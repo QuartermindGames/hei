@@ -718,10 +718,8 @@ PLuint _plTranslateTextureStorageFormat(PLDataFormat format) {
 #if defined(VL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
     switch (format) {
         default:
-        case PL_UNSIGNED_BYTE:
-            return GL_UNSIGNED_BYTE;
-        case PL_UNSIGNED_INT_8_8_8_8_REV:
-            return GL_UNSIGNED_INT_8_8_8_8_REV;
+        case PL_UNSIGNED_BYTE:              return GL_UNSIGNED_BYTE;
+        case PL_UNSIGNED_INT_8_8_8_8_REV:   return GL_UNSIGNED_INT_8_8_8_8_REV;
     }
 #else
     return format;
@@ -734,12 +732,9 @@ PLuint _plTranslateTextureTarget(PLTextureTarget target) {
 #if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     switch (target) {
         default:
-        case PL_TEXTURE_2D:
-            return GL_TEXTURE_2D;
-        case PL_TEXTURE_1D:
-            return GL_TEXTURE_1D;
-        case PL_TEXTURE_3D:
-            return GL_TEXTURE_3D;
+        case PL_TEXTURE_2D: return GL_TEXTURE_2D;
+        case PL_TEXTURE_1D: return GL_TEXTURE_1D;
+        case PL_TEXTURE_3D: return GL_TEXTURE_3D;
     }
 #else
     return (PLuint)format;
@@ -750,18 +745,12 @@ PLuint _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
 #if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     switch (mode) {
         default:
-        case PL_TEXTUREMODE_ADD:
-            return GL_ADD;
-        case PL_TEXTUREMODE_MODULATE:
-            return GL_MODULATE;
-        case PL_TEXTUREMODE_DECAL:
-            return GL_DECAL;
-        case PL_TEXTUREMODE_BLEND:
-            return GL_BLEND;
-        case PL_TEXTUREMODE_REPLACE:
-            return GL_REPLACE;
-        case PL_TEXTUREMODE_COMBINE:
-            return GL_COMBINE;
+        case PL_TEXTUREMODE_ADD:        return GL_ADD;
+        case PL_TEXTUREMODE_MODULATE:   return GL_MODULATE;
+        case PL_TEXTUREMODE_DECAL:      return GL_DECAL;
+        case PL_TEXTUREMODE_BLEND:      return GL_BLEND;
+        case PL_TEXTUREMODE_REPLACE:    return GL_REPLACE;
+        case PL_TEXTUREMODE_COMBINE:    return GL_COMBINE;
     }
 #elif defined (VL_MODE_GLIDE)
 #elif defined (VL_MODE_DIRECT3D)
@@ -777,20 +766,21 @@ PLuint _plTranslateTextureFormat(PLTextureFormat format) {
 #if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     switch (format) {
         default:
-        case VL_TEXTUREFORMAT_RGB8:
-            return GL_RGB8;
-        case VL_TEXTUREFORMAT_RGBA8:
-            return GL_RGBA8;
-        case VL_TEXTUREFORMAT_RGBA_DXT1:
-            return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-        case VL_TEXTUREFORMAT_RGB_DXT1:
-            return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-        case VL_TEXTUREFORMAT_RGBA_DXT3:
-            return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-        case VL_TEXTUREFORMAT_RGBA_DXT5:
-            return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-        case VL_TEXTUREFORMAT_RGB_FXT1:
-            return GL_COMPRESSED_RGB_FXT1_3DFX;
+        case PL_TEXTUREFORMAT_RGB4:         return GL_RGB4;
+        case PL_TEXTUREFORMAT_RGBA4:        return GL_RGBA4;
+        case PL_TEXTUREFORMAT_RGB5:         return GL_RGB5;
+        case PL_TEXTUREFORMAT_RGB5A1:       return GL_RGB5_A1;
+        case PL_TEXTUREFORMAT_RGB565:       return GL_RGB565;
+        case VL_TEXTUREFORMAT_RGB8:         return GL_RGB8;
+        case VL_TEXTUREFORMAT_RGBA8:        return GL_RGBA8;
+        case PL_TEXTUREFORMAT_RGBA12:       return GL_RGBA12;
+        case PL_TEXTUREFORMAT_RGBA16:       return GL_RGBA16;
+        case PL_TEXTUREFORMAT_RGBA16F:      return GL_RGBA16F;
+        case VL_TEXTUREFORMAT_RGBA_DXT1:    return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        case VL_TEXTUREFORMAT_RGB_DXT1:     return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+        case VL_TEXTUREFORMAT_RGBA_DXT3:    return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+        case VL_TEXTUREFORMAT_RGBA_DXT5:    return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+        case VL_TEXTUREFORMAT_RGB_FXT1:     return GL_COMPRESSED_RGB_FXT1_3DFX;
     }
 #elif defined (VL_MODE_GLIDE)
 #elif defined (VL_MODE_DIRECT3D)
@@ -804,8 +794,7 @@ PLbool _plIsCompressedTextureFormat(PLTextureFormat format) {
     _PL_GRAPHICS_TRACK();
 
     switch (format) {
-        default:
-            return PL_FALSE;
+        default:return PL_FALSE;
         case VL_TEXTUREFORMAT_RGBA_DXT1:
         case VL_TEXTUREFORMAT_RGBA_DXT3:
         case VL_TEXTUREFORMAT_RGBA_DXT5:
@@ -883,13 +872,11 @@ void plUploadTexture(PLTexture texture, const PLTextureInfo *upload) {
 
 PLTexture plGetCurrentTexture(PLuint tmu) {
     _PL_GRAPHICS_TRACK();
-
     return pl_graphics_state.tmu[tmu].current_texture;
 }
 
 PLuint plGetCurrentTextureUnit(void) {
     _PL_GRAPHICS_TRACK();
-
     return pl_graphics_state.current_textureunit;
 }
 
@@ -900,7 +887,6 @@ PLuint plGetCurrentTextureUnit(void) {
 
 PLuint plGetMaxTextureSize(void) {
     _PL_GRAPHICS_TRACK();
-
     if (pl_graphics_state.hw_maxtexturesize != 0)
         return pl_graphics_state.hw_maxtexturesize;
 
@@ -917,7 +903,6 @@ PLuint plGetMaxTextureSize(void) {
 
 PLuint plGetMaxTextureUnits(void) {
     _PL_GRAPHICS_TRACK();
-
     if (pl_graphics_state.hw_maxtextureunits != 0)
         return pl_graphics_state.hw_maxtextureunits;
 
@@ -934,7 +919,6 @@ PLuint plGetMaxTextureUnits(void) {
 
 PLuint plGetMaxTextureAnistropy(void) {
     _PL_GRAPHICS_TRACK();
-
     if (pl_graphics_state.hw_maxtextureanistropy != 0)
         return pl_graphics_state.hw_maxtextureanistropy;
 
@@ -953,7 +937,6 @@ PLuint plGetMaxTextureAnistropy(void) {
 
 void plSetTexture(PLTexture texture) {
     _PL_GRAPHICS_TRACK();
-
     if (texture == pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_texture)
         return;
 
@@ -966,7 +949,6 @@ void plSetTexture(PLTexture texture) {
 
 void plSetTextureUnit(PLuint target) {
     _PL_GRAPHICS_TRACK();
-
     if (target == pl_graphics_state.current_textureunit)
         return;
     else if (target > plGetMaxTextureUnits()) {

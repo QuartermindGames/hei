@@ -1,17 +1,28 @@
 /*
-DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-Version 2, December 2004
+This is free and unencumbered software released into the public domain.
 
-Copyright (C) 2011-2016 Mark E Sowden <markelswo@gmail.com>
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-Everyone is permitted to copy and distribute verbatim or modified
-copies of this license document, and changing it is allowed as long
-as the name is changed.
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-0. You just DO WHAT THE FUCK YOU WANT TO.
+For more information, please refer to <http://unlicense.org>
 */
 
 #pragma once
@@ -205,33 +216,34 @@ typedef enum VLTextureClamp {
 } VLTextureClamp;
 
 typedef enum PLTextureFilter {
-    PL_TEXTUREFILTER_MIPMAP_NEAREST,    // GL_NEAREST_MIPMAP_NEAREST
-    PL_TEXTUREFILTER_MIPMAP_LINEAR,        // GL_LINEAR_MIPMAP_LINEAR
+    PL_TEXTUREFILTER_MIPMAP_NEAREST,        // GL_NEAREST_MIPMAP_NEAREST
+    PL_TEXTUREFILTER_MIPMAP_LINEAR,         // GL_LINEAR_MIPMAP_LINEAR
 
     PL_TEXTUREFILTER_MIPMAP_LINEAR_NEAREST,    // GL_LINEAR_MIPMAP_NEAREST
     PL_TEXTUREFILTER_MIPMAP_NEAREST_LINEAR,    // GL_NEAREST_MIPMAP_LINEAR
 
-    PL_TEXTUREFILTER_NEAREST,    // Nearest filtering
-    PL_TEXTUREFILTER_LINEAR        // Linear filtering
+    PL_TEXTUREFILTER_NEAREST,       // Nearest filtering
+    PL_TEXTUREFILTER_LINEAR         // Linear filtering
 } PLTextureFilter;
 
 typedef enum PLTextureFormat {
-#if defined (VL_MODE_OPENGL)
-    VL_TEXTUREFORMAT_RGB8,
-    VL_TEXTUREFORMAT_RGBA8,
+    PL_TEXTUREFORMAT_RGB4,      // 4 4 4 0
+    PL_TEXTUREFORMAT_RGBA4,     // 4 4 4 4
+    PL_TEXTUREFORMAT_RGB5,      // 5 5 5 0
+    PL_TEXTUREFORMAT_RGB5A1,    // 5 5 5 1
+    PL_TEXTUREFORMAT_RGB565,    // 5 6 5 0
+    VL_TEXTUREFORMAT_RGB8,      // 8 8 8 0
+    VL_TEXTUREFORMAT_RGBA8,     // 8 8 8 8
+    PL_TEXTUREFORMAT_RGBA12,    // 12 12 12 12
+    PL_TEXTUREFORMAT_RGBA16,    // 16 16 16 16
+    PL_TEXTUREFORMAT_RGBA16F,   // 16 16 16 16
 
     VL_TEXTUREFORMAT_RGBA_DXT1,
     VL_TEXTUREFORMAT_RGB_DXT1,
     VL_TEXTUREFORMAT_RGBA_DXT3,
     VL_TEXTUREFORMAT_RGBA_DXT5,
 
-    VL_TEXTUREFORMAT_RGB_FXT1,
-#else
-    VL_TEXTUREFORMAT_RGB,
-    VL_TEXTUREFORMAT_RGBA,
-    VL_TEXTUREFORMAT_BGR,
-    VL_TEXTUREFORMAT_BGRA,
-#endif
+    VL_TEXTUREFORMAT_RGB_FXT1
 } PLTextureFormat;
 
 // Texture Environment Modes

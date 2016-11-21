@@ -277,20 +277,21 @@ typedef enum {
     PL_RESULT_SUCCESS,
 
     // FILE I/O
-            PL_RESULT_FILEREAD,        // Failed to read file!
-    PL_RESULT_FILETYPE,        // Unexpected file type!
-    PL_RESULT_FILEVERSION,    // Unsupported version!
-    PL_RESULT_FILESIZE,        // Invalid file size!
-    PL_RESULT_FILEPATH,        // Invalid path!
+    PL_RESULT_FILEREAD,     // Failed to read file!
+    PL_RESULT_FILETYPE,     // Unexpected file type!
+    PL_RESULT_FILEVERSION,  // Unsupported version!
+    PL_RESULT_FILESIZE,     // Invalid file size!
+    PL_RESULT_FILEPATH,     // Invalid path!
 
     // GRAPHICS
-            PL_RESULT_GRAPHICSINIT,    // Graphics failed to initialise!
+    PL_RESULT_GRAPHICSINIT,    // Graphics failed to initialise!
 
     // IMAGE
-            PL_RESULT_IMAGERESOLUTION,    // Invalid image resolution!
+    PL_RESULT_IMAGERESOLUTION,  // Invalid image resolution!
+    PL_RESULT_IMAGEFORMAT,      // Invalid image format!
 
     // MEMORY
-            PL_RESULT_MEMORYALLOC,    // Ran out of memory!
+    PL_RESULT_MEMORYALLOC,    // Ran out of memory!
 } PLresult;
 
 //static jmp_buf jbException;
@@ -346,6 +347,10 @@ static PL_INLINE time_t plStringToTime(const char *ts) {
     time.tm_isdst = -1;
 
     return mktime(&time);
+}
+
+static PL_INLINE PLbool plIsPowerOfTwo(PLuint num) {
+    return ((num != 0) && ((num & (~num + 1)) == num));
 }
 
 //////////////////////////////////////////////////////////////////

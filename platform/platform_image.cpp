@@ -64,3 +64,16 @@ void plFreeImage(PLImage *image) {
 
     plFunctionEnd();
 }
+
+PLbool plIsValidImageSize(PLuint width, PLuint height) {
+    plFunctionStart();
+
+    if((width < 8) || (height < 8))
+        return false;
+    else if(!plIsPowerOfTwo(width) || !plIsPowerOfTwo(height))
+        return false;
+
+    return true;
+
+    plFunctionEnd();
+}

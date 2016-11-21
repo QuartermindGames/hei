@@ -19,6 +19,18 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 #include "platform.h"
 #include "platform_graphics.h"
 
+enum PLImageFlag {
+    PL_IMAGEFLAG_FULLBRIGHT     = (1 << 0),
+
+    PL_IMAGEFLAG_NEAREST    = (5 << 0),
+    PL_IMAGEFLAG_BILINEAR   = (6 << 0),
+    PL_IMAGEFLAG_TRILINEAR  = (7 << 0),
+
+    PL_IMAGEFLAG_NORMALMAP      = (10 << 0),
+    PL_IMAGEFLAG_ENVMAP         = (11 << 0),
+    PL_IMAGEFLAG_SPHEREMAP      = (12 << 0),
+} PLImageFlag;
+
 typedef struct PLImage {
     PLbyte *data;
 
@@ -30,6 +42,7 @@ typedef struct PLImage {
     PLchar path[PL_MAX_PATH];
 
     PLTextureFormat format;
+    PLColourFormat  colour_format;
 
     PLuint flags;
 } PLImage;
@@ -44,6 +57,8 @@ typedef struct PLImage {
 PL_EXTERN_C
 
 extern void plFreeImage(PLImage *image);
+
+extern PLbool plIsValidImageSize(PLuint width, PLuint height);
 
 extern PLresult plLoadFTXImage(FILE *fin, PLImage *out);    // Ritual's FTX image format.
 extern PLresult plLoadPPMImage(FILE *fin, PLImage *out);    // Portable Pixel Map format.
