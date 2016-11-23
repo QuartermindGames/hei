@@ -61,10 +61,10 @@ PLresult plLoadImage(const PLchar *path, PLImage *out)
         return PL_RESULT_FILEREAD;
 
     PLresult result = PL_RESULT_SUCCESS;
-    if (strncmp(extension, PLIMAGE_EXTENSION_DTX, 3))       result = plLoadDTXImage(fin, out);
-    else if (strncmp(extension, PLIMAGE_EXTENSION_FTX, 3))  result = plLoadFTXImage(fin, out);
-    else if (strncmp(extension, PLIMAGE_EXTENSION_VTF, 3))  result = plLoadVTFImage(fin, out);
-    else if (strncmp(extension, PLIMAGE_EXTENSION_PPM, 3))  result = plLoadPPMImage(fin, out);
+    if (!strncmp(extension, PLIMAGE_EXTENSION_DTX, 3))       result = plLoadDTXImage(fin, out);
+    else if (!strncmp(extension, PLIMAGE_EXTENSION_FTX, 3))  result = plLoadFTXImage(fin, out);
+    else if (!strncmp(extension, PLIMAGE_EXTENSION_VTF, 3))  result = plLoadVTFImage(fin, out);
+    else if (!strncmp(extension, PLIMAGE_EXTENSION_PPM, 3))  result = plLoadPPMImage(fin, out);
 
     fclose(fin);
 

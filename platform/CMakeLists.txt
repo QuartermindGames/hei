@@ -3,7 +3,7 @@
 
 project(platform)
 
-file(GLOB PLATFORM_SOURCE_FILES "*.cpp" "*.c")
+file(GLOB PLATFORM_SOURCE_FILES "*.cpp" "*.c" include/*.h)
 
 add_library(platform SHARED ${PLATFORM_SOURCE_FILES})
 

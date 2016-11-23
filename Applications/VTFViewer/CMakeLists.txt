@@ -27,9 +27,9 @@ For more information, please refer to <http://unlicense.org>
 
 project(VTFViewer)
 
-file(GLOB VTFVIEWER_SOURCE_FILES *.cpp)
+file(GLOB VTFVIEWER_SOURCE_FILES *.cpp *.h)
 
 add_executable(VTFViewer ${VTFVIEWER_SOURCE_FILES})
 
 target_include_directories(VTFViewer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(VTFViewer platform)
+target_link_libraries(VTFViewer platform glfw)

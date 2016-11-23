@@ -211,10 +211,20 @@ typedef struct PLVector3D {
 #define PL_COLOUR_GREEN 0, 255, 0, 255
 #define PL_COLOUR_BLUE  0, 0, 255, 255
 
+typedef PLbyte PLColourb[4];
+typedef PLfloat PLColourf[4];
+
+#ifdef __cplusplus
+
 struct PLColour {
     PLColour() : PLColour(PL_COLOUR_WHITE) {}
 
     PLColour(PLuchar _r, PLuchar _g, PLuchar _b, PLuchar _a = 255) : r(_r), g(_g), b(_b), a(_a) {}
+    PLColour(PLfloat _r, PLfloat _g, PLfloat _b, PLfloat _a = 1) :
+            r((PLuchar)(_r * 255)),
+            g((PLuchar)(_g * 255)),
+            b((PLuchar)(_b * 255)),
+            a((PLuchar)(_a * 255)) {}
 
     PLuchar r, g, b, a;
 
@@ -238,6 +248,12 @@ struct PLColour {
         a = 0;
     }
 };
+
+#else
+
+typedef struct PLColour PLColour;
+
+#endif
 
 // Matrices
 

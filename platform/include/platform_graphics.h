@@ -159,27 +159,27 @@ typedef enum PLBlend {
 } PLBlend;
 
 // Blending
-#define    PL_BLEND_ADDITIVE    VL_BLEND_SRC_ALPHA, VL_BLEND_ONE
-#define    PL_BLEND_DEFAULT    VL_BLEND_SRC_ALPHA, VL_BLEND_ONE_MINUS_SRC_ALPHA
+#define PL_BLEND_ADDITIVE   VL_BLEND_SRC_ALPHA, VL_BLEND_ONE
+#define PL_BLEND_DEFAULT    VL_BLEND_SRC_ALPHA, VL_BLEND_ONE_MINUS_SRC_ALPHA
 
 //-----------------
 // Capabilities
 
 typedef enum PLGraphicsCapability {
-    VL_CAPABILITY_FOG = (1 << 0),    // Fog.
-    VL_CAPABILITY_ALPHA_TEST = (1 << 1),    // Alpha-testing.
-    PL_CAPABILITY_BLEND = (1 << 2), // Blending.
+    VL_CAPABILITY_FOG = (1 << 0),           // Fog.
+    PL_CAPABILITY_ALPHA_TEST = (1 << 1),    // Alpha-testing.
+    PL_CAPABILITY_BLEND = (1 << 2),         // Blending.
     PL_CAPABILITY_TEXTURE_2D = (1 << 3),    // Enables/disables textures.
-    VL_CAPABILITY_TEXTURE_GEN_S = (1 << 4),    // Generate S coordinate.
+    VL_CAPABILITY_TEXTURE_GEN_S = (1 << 4), // Generate S coordinate.
     VL_CAPABILITY_TEXTURE_GEN_T = (1 << 5), // Generate T coordinate.
     VL_CAPABILITY_DEPTH_TEST = (1 << 6),    // Depth-testing.
-    VL_CAPABILITY_STENCIL_TEST = (1 << 7),    // Stencil-testing.
-    VL_CAPABILITY_MULTISAMPLE = (1 << 8), // Multisampling.
-    VL_CAPABILITY_CULL_FACE = (1 << 9),    // Automatically cull faces.
-    VL_CAPABILITY_SCISSOR_TEST = (1 << 10), // Scissor test for buffer clear.
+    VL_CAPABILITY_STENCIL_TEST = (1 << 7),  // Stencil-testing.
+    VL_CAPABILITY_MULTISAMPLE = (1 << 8),   // Multisampling.
+    VL_CAPABILITY_CULL_FACE = (1 << 9),     // Automatically cull faces.
+    PL_CAPABILITY_SCISSORTEST = (1 << 10),  // Scissor test for buffer clear.
 
     // Texture Generation
-            VL_CAPABILITY_GENERATEMIPMAP = (1 << 20),
+    PL_CAPABILITY_GENERATEMIPMAP = (1 << 20),
 } PLGraphicsCapability;
 
 PL_EXTERN_C
@@ -370,11 +370,18 @@ typedef enum PLFBOTarget {
 #endif
 } PLFBOTarget;
 
+enum {
+    PL_BUFFER_COLOUR    = (1 << 0),
+    PL_BUFFER_DEPTH     = (1 << 1),
+    PL_BUFFER_STENCIL   = (1 << 2),
+};
+
 PL_EXTERN_C
 
 PL_EXTERN void plSetClearColour3f(PLfloat r, PLfloat g, PLfloat b);
 PL_EXTERN void plSetClearColour4f(PLfloat r, PLfloat g, PLfloat b, PLfloat a);
-PL_EXTERN void plSetClearColour4fv(PLColour rgba);
+PL_EXTERN void plSetClearColour4fv(PLColourf rgba);
+PL_EXTERN void plSetClearColour(PLColour rgba);
 
 PL_EXTERN void plClearBuffers(PLuint buffers);
 

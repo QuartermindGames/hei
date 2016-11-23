@@ -25,15 +25,49 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#include <GLFW/glfw3.h>
+
 #include "platform_image.h"
 #include "platform_window.h"
 #include "platform_graphics.h"
 #include "platform_log.h"
 
-#define LOG "vtfviewer"
+#define TITLE   "VTF/VMT Viewer"
+#define LOG     "vtfviewer"
 
 int main(int argc, char *argv[]) {
     plClearLog(LOG);
 
+    if(!glfwInit()) {
+        plMessageBox(TITLE, "Failed to initialize GLFW!\n");
+        return -1;
+    }
+
+    GLFWwindow *window = glfwCreateWindow(640, 480, TITLE, NULL, NULL);
+    if(!window) {
+        glfwTerminate();
+
+        plMessageBox(TITLE, "Failed to create window!\n");
+        return -1;
+    }
+
+    glfwMakeContextCurrent(window);
+
     plInitGraphics();
+
+    plSetClearColour(PLColour(PL_COLOUR_BLACK));
+
+    while(!glfwWindowShouldClose(window)) {
+        plClearBuffers(PL_BUFFER_COLOUR);
+
+        // draw stuff
+
+        glfwSwapBuffers(window);
+
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+
+    return 0;
 }

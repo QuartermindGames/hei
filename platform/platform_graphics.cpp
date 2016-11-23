@@ -285,29 +285,37 @@ void plSetClearColour3f(PLfloat r, PLfloat g, PLfloat b) {
 void plSetClearColour4f(PLfloat r, PLfloat g, PLfloat b, PLfloat a) {
     _PL_GRAPHICS_TRACK();
 
-    if ((r == pl_graphics_state.current_clearcolour.r) &&
-        (g == pl_graphics_state.current_clearcolour.g) &&
-        (b == pl_graphics_state.current_clearcolour.b) &&
-        (a == pl_graphics_state.current_clearcolour.a))
+    plSetClearColour(PLColour(r, g, b, a));
+}
+
+void plSetClearColour4fv(PLColourf rgba) {
+    plSetClearColour4f(rgba[0], rgba[1], rgba[2], rgba[3]);
+}
+
+void plSetClearColour(PLColour rgba) {
+    if (rgba == pl_graphics_state.current_clearcolour)
         return;
 
 #if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    glClearColor(r, g, b, a);
+    glClearColor(rgba.r / 255, rgba.g / 255, rgba.b / 255, rgba.a / 255);
 #elif defined (VL_MODE_DIRECT3D)
     // Don't need to do anything specific here, colour is set on clear call.
+#else // Software
 #endif
 
-    pl_graphics_state.current_clearcolour.Set(r, g, b, a);
-}
-
-void plSetClearColour4fv(PLColour rgba) {
-    plSetClearColour4f(rgba.r, rgba.g, rgba.b, rgba.a);
+    pl_graphics_state.current_clearcolour = rgba;
 }
 
 void plClearBuffers(PLuint buffers) {
     _PL_GRAPHICS_TRACK();
 
 #if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+    // Rather ugly, but translate it over to GL.
+    PLuint glclear = 0;
+    if(buffers & PL_BUFFER_COLOUR)  glclear |= GL_COLOR_BUFFER_BIT;
+    if(buffers & PL_BUFFER_DEPTH)   glclear |= GL_DEPTH_BUFFER_BIT;
+    if(buffers & PL_BUFFER_STENCIL) glclear |= GL_STENCIL_BUFFER_BIT;
+
     glClear(buffers);
 #elif defined (VL_MODE_GLIDE)
     // Glide only supports clearing a single buffer.
@@ -320,6 +328,7 @@ void plClearBuffers(PLuint buffers) {
         pl_d3d_backbuffer,
         graphics_state.current_clearcolour
     );
+#else // Software
 #endif
 }
 
@@ -336,7 +345,7 @@ typedef struct _PLGraphicsCapabilities {
 _PLGraphicsCapabilities graphics_capabilities[] =
         {
 #if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-                {VL_CAPABILITY_ALPHA_TEST, GL_ALPHA_TEST, "ALPHA_TEST"},
+                {PL_CAPABILITY_ALPHA_TEST, GL_ALPHA_TEST, "ALPHA_TEST"},
                 {PL_CAPABILITY_BLEND, GL_BLEND, "BLEND"},
                 {VL_CAPABILITY_DEPTH_TEST, GL_DEPTH_TEST, "DEPTH_TEST"},
                 {PL_CAPABILITY_TEXTURE_2D, GL_TEXTURE_2D, "TEXTURE_2D"},
@@ -345,11 +354,11 @@ _PLGraphicsCapabilities graphics_capabilities[] =
                 {VL_CAPABILITY_CULL_FACE, GL_CULL_FACE, "CULL_FACE"},
                 {VL_CAPABILITY_STENCIL_TEST, GL_STENCIL_TEST, "STENCIL_TEST"},
                 {VL_CAPABILITY_MULTISAMPLE, GL_MULTISAMPLE, "MULTISAMPLE"},
-                {VL_CAPABILITY_SCISSOR_TEST, GL_SCISSOR_TEST, "SCISSOR_TEST"},
+                {PL_CAPABILITY_SCISSORTEST, GL_SCISSOR_TEST, "SCISSOR_TEST"},
 
-                {VL_CAPABILITY_GENERATEMIPMAP, 0, "GENERATE_MIPMAP"},
+                {PL_CAPABILITY_GENERATEMIPMAP, 0, "GENERATE_MIPMAP"},
 #else
-        { VL_CAPABILITY_ALPHA_TEST, 0, "ALPHA_TEST" },
+        { PL_CAPABILITY_ALPHA_TEST, 0, "ALPHA_TEST" },
         { VL_CAPABILITY_BLEND, 0, "BLEND" },
         { VL_CAPABILITY_DEPTH_TEST, 0, "DEPTH_TEST" },
         { VL_CAPABILITY_TEXTURE_2D, 0, "TEXTURE_2D" },
@@ -832,7 +841,7 @@ void plUploadTexture(PLTexture texture, const PLTextureInfo *upload) {
     PLuint format = _plTranslateTextureFormat(upload->format);
 
     PLuint levels = upload->levels;
-    if (plIsGraphicsStateEnabled(VL_CAPABILITY_GENERATEMIPMAP))
+    if (plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP))
         if (levels <= 1) levels = _PL_TEXTURE_LEVELS;
 
     if (upload->initial)
@@ -863,7 +872,7 @@ void plUploadTexture(PLTexture texture, const PLTextureInfo *upload) {
                         upload->data
                 );
 
-    if (plIsGraphicsStateEnabled(VL_CAPABILITY_GENERATEMIPMAP))
+    if (plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP))
         glGenerateMipmap(GL_TEXTURE_2D);
 #elif defined (VL_MODE_GLIDE)
 #elif defined (VL_MODE_DIRECT3D)
