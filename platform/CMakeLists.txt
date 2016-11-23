@@ -5,7 +5,7 @@ project(platform)
 
 file(GLOB PLATFORM_SOURCE_FILES "*.cpp" "*.c")
 
-add_library(platform STATIC ${PLATFORM_SOURCE_FILES})
+add_library(platform SHARED ${PLATFORM_SOURCE_FILES})
 
 set_target_properties(platform PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 

@@ -30,20 +30,21 @@ PLresult plLoadFTXImage(FILE *fin, PLImage *out) {
 
     FTXHeader header;
     memset(&header, 0, sizeof(FTXHeader));
-    header.width = plGetLittleLong(fin);
-    header.height = plGetLittleLong(fin);
-    header.alpha = plGetLittleLong(fin);
+    header.width = (PLuint)plGetLittleLong(fin);
+    header.height = (PLuint)plGetLittleLong(fin);
+    header.alpha = (PLuint)plGetLittleLong(fin);
 
     memset(out, 0, sizeof(PLImage));
+    out->size = (PLuint)(header.width * header.height * 4);
+    out->data = new PLbyte*[1];
+    out->data[0] = new PLbyte[out->size];
 
-    out->size = header.width * header.height * 4;
-    out->data = (uint8_t *) malloc(out->size);
-    if (fread(out->data, sizeof(uint8_t), out->size, fin) != out->size)
+    if (fread(out->data[0], sizeof(uint8_t), out->size, fin) != out->size)
         return PL_RESULT_FILEREAD;
 
     out->format = VL_TEXTUREFORMAT_RGBA8;
-
-    out->width = header.width;
-    out->height = header.height;
+    out->colour_format = VL_COLOURFORMAT_RGBA;
+    out->width = (PLuint)header.width;
+    out->height = (PLuint)header.height;
     return PL_RESULT_SUCCESS;
 }

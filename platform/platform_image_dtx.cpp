@@ -160,10 +160,10 @@ PLresult plLoadDTXImage(FILE *fin, PLImage *out) {
     for (int i = 0; i < header.mipmaps; i++) {
     }
 
-    out->data = (PLbyte *) calloc(out->size, sizeof(PLbyte));
-    if (!out->data) return PL_RESULT_MEMORYALLOC;
+    out->data = new PLbyte*[header.mipmaps];
+    out->data[0] = new PLbyte[out->size];
 
-    fread(out->data, sizeof(PLbyte), out->size, fin);
+    fread(out->data[0], sizeof(PLbyte), out->size, fin);
 
     /*	for (PLuint i = 0; i < (PLuint)size; i += 4)
     {

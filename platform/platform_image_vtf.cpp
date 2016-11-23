@@ -240,6 +240,7 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
             out->format = VL_TEXTUREFORMAT_RGBA8;
             out->colour_format = VL_COLOURFORMAT_ABGR;
             break;
+        case VTF_FORMAT_BGRX8888:
         case VTF_FORMAT_BGRA8888:
             out->size = (PLuint)(header.width * header.height * 4);
             out->format = VL_TEXTUREFORMAT_RGBA8;
@@ -281,22 +282,46 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
             break;
     }
 
+    if(!out->levels)
+        return PL_RESULT_FILESIZE;
+
+    out->levels = header.mipmaps;
+    out->data = new PLbyte*[out->levels];
+
     if (header.version[1] >= 3) {
         for (PLuint i = 0; i < header3.numresources; i++) {
-
+            // todo, support for later VTF versions.
         }
     } else {
         PLuint faces = 1;
         if(header.flags & VTF_FLAG_ENVMAP)
             faces = 6;
 
+        // VTF's typically include a tiny thumbnail image at the start, which we'll skip.
         fseek(fin, header.lowresimagewidth * header.lowresimageheight / 2, SEEK_CUR);
-        for (PLuint mipmap = 0; mipmap < header.mipmaps; mipmap++) {
+        for (PLuint mipmap = 0, mipsize = out->size; mipmap < header.mipmaps; mipmap++) {
+
+#if 0 // skip frames and faces for now...
             for(PLuint frame = 0; frame < header.frames; frame++) {
                 for(PLuint face = 0; face < faces; face++) {
 
                 }
             }
+#endif
+
+            /* Need to scale mipsize depending on depth of this? Surely each one will use less and less data???
+             * Looking at the DevIL implementation, this doesn't seem like something they worried about but I'm
+             * still slightly concerned about it here.
+             */
+
+            out->data[mipmap] = new PLbyte[mipsize];
+            if(fread(out->data[mipmap], sizeof(PLbyte), mipsize, fin) != mipsize) {
+                delete[] out->data;
+                return PL_RESULT_FILEREAD;
+            }
+
+            // Skip any additional frames.
+            fseek(fin, mipsize * header.frames * faces, SEEK_CUR);
         }
     }
 

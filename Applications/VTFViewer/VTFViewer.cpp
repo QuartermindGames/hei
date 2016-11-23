@@ -1,4 +1,4 @@
-#[[
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,28 +23,17 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-]]
+*/
 
-cmake_minimum_required(VERSION 3.5.1)
+#include "platform_image.h"
+#include "platform_window.h"
+#include "platform_graphics.h"
+#include "platform_log.h"
 
-# Set all of our output directories.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
+#define LOG "vtfviewer"
 
-option(XENON_COMPILE_TOOLS "Compile Xenon utilities" ON)
+int main(int argc, char *argv[]) {
+    plClearLog(LOG);
 
-include_directories("${CMAKE_SOURCE_DIR}/include/")           # Base include directories.
-include_directories("${CMAKE_SOURCE_DIR}/platform/include/")  # Platform lib headers get used for everything.
-include_directories("${CMAKE_SOURCE_DIR}/shared/")            # Xenon shared headers.
-
-add_definitions("-std=c++11" "-D_DEBUG")
-add_subdirectory(platform)
-add_subdirectory(Applications/VTFViewer)
-
-#[[
-if(XENON_COMPILE_TOOLS)
-    #add_subdirectory(level)
-    #add_subdirectory(editor)
-endif(XENON_COMPILE_TOOLS)
-]]
+    plInitGraphics();
+}

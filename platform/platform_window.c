@@ -18,9 +18,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "platform_window.h"
+#include "platform_graphics.h"
+
+#if defined(__linux__)
+#   include <X11/X.h>
+#   include <X11/Xlib.h>
+#endif
 
 /*	Simple Window/Display Handling	*/
 // todo, rewrite ALL of this.
+
+#define PL_WINDOW_WIDTH    640
+#define PL_WINDOW_HEIGHT   480
 
 PLuint plGetScreenWidth(void) {
 #ifdef _WIN32
@@ -29,13 +38,13 @@ PLuint plGetScreenWidth(void) {
     Display *display = XOpenDisplay(NULL);
     if (!display) {
         plSetError("Failed to open display!\n");
-        return 4000;
+        return PL_WINDOW_WIDTH;
     }
 
     Screen *screen = DefaultScreenOfDisplay(display);
     if (!screen) {
         plSetError("Failed to get screen of display!\n");
-        return 4000;
+        return PL_WINDOW_WIDTH;
     }
 
     return (PLuint) screen->width;
