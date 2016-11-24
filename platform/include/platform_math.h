@@ -38,6 +38,10 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 #define    PL_BLUE     2
 #define    PL_ALPHA    3
 
+static PL_INLINE PLdouble plRound(PLdouble num) {
+
+}
+
 // Vectors
 
 typedef PLint PLVector2i[2], PLVector3i[3], PLVector4i[4];
@@ -220,6 +224,8 @@ struct PLColour {
     PLColour() : PLColour(PL_COLOUR_WHITE) {}
 
     PLColour(PLuchar _r, PLuchar _g, PLuchar _b, PLuchar _a = 255) : r(_r), g(_g), b(_b), a(_a) {}
+    PLColour(PLint _r, PLint _g, PLint _b, PLint _a = 255) :
+            PLColour((PLuchar)_r, (PLuchar)_g, (PLuchar) _b, (PLuchar)_a) {}
     PLColour(PLfloat _r, PLfloat _g, PLfloat _b, PLfloat _a = 1) :
             r((PLuchar)(_r * 255)),
             g((PLuchar)(_g * 255)),
@@ -231,21 +237,17 @@ struct PLColour {
     PLbool operator==(PLColour in) const { return ((r == in.r) && (g == in.g) && (b == in.b) && (a == in.a)); }
 
     PLColour operator*(PLColour in) { return PLColour(r * in.r, g * in.g, b * in.b, a * in.a); }
-
     PLColour operator/(PLColour in) { return PLColour(r / in.r, g / in.g, b / in.b, a / in.a); }
 
     void PL_INLINE Set(PLfloat _r, PLfloat _g, PLfloat _b, PLfloat _a = 1) {
-        r = (PLuchar) (_r / 255);
-        g = (PLuchar) (_g / 255);
-        b = (PLuchar) (_b / 255);
-        a = (PLuchar) (_a / 255);
+        r = (PLuchar) (_r * 255);
+        g = (PLuchar) (_g * 255);
+        b = (PLuchar) (_b * 255);
+        a = (PLuchar) (_a * 255);
     }
 
     void PL_INLINE Clear() {
-        r = 0;
-        g = 0;
-        b = 0;
-        a = 0;
+        r = 0; g = 0; b = 0; a = 0;
     }
 };
 
@@ -387,7 +389,7 @@ static PL_INLINE PLfloat plLinearInterpolate(PLfloat y1, PLfloat y2, PLfloat mu)
 }
 
 static PL_INLINE PLfloat plCosineInterpolate(PLfloat y1, PLfloat y2, PLfloat mu) {
-    PLfloat mu2 = (1 - std::cos(mu * (PLfloat) PL_PI)) / 2;
+    PLfloat mu2 = (1 - cosf(mu * (PLfloat) PL_PI)) / 2;
     return (y1 * (1 - mu2) + y2 * mu2);
 }
 

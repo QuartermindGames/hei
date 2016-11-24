@@ -33,7 +33,7 @@ PLresult plLoadPPMImage(FILE *fin, PLImage *out) {
     }
 
     int i = 0, d;
-    unsigned int w, h;
+    unsigned int w = 0, h = 0;
     while (i < 3) {
         fgets(header, PPM_HEADER_SIZE, fin);
         if (header[0] == '#')
@@ -47,15 +47,16 @@ PLresult plLoadPPMImage(FILE *fin, PLImage *out) {
             i += sscanf(header, "%d", &d);
     }
 
-    PLuint size = w * h * 3;
-    uint8_t *image = (uint8_t *) malloc(sizeof(uint8_t) * size);
-    fread(image, sizeof(uint8_t), size, fin);
-
     memset(out, 0, sizeof(PLImage));
-    out->size = size;
+
+    out->size = w * h * 3;
+    out->data = new PLbyte*[1];
+    out->data[0] = new PLbyte[out->size];
+
+    fread(out->data[0], sizeof(uint8_t), out->size, fin);
+
     out->width = w;
     out->height = h;
-    out->data = image;
     out->format = VL_TEXTUREFORMAT_RGB8;
 
     return PL_RESULT_SUCCESS;

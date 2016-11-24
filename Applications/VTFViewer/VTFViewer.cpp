@@ -57,6 +57,15 @@ int main(int argc, char *argv[]) {
 
     plSetClearColour(PLColour(PL_COLOUR_BLACK));
 
+    PLImage image;
+    PLresult result = plLoadImage("./brickwall010d.vtf", &image);
+    if(result != PL_RESULT_SUCCESS){
+        plMessageBox(TITLE, "Failed to load VTF!\n%s", plGetResultString(result));
+        plFreeImage(&image);
+
+        return -1;
+    }
+
     while(!glfwWindowShouldClose(window)) {
         plClearBuffers(PL_BUFFER_COLOUR);
 

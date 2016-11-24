@@ -61,12 +61,12 @@ typedef struct VTFHeader {
 
 typedef struct VTFHeader72 {
     PLushort depth;
-};
+} VTFHeader72;
 
 typedef struct VTFHeader73 {
     PLuchar padding2[3];
     PLuint numresources;
-};
+} VTFHeader73;
 
 #define VTF_VERSION_MAJOR   7
 #define VTF_VERSION_MINOR   5

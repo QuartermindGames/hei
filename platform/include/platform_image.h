@@ -72,6 +72,8 @@ extern void plFreeImage(PLImage *image);
 
 extern PLbool plIsValidImageSize(PLuint width, PLuint height);
 
+extern PLresult plLoadImage(const PLchar *path, PLImage *out);
+
 extern PLresult plLoadFTXImage(FILE *fin, PLImage *out);    // Ritual's FTX image format.
 extern PLresult plLoadPPMImage(FILE *fin, PLImage *out);    // Portable Pixel Map format.
 extern PLresult plLoadDTXImage(FILE *fin, PLImage *out);    // Lithtech's DTX image format.

@@ -46,6 +46,12 @@ PLresult plLoadImage(const PLchar *path, PLImage *out)
         // but it's useful for cases in which we don't care so much about
         // the type of file we're loading.
 
+        /* Scan directory
+         * Find first file with extension
+         * Load file, if fails, load next with extension
+         * Failed? Okay, we give up!
+         */
+
         if (plFileExists(path))
         {
             // Apparently it exists without an extension... Ho boy...
@@ -74,8 +80,10 @@ PLresult plLoadImage(const PLchar *path, PLImage *out)
 void plFreeImage(PLImage *image) {
     plFunctionStart();
 
-    if (!image || !image->data) return;
-    free(image->data);
+    if (!image || !image->data)
+        return;
+
+    delete[] image->data;
 
     plFunctionEnd();
 }
