@@ -345,13 +345,13 @@ PL_EXTERN_C_END
 /*	Converts string to time.
 	http://stackoverflow.com/questions/1765014/convert-string-from-date-into-a-time-t
 */
-static PL_INLINE time_t plStringToTime(const char *ts) {
-    char s_month[5];
-    int day, year;
+static PL_INLINE time_t plStringToTime(const PLchar *ts) {
+    PLchar s_month[5];
+    PLint day, year;
     sscanf(ts, "%s %d %d", s_month, &day, &year);
 
-    static const char months[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
-    int month = (strstr(months, s_month) - months) / 3;
+    static const PLchar months[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
+    PLint month = (PLint)((strstr(months, s_month) - months) / 3);
     struct tm time = {0};
     time.tm_mon = month;
     time.tm_mday = day;
@@ -362,7 +362,7 @@ static PL_INLINE time_t plStringToTime(const char *ts) {
 }
 
 static PL_INLINE PLbool plIsPowerOfTwo(PLuint num) {
-    return ((num != 0) && ((num & (~num + 1)) == num));
+    return (PLbool)((num != 0) && ((num & (~num + 1)) == num));
 }
 
 //////////////////////////////////////////////////////////////////

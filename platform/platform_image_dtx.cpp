@@ -149,7 +149,7 @@ PLresult plLoadDTXImage(FILE *fin, PLImage *out) {
         case DTX_FORMAT_16:
         case DTX_FORMAT_32:
             out->size = (PLuint)(header.width * header.height * 4);
-            out->format = VL_TEXTUREFORMAT_RGBA8;
+            out->format = PL_TEXTUREFORMAT_RGBA8;
             out->colour_format = VL_COLOURFORMAT_RGBA;
             break;
     }

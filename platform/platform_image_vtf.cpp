@@ -78,7 +78,6 @@ enum VTFFlag {
     VTF_FLAG_CLAMPT = 0x00000008,
     VTF_FLAG_ANISOTROPIC = 0x00000010,
     VTF_FLAG_HINT_DXT5 = 0x00000020,
-    VTF_FLAG_PWL_CORRECTED = 0x00000040,
     VTF_FLAG_NO_COMPRESS = 0x00000040,
     VTF_FLAG_NORMAL = 0x00000080,
     VTF_FLAG_NOMIP = 0x00000100,
@@ -104,6 +103,17 @@ enum VTFFlag {
     VTF_FLAG_UNUSED_10000000 = 0x10000000,
     VTF_FLAG_BORDER = 0x20000000,
 } VTFFlag;
+
+enum VTFFace {
+    VTF_FACE_RIGHT,
+    VTF_FACE_LEFT,
+    VTF_FACE_BACK,
+    VTF_FACE_FRONT,
+    VTF_FACE_UP,
+    VTF_FACE_DOWN,
+
+    VTF_FACE_SPHEREMAP
+} VTFFace;
 
 enum VTFFormat {
     VTF_FORMAT_RGBA8888,
@@ -140,12 +150,14 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
 
     VTFHeader header;
     memset(&header, 0, sizeof(header));
+#define VTF_VERSION(maj, min)   ((maj == header.version[1] && min <= header.version[0]) || maj < header.version[0])
+
     if (fread(&header, sizeof(VTFHeader), 1, fin) != 1)
         return PL_RESULT_FILEREAD;
     else if((header.signature[0] != 'V') || (header.signature[1] != 'T') || (header.signature[2] != 'F') ||
             (header.signature[3] != 0))
         return PL_RESULT_FILETYPE;
-    else if ((header.version[0] > VTF_VERSION_MAJOR) || (header.version[1] > VTF_VERSION_MINOR))
+    else if (VTF_VERSION(7, 5))
         return PL_RESULT_FILEVERSION;
 
     else if (!plIsValidImageSize(header.width, header.height))
@@ -232,23 +244,23 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
         default:
         case VTF_FORMAT_ARGB8888:
             out->size = (PLuint)(header.width * header.height * 4);
-            out->format = VL_TEXTUREFORMAT_RGBA8;
+            out->format = PL_TEXTUREFORMAT_RGBA8;
             out->colour_format = VL_COLOURFORMAT_ARGB;
             break;
         case VTF_FORMAT_ABGR8888:
             out->size = (PLuint)(header.width * header.height * 4);
-            out->format = VL_TEXTUREFORMAT_RGBA8;
+            out->format = PL_TEXTUREFORMAT_RGBA8;
             out->colour_format = VL_COLOURFORMAT_ABGR;
             break;
         case VTF_FORMAT_BGRX8888:
         case VTF_FORMAT_BGRA8888:
             out->size = (PLuint)(header.width * header.height * 4);
-            out->format = VL_TEXTUREFORMAT_RGBA8;
+            out->format = PL_TEXTUREFORMAT_RGBA8;
             out->colour_format = VL_COLOURFORMAT_BGRA;
             break;
         case VTF_FORMAT_RGBA8888:
             out->size = (PLuint)(header.width * header.height * 4);
-            out->format = VL_TEXTUREFORMAT_RGBA8;
+            out->format = PL_TEXTUREFORMAT_RGBA8;
             out->colour_format = VL_COLOURFORMAT_RGBA;
             break;
 
@@ -277,6 +289,10 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
             break;
 
         case VTF_FORMAT_UV88: // todo
+            out->size = (PLuint)(header.width * header.height * 4);
+            out->format = PL_TEXTUREFORMAT_RGB4; // todo, not correct
+            out->colour_format = VL_COLOURFORMAT_RGB; // todo, not correct
+            break;
         case VTF_FORMAT_UVLX8888: // todo
         case VTF_FORMAT_UVWQ8888: // todo
             break;

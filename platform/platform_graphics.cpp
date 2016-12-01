@@ -1,17 +1,28 @@
 /*
-DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-Version 2, December 2004
+This is free and unencumbered software released into the public domain.
 
-Copyright (C) 2011-2016 Mark E Sowden <markelswo@gmail.com>
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-Everyone is permitted to copy and distribute verbatim or modified
-copies of this license document, and changing it is allowed as long
-as the name is changed.
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-0. You just DO WHAT THE FUCK YOU WANT TO.
+For more information, please refer to <http://unlicense.org>
 */
 
 #include "platform_graphics.h"
@@ -269,6 +280,32 @@ void plShutdownGraphics(void) {
 #elif defined (VL_MODE_GLIDE)
 #elif defined (VL_MODE_DIRECT3D)
     _plShutdownDirect3D();
+#endif
+}
+
+/*===========================
+	HARDWARE INFORMATION
+===========================*/
+
+PLbool plHWSupportsMultitexture(void) {
+    _PL_GRAPHICS_TRACK();
+
+#if defined(VL_MODE_OPENGL)
+    return pl_gl_multitexture;
+#elif defined(VL_MODE_GLIDE)
+    return true;
+#else
+    return false;
+#endif
+}
+
+PLbool plHWSupportsShaders(void) {
+    _PL_GRAPHICS_TRACK();
+
+#if defined(VL_MODE_OPENGL)
+    return (pl_gl_fragment_program && pl_gl_vertex_program);
+#else
+    return false;
 #endif
 }
 
@@ -704,14 +741,12 @@ void plSetShaderProgram(PLShaderProgram program) {
     pl_graphics_state.current_program = program;
 }
 
-/*===========================
-	TEXTURES
-===========================*/
+/*  Platform Texture Manager    */
 
 PLuint _plTranslateTextureUnit(PLuint target) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL) || (VL_MODE_OPENGL_CORE)
+#if defined (VL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
     PLuint out = GL_TEXTURE0 + target;
     if (out > (GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS - 1))
         plGraphicsLog("Attempted to select an invalid texture image unit! (%i)\n", target);
@@ -781,7 +816,7 @@ PLuint _plTranslateTextureFormat(PLTextureFormat format) {
         case PL_TEXTUREFORMAT_RGB5A1:       return GL_RGB5_A1;
         case PL_TEXTUREFORMAT_RGB565:       return GL_RGB565;
         case VL_TEXTUREFORMAT_RGB8:         return GL_RGB8;
-        case VL_TEXTUREFORMAT_RGBA8:        return GL_RGBA8;
+        case PL_TEXTUREFORMAT_RGBA8:        return GL_RGBA8;
         case PL_TEXTUREFORMAT_RGBA12:       return GL_RGBA12;
         case PL_TEXTUREFORMAT_RGBA16:       return GL_RGBA16;
         case PL_TEXTUREFORMAT_RGBA16F:      return GL_RGBA16F;
@@ -813,20 +848,44 @@ PLbool _plIsCompressedTextureFormat(PLTextureFormat format) {
     }
 }
 
-void plCreateTexture(PLTexture *texture) {
+std::map<PLuint, PLTexture*> pl_graphics_textures;
+
+PLTexture *plCreateTexture(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL)
-    glGenTextures(1, texture);
+    PLTexture *texture = new PLTexture;
+    memset(texture, 0, sizeof(PLTexture));
+    texture->format = PL_TEXTUREFORMAT_RGBA8;
+    texture->width = 8;
+    texture->height = 8;
+
+#if defined(VL_MODE_OPENGL)
+    glGenTextures(1, &texture->id);
 #endif
+
+    return texture;
 }
 
-void plDeleteTexture(PLTexture *texture) {
+void plDeleteTexture(PLTexture *texture, PLbool force) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL)
-    glDeleteTextures(1, texture);
+    if(!texture || ((texture->flags & PL_TEXTUREFLAG_PRESERVE) && !force)) {
+        return;
+    }
+
+    auto tex = pl_graphics_textures.begin();
+    while(tex != pl_graphics_textures.end()) {
+        if(tex->second == texture) {
+#if defined(VL_MODE_OPENGL)
+            glDeleteTextures(1, &texture->id);
 #endif
+
+            delete tex->second;
+            pl_graphics_textures.erase(tex);
+            return;
+        }
+        ++tex;
+    }
 }
 
 #define _PL_TEXTURE_LEVELS  4   // Default number of mipmap levels.
@@ -879,13 +938,15 @@ void plUploadTexture(PLTexture texture, const PLTextureInfo *upload) {
 #endif
 }
 
-PLTexture plGetCurrentTexture(PLuint tmu) {
+PLTexture *plGetCurrentTexture(PLuint tmu) {
     _PL_GRAPHICS_TRACK();
-    return pl_graphics_state.tmu[tmu].current_texture;
+
+    return pl_graphics_textures.find(pl_graphics_state.tmu[tmu].current_texture)->second;
 }
 
 PLuint plGetCurrentTextureUnit(void) {
     _PL_GRAPHICS_TRACK();
+
     return pl_graphics_state.current_textureunit;
 }
 
@@ -944,16 +1005,18 @@ PLuint plGetMaxTextureAnistropy(void) {
 #   pragma GCC diagnostic pop
 #endif
 
-void plSetTexture(PLTexture texture) {
+void plSetTexture(PLTexture *texture) {
     _PL_GRAPHICS_TRACK();
-    if (texture == pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_texture)
+
+    if (texture->id == pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_texture) {
         return;
+    }
 
 #if defined (VL_MODE_OPENGL)
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindTexture(GL_TEXTURE_2D, texture->id);
 #endif
 
-    pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_texture = texture;
+    pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_texture = texture->id;
 }
 
 void plSetTextureUnit(PLuint target) {

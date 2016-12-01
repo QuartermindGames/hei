@@ -42,7 +42,7 @@ PLresult plLoadFTXImage(FILE *fin, PLImage *out) {
     if (fread(out->data[0], sizeof(uint8_t), out->size, fin) != out->size)
         return PL_RESULT_FILEREAD;
 
-    out->format = VL_TEXTUREFORMAT_RGBA8;
+    out->format = PL_TEXTUREFORMAT_RGBA8;
     out->colour_format = VL_COLOURFORMAT_RGBA;
     out->width = (PLuint)header.width;
     out->height = (PLuint)header.height;

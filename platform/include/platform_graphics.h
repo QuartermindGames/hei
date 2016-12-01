@@ -194,15 +194,13 @@ PL_EXTERN_C_END
 //-----------------
 // Textures
 
-typedef PLuint PLTexture;
-
 typedef enum PLTextureTarget {
     PL_TEXTURE_1D,
     PL_TEXTURE_2D,
     PL_TEXTURE_3D
 } PLTextureTarget;
 
-typedef enum VLTextureClamp {
+typedef enum PLTextureClamp {
 #if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     VL_TEXTURECLAMP_CLAMP = GL_CLAMP_TO_EDGE,
     VL_TEXTURECLAMP_WRAP = GL_REPEAT,
@@ -213,7 +211,7 @@ typedef enum VLTextureClamp {
     VL_TEXTURECLAMP_CLAMP,
     VL_TEXTURECLAMP_WRAP,
 #endif
-} VLTextureClamp;
+} PLTextureClamp;
 
 typedef enum PLTextureFilter {
     PL_TEXTUREFILTER_MIPMAP_NEAREST,        // GL_NEAREST_MIPMAP_NEAREST
@@ -233,7 +231,7 @@ typedef enum PLTextureFormat {
     PL_TEXTUREFORMAT_RGB5A1,    // 5 5 5 1
     PL_TEXTUREFORMAT_RGB565,    // 5 6 5 0
     VL_TEXTUREFORMAT_RGB8,      // 8 8 8 0
-    VL_TEXTUREFORMAT_RGBA8,     // 8 8 8 8
+    PL_TEXTUREFORMAT_RGBA8,     // 8 8 8 8
     PL_TEXTUREFORMAT_RGBA12,    // 12 12 12 12
     PL_TEXTUREFORMAT_RGBA16,    // 16 16 16 16
     PL_TEXTUREFORMAT_RGBA16F,   // 16 16 16 16
@@ -256,6 +254,10 @@ typedef enum PLTextureEnvironmentMode {
     PL_TEXTUREMODE_COMBINE
 } PLTextureEnvironmentMode;
 
+enum PLTextureFlag {
+    PL_TEXTUREFLAG_PRESERVE = (1 << 0)
+};
+
 typedef struct PLTextureInfo {
     PLbyte *data;
 
@@ -273,8 +275,22 @@ typedef struct PLTextureInfo {
     PLuint flags;
 } PLTextureInfo;
 
+typedef struct PLTexture {
+    PLuint id;
+
+    PLuint flags;
+    PLuint width, height;
+
+    PLuint size;
+
+    PLTextureFormat format;
+
+    PLchar path[PL_MAX_PATH];
+} PLTexture;
+
 PL_EXTERN_C
 
+#if 0 // Legacy API
 PL_EXTERN void plCreateTexture(PLTexture *texture);
 PL_EXTERN void plDeleteTexture(PLTexture *texture);
 
@@ -292,6 +308,8 @@ PL_EXTERN void plSetTextureAnisotropy(PLTexture texture, PLuint amount);
 PL_EXTERN void plSetTextureUnit(PLuint target);
 PL_EXTERN void plSetTextureFilter(PLTexture texture, PLTextureFilter filter);
 PL_EXTERN void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode);
+#else
+#endif
 
 PL_EXTERN_C_END
 

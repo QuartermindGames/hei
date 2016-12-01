@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 
     PLImage image;
     PLresult result = plLoadImage("./brickwall010d.vtf", &image);
-    if(result != PL_RESULT_SUCCESS){
+    if(result != PL_RESULT_SUCCESS) {
         plMessageBox(TITLE, "Failed to load VTF!\n%s", plGetResultString(result));
         plFreeImage(&image);
 
