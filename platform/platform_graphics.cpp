@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform_graphics.h"
 #include "platform_log.h"
+#include "platform_image.h"
 
 /*	Graphics	*/
 
@@ -112,55 +113,6 @@ data for each of these functions
 /*===========================
 	INITIALIZATION
 ===========================*/
-
-const PLchar *_plGetHWExtensions(void) {
-    _PL_GRAPHICS_TRACK();
-
-#if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    return (const PLchar *) glGetString(GL_EXTENSIONS);
-    // TODO: this works differently in core; use glGetStringi instead!
-#elif defined (VL_MODE_GLIDE)
-    return grGetString(GR_EXTENSION);
-#else
-    return "";
-#endif
-}
-
-const PLchar *_plGetHWRenderer(void) {
-    _PL_GRAPHICS_TRACK();
-
-#if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    return (const PLchar *) glGetString(GL_RENDERER);
-#elif defined (VL_MODE_GLIDE)
-    return grGetString(GR_RENDERER);
-#else
-    return "";
-#endif
-}
-
-const PLchar *_plGetHWVendor(void) {
-    _PL_GRAPHICS_TRACK();
-
-#if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    return (const PLchar *) glGetString(GL_VENDOR);
-#elif defined (VL_MODE_GLIDE)
-    return grGetString(GR_VENDOR);
-#else
-    return "";
-#endif
-}
-
-const PLchar *_plGetHWVersion(void) {
-    _PL_GRAPHICS_TRACK();
-
-#if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    return (const PLchar *) glGetString(GL_VERSION);
-#elif defined (VL_MODE_GLIDE)
-    return grGetString(GR_VERSION);
-#else
-    return "";
-#endif
-}
 
 #if defined (VL_MODE_GLIDE)
 
@@ -286,6 +238,55 @@ void plShutdownGraphics(void) {
 /*===========================
 	HARDWARE INFORMATION
 ===========================*/
+
+const PLchar *_plGetHWExtensions(void) {
+    _PL_GRAPHICS_TRACK();
+
+#if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+    return (const PLchar *) glGetString(GL_EXTENSIONS);
+    // TODO: this works differently in core; use glGetStringi instead!
+#elif defined (VL_MODE_GLIDE)
+    return grGetString(GR_EXTENSION);
+#else
+    return "";
+#endif
+}
+
+const PLchar *_plGetHWRenderer(void) {
+    _PL_GRAPHICS_TRACK();
+
+#if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+    return (const PLchar *) glGetString(GL_RENDERER);
+#elif defined (VL_MODE_GLIDE)
+    return grGetString(GR_RENDERER);
+#else
+    return "";
+#endif
+}
+
+const PLchar *_plGetHWVendor(void) {
+    _PL_GRAPHICS_TRACK();
+
+#if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+    return (const PLchar *) glGetString(GL_VENDOR);
+#elif defined (VL_MODE_GLIDE)
+    return grGetString(GR_VENDOR);
+#else
+    return "";
+#endif
+}
+
+const PLchar *_plGetHWVersion(void) {
+    _PL_GRAPHICS_TRACK();
+
+#if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+    return (const PLchar *) glGetString(GL_VERSION);
+#elif defined (VL_MODE_GLIDE)
+    return grGetString(GR_VERSION);
+#else
+    return "";
+#endif
+}
 
 PLbool plHWSupportsMultitexture(void) {
     _PL_GRAPHICS_TRACK();
@@ -861,7 +862,11 @@ PLTexture *plCreateTexture(void) {
 
 #if defined(VL_MODE_OPENGL)
     glGenTextures(1, &texture->id);
+#else
+    texture->id = pl_graphics_textures.count + 1;
 #endif
+
+    pl_graphics_textures.emplace(texture->id, texture);
 
     return texture;
 }
@@ -890,7 +895,54 @@ void plDeleteTexture(PLTexture *texture, PLbool force) {
 
 #define _PL_TEXTURE_LEVELS  4   // Default number of mipmap levels.
 
-void plUploadTexture(PLTexture texture, const PLTextureInfo *upload) {
+PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
+    _PL_GRAPHICS_TRACK();
+
+    plSetTexture(texture);
+
+#if defined(VL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
+    PLuint levels = upload->levels;
+    if(plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP) && (levels <= 1)) {
+        levels = _PL_TEXTURE_LEVELS;
+    }
+
+    PLuint format = _plTranslateTextureFormat(upload->format);
+    glTexStorage2D(GL_TEXTURE_2D, levels, format, upload->width, upload->height);
+
+    // Check the format, to see if we're getting a compressed
+    // format type.
+    if (_plIsCompressedTextureFormat(upload->format)) {
+        glCompressedTexSubImage2D
+                (
+                        GL_TEXTURE_2D,
+                        0,
+                        upload->x, upload->y,
+                        upload->width, upload->height,
+                        format,
+                        upload->size,
+                        upload->data
+                );
+    } else {
+        glTexSubImage2D
+                (
+                        GL_TEXTURE_2D,
+                        0,
+                        upload->x, upload->y,
+                        upload->width, upload->height,
+                        upload->colour_format,
+                        GL_UNSIGNED_BYTE,
+                        upload->data
+                );
+    }
+
+    if(plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP) && (upload->levels <= 1))
+        glGenerateMipmap(GL_TEXTURE_2D);
+#endif
+
+    return PL_RESULT_SUCCESS;
+}
+
+PLresult plUploadTexture(PLTexture *texture, const PLTextureInfo *upload) {
     _PL_GRAPHICS_TRACK();
 
     plSetTexture(texture);
@@ -936,6 +988,8 @@ void plUploadTexture(PLTexture texture, const PLTextureInfo *upload) {
 #elif defined (VL_MODE_GLIDE)
 #elif defined (VL_MODE_DIRECT3D)
 #endif
+
+    return PL_RESULT_SUCCESS;
 }
 
 PLTexture *plGetCurrentTexture(PLuint tmu) {
@@ -1005,11 +1059,11 @@ PLuint plGetMaxTextureAnistropy(void) {
 #   pragma GCC diagnostic pop
 #endif
 
-void plSetTexture(PLTexture *texture) {
+PLresult plSetTexture(PLTexture *texture) {
     _PL_GRAPHICS_TRACK();
 
     if (texture->id == pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_texture) {
-        return;
+        return PL_RESULT_SUCCESS;
     }
 
 #if defined (VL_MODE_OPENGL)
@@ -1017,6 +1071,8 @@ void plSetTexture(PLTexture *texture) {
 #endif
 
     pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_texture = texture->id;
+
+    return PL_RESULT_SUCCESS;
 }
 
 void plSetTextureUnit(PLuint target) {
@@ -1036,7 +1092,7 @@ void plSetTextureUnit(PLuint target) {
     pl_graphics_state.current_textureunit = target;
 }
 
-void plSetTextureAnisotropy(PLTexture texture, PLuint amount) {
+PLresult plSetTextureAnisotropy(PLTexture *texture, PLuint amount) {
     _PL_GRAPHICS_TRACK();
 
     plSetTexture(texture);
@@ -1044,9 +1100,11 @@ void plSetTextureAnisotropy(PLTexture texture, PLuint amount) {
 #if defined (VL_MODE_OPENGL)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (PLint) amount);
 #endif
+
+    return PL_RESULT_SUCCESS;
 }
 
-void plSetTextureFilter(PLTexture texture, PLTextureFilter filter) {
+PLresult plSetTextureFilter(PLTexture *texture, PLTextureFilter filter) {
     _PL_GRAPHICS_TRACK();
 
     plSetTexture(texture);
@@ -1087,6 +1145,8 @@ void plSetTextureFilter(PLTexture texture, PLTextureFilter filter) {
     // LINEAR > GR_TEXTUREFILTER_BILINEAR
     // todo, glide implementation
 #endif
+
+    return PL_RESULT_SUCCESS;
 }
 
 void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode) {

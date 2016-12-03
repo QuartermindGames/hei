@@ -61,10 +61,16 @@ int main(int argc, char *argv[]) {
     PLresult result = plLoadImage("./brickwall010d.vtf", &image);
     if(result != PL_RESULT_SUCCESS) {
         plMessageBox(TITLE, "Failed to load VTF!\n%s", plGetResultString(result));
-        plFreeImage(&image);
-
         return -1;
     }
+
+    PLTexture *image_texture = plCreateTexture();
+    if(!image_texture) {
+        plMessageBox(TITLE, "Failed to create texture!");
+        return -1;
+    }
+
+    plUploadTextureImage(image_texture, &image);
 
     while(!glfwWindowShouldClose(window)) {
         plClearBuffers(PL_BUFFER_COLOUR);

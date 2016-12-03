@@ -18,6 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "platform_window.h"
+#include "platform_math.h"
 #include "platform_graphics.h"
 
 #if defined(__linux__)
@@ -97,7 +98,7 @@ int iActive = 0,    // Number of current active windows.
 
 /*	Create a new window.
 */
-void plCreateWindow(plWindow_t *window) {
+void plCreateWindow(PLWindow *window) {
     plFunctionStart();
 
     // Make sure the window has been initialized.
@@ -283,7 +284,7 @@ void plMessageBox(const char *ccTitle, const char *ccMessage, ...) {
 #endif
 }
 
-void plSwapBuffers(plWindow_t *window) {
+void plSwapBuffers(PLWindow *window) {
 #ifdef _WIN32
     SwapBuffers(window->dc);
 #else	// Linux

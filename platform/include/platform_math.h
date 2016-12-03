@@ -360,6 +360,8 @@ typedef struct PLQuaternion {
 
 #else
 
+typedef struct PLQuaternion PLQuaternion;
+
 #endif
 
 // Randomisation
@@ -538,22 +540,3 @@ static PL_INLINE PLfloat plInOutPow(PLfloat x, PLfloat p) {
     int sign = (int) p % 2 == 0 ? -1 : 1;
     return (sign / 2.0f * (powf(x - 2.0f, p) + sign * 2.0f));
 }
-
-// GLM
-
-#   ifndef PLATFORM_EXCLUDE_GLM
-#       ifdef _MSC_VER
-#           pragma warning(disable: 4201)
-#       endif
-
-#       include <glm/gtc/type_ptr.hpp>
-#       include <glm/vec2.hpp>
-#       include <glm/vec3.hpp>
-#       include <glm/vec4.hpp>
-#       include <glm/mat4x4.hpp>
-#       include <glm/gtc/matrix_transform.hpp>
-
-#       ifdef _MSC_VER
-#           pragma warning(default: 4201)
-#       endif
-#   endif

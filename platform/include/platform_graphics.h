@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org>
 #include "platform.h"
 #include "platform_math.h"
 
-#define        VL_MODE_OPENGL
+#define     VL_MODE_OPENGL
 //			VL_MODE_OPENGL_CORE
 //			VL_MODE_OPENGL_ES
 //#define	VL_MODE_GLIDE
@@ -288,6 +288,8 @@ typedef struct PLTexture {
     PLchar path[PL_MAX_PATH];
 } PLTexture;
 
+typedef struct PLImage PLImage;
+
 PL_EXTERN_C
 
 #if 0 // Legacy API
@@ -296,9 +298,7 @@ PL_EXTERN void plDeleteTexture(PLTexture *texture);
 
 PL_EXTERN void plUploadTexture(PLTexture texture, const PLTextureInfo *upload);
 
-PL_EXTERN PLuint plGetMaxTextureSize(void);
-PL_EXTERN PLuint plGetMaxTextureUnits(void);
-PL_EXTERN PLuint plGetMaxTextureAnistropy(void);
+
 
 PL_EXTERN PLTexture plGetCurrentTexture(PLuint tmu);
 PL_EXTERN PLuint plGetCurrentTextureUnit(void);
@@ -309,6 +309,20 @@ PL_EXTERN void plSetTextureUnit(PLuint target);
 PL_EXTERN void plSetTextureFilter(PLTexture texture, PLTextureFilter filter);
 PL_EXTERN void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode);
 #else
+
+PL_EXTERN PLTexture *plCreateTexture(void);
+
+PL_EXTERN PLresult plUploadTexture(PLTexture *texture, const PLTextureInfo *upload);
+PL_EXTERN PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload);
+
+PL_EXTERN PLuint plGetMaxTextureSize(void);
+PL_EXTERN PLuint plGetMaxTextureUnits(void);
+PL_EXTERN PLuint plGetMaxTextureAnistropy(void);
+
+PL_EXTERN PLresult plSetTexture(PLTexture *texture);
+PL_EXTERN PLresult plSetTextureFilter(PLTexture *texture, PLTextureFilter filter);
+PL_EXTERN PLresult plSetTextureAnisotropy(PLTexture *texture, PLuint amount);
+
 #endif
 
 PL_EXTERN_C_END
@@ -379,12 +393,12 @@ PL_EXTERN_C_END
 typedef enum PLFBOTarget {
 #if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     PL_FRAMEBUFFER_DEFAULT = GL_FRAMEBUFFER,
-    VL_FRAMEBUFFER_DRAW = GL_DRAW_FRAMEBUFFER,
+    PL_FRAMEBUFFER_DRAW = GL_DRAW_FRAMEBUFFER,
     VL_FRAMEBUFFER_READ = GL_READ_FRAMEBUFFER
 #else
-    VL_FRAMEBUFFER_DEFAULT,
-    VL_FRAMEBUFFER_DRAW,
-    VL_FRAMEBUFFER_READ
+    PL_FRAMEBUFFER_DEFAULT,
+    PL_FRAMEBUFFER_DRAW,
+    PL_FRAMEBUFFER_READ
 #endif
 } PLFBOTarget;
 
@@ -419,19 +433,19 @@ typedef enum PLUniformType {
     PL_UNIFORM_DOUBLE,
 
     // Textures
-            VL_UNIFORM_TEXTURE1D,
+    VL_UNIFORM_TEXTURE1D,
     VL_UNIFORM_TEXTURE2D,
     VL_UNIFORM_TEXTURE3D,
     VL_UNIFORM_TEXTURECUBE,
     VL_UNIFORM_TEXTUREBUFFER,
 
     // Vectors
-            VL_UNIFORM_VEC2,
+    VL_UNIFORM_VEC2,
     VL_UNIFORM_VEC3,
     VL_UNIFORM_VEC4,
 
     // Matrices
-            VL_UNIFORM_MAT3,
+    VL_UNIFORM_MAT3,
 
     VL_UNIFORM_END
 } PLUniformType;
@@ -495,5 +509,14 @@ PL_EXTERN void plFinish(void);
 // Initialization
 PL_EXTERN PLresult plInitGraphics(void);
 PL_EXTERN void plShutdownGraphics(void);
+
+// Hardware Information
+PL_EXTERN const PLchar *_plGetHWExtensions(void);
+PL_EXTERN const PLchar *_plGetHWRenderer(void);
+PL_EXTERN const PLchar *_plGetHWVendor(void);
+PL_EXTERN const PLchar *_plGetHWVersion(void);
+
+PL_EXTERN PLbool plHWSupportsMultitexture(void);
+PL_EXTERN PLbool plHWSupportsShaders(void);
 
 PL_EXTERN_C_END
