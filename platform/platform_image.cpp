@@ -37,8 +37,7 @@ PLresult plLoadImage(const PLchar *path, PLImage *out)
 
     // Xenon uses a lot of long extensions, as do some other modern
     // applications, so that's why we're using a size 16.
-    PLchar extension[16] = "";
-    plGetFileExtension(extension, path);
+    const PLchar *extension = plGetFileExtension(path);
     if (!plIsValidString(extension))
     {
         // This is the slowest loader type, now we need to take a stab
@@ -66,7 +65,7 @@ PLresult plLoadImage(const PLchar *path, PLImage *out)
     if(!fin)
         return PL_RESULT_FILEREAD;
 
-    PLresult result = PL_RESULT_SUCCESS;
+    PLresult result = PL_RESULT_FILETYPE;
     if (!strncmp(extension, PLIMAGE_EXTENSION_DTX, 3))       result = plLoadDTXImage(fin, out);
     else if (!strncmp(extension, PLIMAGE_EXTENSION_FTX, 3))  result = plLoadFTXImage(fin, out);
     else if (!strncmp(extension, PLIMAGE_EXTENSION_VTF, 3))  result = plLoadVTFImage(fin, out);

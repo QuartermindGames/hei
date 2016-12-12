@@ -44,7 +44,7 @@ char
 /*	Sets the name of the currently entered function.
 */
 void plSetErrorFunction(const char *function, ...) {
-    char out[MAX_FUNCTION_LENGTH];
+    char out[2048]; // todo, shitty work around because linux crap    //[MAX_FUNCTION_LENGTH];
     va_list args;
 
     va_start(args, function);

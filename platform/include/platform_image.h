@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org>
 #include "platform.h"
 #include "platform_graphics.h"
 
-enum PLImageFlag {
+enum {
     PL_IMAGEFLAG_FULLBRIGHT     = (1 << 0),
 
     PL_IMAGEFLAG_NEAREST    = (5 << 0),
@@ -58,13 +58,13 @@ typedef struct PLImage {
     PLuint flags;
 } PLImage;
 
-#define PLIMAGE_EXTENSION_FTX   ".ftx"    // Ritual's FTX image format.
-#define PLIMAGE_EXTENSION_DTX   ".dtx"    // Lithtech's DTX image format.
-#define PLIMAGE_EXTENSION_PPM   ".ppm"    // Portable Pixel Map format.
-#define PLIMAGE_EXTENSION_KTX   ".ktx"
-#define PLIMAGE_EXTENSION_TGA   ".tga"
-#define PLIMAGE_EXTENSION_PNG   ".png"
-#define PLIMAGE_EXTENSION_VTF   ".vtf"
+#define PLIMAGE_EXTENSION_FTX   "ftx"    // Ritual's FTX image format.
+#define PLIMAGE_EXTENSION_DTX   "dtx"    // Lithtech's DTX image format.
+#define PLIMAGE_EXTENSION_PPM   "ppm"    // Portable Pixel Map format.
+#define PLIMAGE_EXTENSION_KTX   "ktx"
+#define PLIMAGE_EXTENSION_TGA   "tga"
+#define PLIMAGE_EXTENSION_PNG   "png"
+#define PLIMAGE_EXTENSION_VTF   "vtf"
 
 PL_EXTERN_C
 

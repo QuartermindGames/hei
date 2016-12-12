@@ -25,12 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <GLFW/glfw3.h>
-
 #include "platform_image.h"
 #include "platform_window.h"
 #include "platform_graphics.h"
 #include "platform_log.h"
+
+#include <GLFW/glfw3.h>
 
 #define TITLE   "VTF/VMT Viewer"
 #define LOG     "vtfviewer"
@@ -55,10 +55,11 @@ int main(int argc, char *argv[]) {
 
     plInitGraphics();
 
-    plSetClearColour(PLColour(PL_COLOUR_BLACK));
+    plSetClearColour(PLColour(PL_COLOUR_BLUE));
 
+#if 0
     PLImage image;
-    PLresult result = plLoadImage("./brickwall010d.vtf", &image);
+    PLresult result = plLoadImage("./images/bluegrid.vtf", &image);
     if(result != PL_RESULT_SUCCESS) {
         plMessageBox(TITLE, "Failed to load VTF!\n%s", plGetResultString(result));
         return -1;
@@ -71,9 +72,10 @@ int main(int argc, char *argv[]) {
     }
 
     plUploadTextureImage(image_texture, &image);
+#endif
 
     while(!glfwWindowShouldClose(window)) {
-        plClearBuffers(PL_BUFFER_COLOUR);
+        plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
 
         // draw stuff
 

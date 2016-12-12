@@ -35,9 +35,9 @@ typedef struct VTFHeader {
 
     PLuint headersize;      // I guess this is used to support header alterations?
 
-    PLushort width, height; // Width and height of the texture.
+    PLuint16 width, height; // Width and height of the texture.
 
-    PLuint flags;
+    PLuint32 flags;
 
     PLushort frames;        // For animated texture sets.
     PLushort firstframe;    // Initial frame to start from.
@@ -60,7 +60,7 @@ typedef struct VTFHeader {
 } VTFHeader;
 
 typedef struct VTFHeader72 {
-    PLushort depth;
+    PLuint16 depth;
 } VTFHeader72;
 
 typedef struct VTFHeader73 {

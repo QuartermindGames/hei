@@ -26,8 +26,7 @@ extern void plGetWorkingDirectory(PLchar *out);
 
 extern void plStripExtension(PLchar *dest, const PLchar *in);
 
-extern PLchar *plGetFileExtension(PLchar *dest, const PLchar *in);
-
+extern const PLchar *plGetFileExtension(const PLchar *in);
 extern const PLchar *plGetFileName(const PLchar *path);
 
 extern void plScanDirectory(const PLchar *path, const PLchar *extension, void(*Function)(PLchar *filepath));
@@ -49,3 +48,13 @@ extern PLint plGetLittleShort(FILE *fin);
 extern PLint plGetLittleLong(FILE *fin);
 
 PL_EXTERN_C_END
+
+#ifdef __cplusplus
+
+namespace pl {
+
+    extern std::string GetUserName();
+
+};
+
+#endif

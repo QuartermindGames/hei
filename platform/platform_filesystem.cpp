@@ -17,8 +17,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "platform.h"
-
 #include "platform_filesystem.h"
 
 /*	File System	*/
@@ -102,21 +100,29 @@ PLbool plCreateDirectory(const PLchar *ccPath) {
 }
 
 // Returns the extension for the file.
-PLchar *plGetFileExtension(PLchar *dest, const PLchar *in) {
+const PLchar *plGetFileExtension(const PLchar *in) {
     plFunctionStart();
-    dest = strrchr(in, '.') + 1;
-    return dest;
+    if (!plIsValidString(in)) {
+        return "";
+    }
+
+    const PLchar *s = strrchr(in, '.');
+    if(!s || s == in) {
+        return "";
+    }
+
+    return s + 1;
     plFunctionEnd();
 }
 
 // Strips the extension from the filename.
 void plStripExtension(PLchar *dest, const PLchar *in) {
-    if (in[0] == ' ') {
+    if (!plIsValidString(in)) {
         *dest = 0;
         return;
     }
 
-    char *s = strrchr(in, '.');
+    const PLchar *s = strrchr(in, '.');
     while (in < s) *dest++ = *in++;
     *dest = 0;
 }
@@ -143,7 +149,7 @@ void plGetUserName(PLchar *out) {
         // If it fails, just set it to user.
         sprintf(userstring, "user");
 #else   // Linux
-    char *userstring = getenv("LOGNAME");
+    PLchar *userstring = getenv("LOGNAME");
     if (userstring == NULL)
         // If it fails, just set it to user.
         userstring = "user";
@@ -218,36 +224,36 @@ void plScanDirectory(const PLchar *path, const PLchar *extension, void(*Function
 }
 
 void plGetWorkingDirectory(PLchar *out) {
-    pFUNCTION_START
-        if (!getcwd(out, PL_MAX_PATH)) {
-            switch (errno) {
-                default:
-                    break;
+    plFunctionStart();
+    if (!getcwd(out, PL_MAX_PATH)) {
+        switch (errno) {
+            default:
+                break;
 
-                case EACCES:
-                    plSetError("Permission to read or search a component of the filename was denied!\n");
-                    break;
-                case EFAULT:
-                    plSetError("buf points to a bad address!\n");
-                    break;
-                case EINVAL:
-                    plSetError("The size argument is zero and buf is not a null pointer!\n");
-                    break;
-                case ENOMEM:
-                    plSetError("Out of memory!\n");
-                    break;
-                case ENOENT:
-                    plSetError("The current working directory has been unlinked!\n");
-                    break;
-                case ERANGE:
-                    plSetError("The size argument is less than the length of the absolute pathname of the working directory, including the terminating null byte. \
+            case EACCES:
+                plSetError("Permission to read or search a component of the filename was denied!\n");
+                break;
+            case EFAULT:
+                plSetError("buf points to a bad address!\n");
+                break;
+            case EINVAL:
+                plSetError("The size argument is zero and buf is not a null pointer!\n");
+                break;
+            case ENOMEM:
+                plSetError("Out of memory!\n");
+                break;
+            case ENOENT:
+                plSetError("The current working directory has been unlinked!\n");
+                break;
+            case ERANGE:
+                plSetError("The size argument is less than the length of the absolute pathname of the working directory, including the terminating null byte. \
 						You need to allocate a bigger array and try again!\n");
-                    break;
-            }
-            return;
+                break;
         }
-        strcat(out, "\\");
-    pFUNCTION_END
+        return;
+    }
+    strcat(out, "\\");
+    plFunctionEnd();
 }
 
 /*	File I/O	*/
