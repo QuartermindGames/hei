@@ -32,7 +32,7 @@
 typedef struct U3DAnimationHeader_s {
     PLuint16 frames;    // Number of frames.
     PLuint16 size;    // Size of each frame.
-} U3DAnimationHeader_t;
+} U3DAnimationHeader;
 
 typedef struct U3DDataHeader_s {
     PLuint16 numpolys;    // Number of polygons.
@@ -46,7 +46,7 @@ typedef struct U3DDataHeader_s {
 
     PLuint32 fixscale;
     PLuint32 unused[3];
-} U3DDataHeader_t;
+} U3DDataHeader;
 
 #define    U3D_FLAG_UNLIT            16
 #define    U3D_FLAG_FLAT            32
@@ -67,7 +67,7 @@ typedef struct U3DVertex_s {
     PLint32 x : 11;
     PLint32 y : 11;
     PLint32 z : 10;
-} U3DVertex_t;
+} U3DVertex;
 
 typedef struct U3DTriangle_s {
     PLuint16 vertex[3];    // Vertex indices
@@ -77,7 +77,7 @@ typedef struct U3DTriangle_s {
     PLuint8 ST[3][2];    // Texture coords
     PLuint8 texturenum;    // Texture offset
     PLuint8 flags;        // Triangle flags
-} U3DTriangle_t;
+} U3DTriangle;
 
 FILE *pl_u3d_dataf = nullptr;
 FILE *pl_u3d_animf = nullptr;
@@ -89,7 +89,7 @@ void _plUnloadU3DModel() {
         std::fclose(pl_u3d_dataf);
 }
 
-PLAnimatedModel *plLoadU3DModel(const char *path) {
+PLAnimatedModel *plLoadU3DModel(const PLchar *path) {
     plSetErrorFunction("plLoadU3DModel");
 
     pl_u3d_dataf = std::fopen(path, "rb");
@@ -133,8 +133,8 @@ PLAnimatedModel *plLoadU3DModel(const char *path) {
     }
 
     // Attempt to read the animation header.
-    U3DAnimationHeader_t animheader;
-    if (std::fread(&animheader, sizeof(U3DAnimationHeader_t), 1, pl_u3d_animf) != 1) {
+    U3DAnimationHeader animheader;
+    if (std::fread(&animheader, sizeof(U3DAnimationHeader), 1, pl_u3d_animf) != 1) {
         plSetError("Failed to read animation file!\n");
 
         _plUnloadU3DModel();
@@ -142,8 +142,8 @@ PLAnimatedModel *plLoadU3DModel(const char *path) {
     }
 
     // Attempt to read the data header.
-    U3DDataHeader_t dataheader;
-    if (std::fread(&dataheader, sizeof(U3DDataHeader_t), 1, pl_u3d_dataf) != 1) {
+    U3DDataHeader dataheader;
+    if (std::fread(&dataheader, sizeof(U3DDataHeader), 1, pl_u3d_dataf) != 1) {
         plSetError("Failed to read data file!\n");
 
         _plUnloadU3DModel();
@@ -174,9 +174,9 @@ PLAnimatedModel *plLoadU3DModel(const char *path) {
     std::fseek(pl_u3d_dataf, 12, SEEK_CUR);
 
     // Go through each triangle.
-    std::vector<U3DTriangle_t> utriangles;
+    std::vector<U3DTriangle> utriangles;
     for (unsigned int i = 0; i < model->num_triangles; i++) {
-        if (std::fread(&utriangles[i], sizeof(U3DTriangle_t), 1, pl_u3d_dataf) != 1) {
+        if (std::fread(&utriangles[i], sizeof(U3DTriangle), 1, pl_u3d_dataf) != 1) {
             plSetError("Failed to process triangles! (%i)\n", i);
 
             plDeleteAnimatedModel(model);
@@ -192,9 +192,9 @@ PLAnimatedModel *plLoadU3DModel(const char *path) {
     }
 
     // Go through each vertex.
-    std::vector<U3DVertex_t> uvertices;
+    std::vector<U3DVertex> uvertices;
     for (unsigned int i = 0; i < model->num_frames; i++) {
-        if (std::fread(&uvertices[i], sizeof(U3DVertex_t), 1, pl_u3d_animf) != 1) {
+        if (std::fread(&uvertices[i], sizeof(U3DVertex), 1, pl_u3d_animf) != 1) {
             plSetError("Failed to process vertex! (%i)\n", i);
 
             plDeleteAnimatedModel(model);

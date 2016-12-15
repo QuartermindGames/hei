@@ -45,7 +45,7 @@ For more information, please refer to <http://unlicense.org>
 
 #else
 
-#   define PL_SYSTEM_NAME   "UNKNOWN"
+#   error "Unsupported system type."
 
 #endif
 
@@ -67,6 +67,6 @@ For more information, please refer to <http://unlicense.org>
 
 #else
 
-#   define PL_SYSTEM_CPU    "UNKNOWN"
+#   error "Unsupported CPU type."
 
 #endif

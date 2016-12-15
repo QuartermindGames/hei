@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org>
 #include "platform.h"
 #include "platform_math.h"
 
-#define     VL_MODE_OPENGL
+#define     PL_MODE_OPENGL
 //			VL_MODE_OPENGL_CORE
 //			VL_MODE_OPENGL_ES
 //#define	VL_MODE_GLIDE
@@ -38,7 +38,7 @@ For more information, please refer to <http://unlicense.org>
 //			VL_MODE_VULKAN
 
 // todo, move these into platform_graphics.cpp
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
 
 #	include <GL/glew.h>
 
@@ -67,14 +67,14 @@ typedef PLuint PLRenderBuffer;
 typedef PLuint PLFrameBuffer;
 
 typedef enum PLDataFormat {
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     PL_UNSIGNED_BYTE = GL_UNSIGNED_BYTE,
     PL_UNSIGNED_INT_8_8_8_8_REV = GL_UNSIGNED_INT_8_8_8_8_REV,
 #endif
 } PLDataFormat;
 
 typedef enum PLBufferMask {
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     VL_MASK_COLOUR = GL_COLOR_BUFFER_BIT,
     VL_MASK_DEPTH = GL_DEPTH_BUFFER_BIT,
     VL_MASK_ACCUM = GL_ACCUM_BUFFER_BIT,
@@ -88,7 +88,7 @@ typedef enum PLBufferMask {
 } PLBufferMask;
 
 typedef enum PLColourFormat {
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     VL_COLOURFORMAT_ARGB,
     VL_COLOURFORMAT_ABGR,
     VL_COLOURFORMAT_RGB = GL_RGB,
@@ -119,7 +119,7 @@ typedef enum VLCullMode {
 
 // Blending Modes
 typedef enum PLBlend {
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     VL_BLEND_ZERO = GL_ZERO,
     VL_BLEND_ONE = GL_ONE,
     VL_BLEND_SRC_COLOR = GL_SRC_COLOR,
@@ -171,8 +171,8 @@ typedef enum PLGraphicsCapability {
     PL_CAPABILITY_BLEND = (1 << 2),         // Blending.
     PL_CAPABILITY_TEXTURE_2D = (1 << 3),    // Enables/disables textures.
     VL_CAPABILITY_TEXTURE_GEN_S = (1 << 4), // Generate S coordinate.
-    VL_CAPABILITY_TEXTURE_GEN_T = (1 << 5), // Generate T coordinate.
-    VL_CAPABILITY_DEPTH_TEST = (1 << 6),    // Depth-testing.
+    PL_CAPABILITY_TEXTURE_GEN_T = (1 << 5), // Generate T coordinate.
+    PL_CAPABILITY_DEPTH_TEST = (1 << 6),    // Depth-testing.
     VL_CAPABILITY_STENCIL_TEST = (1 << 7),  // Stencil-testing.
     VL_CAPABILITY_MULTISAMPLE = (1 << 8),   // Multisampling.
     VL_CAPABILITY_CULL_FACE = (1 << 9),     // Automatically cull faces.
@@ -201,7 +201,7 @@ typedef enum PLTextureTarget {
 } PLTextureTarget;
 
 typedef enum PLTextureClamp {
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     VL_TEXTURECLAMP_CLAMP = GL_CLAMP_TO_EDGE,
     VL_TEXTURECLAMP_WRAP = GL_REPEAT,
 #elif defined (VL_MODE_GLIDE)
@@ -331,7 +331,7 @@ PL_EXTERN_C_END
 // Drawing
 
 typedef enum VLDrawMode {
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     VL_DRAWMODE_STATIC = GL_STATIC_DRAW,
     VL_DRAWMODE_DYNAMIC = GL_DYNAMIC_DRAW,
 #else
@@ -391,7 +391,7 @@ PL_EXTERN_C_END
 // Framebuffers
 
 typedef enum PLFBOTarget {
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     PL_FRAMEBUFFER_DEFAULT = GL_FRAMEBUFFER,
     PL_FRAMEBUFFER_DRAW = GL_DRAW_FRAMEBUFFER,
     VL_FRAMEBUFFER_READ = GL_READ_FRAMEBUFFER
@@ -465,7 +465,7 @@ typedef struct PLUniform {
 typedef int PLAttribute;
 
 typedef enum PLShaderType {
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     PL_SHADER_FRAGMENT = GL_FRAGMENT_SHADER,
     PL_SHADER_VERTEX = GL_VERTEX_SHADER,
     PL_SHADER_GEOMETRY = GL_GEOMETRY_SHADER
@@ -505,10 +505,6 @@ PL_EXTERN_C
 PL_EXTERN void plViewport(PLint x, PLint y, PLuint width, PLuint height);
 PL_EXTERN void plScissor(PLint x, PLint y, PLuint width, PLuint height);
 PL_EXTERN void plFinish(void);
-
-// Initialization
-PL_EXTERN PLresult plInitGraphics(void);
-PL_EXTERN void plShutdownGraphics(void);
 
 // Hardware Information
 PL_EXTERN const PLchar *_plGetHWExtensions(void);

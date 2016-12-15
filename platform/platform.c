@@ -27,16 +27,93 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform.h"
 
-#include "platform_system.h"
-
 /*	Generic functions for platform, such as	error handling.	*/
+
+typedef struct PLSubSystem {
+    PLuint subsystem;
+
+    PLresult(*InitFunction)(void);
+    PLvoid(*ShutdownFunction)(void);
+
+    PLbool active;
+} PLSubSystem;
+
+PLSubSystem pl_subsystems[]= {
+        {
+                PL_SUBSYSTEM_GRAPHICS,
+                &_plInitGraphics,
+                &_plShutdownGraphics,
+                PL_FALSE
+        },
+
+        {
+                PL_SUBSYSTEM_IO,
+                &_plInitIO,
+                &_plShutdownIO,
+                PL_FALSE
+        },
+
+        {
+                PL_SUBSYSTEM_IMAGE,
+                NULL,
+                NULL,
+                PL_FALSE
+        },
+
+        {
+                PL_SUBSYSTEM_LIBRARY,
+                NULL,
+                NULL,
+                PL_FALSE
+        },
+
+        {
+                PL_SUBSYSTEM_WINDOW,
+                NULL,
+                NULL,
+                PL_FALSE
+        },
+
+        {
+                PL_SUBSYSTEM_MODEL,
+                NULL,
+                NULL,
+                PL_FALSE
+        }
+};
+
+PLresult plInitialize(PLuint subsystems) {
+    for(PLuint i = 0; i < plArrayElements(pl_subsystems); i++) {
+        if(!pl_subsystems[i].active && (subsystems & pl_subsystems[i].subsystem)) {
+            if(pl_subsystems[i].InitFunction) {
+                PLresult out = pl_subsystems[i].InitFunction();
+                if (out != PL_RESULT_SUCCESS) {
+                    return out;
+                }
+            }
+
+            pl_subsystems[i].active = PL_TRUE;
+        }
+    }
+}
+
+void plShutdown(void) {
+    for(PLuint i = 0; i < plArrayElements(pl_subsystems); i++) {
+        if(!pl_subsystems[i].active) {
+            continue;
+        }
+
+        pl_subsystems[i].ShutdownFunction();
+        pl_subsystems[i].active = false;
+    }
+}
 
 /*	ERROR HANDLING	*/
 
 #define    MAX_FUNCTION_LENGTH    64
 #define    MAX_ERROR_LENGTH    2048
 
-char
+PLchar
         sys_error[MAX_ERROR_LENGTH],
         loc_error[MAX_ERROR_LENGTH],
         loc_function[MAX_FUNCTION_LENGTH];
@@ -44,7 +121,7 @@ char
 /*	Sets the name of the currently entered function.
 */
 void plSetErrorFunction(const char *function, ...) {
-    char out[2048]; // todo, shitty work around because linux crap    //[MAX_FUNCTION_LENGTH];
+    PLchar out[2048]; // todo, shitty work around because linux crap    //[MAX_FUNCTION_LENGTH];
     va_list args;
 
     va_start(args, function);
@@ -64,7 +141,7 @@ void plResetError(void) {
 /*	Sets the local error message.
 */
 void plSetError(const char *msg, ...) {
-    char out[MAX_ERROR_LENGTH];
+    PLchar out[MAX_ERROR_LENGTH];
     va_list args;
 
     va_start(args, msg);
@@ -76,13 +153,13 @@ void plSetError(const char *msg, ...) {
 
 /*	Returns the locally generated error message.
 */
-char *plGetError(void) {
+PLchar *plGetError(void) {
     return loc_error;
 }
 
 /*	Returns a system error message.
 */
-char *plGetSystemError(void) {
+PLchar *plGetSystemError(void) {
 #ifdef _WIN32
     char	*buffer = NULL;
     int		error;

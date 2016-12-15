@@ -59,13 +59,13 @@ PLuint plGetScreenHeight(void) {
         Display *display = XOpenDisplay(NULL);
         if (!display) {
             plSetError("Failed to open display!\n");
-            return 4000;
+            return PL_WINDOW_HEIGHT;
         }
 
         Screen *screen = DefaultScreenOfDisplay(display);
         if (!screen) {
             plSetError("Failed to get screen of display!\n");
-            return 4000;
+            return PL_WINDOW_HEIGHT;
         }
 
         return (PLuint) screen->height;

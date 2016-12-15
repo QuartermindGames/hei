@@ -33,6 +33,6 @@ add_library(platform SHARED ${PLATFORM_SOURCE_FILES})
 
 set_target_properties(platform PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 
-target_compile_options(platform PUBLIC -fPIC)
+target_compile_options(platform PUBLIC -fPIC -DPL_INTERNAL)
 target_include_directories(platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
 target_link_libraries(platform dl GL GLEW)

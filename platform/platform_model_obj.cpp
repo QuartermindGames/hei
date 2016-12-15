@@ -18,9 +18,7 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
 #include "platform_model.h"
 
-/*
-	OBJ Static Model Format
-*/
+/*	OBJ Static Model Format */
 
 enum {
     OBJ_SYNTAX_COMMENT = '#',

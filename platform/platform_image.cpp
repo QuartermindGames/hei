@@ -28,8 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_image.h"
 #include "platform_filesystem.h"
 
-PLresult plLoadImage(const PLchar *path, PLImage *out)
-{
+PLresult plLoadImage(const PLchar *path, PLImage *out) {
     plFunctionStart();
 
     if (!plIsValidString(path))
@@ -38,8 +37,7 @@ PLresult plLoadImage(const PLchar *path, PLImage *out)
     // Xenon uses a lot of long extensions, as do some other modern
     // applications, so that's why we're using a size 16.
     const PLchar *extension = plGetFileExtension(path);
-    if (!plIsValidString(extension))
-    {
+    if (!plIsValidString(extension)) {
         // This is the slowest loader type, now we need to take a stab
         // at which format this file potentially is using some trickery
         // but it's useful for cases in which we don't care so much about
@@ -51,8 +49,7 @@ PLresult plLoadImage(const PLchar *path, PLImage *out)
          * Failed? Okay, we give up!
          */
 
-        if (plFileExists(path))
-        {
+        if (plFileExists(path)) {
             // Apparently it exists without an extension... Ho boy...
 
 
@@ -62,8 +59,9 @@ PLresult plLoadImage(const PLchar *path, PLImage *out)
     }
 
     FILE *fin = fopen(path, "rb");
-    if(!fin)
+    if(!fin) {
         return PL_RESULT_FILEREAD;
+    }
 
     PLresult result = PL_RESULT_FILETYPE;
     if (!strncmp(extension, PLIMAGE_EXTENSION_DTX, 3))       result = plLoadDTXImage(fin, out);
@@ -90,10 +88,11 @@ void plFreeImage(PLImage *image) {
 PLbool plIsValidImageSize(PLuint width, PLuint height) {
     plFunctionStart();
 
-    if((width < 8) || (height < 8))
+    if((width < 8) || (height < 8)) {
         return false;
-    else if(!plIsPowerOfTwo(width) || !plIsPowerOfTwo(height))
+    } else if(!plIsPowerOfTwo(width) || !plIsPowerOfTwo(height)) {
         return false;
+    }
 
     return true;
 

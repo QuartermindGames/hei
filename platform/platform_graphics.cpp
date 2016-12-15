@@ -88,8 +88,10 @@ typedef struct PLGraphicsState {
 
 PLGraphicsState pl_graphics_state;
 
+#define PL_GRAPHICS_LOG  "pl_graphics"
+
 #ifdef _DEBUG
-#	define plGraphicsLog(...) plWriteLog("pl_graphics", __VA_ARGS__)
+#	define plGraphicsLog(...) plWriteLog(PL_GRAPHICS_LOG, __VA_ARGS__)
 #else
 #	define plGraphicsLog(...)
 #endif
@@ -118,7 +120,13 @@ data for each of these functions
 
 #elif defined (VL_MODE_DIRECT3D)
 
-#elif defined (VL_MODE_OPENGL)
+#elif defined(PL_MODE_VULKAN)
+
+void _plInitVulkan() {
+
+}
+
+#elif defined (PL_MODE_OPENGL)
 
 PLbool pl_gl_generate_mipmap = PL_FALSE;
 PLbool pl_gl_depth_texture = PL_FALSE;
@@ -140,43 +148,40 @@ PLuint pl_gl_version_minor = 0;
 void _plInitOpenGL() {
     _PL_GRAPHICS_TRACK();
 
+    // todo, write our own replacement for GLEW
+
     PLuint err = glewInit();
-    if (err != GLEW_OK)
+    if (err != GLEW_OK) {
         plGraphicsLog("Failed to initialize GLEW!\n%s\n", glewGetErrorString(err));
+    }
 
     // Check that the required capabilities are supported.
     if (GLEW_ARB_multitexture) pl_gl_multitexture = PL_TRUE;
-    else
-        plGraphicsLog("Video hardware incapable of multi-texturing!\n");
+    else plGraphicsLog("Video hardware incapable of multi-texturing!\n");
     if (GLEW_ARB_texture_env_combine || GLEW_EXT_texture_env_combine) pl_gl_texture_env_combine = PL_TRUE;
-    else
-        plGraphicsLog("ARB/EXT_texture_env_combine isn't supported by your hardware!\n");
+    else plGraphicsLog("ARB/EXT_texture_env_combine isn't supported by your hardware!\n");
     if (GLEW_ARB_texture_env_add || GLEW_EXT_texture_env_add) pl_gl_texture_env_add = PL_TRUE;
-    else
-        plGraphicsLog("ARB/EXT_texture_env_add isn't supported by your hardware!\n");
+    else plGraphicsLog("ARB/EXT_texture_env_add isn't supported by your hardware!\n");
     if (GLEW_ARB_vertex_program || GLEW_ARB_fragment_program) {
         pl_gl_vertex_program = PL_TRUE;
         pl_gl_fragment_program = PL_TRUE;
     }
-    else
-        plGraphicsLog("Shaders aren't supported by this hardware!\n");
+    else plGraphicsLog("Shaders aren't supported by this hardware!\n");
     if (GLEW_SGIS_generate_mipmap) pl_gl_generate_mipmap = PL_TRUE;
-    else
-        plGraphicsLog("Hardware mipmap generation isn't supported!\n");
+    else plGraphicsLog("Hardware mipmap generation isn't supported!\n");
     if (GLEW_ARB_depth_texture) pl_gl_depth_texture = PL_TRUE;
-    else
-        plGraphicsLog("ARB_depth_texture isn't supported by your hardware!\n");
+    else plGraphicsLog("ARB_depth_texture isn't supported by your hardware!\n");
     if (GLEW_ARB_shadow) pl_gl_shadow = PL_TRUE;
-    else
-        plGraphicsLog("ARB_shadow isn't supported by your hardware!\n");
+    else plGraphicsLog("ARB_shadow isn't supported by your hardware!\n");
     if (GLEW_ARB_vertex_buffer_object) pl_gl_vertex_buffer_object = PL_TRUE;
-    else
-        plGraphicsLog("Hardware doesn't support Vertex Buffer Objects!\n");
+    else plGraphicsLog("Hardware doesn't support Vertex Buffer Objects!\n");
 
     // If HW compression isn't supported then we'll need to do
     // all of this in software later.
     if (GLEW_ARB_texture_compression) {
-        if (GLEW_EXT_texture_compression_s3tc) pl_gl_texture_compression_s3tc = PL_TRUE;
+        if (GLEW_EXT_texture_compression_s3tc) {
+            pl_gl_texture_compression_s3tc = PL_TRUE;
+        }
     }
 
     const PLchar *version = _plGetHWVersion();
@@ -188,14 +193,15 @@ void _plShutdownOpenGL() {}
 
 #endif
 
-PLresult plInitGraphics(void) {
+PLresult _plInitGraphics(void) {
     _PL_GRAPHICS_TRACK();
 
+    plClearLog(PL_GRAPHICS_LOG);
     plGraphicsLog("Initializing graphics abstraction layer...\n");
 
     memset(&pl_graphics_state, 0, sizeof(PLGraphicsState));
 
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     _plInitOpenGL();
 #elif defined (VL_MODE_GLIDE)
     _plInitGlide();
@@ -203,14 +209,11 @@ PLresult plInitGraphics(void) {
     _plInitDirect3D();
 #endif
 
-    pl_graphics_state.tmu = (PLTextureMappingUnit *) calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));
-    if (!pl_graphics_state.tmu) {
-        plSetError("Failed to allocate memory for texture units! (%i)\n", plGetMaxTextureUnits());
-        return PL_RESULT_MEMORYALLOC;
-    }
+    pl_graphics_state.tmu = new PLTextureMappingUnit[plGetMaxTextureUnits()]();    //(PLTextureMappingUnit *) calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));
     memset(pl_graphics_state.tmu, 0, sizeof(PLTextureMappingUnit));
-    for (PLuint i = 0; i < plGetMaxTextureUnits(); i++)
+    for (PLuint i = 0; i < plGetMaxTextureUnits(); i++) {
         pl_graphics_state.tmu[i].current_envmode = PL_TEXTUREMODE_REPLACE;
+    }
 
     // Get any information that will be presented later.
     pl_graphics_state.hw_extensions = _plGetHWExtensions();
@@ -225,14 +228,16 @@ PLresult plInitGraphics(void) {
     return PL_RESULT_SUCCESS;
 }
 
-void plShutdownGraphics(void) {
+void _plShutdownGraphics(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
 #elif defined (VL_MODE_GLIDE)
 #elif defined (VL_MODE_DIRECT3D)
     _plShutdownDirect3D();
 #endif
+
+    delete pl_graphics_state.tmu;
 }
 
 /*===========================
@@ -242,7 +247,7 @@ void plShutdownGraphics(void) {
 const PLchar *_plGetHWExtensions(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined(PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     return (const PLchar *) glGetString(GL_EXTENSIONS);
     // TODO: this works differently in core; use glGetStringi instead!
 #elif defined (VL_MODE_GLIDE)
@@ -255,7 +260,7 @@ const PLchar *_plGetHWExtensions(void) {
 const PLchar *_plGetHWRenderer(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined(PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     return (const PLchar *) glGetString(GL_RENDERER);
 #elif defined (VL_MODE_GLIDE)
     return grGetString(GR_RENDERER);
@@ -267,7 +272,7 @@ const PLchar *_plGetHWRenderer(void) {
 const PLchar *_plGetHWVendor(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined(PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     return (const PLchar *) glGetString(GL_VENDOR);
 #elif defined (VL_MODE_GLIDE)
     return grGetString(GR_VENDOR);
@@ -279,7 +284,7 @@ const PLchar *_plGetHWVendor(void) {
 const PLchar *_plGetHWVersion(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined(PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     return (const PLchar *) glGetString(GL_VERSION);
 #elif defined (VL_MODE_GLIDE)
     return grGetString(GR_VERSION);
@@ -291,7 +296,7 @@ const PLchar *_plGetHWVersion(void) {
 PLbool plHWSupportsMultitexture(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined(VL_MODE_OPENGL)
+#if defined(PL_MODE_OPENGL)
     return pl_gl_multitexture;
 #elif defined(VL_MODE_GLIDE)
     return true;
@@ -303,7 +308,7 @@ PLbool plHWSupportsMultitexture(void) {
 PLbool plHWSupportsShaders(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined(VL_MODE_OPENGL)
+#if defined(PL_MODE_OPENGL)
     return (pl_gl_fragment_program && pl_gl_vertex_program);
 #else
     return false;
@@ -334,7 +339,7 @@ void plSetClearColour(PLColour rgba) {
     if (rgba == pl_graphics_state.current_clearcolour)
         return;
 
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     glClearColor(rgba.r / 255, rgba.g / 255, rgba.b / 255, rgba.a / 255);
 #elif defined (VL_MODE_DIRECT3D)
     // Don't need to do anything specific here, colour is set on clear call.
@@ -347,14 +352,13 @@ void plSetClearColour(PLColour rgba) {
 void plClearBuffers(PLuint buffers) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     // Rather ugly, but translate it over to GL.
     PLuint glclear = 0;
     if(buffers & PL_BUFFER_COLOUR)  glclear |= GL_COLOR_BUFFER_BIT;
     if(buffers & PL_BUFFER_DEPTH)   glclear |= GL_DEPTH_BUFFER_BIT;
     if(buffers & PL_BUFFER_STENCIL) glclear |= GL_STENCIL_BUFFER_BIT;
-
-    glClear(buffers);
+    glClear(glclear);
 #elif defined (VL_MODE_GLIDE)
     // Glide only supports clearing a single buffer.
     grBufferClear(
@@ -382,13 +386,13 @@ typedef struct _PLGraphicsCapabilities {
 
 _PLGraphicsCapabilities graphics_capabilities[] =
         {
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
                 {PL_CAPABILITY_ALPHA_TEST, GL_ALPHA_TEST, "ALPHA_TEST"},
                 {PL_CAPABILITY_BLEND, GL_BLEND, "BLEND"},
-                {VL_CAPABILITY_DEPTH_TEST, GL_DEPTH_TEST, "DEPTH_TEST"},
+                {PL_CAPABILITY_DEPTH_TEST, GL_DEPTH_TEST, "DEPTH_TEST"},
                 {PL_CAPABILITY_TEXTURE_2D, GL_TEXTURE_2D, "TEXTURE_2D"},
                 {VL_CAPABILITY_TEXTURE_GEN_S, GL_TEXTURE_GEN_S, "TEXTURE_GEN_S"},
-                {VL_CAPABILITY_TEXTURE_GEN_T, GL_TEXTURE_GEN_T, "TEXTURE_GEN_T"},
+                {PL_CAPABILITY_TEXTURE_GEN_T, GL_TEXTURE_GEN_T, "TEXTURE_GEN_T"},
                 {VL_CAPABILITY_CULL_FACE, GL_CULL_FACE, "CULL_FACE"},
                 {VL_CAPABILITY_STENCIL_TEST, GL_STENCIL_TEST, "STENCIL_TEST"},
                 {VL_CAPABILITY_MULTISAMPLE, GL_MULTISAMPLE, "MULTISAMPLE"},
@@ -398,10 +402,10 @@ _PLGraphicsCapabilities graphics_capabilities[] =
 #else
         { PL_CAPABILITY_ALPHA_TEST, 0, "ALPHA_TEST" },
         { VL_CAPABILITY_BLEND, 0, "BLEND" },
-        { VL_CAPABILITY_DEPTH_TEST, 0, "DEPTH_TEST" },
+        { PL_CAPABILITY_DEPTH_TEST, 0, "DEPTH_TEST" },
         { VL_CAPABILITY_TEXTURE_2D, 0, "TEXTURE_2D" },
         { VL_CAPABILITY_TEXTURE_GEN_S, 0, "TEXTURE_GEN_S" },
-        { VL_CAPABILITY_TEXTURE_GEN_T, 0, "TEXTURE_GEN_T" },
+        { PL_CAPABILITY_TEXTURE_GEN_T, 0, "TEXTURE_GEN_T" },
         { VL_CAPABILITY_CULL_FACE, 0, "CULL_FACE" },
         { VL_CAPABILITY_STENCIL_TEST, 0, "STENCIL_TEST" },
         { VL_CAPABILITY_MULTISAMPLE, 0, "MULTISAMPLE" },
@@ -437,14 +441,14 @@ void plEnableGraphicsStates(PLuint flags) {
         if (flags & VL_CAPABILITY_FOG)
             // TODO: need to check this is supported...
             grFogMode(GR_FOG_WITH_TABLE_ON_FOGCOORD_EXT);
-        if (flags & VL_CAPABILITY_DEPTH_TEST)
+        if (flags & PL_CAPABILITY_DEPTH_TEST)
             grDepthBufferMode(GR_DEPTHBUFFER_ZBUFFER);
         if (flags & VL_CAPABILITY_CULL_FACE)
             grCullMode(graphics_state.current_cullmode);
 #endif
 
         if ((flags & graphics_capabilities[i].pl_parm) && (graphics_capabilities[i].to_parm != 0))
-#if defined (VL_MODE_OPENGL) || (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || (VL_MODE_OPENGL_CORE)
             glEnable(graphics_capabilities[i].to_parm);
 #elif defined (VL_MODE_GLIDE)
         grEnable(graphics_capabilities[i].to_parm);
@@ -471,14 +475,14 @@ void plDisableGraphicsStates(PLuint flags) {
 #if defined (VL_MODE_GLIDE)
         if (flags & VL_CAPABILITY_FOG)
             grFogMode(GR_FOG_DISABLE);
-        if (flags & VL_CAPABILITY_DEPTH_TEST)
+        if (flags & PL_CAPABILITY_DEPTH_TEST)
             grDepthBufferMode(GR_DEPTHBUFFER_DISABLE);
         if (flags & VL_CAPABILITY_CULL_FACE)
             grCullMode(graphics_state.current_cullmode);
 #endif
 
         if ((flags & graphics_capabilities[i].pl_parm) && (graphics_capabilities[i].to_parm != 0))
-#if defined (VL_MODE_OPENGL) || (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || (VL_MODE_OPENGL_CORE)
             glDisable(graphics_capabilities[i].to_parm);
 #elif defined (VL_MODE_GLIDE)
         grDisable(graphics_capabilities[i].to_parm);
@@ -495,7 +499,7 @@ void plDisableGraphicsStates(PLuint flags) {
 void plSetBlendMode(PLBlend modea, PLBlend modeb) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     glBlendFunc(modea, modeb);
 #elif defined (VL_MODE_GLIDE)
     grAlphaBlendFunction(modea, modeb, modea, modeb);
@@ -507,7 +511,7 @@ void plSetCullMode(VLCullMode mode) {
 
     if (mode == pl_graphics_state.current_cullmode)
         return;
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     glCullFace(GL_BACK);
     switch (mode) {
         default:
@@ -536,7 +540,7 @@ typedef struct PLTranslatePrimitive {
 } PLTranslatePrimitive;
 
 PLTranslatePrimitive _pl_primitives[] = {
-#if defined (VL_MODE_OPENGL) || (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || (VL_MODE_OPENGL_CORE)
         {VL_PRIMITIVE_LINES, GL_LINES, "LINES"},
         {VL_PRIMITIVE_POINTS, GL_POINTS, "POINTS"},
         {VL_PRIMITIVE_TRIANGLES, GL_TRIANGLES, "TRIANGLES"},
@@ -545,7 +549,7 @@ PLTranslatePrimitive _pl_primitives[] = {
         {VL_PRIMITIVE_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"},
         {VL_PRIMITIVE_QUADS, GL_QUADS, "QUADS"}
 #elif defined (VL_MODE_GLIDE)
-{ VL_PRIMITIVE_LINES,					GR_LINES,			"LINES" },
+    { VL_PRIMITIVE_LINES,					GR_LINES,			"LINES" },
     { VL_PRIMITIVE_LINE_STRIP,				GR_LINE_STRIP,		"LINE_STRIP" },
     { VL_PRIMITIVE_POINTS,					GR_POINTS,			"POINTS" },
     { VL_PRIMITIVE_TRIANGLES,				GR_TRIANGLES,		"TRIANGLES" },
@@ -582,7 +586,7 @@ void _plDrawArrays(PLPrimitive mode, PLuint first, PLuint count) {
     _PL_GRAPHICS_TRACK();
 
     if ((count == 0) || (first > count)) return;
-#if defined(VL_MODE_OPENGL)
+#if defined(PL_MODE_OPENGL)
     glDrawArrays(_plTranslatePrimitiveMode(mode), first, count);
 #endif
 }
@@ -591,7 +595,7 @@ void _plDrawElements(PLPrimitive mode, PLuint count, PLuint type, const PLvoid *
     _PL_GRAPHICS_TRACK();
 
     if ((count == 0) || !indices) return;
-#if defined(VL_MODE_OPENGL)
+#if defined(PL_MODE_OPENGL)
     glDrawElements(_plTranslatePrimitiveMode(mode), count, type, indices);
 #endif
 }
@@ -606,7 +610,7 @@ void plDraw(PLDraw *draw) {
 
 #if defined(VL_MODE_GLIDE)
     // todo, glide needs its own setup here...
-#elif defined(VL_MODE_OPENGL)
+#elif defined(PL_MODE_OPENGL)
 #if 0
     if(draw->_gl_vbo[_VL_BUFFER_VERTICES] != 0)
     {
@@ -694,7 +698,7 @@ void plDrawVertexNormals(PLDraw *draw) {
 void plCreateShader(PLShader *shader, PLShaderType type) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     *shader = glCreateShader(type);
 #endif
 }
@@ -702,7 +706,7 @@ void plCreateShader(PLShader *shader, PLShaderType type) {
 void plDeleteShader(PLShader *shader) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     glDeleteShader(*shader);
 #endif
 }
@@ -710,7 +714,7 @@ void plDeleteShader(PLShader *shader) {
 void plCreateShaderProgram(PLShaderProgram *program) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     *program = glCreateProgram();
 #endif
 }
@@ -718,7 +722,7 @@ void plCreateShaderProgram(PLShaderProgram *program) {
 void plDeleteShaderProgram(PLShaderProgram *program) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     glDeleteProgram(*program);
 #endif
 }
@@ -735,7 +739,7 @@ void plSetShaderProgram(PLShaderProgram program) {
     if (program == pl_graphics_state.current_program)
         return;
 
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     glUseProgram(program);
 #endif
 
@@ -747,7 +751,7 @@ void plSetShaderProgram(PLShaderProgram program) {
 PLuint _plTranslateTextureUnit(PLuint target) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
     PLuint out = GL_TEXTURE0 + target;
     if (out > (GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS - 1))
         plGraphicsLog("Attempted to select an invalid texture image unit! (%i)\n", target);
@@ -760,7 +764,7 @@ PLuint _plTranslateTextureUnit(PLuint target) {
 PLuint _plTranslateTextureStorageFormat(PLDataFormat format) {
     _PL_GRAPHICS_TRACK();
 
-#if defined(VL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
+#if defined(PL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
     switch (format) {
         default:
         case PL_UNSIGNED_BYTE:              return GL_UNSIGNED_BYTE;
@@ -774,7 +778,7 @@ PLuint _plTranslateTextureStorageFormat(PLDataFormat format) {
 PLuint _plTranslateTextureTarget(PLTextureTarget target) {
     _PL_GRAPHICS_TRACK();
 
-#if defined(VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined(PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     switch (target) {
         default:
         case PL_TEXTURE_2D: return GL_TEXTURE_2D;
@@ -787,7 +791,7 @@ PLuint _plTranslateTextureTarget(PLTextureTarget target) {
 }
 
 PLuint _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     switch (mode) {
         default:
         case PL_TEXTUREMODE_ADD:        return GL_ADD;
@@ -808,7 +812,7 @@ PLuint _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
 PLuint _plTranslateTextureFormat(PLTextureFormat format) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     switch (format) {
         default:
         case PL_TEXTUREFORMAT_RGB4:         return GL_RGB4;
@@ -860,7 +864,7 @@ PLTexture *plCreateTexture(void) {
     texture->width = 8;
     texture->height = 8;
 
-#if defined(VL_MODE_OPENGL)
+#if defined(PL_MODE_OPENGL)
     glGenTextures(1, &texture->id);
 #else
     texture->id = pl_graphics_textures.count + 1;
@@ -881,7 +885,7 @@ void plDeleteTexture(PLTexture *texture, PLbool force) {
     auto tex = pl_graphics_textures.begin();
     while(tex != pl_graphics_textures.end()) {
         if(tex->second == texture) {
-#if defined(VL_MODE_OPENGL)
+#if defined(PL_MODE_OPENGL)
             glDeleteTextures(1, &texture->id);
 #endif
 
@@ -900,7 +904,7 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
 
     plSetTexture(texture);
 
-#if defined(VL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
+#if defined(PL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
     PLuint levels = upload->levels;
     if(plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP) && (levels <= 1)) {
         levels = _PL_TEXTURE_LEVELS;
@@ -947,7 +951,7 @@ PLresult plUploadTexture(PLTexture *texture, const PLTextureInfo *upload) {
 
     plSetTexture(texture);
 
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     PLuint storage = _plTranslateTextureStorageFormat(upload->storage_type);
     PLuint format = _plTranslateTextureFormat(upload->format);
 
@@ -1014,7 +1018,7 @@ PLuint plGetMaxTextureSize(void) {
     if (pl_graphics_state.hw_maxtexturesize != 0)
         return pl_graphics_state.hw_maxtexturesize;
 
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     PLint num_size = 0;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &num_size);
     pl_graphics_state.hw_maxtexturesize = (PLuint) num_size;
@@ -1030,7 +1034,7 @@ PLuint plGetMaxTextureUnits(void) {
     if (pl_graphics_state.hw_maxtextureunits != 0)
         return pl_graphics_state.hw_maxtextureunits;
 
-#ifdef VL_MODE_OPENGL
+#ifdef PL_MODE_OPENGL
     PLint num_units = 0;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &num_units);
     pl_graphics_state.hw_maxtextureunits = (PLuint) num_units;
@@ -1046,7 +1050,7 @@ PLuint plGetMaxTextureAnistropy(void) {
     if (pl_graphics_state.hw_maxtextureanistropy != 0)
         return pl_graphics_state.hw_maxtextureanistropy;
 
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     PLfloat num_anisotropy = 0;
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &num_anisotropy);
     pl_graphics_state.hw_maxtextureanistropy = (PLuint) num_anisotropy;
@@ -1066,7 +1070,7 @@ PLresult plSetTexture(PLTexture *texture) {
         return PL_RESULT_SUCCESS;
     }
 
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     glBindTexture(GL_TEXTURE_2D, texture->id);
 #endif
 
@@ -1085,7 +1089,7 @@ void plSetTextureUnit(PLuint target) {
         return;
     }
 
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     glActiveTexture(_plTranslateTextureUnit(target));
 #endif
 
@@ -1097,7 +1101,7 @@ PLresult plSetTextureAnisotropy(PLTexture *texture, PLuint amount) {
 
     plSetTexture(texture);
 
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (PLint) amount);
 #endif
 
@@ -1109,7 +1113,7 @@ PLresult plSetTextureFilter(PLTexture *texture, PLTextureFilter filter) {
 
     plSetTexture(texture);
 
-#ifdef VL_MODE_OPENGL
+#ifdef PL_MODE_OPENGL
     PLuint filtermin, filtermax;
     switch (filter) {
         default:
@@ -1155,7 +1159,7 @@ void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
     if (pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_envmode == mode)
         return;
 
-#if defined(VL_MODE_OPENGL)
+#if defined(PL_MODE_OPENGL)
     glTexEnvi
             (
                     GL_TEXTURE_ENV,
@@ -1230,7 +1234,7 @@ void plViewport(PLint x, PLint y, PLuint width, PLuint height) {
          (height == pl_graphics_state.viewport_height)))
         return;
 
-#if defined (VL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL)
     glViewport(x, y, width, height);
 
     pl_graphics_state.viewport_x = x;
@@ -1253,7 +1257,7 @@ void plViewport(PLint x, PLint y, PLuint width, PLuint height) {
 void plScissor(PLint x, PLint y, PLuint width, PLuint height) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     glScissor(x, y, width, height);
 #elif defined (VL_MODE_DIRECT3D)
     D3D11_RECT scissor_region;
@@ -1267,7 +1271,7 @@ void plScissor(PLint x, PLint y, PLuint width, PLuint height) {
 void plFinish(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (VL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     glFinish();
 #elif defined (VL_MODE_GLIDE)
     grFinish();

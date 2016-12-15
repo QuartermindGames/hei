@@ -283,33 +283,58 @@ typedef unsigned short          PLushort;
 
 //////////////////////////////////////////////////////////////////
 
-/*	Error Management Functionality	*/
-
+// Error return values
 typedef enum {
     PL_RESULT_SUCCESS,
 
     // FILE I/O
-    PL_RESULT_FILEREAD,     // Failed to read file!
+            PL_RESULT_FILEREAD,     // Failed to read file!
     PL_RESULT_FILETYPE,     // Unexpected file type!
     PL_RESULT_FILEVERSION,  // Unsupported version!
     PL_RESULT_FILESIZE,     // Invalid file size!
     PL_RESULT_FILEPATH,     // Invalid path!
 
     // GRAPHICS
-    PL_RESULT_GRAPHICSINIT,    // Graphics failed to initialise!
+            PL_RESULT_GRAPHICSINIT,    // Graphics failed to initialise!
 
     // IMAGE
-    PL_RESULT_IMAGERESOLUTION,  // Invalid image resolution!
+            PL_RESULT_IMAGERESOLUTION,  // Invalid image resolution!
     PL_RESULT_IMAGEFORMAT,      // Invalid image format!
 
     // MEMORY
-    PL_RESULT_MEMORYALLOC,    // Ran out of memory!
+            PL_RESULT_MEMORYALLOC,    // Ran out of memory!
 } PLresult;
+
+//////////////////////////////////////////////////////////////////
+
+enum {
+    PL_SUBSYSTEM_GRAPHICS   = (1 << 0), // Graphics/rendering
+    PL_SUBSYSTEM_IO         = (2 << 0), // Filesystem I/O
+    PL_SUBSYSTEM_IMAGE      = (3 << 0), // Image loaders
+    PL_SUBSYSTEM_LIBRARY    = (4 << 0), // Module/library management
+    PL_SUBSYSTEM_LOG        = (5 << 0), // Logging
+    PL_SUBSYSTEM_MODEL      = (6 << 0), // Model loaders
+    PL_SUBSYSTEM_WINDOW     = (7 << 0), // Windowing
+};
+
+#if defined(PL_INTERNAL)
+
+PL_EXTERN_C
+
+PLresult _plInitGraphics(void);
+void _plShutdownGraphics(void);
+
+PLresult _plInitIO(void);
+void _plShutdownIO(void);
+
+PL_EXTERN_C_END
+
+#endif
 
 //static jmp_buf jbException;
 
-#define    pFUNCTION_UPDATE()            \
-    plResetError();                    \
+#define    pFUNCTION_UPDATE()           \
+    plResetError();                     \
     plSetErrorFunction(PL_FUNCTION)
 #ifndef __cplusplus
 #define    pFUNCTION_START        plSetErrorFunction(PL_FUNCTION); {
@@ -326,17 +351,19 @@ plSetErrorFunction(PL_FUNCTION);
 
 PL_EXTERN_C
 
-extern void plResetError(
-        void);                                    // Resets the error message to "null", so you can ensure you have the correct message from the library.
+extern PLresult plInitialize(PLuint subsystems);
+extern void plShutdown(void);
+
+extern void plResetError(void); // Resets the error message to "null", so you can ensure you have the correct message from the library.
 extern void
-plSetError(const char *msg, ...);                    // Sets the error message, so we can grab it outside the library.
+plSetError(const char *msg, ...);   // Sets the error message, so we can grab it outside the library.
 extern void
-plSetErrorFunction(const char *function, ...);        // Sets the currently active function, for error reporting.
+plSetErrorFunction(const char *function, ...);  // Sets the currently active function, for error reporting.
 
 extern const PLchar *plGetResultString(PLresult result);
 
-extern char *plGetSystemError(void);    // Returns the error message currently given by the operating system.
-extern char *plGetError(void);            // Returns the last recorded error.
+extern PLchar *plGetSystemError(void);  // Returns the error message currently given by the operating system.
+extern PLchar *plGetError(void);        // Returns the last recorded error.
 
 PL_EXTERN_C_END
 

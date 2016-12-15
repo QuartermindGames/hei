@@ -21,6 +21,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /*	File System	*/
 
+PLresult _plInitIO(void) {
+
+}
+
+void _plShutdownIO(void) {
+
+}
+
 // Checks whether a file has been modified or not.
 PLbool plIsFileModified(time_t oldtime, const PLchar *path) {
     plFunctionStart();
@@ -29,14 +37,15 @@ PLbool plIsFileModified(time_t oldtime, const PLchar *path) {
         return PL_FALSE;
     }
 
-    struct stat sAttributes;
-    if (stat(path, &sAttributes) == -1) {
+    struct stat attributes;
+    if (stat(path, &attributes) == -1) {
         plSetError("Failed to get file stats!\n");
         return PL_FALSE;
     }
 
-    if (sAttributes.st_mtime > oldtime)
+    if (attributes.st_mtime > oldtime) {
         return PL_TRUE;
+    }
 
     return PL_FALSE;
     plFunctionEnd();
@@ -44,49 +53,49 @@ PLbool plIsFileModified(time_t oldtime, const PLchar *path) {
 
 time_t plGetFileModifiedTime(const PLchar *path) {
     plFunctionStart();
-    struct stat sAttributes;
-    if (stat(path, &sAttributes) == -1) {
+    struct stat attributes;
+    if (stat(path, &attributes) == -1) {
         plSetError("Failed to get modification time!\n");
         return 0;
     }
-    return sAttributes.st_mtime;
+    return attributes.st_mtime;
     plFunctionEnd();
 }
 
 void plLowerCasePath(PLchar *out) {
     plFunctionStart();
-    for (int i = 0; out[i]; i++)
+    for (int i = 0; out[i]; i++) {
         out[i] = (PLchar) tolower(out[i]);
+    }
     plFunctionEnd();
 }
 
 // Creates a folder at the given path.
-PLbool plCreateDirectory(const PLchar *ccPath) {
+PLbool plCreateDirectory(const PLchar *path) {
     plFunctionStart();
 #ifdef _WIN32
-    if(CreateDirectory(ccPath, NULL) || (GetLastError() == ERROR_ALREADY_EXISTS))
+    if(CreateDirectory(path, NULL) || (GetLastError() == ERROR_ALREADY_EXISTS))
         return PL_TRUE;
     else if(GetLastError() == ERROR_PATH_NOT_FOUND)
-        plSetError("Failed to find an intermediate directory! (%s)\n", ccPath);
+        plSetError("Failed to find an intermediate directory! (%s)\n", path);
     else    // Assume it already exists.
-        plSetError("Unknown error! (%s)\n", ccPath);
+        plSetError("Unknown error! (%s)\n", path);
 #else
     {
-        struct stat ssBuffer;
-
-        if (stat(ccPath, &ssBuffer) == -1) {
-            if (mkdir(ccPath, 0777) == 0)
+        struct stat buffer;
+        if (stat(path, &buffer) == -1) {
+            if (mkdir(path, 0777) == 0)
                 return PL_TRUE;
             else {
                 switch (errno) {
                     case EACCES:
-                        plSetError("Failed to get permission! (%s)\n", ccPath);
+                        plSetError("Failed to get permission! (%s)\n", path);
                     case EROFS:
-                        plSetError("File system is read only! (%s)\n", ccPath);
+                        plSetError("File system is read only! (%s)\n", path);
                     case ENAMETOOLONG:
-                        plSetError("Path is too long! (%s)\n", ccPath);
+                        plSetError("Path is too long! (%s)\n", path);
                     default:
-                        plSetError("Failed to create directory! (%s)\n", ccPath);
+                        plSetError("Failed to create directory! (%s)\n", path);
                 }
             }
         } else
@@ -117,6 +126,7 @@ const PLchar *plGetFileExtension(const PLchar *in) {
 
 // Strips the extension from the filename.
 void plStripExtension(PLchar *dest, const PLchar *in) {
+    plFunctionStart();
     if (!plIsValidString(in)) {
         *dest = 0;
         return;
@@ -125,6 +135,7 @@ void plStripExtension(PLchar *dest, const PLchar *in) {
     const PLchar *s = strrchr(in, '.');
     while (in < s) *dest++ = *in++;
     *dest = 0;
+    plFunctionEnd();
 }
 
 // Returns a pointer to the last component in the given filename. 
@@ -150,20 +161,18 @@ void plGetUserName(PLchar *out) {
         sprintf(userstring, "user");
 #else   // Linux
     PLchar *userstring = getenv("LOGNAME");
-    if (userstring == NULL)
+    if (userstring == NULL) {
         // If it fails, just set it to user.
         userstring = "user";
+    }
 #endif
-    {
-        int i = 0,
-                userlength = (int) strlen(userstring);
-        while (i < userlength) {
-            if (userstring[i] == ' ')
-                out[i] = '_';
-            else
-                out[i] = (char) tolower(userstring[i]);
-            i++;
-        }
+    int i = 0, userlength = (int) strlen(userstring);
+    while (i < userlength) {
+        if (userstring[i] == ' ') {
+            out[i] = '_';
+        } else {
+            out[i] = (char) tolower(userstring[i]);
+        } i++;
     }
 
     //strncpy(out, cUser, sizeof(out));

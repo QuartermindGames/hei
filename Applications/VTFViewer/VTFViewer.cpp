@@ -53,11 +53,8 @@ int main(int argc, char *argv[]) {
 
     glfwMakeContextCurrent(window);
 
-    plInitGraphics();
+    plInitialize(PL_SUBSYSTEM_GRAPHICS);
 
-    plSetClearColour(PLColour(PL_COLOUR_BLUE));
-
-#if 0
     PLImage image;
     PLresult result = plLoadImage("./images/bluegrid.vtf", &image);
     if(result != PL_RESULT_SUCCESS) {
@@ -65,6 +62,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+#if 0
     PLTexture *image_texture = plCreateTexture();
     if(!image_texture) {
         plMessageBox(TITLE, "Failed to create texture!");
@@ -73,6 +71,8 @@ int main(int argc, char *argv[]) {
 
     plUploadTextureImage(image_texture, &image);
 #endif
+
+    plSetClearColour(PLColour(PL_COLOUR_RED));
 
     while(!glfwWindowShouldClose(window)) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
@@ -85,6 +85,8 @@ int main(int argc, char *argv[]) {
     }
 
     glfwTerminate();
+
+    plShutdown();
 
     return 0;
 }
