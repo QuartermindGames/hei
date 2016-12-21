@@ -69,6 +69,8 @@ PLresult plLoadImage(const PLchar *path, PLImage *out) {
     else if (!strncmp(extension, PLIMAGE_EXTENSION_VTF, 3))  result = plLoadVTFImage(fin, out);
     else if (!strncmp(extension, PLIMAGE_EXTENSION_PPM, 3))  result = plLoadPPMImage(fin, out);
 
+    strncpy(out->path, path, sizeof(out->path));
+
     fclose(fin);
 
     return result;
