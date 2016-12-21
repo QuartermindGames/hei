@@ -230,7 +230,7 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
     plFunctionStart();
 
     VTFHeader header;
-    memset(&header, 0, sizeof(header));
+    memset(&header, 0, sizeof(VTFHeader));
 #define VTF_VERSION(maj, min)   ((maj == header.version[1] && min <= header.version[0]) || maj < header.version[0])
 
     if (fread(&header, sizeof(VTFHeader), 1, fin) != 1)
@@ -256,13 +256,13 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
 
     VTFHeader72 header2;
     if (header.version[1] >= 2) {
-        memset(&header2, 0, sizeof(header));
+        memset(&header2, 0, sizeof(VTFHeader72));
         if (fread(&header2, sizeof(VTFHeader72), 1, fin) != 1)
             return PL_RESULT_FILEREAD;
     }
     VTFHeader73 header3;
     if (header.version[1] >= 3) {
-        memset(&header3, 0, sizeof(header));
+        memset(&header3, 0, sizeof(VTFHeader73));
         if (fread(&header3, sizeof(VTFHeader73), 1, fin) != 1)
             return PL_RESULT_FILEREAD;
     }
@@ -289,7 +289,7 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
 
         // VTF's typically include a tiny thumbnail image at the start, which we'll skip.
         fseek(fin, header.lowresimagewidth * header.lowresimageheight / 2, SEEK_CUR);
-        for (PLuint mipmap = 0; mipmap < header.mipmaps; mipmap++) {
+        for (PLuint mipmap = header.mipmaps; mipmap; mipmap--) {
 
 #if 0 // skip frames and faces for now...
             for(PLuint frame = 0; frame < header.frames; frame++) {
