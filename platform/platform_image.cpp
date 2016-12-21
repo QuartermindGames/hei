@@ -74,6 +74,23 @@ PLresult plLoadImage(const PLchar *path, PLImage *out) {
     return result;
 }
 
+PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height) {
+    switch(format) {
+        case PL_IMAGEFORMAT_RGB_DXT1:   return (width * height) >> 1;
+        case PL_IMAGEFORMAT_RGBA_DXT1:  return width * height * 4;
+        case PL_IMAGEFORMAT_RGBA_DXT3:
+        case PL_IMAGEFORMAT_RGBA_DXT5:  return width * height;
+
+        case PL_IMAGEFORMAT_RGB5A1:     return width * height * 2;
+        case PL_IMAGEFORMAT_RGB8:
+        case PL_IMAGEFORMAT_RGB565:     return width * height * 3;
+        case PL_IMAGEFORMAT_RGBA4:
+        case PL_IMAGEFORMAT_RGBA8:      return width * height * 4;
+        case PL_IMAGEFORMAT_RGBA16F:
+        case PL_IMAGEFORMAT_RGBA16:     return width * height * 8;
+    }
+}
+
 void plFreeImage(PLImage *image) {
     plFunctionStart();
 
@@ -88,7 +105,7 @@ void plFreeImage(PLImage *image) {
 PLbool plIsValidImageSize(PLuint width, PLuint height) {
     plFunctionStart();
 
-    if((width < 8) || (height < 8)) {
+    if((width < 2) || (height < 2)) {
         return false;
     } else if(!plIsPowerOfTwo(width) || !plIsPowerOfTwo(height)) {
         return false;

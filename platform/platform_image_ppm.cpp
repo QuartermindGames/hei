@@ -57,7 +57,7 @@ PLresult plLoadPPMImage(FILE *fin, PLImage *out) {
 
     out->width = w;
     out->height = h;
-    out->format = VL_TEXTUREFORMAT_RGB8;
+    out->format = PL_IMAGEFORMAT_RGB8;
 
     return PL_RESULT_SUCCESS;
 }

@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org>
 #pragma once
 
 #include "platform.h"
-#include "platform_graphics.h"
 
 enum {
     PL_IMAGEFLAG_FULLBRIGHT     = (1 << 0),
@@ -42,6 +41,37 @@ enum {
     PL_IMAGEFLAG_SPHEREMAP      = (12 << 0),
 } PLImageFlag;
 
+typedef enum PLImageFormat {
+    PL_IMAGEFORMAT_UNKNOWN,
+
+    PL_IMAGEFORMAT_RGB4,      // 4 4 4 0
+    PL_IMAGEFORMAT_RGBA4,     // 4 4 4 4
+    PL_IMAGEFORMAT_RGB5,      // 5 5 5 0
+    PL_IMAGEFORMAT_RGB5A1,    // 5 5 5 1
+    PL_IMAGEFORMAT_RGB565,    // 5 6 5 0
+    PL_IMAGEFORMAT_RGB8,      // 8 8 8 0
+    PL_IMAGEFORMAT_RGBA8,     // 8 8 8 8
+    PL_IMAGEFORMAT_RGBA12,    // 12 12 12 12
+    PL_IMAGEFORMAT_RGBA16,    // 16 16 16 16
+    PL_IMAGEFORMAT_RGBA16F,   // 16 16 16 16
+
+    PL_IMAGEFORMAT_RGBA_DXT1,
+    PL_IMAGEFORMAT_RGB_DXT1,
+    PL_IMAGEFORMAT_RGBA_DXT3,
+    PL_IMAGEFORMAT_RGBA_DXT5,
+
+    PL_IMAGEFORMAT_RGB_FXT1
+} PLImageFormat;
+
+typedef enum PLColourFormat {
+    PL_COLOURFORMAT_ARGB,
+    PL_COLOURFORMAT_ABGR,
+    PL_COLOURFORMAT_RGB,
+    PL_COLOURFORMAT_BGR,
+    PL_COLOURFORMAT_RGBA,
+    PL_COLOURFORMAT_BGRA,
+} PLColourFormat;
+
 typedef struct PLImage {
     PLbyte **data;
 
@@ -52,19 +82,19 @@ typedef struct PLImage {
 
     PLchar path[PL_MAX_PATH];
 
-    PLTextureFormat format;
-    PLColourFormat  colour_format;
+    PLImageFormat format;
+    PLColourFormat colour_format;
 
     PLuint flags;
 } PLImage;
 
-#define PLIMAGE_EXTENSION_FTX   "ftx"    // Ritual's FTX image format.
-#define PLIMAGE_EXTENSION_DTX   "dtx"    // Lithtech's DTX image format.
-#define PLIMAGE_EXTENSION_PPM   "ppm"    // Portable Pixel Map format.
+#define PLIMAGE_EXTENSION_FTX   "ftx"   // Ritual's FTX image format
+#define PLIMAGE_EXTENSION_DTX   "dtx"   // Direct Texture (LithTech)
+#define PLIMAGE_EXTENSION_PPM   "ppm"   // Portable Pixel Map
 #define PLIMAGE_EXTENSION_KTX   "ktx"
 #define PLIMAGE_EXTENSION_TGA   "tga"
 #define PLIMAGE_EXTENSION_PNG   "png"
-#define PLIMAGE_EXTENSION_VTF   "vtf"
+#define PLIMAGE_EXTENSION_VTF   "vtf"   // Valve Texture Format (Source Engine)
 
 PL_EXTERN_C
 
@@ -78,5 +108,11 @@ extern PLresult plLoadFTXImage(FILE *fin, PLImage *out);    // Ritual's FTX imag
 extern PLresult plLoadPPMImage(FILE *fin, PLImage *out);    // Portable Pixel Map format.
 extern PLresult plLoadDTXImage(FILE *fin, PLImage *out);    // Lithtech's DTX image format.
 extern PLresult plLoadVTFImage(FILE *fin, PLImage *out);    // Valve's VTF image format.
+
+#if defined(PL_INTERNAL)
+
+PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height);
+
+#endif
 
 PL_EXTERN_C_END

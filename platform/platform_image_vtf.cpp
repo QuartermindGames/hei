@@ -35,9 +35,9 @@ typedef struct VTFHeader {
 
     PLuint headersize;      // I guess this is used to support header alterations?
 
-    PLuint16 width, height; // Width and height of the texture.
+    PLushort width, height; // Width and height of the texture.
 
-    PLuint32 flags;
+    PLint flags;
 
     PLushort frames;        // For animated texture sets.
     PLushort firstframe;    // Initial frame to start from.
@@ -60,7 +60,7 @@ typedef struct VTFHeader {
 } VTFHeader;
 
 typedef struct VTFHeader72 {
-    PLuint16 depth;
+    PLushort depth;
 } VTFHeader72;
 
 typedef struct VTFHeader73 {
@@ -145,6 +145,87 @@ enum VTFFormat {
     VTF_FORMAT_UVLX8888
 } VTFFormat;
 
+void _plConvertVTFFormat(PLImage *image, PLuint in) {
+    switch(in) {
+        case VTF_FORMAT_A8:
+            image->format = PL_IMAGEFORMAT_RGB4;
+            image->colour_format = PL_COLOURFORMAT_RGB;
+            break;
+        case VTF_FORMAT_ABGR8888:
+            image->format = PL_IMAGEFORMAT_RGBA8;
+            image->colour_format = PL_COLOURFORMAT_ABGR;
+            break;
+        case VTF_FORMAT_ARGB8888:
+            image->format = PL_IMAGEFORMAT_RGBA8;
+            image->colour_format = PL_COLOURFORMAT_ARGB;
+            break;
+        case VTF_FORMAT_BGR565:
+            image->format = PL_IMAGEFORMAT_RGB565;
+            image->colour_format = PL_COLOURFORMAT_BGR;
+            break;
+        case VTF_FORMAT_BGR888:
+        case VTF_FORMAT_BGR888_BLUESCREEN:
+            image->format = PL_IMAGEFORMAT_RGB8;
+            image->colour_format = PL_COLOURFORMAT_BGR;
+            break;
+        case VTF_FORMAT_BGRA4444:
+            image->format = PL_IMAGEFORMAT_RGBA4;
+            image->colour_format = PL_COLOURFORMAT_BGRA;
+            break;
+        case VTF_FORMAT_BGRA5551:
+            image->format = PL_IMAGEFORMAT_RGB5A1;
+            image->colour_format = PL_COLOURFORMAT_BGRA;
+            break;
+        case VTF_FORMAT_BGRA8888:
+        case VTF_FORMAT_BGRX8888:
+            image->format = PL_IMAGEFORMAT_RGBA8;
+            image->colour_format = PL_COLOURFORMAT_BGRA;
+            break;
+        case VTF_FORMAT_DXT1:
+            image->format = PL_IMAGEFORMAT_RGB_DXT1;
+            image->colour_format = PL_COLOURFORMAT_RGB;
+            break;
+        case VTF_FORMAT_DXT1_ONEBITALPHA:
+            image->format = PL_IMAGEFORMAT_RGBA_DXT1;
+            image->colour_format = PL_COLOURFORMAT_RGBA;
+            break;
+        case VTF_FORMAT_DXT3:
+            image->format = PL_IMAGEFORMAT_RGBA_DXT3;
+            image->colour_format = PL_COLOURFORMAT_RGBA;
+            break;
+        case VTF_FORMAT_DXT5:
+            image->format = PL_IMAGEFORMAT_RGBA_DXT5;
+            image->colour_format = PL_COLOURFORMAT_RGBA;
+            break;
+        case VTF_FORMAT_I8:                 abort();    // todo
+        case VTF_FORMAT_IA88:               abort();    // todo
+        case VTF_FORMAT_P8:                 abort();    // todo
+        case VTF_FORMAT_RGB565:             abort();    // todo
+        case VTF_FORMAT_RGB888:             // Same as RGB888_BLUESCREEN.
+        case VTF_FORMAT_RGB888_BLUESCREEN:
+            image->format = PL_IMAGEFORMAT_RGB8;
+            image->colour_format = PL_COLOURFORMAT_RGB;
+            break;
+        case VTF_FORMAT_RGBA8888:
+            image->format = PL_IMAGEFORMAT_RGBA8;
+            image->colour_format = PL_COLOURFORMAT_RGBA;
+            break;
+        case VTF_FORMAT_RGBA16161616:
+            image->format = PL_IMAGEFORMAT_RGBA16;
+            image->colour_format = PL_COLOURFORMAT_RGBA;
+        case VTF_FORMAT_RGBA16161616F:
+            image->format = PL_IMAGEFORMAT_RGBA16F;
+            image->colour_format = PL_COLOURFORMAT_RGBA;
+            break;
+        case VTF_FORMAT_UV88:               abort();    // todo
+        case VTF_FORMAT_UVLX8888:           abort();    // todo
+        case VTF_FORMAT_UVWQ8888:           abort();    // todo
+        default:
+            image->format = PL_IMAGEFORMAT_UNKNOWN;
+            image->colour_format = PL_COLOURFORMAT_RGB;
+    }
+}
+
 PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
     plFunctionStart();
 
@@ -191,131 +272,24 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
     out->width = header.width;
     out->height = header.height;
 
-    switch (header.highresimageformat) {
-        case VTF_FORMAT_DXT1: // Standard compression, no alpha
-            out->size = (header.width * header.height) >> 1;
-            out->format = VL_TEXTUREFORMAT_RGB_DXT1;
-            out->colour_format = VL_COLOURFORMAT_RGB;
-            break;
-        case VTF_FORMAT_DXT1_ONEBITALPHA: // Standard compression, one bit alpha
-            out->size = (PLuint)(header.width * header.height * 4);
-            out->format = VL_TEXTUREFORMAT_RGBA_DXT1;
-            out->colour_format = VL_COLOURFORMAT_RGBA;
-            break;
-        case VTF_FORMAT_DXT3: // Uninterpolated Alpha
-            out->size = header.width * header.height;
-            out->format = VL_TEXTUREFORMAT_RGBA_DXT3;
-            out->colour_format = VL_COLOURFORMAT_RGBA;
-            break;
-        case VTF_FORMAT_DXT5: // Interpolated Alpha
-            out->size = header.width * header.height;
-            out->format = VL_TEXTUREFORMAT_RGBA_DXT5;
-            out->colour_format = VL_COLOURFORMAT_RGBA;
-            break;
-
-        case VTF_FORMAT_BGRA5551:
-            out->size = (PLuint)(header.width * header.height * 2);
-            out->format = PL_TEXTUREFORMAT_RGB5A1;
-            out->colour_format = VL_COLOURFORMAT_BGRA;
-            break;
-        case VTF_FORMAT_BGRX5551:
-            out->size = (PLuint)(header.width * header.height * 2);
-            // todo, texture format
-            out->colour_format = VL_COLOURFORMAT_BGR;
-            break;
-
-        case VTF_FORMAT_RGB565:
-            out->size = (PLuint)(header.width * header.height * 3);
-            out->format = PL_TEXTUREFORMAT_RGB565;
-            out->colour_format = VL_COLOURFORMAT_RGB;
-            break;
-        case VTF_FORMAT_BGR565:
-            out->size = (PLuint)(header.width * header.height * 3);
-            out->format = PL_TEXTUREFORMAT_RGB565;
-            out->colour_format = VL_COLOURFORMAT_BGR;
-            break;
-
-        case VTF_FORMAT_BGRA4444:
-            out->size = (PLuint)(header.width * header.height * 4);
-            out->format = PL_TEXTUREFORMAT_RGBA4;
-            out->colour_format = VL_COLOURFORMAT_BGRA;
-            break;
-
-        default:
-        case VTF_FORMAT_ARGB8888:
-            out->size = (PLuint)(header.width * header.height * 4);
-            out->format = PL_TEXTUREFORMAT_RGBA8;
-            out->colour_format = VL_COLOURFORMAT_ARGB;
-            break;
-        case VTF_FORMAT_ABGR8888:
-            out->size = (PLuint)(header.width * header.height * 4);
-            out->format = PL_TEXTUREFORMAT_RGBA8;
-            out->colour_format = VL_COLOURFORMAT_ABGR;
-            break;
-        case VTF_FORMAT_BGRX8888:
-        case VTF_FORMAT_BGRA8888:
-            out->size = (PLuint)(header.width * header.height * 4);
-            out->format = PL_TEXTUREFORMAT_RGBA8;
-            out->colour_format = VL_COLOURFORMAT_BGRA;
-            break;
-        case VTF_FORMAT_RGBA8888:
-            out->size = (PLuint)(header.width * header.height * 4);
-            out->format = PL_TEXTUREFORMAT_RGBA8;
-            out->colour_format = VL_COLOURFORMAT_RGBA;
-            break;
-
-        case VTF_FORMAT_BGR888: // Uncompressed texture
-        case VTF_FORMAT_BGR888_BLUESCREEN:
-            out->size = (PLuint)(header.width * header.height * 3);
-            out->format = VL_TEXTUREFORMAT_RGB8;
-            out->colour_format = VL_COLOURFORMAT_BGR;
-            break;
-        case VTF_FORMAT_RGB888:
-        case VTF_FORMAT_RGB888_BLUESCREEN:
-            out->size = (PLuint)(header.width * header.height * 3);
-            out->format = VL_TEXTUREFORMAT_RGB8;
-            out->colour_format = VL_COLOURFORMAT_RGB;
-            break;
-
-        case VTF_FORMAT_RGBA16161616: // Integer HDR Format
-            out->size = (PLuint)(header.width * header.height * 8);
-            out->format = PL_TEXTUREFORMAT_RGBA16;
-            out->colour_format = VL_COLOURFORMAT_RGBA;
-            break;
-        case VTF_FORMAT_RGBA16161616F: // Floating Point HDR Format
-            out->size = (PLuint)(header.width * header.height * 8);
-            out->format = PL_TEXTUREFORMAT_RGBA16F;
-            out->colour_format = VL_COLOURFORMAT_RGBA;
-            break;
-
-        case VTF_FORMAT_UV88: // todo
-            out->size = (PLuint)(header.width * header.height * 4);
-            out->format = PL_TEXTUREFORMAT_RGB4; // todo, not correct
-            out->colour_format = VL_COLOURFORMAT_RGB; // todo, not correct
-            break;
-        case VTF_FORMAT_UVLX8888: // todo
-        case VTF_FORMAT_UVWQ8888: // todo
-            break;
-    }
-
-    if(!out->levels)
-        return PL_RESULT_FILESIZE;
+    _plConvertVTFFormat(out, header.highresimageformat);
 
     out->levels = header.mipmaps;
     out->data = new PLbyte*[out->levels];
 
+    /*
     if (header.version[1] >= 3) {
         for (PLuint i = 0; i < header3.numresources; i++) {
             // todo, support for later VTF versions.
         }
-    } else {
+    } else */ {
         PLuint faces = 1;
         if(header.flags & VTF_FLAG_ENVMAP)
             faces = 6;
 
         // VTF's typically include a tiny thumbnail image at the start, which we'll skip.
         fseek(fin, header.lowresimagewidth * header.lowresimageheight / 2, SEEK_CUR);
-        for (PLuint mipmap = 0, mipsize = out->size; mipmap < header.mipmaps; mipmap++) {
+        for (PLuint mipmap = 0; mipmap < header.mipmaps; mipmap++) {
 
 #if 0 // skip frames and faces for now...
             for(PLuint frame = 0; frame < header.frames; frame++) {
@@ -330,6 +304,7 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
              * still slightly concerned about it here.
              */
 
+            PLuint mipsize = _plGetImageSize(out->format, 0, 0);
             out->data[mipmap] = new PLbyte[mipsize];
             if(fread(out->data[mipmap], sizeof(PLbyte), mipsize, fin) != mipsize) {
                 delete[] out->data;

@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform.h"
 #include "platform_math.h"
+#include "platform_image.h"
 
 #define     PL_MODE_OPENGL
 //			VL_MODE_OPENGL_CORE
@@ -86,27 +87,6 @@ typedef enum PLBufferMask {
     VL_MASK_STENCIL		= (1 << 3),
 #endif
 } PLBufferMask;
-
-typedef enum PLColourFormat {
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    VL_COLOURFORMAT_ARGB,
-    VL_COLOURFORMAT_ABGR,
-    VL_COLOURFORMAT_RGB = GL_RGB,
-    VL_COLOURFORMAT_BGR = GL_BGR,
-    VL_COLOURFORMAT_RGBA = GL_RGBA,
-    VL_COLOURFORMAT_BGRA = GL_BGRA,
-#elif defined (VL_MODE_GLIDE)
-    VL_COLOURFORMAT_ARGB	= GR_COLORFORMAT_ARGB,
-    VL_COLOURFORMAT_ABGR	= GR_COLORFORMAT_ABGR,
-    VL_COLOURFORMAT_RGBA	= GR_COLORFORMAT_RGBA,
-    VL_COLOURFORMAT_BGRA	= GR_COLORFORMAT_BGRA,
-#else
-    VL_COLOURFORMAT_ARGB	= 0,
-    VL_COLOURFORMAT_ABGR	= 1,
-    VL_COLOURFORMAT_RGBA	= 2,
-    VL_COLOURFORMAT_BGRA	= 3,
-#endif
-} PLColourFormat;
 
 typedef enum VLCullMode {
     VL_CULL_START = -1,
@@ -224,26 +204,6 @@ typedef enum PLTextureFilter {
     PL_TEXTUREFILTER_LINEAR         // Linear filtering
 } PLTextureFilter;
 
-typedef enum PLTextureFormat {
-    PL_TEXTUREFORMAT_RGB4,      // 4 4 4 0
-    PL_TEXTUREFORMAT_RGBA4,     // 4 4 4 4
-    PL_TEXTUREFORMAT_RGB5,      // 5 5 5 0
-    PL_TEXTUREFORMAT_RGB5A1,    // 5 5 5 1
-    PL_TEXTUREFORMAT_RGB565,    // 5 6 5 0
-    VL_TEXTUREFORMAT_RGB8,      // 8 8 8 0
-    PL_TEXTUREFORMAT_RGBA8,     // 8 8 8 8
-    PL_TEXTUREFORMAT_RGBA12,    // 12 12 12 12
-    PL_TEXTUREFORMAT_RGBA16,    // 16 16 16 16
-    PL_TEXTUREFORMAT_RGBA16F,   // 16 16 16 16
-
-    VL_TEXTUREFORMAT_RGBA_DXT1,
-    VL_TEXTUREFORMAT_RGB_DXT1,
-    VL_TEXTUREFORMAT_RGBA_DXT3,
-    VL_TEXTUREFORMAT_RGBA_DXT5,
-
-    VL_TEXTUREFORMAT_RGB_FXT1
-} PLTextureFormat;
-
 // Texture Environment Modes
 typedef enum PLTextureEnvironmentMode {
     PL_TEXTUREMODE_ADD,
@@ -268,7 +228,7 @@ typedef struct PLTextureInfo {
 
     PLColourFormat pixel_format;
     PLDataFormat storage_type;
-    PLTextureFormat format;
+    PLImageFormat format;
 
     PLbool initial;
 
@@ -283,9 +243,7 @@ typedef struct PLTexture {
 
     PLuint size;
 
-    PLTextureFormat format;
-
-    PLchar path[PL_MAX_PATH];
+    PLImageFormat format;
 } PLTexture;
 
 typedef struct PLImage PLImage;

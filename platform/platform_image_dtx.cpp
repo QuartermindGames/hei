@@ -120,37 +120,37 @@ PLresult plLoadDTXImage(FILE *fin, PLImage *out) {
     switch (_plGetDTXFormat(&header)) {
         case DTX_FORMAT_8PALLETTE:
             out->size = header.width * header.height;
-            out->format = VL_TEXTUREFORMAT_RGB8;
-            out->colour_format = VL_COLOURFORMAT_RGB;
+            out->format = PL_IMAGEFORMAT_RGB8;
+            out->colour_format = PL_COLOURFORMAT_RGB;
             break;
 
         case DTX_FORMAT_S3TC_DXT1:
             out->size = (header.width * header.height) >> 1;
-            out->format = VL_TEXTUREFORMAT_RGB_DXT1;
-            out->colour_format = VL_COLOURFORMAT_RGB;
+            out->format = PL_IMAGEFORMAT_RGB_DXT1;
+            out->colour_format = PL_COLOURFORMAT_RGB;
             break;
         case DTX_FORMAT_S3TC_DXT3:
             out->size = header.width * header.height;
-            out->format = VL_TEXTUREFORMAT_RGBA_DXT3;
-            out->colour_format = VL_COLOURFORMAT_RGBA;
+            out->format = PL_IMAGEFORMAT_RGBA_DXT3;
+            out->colour_format = PL_COLOURFORMAT_RGBA;
             break;
         case DTX_FORMAT_S3TC_DXT5:
             out->size = header.width * header.height;
-            out->format = VL_TEXTUREFORMAT_RGBA_DXT5;
-            out->colour_format = VL_COLOURFORMAT_RGBA;
+            out->format = PL_IMAGEFORMAT_RGBA_DXT5;
+            out->colour_format = PL_COLOURFORMAT_RGBA;
             break;
 
         case DTX_FORMAT_8:
             out->size = header.width * header.height;
-            out->format = VL_TEXTUREFORMAT_RGB8;
-            out->colour_format = VL_COLOURFORMAT_RGB;
+            out->format = PL_IMAGEFORMAT_RGB8;
+            out->colour_format = PL_COLOURFORMAT_RGB;
             break;
         default:
         case DTX_FORMAT_16:
         case DTX_FORMAT_32:
             out->size = (PLuint)(header.width * header.height * 4);
-            out->format = PL_TEXTUREFORMAT_RGBA8;
-            out->colour_format = VL_COLOURFORMAT_RGBA;
+            out->format = PL_IMAGEFORMAT_RGBA8;
+            out->colour_format = PL_COLOURFORMAT_RGBA;
             break;
     }
 

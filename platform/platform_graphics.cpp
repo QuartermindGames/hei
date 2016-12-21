@@ -363,7 +363,7 @@ void plClearBuffers(PLuint buffers) {
     // Glide only supports clearing a single buffer.
     grBufferClear(
         // Convert buffer_clearcolour to something that works with Glide.
-        _plConvertColour4fv(VL_COLOURFORMAT_RGBA, graphics_state.buffer_clearcolour),
+        _plConvertColour4fv(PL_COLOURFORMAT_RGBA, graphics_state.buffer_clearcolour),
         1, 1);
 #elif defined (VL_MODE_DIRECT3D)
     pl_d3d_context->lpVtbl->ClearRenderTargetView(pl_d3d_context,
@@ -809,27 +809,52 @@ PLuint _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
 #endif
 }
 
-PLuint _plTranslateTextureFormat(PLTextureFormat format) {
+PLuint _plTranslateColourFormat(PLColourFormat format) {
+    _PL_GRAPHICS_TRACK();
+
+    switch(format) {
+#if defined(PL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
+        default:
+        case PL_COLOURFORMAT_RGB:   return GL_RGB;
+        case PL_COLOURFORMAT_RGBA:  return GL_RGBA;
+        case PL_COLOURFORMAT_BGR:   return GL_BGR;
+        case PL_COLOURFORMAT_BGRA:  return GL_BGRA;
+#elif defined(VL_MODE_GLIDE)
+        default:
+        case PL_COLOURFORMAT_RGBA:  return GR_COLORFORMAT_RGBA;
+        case PL_COLOURFORMAT_BGRA:  return GR_COLORFORMAT_BGRA;
+        case PL_COLOURFORMAT_ARGB:  return GR_COLORFORMAT_ARGB;
+        case PL_COLOURFORMAT_ABGR:  return GR_COLORFORMAT_ABGR;
+#elif defined(VL_MODE_DIRECT3D)
+        // todo
+#else
+        default:    return format;
+#endif
+    }
+}
+
+PLuint _plTranslateTextureFormat(PLImageFormat format) {
     _PL_GRAPHICS_TRACK();
 
 #if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     switch (format) {
         default:
-        case PL_TEXTUREFORMAT_RGB4:         return GL_RGB4;
-        case PL_TEXTUREFORMAT_RGBA4:        return GL_RGBA4;
-        case PL_TEXTUREFORMAT_RGB5:         return GL_RGB5;
-        case PL_TEXTUREFORMAT_RGB5A1:       return GL_RGB5_A1;
-        case PL_TEXTUREFORMAT_RGB565:       return GL_RGB565;
-        case VL_TEXTUREFORMAT_RGB8:         return GL_RGB8;
-        case PL_TEXTUREFORMAT_RGBA8:        return GL_RGBA8;
-        case PL_TEXTUREFORMAT_RGBA12:       return GL_RGBA12;
-        case PL_TEXTUREFORMAT_RGBA16:       return GL_RGBA16;
-        case PL_TEXTUREFORMAT_RGBA16F:      return GL_RGBA16F;
-        case VL_TEXTUREFORMAT_RGBA_DXT1:    return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-        case VL_TEXTUREFORMAT_RGB_DXT1:     return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-        case VL_TEXTUREFORMAT_RGBA_DXT3:    return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-        case VL_TEXTUREFORMAT_RGBA_DXT5:    return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-        case VL_TEXTUREFORMAT_RGB_FXT1:     return GL_COMPRESSED_RGB_FXT1_3DFX;
+        case PL_IMAGEFORMAT_RGB4:         return GL_RGB4;
+        case PL_IMAGEFORMAT_RGBA4:        return GL_RGBA4;
+        case PL_IMAGEFORMAT_RGB5:         return GL_RGB5;
+        case PL_IMAGEFORMAT_RGB5A1:       return GL_RGB5_A1;
+        case PL_IMAGEFORMAT_RGB565:       return GL_RGB565;
+        case PL_IMAGEFORMAT_RGB8:         return GL_RGB8;
+        case PL_IMAGEFORMAT_RGBA8:        return GL_RGBA8;
+        case PL_IMAGEFORMAT_RGBA12:       return GL_RGBA12;
+        case PL_IMAGEFORMAT_RGBA16:       return GL_RGBA16;
+        case PL_IMAGEFORMAT_RGBA16F:      return GL_RGBA16F;
+
+        case PL_IMAGEFORMAT_RGBA_DXT1:    return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        case PL_IMAGEFORMAT_RGB_DXT1:     return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+        case PL_IMAGEFORMAT_RGBA_DXT3:    return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+        case PL_IMAGEFORMAT_RGBA_DXT5:    return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+        case PL_IMAGEFORMAT_RGB_FXT1:     return GL_COMPRESSED_RGB_FXT1_3DFX;
     }
 #elif defined (VL_MODE_GLIDE)
 #elif defined (VL_MODE_DIRECT3D)
@@ -839,16 +864,16 @@ PLuint _plTranslateTextureFormat(PLTextureFormat format) {
 #endif
 }
 
-PLbool _plIsCompressedTextureFormat(PLTextureFormat format) {
+PLbool _plIsCompressedTextureFormat(PLImageFormat format) {
     _PL_GRAPHICS_TRACK();
 
     switch (format) {
-        default:return PL_FALSE;
-        case VL_TEXTUREFORMAT_RGBA_DXT1:
-        case VL_TEXTUREFORMAT_RGBA_DXT3:
-        case VL_TEXTUREFORMAT_RGBA_DXT5:
-        case VL_TEXTUREFORMAT_RGB_DXT1:
-        case VL_TEXTUREFORMAT_RGB_FXT1:
+        default:    return PL_FALSE;
+        case PL_IMAGEFORMAT_RGBA_DXT1:
+        case PL_IMAGEFORMAT_RGBA_DXT3:
+        case PL_IMAGEFORMAT_RGBA_DXT5:
+        case PL_IMAGEFORMAT_RGB_DXT1:
+        case PL_IMAGEFORMAT_RGB_FXT1:
             return PL_TRUE;
     }
 }
@@ -860,7 +885,7 @@ PLTexture *plCreateTexture(void) {
 
     PLTexture *texture = new PLTexture;
     memset(texture, 0, sizeof(PLTexture));
-    texture->format = PL_TEXTUREFORMAT_RGBA8;
+    texture->format = PL_IMAGEFORMAT_RGBA8;
     texture->width = 8;
     texture->height = 8;
 
