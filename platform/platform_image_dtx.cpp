@@ -112,6 +112,7 @@ PLresult plLoadDTXImage(FILE *fin, PLImage *out) {
     else if ((header.width < 8) || (header.height < 8))
         return PL_RESULT_IMAGERESOLUTION;
 
+
     memset(out, 0, sizeof(PLImage));
 
     out->width = header.width;

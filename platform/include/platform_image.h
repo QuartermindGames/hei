@@ -80,7 +80,7 @@ typedef struct PLImage {
     PLuint size;
     PLuint levels;
 
-    PLchar path[PL_MAX_PATH];
+    PLchar path[PL_SYSTEM_MAX_PATH];
 
     PLImageFormat format;
     PLColourFormat colour_format;

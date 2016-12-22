@@ -27,7 +27,12 @@ For more information, please refer to <http://unlicense.org>
 
 project(platform)
 
-file(GLOB PLATFORM_SOURCE_FILES "*.cpp" "*.c" include/*.h)
+file(
+        GLOB PLATFORM_SOURCE_FILES
+        *.cpp *.c
+        graphics/*.cpp graphics/*.h
+        include/*.h
+        )
 
 add_library(platform SHARED ${PLATFORM_SOURCE_FILES})
 

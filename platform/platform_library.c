@@ -67,7 +67,7 @@ PL_INSTANCE plLoadLibrary(const PLchar *path) {
     plFunctionStart();
 
     PLchar newpath[PL_MAX_PATH];
-    sprintf(newpath, "%s"PL_MODULE_EXTENSION, path);
+    sprintf(newpath, "%s"PL_SYSTEM_LIBRARY_EXTENSION, path);
 
     PL_INSTANCE instance =
 #ifdef _WIN32

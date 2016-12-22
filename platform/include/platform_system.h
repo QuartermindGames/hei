@@ -31,23 +31,90 @@ For more information, please refer to <http://unlicense.org>
  * headers and any additional system information.
  */
 
+// Operating System
+
 #if defined(_WIN32)
 
-#   define PL_SYSTEM_NAME   "WINDOWS"
+#	ifndef PL_IGNORE_PLATFORM_HEADERS
+#		include <Windows.h>
+#		include <WindowsX.h>
+#		include <CommCtrl.h>
+#		include <direct.h>
+#		include <lmcons.h>
 
-#elif defined(__APPLE__)
+#		ifdef PlaySound
+#			undef PlaySound
+#		endif
+#		ifdef LoadImage
+#			undef LoadImage
+#		endif
 
-#   define PL_SYSTEM_NAME   "MACOS"
+#		undef min
+#		undef max
+#	endif
+
+#   define PL_SYSTEM_NAME               "WINDOWS"
+#   define PL_SYSTEM_LIBRARY_EXTENSION  ".dll"
+
+#   define PL_SYSTEM_MAX_PATH           (MAX_PATH - 1)
+#   define PL_SYSTEM_MAX_USERNAME       UNLEN
+
+#	ifdef _MSC_VER
+#		pragma warning(disable : 4152)
+#		pragma warning(disable : 4800)	// 'type' : forcing value to bool 'true' or 'false' (performance warning)
+
+#		ifndef itoa
+#			define	itoa		_itoa
+#		endif
+#		ifndef getcwd
+#			define	getcwd		_getcwd
+#		endif
+#		ifndef snprintf
+#			define	snprintf	_snprintf
+#		endif
+#		ifndef unlink
+#			define	unlink		_unlink
+#		endif
+#		ifndef strcasecmp
+#			define	strcasecmp	_stricmp
+#		endif
+#		ifndef mkdir
+#			define	mkdir		_mkdir
+#		endif
+#		ifndef strncasecmp
+#			define	strncasecmp	_str
+#		endif
+#		ifdef __cplusplus
+#			ifndef nothrow
+//#				define nothrow __nothrow
+#			endif
+#		endif
+#	endif
 
 #elif defined(__linux__) // Linux
 
+#	ifndef PL_IGNORE_SYSTEM_HEADERS
+
+#		include <dirent.h>
+#		include <unistd.h>
+#		include <dlfcn.h>
+#		include <strings.h>
+
+#	endif
+
 #   define PL_SYSTEM_NAME   "LINUX"
+#   define PL_SYSTEM_LIBRARY_EXTENSION ".so"
+
+#   define PL_SYSTEM_MAX_PATH       256
+#   define PL_SYSTEM_MAX_USERNAME   32
 
 #else
 
 #   error "Unsupported system type."
 
 #endif
+
+// (Basic) Hardware
 
 #if defined(__amd64) || defined(__amd64__) || defined(_M_X64) || defined(_M_AMD64)
 
@@ -69,4 +136,33 @@ For more information, please refer to <http://unlicense.org>
 
 #   error "Unsupported CPU type."
 
+#endif
+
+// Compiler
+
+#if defined(_MSC_VER)
+#   define PL_INSTANCE  HINSTANCE
+#   define PL_FARPROC   FARPROC
+#	define PL_EXTERN	extern
+#	define PL_CALL		__stdcall
+#	define PL_INLINE	__inline
+
+// MSVC doesn't support __func__
+#	define PL_FUNCTION	__FUNCTION__    // Returns the active function.
+
+#   define PL_EXPORT    __declspec(dllexport)
+#   define PL_IMPORT    __declspec(dllimport)
+#else
+#   define PL_INSTANCE  void*
+#   define PL_FARPROC   void*
+#	define PL_EXTERN    extern
+#	define PL_CALL
+#	define PL_INLINE    inline
+
+#	define PL_FUNCTION  __FILE__      // Returns the active function.
+// todo, we'll need to do some weird hacky shit on Linux for this, since __func__ isn't a string literal like it is
+// on MSVC
+
+#   define PL_EXPORT    __attribute__((visibility("default")))
+#   define PL_IMPORT    __attribute__((visibility("hidden")))
 #endif

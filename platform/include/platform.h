@@ -97,144 +97,12 @@ support.
 #	endif
 #endif
 
-// Windows
-#ifdef _WIN32
-// Headers
-#	ifndef PL_IGNORE_PLATFORM_HEADERS
-#		include <Windows.h>
-#		include <WindowsX.h>
-#		include <CommCtrl.h>
-#		include <direct.h>
-#		include <lmcons.h>
-
-#		ifdef PlaySound
-#			undef PlaySound
-#		endif
-#		ifdef LoadImage
-#			undef LoadImage
-#		endif
-
-#		undef min
-#		undef max
-#	endif
-
-// Information
-#	define	PL_NAME	"WINDOWS"	// Platform name.
-
-// Limits
-#	define	PLATFORM_MAX_PATH	MAX_PATH-1	// Maximum path length.
-#	define	PL_MAX_USERNAME		UNLEN
-
-// Other
-#	ifdef _MSC_VER
-#		pragma warning(disable : 4152)
-#		pragma warning(disable : 4800)	// 'type' : forcing value to bool 'true' or 'false' (performance warning)
-
-#		ifndef itoa
-#			define	itoa		_itoa
-#		endif
-#		ifndef getcwd
-#			define	getcwd		_getcwd
-#		endif
-#		ifndef snprintf
-#			define	snprintf	_snprintf
-#		endif
-#		ifndef unlink
-#			define	unlink		_unlink
-#		endif
-#		ifndef strcasecmp
-#			define	strcasecmp	_stricmp
-#		endif
-#		ifndef mkdir
-#			define	mkdir		_mkdir
-#		endif
-#		ifndef strncasecmp
-#			define	strncasecmp	_str
-#		endif
-#		ifdef __cplusplus
-#			ifndef nothrow
-//#				define nothrow __nothrow
-#			endif
-#		endif
-#	endif
-#elif __APPLE__    // Mac OS X
-// Information
-#	define	PL_NAME	"APPLE"
-
-// Limits
-#	define	PLATFORM_MAX_PATH	256	// Supposedly "unlimited", but we'll limit this anyway.
-
-// Other
-#	ifndef st_mtime
-#		define	st_mtime st_mtimespec.tv_sec
-#	endif
-#else	// Linux
-// Headers
-#	ifndef PL_IGNORE_PLATFORM_HEADERS
-
-#		include <dirent.h>
-#		include <unistd.h>
-#		include <dlfcn.h>
-#		include <strings.h>
-
-#	endif
-
-// Information
-#	define    PL_NAME    "LINUX"
-
-// Limits
-#	define    PLATFORM_MAX_PATH    256    // Maximum path length.
-#	define    PL_MAX_USERNAME        32
-#endif
-
-#ifndef PL_NAME
-#	define PL_NAME "Unknown"	// Platform name.
-#endif
-#ifndef PLATFORM_MAX_PATH
-#	define PLATFORM_MAX_PATH 256	// Max path supported on platform.
-#endif
-#ifndef PL_MAX_PATH
-#	ifdef PLATFORM_MAX_PATH
-#		define PL_MAX_PATH PLATFORM_MAX_PATH
-#	else
-#		define PL_MAX_PATH 256	// Max path supported on platform.
-#	endif
-#endif
-#ifndef PL_MAX_USERNAME
-#	define PL_MAX_USERNAME 256	// Maximum length allowed for a username.
-#endif
-
-// Other
-#ifndef PL_INSTANCE
-#	define    PL_INSTANCE    void *    // Instance definition.
-#endif
-#ifndef PL_FARPROC
-#	define    PL_FARPROC    void *    // Function pointer.
-#endif
-
-#if defined(_MSC_VER)
-#	define PL_EXTERN	extern
-#	define PL_CALL		__stdcall
-#	define PL_INLINE	__inline
-
-// MSVC doesn't support __func__
-#	define PL_FUNCTION	__FUNCTION__    // Returns the active function.
-#else
-#	define PL_EXTERN    extern
-#	define PL_CALL
-#	define PL_INLINE    inline
-
-#	define PL_FUNCTION    __FILE__        // Returns the active function.
-// todo, we'll need to do some weird hacky shit on Linux for this, since __func__ isn't a string literal like it is
-// on MSVC
-#endif
-
 #ifdef __cplusplus
-#	define	PL_EXTERN_C			extern "C" {
-#	define	PL_EXTERN_C_END		}
+#	define	PL_EXTERN_C     extern "C" {
+#	define	PL_EXTERN_C_END }
 #else
-#	define    PL_EXTERN_C
-#	define    PL_EXTERN_C_END
+#	define  PL_EXTERN_C
+#	define  PL_EXTERN_C_END
 #endif
 
 #include "platform_system.h"
@@ -249,8 +117,8 @@ support.
 #ifndef FALSE
 #	define FALSE false
 #endif
-#define PL_BOOL        BOOL
-#define PL_TRUE        TRUE
+#define PL_BOOL     BOOL
+#define PL_TRUE     TRUE
 #define PL_FALSE    FALSE
 
 #define plArrayElements(a)  (sizeof(a)/sizeof(*(a)))    // Returns the number of elements within an array.
@@ -319,6 +187,8 @@ enum {
 
 #if defined(PL_INTERNAL)
 
+#define PL_DLL  PL_EXPORT
+
 PL_EXTERN_C
 
 PLresult _plInitGraphics(void);
@@ -328,6 +198,10 @@ PLresult _plInitIO(void);
 void _plShutdownIO(void);
 
 PL_EXTERN_C_END
+
+#else
+
+#define PL_DLL  PL_IMPORT
 
 #endif
 
@@ -351,19 +225,19 @@ plSetErrorFunction(PL_FUNCTION);
 
 PL_EXTERN_C
 
-extern PLresult plInitialize(PLuint subsystems);
-extern void plShutdown(void);
+PL_EXTERN PLresult plInitialize(PLuint subsystems);
+PL_EXTERN void plShutdown(void);
 
-extern void plResetError(void); // Resets the error message to "null", so you can ensure you have the correct message from the library.
-extern void
+PL_EXTERN void plResetError(void); // Resets the error message to "null", so you can ensure you have the correct message from the library.
+PL_EXTERN void
 plSetError(const char *msg, ...);   // Sets the error message, so we can grab it outside the library.
-extern void
+PL_EXTERN void
 plSetErrorFunction(const char *function, ...);  // Sets the currently active function, for error reporting.
 
-extern const PLchar *plGetResultString(PLresult result);
+PL_EXTERN const PLchar *plGetResultString(PLresult result);
 
-extern PLchar *plGetSystemError(void);  // Returns the error message currently given by the operating system.
-extern PLchar *plGetError(void);        // Returns the last recorded error.
+PL_EXTERN PLchar *plGetSystemError(void);  // Returns the error message currently given by the operating system.
+PL_EXTERN PLchar *plGetError(void);        // Returns the last recorded error.
 
 PL_EXTERN_C_END
 

@@ -380,9 +380,6 @@ PL_EXTERN_C_END
 //-----------------
 // Shaders
 
-typedef PLuint PLShader;
-typedef PLuint PLShaderProgram;
-
 typedef enum PLUniformType {
     VL_UNIFORM_FLOAT,
     VL_UNIFORM_INT,
@@ -408,9 +405,6 @@ typedef enum PLUniformType {
     VL_UNIFORM_END
 } PLUniformType;
 
-#if 0
-typedef int PLUniform;
-#else
 typedef struct PLUniform {
     PLint location;    // Location within the shader.
 
@@ -418,7 +412,6 @@ typedef struct PLUniform {
 
     PLchar def[16];    // Default value.
 } PLUniform;
-#endif
 
 typedef int PLAttribute;
 
@@ -433,6 +426,23 @@ typedef enum PLShaderType {
     PL_SHADER_GEOMETRY
 #endif
 } PLShaderType;
+
+typedef struct PLShader {
+    PLuint id;  // Identifier, can either be received from hardware or assigned by platform lib.
+
+    PLShaderType type;          // Type of shader, vertex/fragment/geom.
+
+    const PLchar    *source;                            // Source of the shader.
+    char            source_path[PL_SYSTEM_MAX_PATH];    // Path that the shader is loaded from (can be null).
+} PLShader;
+
+typedef struct PLShaderProgram {
+    PLuint id;  // Identifier, can either be received from hardware or assigned by platform lib.
+
+    PLShader    **shaders;      // Array containing shaders attached to program.
+    PLUniform   **uniforms;     // Uniforms attached to program.
+    PLAttribute **attributes;   // Attributes attached to program.
+} PLShaderProgram;
 
 PL_EXTERN_C
 

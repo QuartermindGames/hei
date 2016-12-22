@@ -189,7 +189,7 @@ void plScanDirectory(const PLchar *path, const PLchar *extension, void(*Function
         return;
     }
 
-    char filestring[PL_MAX_PATH];
+    char filestring[PL_SYSTEM_MAX_PATH];
 #ifdef _WIN32
     {
         WIN32_FIND_DATA	finddata;
@@ -234,7 +234,7 @@ void plScanDirectory(const PLchar *path, const PLchar *extension, void(*Function
 
 void plGetWorkingDirectory(PLchar *out) {
     plFunctionStart();
-    if (!getcwd(out, PL_MAX_PATH)) {
+    if (!getcwd(out, PL_SYSTEM_MAX_PATH)) {
         switch (errno) {
             default:
                 break;
