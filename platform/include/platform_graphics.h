@@ -378,86 +378,6 @@ PL_EXTERN void plClearBuffers(PLuint buffers);
 PL_EXTERN_C_END
 
 //-----------------
-// Shaders
-
-typedef enum PLUniformType {
-    VL_UNIFORM_FLOAT,
-    VL_UNIFORM_INT,
-    VL_UNIFORM_UINT,
-    VL_UNIFORM_BOOL,
-    PL_UNIFORM_DOUBLE,
-
-    // Textures
-    VL_UNIFORM_TEXTURE1D,
-    VL_UNIFORM_TEXTURE2D,
-    VL_UNIFORM_TEXTURE3D,
-    VL_UNIFORM_TEXTURECUBE,
-    VL_UNIFORM_TEXTUREBUFFER,
-
-    // Vectors
-    VL_UNIFORM_VEC2,
-    VL_UNIFORM_VEC3,
-    VL_UNIFORM_VEC4,
-
-    // Matrices
-    VL_UNIFORM_MAT3,
-
-    VL_UNIFORM_END
-} PLUniformType;
-
-typedef struct PLUniform {
-    PLint location;    // Location within the shader.
-
-    PLUniformType type;    // Data type.
-
-    PLchar def[16];    // Default value.
-} PLUniform;
-
-typedef int PLAttribute;
-
-typedef enum PLShaderType {
-#if defined (PL_MODE_OPENGL)
-    PL_SHADER_FRAGMENT = GL_FRAGMENT_SHADER,
-    PL_SHADER_VERTEX = GL_VERTEX_SHADER,
-    PL_SHADER_GEOMETRY = GL_GEOMETRY_SHADER
-#else
-    PL_SHADER_FRAGMENT,
-    PL_SHADER_VERTEX,
-    PL_SHADER_GEOMETRY
-#endif
-} PLShaderType;
-
-typedef struct PLShader {
-    PLuint id;  // Identifier, can either be received from hardware or assigned by platform lib.
-
-    PLShaderType type;          // Type of shader, vertex/fragment/geom.
-
-    const PLchar    *source;                            // Source of the shader.
-    char            source_path[PL_SYSTEM_MAX_PATH];    // Path that the shader is loaded from (can be null).
-} PLShader;
-
-typedef struct PLShaderProgram {
-    PLuint id;  // Identifier, can either be received from hardware or assigned by platform lib.
-
-    PLShader    **shaders;      // Array containing shaders attached to program.
-    PLUniform   **uniforms;     // Uniforms attached to program.
-    PLAttribute **attributes;   // Attributes attached to program.
-} PLShaderProgram;
-
-PL_EXTERN_C
-
-PL_EXTERN void plCreateShader(PLShader *shader, PLShaderType type);
-PL_EXTERN void plDeleteShader(PLShader *shader);
-PL_EXTERN void plCreateShaderProgram(PLShaderProgram *program);
-PL_EXTERN void plDeleteShaderProgram(PLShaderProgram *program);
-
-PL_EXTERN PLShaderProgram plGetCurrentShaderProgram(void);
-
-PL_EXTERN void plSetShaderProgram(PLShaderProgram program);
-
-PL_EXTERN_C_END
-
-//-----------------
 // Lighting
 
 typedef struct PLLight {
@@ -484,3 +404,5 @@ PL_EXTERN PLbool plHWSupportsMultitexture(void);
 PL_EXTERN PLbool plHWSupportsShaders(void);
 
 PL_EXTERN_C_END
+
+#include "platform_graphics_shader.h"

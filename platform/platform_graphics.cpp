@@ -65,7 +65,7 @@ typedef struct PLGraphicsState {
     PLTextureMappingUnit *tmu;
 
     // Shader states.
-    PLShaderProgram current_program;
+    unsigned int current_program;
 
     // Hardware / Driver information
 
@@ -708,14 +708,6 @@ void plDeleteShader(PLShader *shader) {
 
 #if defined (PL_MODE_OPENGL)
     glDeleteShader(*shader);
-#endif
-}
-
-void plCreateShaderProgram(PLShaderProgram *program) {
-    _PL_GRAPHICS_TRACK();
-
-#if defined (PL_MODE_OPENGL)
-    *program = glCreateProgram();
 #endif
 }
 
