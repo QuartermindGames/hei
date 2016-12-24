@@ -31,41 +31,32 @@ For more information, please refer to <http://unlicense.org>
 
 PL_EXTERN_C
 
-extern void plGetUserName(PLchar *out);
+PL_EXTERN void plGetUserName(PLchar *out);
 
-extern void plGetWorkingDirectory(PLchar *out);
+PL_EXTERN void plGetWorkingDirectory(PLchar *out);
+PL_EXTERN void plSetWorkingDirectory(const char *path);
 
-extern void plStripExtension(PLchar *dest, const PLchar *in);
+PL_EXTERN void plStripExtension(PLchar *dest, const PLchar *in);
 
-extern const PLchar *plGetFileExtension(const PLchar *in);
-extern const PLchar *plGetFileName(const PLchar *path);
+PL_EXTERN const PLchar *plGetFileExtension(const PLchar *in);
+PL_EXTERN const PLchar *plGetFileName(const PLchar *path);
 
-extern void plScanDirectory(const PLchar *path, const PLchar *extension, void(*Function)(PLchar *filepath));
+PL_EXTERN void plScanDirectory(const PLchar *path, const PLchar *extension, void(*Function)(PLchar *filepath));
 
-extern void plLowerCasePath(PLchar *out);
+PL_EXTERN void plLowerCasePath(PLchar *out);
 
-extern PLbool plCreateDirectory(const PLchar *path);
+PL_EXTERN PLbool plCreateDirectory(const PLchar *path);
 
 // File I/O ...
 
-extern PLbool plFileExists(const PLchar *path);
+PL_EXTERN PLbool plFileExists(const PLchar *path);
 
-extern PLbool plIsFileModified(time_t oldtime, const PLchar *path);
+PL_EXTERN PLbool plIsFileModified(time_t oldtime, const PLchar *path);
 
-extern time_t plGetFileModifiedTime(const PLchar *path);
+PL_EXTERN time_t plGetFileModifiedTime(const PLchar *path);
 
-extern PLint plGetLittleShort(FILE *fin);
+PL_EXTERN PLint plGetLittleShort(FILE *fin);
 
-extern PLint plGetLittleLong(FILE *fin);
+PL_EXTERN PLint plGetLittleLong(FILE *fin);
 
 PL_EXTERN_C_END
-
-#ifdef __cplusplus
-
-namespace pl {
-
-    extern std::string GetUserName();
-
-};
-
-#endif

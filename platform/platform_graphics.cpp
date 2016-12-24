@@ -41,60 +41,7 @@ For more information, please refer to <http://unlicense.org>
 		support for SW rendering? could be neat.
 */
 
-typedef struct PLTextureMappingUnit {
-    PLbool active;
-
-    PLuint current_texture;
-    PLuint current_capabilities;
-
-    PLTextureEnvironmentMode current_envmode;
-} PLTextureMappingUnit;
-
-typedef struct PLGraphicsState {
-    PLuint num_cards;        // Number of video cards.
-
-    VLCullMode current_cullmode;
-
-    PLColour current_clearcolour;
-    PLColour current_colour;            // Current global colour.
-
-    PLuint current_capabilities;    // Enabled capabilities.
-    PLuint current_textureunit;
-
-    // Texture states.
-    PLTextureMappingUnit *tmu;
-
-    // Shader states.
-    unsigned int current_program;
-
-    // Hardware / Driver information
-
-    const PLchar *hw_vendor;
-    const PLchar *hw_renderer;
-    const PLchar *hw_version;
-    const PLchar *hw_extensions;
-
-    PLuint hw_maxtexturesize;
-    PLuint hw_maxtextureunits;
-    PLuint hw_maxtextureanistropy;
-
-    ////////////////////////////////////////
-
-    PLint viewport_x, viewport_y;
-    PLuint viewport_width, viewport_height;
-
-    PLbool mode_debug;
-} PLGraphicsState;
-
 PLGraphicsState pl_graphics_state;
-
-#define PL_GRAPHICS_LOG  "pl_graphics"
-
-#ifdef _DEBUG
-#	define plGraphicsLog(...) plWriteLog(PL_GRAPHICS_LOG, __VA_ARGS__)
-#else
-#	define plGraphicsLog(...)
-#endif
 
 /*	TODO:
 - Add somewhere we can store tracking
@@ -102,14 +49,14 @@ data for each of these functions
 - Do this in another thread if possible
 - Display that data as an overlay
 */
-#define    _PL_GRAPHICS_TRACK()                                    \
-    {                                                            \
-        unsigned static int _t = 0;                                \
-        if(pl_graphics_state.mode_debug)                        \
-        {                                                        \
-            plGraphicsLog(" " PL_FUNCTION "\n");                \
-            _t++;                                                \
-        }                                                        \
+#define    _PL_GRAPHICS_TRACK()                     \
+    {                                               \
+        unsigned static int _t = 0;                 \
+        if(pl_graphics_state.mode_debug)            \
+        {                                           \
+            plGraphicsLog(" " PL_FUNCTION "\n");    \
+            _t++;                                   \
+        }                                           \
     }
 
 /*===========================
@@ -694,30 +641,6 @@ void plDrawVertexNormals(PLDraw *draw) {
 /*===========================
 	SHADERS
 ===========================*/
-
-void plCreateShader(PLShader *shader, PLShaderType type) {
-    _PL_GRAPHICS_TRACK();
-
-#if defined (PL_MODE_OPENGL)
-    *shader = glCreateShader(type);
-#endif
-}
-
-void plDeleteShader(PLShader *shader) {
-    _PL_GRAPHICS_TRACK();
-
-#if defined (PL_MODE_OPENGL)
-    glDeleteShader(*shader);
-#endif
-}
-
-void plDeleteShaderProgram(PLShaderProgram *program) {
-    _PL_GRAPHICS_TRACK();
-
-#if defined (PL_MODE_OPENGL)
-    glDeleteProgram(*program);
-#endif
-}
 
 PLShaderProgram plGetCurrentShaderProgram(void) {
     _PL_GRAPHICS_TRACK();

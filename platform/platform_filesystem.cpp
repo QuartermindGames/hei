@@ -265,6 +265,31 @@ void plGetWorkingDirectory(PLchar *out) {
     plFunctionEnd();
 }
 
+void plSetWorkingDirectory(const char *path) {
+    if(chdir(path) != 0) {
+        switch(errno) {
+            default: break;
+
+            case EACCES:
+                plSetError("Search permission is denied for any component of pathname!\n");
+                break;
+            case ELOOP:
+                plSetError("A loop exists in the symbolic links encountered during resolution of the path argument!\n");
+                break;
+            case ENAMETOOLONG:
+                plSetError("The length of the path argument exceeds PATH_MAX or a pathname component is longer than \
+                NAME_MAX!\n");
+                break;
+            case ENOENT:
+                plSetError("A component of path does not name an existing directory or path is an empty string!\n");
+                break;
+            case ENOTDIR:
+                plSetError("A component of the pathname is not a directory!\n");
+                break;
+        }
+    }
+}
+
 /*	File I/O	*/
 
 // Checks if a file exists or not.

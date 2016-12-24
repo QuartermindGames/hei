@@ -121,9 +121,6 @@ support.
 #define PL_TRUE     TRUE
 #define PL_FALSE    FALSE
 
-#define plArrayElements(a)  (sizeof(a)/sizeof(*(a)))    // Returns the number of elements within an array.
-#define plIsValidString(a)  ((a[0] != '\0') && (a[0] != ' '))
-
 typedef int                     PLint;
 typedef char                    PLint8;
 typedef short int               PLint16;
@@ -147,7 +144,9 @@ typedef double                  PLdouble;
 typedef short                   PLshort;
 typedef unsigned short          PLushort;
 
-#define PL_FLOATTOBYTE(a)   (PLbyte)(a / 255)
+#define plFloatToByte(a)    (PLbyte)(a / 255)
+#define plArrayElements(a)  (sizeof(a) / sizeof(*(a)))    // Returns the number of elements within an array.
+#define plIsValidString(a)  ((a[0] != '\0') && (a[0] != ' '))
 
 //////////////////////////////////////////////////////////////////
 
@@ -163,14 +162,16 @@ typedef enum {
     PL_RESULT_FILEPATH,     // Invalid path!
 
     // GRAPHICS
-            PL_RESULT_GRAPHICSINIT,    // Graphics failed to initialise!
+    PL_RESULT_GRAPHICSINIT,     // Graphics failed to initialise!
+    PL_RESULT_SHADERTYPE,       // Unsupported shader type!
+    PL_RESULT_SHADERCOMPILE,    // Failed to compile shader!
 
     // IMAGE
-            PL_RESULT_IMAGERESOLUTION,  // Invalid image resolution!
-    PL_RESULT_IMAGEFORMAT,      // Invalid image format!
+    PL_RESULT_IMAGERESOLUTION,  // Invalid image resolution!
+    PL_RESULT_IMAGEFORMAT,      // Unsupported image format!
 
     // MEMORY
-            PL_RESULT_MEMORYALLOC,    // Ran out of memory!
+    PL_RESULT_MEMORYALLOC,    // Ran out of memory!
 } PLresult;
 
 //////////////////////////////////////////////////////////////////

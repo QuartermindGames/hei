@@ -63,6 +63,16 @@ For more information, please refer to <http://unlicense.org>
 #elif defined (VL_MODE_VULKAN)
 #endif
 
+#if defined(PL_INTERNAL)
+#   include "platform_log.h"
+#   define PL_GRAPHICS_LOG  "pl_graphics"
+#   ifdef _DEBUG
+#	    define plGraphicsLog(...) plWriteLog(PL_GRAPHICS_LOG, __VA_ARGS__)
+#   else
+#	    define plGraphicsLog(...)
+#   endif
+#endif
+
 typedef PLuint PLVertexArray;
 typedef PLuint PLRenderBuffer;
 typedef PLuint PLFrameBuffer;
@@ -173,6 +183,15 @@ PL_EXTERN_C_END
 
 //-----------------
 // Textures
+
+typedef struct PLTextureMappingUnit {
+    PLbool active;
+
+    PLuint current_texture;
+    PLuint current_capabilities;
+
+    PLTextureEnvironmentMode current_envmode;
+} PLTextureMappingUnit;
 
 typedef enum PLTextureTarget {
     PL_TEXTURE_1D,
@@ -352,7 +371,7 @@ typedef enum PLFBOTarget {
 #if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     PL_FRAMEBUFFER_DEFAULT = GL_FRAMEBUFFER,
     PL_FRAMEBUFFER_DRAW = GL_DRAW_FRAMEBUFFER,
-    VL_FRAMEBUFFER_READ = GL_READ_FRAMEBUFFER
+    PL_FRAMEBUFFER_READ = GL_READ_FRAMEBUFFER
 #else
     PL_FRAMEBUFFER_DEFAULT,
     PL_FRAMEBUFFER_DRAW,
@@ -388,7 +407,45 @@ typedef struct PLLight {
 
 //-----------------
 
+typedef struct PLGraphicsState {
+    PLuint num_cards;        // Number of video cards.
+
+    VLCullMode current_cullmode;
+
+    PLColour current_clearcolour;
+    PLColour current_colour;            // Current global colour.
+
+    PLuint current_capabilities;    // Enabled capabilities.
+    PLuint current_textureunit;
+
+    // Texture states.
+    PLTextureMappingUnit *tmu;
+
+    // Shader states.
+    unsigned int current_program;
+
+    // Hardware / Driver information
+
+    const PLchar *hw_vendor;
+    const PLchar *hw_renderer;
+    const PLchar *hw_version;
+    const PLchar *hw_extensions;
+
+    PLuint hw_maxtexturesize;
+    PLuint hw_maxtextureunits;
+    PLuint hw_maxtextureanistropy;
+
+    ////////////////////////////////////////
+
+    PLint viewport_x, viewport_y;
+    PLuint viewport_width, viewport_height;
+
+    PLbool mode_debug;
+} PLGraphicsState;
+
 PL_EXTERN_C
+
+PL_EXTERN PLGraphicsState pl_graphics_state;
 
 PL_EXTERN void plViewport(PLint x, PLint y, PLuint width, PLuint height);
 PL_EXTERN void plScissor(PLint x, PLint y, PLuint width, PLuint height);
