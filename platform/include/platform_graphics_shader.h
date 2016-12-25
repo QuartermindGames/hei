@@ -80,9 +80,6 @@ namespace pl {
         private:
             unsigned int id_;
 
-            std::string source_;
-            std::string source_path_;
-
             ShaderType type_;
         };
 

@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org>
 /*	Monolith's DTX Format (http://www.cnblogs.com/crsky/p/4702916.html)	*/
 
 typedef struct {
-    PLuint32 type;      // This is always the same (resource type).
     PLint32 version;    // Version of the format, Lithtech used negative numbers.
 
     PLuint16 width, height;     // Width and height of the texture.
@@ -96,22 +95,29 @@ PLbyte _plGetDTXFormat(DTXHeader *dtx) {
     return dtx->extra[2];
 }
 
+PLbool _plDTXFormatCheck(FILE *fin) {
+    rewind(fin);
+
+    // Try reading in the type first, as Lithtech has "resource types" rather than idents.
+    PLint type;
+    if((fread(&type, sizeof(PLint), 1, fin) != 1)) {
+        return false;
+    }
+
+    return (type == 0);
+}
+
 PLresult plLoadDTXImage(FILE *fin, PLImage *out) {
     plSetErrorFunction("plLoadDTXImage");
 
     DTXHeader header;
     memset(&header, 0, sizeof(header));
-
     if (fread(&header, sizeof(DTXHeader), 1, fin) != 1)
         return PL_RESULT_FILEREAD;
-
-    if (header.type != 0)
-        return PL_RESULT_FILETYPE;
     else if ((header.version < DTX_VERSION_MAX) || (header.version > DTX_VERSION_MIN))
         return PL_RESULT_FILEVERSION;
     else if ((header.width < 8) || (header.height < 8))
         return PL_RESULT_IMAGERESOLUTION;
-
 
     memset(out, 0, sizeof(PLImage));
 

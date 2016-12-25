@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org>
 /*  Valve's VTF Format (https://developer.valvesoftware.com/wiki/Valve_Texture_Format)  */
 
 typedef struct VTFHeader {
-    PLchar signature[4];    // 'VTF'
     PLuint version[2];      // Minor followed by major.
 
     PLuint headersize;      // I guess this is used to support header alterations?
@@ -226,6 +225,15 @@ void _plConvertVTFFormat(PLImage *image, PLuint in) {
     }
 }
 
+PLbool _plVTFFormatCheck(FILE *fin) {
+    rewind(fin);
+
+    PLchar ident[4];
+    fread(ident, 1, 4, fin);
+
+    return (strncmp(ident, "VTF ", 4) == 0);
+}
+
 PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
     plFunctionStart();
 
@@ -235,9 +243,6 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
 
     if (fread(&header, sizeof(VTFHeader), 1, fin) != 1)
         return PL_RESULT_FILEREAD;
-    else if((header.signature[0] != 'V') || (header.signature[1] != 'T') || (header.signature[2] != 'F') ||
-            (header.signature[3] != 0))
-        return PL_RESULT_FILETYPE;
     else if (VTF_VERSION(7, 5))
         return PL_RESULT_FILEVERSION;
 

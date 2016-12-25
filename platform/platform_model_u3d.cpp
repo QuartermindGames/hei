@@ -70,23 +70,25 @@ typedef struct U3DVertex_s {
 } U3DVertex;
 
 typedef struct U3DTriangle_s {
-    PLuint16 vertex[3];    // Vertex indices
+    PLuint16 vertex[3]; // Vertex indices
 
-    PLuint8 type;        // Triangle type
-    PLuint8 colour;        // Triangle colour
-    PLuint8 ST[3][2];    // Texture coords
-    PLuint8 texturenum;    // Texture offset
-    PLuint8 flags;        // Triangle flags
+    PLuint8 type;       // Triangle type
+    PLuint8 colour;     // Triangle colour
+    PLuint8 ST[3][2];   // Texture coords
+    PLuint8 texturenum; // Texture offset
+    PLuint8 flags;      // Triangle flags
 } U3DTriangle;
 
 FILE *pl_u3d_dataf = nullptr;
 FILE *pl_u3d_animf = nullptr;
 
 void _plUnloadU3DModel() {
-    if (pl_u3d_animf)
+    if (pl_u3d_animf) {
         std::fclose(pl_u3d_animf);
-    if (pl_u3d_dataf)
+    }
+    if (pl_u3d_dataf) {
         std::fclose(pl_u3d_dataf);
+    }
 }
 
 PLAnimatedModel *plLoadU3DModel(const PLchar *path) {

@@ -94,24 +94,30 @@ typedef struct PLImage {
 #define PLIMAGE_EXTENSION_KTX   "ktx"
 #define PLIMAGE_EXTENSION_TGA   "tga"
 #define PLIMAGE_EXTENSION_PNG   "png"
+#define PLIMAGE_EXTENSION_DDS   "dds"
 #define PLIMAGE_EXTENSION_VTF   "vtf"   // Valve Texture Format (Source Engine)
 
 PL_EXTERN_C
 
-extern void plFreeImage(PLImage *image);
+PL_EXTERN void plFreeImage(PLImage *image);
 
-extern PLbool plIsValidImageSize(PLuint width, PLuint height);
+PL_EXTERN PLbool plIsValidImageSize(PLuint width, PLuint height);
 
-extern PLresult plLoadImage(const PLchar *path, PLImage *out);
+PL_EXTERN PLresult plLoadImage(const PLchar *path, PLImage *out);
 
-extern PLresult plLoadFTXImage(FILE *fin, PLImage *out);    // Ritual's FTX image format.
-extern PLresult plLoadPPMImage(FILE *fin, PLImage *out);    // Portable Pixel Map format.
-extern PLresult plLoadDTXImage(FILE *fin, PLImage *out);    // Lithtech's DTX image format.
-extern PLresult plLoadVTFImage(FILE *fin, PLImage *out);    // Valve's VTF image format.
+PL_EXTERN PLresult plLoadFTXImage(FILE *fin, PLImage *out);    // Ritual's FTX image format.
+PL_EXTERN PLresult plLoadPPMImage(FILE *fin, PLImage *out);    // Portable Pixel Map format.
+PL_EXTERN PLresult plLoadDTXImage(FILE *fin, PLImage *out);    // Lithtech's DTX image format.
+PL_EXTERN PLresult plLoadVTFImage(FILE *fin, PLImage *out);    // Valve's VTF image format.
+PL_EXTERN PLresult plLoadDDSImage(FILE *fin, PLImage *out);
 
 #if defined(PL_INTERNAL)
 
 PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height);
+
+PLbool _plDDSFormatCheck(FILE *fin);
+PLbool _plDTXFormatCheck(FILE *fin);
+PLbool _plVTFFormatCheck(FILE *fin);
 
 #endif
 

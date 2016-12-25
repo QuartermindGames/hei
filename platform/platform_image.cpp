@@ -34,44 +34,38 @@ PLresult plLoadImage(const PLchar *path, PLImage *out) {
     if (!plIsValidString(path))
         return PL_RESULT_FILEPATH;
 
+    PLresult result = PL_RESULT_FILETYPE;
+
     // Xenon uses a lot of long extensions, as do some other modern
     // applications, so that's why we're using a size 16.
-    const PLchar *extension = plGetFileExtension(path);
-    if (!plIsValidString(extension)) {
-        // This is the slowest loader type, now we need to take a stab
-        // at which format this file potentially is using some trickery
-        // but it's useful for cases in which we don't care so much about
-        // the type of file we're loading.
-
-        /* Scan directory
-         * Find first file with extension
-         * Load file, if fails, load next with extension
-         * Failed? Okay, we give up!
-         */
-
-        if (plFileExists(path)) {
-            // Apparently it exists without an extension... Ho boy...
-
-
-        }
-
-        std::string full_name = path;
-    }
 
     FILE *fin = fopen(path, "rb");
     if(!fin) {
         return PL_RESULT_FILEREAD;
     }
 
-    PLresult result = PL_RESULT_FILETYPE;
-    if (!strncmp(extension, PLIMAGE_EXTENSION_DTX, 3))       result = plLoadDTXImage(fin, out);
-    else if (!strncmp(extension, PLIMAGE_EXTENSION_FTX, 3))  result = plLoadFTXImage(fin, out);
-    else if (!strncmp(extension, PLIMAGE_EXTENSION_VTF, 3))  result = plLoadVTFImage(fin, out);
-    else if (!strncmp(extension, PLIMAGE_EXTENSION_PPM, 3))  result = plLoadPPMImage(fin, out);
-
-    strncpy(out->path, path, sizeof(out->path));
+    if(_plDDSFormatCheck(fin)) {
+        result = plLoadDDSImage(fin, out);
+    } else if(_plVTFFormatCheck(fin)) {
+        result = plLoadVTFImage(fin, out);
+    } else if(_plDTXFormatCheck(fin)) {
+        result = plLoadDTXImage(fin, out);
+    } else {
+        const PLchar *extension = plGetFileExtension(path);
+        if(plIsValidString(extension)) {
+            if (!strncmp(extension, PLIMAGE_EXTENSION_FTX, 3)) {
+                result = plLoadFTXImage(fin, out);
+            } else if (!strncmp(extension, PLIMAGE_EXTENSION_PPM, 3)) {
+                result = plLoadPPMImage(fin, out);
+            }
+        }
+    }
 
     fclose(fin);
+
+    if(result == PL_RESULT_SUCCESS) {
+        strncpy(out->path, path, sizeof(out->path));
+    }
 
     return result;
 }
@@ -90,6 +84,8 @@ PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height) {
         case PL_IMAGEFORMAT_RGBA8:      return width * height * 4;
         case PL_IMAGEFORMAT_RGBA16F:
         case PL_IMAGEFORMAT_RGBA16:     return width * height * 8;
+
+        default:    return 0;
     }
 }
 
