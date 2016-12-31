@@ -27,139 +27,148 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#if 1
+typedef struct PLShaderUniform {
+    PLuint id;  // Typically the location within the shader.
+
+    PLUniformType type;
+
+    PLchar def[32]; // Default value.
+} PLShaderUniform;
 
 namespace pl {
-
     namespace graphics {
 
         typedef enum ShaderType {
-            SHADER_FRAGMENT,
-            SHADER_VERTEX,
-            SHADER_GEOMETRY
+            SHADER_VERTEX,   // GL_VERTEX_SHADER
+            SHADER_FRAGMENT, // GL_FRAGMENT_SHADER
+            SHADER_GEOMETRY, // GL_GEOMETRY_SHADER
+            SHADER_COMPUTE,  // GL_COMPUTE_SHADER
         } ShaderType;
-
-        typedef enum ShaderUniformType {
-            PL_UNIFORM_FLOAT,
-            PL_UNIFORM_INT,
-            PL_UNIFORM_UINT,
-            PL_UNIFORM_BOOL,
-            PL_UNIFORM_DOUBLE,
-
-            // Textures
-            PL_UNIFORM_TEXTURE1D,
-            PL_UNIFORM_TEXTURE2D,
-            PL_UNIFORM_TEXTURE3D,
-            PL_UNIFORM_TEXTURECUBE,
-            PL_UNIFORM_TEXTUREBUFFER,
-
-            // Vectors
-            PL_UNIFORM_VEC2,
-            PL_UNIFORM_VEC3,
-            PL_UNIFORM_VEC4,
-
-            // Matrices
-            PL_UNIFORM_MAT3
-        } ShaderUniformType;
 
         class Shader {
         public:
-            PL_DLL Shader(ShaderType type);
-            PL_DLL ~Shader();
+            Shader(ShaderType type);
+            ~Shader();
 
-            PL_DLL PLresult Load(std::string path);
+            PLresult LoadFile(std::string path);
 
-            PL_DLL unsigned int GetInstance() {
-                return id_;
-            }
+            unsigned int GetInstance() { return id_; }
 
-            PL_DLL ShaderType GetType() {
-                return type_;
-            }
-
+        protected:
         private:
             unsigned int id_;
 
             ShaderType type_;
         };
 
-        class ShaderUniform {};
-        class ShaderAttribute {};
+        class ShaderProgram;
 
-        class ShaderProgram {
+        typedef enum ShaderUniformType {
+            UNIFORM_FLOAT,
+            UNIFORM_INT,
+            UNIFORM_UINT,
+            UNIFORM_BOOL,
+            UNIFORM_DOUBLE,
+
+            // Textures
+
+            UNIFORM_SAMPLER1D,
+            UNIFORM_SAMPLER2D,
+            UNIFORM_SAMPLER3D,
+            UNIFORM_SAMPLERCUBE,
+
+            // Vectors
+
+            UNIFORM_VEC2,
+            UNIFORM_VEC3,
+            UNIFORM_VEC4,
+
+            // Matrices
+
+            UNIFORM_MAT3
+        } ShaderUniformType;
+
+        class ShaderUniform {
         public:
-            ShaderProgram(std::string name);
-            ~ShaderProgram();
+            ShaderUniform(ShaderProgram *parent, std::string name);
 
-            PL_DLL virtual void RegisterShader(std::string path, ShaderType type);
-            PL_DLL virtual void RegisterAttributes();
-
-            PL_DLL void Attach(Shader *shader);
-            PL_DLL void Enable();
-            PL_DLL void Disable();
-            PL_DLL void Link();
-
-            PL_DLL int GetUniformLocation(std::string name);
-
-            PL_DLL bool IsActive();
+            void Set(float x);
+            void Set(float x, float y);
+            void Set(float x, float y, float z);
+            void Set(float x, float y, float z, float w);
+            void Set(int x);
+            void Set(int x, int y);
+            void Set(int x, int y, int z);
 
         protected:
         private:
             unsigned int id_;
 
-            std::vector<Shader>                                 shaders_;
-            std::unordered_map<std::string, ShaderAttribute>    attributes_;
-            std::unordered_map<std::string, ShaderUniform>      uniforms_;
+            ShaderProgram *parent_;
+        };
 
-            std::string name_;
+        class ShaderAttribute {
+        public:
+            ShaderAttribute(ShaderProgram *parent, std::string name);
+
+            void Set(float x);
+            void Set(float x, float y);
+            void Set(float x, float y, float z);
+            void Set(float x, float y, float z, float w);
+            void Set(int x);
+            void Set(int x, int y);
+            void Set(int x, int y, int z);
+
+        protected:
+        private:
+            unsigned int id_;
+
+            ShaderProgram *parent_;
+        };
+
+        class ShaderProgram {
+        public:
+            ShaderProgram();
+            ~ShaderProgram();
+
+            void RegisterUniform(std::string name);
+            void RegisterAttribute(std::string name);
+
+            void AttachShader(Shader *shader);
+
+            bool IsEnabled() { return (plGetCurrentShaderProgram() == id_); }
+
+            void Enable();
+            void Disable();
+
+            ShaderAttribute *GetAttribute(std::string name) {
+                auto attribute = attributes.find(name);
+                if(attribute != attributes.end()) {
+                    return &attribute->second;
+                }
+
+                return nullptr;
+            }
+
+            ShaderUniform *GetUniform(std::string name) {
+                auto uniform = uniforms.find(name);
+                if(uniform != uniforms.end()) {
+                    return &uniform->second;
+                }
+
+                return nullptr;
+            }
+
+            unsigned int GetInstance() { return id_; }
+
+        protected:
+        private:
+            unsigned int id_;
+
+            std::vector<*Shader>							    shaders;
+            std::unordered_map<std::string, ShaderAttribute>	attributes;
+            std::unordered_map<std::string, ShaderUniform>		uniforms;
         };
 
     }
-
 }
-
-#else
-
-typedef struct PLShaderUniform {
-    PLuint id;
-
-    PLShaderUniformType type;
-
-    PLchar def[32];
-} PLShaderUniform;
-
-typedef struct PLShaderAttribute {
-    PLuint id;
-} PLShaderAttribute;
-
-typedef struct PLShader {
-    PLuint id;
-
-    PLShaderType type;
-
-    PLchar *source;
-    PLchar source_path[PL_SYSTEM_MAX_PATH];
-} PLShader;
-
-typedef struct PLShaderProgram {
-    PLuint id;
-
-    PLShader            **shaders;
-    PLShaderUniform     **uniforms;
-    PLShaderAttribute   **attributes;
-} PLShaderProgram;
-
-PL_EXTERN_C
-
-PL_EXTERN PLShader *plCreateShader(PLShaderType type);
-PL_EXTERN void plDeleteShader(PLShader *shader);
-
-PL_EXTERN PLShaderProgram *plCreateShaderProgram(void);
-PL_EXTERN void plDeleteShaderProgram(PLShaderProgram *program);
-
-PL_EXTERN PLShaderProgram *plGetCurrentShaderProgram(void);
-PL_EXTERN void plSetShaderProgram(PLShaderProgram *program);
-
-PL_EXTERN_C_END
-
-#endif

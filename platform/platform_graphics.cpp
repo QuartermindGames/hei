@@ -642,13 +642,13 @@ void plDrawVertexNormals(PLDraw *draw) {
 	SHADERS
 ===========================*/
 
-PLShaderProgram plGetCurrentShaderProgram(void) {
+unsigned int plGetCurrentShaderProgram(void) {
     _PL_GRAPHICS_TRACK();
 
     return pl_graphics_state.current_program;
 }
 
-void plSetShaderProgram(PLShaderProgram program) {
+void plEnableShaderProgram(unsigned int program) {
     _PL_GRAPHICS_TRACK();
 
     if (program == pl_graphics_state.current_program)
@@ -661,7 +661,23 @@ void plSetShaderProgram(PLShaderProgram program) {
     pl_graphics_state.current_program = program;
 }
 
-/*  Platform Texture Manager    */
+void plDisableShaderProgram(unsigned int program) {
+    _PL_GRAPHICS_TRACK();
+
+    if(program != pl_graphics_state.current_program) {
+        return;
+    }
+
+#if defined(PL_MODE_OPENGL)
+    glUseProgram(0);
+#endif
+
+    pl_graphics_state.current_program = 0;
+}
+
+/*===========================
+	TEXTURES
+===========================*/
 
 PLuint _plTranslateTextureUnit(PLuint target) {
     _PL_GRAPHICS_TRACK();

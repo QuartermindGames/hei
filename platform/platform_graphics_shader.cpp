@@ -27,16 +27,14 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform_graphics.h"
 
-PLuint _plTranslateShaderType(pl::graphics::ShaderType type) {
+using namespace pl::graphics;
+
+unsigned int _plTranslateShaderType(ShaderType type) {
     switch(type) {
-#if defined(PL_MODE_OPENGL)
-        default:                                            return 0;   // todo, urgh, handle these cases better!
-        case pl::graphics::ShaderType::SHADER_FRAGMENT:     return GL_FRAGMENT_SHADER;
-        case pl::graphics::ShaderType::SHADER_GEOMETRY:     return GL_GEOMETRY_SHADER;
-        case pl::graphics::ShaderType::SHADER_VERTEX:       return GL_VERTEX_SHADER;
-#else
-        default:    return 0;
-#endif
+        case SHADER_VERTEX:      return GL_VERTEX_SHADER;
+        case SHADER_FRAGMENT:    return GL_FRAGMENT_SHADER;
+        case SHADER_GEOMETRY:    return GL_GEOMETRY_SHADER;
+        case SHADER_COMPUTE:     return GL_COMPUTE_SHADER;
     }
 }
 
@@ -44,32 +42,25 @@ PLuint _plTranslateShaderType(pl::graphics::ShaderType type) {
 	SHADER
 ===========================*/
 
-pl::graphics::Shader::Shader(ShaderType type) : type_(type) {
-#if defined(PL_MODE_OPENGL)
+Shader::Shader(ShaderType type) : type_(type) {
     id_ = glCreateShader(_plTranslateShaderType(type_));
     if(id_ == 0) {
-        // todo, failed to create shader.
+        throw std::runtime_error("failed to create shader");
     }
-#endif
 }
 
-pl::graphics::Shader::~Shader() {
-#if defined(PL_MODE_OPENGL)
-    if(id_ != 0) {
-        glDeleteShader(id_);
-    }
-#endif
+Shader::~Shader() {
+    glDeleteShader(id_);
 }
 
-PLresult pl::graphics::Shader::Load(std::string path) {
-#if defined(PL_MODE_OPENGL)
+PLresult Shader::LoadFile(std::string path) {
     // Ensure we use the correct path and shader.
     std::string full_path;
     switch(type_) {
-        case pl::graphics::ShaderType::SHADER_FRAGMENT:
+        case ShaderType::SHADER_FRAGMENT:
             full_path = path + "_fragment.shader";
             break;
-        case pl::graphics::ShaderType::SHADER_VERTEX:
+        case ShaderType::SHADER_VERTEX:
             full_path = path + "_vertex.shader";
             break;
         default:    return PL_RESULT_FILETYPE;
@@ -87,14 +78,14 @@ PLresult pl::graphics::Shader::Load(std::string path) {
     file.read(buf, size);
 
     const char *full_source[] = {
-#if defined (VL_MODE_OPENGL)
+#if defined(PL_MODE_OPENGL)
         //"#version 110\n",	// OpenGL 2.0
-		"#version 120\n",	// OpenGL 2.1
-		//"#version 130\n",	// OpenGL 3.0
-		//"#version 140\n",	// OpenGL 3.1
-		//"#version 150\n",	// OpenGL 3.2
-		//"#version 450\n",	// OpenGL 4.5
-#elif defined (VL_MODE_OPENGL_ES)
+        "#version 120\n",	// OpenGL 2.1
+        //"#version 130\n",	// OpenGL 3.0
+        //"#version 140\n",	// OpenGL 3.1
+        //"#version 150\n",	// OpenGL 3.2
+        //"#version 450\n",	// OpenGL 4.5
+#elif defined(PL_MODE_OPENGL_ES)
         "#version 100\n",	// OpenGL ES 2.0
 #endif
         buf
@@ -121,45 +112,168 @@ PLresult pl::graphics::Shader::Load(std::string path) {
     }
 
     return PL_RESULT_SUCCESS;
-#else
-    return PL_RESULT_SUCCESS;
-#endif
+}
+
+/*===========================
+	SHADER UNIFORM
+===========================*/
+
+ShaderUniform::ShaderUniform(ShaderProgram *parent, std::string name) {
+    if(!parent) {
+        throw std::runtime_error("invalid shader program");
+    } else if(parent->GetInstance() == 0) {
+        throw std::runtime_error("invalid shader program instance, might not yet have been created");
+    }
+    parent_ = parent;
+
+    if(name.empty()) {
+        throw std::runtime_error("received invalid uniform name");
+    }
+
+    int location = glGetUniformLocation(parent_->GetInstance(), name.c_str());
+    if(location == -1) {
+        throw std::runtime_error("failed to get uniform location");
+    }
+    id_ = static_cast<unsigned int>(location);
+}
+
+void ShaderUniform::Set(float x) {
+    glUniform1f(id_, x);
+}
+
+void ShaderUniform::Set(float x, float y) {
+    glUniform2f(id_, x, y);
+}
+
+void ShaderUniform::Set(float x, float y, float z) {
+    glUniform3f(id_, x, y, z);
+}
+
+void ShaderUniform::Set(float x, float y, float z, float w) {
+    glUniform4f(id_, x, y, z, w);
+}
+
+void ShaderUniform::Set(int x) {
+    glUniform1i(id_, x);
+}
+
+void ShaderUniform::Set(int x, int y) {
+    glUniform2i(id_, x, y);
+}
+
+void ShaderUniform::Set(int x, int y, int z) {
+    glUniform3i(id_, x, y, z);
+}
+
+/*===========================
+	SHADER ATTRIBUTE
+===========================*/
+
+ShaderAttribute::ShaderAttribute(ShaderProgram *parent, std::string name) {
+    if(!parent) {
+        throw std::runtime_error("invalid shader program");
+    } else if(parent->GetInstance() == 0) {
+        throw std::runtime_error("invalid shader program instance, might not yet have been created");
+    }
+    parent_ = parent;
+
+    if(name.empty()) { // warning?
+        throw std::runtime_error("received invalid attribute name");
+    }
+
+    int location = glGetAttribLocation(parent_->GetInstance(), name.c_str());
+    if(location == -1) { // warning?
+        throw std::runtime_error("failed to get attribute location");
+    }
+    id_ = static_cast<unsigned int>(location);
+}
+
+void ShaderAttribute::Set(float x) {
+
+}
+
+void ShaderAttribute::Set(float x, float y) {
+
+}
+
+void ShaderAttribute::Set(float x, float y, float z) {
+
+}
+
+void ShaderAttribute::Set(float x, float y, float z, float w) {
+
+}
+
+void ShaderAttribute::Set(int x) {
+
+}
+
+void ShaderAttribute::Set(int x, int y) {
+
+}
+
+void ShaderAttribute::Set(int x, int y, int z) {
+
 }
 
 /*===========================
 	SHADER PROGRAM
 ===========================*/
 
-pl::graphics::ShaderProgram::ShaderProgram(std::string name) : name_(name) {
-#if defined(PL_MODE_OPENGL)
-    id_ = glCreateProgram();
-    if(id_ == 0) {
-        // todo, failed to create shader program.
-    }
-#endif
-}
-
-pl::graphics::ShaderProgram::~ShaderProgram() {
-#if defined(PL_MODE_OPENGL)
-    if(id_ != 0) {
-        glDeleteProgram(id_);
-    }
-#endif
-
-    attributes_.clear();
-    uniforms_.clear();
-    shaders_.clear();
-}
-
-int pl::graphics::ShaderProgram::GetUniformLocation(std::string name) {
-#if defined(PL_MODE_OPENGL)
-    int location = glGetUniformLocation(id_, name.c_str());
-    if(location == -1) {
-        // todo, failed to get uniform location.
+ShaderProgram::ShaderProgram() {
+    int id = glCreateProgram();
+    if(id == 0) {
+        throw std::runtime_error("failed to create shader program");
     }
 
-    return location;
-#else
-    return 0;
-#endif
+    id_ = static_cast<unsigned int>(id);
 }
+
+void ShaderProgram::Enable() {
+    plEnableShaderProgram(id_);
+}
+
+void ShaderProgram::Disable() {
+    plDisableShaderProgram(id_);
+}
+
+void ShaderProgram::RegisterUniform(std::string name) {
+    if(name.empty()) { // warning?
+        throw std::runtime_error("received invalid uniform name");
+    }
+
+    // Ensure it's not registered already.
+    ShaderUniform *euni = GetUniform(name);
+    if(euni) {
+        return;
+    }
+
+    uniforms.emplace(name, ShaderUniform(this, name));
+}
+
+void ShaderProgram::RegisterAttribute(std::string name) {
+    if(name.empty()) { // warning?
+        throw std::runtime_error("received invalid attribute name");
+    }
+
+    // Ensure it's not registered already.
+    ShaderAttribute *eati = GetAttribute(name);
+    if(eati) {
+        return;
+    }
+
+    attributes.emplace(name, ShaderAttribute(this, name));
+}
+
+void ShaderProgram::AttachShader(Shader *shader) {
+    if(!shader) { // warning?
+        throw std::runtime_error("invalid shader");
+    } else if(shader->GetInstance() == 0) { // warning?
+        throw std::runtime_error("invalid shader instance, might not yet have been created");
+    }
+
+    glAttachShader(id_, shader->GetInstance());
+
+    shaders.push_back(shader);
+}
+
