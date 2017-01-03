@@ -26,15 +26,16 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include "platform_graphics.h"
+#include "platform_filesystem.h"
 
 using namespace pl::graphics;
 
-unsigned int _plTranslateShaderType(ShaderType type) {
+unsigned int _plTranslateShaderType(PLShaderType type) {
     switch(type) {
-        case SHADER_VERTEX:      return GL_VERTEX_SHADER;
-        case SHADER_FRAGMENT:    return GL_FRAGMENT_SHADER;
-        case SHADER_GEOMETRY:    return GL_GEOMETRY_SHADER;
-        case SHADER_COMPUTE:     return GL_COMPUTE_SHADER;
+        case PL_SHADER_VERTEX:      return GL_VERTEX_SHADER;
+        case PL_SHADER_FRAGMENT:    return GL_FRAGMENT_SHADER;
+        case PL_SHADER_GEOMETRY:    return GL_GEOMETRY_SHADER;
+        case PL_SHADER_COMPUTE:     return GL_COMPUTE_SHADER;
     }
 }
 
@@ -42,7 +43,7 @@ unsigned int _plTranslateShaderType(ShaderType type) {
 	SHADER
 ===========================*/
 
-Shader::Shader(ShaderType type) : type_(type) {
+Shader::Shader(PLShaderType type) : type_(type) {
     id_ = glCreateShader(_plTranslateShaderType(type_));
     if(id_ == 0) {
         throw std::runtime_error("failed to create shader");
@@ -57,17 +58,16 @@ PLresult Shader::LoadFile(std::string path) {
     // Ensure we use the correct path and shader.
     std::string full_path;
     switch(type_) {
-        case ShaderType::SHADER_FRAGMENT:
+        case PL_SHADER_FRAGMENT:
             full_path = path + "_fragment.shader";
             break;
-        case ShaderType::SHADER_VERTEX:
+        case PL_SHADER_VERTEX:
             full_path = path + "_vertex.shader";
             break;
         default:    return PL_RESULT_FILETYPE;
     }
 
-    std::ifstream file;
-    file.open(full_path, std::ios::in);
+    std::ifstream file(full_path, std::ios::in);
     if(!file.is_open()) {
         return PL_RESULT_FILEREAD;
     }
@@ -229,6 +229,14 @@ ShaderProgram::ShaderProgram() {
     id_ = static_cast<unsigned int>(id);
 }
 
+ShaderProgram::~ShaderProgram() {
+    if(id_ == 0) {
+        return;
+    }
+
+    glDeleteProgram(id_);
+}
+
 void ShaderProgram::Enable() {
     plEnableShaderProgram(id_);
 }
@@ -238,8 +246,9 @@ void ShaderProgram::Disable() {
 }
 
 void ShaderProgram::RegisterUniform(std::string name) {
-    if(name.empty()) { // warning?
-        throw std::runtime_error("received invalid uniform name");
+    if(name.empty()) {
+        plGraphicsLog("Attempted to register a uniform with an invalid name!\n");
+        return;
     }
 
     // Ensure it's not registered already.
@@ -252,8 +261,9 @@ void ShaderProgram::RegisterUniform(std::string name) {
 }
 
 void ShaderProgram::RegisterAttribute(std::string name) {
-    if(name.empty()) { // warning?
-        throw std::runtime_error("received invalid attribute name");
+    if(name.empty()) {
+        plGraphicsLog("Attempted to register an attribute with an invalid name!\n");
+        return;
     }
 
     // Ensure it's not registered already.
@@ -266,14 +276,25 @@ void ShaderProgram::RegisterAttribute(std::string name) {
 }
 
 void ShaderProgram::AttachShader(Shader *shader) {
-    if(!shader) { // warning?
-        throw std::runtime_error("invalid shader");
-    } else if(shader->GetInstance() == 0) { // warning?
-        throw std::runtime_error("invalid shader instance, might not yet have been created");
+    if(!shader) {
+        plGraphicsLog("Attempted to attach an invalid shader!\n");
+        return;
+    } else if(shader->GetInstance() == 0) {
+        plGraphicsLog("Attempted to attach a shader with an invalid instance!\n");
+        return;
     }
 
     glAttachShader(id_, shader->GetInstance());
 
     shaders.push_back(shader);
+}
+
+void ShaderProgram::LoadShaders(std::string vertex, std::string fragment) {
+    if(!plFileExists(vertex.c_str()) || !plFileExists(fragment.c_str())) {
+        plGraphicsLog("Invalid shader path! (%s / %s)\n", fragment.c_str(), vertex.c_str());
+        return;
+    }
+
+    Shader *frag = new Shader(PL_SHADER_FRAGMENT);
 }
 

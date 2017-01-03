@@ -66,7 +66,7 @@ PLvoid plUnloadLibrary(PL_INSTANCE instance) {
 PL_INSTANCE plLoadLibrary(const PLchar *path) {
     plFunctionStart();
 
-    PLchar newpath[PL_MAX_PATH];
+    PLchar newpath[PL_SYSTEM_MAX_PATH];
     sprintf(newpath, "%s"PL_SYSTEM_LIBRARY_EXTENSION, path);
 
     PL_INSTANCE instance =

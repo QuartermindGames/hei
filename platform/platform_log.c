@@ -23,7 +23,7 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 void plWriteLog(const char *path, const char *msg, ...) {
     pFUNCTION_START
 
-        char newpath[PLATFORM_MAX_PATH];
+        char newpath[PL_SYSTEM_MAX_PATH];
         sprintf(newpath, "%s"LOG_FILE_EXTENSION, path);
 
         static char buffer[1024];
@@ -44,7 +44,7 @@ void plWriteLog(const char *path, const char *msg, ...) {
 void plClearLog(const char *path) {
     pFUNCTION_START
 
-        char newpath[PLATFORM_MAX_PATH];
+        char newpath[PL_SYSTEM_MAX_PATH];
         sprintf(newpath, "%s"LOG_FILE_EXTENSION, path);
         unlink(newpath);
 

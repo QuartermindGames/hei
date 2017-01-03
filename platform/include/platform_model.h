@@ -21,26 +21,16 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 #include "platform_graphics.h"
 
 enum {
-    PL_MODELTYPE_START,
-
     PL_MODELTYPE_STATIC,
     PL_MODELTYPE_ANIMATED,
-    PL_MODELTYPE_SKELETAL,
-
-    PL_MODELTYPE_END
+    PL_MODELTYPE_SKELETAL
 };
 
-typedef struct PLTriangle {
-    PLVector3D normal;
-
-    unsigned int indices[3];
-} PLTriangle;
-
 typedef struct PLModelFrame {
-    PLTriangle *triangles;
-    PLVertex *vertices;
+    pl::graphics::Triangle  *triangles;
+    pl::graphics::Vertex    *vertices;
 
-    PLVector3D mins, maxs; // Bounds
+    pl::math::Vector3D mins, maxs; // Bounds
 } PLModelFrame;
 
 /*	Static animated mesh.
@@ -49,7 +39,7 @@ typedef struct PLStaticModel {
     unsigned int num_triangles;
     unsigned int num_vertices;
 
-    PLPrimitive primitive;
+    pl::graphics::Primitive primitive;
 
     PLModelFrame frame;
 } PLStaticModel;
@@ -61,7 +51,7 @@ typedef struct PLAnimatedModel {
     unsigned int num_vertices;
     unsigned int num_frames;
 
-    PLPrimitive primitive;
+    pl::graphics::Primitive primitive;
 
     PLModelFrame *frames;
 } PLAnimatedModel;
@@ -72,7 +62,7 @@ typedef struct PLSkeletalModel {
     unsigned int num_triangles;
     unsigned int num_vertices;
 
-    PLPrimitive primitive;
+    pl::graphics::Primitive primitive;
 
     // Unfinished...
 } PLSkeletalModel;

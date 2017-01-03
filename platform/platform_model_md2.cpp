@@ -28,14 +28,14 @@ MD2 Model Format
 Model format introduced in id Software's Quake 2.
 */
 
-#define MD2_HEADER            (('2'<<24)+('P'<<16)+('D'<<8)+'I')
-#define    MD2_FILE_EXTENSION    ".md2"
-#define    MD2_VERSION            8
+#define MD2_HEADER          (('2'<<24)+('P'<<16)+('D'<<8)+'I')
+#define MD2_FILE_EXTENSION  ".md2"
+#define MD2_VERSION         8
 
-#define    MD2_MAX_FRAMES        1024
-#define MD2_MAX_SKINS        32
-#define MD2_MAX_TRIANGLES    4096
-#define    MD2_MAX_VERTICES    8192
+#define MD2_MAX_FRAMES      1024
+#define MD2_MAX_SKINS       32
+#define MD2_MAX_TRIANGLES   4096
+#define MD2_MAX_VERTICES    8192
 
 typedef struct {
     PLshort index_xyz[3];

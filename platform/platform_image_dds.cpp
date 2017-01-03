@@ -27,14 +27,14 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform_image.h"
 
-typedef struct DDSPixelFormat {
+struct DDSPixelFormat {
     uint32_t size;
     uint32_t flags;
     uint32_t fourcc;
     uint32_t rgbbitcount;
 };
 
-typedef struct DDSHeader {
+struct DDSHeader {
     uint32_t size;          // Should always be 124.
     uint32_t flags;
     uint32_t height, width;
@@ -47,11 +47,11 @@ typedef struct DDSHeader {
 
     uint32_t caps, caps2, caps3, caps4;
     uint32_t reserved2;
-} DDSHeader;
+};
 
-typedef enum DDSFlag {
+enum DDSFlag {
     DDS_CAPS,
-} DDSFlag;
+};
 
 PLbool _plDDSFormatCheck(FILE *fin) {
     rewind(fin);

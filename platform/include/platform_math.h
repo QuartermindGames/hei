@@ -50,158 +50,164 @@ typedef PLdouble PLVector2d[2], PLVector3d[3], PLVector4d[4];
 
 #ifdef __cplusplus
 
-typedef struct PLVector2D {
-    PLVector2D(PLfloat a, PLfloat b) : x(a), y(b) {}
+namespace pl {
+    namespace math {
 
-    PLVector2D() : x(0), y(0) {}
+        struct Vector2D {
+            Vector2D(PLfloat a, PLfloat b) : x(a), y(b) {}
 
-    PLfloat x, y;
+            Vector2D() : x(0), y(0) {}
 
-    void operator=(PLVector2D a) {
-        x = a.x;
-        y = a.y;
+            PLfloat x, y;
+
+            void operator=(Vector2D a) {
+                x = a.x;
+                y = a.y;
+            }
+
+            void operator=(PLfloat a) {
+                x = a;
+                y = a;
+            }
+
+            void operator*=(Vector2D a) {
+                x *= a.x;
+                y *= a.y;
+            }
+
+            void operator*=(PLfloat a) {
+                x *= a;
+                y *= a;
+            }
+
+            void operator/=(Vector2D a) {
+                x /= a.x;
+                y /= a.y;
+            }
+
+            void operator/=(PLfloat a) {
+                x /= a;
+                y /= a;
+            }
+
+            void operator+=(Vector2D a) {
+                x += a.x;
+                y += a.y;
+            }
+
+            PLbool operator==(Vector2D a) const { return ((x == a.x) && (y == a.y)); }
+
+            Vector2D operator*(Vector2D a) { return Vector2D(x * a.x, y * a.y); }
+
+            Vector2D operator*(PLfloat a) { return Vector2D(x * a, y * a); }
+
+            Vector2D operator/(Vector2D a) { return Vector2D(x / a.x, y / a.y); }
+
+            Vector2D operator/(PLfloat a) { return Vector2D(x / a, y / a); }
+
+            PLfloat Length() { return std::sqrt(x * x + y * y); }
+
+            Vector2D Normalize() {
+                Vector2D out;
+                PLfloat length = Length();
+                if (length != 0)
+                    out.Set(x / length, y / length);
+                return out;
+            }
+
+            void PL_INLINE Set(PLfloat a, PLfloat b) {
+                x = a;
+                y = b;
+            }
+
+            void PL_INLINE Clear() {
+                x = 0;
+                y = 0;
+            }
+        };
+
+        struct Vector3D {
+            Vector3D(PLfloat _x, PLfloat _y, PLfloat _z) : x(_x), y(_y), z(_z) {}
+
+            Vector3D() : x(0), y(0) {}
+
+            PLfloat x, y, z;
+
+            void operator=(Vector3D a) {
+                x = a.x;
+                y = a.y;
+                z = a.z;
+            }
+
+            void operator=(PLfloat a) {
+                x = a;
+                y = a;
+                z = a;
+            }
+
+            void operator*=(Vector3D a) {
+                x *= a.x;
+                y *= a.y;
+                z *= a.z;
+            }
+
+            void operator*=(PLfloat a) {
+                x *= a;
+                y *= a;
+                z *= a;
+            }
+
+            void operator+=(Vector3D a) {
+                x += a.x;
+                y += a.y;
+                z += a.z;
+            }
+
+            PLbool operator==(Vector3D a) const { return ((x == a.x) && (y == a.y) && (z == a.z)); }
+
+            Vector3D operator*(Vector3D a) const { return Vector3D(x * a.x, y * a.y, z * a.z); }
+
+            Vector3D operator*(PLfloat a) const { return Vector3D(x * a, y * a, z * a); }
+
+            Vector3D operator-(Vector3D a) const { return Vector3D(x - a.x, y - a.y, z - a.z); }
+
+            Vector3D operator-(PLfloat a) const { return Vector3D(x - a, y - a, z - a); }
+
+            Vector3D operator+(Vector3D a) const { return Vector3D(x + a.x, y + a.y, z + a.z); }
+
+            Vector3D operator+(PLfloat a) const { return Vector3D(x + a, y + a, z + a); }
+
+            PLfloat Length() { return std::sqrt(x * x + y * y + z * z); }
+
+            PLfloat DotProduct(Vector3D a) { return (x * a.x + y * a.y + z * a.z); }
+
+            Vector3D CrossProduct(Vector3D a) {
+                return Vector3D(y * a.z - z * a.y, z * a.x - x * a.z, x * a.y - y * a.x);
+            }
+
+            Vector3D Normalize() {
+                Vector3D out;
+                PLfloat length = Length();
+                if (length != 0)
+                    out.Set(x / length, y / length, z / length);
+                return out;
+            }
+
+            void PL_INLINE Set(PLfloat _x, PLfloat _y, PLfloat _z) {
+                x = _x;
+                y = _y;
+                z = _z;
+            }
+
+            void PL_INLINE Clear() {
+                x = 0;
+                y = 0;
+                z = 0;
+            }
+        };
+
     }
-
-    void operator=(PLfloat a) {
-        x = a;
-        y = a;
-    }
-
-    void operator*=(PLVector2D a) {
-        x *= a.x;
-        y *= a.y;
-    }
-
-    void operator*=(PLfloat a) {
-        x *= a;
-        y *= a;
-    }
-
-    void operator/=(PLVector2D a) {
-        x /= a.x;
-        y /= a.y;
-    }
-
-    void operator/=(PLfloat a) {
-        x /= a;
-        y /= a;
-    }
-
-    void operator+=(PLVector2D a) {
-        x += a.x;
-        y += a.y;
-    }
-
-    PLbool operator==(PLVector2D a) const { return ((x == a.x) && (y == a.y)); }
-
-    PLVector2D operator*(PLVector2D a) { return PLVector2D(x * a.x, y * a.y); }
-
-    PLVector2D operator*(PLfloat a) { return PLVector2D(x * a, y * a); }
-
-    PLVector2D operator/(PLVector2D a) { return PLVector2D(x / a.x, y / a.y); }
-
-    PLVector2D operator/(PLfloat a) { return PLVector2D(x / a, y / a); }
-
-    PLfloat Length() { return std::sqrt(x * x + y * y); }
-
-    PLVector2D Normalize() {
-        PLVector2D out;
-        PLfloat length = Length();
-        if (length != 0)
-            out.Set(x / length, y / length);
-        return out;
-    }
-
-    void PL_INLINE Set(PLfloat a, PLfloat b) {
-        x = a;
-        y = b;
-    }
-
-    void PL_INLINE Clear() {
-        x = 0;
-        y = 0;
-    }
-} PLVector2D;
-
-typedef struct PLVector3D {
-    PLVector3D(PLfloat _x, PLfloat _y, PLfloat _z) : x(_x), y(_y), z(_z) {}
-
-    PLVector3D() : x(0), y(0) {}
-
-    PLfloat x, y, z;
-
-    void operator=(PLVector3D a) {
-        x = a.x;
-        y = a.y;
-        z = a.z;
-    }
-
-    void operator=(PLfloat a) {
-        x = a;
-        y = a;
-        z = a;
-    }
-
-    void operator*=(PLVector3D a) {
-        x *= a.x;
-        y *= a.y;
-        z *= a.z;
-    }
-
-    void operator*=(PLfloat a) {
-        x *= a;
-        y *= a;
-        z *= a;
-    }
-
-    void operator+=(PLVector3D a) {
-        x += a.x;
-        y += a.y;
-        z += a.z;
-    }
-
-    PLbool operator==(PLVector3D a) const { return ((x == a.x) && (y == a.y) && (z == a.z)); }
-
-    PLVector3D operator*(PLVector3D a) const { return PLVector3D(x * a.x, y * a.y, z * a.z); }
-
-    PLVector3D operator*(PLfloat a) const { return PLVector3D(x * a, y * a, z * a); }
-
-    PLVector3D operator-(PLVector3D a) const { return PLVector3D(x - a.x, y - a.y, z - a.z); }
-
-    PLVector3D operator-(PLfloat a) const { return PLVector3D(x - a, y - a, z - a); }
-
-    PLVector3D operator+(PLVector3D a) const { return PLVector3D(x + a.x, y + a.y, z + a.z); }
-
-    PLVector3D operator+(PLfloat a) const { return PLVector3D(x + a, y + a, z + a); }
-
-    PLfloat Length() { return std::sqrt(x * x + y * y + z * z); }
-
-    PLfloat DotProduct(PLVector3D a) { return (x * a.x + y * a.y + z * a.z); }
-
-    PLVector3D CrossProduct(PLVector3D a) {
-        return PLVector3D(y * a.z - z * a.y, z * a.x - x * a.z, x * a.y - y * a.x);
-    }
-
-    PLVector3D Normalize() {
-        PLVector3D out;
-        PLfloat length = Length();
-        if (length != 0)
-            out.Set(x / length, y / length, z / length);
-        return out;
-    }
-
-    void PL_INLINE Set(PLfloat _x, PLfloat _y, PLfloat _z) {
-        x = _x;
-        y = _y;
-        z = _z;
-    }
-
-    void PL_INLINE Clear() {
-        x = 0;
-        y = 0;
-        z = 0;
-    }
-} PLVector3D;
+}
 
 #else
 
@@ -220,40 +226,52 @@ typedef PLfloat PLColourf[4];
 
 #ifdef __cplusplus
 
-struct PLColour {
-    PLColour() : PLColour(PL_COLOUR_WHITE) {}
+namespace pl {
+    namespace math {
 
-    PLColour(PLuchar _r, PLuchar _g, PLuchar _b, PLuchar _a = 255) : r(_r), g(_g), b(_b), a(_a) {}
-    PLColour(PLint _r, PLint _g, PLint _b, PLint _a = 255) :
-            PLColour((PLuchar)_r, (PLuchar)_g, (PLuchar) _b, (PLuchar)_a) {}
-    PLColour(PLfloat _r, PLfloat _g, PLfloat _b, PLfloat _a = 1) :
-            r((PLuchar)(_r * 255)),
-            g((PLuchar)(_g * 255)),
-            b((PLuchar)(_b * 255)),
-            a((PLuchar)(_a * 255)) {}
+        struct Colour {
+            Colour() : Colour(PL_COLOUR_WHITE) {}
 
-    PLuchar r, g, b, a;
+            Colour(PLuchar _r, PLuchar _g, PLuchar _b, PLuchar _a = 255) : r(_r), g(_g), b(_b), a(_a) {}
 
-    PLbool operator==(PLColour in) const { return ((r == in.r) && (g == in.g) && (b == in.b) && (a == in.a)); }
+            Colour(PLint _r, PLint _g, PLint _b, PLint _a = 255) :
+                    Colour((PLuchar) _r, (PLuchar) _g, (PLuchar) _b, (PLuchar) _a) {}
 
-    PLColour operator*(PLColour in) { return PLColour(r * in.r, g * in.g, b * in.b, a * in.a); }
-    PLColour operator/(PLColour in) { return PLColour(r / in.r, g / in.g, b / in.b, a / in.a); }
+            Colour(PLfloat _r, PLfloat _g, PLfloat _b, PLfloat _a = 1) :
+                    r((PLuchar) (_r * 255)),
+                    g((PLuchar) (_g * 255)),
+                    b((PLuchar) (_b * 255)),
+                    a((PLuchar) (_a * 255)) {}
 
-    void PL_INLINE Set(PLfloat _r, PLfloat _g, PLfloat _b, PLfloat _a = 1) {
-        r = (PLuchar) (_r * 255);
-        g = (PLuchar) (_g * 255);
-        b = (PLuchar) (_b * 255);
-        a = (PLuchar) (_a * 255);
+            PLuchar r, g, b, a;
+
+            PLbool operator==(Colour in) const { return ((r == in.r) && (g == in.g) && (b == in.b) && (a == in.a)); }
+
+            Colour operator*(Colour in) { return Colour(r * in.r, g * in.g, b * in.b, a * in.a); }
+
+            Colour operator/(Colour in) { return Colour(r / in.r, g / in.g, b / in.b, a / in.a); }
+
+            void PL_INLINE Set(PLfloat _r, PLfloat _g, PLfloat _b, PLfloat _a = 1) {
+                r = (PLuchar) (_r * 255);
+                g = (PLuchar) (_g * 255);
+                b = (PLuchar) (_b * 255);
+                a = (PLuchar) (_a * 255);
+            }
+
+            void PL_INLINE Clear() {
+                r = 0;
+                g = 0;
+                b = 0;
+                a = 0;
+            }
+        };
+
     }
-
-    void PL_INLINE Clear() {
-        r = 0; g = 0; b = 0; a = 0;
-    }
-};
+}
 
 #else
 
-typedef struct PLColour PLColour;
+typedef struct Colour Colour;
 
 #endif
 

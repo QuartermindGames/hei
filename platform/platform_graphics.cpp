@@ -275,14 +275,14 @@ void plSetClearColour3f(PLfloat r, PLfloat g, PLfloat b) {
 void plSetClearColour4f(PLfloat r, PLfloat g, PLfloat b, PLfloat a) {
     _PL_GRAPHICS_TRACK();
 
-    plSetClearColour(PLColour(r, g, b, a));
+    plSetClearColour(pl::math::Colour(r, g, b, a));
 }
 
 void plSetClearColour4fv(PLColourf rgba) {
     plSetClearColour4f(rgba[0], rgba[1], rgba[2], rgba[3]);
 }
 
-void plSetClearColour(PLColour rgba) {
+void plSetClearColour(pl::math::Colour rgba) {
     if (rgba == pl_graphics_state.current_clearcolour)
         return;
 
@@ -477,76 +477,7 @@ void plSetCullMode(VLCullMode mode) {
 #endif
     pl_graphics_state.current_cullmode = mode;
 }
-
-typedef struct PLTranslatePrimitive {
-    PLPrimitive mode;
-
-    PLuint target;
-
-    const PLchar *name;
-} PLTranslatePrimitive;
-
-PLTranslatePrimitive _pl_primitives[] = {
-#if defined (PL_MODE_OPENGL) || (VL_MODE_OPENGL_CORE)
-        {VL_PRIMITIVE_LINES, GL_LINES, "LINES"},
-        {VL_PRIMITIVE_POINTS, GL_POINTS, "POINTS"},
-        {VL_PRIMITIVE_TRIANGLES, GL_TRIANGLES, "TRIANGLES"},
-        {VL_PRIMITIVE_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN"},
-        {VL_PRIMITIVE_TRIANGLE_FAN_LINE, GL_LINES, "TRIANGLE_FAN_LINE"},
-        {VL_PRIMITIVE_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"},
-        {VL_PRIMITIVE_QUADS, GL_QUADS, "QUADS"}
-#elif defined (VL_MODE_GLIDE)
-    { VL_PRIMITIVE_LINES,					GR_LINES,			"LINES" },
-    { VL_PRIMITIVE_LINE_STRIP,				GR_LINE_STRIP,		"LINE_STRIP" },
-    { VL_PRIMITIVE_POINTS,					GR_POINTS,			"POINTS" },
-    { VL_PRIMITIVE_TRIANGLES,				GR_TRIANGLES,		"TRIANGLES" },
-    { VL_PRIMITIVE_TRIANGLE_FAN,			GR_TRIANGLE_FAN,	"TRIANGLE_FAN" },
-    { VL_PRIMITIVE_TRIANGLE_FAN_LINE,		GR_LINES,			"TRIANGLE_FAN_LINE" },
-    { VL_PRIMITIVE_TRIANGLE_STRIP,			GR_TRIANGLE_STRIP,	"TRIANGLE_STRIP" },
-    { VL_PRIMITIVE_QUADS,					0,					"QUADS" }
-#elif defined (VL_MODE_DIRECT3D)
-#elif defined (VL_MODE_VULKAN)
-    { VL_PRIMITIVE_LINES,					VK_PRIMITIVE_TOPOLOGY_LINE_LIST,		"LINES" },
-    { VL_PRIMITIVE_POINTS,					VK_PRIMITIVE_TOPOLOGY_POINT_LIST,		"POINTS" },
-    { VL_PRIMITIVE_TRIANGLES,				VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,	"TRIANGLES" },
-    { VL_PRIMITIVE_TRIANGLE_FAN,			VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN,		"TRIANGLE_FAN" },
-    { VL_PRIMITIVE_TRIANGLE_FAN_LINE,		VK_PRIMITIVE_TOPOLOGY_LINE_LIST,		"TRIANGLE_FAN_LINE" },
-    { VL_PRIMITIVE_TRIANGLE_STRIP,			VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,	"TRIANGLE_STRIP" },
-    { VL_PRIMITIVE_QUADS,					0,										"QUADS" }
-#else
-    { 0 }
-#endif
-};
-
-PLuint _plTranslatePrimitiveMode(PLPrimitive mode) {
-    _PL_GRAPHICS_TRACK();
-
-    for (PLint i = 0; i < plArrayElements(_pl_primitives); i++)
-        if (mode == _pl_primitives[i].mode)
-            return _pl_primitives[i].target;
-
-    // Hacky, but just return initial otherwise.
-    return _pl_primitives[0].target;
-}
-
-void _plDrawArrays(PLPrimitive mode, PLuint first, PLuint count) {
-    _PL_GRAPHICS_TRACK();
-
-    if ((count == 0) || (first > count)) return;
-#if defined(PL_MODE_OPENGL)
-    glDrawArrays(_plTranslatePrimitiveMode(mode), first, count);
-#endif
-}
-
-void _plDrawElements(PLPrimitive mode, PLuint count, PLuint type, const PLvoid *indices) {
-    _PL_GRAPHICS_TRACK();
-
-    if ((count == 0) || !indices) return;
-#if defined(PL_MODE_OPENGL)
-    glDrawElements(_plTranslatePrimitiveMode(mode), count, type, indices);
-#endif
-}
-
+#if 0
 void plDraw(PLDraw *draw) {
     _PL_GRAPHICS_TRACK();
 #if 0 // update this :(
@@ -569,7 +500,7 @@ void plDraw(PLDraw *draw) {
 
         // todo, switch to using glInterleavedArrays?
 
-        if (draw->primitive == VL_PRIMITIVE_TRIANGLES)
+        if (draw->primitive == PL_PRIMITIVE_TRIANGLES)
             _vlDrawElements(
                 draw->primitive,
                 draw->numtriangles * 3,
@@ -601,7 +532,7 @@ void plDraw(PLDraw *draw) {
                 glTexCoordPointer(2, GL_FLOAT, sizeof(PLVertex), vert->ST[i]);
             }
 
-        if(draw->primitive == VL_PRIMITIVE_TRIANGLES)
+        if(draw->primitive == PL_PRIMITIVE_TRIANGLES)
             _plDrawElements
             (
                     draw->primitive,
@@ -626,17 +557,7 @@ void plDraw(PLDraw *draw) {
 #endif
 #endif
 }
-
-void plDrawVertexNormals(PLDraw *draw) {
-    if (draw->primitive == VL_PRIMITIVE_LINES)
-        return;
-
-    PLVector3D endpos;
-    for (PLuint i = 0; i < draw->numverts; i++) {
-        endpos = (draw->vertices[i].normal * 2.0f) + draw->vertices[i].position;
-        //plDrawLine blah
-    }
-}
+#endif
 
 /*===========================
 	SHADERS
@@ -809,7 +730,7 @@ PLbool _plIsCompressedTextureFormat(PLImageFormat format) {
     }
 }
 
-std::map<PLuint, PLTexture*> pl_graphics_textures;
+std::unordered_map<PLuint, PLTexture*> _pl_graphics_textures;
 
 PLTexture *plCreateTexture(void) {
     _PL_GRAPHICS_TRACK();
@@ -823,10 +744,10 @@ PLTexture *plCreateTexture(void) {
 #if defined(PL_MODE_OPENGL)
     glGenTextures(1, &texture->id);
 #else
-    texture->id = pl_graphics_textures.count + 1;
+    texture->id = _pl_graphics_textures.count + 1;
 #endif
 
-    pl_graphics_textures.emplace(texture->id, texture);
+    _pl_graphics_textures.emplace(texture->id, texture);
 
     return texture;
 }
@@ -838,15 +759,15 @@ void plDeleteTexture(PLTexture *texture, PLbool force) {
         return;
     }
 
-    auto tex = pl_graphics_textures.begin();
-    while(tex != pl_graphics_textures.end()) {
+    auto tex = _pl_graphics_textures.begin();
+    while(tex != _pl_graphics_textures.end()) {
         if(tex->second == texture) {
 #if defined(PL_MODE_OPENGL)
             glDeleteTextures(1, &texture->id);
 #endif
 
             delete tex->second;
-            pl_graphics_textures.erase(tex);
+            _pl_graphics_textures.erase(tex);
             return;
         }
         ++tex;
@@ -955,7 +876,7 @@ PLresult plUploadTexture(PLTexture *texture, const PLTextureInfo *upload) {
 PLTexture *plGetCurrentTexture(PLuint tmu) {
     _PL_GRAPHICS_TRACK();
 
-    return pl_graphics_textures.find(pl_graphics_state.tmu[tmu].current_texture)->second;
+    return _pl_graphics_textures.find(pl_graphics_state.tmu[tmu].current_texture)->second;
 }
 
 PLuint plGetCurrentTextureUnit(void) {
@@ -1130,7 +1051,7 @@ void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
 /*===========================
 	LIGHTING
 ===========================*/
-
+#if 0
 void plApplyLighting(PLDraw *object, PLLight *light, PLVector3f position) {
 #if 0
     // Calculate the distance.
@@ -1176,6 +1097,7 @@ void plApplyLighting(PLDraw *object, PLLight *light, PLVector3f position) {
     }
 #endif
 }
+#endif
 
 /*===========================
 	UTILITY FUNCTIONS

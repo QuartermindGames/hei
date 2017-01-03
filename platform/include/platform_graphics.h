@@ -225,65 +225,7 @@ PL_EXTERN PLresult plSetTextureAnisotropy(PLTexture *texture, PLuint amount);
 
 PL_EXTERN_C_END
 
-//-----------------
-// Drawing
-
-typedef enum VLDrawMode {
-#if defined (PL_MODE_OPENGL)
-    VL_DRAWMODE_STATIC = GL_STATIC_DRAW,
-    VL_DRAWMODE_DYNAMIC = GL_DYNAMIC_DRAW,
-#else
-    VL_DRAWMODE_STATIC,
-    VL_DRAWMODE_DYNAMIC,
-#endif
-} VLDrawMode;
-
-// Primitive Types
-typedef enum PLPrimitive {
-    VL_PRIMITIVE_IGNORE = -1,
-
-    VL_PRIMITIVE_LINES,
-    VL_PRIMITIVE_LINE_STRIP,
-    VL_PRIMITIVE_POINTS,
-    VL_PRIMITIVE_TRIANGLES,
-    VL_PRIMITIVE_TRIANGLE_STRIP,
-    VL_PRIMITIVE_TRIANGLE_FAN,
-    VL_PRIMITIVE_TRIANGLE_FAN_LINE,
-    VL_PRIMITIVE_QUADS,                // Advised to avoid this.
-
-    VL_PRIMITIVE_END
-} PLPrimitive;
-
-typedef struct PLVertex {
-    PLVector3D position, normal;
-
-    PLVector2D ST[16];
-
-    PLColour colour;
-} PLVertex;
-
-typedef struct PLDraw {
-    PLVertex *vertices;                            // Array of vertices for the object.
-
-    PLuint numverts;                            // Number of vertices.
-    PLuint numtriangles;                        // Number of triangles.
-
-    PLuint8 *indices;                                // List of indices.
-
-    PLPrimitive primitive, primitive_restore;        // Type of primitive, and primitive to restore to.
-
-    unsigned int _gl_vbo[16];                        // Vertex buffer object.
-} PLDraw;
-
-PL_EXTERN_C
-
-PL_EXTERN void plSetBlendMode(PLBlend modea, PLBlend modeb);
-PL_EXTERN void plSetCullMode(VLCullMode mode);
-
-PL_EXTERN void plDraw(PLDraw *draw);
-PL_EXTERN void plDrawVertexNormals(PLDraw *draw);
-
-PL_EXTERN_C_END
+#include "platform_graphics_mesh.h"
 
 //-----------------
 // Framebuffers
@@ -311,7 +253,7 @@ PL_EXTERN_C
 PL_EXTERN void plSetClearColour3f(PLfloat r, PLfloat g, PLfloat b);
 PL_EXTERN void plSetClearColour4f(PLfloat r, PLfloat g, PLfloat b, PLfloat a);
 PL_EXTERN void plSetClearColour4fv(PLColourf rgba);
-PL_EXTERN void plSetClearColour(PLColour rgba);
+PL_EXTERN void plSetClearColour(pl::math::Colour rgba);
 
 PL_EXTERN void plClearBuffers(PLuint buffers);
 
@@ -322,7 +264,7 @@ PL_EXTERN_C_END
 
 typedef struct PLLight {
     PLVector3f position;
-    PLColour colour;
+    pl::math::Colour colour;
     float radius;
 } PLLight;
 
@@ -333,8 +275,8 @@ typedef struct PLGraphicsState {
 
     VLCullMode current_cullmode;
 
-    PLColour current_clearcolour;
-    PLColour current_colour;            // Current global colour.
+    pl::math::Colour current_clearcolour;
+    pl::math::Colour current_colour;            // Current global colour.
 
     PLuint current_capabilities;    // Enabled capabilities.
     PLuint current_textureunit;
@@ -393,3 +335,5 @@ void plDisableShaderProgram(unsigned int program);
 PL_EXTERN_C_END
 
 #include "platform_graphics_shader.h"
+#include "platform_graphics_camera.h"
+#include "platform_graphics_viewport.h"

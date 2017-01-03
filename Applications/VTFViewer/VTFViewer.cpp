@@ -62,7 +62,6 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-#if 0
     PLTexture *image_texture = plCreateTexture();
     if(!image_texture) {
         plMessageBox(TITLE, "Failed to create texture!");
@@ -70,7 +69,6 @@ int main(int argc, char *argv[]) {
     }
 
     plUploadTextureImage(image_texture, &image);
-#endif
 
     plSetClearColour(PLColour(PL_COLOUR_RED));
 

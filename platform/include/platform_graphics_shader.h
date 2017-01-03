@@ -27,27 +27,52 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-typedef struct PLShaderUniform {
-    PLuint id;  // Typically the location within the shader.
+typedef enum PLShaderType {
+    PL_SHADER_VERTEX,   // GL_VERTEX_SHADER
+    PL_SHADER_FRAGMENT, // GL_FRAGMENT_SHADER
+    PL_SHADER_GEOMETRY, // GL_GEOMETRY_SHADER
+    PL_SHADER_COMPUTE,  // GL_COMPUTE_SHADER
+} PLShaderType;
 
-    PLUniformType type;
+typedef enum PLShaderUniformType {
+    PL_UNIFORM_FLOAT,
+    PL_UNIFORM_INT,
+    PL_UNIFORM_UINT,
+    PL_UNIFORM_BOOL,
+    PL_UNIFORM_DOUBLE,
 
-    PLchar def[32]; // Default value.
-} PLShaderUniform;
+    // Textures
+
+    PL_UNIFORM_SAMPLER1D,
+    PL_UNIFORM_SAMPLER2D,
+    PL_UNIFORM_SAMPLER3D,
+    PL_UNIFORM_SAMPLERCUBE,
+    PL_UNIFORM_SAMPLER1DSHADOW,
+    PL_UNIFORM_SAMPLER2DSHADOW,
+
+    // Vectors
+
+    PL_UNIFORM_VEC2,
+    PL_UNIFORM_VEC3,
+    PL_UNIFORM_VEC4,
+
+    // Matrices
+
+    PL_UNIFORM_MAT3
+} ShaderUniformType;
+
+typedef int PLSampler1D, PLSampler2D, PLSampler3D;
+typedef int PLSamplerCube;
+typedef int PLSampler1DShadow, PLSampler2DShadow;
+
+#ifdef __cplusplus
 
 namespace pl {
     namespace graphics {
 
-        typedef enum ShaderType {
-            SHADER_VERTEX,   // GL_VERTEX_SHADER
-            SHADER_FRAGMENT, // GL_FRAGMENT_SHADER
-            SHADER_GEOMETRY, // GL_GEOMETRY_SHADER
-            SHADER_COMPUTE,  // GL_COMPUTE_SHADER
-        } ShaderType;
-
         class Shader {
         public:
-            Shader(ShaderType type);
+            Shader(PLShaderType type);
             ~Shader();
 
             PLresult LoadFile(std::string path);
@@ -58,35 +83,10 @@ namespace pl {
         private:
             unsigned int id_;
 
-            ShaderType type_;
+            PLShaderType type_;
         };
 
         class ShaderProgram;
-
-        typedef enum ShaderUniformType {
-            UNIFORM_FLOAT,
-            UNIFORM_INT,
-            UNIFORM_UINT,
-            UNIFORM_BOOL,
-            UNIFORM_DOUBLE,
-
-            // Textures
-
-            UNIFORM_SAMPLER1D,
-            UNIFORM_SAMPLER2D,
-            UNIFORM_SAMPLER3D,
-            UNIFORM_SAMPLERCUBE,
-
-            // Vectors
-
-            UNIFORM_VEC2,
-            UNIFORM_VEC3,
-            UNIFORM_VEC4,
-
-            // Matrices
-
-            UNIFORM_MAT3
-        } ShaderUniformType;
 
         class ShaderUniform {
         public:
@@ -134,6 +134,8 @@ namespace pl {
             void RegisterUniform(std::string name);
             void RegisterAttribute(std::string name);
 
+            void LoadShaders(std::string vertex, std::string fragment);
+
             void AttachShader(Shader *shader);
 
             bool IsEnabled() { return (plGetCurrentShaderProgram() == id_); }
@@ -165,10 +167,12 @@ namespace pl {
         private:
             unsigned int id_;
 
-            std::vector<*Shader>							    shaders;
+            std::vector<Shader*>							    shaders;
             std::unordered_map<std::string, ShaderAttribute>	attributes;
             std::unordered_map<std::string, ShaderUniform>		uniforms;
         };
 
     }
 }
+
+#endif

@@ -20,6 +20,8 @@
 
 #include "platform_model.h"
 
+using namespace pl::graphics;
+
 /*
 	UNREAL 3D Animated Model Format
 
@@ -168,8 +170,8 @@ PLAnimatedModel *plLoadU3DModel(const PLchar *path) {
     // Allocate the triangle/vertex arrays.
     model->frames = new PLModelFrame[model->num_frames];
     for (unsigned int i = 0; i < model->num_frames; i++) {
-        model->frames[i].vertices = new PLVertex[model->num_vertices];
-        model->frames[i].triangles = new PLTriangle[model->num_triangles];
+        model->frames[i].vertices = new Vertex[model->num_vertices];
+        model->frames[i].triangles = new Triangle[model->num_triangles];
     }
 
     // Skip unused header data.
