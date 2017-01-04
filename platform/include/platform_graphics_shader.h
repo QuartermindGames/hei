@@ -27,40 +27,6 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-typedef enum PLShaderType {
-    PL_SHADER_VERTEX,   // GL_VERTEX_SHADER
-    PL_SHADER_FRAGMENT, // GL_FRAGMENT_SHADER
-    PL_SHADER_GEOMETRY, // GL_GEOMETRY_SHADER
-    PL_SHADER_COMPUTE,  // GL_COMPUTE_SHADER
-} PLShaderType;
-
-typedef enum PLShaderUniformType {
-    PL_UNIFORM_FLOAT,
-    PL_UNIFORM_INT,
-    PL_UNIFORM_UINT,
-    PL_UNIFORM_BOOL,
-    PL_UNIFORM_DOUBLE,
-
-    // Textures
-
-    PL_UNIFORM_SAMPLER1D,
-    PL_UNIFORM_SAMPLER2D,
-    PL_UNIFORM_SAMPLER3D,
-    PL_UNIFORM_SAMPLERCUBE,
-    PL_UNIFORM_SAMPLER1DSHADOW,
-    PL_UNIFORM_SAMPLER2DSHADOW,
-
-    // Vectors
-
-    PL_UNIFORM_VEC2,
-    PL_UNIFORM_VEC3,
-    PL_UNIFORM_VEC4,
-
-    // Matrices
-
-    PL_UNIFORM_MAT3
-} ShaderUniformType;
-
 typedef int PLSampler1D, PLSampler2D, PLSampler3D;
 typedef int PLSamplerCube;
 typedef int PLSampler1DShadow, PLSampler2DShadow;
@@ -70,9 +36,16 @@ typedef int PLSampler1DShadow, PLSampler2DShadow;
 namespace pl {
     namespace graphics {
 
-        class Shader {
+        typedef enum ShaderType {
+            SHADER_VERTEX,   // GL_VERTEX_SHADER
+            SHADER_FRAGMENT, // GL_FRAGMENT_SHADER
+            SHADER_GEOMETRY, // GL_GEOMETRY_SHADER
+            SHADER_COMPUTE,  // GL_COMPUTE_SHADER
+        } ShaderType;
+
+        class PL_DLL Shader {
         public:
-            Shader(PLShaderType type);
+            Shader(ShaderType type, std::string path);
             ~Shader();
 
             PLresult LoadFile(std::string path);
@@ -83,12 +56,39 @@ namespace pl {
         private:
             unsigned int id_;
 
-            PLShaderType type_;
+            ShaderType type_;
         };
 
         class ShaderProgram;
 
-        class ShaderUniform {
+        typedef enum ShaderUniformType {
+            UNIFORM_FLOAT,
+            UNIFORM_INT,
+            UNIFORM_UINT,
+            UNIFORM_BOOL,
+            UNIFORM_DOUBLE,
+
+            // Textures
+
+            UNIFORM_SAMPLER1D,
+            UNIFORM_SAMPLER2D,
+            UNIFORM_SAMPLER3D,
+            UNIFORM_SAMPLERCUBE,
+            UNIFORM_SAMPLER1DSHADOW,
+            UNIFORM_SAMPLER2DSHADOW,
+
+            // Vectors
+
+            UNIFORM_VEC2,
+            UNIFORM_VEC3,
+            UNIFORM_VEC4,
+
+            // Matrices
+
+            UNIFORM_MAT3
+        } ShaderUniformType;
+
+        class PL_DLL ShaderUniform {
         public:
             ShaderUniform(ShaderProgram *parent, std::string name);
 
@@ -107,7 +107,7 @@ namespace pl {
             ShaderProgram *parent_;
         };
 
-        class ShaderAttribute {
+        class PL_DLL ShaderAttribute {
         public:
             ShaderAttribute(ShaderProgram *parent, std::string name);
 
@@ -126,7 +126,7 @@ namespace pl {
             ShaderProgram *parent_;
         };
 
-        class ShaderProgram {
+        class PL_DLL ShaderProgram {
         public:
             ShaderProgram();
             ~ShaderProgram();
@@ -139,6 +139,10 @@ namespace pl {
             void AttachShader(Shader *shader);
 
             bool IsEnabled() { return (plGetCurrentShaderProgram() == id_); }
+
+            virtual void PreDraw();
+            virtual void Draw() = 0;
+            virtual void PostDraw();
 
             void Enable();
             void Disable();

@@ -30,12 +30,12 @@ For more information, please refer to <http://unlicense.org>
 
 using namespace pl::graphics;
 
-unsigned int _plTranslateShaderType(PLShaderType type) {
+unsigned int _plTranslateShaderType(ShaderType type) {
     switch(type) {
-        case PL_SHADER_VERTEX:      return GL_VERTEX_SHADER;
-        case PL_SHADER_FRAGMENT:    return GL_FRAGMENT_SHADER;
-        case PL_SHADER_GEOMETRY:    return GL_GEOMETRY_SHADER;
-        case PL_SHADER_COMPUTE:     return GL_COMPUTE_SHADER;
+        case SHADER_VERTEX:      return GL_VERTEX_SHADER;
+        case SHADER_FRAGMENT:    return GL_FRAGMENT_SHADER;
+        case SHADER_GEOMETRY:    return GL_GEOMETRY_SHADER;
+        case SHADER_COMPUTE:     return GL_COMPUTE_SHADER;
     }
 }
 
@@ -43,10 +43,12 @@ unsigned int _plTranslateShaderType(PLShaderType type) {
 	SHADER
 ===========================*/
 
-Shader::Shader(PLShaderType type) : type_(type) {
+Shader::Shader(ShaderType type, std::string path) : type_(type) {
     id_ = glCreateShader(_plTranslateShaderType(type_));
     if(id_ == 0) {
         throw std::runtime_error("failed to create shader");
+    } else if(!path.empty() && (LoadFile(path) != PL_RESULT_SUCCESS)) {
+        throw std::runtime_error("failed to load shader");
     }
 }
 
@@ -58,10 +60,10 @@ PLresult Shader::LoadFile(std::string path) {
     // Ensure we use the correct path and shader.
     std::string full_path;
     switch(type_) {
-        case PL_SHADER_FRAGMENT:
+        case SHADER_FRAGMENT:
             full_path = path + "_fragment.shader";
             break;
-        case PL_SHADER_VERTEX:
+        case SHADER_VERTEX:
             full_path = path + "_vertex.shader";
             break;
         default:    return PL_RESULT_FILETYPE;
@@ -295,6 +297,34 @@ void ShaderProgram::LoadShaders(std::string vertex, std::string fragment) {
         return;
     }
 
-    Shader *frag = new Shader(PL_SHADER_FRAGMENT);
+    AttachShader(new Shader(SHADER_FRAGMENT, fragment));
+    AttachShader(new Shader(SHADER_VERTEX, vertex));
 }
+
+//////////////////////////////////////////
+// API DESIGN CHECK
+
+ShaderProgram *simple_program, *int_program;
+
+void _plShaderInitialize() {
+    // Simple
+    simple_program = new ShaderProgram();
+    simple_program->LoadShaders("./shaders/base", "./shaders/base");
+
+    // Intermediate
+    int_program = new ShaderProgram();
+    int_program->AttachShader(new Shader(SHADER_VERTEX, "./shaders/base"));
+    int_program->AttachShader(new Shader(SHADER_FRAGMENT, "./shaders/base"));
+}
+
+void _plShaderDraw() {
+
+}
+
+void _plShaderShutdown() {
+    delete simple_program;
+    delete int_program;
+}
+
+//////////////////////////////////////////
 

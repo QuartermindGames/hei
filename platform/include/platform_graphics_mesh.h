@@ -61,11 +61,26 @@ namespace pl {
         } MeshMode;
 
         class Mesh {
+        public:
+            Mesh(Primitive primitive, unsigned int num_tris, unsigned int num_verts);
+            ~Mesh();
 
+            void Begin();
+            void Vertex();
+            void Colour();
+            void Normal();
+            void TexCoord();
+            void End();
+
+        protected:
+        private:
+            MeshMode mode_;
         };
 
-        class StaticMesh : Mesh {};
-        class DynamicMesh : Mesh {};
+        class Line {};
+        class Rectangle {};
+        class CoordinateAxes {};
+        class Grid {};
 
     }
 }

@@ -32,6 +32,8 @@ For more information, please refer to <http://unlicense.org>
 
 #include <GLFW/glfw3.h>
 
+using namespace pl;
+
 #define TITLE   "VTF/VMT Viewer"
 #define LOG     "vtfviewer"
 
@@ -55,6 +57,8 @@ int main(int argc, char *argv[]) {
 
     plInitialize(PL_SUBSYSTEM_GRAPHICS);
 
+    plSetDefaultGraphicsState();
+
     PLImage image;
     PLresult result = plLoadImage("./images/bluegrid.vtf", &image);
     if(result != PL_RESULT_SUCCESS) {
@@ -70,10 +74,8 @@ int main(int argc, char *argv[]) {
 
     plUploadTextureImage(image_texture, &image);
 
-    plSetClearColour(PLColour(PL_COLOUR_RED));
-
     while(!glfwWindowShouldClose(window)) {
-        plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
+        plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
         // draw stuff
 

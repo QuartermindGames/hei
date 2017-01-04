@@ -314,6 +314,8 @@ PL_EXTERN_C
 
 PL_EXTERN PLGraphicsState pl_graphics_state;
 
+PL_EXTERN void plSetDefaultGraphicsState(void);
+
 PL_EXTERN void plViewport(PLint x, PLint y, PLuint width, PLuint height);
 PL_EXTERN void plScissor(PLint x, PLint y, PLuint width, PLuint height);
 PL_EXTERN void plFinish(void);

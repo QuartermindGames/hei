@@ -29,6 +29,9 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_log.h"
 #include "platform_image.h"
 
+using namespace pl::graphics;
+using namespace pl::math;
+
 /*	Graphics	*/
 
 /*	todo,
@@ -275,14 +278,14 @@ void plSetClearColour3f(PLfloat r, PLfloat g, PLfloat b) {
 void plSetClearColour4f(PLfloat r, PLfloat g, PLfloat b, PLfloat a) {
     _PL_GRAPHICS_TRACK();
 
-    plSetClearColour(pl::math::Colour(r, g, b, a));
+    plSetClearColour(Colour(r, g, b, a));
 }
 
 void plSetClearColour4fv(PLColourf rgba) {
     plSetClearColour4f(rgba[0], rgba[1], rgba[2], rgba[3]);
 }
 
-void plSetClearColour(pl::math::Colour rgba) {
+void plSetClearColour(Colour rgba) {
     if (rgba == pl_graphics_state.current_clearcolour)
         return;
 
@@ -1102,6 +1105,22 @@ void plApplyLighting(PLDraw *object, PLLight *light, PLVector3f position) {
 /*===========================
 	UTILITY FUNCTIONS
 ===========================*/
+
+void plSetDefaultGraphicsState(void) {
+    plSetClearColour(Colour(0, 0, 0, 255));
+    plSetCullMode(VL_CULL_NEGATIVE);
+    plSetTextureUnit(0);
+
+#if defined(PL_MODE_OPENGL)
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+    glDepthRange(0, 1);
+    glDepthFunc(GL_LEQUAL);
+#endif
+
+    plEnableGraphicsStates(PL_CAPABILITY_SCISSORTEST);
+}
 
 void plViewport(PLint x, PLint y, PLuint width, PLuint height) {
     _PL_GRAPHICS_TRACK();
