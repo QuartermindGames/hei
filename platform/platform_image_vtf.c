@@ -279,8 +279,8 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
 
     _plConvertVTFFormat(out, header.highresimageformat);
 
-    out->levels = header.mipmaps;
-    out->data = new PLbyte*[out->levels];
+    out->levels = 1;
+    out->data = (PLbyte**)calloc(1, sizeof(PLbyte*));
 
     /*
     if (header.version[1] >= 3) {
@@ -294,32 +294,31 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
 
         // VTF's typically include a tiny thumbnail image at the start, which we'll skip.
         fseek(fin, header.lowresimagewidth * header.lowresimageheight / 2, SEEK_CUR);
-        for (PLuint mipmap = header.mipmaps; mipmap; mipmap--) {
 
-#if 0 // skip frames and faces for now...
-            for(PLuint frame = 0; frame < header.frames; frame++) {
-                for(PLuint face = 0; face < faces; face++) {
+        for (PLuint mipmap = 0; mipmap < header.mipmaps; ++mipmap) {
+            for(PLuint frame = 0; frame < header.frames; ++frame) {
+                for(PLuint face = 0; face < faces; ++face) {
+                    // We'll just skip the smaller mipmaps for now, can generate these later.
+                    PLuint mipw = out->width / (PLuint)pow(2, mipmap); //(out->width * (mipmap + 1)) / header.mipmaps;
+                    PLuint miph = out->height / (PLuint)pow(2, mipmap); //(out->height * (mipmap + 1)) / header.mipmaps;
+                    PLuint mipsize = _plGetImageSize(out->format, mipw, miph);
+                    if(mipmap == (header.mipmaps - 1)) {
+                        out->data[0] = (PLbyte*)calloc(mipsize, sizeof(PLbyte));
+                        if (fread(out->data[0], sizeof(PLbyte), mipsize, fin) != mipsize) {
+                            if(feof(fin)) {
+                                perror(PL_FUNCTION);
+                            }
 
+                            _plFreeImage(out);
+                            return PL_RESULT_FILEREAD;
+                        }
+                    } else {
+                        fseek(fin, mipsize, SEEK_CUR);
+                    }
                 }
             }
-#endif
-
-            /* Need to scale mipsize depending on depth of this? Surely each one will use less and less data???
-             * Looking at the DevIL implementation, this doesn't seem like something they worried about but I'm
-             * still slightly concerned about it here.
-             */
-
-            PLuint mipsize = _plGetImageSize(out->format, 0, 0);
-            out->data[mipmap] = new PLbyte[mipsize];
-            if(fread(out->data[mipmap], sizeof(PLbyte), mipsize, fin) != mipsize) {
-                delete[] out->data;
-                return PL_RESULT_FILEREAD;
-            }
-
-            // Skip any additional frames.
-            fseek(fin, mipsize * header.frames * faces, SEEK_CUR);
         }
     }
 
-    plFunctionEnd();
+    return PL_RESULT_SUCCESS;
 }

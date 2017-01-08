@@ -57,7 +57,7 @@ data for each of these functions
         unsigned static int _t = 0;                 \
         if(pl_graphics_state.mode_debug)            \
         {                                           \
-            plGraphicsLog(" " PL_FUNCTION "\n");    \
+            plGraphicsLog(" %s\n", PL_FUNCTION);    \
             _t++;                                   \
         }                                           \
     }

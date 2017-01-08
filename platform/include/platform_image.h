@@ -73,7 +73,11 @@ typedef enum PLColourFormat {
 } PLColourFormat;
 
 typedef struct PLImage {
+#if 1
     PLbyte **data;
+#else
+    PLbyte *data;
+#endif
 
     PLuint x, y;
     PLuint width, height;
@@ -99,8 +103,6 @@ typedef struct PLImage {
 
 PL_EXTERN_C
 
-PL_EXTERN void plFreeImage(PLImage *image);
-
 PL_EXTERN PLbool plIsValidImageSize(PLuint width, PLuint height);
 
 PL_EXTERN PLresult plLoadImage(const PLchar *path, PLImage *out);
@@ -114,6 +116,8 @@ PL_EXTERN PLresult plLoadDDSImage(FILE *fin, PLImage *out);
 #if defined(PL_INTERNAL)
 
 PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height);
+
+void _plFreeImage(PLImage *image);
 
 PLbool _plDDSFormatCheck(FILE *fin);
 PLbool _plDTXFormatCheck(FILE *fin);

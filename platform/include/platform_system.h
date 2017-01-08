@@ -159,8 +159,12 @@ For more information, please refer to <http://unlicense.org>
 #	define PL_CALL
 #	define PL_INLINE    inline
 
+#if 0
 #	define PL_FUNCTION  __FILE__      // Returns the active function.
+#else
+#   define PL_FUNCTION __FUNCTION__
 // todo, we'll need to do some weird hacky shit on Linux for this, since __func__ isn't a string literal like it is
+#endif
 // on MSVC
 
 #   define PL_EXPORT    __attribute__((visibility("default")))

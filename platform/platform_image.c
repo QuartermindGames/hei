@@ -90,13 +90,22 @@ PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height) {
     }
 }
 
-void plFreeImage(PLImage *image) {
+void _plFreeImage(PLImage *image) {
     plFunctionStart();
 
-    if (!image || !image->data)
+    if (!image || !image->data) {
         return;
+    }
 
-    delete[] image->data;
+    for(PLuint levels = 0; levels < image->levels; ++levels) {
+        if(!image->data[levels]) {
+            continue;
+        }
+
+        free(image->data[levels]);
+    }
+
+    free(image->data);
 
     plFunctionEnd();
 }
