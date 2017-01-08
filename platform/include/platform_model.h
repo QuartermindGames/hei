@@ -27,8 +27,8 @@ enum {
 };
 
 typedef struct PLModelFrame {
-    pl::graphics::Triangle  *triangles;
-    pl::graphics::Vertex    *vertices;
+    PLTriangle  *triangles;
+    PLVertex    *vertices;
 
     pl::math::Vector3D mins, maxs; // Bounds
 } PLModelFrame;
@@ -39,7 +39,7 @@ typedef struct PLStaticModel {
     unsigned int num_triangles;
     unsigned int num_vertices;
 
-    pl::graphics::Primitive primitive;
+    PLPrimitive primitive;
 
     PLModelFrame frame;
 } PLStaticModel;
@@ -51,7 +51,7 @@ typedef struct PLAnimatedModel {
     unsigned int num_vertices;
     unsigned int num_frames;
 
-    pl::graphics::Primitive primitive;
+    PLPrimitive primitive;
 
     PLModelFrame *frames;
 } PLAnimatedModel;
@@ -62,7 +62,7 @@ typedef struct PLSkeletalModel {
     unsigned int num_triangles;
     unsigned int num_vertices;
 
-    pl::graphics::Primitive primitive;
+    PLPrimitive primitive;
 
     // Unfinished...
 } PLSkeletalModel;

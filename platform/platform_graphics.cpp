@@ -159,7 +159,7 @@ PLresult _plInitGraphics(void) {
     _plInitDirect3D();
 #endif
 
-    pl_graphics_state.tmu = new PLTextureMappingUnit[plGetMaxTextureUnits()]();    //(PLTextureMappingUnit *) calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));
+    pl_graphics_state.tmu = (PLTextureMappingUnit*)calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));
     memset(pl_graphics_state.tmu, 0, sizeof(PLTextureMappingUnit));
     for (PLuint i = 0; i < plGetMaxTextureUnits(); i++) {
         pl_graphics_state.tmu[i].current_envmode = PL_TEXTUREMODE_REPLACE;
@@ -269,34 +269,24 @@ PLbool plHWSupportsShaders(void) {
 	FRAMEBUFFERS
 ===========================*/
 
-void plSetClearColour3f(PLfloat r, PLfloat g, PLfloat b) {
-    _PL_GRAPHICS_TRACK();
-
-    plSetClearColour4f(r, g, b, pl_graphics_state.current_clearcolour.a);
-}
-
-void plSetClearColour4f(PLfloat r, PLfloat g, PLfloat b, PLfloat a) {
-    _PL_GRAPHICS_TRACK();
-
-    plSetClearColour(Colour(r, g, b, a));
-}
-
-void plSetClearColour4fv(PLColourf rgba) {
-    plSetClearColour4f(rgba[0], rgba[1], rgba[2], rgba[3]);
-}
-
-void plSetClearColour(Colour rgba) {
-    if (rgba == pl_graphics_state.current_clearcolour)
+void plSetClearColour(PLColour rgba) {
+    if (plCompareColour(rgba, pl_graphics_state.current_clearcolour)) {
         return;
+    }
 
 #if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    glClearColor(rgba.r / 255, rgba.g / 255, rgba.b / 255, rgba.a / 255);
+    glClearColor(
+            plByteToFloat(rgba.r),
+            plByteToFloat(rgba.g),
+            plByteToFloat(rgba.b),
+            plByteToFloat(rgba.a)
+    );
 #elif defined (VL_MODE_DIRECT3D)
     // Don't need to do anything specific here, colour is set on clear call.
 #else // Software
 #endif
 
-    pl_graphics_state.current_clearcolour = rgba;
+    plCopyColour(&pl_graphics_state.current_clearcolour, rgba);
 }
 
 void plClearBuffers(PLuint buffers) {
@@ -329,9 +319,9 @@ void plClearBuffers(PLuint buffers) {
 ===========================*/
 
 typedef struct _PLGraphicsCapabilities {
-    unsigned int pl_parm, to_parm;
+    PLuint pl_parm, to_parm;
 
-    const char *ident;
+    const PLchar *ident;
 } _PLGraphicsCapabilities;
 
 _PLGraphicsCapabilities graphics_capabilities[] =
@@ -339,7 +329,7 @@ _PLGraphicsCapabilities graphics_capabilities[] =
 #if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
                 {PL_CAPABILITY_ALPHA_TEST, GL_ALPHA_TEST, "ALPHA_TEST"},
                 {PL_CAPABILITY_BLEND, GL_BLEND, "BLEND"},
-                {PL_CAPABILITY_DEPTH_TEST, GL_DEPTH_TEST, "DEPTH_TEST"},
+                {PL_CAPABILITY_DEPTHTEST, GL_DEPTH_TEST, "DEPTH_TEST"},
                 {PL_CAPABILITY_TEXTURE_2D, GL_TEXTURE_2D, "TEXTURE_2D"},
                 {VL_CAPABILITY_TEXTURE_GEN_S, GL_TEXTURE_GEN_S, "TEXTURE_GEN_S"},
                 {PL_CAPABILITY_TEXTURE_GEN_T, GL_TEXTURE_GEN_T, "TEXTURE_GEN_T"},
@@ -352,7 +342,7 @@ _PLGraphicsCapabilities graphics_capabilities[] =
 #else
         { PL_CAPABILITY_ALPHA_TEST, 0, "ALPHA_TEST" },
         { VL_CAPABILITY_BLEND, 0, "BLEND" },
-        { PL_CAPABILITY_DEPTH_TEST, 0, "DEPTH_TEST" },
+        { PL_CAPABILITY_DEPTHTEST, 0, "DEPTH_TEST" },
         { VL_CAPABILITY_TEXTURE_2D, 0, "TEXTURE_2D" },
         { VL_CAPABILITY_TEXTURE_GEN_S, 0, "TEXTURE_GEN_S" },
         { PL_CAPABILITY_TEXTURE_GEN_T, 0, "TEXTURE_GEN_T" },
@@ -391,7 +381,7 @@ void plEnableGraphicsStates(PLuint flags) {
         if (flags & VL_CAPABILITY_FOG)
             // TODO: need to check this is supported...
             grFogMode(GR_FOG_WITH_TABLE_ON_FOGCOORD_EXT);
-        if (flags & PL_CAPABILITY_DEPTH_TEST)
+        if (flags & PL_CAPABILITY_DEPTHTEST)
             grDepthBufferMode(GR_DEPTHBUFFER_ZBUFFER);
         if (flags & VL_CAPABILITY_CULL_FACE)
             grCullMode(graphics_state.current_cullmode);
@@ -425,7 +415,7 @@ void plDisableGraphicsStates(PLuint flags) {
 #if defined (VL_MODE_GLIDE)
         if (flags & VL_CAPABILITY_FOG)
             grFogMode(GR_FOG_DISABLE);
-        if (flags & PL_CAPABILITY_DEPTH_TEST)
+        if (flags & PL_CAPABILITY_DEPTHTEST)
             grDepthBufferMode(GR_DEPTHBUFFER_DISABLE);
         if (flags & VL_CAPABILITY_CULL_FACE)
             grCullMode(graphics_state.current_cullmode);
@@ -1107,7 +1097,7 @@ void plApplyLighting(PLDraw *object, PLLight *light, PLVector3f position) {
 ===========================*/
 
 void plSetDefaultGraphicsState(void) {
-    plSetClearColour(Colour(0, 0, 0, 255));
+    plSetClearColour(plCreateColour4b(PL_COLOUR_BLACK));
     plSetCullMode(VL_CULL_NEGATIVE);
     plSetTextureUnit(0);
 

@@ -1,40 +1,21 @@
 
 #pragma once
 
-namespace pl {
-    namespace graphics {
+#include "platform.h"
 
-        class Camera;
+typedef struct PLViewport {
+    PLint x, y;
 
-        class PL_DLL Viewport {
-        public:
-            Viewport(int x = 0, int y = 0, unsigned int width = 640, unsigned int height = 480);
+    PLuint width, height;
 
-            math::Vector2D GetSize() { return math::Vector2D(width_, height_); }
-            unsigned int GetWidth() { return width_; }
-            unsigned int GetHeight() { return height_; }
+    struct PLViewport *parent, **children;
+} PLViewport;
 
-            void SetSize(unsigned int width, unsigned int height);
+PL_EXTERN_C
 
-            math::Vector2D GetPosition() { return math::Vector2D(x_, y_); }
+PL_EXTERN void plSetViewportSize(PLViewport *viewport, PLuint width, PLuint height);
+PL_EXTERN void plSetViewportPosition(PLViewport *viewport, PLint x, PLint y);
 
-            void SetPosition(int x, int y);
+PL_EXTERN void plScreenshot(PLViewport *viewport, const PLchar *path);
 
-            virtual void Draw() = 0;
-
-            void Screenshot(std::string path);
-            void Screenshot();
-
-        protected:
-        private:
-            int x_, y_;
-            unsigned int width_, height_;
-
-            Camera *camera_;
-
-            std::vector<Viewport*> children_;
-            Viewport*parent_;
-        };
-
-    }
-}
+PL_EXTERN_C_END

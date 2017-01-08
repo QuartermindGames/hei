@@ -1,4 +1,4 @@
-#[[
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,20 +23,36 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-]]
+*/
 
-project(platform)
+#version 120
 
-file(
-        GLOB PLATFORM_SOURCE_FILES
-        *.cpp *.c
-        include/*.h
-        )
+varying vec4 v_diffusecolour;
+varying vec4 v_normalcolour;
 
-add_library(platform SHARED ${PLATFORM_SOURCE_FILES})
+uniform sampler2D	u_diffusemap;
+uniform sampler2D	u_detailmap;
+uniform sampler2D	u_fullbrightmap;
+uniform sampler2D	u_normalmap;
+uniform sampler2D	u_spheremap;
 
-set_target_properties(platform PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
+uniform vec4	u_lightcolour;
+uniform vec3	u_lightposition;
 
-target_compile_options(platform PUBLIC -fPIC -DPL_INTERNAL)
-target_include_directories(platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(platform dl GL GLEW)
+uniform	float	u_alphaclamp;
+uniform	bool	u_alphatest;
+
+void main() {
+	vec4 diffuse = texture2D(u_diffusemap, gl_TexCoord[0].st);
+
+	// Alpha-testing.
+	if (u_alphatest == true) {
+		if (diffuse.a < u_alphaclamp) {
+			discard;
+		}
+	}
+
+	gl_FragColor = diffuse;
+	//gl_FragColor = vec4(v_diffusecolour.xyz, 1.0) * diffuse;
+	//gl_FragColor = normalize(v_normalcolour);
+}

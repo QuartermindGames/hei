@@ -31,8 +31,9 @@ For more information, please refer to <http://unlicense.org>
 PLresult plLoadImage(const PLchar *path, PLImage *out) {
     plFunctionStart();
 
-    if (!plIsValidString(path))
+    if (!plIsValidString(path)) {
         return PL_RESULT_FILEPATH;
+    }
 
     PLresult result = PL_RESULT_FILETYPE;
 

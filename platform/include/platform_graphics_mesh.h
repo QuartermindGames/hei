@@ -1,88 +1,58 @@
 
 #pragma once
 
-#if 0
-typedef struct PLDraw {
+typedef enum PLPrimitive {
+    PL_PRIMITIVE_IGNORE,
+
+    PL_PRIMITIVE_LINES,
+    PL_PRIMITIVE_LINE_STRIP,
+    PL_PRIMITIVE_POINTS,
+    PL_PRIMITIVE_TRIANGLES,
+    PL_PRIMITIVE_TRIANGLE_STRIP,
+    PL_PRIMITIVE_TRIANGLE_FAN,
+    PL_PRIMITIVE_TRIANGLE_FAN_LINE,
+    PL_PRIMITIVE_QUADS,
+
+    PL_NUM_PRIMITIVES
+} PLPrimitive;
+
+typedef enum PLDrawMode {
+    PL_DRAW_DYNAMIC,
+    PL_DRAW_STATIC,
+
+    PL_NUM_DRAWMODES
+} PLDrawMode;
+
+typedef struct PLVertex {
+    PLVector3D position, normal;
+    PLVector2D st[16];
+
+    PLColour colour;
+} PLVertex;
+
+typedef struct PLTriangle {
+    PLVector3D normal;
+
+    PLuint indices[3];
+} PLTriangle;
+
+typedef struct PLMesh {
     PLuint id;
 
-    PLVertex *vertices;                            // Array of vertices for the object.
+    PLVertex *vertices;
+    PLTriangle *triangles;
+    PLuint8 *indices;
 
-    PLuint numverts;                            // Number of vertices.
-    PLuint numtriangles;                        // Number of triangles.
+    PLuint numverts;
+    PLuint numtriangles;
 
-    PLuint8 *indices;                                // List of indices.
+    PLPrimitive primitive, primitive_restore;
+    PLDrawMode mode;
+} PLMesh;
 
-    PLPrimitive primitive, primitive_restore;        // Type of primitive, and primitive to restore to.
-} PLDraw;
-#endif
+PL_EXTERN_C
 
-#ifdef __cplusplus
+PL_EXTERN PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, PLuint num_tris, PLuint num_verts);
+PL_EXTERN void plDeleteMesh(PLMesh *mesh);
 
-namespace pl {
-    namespace graphics {
-
-        typedef enum Primitive {
-            PRIMITIVE_LINES,
-            PRIMITIVE_LINE_STRIP,
-            PRIMITIVE_POINTS,
-            PRIMITIVE_TRIANGLES,
-            PRIMITIVE_TRIANGLE_STRIP,
-            PRIMITIVE_TRIANGLE_FAN,
-            PRIMITIVE_TRIANGLE_FAN_LINE,
-            PRIMITIVE_QUADS
-        } Primitive;
-
-        typedef struct Vertex {
-            math::Vector3D position, normal;
-            math::Vector2D ST[16];
-
-            math::Colour colour;
-        } Vertex;
-
-        typedef struct Triangle {
-            math::Vector3D normal;
-
-            unsigned int indices[3];
-        } Triangle;
-
-        typedef enum MeshMode {
-#if 0
-#if defined (PL_MODE_OPENGL)
-            VL_DRAWMODE_STATIC = GL_STATIC_DRAW,
-            VL_DRAWMODE_DYNAMIC = GL_DYNAMIC_DRAW,
-#else
-            VL_DRAWMODE_STATIC,
-            VL_DRAWMODE_DYNAMIC,
-#endif
-#else
-            MESH_DYNAMIC,
-            MESH_STATIC
-#endif
-        } MeshMode;
-
-        class Mesh {
-        public:
-            Mesh(Primitive primitive, unsigned int num_tris, unsigned int num_verts);
-            ~Mesh();
-
-            void Begin();
-            void Vertex();
-            void Colour();
-            void Normal();
-            void TexCoord();
-            void End();
-
-        protected:
-        private:
-            MeshMode mode_;
-        };
-
-        class Line {};
-        class Rectangle {};
-        class CoordinateAxes {};
-        class Grid {};
-
-    }
-}
-
-#endif
+PL_EXTERN_C_END

@@ -57,9 +57,9 @@ PLbool _plDDSFormatCheck(FILE *fin) {
     rewind(fin);
 
     PLchar ident[4];
-    fread(ident, 1, 4, fin);
+    fread(ident, sizeof(PLchar), 4, fin);
 
-    return (strncmp(ident, "DDS ", 4) == 0);
+    return (strncmp(ident, "DDS", 3) == 0);
 }
 
 PLresult plLoadDDSImage(FILE *fin, PLImage *out) {

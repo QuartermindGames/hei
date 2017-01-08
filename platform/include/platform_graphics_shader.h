@@ -140,9 +140,9 @@ namespace pl {
 
             bool IsEnabled() { return (plGetCurrentShaderProgram() == id_); }
 
-            virtual void PreDraw();
+            virtual void PreDraw() {}
             virtual void Draw() = 0;
-            virtual void PostDraw();
+            virtual void PostDraw() {}
 
             void Enable();
             void Disable();

@@ -81,15 +81,15 @@ PLStaticModel *plLoadOBJModel(const PLchar *path) {
                 continue;
             case OBJ_SYNTAX_VERTEX: {
                 if (line[1] == OBJ_SYNTAX_VERTEX_NORMAL) {
-                    PLVector3f normal = {0, 0, 0};
-                    std::sscanf(line.c_str() + 2, "%f %f %f", &normal[0], &normal[1], &normal[2]);
-                    normals.push_back(Vector3D(normal[0], normal[1], normal[2]));
+                    PLVector3D normal = {0, 0, 0};
+                    std::sscanf(line.c_str() + 2, "%f %f %f", &normal.x, &normal.y, &normal.z);
+                    normals.push_back(Vector3D(normal.x, normal.y, normal.z));
                 } else if (line[1] == OBJ_SYNTAX_VERTEX_ST) {}
                 else // Vertex coords
                 {
-                    PLVector3f position = {0, 0, 0};
-                    std::sscanf(line.c_str() + 2, "%f %f %f", &position[0], &position[1], &position[2]);
-                    vertices.push_back(Vector3D(position[0], position[1], position[2]));
+                    PLVector3D position = {0, 0, 0};
+                    std::sscanf(line.c_str() + 2, "%f %f %f", &position.x, &position.y, &position.z);
+                    vertices.push_back(Vector3D(position.x, position.y, position.z));
                 }
             }
                 break;
@@ -117,13 +117,13 @@ PLStaticModel *plLoadOBJModel(const PLchar *path) {
 
     model->num_triangles = 0;
     model->num_vertices = (unsigned int) vertices.size();
-    model->primitive = PRIMITIVE_POINTS;
+    model->primitive = PL_PRIMITIVE_POINTS;
 
     // Allocate vertex/triangle arrays.
-    model->frame.vertices = new Vertex[model->num_vertices];
+    model->frame.vertices = new PLVertex[model->num_vertices];
     for (unsigned int i = 0; i < model->num_vertices; i++) {
-        Vertex *vertex = &model->frame.vertices[0];
-        vertex->position = vertices[i];
+        PLVertex *vertex = &model->frame.vertices[0];
+        //vertex->position = vertices[i];
     }
 
     _plUnloadOBJModel();

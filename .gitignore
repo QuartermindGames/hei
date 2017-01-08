@@ -27,3 +27,6 @@
 *.exe
 *.out
 *.app
+
+# Assorted files
+/bin/pl_graphics.log

@@ -81,3 +81,11 @@ typedef struct PLTexture {
 
     PLImageFormat format;
 } PLTexture;
+
+PL_EXTERN_C
+
+PL_EXTERN void plDeleteTexture(PLTexture *texture, PLbool force);
+
+PL_EXTERN const PLchar *plPrintTextureMemoryUsage(void);
+
+PL_EXTERN_C_END

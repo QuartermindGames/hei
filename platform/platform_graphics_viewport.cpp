@@ -2,14 +2,22 @@
 #include "platform_graphics.h"
 #include "platform_filesystem.h"
 
-using namespace pl::graphics;
+void plSetViewportPosition(PLViewport *viewport, PLint x, PLint y) {
+    if((viewport->x == x) && (viewport->y == y)) {
+        return;
+    }
 
-Viewport::Viewport(int x, int y, unsigned int width, unsigned int height)
-        : x_(x), y_(y), width_(width), height_(height), parent_(nullptr), camera_(nullptr) {
-    // Nothing to do here.
+    viewport->x = x;
+    viewport->y = y;
+
+    // todo, update children
 }
 
-void Viewport::SetSize(unsigned int width, unsigned int height) {
+void plSetViewportSize(PLViewport *viewport, PLuint width, PLuint height) {
+    if((viewport->width == width) && (viewport->height == height)) {
+        return;
+    }
+
     if(width == 0) {
         width = 1;
     }
@@ -18,18 +26,13 @@ void Viewport::SetSize(unsigned int width, unsigned int height) {
         height = 1;
     }
 
-    width_ = width;
-    height_ = height;
+    viewport->width = width;
+    viewport->height = height;
 
     // todo, update camera fov
 }
 
-void Viewport::SetPosition(int x, int y) {
-    x_ = x; y_ = y;
-
-    // todo, update children
-}
-
+#if 0
 void Viewport::Screenshot(std::string path) {
     unsigned char *buffer = new unsigned char(height_ * width_ * 3);
     glReadPixels(x_, y_, width_, height_, GL_RGB, GL_UNSIGNED_BYTE, buffer);
@@ -63,6 +66,14 @@ void Viewport::Screenshot() {
     } while(plFileExists(scrname.c_str()));
 
     Screenshot(scrname);
+}
+#endif
+
+void plScreenshot(PLViewport *viewport, const PLchar *path) {
+    PLbyte *buffer = (PLbyte*)calloc(viewport->height * viewport->width * 3, sizeof(PLbyte));
+    glReadPixels(viewport->x, viewport->y, viewport->width, viewport->height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+
+    free(buffer);
 }
 
 

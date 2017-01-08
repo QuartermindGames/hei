@@ -80,15 +80,18 @@ PLresult Shader::LoadFile(std::string path) {
     file.read(buf, size);
 
     const char *full_source[] = {
+#if 0
 #if defined(PL_MODE_OPENGL)
         //"#version 110\n",	// OpenGL 2.0
         "#version 120\n",	// OpenGL 2.1
         //"#version 130\n",	// OpenGL 3.0
         //"#version 140\n",	// OpenGL 3.1
         //"#version 150\n",	// OpenGL 3.2
+        //"#version 330\n", // OpenGL 3.3
         //"#version 450\n",	// OpenGL 4.5
 #elif defined(PL_MODE_OPENGL_ES)
         "#version 100\n",	// OpenGL ES 2.0
+#endif
 #endif
         buf
     };
@@ -300,31 +303,4 @@ void ShaderProgram::LoadShaders(std::string vertex, std::string fragment) {
     AttachShader(new Shader(SHADER_FRAGMENT, fragment));
     AttachShader(new Shader(SHADER_VERTEX, vertex));
 }
-
-//////////////////////////////////////////
-// API DESIGN CHECK
-
-ShaderProgram *simple_program, *int_program;
-
-void _plShaderInitialize() {
-    // Simple
-    simple_program = new ShaderProgram();
-    simple_program->LoadShaders("./shaders/base", "./shaders/base");
-
-    // Intermediate
-    int_program = new ShaderProgram();
-    int_program->AttachShader(new Shader(SHADER_VERTEX, "./shaders/base"));
-    int_program->AttachShader(new Shader(SHADER_FRAGMENT, "./shaders/base"));
-}
-
-void _plShaderDraw() {
-
-}
-
-void _plShaderShutdown() {
-    delete simple_program;
-    delete int_program;
-}
-
-//////////////////////////////////////////
 

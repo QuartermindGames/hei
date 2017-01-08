@@ -32,6 +32,8 @@ For more information, please refer to <http://unlicense.org>
 
 #include <GLFW/glfw3.h>
 
+// The following is an example of loading a VTF texture using the platform libraries image functionality.
+
 using namespace pl;
 
 #define TITLE   "VTF/VMT Viewer"
@@ -59,6 +61,15 @@ int main(int argc, char *argv[]) {
 
     plSetDefaultGraphicsState();
 
+    plEnableGraphicsStates(PL_CAPABILITY_DEPTHTEST);
+
+    plSetClearColour(plCreateColour4b(PL_COLOUR_RED));
+
+    // Set up the viewport.
+    plViewport(0, 0, 640, 480);
+    plScissor(0, 0, 640, 480);
+
+    // Load the image up from the HDD.
     PLImage image;
     PLresult result = plLoadImage("./images/bluegrid.vtf", &image);
     if(result != PL_RESULT_SUCCESS) {
@@ -66,13 +77,22 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    // Create a texture slot for our new texture.
     PLTexture *image_texture = plCreateTexture();
     if(!image_texture) {
         plMessageBox(TITLE, "Failed to create texture!");
         return -1;
     }
 
+    // Assign that image to our texture and upload it to the GPU.
+    plSetTextureFilter(image_texture, PL_TEXTUREFILTER_NEAREST);
     plUploadTextureImage(image_texture, &image);
+
+    PLMesh *cube = plCreateMesh(PL_PRIMITIVE_TRIANGLE_FAN, PL_DRAW_STATIC, 2, 4);
+    if(!cube) {
+        plMessageBox(TITLE, "Failed to create mesh!\n%s", plGetError());
+        return -1;
+    }
 
     while(!glfwWindowShouldClose(window)) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
@@ -83,6 +103,9 @@ int main(int argc, char *argv[]) {
 
         glfwPollEvents();
     }
+
+    plDeleteTexture(image_texture, true);
+    plDeleteMesh(cube);
 
     glfwTerminate();
 

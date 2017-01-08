@@ -86,10 +86,10 @@ FILE *pl_u3d_animf = nullptr;
 
 void _plUnloadU3DModel() {
     if (pl_u3d_animf) {
-        std::fclose(pl_u3d_animf);
+        fclose(pl_u3d_animf);
     }
     if (pl_u3d_dataf) {
-        std::fclose(pl_u3d_dataf);
+        fclose(pl_u3d_dataf);
     }
 }
 
@@ -99,7 +99,7 @@ PLAnimatedModel *plLoadU3DModel(const PLchar *path) {
     pl_u3d_dataf = std::fopen(path, "rb");
     if (!pl_u3d_dataf) {
         plSetError("Failed to load data file! (%s)\n", path);
-        return nullptr;
+        return NULL;
     }
 
     // Try to figure out the data string we used
@@ -121,13 +121,13 @@ PLAnimatedModel *plLoadU3DModel(const PLchar *path) {
     newpath.append("_a.3d");
 
     // Attempt to load the animation file.
-    pl_u3d_animf = std::fopen(newpath.c_str(), "rb");
+    pl_u3d_animf = fopen(newpath.c_str(), "rb");
     if (!pl_u3d_animf) {
         // Some legacy models use _Anim...
         newpath.erase(newpath.length() - 5);
         newpath.append("_Anim.3d");
 
-        pl_u3d_animf = std::fopen(newpath.c_str(), "r");
+        pl_u3d_animf = fopen(newpath.c_str(), "r");
         if (!pl_u3d_animf) {
             plSetError("Failed to load U3D animation data! (%s)\n", newpath.c_str());
 
@@ -138,7 +138,7 @@ PLAnimatedModel *plLoadU3DModel(const PLchar *path) {
 
     // Attempt to read the animation header.
     U3DAnimationHeader animheader;
-    if (std::fread(&animheader, sizeof(U3DAnimationHeader), 1, pl_u3d_animf) != 1) {
+    if (fread(&animheader, sizeof(U3DAnimationHeader), 1, pl_u3d_animf) != 1) {
         plSetError("Failed to read animation file!\n");
 
         _plUnloadU3DModel();
@@ -147,7 +147,7 @@ PLAnimatedModel *plLoadU3DModel(const PLchar *path) {
 
     // Attempt to read the data header.
     U3DDataHeader dataheader;
-    if (std::fread(&dataheader, sizeof(U3DDataHeader), 1, pl_u3d_dataf) != 1) {
+    if (fread(&dataheader, sizeof(U3DDataHeader), 1, pl_u3d_dataf) != 1) {
         plSetError("Failed to read data file!\n");
 
         _plUnloadU3DModel();
@@ -159,7 +159,7 @@ PLAnimatedModel *plLoadU3DModel(const PLchar *path) {
         plSetError("Failed to allocate animated model!\n");
 
         _plUnloadU3DModel();
-        return nullptr;
+        return NULL;
     }
 
     // Store the information we've gathered.
@@ -169,9 +169,9 @@ PLAnimatedModel *plLoadU3DModel(const PLchar *path) {
 
     // Allocate the triangle/vertex arrays.
     model->frames = new PLModelFrame[model->num_frames];
-    for (unsigned int i = 0; i < model->num_frames; i++) {
-        model->frames[i].vertices = new Vertex[model->num_vertices];
-        model->frames[i].triangles = new Triangle[model->num_triangles];
+    for (PLuint i = 0; i < model->num_frames; i++) {
+        model->frames[i].vertices = new PLVertex[model->num_vertices];
+        model->frames[i].triangles = new PLTriangle[model->num_triangles];
     }
 
     // Skip unused header data.

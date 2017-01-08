@@ -144,7 +144,6 @@ typedef double                  PLdouble;
 typedef short                   PLshort;
 typedef unsigned short          PLushort;
 
-#define plFloatToByte(a)    (PLbyte)(a / 255)
 #define plArrayElements(a)  (sizeof(a) / sizeof(*(a)))    // Returns the number of elements within an array.
 #define plIsValidString(a)  ((a[0] != '\0') && (a[0] != ' '))
 
@@ -190,6 +189,19 @@ enum {
 
 #define PL_DLL  PL_EXPORT
 
+#ifndef __cplusplus
+#define pFUNCTION_START  plSetErrorFunction(PL_FUNCTION); {
+#else
+#define	pFUNCTION_START	\
+plSetErrorFunction(PL_FUNCTION);
+// TRY whatever
+#endif
+#define pFUNCTION_END   }
+
+#define plFunctionStart()    \
+    plResetError(); plSetErrorFunction(PL_FUNCTION)
+#define plFunctionEnd()
+
 PL_EXTERN_C
 
 PLresult _plInitGraphics(void);
@@ -205,24 +217,6 @@ PL_EXTERN_C_END
 #define PL_DLL  PL_IMPORT
 
 #endif
-
-//static jmp_buf jbException;
-
-#define    pFUNCTION_UPDATE()           \
-    plResetError();                     \
-    plSetErrorFunction(PL_FUNCTION)
-#ifndef __cplusplus
-#define    pFUNCTION_START        plSetErrorFunction(PL_FUNCTION); {
-#else
-#define	pFUNCTION_START	\
-plSetErrorFunction(PL_FUNCTION);
-// TRY whatever
-#endif
-#define pFUNCTION_END        }
-
-#define plFunctionStart()    \
-    plResetError(); plSetErrorFunction(PL_FUNCTION)
-#define plFunctionEnd()
 
 PL_EXTERN_C
 

@@ -162,7 +162,7 @@ typedef enum PLGraphicsCapability {
     PL_CAPABILITY_TEXTURE_2D = (1 << 3),    // Enables/disables textures.
     VL_CAPABILITY_TEXTURE_GEN_S = (1 << 4), // Generate S coordinate.
     PL_CAPABILITY_TEXTURE_GEN_T = (1 << 5), // Generate T coordinate.
-    PL_CAPABILITY_DEPTH_TEST = (1 << 6),    // Depth-testing.
+    PL_CAPABILITY_DEPTHTEST = (1 << 6),    // Depth-testing.
     VL_CAPABILITY_STENCIL_TEST = (1 << 7),  // Stencil-testing.
     VL_CAPABILITY_MULTISAMPLE = (1 << 8),   // Multisampling.
     VL_CAPABILITY_CULL_FACE = (1 << 9),     // Automatically cull faces.
@@ -250,10 +250,7 @@ enum {
 
 PL_EXTERN_C
 
-PL_EXTERN void plSetClearColour3f(PLfloat r, PLfloat g, PLfloat b);
-PL_EXTERN void plSetClearColour4f(PLfloat r, PLfloat g, PLfloat b, PLfloat a);
-PL_EXTERN void plSetClearColour4fv(PLColourf rgba);
-PL_EXTERN void plSetClearColour(pl::math::Colour rgba);
+PL_EXTERN void plSetClearColour(PLColour rgba);
 
 PL_EXTERN void plClearBuffers(PLuint buffers);
 
@@ -262,10 +259,20 @@ PL_EXTERN_C_END
 //-----------------
 // Lighting
 
+typedef enum PLLightType {
+    PL_LIGHT_SPOT,  // Spotlight
+    PL_LIGHT_OMNI   // Omni-directional
+} PLLightType;
+
 typedef struct PLLight {
-    PLVector3f position;
-    pl::math::Colour colour;
-    float radius;
+    PLVector3D position;
+    PLVector3D angles;
+
+    PLColour colour;
+
+    PLfloat radius;
+
+    PLLightType type;
 } PLLight;
 
 //-----------------
@@ -275,8 +282,8 @@ typedef struct PLGraphicsState {
 
     VLCullMode current_cullmode;
 
-    pl::math::Colour current_clearcolour;
-    pl::math::Colour current_colour;            // Current global colour.
+    PLColour current_clearcolour;
+    PLColour current_colour;        // Current global colour.
 
     PLuint current_capabilities;    // Enabled capabilities.
     PLuint current_textureunit;
@@ -287,9 +294,9 @@ typedef struct PLGraphicsState {
 
     // Shader states
 
-    unsigned int num_shaders;
+    PLuint num_shaders;
 
-    unsigned int current_program;
+    PLuint current_program;
 
     // Hardware / Driver information
 
@@ -329,10 +336,10 @@ PL_EXTERN const PLchar *_plGetHWVersion(void);
 PL_EXTERN PLbool plHWSupportsMultitexture(void);
 PL_EXTERN PLbool plHWSupportsShaders(void);
 
-unsigned int plGetCurrentShaderProgram(void);
+PL_EXTERN PLuint plGetCurrentShaderProgram(void);
 
-void plEnableShaderProgram(unsigned int program);
-void plDisableShaderProgram(unsigned int program);
+PL_EXTERN void plEnableShaderProgram(unsigned int program);
+PL_EXTERN void plDisableShaderProgram(unsigned int program);
 
 PL_EXTERN_C_END
 

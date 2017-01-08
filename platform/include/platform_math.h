@@ -1,17 +1,28 @@
 /*
-DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-Version 2, December 2004
+This is free and unencumbered software released into the public domain.
 
-Copyright (C) 2011-2016 Mark E Sowden <markelswo@gmail.com>
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-Everyone is permitted to copy and distribute verbatim or modified
-copies of this license document, and changing it is allowed as long
-as the name is changed.
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-0. You just DO WHAT THE FUCK YOU WANT TO.
+For more information, please refer to <http://unlicense.org>
 */
 
 #pragma once
@@ -22,31 +33,62 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
 #define PL_PI   3.14159265358979323846
 
-#define    PL_X    0
-#define    PL_Y    1
-#define    PL_Z    2
+enum {
+    PL_X,
+    PL_Y,
+    PL_Z
+};
 
-#define    PL_WIDTH    0
-#define    PL_HEIGHT   1
+enum {
+    PL_WIDTH,
+    PL_HEIGHT
+};
 
-#define PL_PITCH    0
-#define    PL_YAW      1
-#define    PL_ROLL     2
+enum {
+    PL_PITCH,
+    PL_YAW,
+    PL_ROLL
+};
 
-#define    PL_RED      0
-#define    PL_GREEN    1
-#define    PL_BLUE     2
-#define    PL_ALPHA    3
+enum {
+    PL_RED,
+    PL_GREEN,
+    PL_BLUE,
+    PL_ALPHA
+};
 
-static PL_INLINE PLdouble plRound(PLdouble num) {
-
-}
+#define plFloatToByte(a)    (PLbyte)round(a * 255)
+#define plByteToFloat(a)    (a / (PLfloat)255)
 
 // Vectors
 
-typedef PLint PLVector2i[2], PLVector3i[3], PLVector4i[4];
-typedef PLfloat PLVector2f[2], PLVector3f[3], PLVector4f[4];
-typedef PLdouble PLVector2d[2], PLVector3d[3], PLVector4d[4];
+typedef struct PLVector2D {
+    PLfloat x, y;
+} PLVector2D;
+
+static PL_INLINE void plClearVector2D(PLVector2D *v) {
+    memset(v, 0, sizeof(PLVector2D));
+}
+
+static PL_INLINE void plAddVector2D(PLVector2D *v, PLVector2D v2) {
+    v->x = v2.x; v->y = v2.y;
+}
+
+static PL_INLINE void plDivideVector2D(PLVector2D *v, PLVector2D v2) {
+    v->x /= v2.x; v->y /= v2.y;
+}
+
+static PL_INLINE PLbool plCompareVector2D(PLVector2D v, PLVector2D v2) {
+    return ((v.x == v2.x) && (v.y == v2.y));
+}
+
+typedef struct PLVector3D {
+    PLfloat x, y, z;
+} PLVector3D;
+
+static PL_INLINE void plClearVector3D(PLVector3D *v) {
+    memset(v, 0, sizeof(PLVector3D));
+}
 
 #ifdef __cplusplus
 
@@ -209,8 +251,6 @@ namespace pl {
     }
 }
 
-#else
-
 #endif
 
 // Colour
@@ -221,166 +261,172 @@ namespace pl {
 #define PL_COLOUR_GREEN 0, 255, 0, 255
 #define PL_COLOUR_BLUE  0, 0, 255, 255
 
-typedef PLbyte PLColourb[4];
-typedef PLfloat PLColourf[4];
+typedef struct PLColour {
+    PLbyte r, g, b, a;
+} PLColour;
 
-#ifdef __cplusplus
-
-namespace pl {
-    namespace math {
-
-        struct Colour {
-            Colour() : Colour(PL_COLOUR_WHITE) {}
-
-            Colour(PLuchar _r, PLuchar _g, PLuchar _b, PLuchar _a = 255) : r(_r), g(_g), b(_b), a(_a) {}
-
-            Colour(PLint _r, PLint _g, PLint _b, PLint _a = 255) :
-                    Colour((PLuchar) _r, (PLuchar) _g, (PLuchar) _b, (PLuchar) _a) {}
-
-            Colour(PLfloat _r, PLfloat _g, PLfloat _b, PLfloat _a = 1) :
-                    r((PLuchar) (_r * 255)),
-                    g((PLuchar) (_g * 255)),
-                    b((PLuchar) (_b * 255)),
-                    a((PLuchar) (_a * 255)) {}
-
-            PLuchar r, g, b, a;
-
-            PLbool operator==(Colour in) const { return ((r == in.r) && (g == in.g) && (b == in.b) && (a == in.a)); }
-
-            Colour operator*(Colour in) { return Colour(r * in.r, g * in.g, b * in.b, a * in.a); }
-
-            Colour operator/(Colour in) { return Colour(r / in.r, g / in.g, b / in.b, a / in.a); }
-
-            void PL_INLINE Set(PLfloat _r, PLfloat _g, PLfloat _b, PLfloat _a = 1) {
-                r = (PLuchar) (_r * 255);
-                g = (PLuchar) (_g * 255);
-                b = (PLuchar) (_b * 255);
-                a = (PLuchar) (_a * 255);
-            }
-
-            void PL_INLINE Clear() {
-                r = 0;
-                g = 0;
-                b = 0;
-                a = 0;
-            }
-        };
-
-    }
+static PL_INLINE PLColour plCreateColour4b(PLbyte r, PLbyte g, PLbyte b, PLbyte a) {
+    PLColour c = { r, g, b, a };
+    return c;
 }
 
-#else
+static PL_INLINE PLColour plCreateColour4f(PLfloat r, PLfloat g, PLfloat b, PLfloat a) {
+    PLColour c = {
+        plFloatToByte(r),
+        plFloatToByte(g),
+        plFloatToByte(b),
+        plFloatToByte(a)
+    };
+    return c;
+}
 
-typedef struct Colour Colour;
+static PL_INLINE void plClearColour(PLColour *c) {
+    memset(c, 0, sizeof(PLColour));
+}
 
-#endif
+static PL_INLINE void plSetColour4b(PLColour *c, PLbyte r, PLbyte g, PLbyte b, PLbyte a) {
+    c->r = r; c->g = g; c->b = b; c->a = a;
+}
+
+static PL_INLINE void plSetColour4f(PLColour *c, PLfloat r, PLfloat g, PLfloat b, PLfloat a) {
+    c->r = plFloatToByte(r);
+    c->g = plFloatToByte(g);
+    c->b = plFloatToByte(b);
+    c->a = plFloatToByte(a);
+}
+
+static PL_INLINE PLbool plCompareColour(PLColour c, PLColour c2) {
+    return ((c.r == c2.r) && (c.g == c2.g) && (c.b == c2.b) && (c.a == c2.a));
+}
+
+static PL_INLINE void plCopyColour(PLColour *c, PLColour c2) {
+    c->r = c2.r; c->g = c2.g; c->b = c2.b; c->a = c2.a;
+}
+
+static PL_INLINE void plMultiplyColour(PLColour *c, PLColour c2) {
+    c->r *= c2.r; c->g *= c2.g; c->b *= c2.b; c->a *= c2.a;
+}
+
+static PL_INLINE void plMultiplyColourf(PLColour *c, PLfloat a) {
+    PLbyte a2 = plFloatToByte(a);
+    c->r *= a2; c->g *= a2; c->b *= a2; c->a *= a2;
+}
+
+static PL_INLINE void plDivideColour(PLColour *c, PLColour c2) {
+    c->r /= c2.r; c->g /= c2.g; c->b /= c2.b; c->a /= c2.a;
+}
+
+static PL_INLINE void plDivideColourf(PLColour *c, PLfloat a) {
+    PLbyte a2 = plFloatToByte(a);
+    c->r /= a2; c->g /= a2; c->b /= a2; c->a /= a2;
+}
+
+static PL_INLINE const PLchar *plPrintColour(PLColour c) {
+    static PLchar s[16] = {0};
+    snprintf(s, 16, "%i %i %i %i", c.r, c.g, c.b, c.a);
+    return s;
+}
 
 // Matrices
 
-typedef PLfloat PLMatrix3x3f[3][3], PLMatrix4x4f[4][4];
-typedef PLdouble PLMatrix3x3d[3][3], PLMatrix4x4d[4][4];
+typedef PLfloat PLMatrix3[3][3], PLMatrix4[4][4];
+
+static PL_INLINE void plClearMatrix4(PLMatrix4 m) {
+    memset(m, 0, sizeof(m[0][0]) * 8);
+}
+
+static PL_INLINE void plAddMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
+    for(PLint i = 0; i < 4; i++) {
+        for(PLint j = 0; i < 4; j++) {
+            m[i][j] += m2[i][j];
+        }
+    }
+}
+
+static PL_INLINE void plMultiplyMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
+    for(PLint i = 0; i < 4; i++) {
+        for(PLint j = 0; j < 4; j++) {
+            m[i][j] *= m2[i][j];
+        }
+    }
+}
+
+static PL_INLINE void plMultiplyMatrix4f(PLMatrix4 m, PLfloat a) {
+    for(PLint i = 0; i < 4; i++) {
+        for(PLint j = 0; j < 4; j++) {
+            m[i][j] *= a;
+        }
+    }
+}
+
+static PL_INLINE void plDivisionMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
+    for(PLint i = 0; i < 4; i++) {
+        for(PLint j = 0; j < 4; j++) {
+            m[i][j] /= m2[i][j];
+        }
+    }
+}
+
+static PL_INLINE void plDivisionMatrix4f(PLMatrix4 m, PLfloat a) {
+    for(PLint i = 0; i < 4; i++) {
+        for(PLint j = 0; j < 4; j++) {
+            m[i][j] /= a;
+        }
+    }
+}
+
+static PL_INLINE const PLchar *plPrintMatrix4(const PLMatrix4 m) {
+    static PLchar s[256] = {0};
+    snprintf(s, 256,
+            "%i %i %i %i\n"
+            "%i %i %i %i\n"
+            "%i %i %i %i\n"
+            "%i %i %i %i",
+            (PLint)m[0][0], (PLint)m[0][1], (PLint)m[0][2], (PLint)m[0][3],
+            (PLint)m[1][0], (PLint)m[1][1], (PLint)m[1][2], (PLint)m[1][3],
+            (PLint)m[2][0], (PLint)m[2][1], (PLint)m[2][2], (PLint)m[2][3],
+            (PLint)m[3][0], (PLint)m[3][1], (PLint)m[3][2], (PLint)m[3][3]
+            );
+    return s;
+}
 
 // Quaternion
 
-typedef PLfloat PLQuaternionf[4];
-typedef PLdouble PLQuaterniond[4];
+typedef PLfloat PLQuaternion[4];
 
-#ifdef __cplusplus
+static PL_INLINE void plClearQuaternion(PLQuaternion q) {
+    memset(q, 0, sizeof(PLQuaternion));
+}
 
-typedef struct PLQuaternion {
-    PLQuaternion(PLfloat a, PLfloat b, PLfloat c, PLfloat d) : x(a), y(b), z(c), w(d) {}
+static PL_INLINE void plMultiplyQuaternion(PLQuaternion q, const PLQuaternion q2) {
+    q[0] *= q2[0]; q[1] *= q2[1]; q[2] *= q2[2]; q[3] *= q2[3];
+}
 
-    PLQuaternion(PLfloat a, PLfloat b, PLfloat c) : x(a), y(b), z(c), w(0) {}
+static PL_INLINE void plMultiplyQuaternionf(PLQuaternion q, PLfloat a) {
+    q[0] *= a; q[1] *= a; q[2] *= a; q[3] *= a;
+}
 
-    PLQuaternion() : x(0), y(0), z(0), w(0) {}
+static PL_INLINE void plAddQuaternion(PLQuaternion q, const PLQuaternion q2) {
+    q[0] += q2[0]; q[1] += q2[1]; q[2] += q2[2]; q[3] += q2[3];
+}
 
-    PLfloat x, y, z, w;
+static PL_INLINE void plAddQuaternionf(PLQuaternion q, PLfloat a) {
+    q[0] += a; q[1] += a; q[2] += a; q[3] += a;
+}
 
-    void operator=(PLQuaternion a) {
-        x = a.x;
-        y = a.y;
-        z = a.z;
-        w = a.w;
-    }
+static PL_INLINE void plInverseQuaternion(PLQuaternion q) {
+    q[0] = -q[0]; q[1] = -q[1]; q[2] = -q[2]; q[3] = -q[3];
+}
 
-    void operator*=(PLfloat a) {
-        x *= a;
-        y *= a;
-        z *= a;
-        w *= a;
-    }
+static PL_INLINE PLfloat plQuaternionLength(PLQuaternion q) {
+    return sqrtf(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
+}
 
-    void operator*=(PLQuaternion a) {
-        x *= a.x;
-        y *= a.y;
-        z *= a.z;
-        w *= a.w;
-    }
-
-    PLbool operator==(PLQuaternion a) const {
-        return ((x == a.x) && (y == a.y) && (z == a.z) && (w == a.w));
-    }
-
-    PLQuaternion operator*(PLfloat a) {
-        return PLQuaternion(x * a, y * a, z * a, w * a);
-    }
-
-    PLQuaternion operator*(PLQuaternion a) {
-        return PLQuaternion(x * a.x, y * a.y, z * a.z, w * a.w);
-    }
-
-    void PL_INLINE Set(PLfloat a, PLfloat b, PLfloat c, PLfloat d) {
-        x = a;
-        y = b;
-        z = c;
-        w = d;
-    }
-
-    void PL_INLINE Set(PLfloat a, PLfloat b, PLfloat c) {
-        x = a;
-        y = b;
-        z = c;
-    }
-
-    void PL_INLINE Clear() {
-        x = 0;
-        y = 0;
-        z = 0;
-        w = 0;
-    }
-
-    const PL_INLINE PLchar *String() {
-        static PLchar s[32] = {0};
-        snprintf(s, 32, "%i %i %i %i", (PLint) x, (PLint) y, (PLint) z, (PLint) w);
-        return s;
-    }
-
-    PLfloat PL_INLINE Length() {
-        return std::sqrt((x * x + y * y + z * z + w * w));
-    }
-
-    PLQuaternion PL_INLINE Scale(PLfloat a) {
-        return PLQuaternion(x * a, y * a, z * a, w * a);
-    }
-
-    PLQuaternion PL_INLINE Inverse() {
-        return PLQuaternion(-x, -y, -z, w);
-    }
-
-    PLQuaternion PL_INLINE Normalize() {
-        PLfloat l = Length();
-        if (l) {
-            float i = 1 / l;
-            return Scale(i);
-        }
-    }
-} PLQuaternion;
-
-#else
-
-typedef struct PLQuaternion PLQuaternion;
-
-#endif
+static PL_INLINE const PLchar *plPrintQuaternion(const PLQuaternion q) {
+    static PLchar s[32] = {0};
+    snprintf(s, 32, "%i %i %i %i", (PLint)q[0], (PLint)q[1], (PLint)q[2], (PLint)q[3]);
+    return s;
+}
 
 // Randomisation
 
@@ -416,73 +462,103 @@ static PL_INLINE PLfloat plCosineInterpolate(PLfloat y1, PLfloat y2, PLfloat mu)
 // http://probesys.blogspot.co.uk/2011/10/useful-math-functions.html
 
 static PL_INLINE PLfloat plOutPow(PLfloat x, PLfloat p) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     PLint sign = (PLint) p % 2 == 0 ? -1 : 1;
     return (sign * (powf(x - 1.0f, p) + sign));
 }
 
 static PL_INLINE PLfloat plLinear(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return x;
 }
 
 static PL_INLINE PLfloat plInPow(PLfloat x, PLfloat p) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return powf(x, p);
 }
 
 static PL_INLINE PLfloat plInSin(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return -cosf(x * ((float) PL_PI / 2.0f)) + 1.0f;
 }
 
 static PL_INLINE PLfloat plOutSin(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return sinf(x * ((float) PL_PI / 2.0f));
 }
 
 static PL_INLINE PLfloat plInExp(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return powf(2.0f, 10.0f * (x - 1.0f));
 }
 
 static PL_INLINE PLfloat plOutExp(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return -powf(2.0f, -1.0f * x) + 1.0f;
 }
 
 static PL_INLINE PLfloat plInOutExp(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return x < 0.5f ? 0.5f * powf(2.0f, 10.0f * (2.0f * x - 1.0f)) :
            0.5f * (-powf(2.0f, 10.0f * (-2.0f * x + 1.0f)) + 1.0f);
 }
 
 static PL_INLINE PLfloat plInCirc(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return -(sqrtf(1.0f - x * x) - 1.0f);
 }
 
 static PL_INLINE PLfloat plOutBack(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return (x - 1.0f) * (x - 1.0f) * ((1.70158f + 1.0f) * (x - 1.0f) + 1.70158f) + 1.0f;
 }
@@ -494,19 +570,24 @@ static PL_INLINE PLfloat plImpulse(PLfloat x, PLfloat k) {
 }
 
 static PL_INLINE PLfloat plRebound(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
-    if (x < (1.0f / 2.75f)) return 1.0f - 7.5625f * x * x;
-    else if (x < (2.0f / 2.75f))
+    if (x < (1.0f / 2.75f)) {
+        return 1.0f - 7.5625f * x * x;
+    } else if (x < (2.0f / 2.75f)) {
         return 1.0f - (7.5625f * (x - 1.5f / 2.75f) *
                        (x - 1.5f / 2.75f) + 0.75f);
-    else if (x < (2.5f / 2.75f))
+    } else if (x < (2.5f / 2.75f)) {
         return 1.0f - (7.5625f * (x - 2.25f / 2.75f) *
                        (x - 2.25f / 2.75f) + 0.9375f);
-    else
+    } else {
         return 1.0f - (7.5625f * (x - 2.625f / 2.75f) * (x - 2.625f / 2.75f) +
                        0.984375f);
+    }
 }
 
 static PL_INLINE PLfloat plExpPulse(PLfloat x, PLfloat k, PLfloat n) {
@@ -514,8 +595,11 @@ static PL_INLINE PLfloat plExpPulse(PLfloat x, PLfloat k, PLfloat n) {
 }
 
 static PL_INLINE PLfloat plInOutBack(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return x < 0.5f ? 0.5f * (4.0f * x * x * ((2.5949f + 1.0f) * 2.0f * x - 2.5949f)) :
            0.5f * ((2.0f * x - 2.0f) * (2.0f * x - 2.0f) * ((2.5949f + 1.0f) * (2.0f * x - 2.0f) +
@@ -523,37 +607,52 @@ static PL_INLINE PLfloat plInOutBack(PLfloat x) {
 }
 
 static PL_INLINE PLfloat plInBack(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return x * x * ((1.70158f + 1.0f) * x - 1.70158f);
 }
 
 static PL_INLINE PLfloat plInOutCirc(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return x < 1.0f ? -0.5f * (sqrtf(1.0f - x * x) - 1.0f) :
            0.5f * (sqrtf(1.0f - ((1.0f * x) - 2.0f) * ((2.0f * x) - 2.0f)) + 1.0f);
 }
 
 static PL_INLINE PLfloat plOutCirc(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return sqrtf(1.0f - (x - 1.0f) * (x - 1.0f));
 }
 
 static PL_INLINE PLfloat plInOutSin(PLfloat x) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     return -0.5f * (cosf((PLfloat) PL_PI * x) - 1.0f);
 }
 
 static PL_INLINE PLfloat plInOutPow(PLfloat x, PLfloat p) {
-    if (x < 0) return 0;
-    if (x > 1.0f) return 1.0f;
+    if (x < 0) {
+        return 0;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    }
 
     int sign = (int) p % 2 == 0 ? -1 : 1;
     return (sign / 2.0f * (powf(x - 2.0f, p) + sign * 2.0f));

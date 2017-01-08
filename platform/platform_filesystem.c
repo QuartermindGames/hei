@@ -141,7 +141,9 @@ void plStripExtension(PLchar *dest, const PLchar *in) {
 // Returns a pointer to the last component in the given filename. 
 const PLchar *plGetFileName(const PLchar *path) {
     const PLchar *lslash = strrchr(path, '/');
-    if (lslash != NULL) path = lslash + 1;
+    if (lslash != NULL) {
+        path = lslash + 1;
+    }
     return path;
 }
 

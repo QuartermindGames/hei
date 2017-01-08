@@ -22,25 +22,11 @@ using namespace pl::math;
 /*	PLATFORM MODEL LOADER	*/
 
 Vector3D plGenerateNormal(Vector3D a, Vector3D b, Vector3D c) {
-#if 1
     Vector3D x = c - b;
     Vector3D y = a - b;
 
     Vector3D normal = x.CrossProduct(y);
     return normal.Normalize();
-#else // legacy
-    PLVector3f x, y;
-    plVectorSubtract3fv(c, b, x);
-    plVectorSubtract3fv(a, b, y);
-
-    PLVector3f normal;
-    plVectorClear(normal);
-    plCrossProduct(x, y, normal);
-    plVectorNormalize(normal);
-
-    std::vector<float> vnorm = { normal[0], normal[1], normal[2] };
-    return vnorm;
-#endif
 }
 
 void plGenerateStaticModelNormals(PLStaticModel *model) {
@@ -58,8 +44,8 @@ void plGenerateStaticModelNormals(PLStaticModel *model) {
         frame->triangles[i].normal[PL_Z] = normal[PL_Z];
     }
 #else // per vertex...
-    for (Vertex *vertex = &frame->vertices[0]; vertex; ++vertex) {
-        for (Triangle *triangle = &frame->triangles[0]; triangle; ++triangle) {
+    for (PLVertex *vertex = &frame->vertices[0]; vertex; ++vertex) {
+        for (PLTriangle *triangle = &frame->triangles[0]; triangle; ++triangle) {
 
         }
     }
@@ -75,8 +61,8 @@ void plGenerateAnimatedModelNormals(PLAnimatedModel *model) {
     // but hell, if there's a way to abstractily grab the direction of a face then
     // surely we could figure that out.
     for (PLModelFrame *frame = &model->frames[0]; frame; ++frame) {
-        for (Vertex *vertex = &frame->vertices[0]; vertex; ++vertex) {
-            for (Triangle *triangle = &frame->triangles[0]; triangle; ++triangle) {
+        for (PLVertex *vertex = &frame->vertices[0]; vertex; ++vertex) {
+            for (PLTriangle *triangle = &frame->triangles[0]; triangle; ++triangle) {
 
             }
         }
@@ -88,9 +74,7 @@ void plGenerateSkeletalModelNormals(PLSkeletalModel *model) {
         return;
 }
 
-/*
-	Static Model
-*/
+/*	Static Model    */
 
 PLStaticModel *plCreateStaticModel(void) {
     plSetErrorFunction("plCreateStaticModel");

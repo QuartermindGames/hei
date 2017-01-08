@@ -1,32 +1,19 @@
 
 #pragma once
 
-namespace pl {
-    namespace graphics {
-        
-        class Viewport;
+#include "platform.h"
 
-        class Camera {
-        public:
-            Camera();
-            Camera(Viewport *viewport);
+typedef struct PLCamera {
+    PLfloat fov, fovx, fovy;
 
-            virtual void Draw();
-            virtual void Simulate();
+    PLVector3D angles, position;
+} PLCamera;
 
-            // todo, input
+PL_EXTERN_C
 
-            void SetAngles(float x, float y, float z);
-            void SetAngles(math::Vector3D angles);
-            void SetPitch(float pitch);
-            void PrintAngles();
+PL_EXTERN PLCamera *plCreateCamera(void);
+PL_EXTERN void plDestroyCamera(PLCamera *camera);
 
-        protected:
-        private:
-            math::Vector3D angles_, position_;
+PL_EXTERN void plPrintCameraAngles(PLCamera *camera);
 
-            float fov_, fovx_, fovy_;
-        };
-
-    }
-}
+PL_EXTERN_C_END

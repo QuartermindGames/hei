@@ -229,9 +229,9 @@ PLbool _plVTFFormatCheck(FILE *fin) {
     rewind(fin);
 
     PLchar ident[4];
-    fread(ident, 1, 4, fin);
+    fread(ident, sizeof(PLchar), 4, fin);
 
-    return (strncmp(ident, "VTF ", 4) == 0);
+    return (strncmp(ident, "VTF", 3) == 0);
 }
 
 PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
