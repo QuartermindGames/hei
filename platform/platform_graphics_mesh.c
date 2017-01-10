@@ -46,69 +46,16 @@ PLuint _plTranslatePrimitiveMode(PLPrimitive mode) {
         return 0;
     }
 
-    for (PLint i = 0; i < plArrayElements(_pl_primitives); i++)
+    for (PLint i = 0; i < plArrayElements(_pl_primitives); i++) {
         if (mode == _pl_primitives[i].mode)
             return _pl_primitives[i].target;
+    }
 
     // Hacky, but just return initial otherwise.
     return _pl_primitives[0].target;
 }
 
-#if 0 // legacy
-
-
-
-
-
-
-
-PLDraw *plCreateMesh(void) {
-    PLDraw *draw = new PLDraw();
-
-#if defined(PL_MODE_OPENGL)
-    glGenVertexArrays(1, &draw->id);
-#endif
-
-    return draw;
-}
-
-void plDeleteDraw(PLDraw *draw) {
-#if defined(PL_MODE_OPENGL)
-    glDeleteVertexArrays(1, &draw->id);
-#endif
-
-    delete draw;
-}
-
-void _plDrawArrays(PLPrimitive mode, PLuint first, PLuint count) {
-    if ((count == 0) || (first > count)) {
-        return;
-    }
-#if defined(PL_MODE_OPENGL)
-    glDrawArrays(_plTranslatePrimitiveMode(mode), first, count);
-#endif
-}
-
-void _plDrawElements(PLPrimitive mode, PLuint count, PLuint type, const PLvoid *indices) {
-    if ((count == 0) || !indices) {
-        return;
-    }
-#if defined(PL_MODE_OPENGL)
-    glDrawElements(_plTranslatePrimitiveMode(mode), count, type, indices);
-#endif
-}
-
-void plBeginDraw(PLDraw *draw) {
-
-}
-
-void plEndDraw(PLDraw *draw) {
-
-}
-
-#endif
-
-unsigned int _plTranslateDrawMode(PLDrawMode mode) {
+PLuint _plTranslateDrawMode(PLDrawMode mode) {
 #if defined(PL_MODE_OPENGL)
     if(mode == PL_DRAW_DYNAMIC) {
         return GL_DYNAMIC_DRAW;
@@ -119,6 +66,26 @@ unsigned int _plTranslateDrawMode(PLDrawMode mode) {
     return 0;
 #else
     return mode;
+#endif
+}
+
+void _plDrawArrays(PLPrimitive mode, PLuint first, PLuint count) {
+    if ((count == 0) || (first > count)) {
+        return;
+    }
+
+#if defined(PL_MODE_OPENGL)
+    glDrawArrays(_plTranslatePrimitiveMode(mode), first, count);
+#endif
+}
+
+void _plDrawElements(PLPrimitive mode, PLuint count, PLuint type, const PLvoid *indices) {
+    if ((count == 0) || !indices) {
+        return;
+    }
+
+#if defined(PL_MODE_OPENGL)
+    glDrawElements(_plTranslatePrimitiveMode(mode), count, type, indices);
 #endif
 }
 
@@ -152,7 +119,7 @@ PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, PLuint num_tris, PL
     mesh->mode = mode;
 
 #if defined(PL_MODE_OPENGL)
-   // glGenBuffers()
+    glGenBuffers(1, &mesh->id);
 #endif
 }
 
@@ -171,6 +138,41 @@ void plDeleteMesh(PLMesh *mesh) {
         free(mesh->triangles);
     }
     free(mesh);
+}
+
+PLint _pl_mesh_position = -1;
+
+void plMeshBegin(PLMesh *mesh) {
+    // Reset the data contained by the mesh, if we're going to begin a new draw.
+    memset(mesh->vertices, 0, sizeof(PLVertex) * mesh->numverts);
+    memset(mesh->triangles, 0, sizeof(PLTriangle) * mesh->numtriangles);
+
+    _pl_mesh_position = -1;
+}
+
+void plMeshVertex(PLMesh *mesh, PLVector3D vector) {
+    _pl_mesh_position++;
+    plCopyVector3D(&mesh->vertices[_pl_mesh_position].position, vector);
+}
+
+void plMeshColour(PLMesh *mesh, PLColour colour) {
+    plCopyColour(&mesh->vertices[_pl_mesh_position].colour, colour);
+}
+
+void plMeshEnd(PLMesh *mesh) {
+#if defined(PL_MODE_OPENGL)
+    // Fill our buffer with data.
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->id);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(PLVertex), &mesh->vertices[0].position.x, _plTranslateDrawMode(mesh->mode));
+#endif
+}
+
+void plMeshDraw(PLMesh *mesh) {
+    /*
+     plTranslateMesh(mesh, mesh->position);
+     plRotateMesh(mesh, mesh->angles);
+     blah blah
+     */
 }
 
 void plDrawVertexNormals(PLMesh *mesh) {

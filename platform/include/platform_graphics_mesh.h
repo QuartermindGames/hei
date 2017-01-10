@@ -36,6 +36,10 @@ typedef struct PLTriangle {
     PLuint indices[3];
 } PLTriangle;
 
+typedef enum PLMeshBuffer {
+    PL_MESHBUFFER_ARRAY,
+};
+
 typedef struct PLMesh {
     PLuint id;
 
@@ -48,6 +52,8 @@ typedef struct PLMesh {
 
     PLPrimitive primitive, primitive_restore;
     PLDrawMode mode;
+
+    PLVector3D position, angles;
 } PLMesh;
 
 PL_EXTERN_C

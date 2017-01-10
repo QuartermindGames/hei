@@ -86,6 +86,10 @@ typedef struct PLVector3D {
     PLfloat x, y, z;
 } PLVector3D;
 
+static PL_INLINE void plCopyVector3D(PLVector3D *v, PLVector3D v2) {
+    v->x = v2.x; v->y = v2.y; v->z = v2.z;
+}
+
 static PL_INLINE void plClearVector3D(PLVector3D *v) {
     memset(v, 0, sizeof(PLVector3D));
 }
