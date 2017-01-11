@@ -163,11 +163,58 @@ void plMeshEnd(PLMesh *mesh) {
 #if defined(PL_MODE_OPENGL)
     // Fill our buffer with data.
     glBindBuffer(GL_ARRAY_BUFFER, mesh->id);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(PLVertex), &mesh->vertices[0].position.x, _plTranslateDrawMode(mesh->mode));
+    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)sizeof(PLVertex), &mesh->vertices[0].position.x, _plTranslateDrawMode(mesh->mode));
 #endif
 }
 
 void plMeshDraw(PLMesh *mesh) {
+    if(!mesh || !mesh->numverts) {
+        return;
+    }
+
+    {
+#if !defined(VL_MODE_OPENGL_CORE)   // Immediate mode isn't support in core!
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glEnableClientState(GL_COLOR_ARRAY);
+        glEnableClientState(GL_NORMAL_ARRAY);
+
+        PLVertex *vert = &mesh->vertices[0];
+        glVertexPointer(3, GL_FLOAT, sizeof(PLVertex), &vert->position);
+        glColorPointer(4, GL_FLOAT, sizeof(PLVertex), &vert->colour);
+        glNormalPointer(GL_FLOAT, sizeof(PLVertex), &vert->normal);
+        for(PLint i = 0; i < plGetMaxTextureUnits(); i++) {
+            if (pl_graphics_state.tmu[i].active) {
+                glClientActiveTexture((GLenum) GL_TEXTURE0 + i);
+                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+                glTexCoordPointer(2, GL_FLOAT, sizeof(PLVertex), vert->st);
+            }
+        }
+
+        if(mesh->primitive == PL_PRIMITIVE_TRIANGLES) {
+            _plDrawElements
+                    (
+                            mesh->primitive,
+                            mesh->numtriangles * 3,
+                            GL_UNSIGNED_BYTE,
+                            mesh->indices
+                    );
+        }
+        else {
+            _plDrawArrays(mesh->primitive, 0, mesh->numverts);
+        }
+
+        glDisableClientState(GL_COLOR_ARRAY);
+        glDisableClientState(GL_VERTEX_ARRAY);
+        glDisableClientState(GL_NORMAL_ARRAY);
+        for(PLint i = 0; i < plGetMaxTextureUnits(); i++)
+            if(pl_graphics_state.tmu[i].active)
+            {
+                glClientActiveTexture((GLenum)GL_TEXTURE0 + i);
+                glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+            }
+#endif
+    }
+
     /*
      plTranslateMesh(mesh, mesh->position);
      plRotateMesh(mesh, mesh->angles);
@@ -188,3 +235,43 @@ void plDrawVertexNormals(PLMesh *mesh) {
     }
 #endif
 }
+
+/*
+void plDraw(PLDraw *draw) {
+    _PL_GRAPHICS_TRACK();
+#if 0 // update this :(
+
+
+#if defined(VL_MODE_GLIDE)
+    // todo, glide needs its own setup here...
+#elif defined(PL_MODE_OPENGL)
+#if 0
+    if(draw->_gl_vbo[_VL_BUFFER_VERTICES] != 0)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, draw->_gl_vbo[_VL_BUFFER_VERTICES]);
+        glVertexPointer(3, GL_FLOAT, sizeof(PLVertex), NULL);
+
+        glBindBuffer(GL_ARRAY_BUFFER, draw->_gl_vbo[_VL_BUFFER_TEXCOORDS]);
+        glTexCoordPointer(2, GL_FLOAT, sizeof(PLVertex), NULL);
+
+        // todo, switch to using glInterleavedArrays?
+
+        if (draw->primitive == PL_PRIMITIVE_TRIANGLES)
+            _vlDrawElements(
+                draw->primitive,
+                draw->numtriangles * 3,
+                GL_UNSIGNED_BYTE,
+                draw->indices
+            );
+        else
+            _vlDrawArrays(draw->primitive, 0, draw->numverts);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+    else
+#endif
+
+#endif
+#endif
+}
+ */

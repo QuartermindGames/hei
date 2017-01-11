@@ -36,10 +36,6 @@ typedef struct PLTriangle {
     PLuint indices[3];
 } PLTriangle;
 
-typedef enum PLMeshBuffer {
-    PL_MESHBUFFER_ARRAY,
-};
-
 typedef struct PLMesh {
     PLuint id;
 
