@@ -2,6 +2,13 @@
 #include "platform_graphics.h"
 #include "platform_filesystem.h"
 
+void plSetupViewport(PLViewport *viewport, PLint x, PLint y, PLuint width, PLuint height) {
+    memset(viewport, 0, sizeof(PLViewport));
+
+    plSetViewportPosition(viewport, x, y);
+    plSetViewportSize(viewport, width, height);
+}
+
 void plSetViewportPosition(PLViewport *viewport, PLint x, PLint y) {
     if((viewport->x == x) && (viewport->y == y)) {
         return;
@@ -32,16 +39,18 @@ void plSetViewportSize(PLViewport *viewport, PLuint width, PLuint height) {
     // todo, update camera fov
 }
 
-#if 0
-void Viewport::Screenshot(std::string path) {
-    unsigned char *buffer = new unsigned char(height_ * width_ * 3);
-    glReadPixels(x_, y_, width_, height_, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+void plSetCurrentViewport(PLViewport *viewport) {
+    if(!viewport || (pl_graphics_state.current_viewport == viewport)) {
+        return;
+    }
 
-    // todo, write with PLImage
+    plViewport(viewport->x, viewport->y, viewport->width, viewport->height);
+    plScissor(viewport->x, viewport->y, viewport->width, viewport->height);
 
-    delete buffer;
+    pl_graphics_state.current_viewport = viewport;
 }
 
+#if 0
 #define PL_PATH_SCREENSHOTS "./screenshots" // todo, this SHOULDN'T be hardcoded like this :(
 
 void Viewport::Screenshot() {

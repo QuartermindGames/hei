@@ -65,9 +65,10 @@ int main(int argc, char *argv[]) {
 
     plSetClearColour(plCreateColour4b(PL_COLOUR_RED));
 
-    // Set up the viewport.
-    plViewport(0, 0, 640, 480);
-    plScissor(0, 0, 640, 480);
+    // An example of setting up a viewport.
+    PLViewport viewport;
+    plSetupViewport(&viewport, 0, 0, 640, 480);
+    plSetCurrentViewport(&viewport);
 
     // Load the image up from the HDD.
     PLImage image;
@@ -88,11 +89,19 @@ int main(int argc, char *argv[]) {
     plSetTextureFilter(image_texture, PL_TEXTUREFILTER_NEAREST);
     plUploadTextureImage(image_texture, &image);
 
-    PLMesh *cube = plCreateMesh(PL_PRIMITIVE_TRIANGLE_FAN, PL_DRAW_STATIC, 2, 4);
+    // Allocate our mesh object.
+    PLMesh *cube = plCreateMesh(PL_PRIMITIVE_POINTS, PL_DRAW_STATIC, 2, 4);
     if(!cube) {
         plMessageBox(TITLE, "Failed to create mesh!\n%s", plGetError());
         return -1;
     }
+    // Clear, define and upload.
+    plBeginMesh(cube);
+    plAddMeshVertex3f(cube, 0, 0, 0);
+    plAddMeshVertex3f(cube, 0, 0, 1);
+    plAddMeshVertex3f(cube, 0, 1, 1);
+    plAddMeshVertex3f(cube, 1, 1, 1);
+    plEndMesh(cube);
 
     while(!glfwWindowShouldClose(window)) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);

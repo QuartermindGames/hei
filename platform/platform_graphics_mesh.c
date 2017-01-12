@@ -142,7 +142,7 @@ void plDeleteMesh(PLMesh *mesh) {
 
 PLint _pl_mesh_position = -1;
 
-void plMeshBegin(PLMesh *mesh) {
+void plBeginMesh(PLMesh *mesh) {
     // Reset the data contained by the mesh, if we're going to begin a new draw.
     memset(mesh->vertices, 0, sizeof(PLVertex) * mesh->numverts);
     memset(mesh->triangles, 0, sizeof(PLTriangle) * mesh->numtriangles);
@@ -150,16 +150,21 @@ void plMeshBegin(PLMesh *mesh) {
     _pl_mesh_position = -1;
 }
 
-void plMeshVertex(PLMesh *mesh, PLVector3D vector) {
+void plAddMeshVertex(PLMesh *mesh, PLVector3D vector) {
     _pl_mesh_position++;
     plCopyVector3D(&mesh->vertices[_pl_mesh_position].position, vector);
+}
+
+void plAddMeshVertex3f(PLMesh *mesh, PLfloat x, PLfloat y, PLfloat z) {
+    _pl_mesh_position++;
+    plCopyVector3D(&mesh->vertices[_pl_mesh_position].position, plCreateVector3D(x, y, z));
 }
 
 void plMeshColour(PLMesh *mesh, PLColour colour) {
     plCopyColour(&mesh->vertices[_pl_mesh_position].colour, colour);
 }
 
-void plMeshEnd(PLMesh *mesh) {
+void plEndMesh(PLMesh *mesh) {
 #if defined(PL_MODE_OPENGL)
     // Fill our buffer with data.
     glBindBuffer(GL_ARRAY_BUFFER, mesh->id);
@@ -167,7 +172,7 @@ void plMeshEnd(PLMesh *mesh) {
 #endif
 }
 
-void plMeshDraw(PLMesh *mesh) {
+void plDrawMesh(PLMesh *mesh) {
     if(!mesh || !mesh->numverts) {
         return;
     }
@@ -222,7 +227,7 @@ void plMeshDraw(PLMesh *mesh) {
      */
 }
 
-void plDrawVertexNormals(PLMesh *mesh) {
+void plDrawMeshNormals(PLMesh *mesh) {
     if (mesh->primitive == PL_PRIMITIVE_LINES) {
         return;
     }

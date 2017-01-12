@@ -1,17 +1,28 @@
 /*
-DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-Version 2, December 2004
+This is free and unencumbered software released into the public domain.
 
-Copyright (C) 2011-2016 Mark E Sowden <markelswo@gmail.com>
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-Everyone is permitted to copy and distribute verbatim or modified
-copies of this license document, and changing it is allowed as long
-as the name is changed.
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-0. You just DO WHAT THE FUCK YOU WANT TO.
+For more information, please refer to <http://unlicense.org>
 */
 
 #include "platform_log.h"
@@ -20,33 +31,30 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
 #define    LOG_FILE_EXTENSION    ".log"
 
-void plWriteLog(const char *path, const char *msg, ...) {
-    pFUNCTION_START
+void plWriteLog(const PLchar *path, const PLchar *msg, ...) {
+    plFunctionStart();
 
-        char newpath[PL_SYSTEM_MAX_PATH];
-        sprintf(newpath, "%s"LOG_FILE_EXTENSION, path);
+    PLchar newpath[PL_SYSTEM_MAX_PATH];
+    sprintf(newpath, "%s"LOG_FILE_EXTENSION, path);
 
-        static char buffer[1024];
-        va_list args;
-        va_start(args, msg);
-        vsnprintf(buffer, sizeof(buffer), msg, args);
-        va_end(args);
+    static PLchar buffer[1024];
+    va_list args;
+    va_start(args, msg);
+    vsnprintf(buffer, sizeof(buffer), msg, args);
+    va_end(args);
 
-        size_t size = strlen(buffer);
-        FILE *file = fopen(newpath, "a");
-        if (fwrite(buffer, sizeof(char), size, file) != size)
-            plSetError("Failed to write to log! (%s)", newpath);
-        fclose(file);
-
-    pFUNCTION_END
+    size_t size = strlen(buffer);
+    FILE *file = fopen(newpath, "a");
+    if (fwrite(buffer, sizeof(PLchar), size, file) != size) {
+        plSetError("Failed to write to log! (%s)", newpath);
+    }
+    fclose(file);
 }
 
-void plClearLog(const char *path) {
-    pFUNCTION_START
+void plClearLog(const PLchar *path) {
+    plFunctionStart();
 
-        char newpath[PL_SYSTEM_MAX_PATH];
-        sprintf(newpath, "%s"LOG_FILE_EXTENSION, path);
-        unlink(newpath);
-
-    pFUNCTION_END
+    PLchar newpath[PL_SYSTEM_MAX_PATH];
+    sprintf(newpath, "%s"LOG_FILE_EXTENSION, path);
+    unlink(newpath);
 }

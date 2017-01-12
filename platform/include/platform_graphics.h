@@ -277,6 +277,36 @@ typedef struct PLLight {
 
 //-----------------
 
+PL_EXTERN_C
+
+PL_EXTERN void plSetDefaultGraphicsState(void);
+
+PL_EXTERN void plViewport(PLint x, PLint y, PLuint width, PLuint height);
+PL_EXTERN void plScissor(PLint x, PLint y, PLuint width, PLuint height);
+PL_EXTERN void plFinish(void);
+
+// Hardware Information
+PL_EXTERN const PLchar *_plGetHWExtensions(void);
+PL_EXTERN const PLchar *_plGetHWRenderer(void);
+PL_EXTERN const PLchar *_plGetHWVendor(void);
+PL_EXTERN const PLchar *_plGetHWVersion(void);
+
+PL_EXTERN PLbool plHWSupportsMultitexture(void);
+PL_EXTERN PLbool plHWSupportsShaders(void);
+
+PL_EXTERN PLuint plGetCurrentShaderProgram(void);
+
+PL_EXTERN void plEnableShaderProgram(unsigned int program);
+PL_EXTERN void plDisableShaderProgram(unsigned int program);
+
+PL_EXTERN_C_END
+
+#include "platform_graphics_shader.h"
+#include "platform_graphics_camera.h"
+#include "platform_graphics_viewport.h"
+
+/////////////////////////////////////////////////////
+
 typedef struct PLGraphicsState {
     PLuint num_cards;        // Number of video cards.
 
@@ -287,6 +317,10 @@ typedef struct PLGraphicsState {
 
     PLuint current_capabilities;    // Enabled capabilities.
     PLuint current_textureunit;
+
+    // Viewport
+
+    PLViewport *current_viewport;
 
     // Texture states
 
@@ -321,28 +355,4 @@ PL_EXTERN_C
 
 PL_EXTERN PLGraphicsState pl_graphics_state;
 
-PL_EXTERN void plSetDefaultGraphicsState(void);
-
-PL_EXTERN void plViewport(PLint x, PLint y, PLuint width, PLuint height);
-PL_EXTERN void plScissor(PLint x, PLint y, PLuint width, PLuint height);
-PL_EXTERN void plFinish(void);
-
-// Hardware Information
-PL_EXTERN const PLchar *_plGetHWExtensions(void);
-PL_EXTERN const PLchar *_plGetHWRenderer(void);
-PL_EXTERN const PLchar *_plGetHWVendor(void);
-PL_EXTERN const PLchar *_plGetHWVersion(void);
-
-PL_EXTERN PLbool plHWSupportsMultitexture(void);
-PL_EXTERN PLbool plHWSupportsShaders(void);
-
-PL_EXTERN PLuint plGetCurrentShaderProgram(void);
-
-PL_EXTERN void plEnableShaderProgram(unsigned int program);
-PL_EXTERN void plDisableShaderProgram(unsigned int program);
-
 PL_EXTERN_C_END
-
-#include "platform_graphics_shader.h"
-#include "platform_graphics_camera.h"
-#include "platform_graphics_viewport.h"
