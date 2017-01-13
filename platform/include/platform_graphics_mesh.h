@@ -36,8 +36,45 @@ typedef struct PLTriangle {
     PLuint indices[3];
 } PLTriangle;
 
+#if defined(PL_MODE_OPENGL)
+/*  Draw calls are horribly complicated in modern GL
+ *  and require us to track a number of different indexes
+ *  all at once, rather than just the one.
+ *
+ *  Because of this and for the sake of time, this is why
+ *  there is this horrid collection below and 'mode'-specific
+ *  code here which I would rather live without in the libraries
+ *  own headers.
+ *
+ *  I can't really think of a solution to this at the moment
+ *  because generally the structs here should be the same
+ *  regardless of which rendering API we've chosen (otherwise
+ *  people using the library might have to refactor code or make
+ *  changes depending on which rendering API they want to use which
+ *  makes this all slightly redundant).
+ *
+ *  Onc solution might be to have a seperate dynamically allocated
+ *  array within the platform library itself which carries all of these
+ *  for us and knows which ones are assigned to which mesh objects...
+ *  But that sounds so overly complicated and stupid that the better
+ *  solution in the end might be to just leave this how it is.
+ *
+ *  ~hogsy
+ */
+enum {
+    _PL_MESH_VERTICES,
+    _PL_MESH_INDICES,
+
+    _PL_NUM_MESHINDEXES
+};
+#endif
+
 typedef struct PLMesh {
+#if defined(PL_MODE_OPENGL)
+    PLuint id[_PL_NUM_MESHINDEXES];
+#else
     PLuint id;
+#endif
 
     PLVertex *vertices;
     PLTriangle *triangles;
@@ -61,5 +98,7 @@ PL_EXTERN void plBeginMesh(PLMesh *mesh);
 PL_EXTERN void plAddMeshVertex(PLMesh *mesh, PLVector3D vector);
 PL_EXTERN void plAddMeshVertex3f(PLMesh *mesh, PLfloat x, PLfloat y, PLfloat z);
 PL_EXTERN void plEndMesh(PLMesh *mesh);
+
+PL_EXTERN void plDrawMesh(PLMesh *mesh);
 
 PL_EXTERN_C_END

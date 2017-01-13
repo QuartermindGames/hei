@@ -97,16 +97,18 @@ int main(int argc, char *argv[]) {
     }
     // Clear, define and upload.
     plBeginMesh(cube);
-    plAddMeshVertex3f(cube, 0, 0, 0);
-    plAddMeshVertex3f(cube, 0, 0, 1);
-    plAddMeshVertex3f(cube, 0, 1, 1);
-    plAddMeshVertex3f(cube, 1, 1, 1);
+    plAddMeshVertex3f(cube, .1f, 0, 0);
+    plAddMeshVertex3f(cube, 0, 0, .1f);
+    plAddMeshVertex3f(cube, 0, .1f, .1f);
+    plAddMeshVertex3f(cube, .1f, .1f, .1f);
     plEndMesh(cube);
 
     while(!glfwWindowShouldClose(window)) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
         // draw stuff
+
+        plDrawMesh(cube);
 
         glfwSwapBuffers(window);
 
