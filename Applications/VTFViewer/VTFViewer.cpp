@@ -39,6 +39,18 @@ using namespace pl;
 #define TITLE   "VTF/VMT Viewer"
 #define LOG     "vtfviewer"
 
+void DEBUGVectorDifference(PLVector3D *v, PLVector3D *v3) {
+    PLVector3D v2(0, 0, 1);
+
+    if(*v == v2) {
+
+    } else if(v == v3) {
+
+    } else if(v3 == v) {
+
+    }
+}
+
 int main(int argc, char *argv[]) {
     plClearLog(LOG);
 
@@ -60,10 +72,9 @@ int main(int argc, char *argv[]) {
     plInitialize(PL_SUBSYSTEM_GRAPHICS);
 
     plSetDefaultGraphicsState();
+    plSetClearColour(plCreateColour4b(PL_COLOUR_RED));
 
     plEnableGraphicsStates(PL_CAPABILITY_DEPTHTEST);
-
-    plSetClearColour(plCreateColour4b(PL_COLOUR_RED));
 
     // An example of setting up a viewport.
     PLViewport viewport;
@@ -86,22 +97,26 @@ int main(int argc, char *argv[]) {
     }
 
     // Assign that image to our texture and upload it to the GPU.
+    plSetTexture(image_texture);
     plSetTextureFilter(image_texture, PL_TEXTUREFILTER_NEAREST);
     plUploadTextureImage(image_texture, &image);
 
+    _plFreeImage(&image);
+
     // Allocate our mesh object.
-    PLMesh *cube = plCreateMesh(PL_PRIMITIVE_POINTS, PL_DRAW_STATIC, 2, 4);
+    PLMesh *cube = plCreateMesh(PL_PRIMITIVE_TRIANGLE_STRIP, PL_DRAW_STATIC, 2, 4);
     if(!cube) {
         plMessageBox(TITLE, "Failed to create mesh!\n%s", plGetError());
         return -1;
     }
+
     // Clear, define and upload.
-    plBeginMesh(cube);
-    plAddMeshVertex3f(cube, .1f, 0, 0);
-    plAddMeshVertex3f(cube, 0, 0, .1f);
-    plAddMeshVertex3f(cube, 0, .1f, .1f);
-    plAddMeshVertex3f(cube, .1f, .1f, .1f);
-    plEndMesh(cube);
+    plClearMesh(cube);
+    plSetMeshVertex3f(cube, 0, 0, 0, 0);
+    plSetMeshVertex3f(cube, 1, 0, 1, 0);
+    plSetMeshVertex3f(cube, 2, 1, 0, 0);
+    plSetMeshVertex3f(cube, 3, 1.5f, 1, 0);
+    plUploadMesh(cube);
 
     while(!glfwWindowShouldClose(window)) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);

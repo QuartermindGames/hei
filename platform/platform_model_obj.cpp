@@ -19,7 +19,6 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 #include "platform_model.h"
 
 using namespace pl::graphics;
-using namespace pl::math;
 
 /*	OBJ Static Model Format */
 
@@ -38,8 +37,8 @@ typedef struct OBJFace_s {
 
 } OBJFace_t;
 
-std::vector<Vector3D> vertices;
-std::vector<Vector3D> normals;
+std::vector<PLVector3D> vertices;
+std::vector<PLVector3D> normals;
 
 std::ifstream pl_obj_data;
 
@@ -83,13 +82,13 @@ PLStaticModel *plLoadOBJModel(const PLchar *path) {
                 if (line[1] == OBJ_SYNTAX_VERTEX_NORMAL) {
                     PLVector3D normal = {0, 0, 0};
                     std::sscanf(line.c_str() + 2, "%f %f %f", &normal.x, &normal.y, &normal.z);
-                    normals.push_back(Vector3D(normal.x, normal.y, normal.z));
+                    normals.push_back(PLVector3D(normal.x, normal.y, normal.z));
                 } else if (line[1] == OBJ_SYNTAX_VERTEX_ST) {}
                 else // Vertex coords
                 {
                     PLVector3D position = {0, 0, 0};
                     std::sscanf(line.c_str() + 2, "%f %f %f", &position.x, &position.y, &position.z);
-                    vertices.push_back(Vector3D(position.x, position.y, position.z));
+                    vertices.push_back(PLVector3D(position.x, position.y, position.z));
                 }
             }
                 break;

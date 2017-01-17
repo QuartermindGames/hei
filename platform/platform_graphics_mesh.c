@@ -150,31 +150,25 @@ void plDeleteMesh(PLMesh *mesh) {
     free(mesh);
 }
 
-PLint _pl_mesh_position = -1;
-
-void plBeginMesh(PLMesh *mesh) {
+void plClearMesh(PLMesh *mesh) {
     // Reset the data contained by the mesh, if we're going to begin a new draw.
     memset(mesh->vertices, 0, sizeof(PLVertex) * mesh->numverts);
     memset(mesh->triangles, 0, sizeof(PLTriangle) * mesh->numtriangles);
-
-    _pl_mesh_position = -1;
 }
 
-void plAddMeshVertex(PLMesh *mesh, PLVector3D vector) {
-    _pl_mesh_position++;
-    plCopyVector3D(&mesh->vertices[_pl_mesh_position].position, vector);
+void plSetMeshVertex(PLMesh *mesh, PLuint index, PLVector3D vector) {
+    mesh->vertices[index].position = vector;
 }
 
-void plAddMeshVertex3f(PLMesh *mesh, PLfloat x, PLfloat y, PLfloat z) {
-    _pl_mesh_position++;
-    plCopyVector3D(&mesh->vertices[_pl_mesh_position].position, plCreateVector3D(x, y, z));
+void plSetMeshVertex3f(PLMesh *mesh, PLuint index, PLfloat x, PLfloat y, PLfloat z) {
+    mesh->vertices[index].position = plCreateVector3D(x, y, z);
 }
 
-void plMeshColour(PLMesh *mesh, PLColour colour) {
-    plCopyColour(&mesh->vertices[_pl_mesh_position].colour, colour);
+void plSetMeshColour(PLMesh *mesh, PLuint index, PLColour colour) {
+    plCopyColour(&mesh->vertices[index].colour, colour);
 }
 
-void plEndMesh(PLMesh *mesh) {
+void plUploadMesh(PLMesh *mesh) {
 #if defined(PL_MODE_OPENGL) && defined(_PL_USE_VERTEX_BUFFER_OBJECTS)
     // Fill our buffer with data.
     glBindBuffer(GL_ARRAY_BUFFER, mesh->id[_PL_MESH_VERTICES]);

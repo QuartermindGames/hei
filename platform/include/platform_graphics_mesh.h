@@ -94,10 +94,10 @@ PL_EXTERN_C
 PL_EXTERN PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, PLuint num_tris, PLuint num_verts);
 PL_EXTERN void plDeleteMesh(PLMesh *mesh);
 
-PL_EXTERN void plBeginMesh(PLMesh *mesh);
-PL_EXTERN void plAddMeshVertex(PLMesh *mesh, PLVector3D vector);
-PL_EXTERN void plAddMeshVertex3f(PLMesh *mesh, PLfloat x, PLfloat y, PLfloat z);
-PL_EXTERN void plEndMesh(PLMesh *mesh);
+PL_EXTERN void plClearMesh(PLMesh *mesh);
+PL_EXTERN void plSetMeshVertex(PLMesh *mesh, PLuint index, PLVector3D vector);
+PL_EXTERN void plSetMeshVertex3f(PLMesh *mesh, PLuint index, PLfloat x, PLfloat y, PLfloat z);
+PL_EXTERN void plUploadMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawMesh(PLMesh *mesh);
 

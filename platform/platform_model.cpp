@@ -28,15 +28,14 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_model.h"
 
 using namespace pl::graphics;
-using namespace pl::math;
 
 /*	PLATFORM MODEL LOADER	*/
 
-Vector3D plGenerateNormal(Vector3D a, Vector3D b, Vector3D c) {
-    Vector3D x = c - b;
-    Vector3D y = a - b;
+PLVector3D plGenerateNormal(PLVector3D a, PLVector3D b, PLVector3D c) {
+    PLVector3D x = c - b;
+    PLVector3D y = a - b;
 
-    Vector3D normal = x.CrossProduct(y);
+    PLVector3D normal = x.CrossProduct(y);
     return normal.Normalize();
 }
 

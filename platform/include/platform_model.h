@@ -30,7 +30,7 @@ typedef struct PLModelFrame {
     PLTriangle  *triangles;
     PLVertex    *vertices;
 
-    pl::math::Vector3D mins, maxs; // Bounds
+    PLVector3D mins, maxs; // Bounds
 } PLModelFrame;
 
 /*	Static animated mesh.

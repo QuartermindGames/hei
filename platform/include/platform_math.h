@@ -64,6 +64,76 @@ enum {
 
 typedef struct PLVector2D {
     PLfloat x, y;
+
+#ifdef __cplusplus
+    PLVector2D(PLfloat a, PLfloat b) : x(a), y(b) {}
+    PLVector2D() : x(0), y(0) {}
+
+    void operator=(PLVector2D a) {
+        x = a.x;
+        y = a.y;
+    }
+
+    void operator=(PLfloat a) {
+        x = a;
+        y = a;
+    }
+
+    void operator*=(PLVector2D a) {
+        x *= a.x;
+        y *= a.y;
+    }
+
+    void operator*=(PLfloat a) {
+        x *= a;
+        y *= a;
+    }
+
+    void operator/=(PLVector2D a) {
+        x /= a.x;
+        y /= a.y;
+    }
+
+    void operator/=(PLfloat a) {
+        x /= a;
+        y /= a;
+    }
+
+    void operator+=(PLVector2D a) {
+        x += a.x;
+        y += a.y;
+    }
+
+    PLbool operator==(PLVector2D a) const { return ((x == a.x) && (y == a.y)); }
+
+    PLVector2D operator*(PLVector2D a) const { return PLVector2D(x * a.x, y * a.y); }
+
+    PLVector2D operator*(PLfloat a) const { return PLVector2D(x * a, y * a); }
+
+    PLVector2D operator/(PLVector2D a) const { return PLVector2D(x / a.x, y / a.y); }
+
+    PLVector2D operator/(PLfloat a) const { return PLVector2D(x / a, y / a); }
+
+    PLfloat Length() { return std::sqrt(x * x + y * y); }
+
+    PLVector2D Normalize() {
+        PLVector2D out;
+        PLfloat length = Length();
+        if (length != 0)
+            out.Set(x / length, y / length);
+        return out;
+    }
+
+    void PL_INLINE Set(PLfloat a, PLfloat b) {
+        x = a;
+        y = b;
+    }
+
+    void PL_INLINE Clear() {
+        x = 0;
+        y = 0;
+    }
+#endif
 } PLVector2D;
 
 static PL_INLINE void plClearVector2D(PLVector2D *v) {
@@ -84,6 +154,110 @@ static PL_INLINE PLbool plCompareVector2D(PLVector2D v, PLVector2D v2) {
 
 typedef struct PLVector3D {
     PLfloat x, y, z;
+
+#ifdef __cplusplus
+    PLVector3D(PLfloat _x, PLfloat _y, PLfloat _z) : x(_x), y(_y), z(_z) {}
+
+    PLVector3D() : x(0), y(0) {}
+
+    void PL_INLINE operator=(PLVector3D a) {
+        x = a.x;
+        y = a.y;
+        z = a.z;
+    }
+
+    void PL_INLINE operator=(PLfloat a) {
+        x = a;
+        y = a;
+        z = a;
+    }
+
+    void PL_INLINE operator*=(PLVector3D a) {
+        x *= a.x;
+        y *= a.y;
+        z *= a.z;
+    }
+
+    void PL_INLINE operator*=(PLfloat a) {
+        x *= a;
+        y *= a;
+        z *= a;
+    }
+
+    void PL_INLINE operator+=(PLVector3D a) {
+        x += a.x;
+        y += a.y;
+        z += a.z;
+    }
+
+    PLbool PL_INLINE operator==(const PLVector3D &a) const {
+        return ((x == a.x) && (y == a.y) && (z == a.z));
+    }
+
+    PLVector3D PL_INLINE operator*(PLVector3D a) const {
+        return PLVector3D(x * a.x, y * a.y, z * a.z);
+    }
+
+    PLVector3D PL_INLINE operator*(PLfloat a) const {
+        return PLVector3D(x * a, y * a, z * a);
+    }
+
+    PLVector3D PL_INLINE operator-(PLVector3D a) const {
+        return PLVector3D(x - a.x, y - a.y, z - a.z);
+    }
+
+    PLVector3D PL_INLINE operator-(PLfloat a) const {
+        return PLVector3D(x - a, y - a, z - a);
+    }
+
+    PLVector3D PL_INLINE operator+(PLVector3D a) const {
+        return PLVector3D(x + a.x, y + a.y, z + a.z);
+    }
+
+    PLVector3D PL_INLINE operator+(PLfloat a) const {
+        return PLVector3D(x + a, y + a, z + a);
+    }
+
+    PLVector3D PL_INLINE operator / (const PLVector3D &a) const {
+        return PLVector3D(x / a.x, y / a.y, z / a.z);
+    }
+
+    PLVector3D PL_INLINE operator / (PLfloat a) const {
+        return PLVector3D(x / a, y / a, z / a);
+    }
+
+    PLfloat PL_INLINE Length() {
+        return std::sqrt(x * x + y * y + z * z);
+    }
+
+    PLfloat PL_INLINE DotProduct(PLVector3D a) {
+        return (x * a.x + y * a.y + z * a.z);
+    }
+
+    PLVector3D PL_INLINE CrossProduct(PLVector3D a) {
+        return PLVector3D(y * a.z - z * a.y, z * a.x - x * a.z, x * a.y - y * a.x);
+    }
+
+    PLVector3D PL_INLINE Normalize() {
+        return (*this) / Length();
+    }
+
+    PLfloat PL_INLINE Difference(PLVector3D v) {
+        return ((*this) - v).Length();
+    }
+
+    void PL_INLINE Set(PLfloat _x, PLfloat _y, PLfloat _z) {
+        x = _x;
+        y = _y;
+        z = _z;
+    }
+
+    void PL_INLINE Clear() {
+        x = 0;
+        y = 0;
+        z = 0;
+    }
+#endif
 } PLVector3D;
 
 static PL_INLINE PLVector3D plCreateVector3D(PLfloat x, PLfloat y, PLfloat z) {
@@ -91,176 +265,58 @@ static PL_INLINE PLVector3D plCreateVector3D(PLfloat x, PLfloat y, PLfloat z) {
     return v;
 }
 
-static PL_INLINE void plCopyVector3D(PLVector3D *v, PLVector3D v2) {
-    v->x = v2.x; v->y = v2.y; v->z = v2.z;
+static PL_INLINE void plAddVector3D(PLVector3D *v, PLVector3D v2) {
+    v->x += v2.x; v->y += v2.y; v->z += v2.z;
+}
+
+static PL_INLINE void plSubtractVector3D(PLVector3D *v, PLVector3D v2) {
+    v->x -= v2.x; v->y -= v2.y; v->z -= v2.z;
+}
+
+static PL_INLINE void plScaleVector3D(PLVector3D *v, PLVector3D v2) {
+    v->x *= v2.x; v->y *= v2.y; v->z *= v2.z;
+}
+
+static PL_INLINE void plScaleVector3Df(PLVector3D *v, PLfloat f) {
+    v->x *= f; v->y *= f; v->z *= f;
+}
+
+static PL_INLINE void plDivideVector3D(PLVector3D *v, PLVector3D v2) {
+    v->x /= v2.x; v->y /= v2.y; v->z /= v2.z;
 }
 
 static PL_INLINE void plClearVector3D(PLVector3D *v) {
     memset(v, 0, sizeof(PLVector3D));
 }
 
-#ifdef __cplusplus
+static PL_INLINE PLVector3D plVector3DCrossProduct(PLVector3D v, PLVector3D v2) {
+      return plCreateVector3D(
+              v.y * v2.z - v.z * v2.y,
+              v.z * v2.x - v.x * v2.z,
+              v.x * v2.y - v.y * v2.x
+      );
+}
 
-namespace pl {
-    namespace math {
+static PL_INLINE PLfloat plVector3DDotProduct(PLVector3D v, PLVector3D v2) {
+    return (v.x * v2.x + v.y * v2.y + v.z * v2.z);
+}
 
-        struct Vector2D {
-            Vector2D(PLfloat a, PLfloat b) : x(a), y(b) {}
+static PL_INLINE PLfloat plVector3DLength(PLVector3D v) {
+    return sqrtf(v.x * v.x + v.y * v.y);
+}
 
-            Vector2D() : x(0), y(0) {}
-
-            PLfloat x, y;
-
-            void operator=(Vector2D a) {
-                x = a.x;
-                y = a.y;
-            }
-
-            void operator=(PLfloat a) {
-                x = a;
-                y = a;
-            }
-
-            void operator*=(Vector2D a) {
-                x *= a.x;
-                y *= a.y;
-            }
-
-            void operator*=(PLfloat a) {
-                x *= a;
-                y *= a;
-            }
-
-            void operator/=(Vector2D a) {
-                x /= a.x;
-                y /= a.y;
-            }
-
-            void operator/=(PLfloat a) {
-                x /= a;
-                y /= a;
-            }
-
-            void operator+=(Vector2D a) {
-                x += a.x;
-                y += a.y;
-            }
-
-            PLbool operator==(Vector2D a) const { return ((x == a.x) && (y == a.y)); }
-
-            Vector2D operator*(Vector2D a) { return Vector2D(x * a.x, y * a.y); }
-
-            Vector2D operator*(PLfloat a) { return Vector2D(x * a, y * a); }
-
-            Vector2D operator/(Vector2D a) { return Vector2D(x / a.x, y / a.y); }
-
-            Vector2D operator/(PLfloat a) { return Vector2D(x / a, y / a); }
-
-            PLfloat Length() { return std::sqrt(x * x + y * y); }
-
-            Vector2D Normalize() {
-                Vector2D out;
-                PLfloat length = Length();
-                if (length != 0)
-                    out.Set(x / length, y / length);
-                return out;
-            }
-
-            void PL_INLINE Set(PLfloat a, PLfloat b) {
-                x = a;
-                y = b;
-            }
-
-            void PL_INLINE Clear() {
-                x = 0;
-                y = 0;
-            }
-        };
-
-        struct Vector3D {
-            Vector3D(PLfloat _x, PLfloat _y, PLfloat _z) : x(_x), y(_y), z(_z) {}
-
-            Vector3D() : x(0), y(0) {}
-
-            PLfloat x, y, z;
-
-            void operator=(Vector3D a) {
-                x = a.x;
-                y = a.y;
-                z = a.z;
-            }
-
-            void operator=(PLfloat a) {
-                x = a;
-                y = a;
-                z = a;
-            }
-
-            void operator*=(Vector3D a) {
-                x *= a.x;
-                y *= a.y;
-                z *= a.z;
-            }
-
-            void operator*=(PLfloat a) {
-                x *= a;
-                y *= a;
-                z *= a;
-            }
-
-            void operator+=(Vector3D a) {
-                x += a.x;
-                y += a.y;
-                z += a.z;
-            }
-
-            PLbool operator==(Vector3D a) const { return ((x == a.x) && (y == a.y) && (z == a.z)); }
-
-            Vector3D operator*(Vector3D a) const { return Vector3D(x * a.x, y * a.y, z * a.z); }
-
-            Vector3D operator*(PLfloat a) const { return Vector3D(x * a, y * a, z * a); }
-
-            Vector3D operator-(Vector3D a) const { return Vector3D(x - a.x, y - a.y, z - a.z); }
-
-            Vector3D operator-(PLfloat a) const { return Vector3D(x - a, y - a, z - a); }
-
-            Vector3D operator+(Vector3D a) const { return Vector3D(x + a.x, y + a.y, z + a.z); }
-
-            Vector3D operator+(PLfloat a) const { return Vector3D(x + a, y + a, z + a); }
-
-            PLfloat Length() { return std::sqrt(x * x + y * y + z * z); }
-
-            PLfloat DotProduct(Vector3D a) { return (x * a.x + y * a.y + z * a.z); }
-
-            Vector3D CrossProduct(Vector3D a) {
-                return Vector3D(y * a.z - z * a.y, z * a.x - x * a.z, x * a.y - y * a.x);
-            }
-
-            Vector3D Normalize() {
-                Vector3D out;
-                PLfloat length = Length();
-                if (length != 0)
-                    out.Set(x / length, y / length, z / length);
-                return out;
-            }
-
-            void PL_INLINE Set(PLfloat _x, PLfloat _y, PLfloat _z) {
-                x = _x;
-                y = _y;
-                z = _z;
-            }
-
-            void PL_INLINE Clear() {
-                x = 0;
-                y = 0;
-                z = 0;
-            }
-        };
-
+static PL_INLINE void plNormalizeVector3D(PLVector3D *v) {
+    PLfloat length = plVector3DLength(*v);
+    if(length != 0) {
+        v->x /= length; v->y /= length; v->z /= length;
     }
 }
 
-#endif
+const static PL_INLINE PLchar *plPrintVector3D(PLVector3D v) {
+    static PLchar s[32] = { 0 };
+    snprintf(s, 32, "%i %i %i", (PLint)v.x, (PLint)v.y, (PLint)v.z);
+    return s;
+}
 
 // Colour
 

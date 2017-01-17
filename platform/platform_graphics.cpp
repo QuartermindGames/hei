@@ -30,7 +30,6 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_image.h"
 
 using namespace pl::graphics;
-using namespace pl::math;
 
 /*	Graphics	*/
 
