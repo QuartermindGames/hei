@@ -190,8 +190,20 @@ typedef struct PLVector3D {
         z += a.z;
     }
 
-    PLbool PL_INLINE operator==(const PLVector3D &a) const {
+    PLbool PL_INLINE operator == (const PLVector3D &a) const {
         return ((x == a.x) && (y == a.y) && (z == a.z));
+    }
+
+    PLbool PL_INLINE operator == (PLfloat f) const {
+        return ((x == f) && (y == f) && (z == f));
+    }
+
+    PLbool PL_INLINE operator != (const PLVector3D &a) const {
+        return !(a == *this);
+    }
+
+    PLbool PL_INLINE operator != (PLfloat f) const {
+        return ((x != f) && (y != f) && (z != f));
     }
 
     PLVector3D PL_INLINE operator*(PLVector3D a) const {

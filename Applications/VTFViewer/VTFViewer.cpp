@@ -40,13 +40,27 @@ using namespace pl;
 #define LOG     "vtfviewer"
 
 void DEBUGVectorDifference(PLVector3D *v, PLVector3D *v3) {
-    PLVector3D v2(0, 0, 1);
+    PLVector3D v2(0, 0, 1), v4;
 
     if(*v == v2) {
 
     } else if(v == v3) {
 
     } else if(v3 == v) {
+
+    }
+
+    *v = v2;
+
+    if(v2 != v4) {
+
+    } else if(v != v3) {
+
+    } else if(v3 != v) {
+
+    } else if(v2 != *v) {
+
+    } else if(*v != v2) {
 
     }
 }
