@@ -52,6 +52,10 @@ void DEBUGVectorDifference(PLVector3D *v, PLVector3D *v3) {
 
     *v = v2;
 
+    v2 *= v4;
+    v2 *= *v;
+    *v *= v2;
+
     if(v2 != v4) {
 
     } else if(v != v3) {

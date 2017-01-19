@@ -160,31 +160,31 @@ typedef struct PLVector3D {
 
     PLVector3D() : x(0), y(0) {}
 
-    void PL_INLINE operator=(PLVector3D a) {
+    void PL_INLINE operator = (PLVector3D a) {
         x = a.x;
         y = a.y;
         z = a.z;
     }
 
-    void PL_INLINE operator=(PLfloat a) {
+    void PL_INLINE operator = (PLfloat a) {
         x = a;
         y = a;
         z = a;
     }
 
-    void PL_INLINE operator*=(PLVector3D a) {
-        x *= a.x;
-        y *= a.y;
-        z *= a.z;
+    void PL_INLINE operator *= (const PLVector3D &v) {
+        x *= v.x;
+        y *= v.y;
+        z *= v.z;
     }
 
-    void PL_INLINE operator*=(PLfloat a) {
+    void PL_INLINE operator *= (PLfloat a) {
         x *= a;
         y *= a;
         z *= a;
     }
 
-    void PL_INLINE operator+=(PLVector3D a) {
+    void PL_INLINE operator += (PLVector3D a) {
         x += a.x;
         y += a.y;
         z += a.z;
@@ -206,27 +206,27 @@ typedef struct PLVector3D {
         return ((x != f) && (y != f) && (z != f));
     }
 
-    PLVector3D PL_INLINE operator*(PLVector3D a) const {
+    PLVector3D PL_INLINE operator * (PLVector3D a) const {
         return PLVector3D(x * a.x, y * a.y, z * a.z);
     }
 
-    PLVector3D PL_INLINE operator*(PLfloat a) const {
+    PLVector3D PL_INLINE operator * (PLfloat a) const {
         return PLVector3D(x * a, y * a, z * a);
     }
 
-    PLVector3D PL_INLINE operator-(PLVector3D a) const {
+    PLVector3D PL_INLINE operator - (PLVector3D a) const {
         return PLVector3D(x - a.x, y - a.y, z - a.z);
     }
 
-    PLVector3D PL_INLINE operator-(PLfloat a) const {
+    PLVector3D PL_INLINE operator - (PLfloat a) const {
         return PLVector3D(x - a, y - a, z - a);
     }
 
-    PLVector3D PL_INLINE operator+(PLVector3D a) const {
+    PLVector3D PL_INLINE operator + (PLVector3D a) const {
         return PLVector3D(x + a.x, y + a.y, z + a.z);
     }
 
-    PLVector3D PL_INLINE operator+(PLfloat a) const {
+    PLVector3D PL_INLINE operator + (PLfloat a) const {
         return PLVector3D(x + a, y + a, z + a);
     }
 
@@ -238,23 +238,43 @@ typedef struct PLVector3D {
         return PLVector3D(x / a, y / a, z / a);
     }
 
-    PLfloat PL_INLINE Length() {
+    bool PL_INLINE operator > (const PLVector3D &v) const {
+        return ((x > v.x) && (y > v.y) && (z > v.z));
+    }
+
+    bool PL_INLINE operator < (const PLVector3D &v) const {
+        return ((x < v.x) && (y < v.y) && (z < v.z));
+    }
+
+    bool PL_INLINE operator >= (const PLVector3D &v) const {
+        return ((x >= v.x) && (y >= v.y) && (z >= v.z));
+    }
+
+    bool PL_INLINE operator <= (const PLVector3D &v) const {
+        return ((x <= v.x) && (y <= v.y) && (z <= v.z));
+    }
+
+    PLfloat PL_INLINE Length() const {
         return std::sqrt(x * x + y * y + z * z);
     }
 
-    PLfloat PL_INLINE DotProduct(PLVector3D a) {
+    PLfloat PL_INLINE DotProduct(PLVector3D a) const {
         return (x * a.x + y * a.y + z * a.z);
     }
 
-    PLVector3D PL_INLINE CrossProduct(PLVector3D a) {
+    PLVector3D PL_INLINE CrossProduct(PLVector3D a) const {
         return PLVector3D(y * a.z - z * a.y, z * a.x - x * a.z, x * a.y - y * a.x);
     }
 
-    PLVector3D PL_INLINE Normalize() {
+    PLVector3D PL_INLINE Normalize() const {
         return (*this) / Length();
     }
 
-    PLfloat PL_INLINE Difference(PLVector3D v) {
+    PLVector3D PL_INLINE Negate(PLVector3D v) const {
+
+    }
+
+    PLfloat PL_INLINE Difference(PLVector3D v) const {
         return ((*this) - v).Length();
     }
 
@@ -262,12 +282,6 @@ typedef struct PLVector3D {
         x = _x;
         y = _y;
         z = _z;
-    }
-
-    void PL_INLINE Clear() {
-        x = 0;
-        y = 0;
-        z = 0;
     }
 #endif
 } PLVector3D;
