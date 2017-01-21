@@ -222,6 +222,10 @@ typedef struct PLVector3D {
         return PLVector3D(x - a, y - a, z - a);
     }
 
+    PLVector3D PL_INLINE operator - () const {
+        return PLVector3D(-x, -y, -z);
+    }
+
     PLVector3D PL_INLINE operator + (PLVector3D a) const {
         return PLVector3D(x + a.x, y + a.y, z + a.z);
     }
@@ -236,6 +240,10 @@ typedef struct PLVector3D {
 
     PLVector3D PL_INLINE operator / (PLfloat a) const {
         return PLVector3D(x / a, y / a, z / a);
+    }
+
+    PL_INLINE PLfloat& operator [] (const unsigned int i) {
+        return *((&x) + i);
     }
 
     bool PL_INLINE operator > (const PLVector3D &v) const {
@@ -309,6 +317,10 @@ static PL_INLINE void plScaleVector3Df(PLVector3D *v, PLfloat f) {
 
 static PL_INLINE void plDivideVector3D(PLVector3D *v, PLVector3D v2) {
     v->x /= v2.x; v->y /= v2.y; v->z /= v2.z;
+}
+
+static PL_INLINE void plInverseVector3D(PLVector3D *v) {
+    v->x = -v->x; v->y = -v->y; v->z = -v->z;
 }
 
 static PL_INLINE void plClearVector3D(PLVector3D *v) {

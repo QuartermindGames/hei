@@ -50,6 +50,12 @@ void DEBUGVectorDifference(PLVector3D *v, PLVector3D *v3) {
 
     }
 
+    v2[0] = 2;
+    v2[1] = 3;
+    v2[2] = 0;
+
+    printf("%i %i %i\n", (int)v2[0], (int)v2[1], (int)v2[2]);
+
     *v = v2;
 
     v2 *= v4;
@@ -71,6 +77,9 @@ void DEBUGVectorDifference(PLVector3D *v, PLVector3D *v3) {
 
 int main(int argc, char *argv[]) {
     plClearLog(LOG);
+
+    PLVector3D v1, v2;
+    DEBUGVectorDifference(&v1, &v2);
 
     if(!glfwInit()) {
         plMessageBox(TITLE, "Failed to initialize GLFW!\n");
