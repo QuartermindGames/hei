@@ -136,6 +136,11 @@ typedef struct PLVector2D {
 #endif
 } PLVector2D;
 
+PL_INLINE static PLVector2D plCreateVector2D(PLfloat s, PLfloat t) {
+    PLVector2D v = { s, t };
+    return v;
+}
+
 static PL_INLINE void plClearVector2D(PLVector2D *v) {
     memset(v, 0, sizeof(PLVector2D));
 }
@@ -278,10 +283,6 @@ typedef struct PLVector3D {
         return (*this) / Length();
     }
 
-    PLVector3D PL_INLINE Negate(PLVector3D v) const {
-
-    }
-
     PLfloat PL_INLINE Difference(PLVector3D v) const {
         return ((*this) - v).Length();
     }
@@ -355,6 +356,8 @@ const static PL_INLINE PLchar *plPrintVector3D(PLVector3D v) {
     snprintf(s, 32, "%i %i %i", (PLint)v.x, (PLint)v.y, (PLint)v.z);
     return s;
 }
+
+#define PL_ORIGIN   plCreateVector3D(0, 0, 0)
 
 // Colour
 
@@ -440,7 +443,7 @@ static PL_INLINE void plClearMatrix4(PLMatrix4 m) {
 
 static PL_INLINE void plAddMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
     for(PLint i = 0; i < 4; i++) {
-        for(PLint j = 0; i < 4; j++) {
+        for(PLint j = 0; j < 4; j++) {
             m[i][j] += m2[i][j];
         }
     }
@@ -495,6 +498,8 @@ static PL_INLINE const PLchar *plPrintMatrix4(const PLMatrix4 m) {
 
 // Quaternion
 
+#if 0
+
 typedef PLfloat PLQuaternion[4];
 
 static PL_INLINE void plClearQuaternion(PLQuaternion q) {
@@ -530,6 +535,85 @@ static PL_INLINE const PLchar *plPrintQuaternion(const PLQuaternion q) {
     snprintf(s, 32, "%i %i %i %i", (PLint)q[0], (PLint)q[1], (PLint)q[2], (PLint)q[3]);
     return s;
 }
+
+#endif
+
+typedef struct PLQuaternion {
+    PLfloat x, y, z, w;
+
+#ifdef __cplusplus
+
+    PLQuaternion(PLfloat a, PLfloat b, PLfloat c, PLfloat d) : x(a), y(b), z(c), w(d) {}
+
+    PLQuaternion(PLfloat a, PLfloat b, PLfloat c) : x(a), y(b), z(c), w(0) {}
+
+    PLQuaternion() : x(0), y(0), z(0), w(0) {}
+
+    PL_INLINE void operator = (PLQuaternion a) {
+        x = a.x; y = a.y; z = a.z; w = a.w;
+    }
+
+    PL_INLINE void operator *= (PLfloat a) {
+        x *= a; y *= a; z *= a; w *= a;
+    }
+
+    PL_INLINE void operator *= (PLQuaternion a) {
+        x *= a.x;
+        y *= a.y;
+        z *= a.z;
+        w *= a.w;
+    }
+
+    PL_INLINE PLbool operator == (PLQuaternion a) const {
+        return ((x == a.x) && (y == a.y) && (z == a.z) && (w == a.w));
+    }
+
+    PL_INLINE PLQuaternion operator * (PLfloat a) {
+        return PLQuaternion(x * a, y * a, z * a, w * a);
+    }
+
+    PL_INLINE PLQuaternion operator * (PLQuaternion a) {
+        return PLQuaternion(x * a.x, y * a.y, z * a.z, w * a.w);
+    }
+
+    PL_INLINE void Set(PLfloat a, PLfloat b, PLfloat c, PLfloat d) {
+        x = a; y = b; z = c; w = d;
+    }
+
+    PL_INLINE void Set(PLfloat a, PLfloat b, PLfloat c) {
+        x = a;
+        y = b;
+        z = c;
+    }
+
+    PL_INLINE const PLchar *String() {
+        static PLchar s[32] = {0};
+        snprintf(s, 32, "%i %i %i %i", (PLint) x, (PLint) y, (PLint) z, (PLint) w);
+        return s;
+    }
+
+    PL_INLINE PLfloat Length() {
+        return std::sqrt((x * x + y * y + z * z + w * w));
+    }
+
+    PL_INLINE PLQuaternion Scale(PLfloat a) {
+        return PLQuaternion(x * a, y * a, z * a, w * a);
+    }
+
+    PL_INLINE PLQuaternion Inverse() {
+        return PLQuaternion(-x, -y, -z, w);
+    }
+
+    PL_INLINE PLQuaternion Normalize() {
+        PLfloat l = Length();
+        if (l) {
+            float i = 1 / l;
+            return Scale(i);
+        }
+    }
+
+#endif
+} PLQuaternion;
 
 // Randomisation
 

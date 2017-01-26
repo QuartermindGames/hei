@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
     _plFreeImage(&image);
 
     // Allocate our mesh object.
-    PLMesh *cube = plCreateMesh(PL_PRIMITIVE_TRIANGLE_STRIP, PL_DRAW_STATIC, 2, 4);
+    PLMesh *cube = plCreateMesh(PL_PRIMITIVE_QUADS, PL_DRAW_STATIC, 2, 4);
     if(!cube) {
         plMessageBox(TITLE, "Failed to create mesh!\n%s", plGetError());
         return -1;
@@ -139,21 +139,30 @@ int main(int argc, char *argv[]) {
 
     // Clear, define and upload.
     plClearMesh(cube);
-    plSetMeshVertex3f(cube, 0, 0, 0, 0);
-    plSetMeshVertex3f(cube, 1, 0, 1, 0);
-    plSetMeshVertex3f(cube, 2, 1, 0, 0);
-    plSetMeshVertex3f(cube, 3, 1.5f, 1, 0);
+    plSetMeshVertexPosition3f(cube, 0, 0, 0, 0);
+    plSetMeshVertexST(cube, 0, 0, 0);
+    plSetMeshVertexPosition3f(cube, 1, 640, 0, 0);
+    plSetMeshVertexST(cube, 1, 1, 0);
+    plSetMeshVertexPosition3f(cube, 2, 640, 480, 0);
+    plSetMeshVertexST(cube, 2, 1, 1);
+    plSetMeshVertexPosition3f(cube, 3, 0, 480, 0);
+    plSetMeshVertexST(cube, 3, 0, 1);
     plUploadMesh(cube);
+
+    plEnableGraphicsStates(PL_CAPABILITY_TEXTURE_2D);
 
     while(!glfwWindowShouldClose(window)) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
-        // draw stuff
+        // draw stuff start
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0, 640, 480, 0, 0, 1);
 
         plDrawMesh(cube);
+        // draw stuff end
 
         glfwSwapBuffers(window);
-
         glfwPollEvents();
     }
 
