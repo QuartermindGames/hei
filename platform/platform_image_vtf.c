@@ -250,11 +250,13 @@ PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
         return PL_RESULT_IMAGERESOLUTION;
     else if(header.lowresimagewidth && header.lowresimageheight) {
         if ((header.lowresimagewidth > 16) || (header.lowresimageheight > 16) ||
-            (header.lowresimagewidth > header.width) || (header.lowresimageheight > header.height))
+            (header.lowresimagewidth > header.width) || (header.lowresimageheight > header.height)) {
             return PL_RESULT_IMAGERESOLUTION;
+        }
 
-        if(header.lowresimageformat != VTF_FORMAT_DXT1)
+        if(header.lowresimageformat != VTF_FORMAT_DXT1) {
             return PL_RESULT_IMAGEFORMAT;
+        }
     }
 
     // todo, use the headersize flag so we can load this more intelligently!

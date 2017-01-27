@@ -50,17 +50,20 @@ void DEBUGVectorDifference(PLVector3D *v, PLVector3D *v3) {
 
     }
 
+    printf("%s %s %s\n", plPrintVector3D(*v), plPrintVector3D(v2), plPrintVector3D(*v3));
+
     v2[0] = 2;
     v2[1] = 3;
     v2[2] = 0;
 
-    printf("%i %i %i\n", (int)v2[0], (int)v2[1], (int)v2[2]);
+    printf("%s %s %s\n", plPrintVector3D(*v), plPrintVector3D(v2), plPrintVector3D(*v3));
 
     *v = v2;
-
     v2 *= v4;
     v2 *= *v;
     *v *= v2;
+
+    printf("%s %s %s\n", plPrintVector3D(*v), plPrintVector3D(v2), plPrintVector3D(*v3));
 
     if(v2 != v4) {
 
@@ -73,6 +76,8 @@ void DEBUGVectorDifference(PLVector3D *v, PLVector3D *v3) {
     } else if(*v != v2) {
 
     }
+
+    printf("%s %s %s\n", plPrintVector3D(*v), plPrintVector3D(v2), plPrintVector3D(*v3));
 }
 
 int main(int argc, char *argv[]) {
@@ -110,7 +115,7 @@ int main(int argc, char *argv[]) {
 
     // Load the image up from the HDD.
     PLImage image;
-    PLresult result = plLoadImage("./images/bluegrid.vtf", &image);
+    PLresult result = plLoadImage("./images/brickwall010d.vtf", &image);
     if(result != PL_RESULT_SUCCESS) {
         plMessageBox(TITLE, "Failed to load VTF!\n%s", plGetResultString(result));
         return -1;
