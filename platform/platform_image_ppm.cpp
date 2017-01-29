@@ -20,8 +20,8 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
 #define    PPM_HEADER_SIZE    70
 
-PLresult plLoadPPMImage(FILE *fin, PLImage *out) {
-    plSetErrorFunction("plLoadPPMImage");
+PLresult _plLoadPPMImage(FILE *fin, PLImage *out) {
+    plSetErrorFunction("_plLoadPPMImage");
 
     char header[PPM_HEADER_SIZE];
     memset(&header, 0, sizeof(header));

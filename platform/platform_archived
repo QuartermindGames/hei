@@ -5,40 +5,7 @@ namespace pl {
     namespace math {
 
         struct Colour {
-            Colour() : Colour(PL_COLOUR_WHITE) {}
 
-            Colour(PLuchar _r, PLuchar _g, PLuchar _b, PLuchar _a = 255) : r(_r), g(_g), b(_b), a(_a) {}
-
-            Colour(PLint _r, PLint _g, PLint _b, PLint _a = 255) :
-                    Colour((PLuchar) _r, (PLuchar) _g, (PLuchar) _b, (PLuchar) _a) {}
-
-            Colour(PLfloat _r, PLfloat _g, PLfloat _b, PLfloat _a = 1) :
-                    r((PLuchar) (_r * 255)),
-                    g((PLuchar) (_g * 255)),
-                    b((PLuchar) (_b * 255)),
-                    a((PLuchar) (_a * 255)) {}
-
-            PLuchar r, g, b, a;
-
-            PLbool operator==(Colour in) const { return ((r == in.r) && (g == in.g) && (b == in.b) && (a == in.a)); }
-
-            Colour operator*(Colour in) { return Colour(r * in.r, g * in.g, b * in.b, a * in.a); }
-
-            Colour operator/(Colour in) { return Colour(r / in.r, g / in.g, b / in.b, a / in.a); }
-
-            void PL_INLINE Set(PLfloat _r, PLfloat _g, PLfloat _b, PLfloat _a = 1) {
-                r = (PLuchar) (_r * 255);
-                g = (PLuchar) (_g * 255);
-                b = (PLuchar) (_b * 255);
-                a = (PLuchar) (_a * 255);
-            }
-
-            void PL_INLINE Clear() {
-                r = 0;
-                g = 0;
-                b = 0;
-                a = 0;
-            }
         };
 
     }

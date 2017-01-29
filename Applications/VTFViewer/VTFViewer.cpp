@@ -83,15 +83,21 @@ void DEBUGVectorDifference(PLVector3D *v, PLVector3D *v3) {
 int main(int argc, char *argv[]) {
     plClearLog(LOG);
 
-    PLVector3D v1, v2;
-    DEBUGVectorDifference(&v1, &v2);
+    // Load the image up from the HDD.
+    PLImage image;
+    PLresult result = plLoadImage("./images/jello.tif", &image);
+    if(result != PL_RESULT_SUCCESS) {
+        plMessageBox(TITLE, "Failed to load VTF!\n%s", plGetResultString(result));
+        return -1;
+    }
 
     if(!glfwInit()) {
         plMessageBox(TITLE, "Failed to initialize GLFW!\n");
         return -1;
     }
 
-    GLFWwindow *window = glfwCreateWindow(640, 480, TITLE, NULL, NULL);
+    const unsigned int width = image.width, height = image.height;
+    GLFWwindow *window = glfwCreateWindow(width, height, TITLE, NULL, NULL);
     if(!window) {
         glfwTerminate();
 
@@ -104,22 +110,14 @@ int main(int argc, char *argv[]) {
     plInitialize(PL_SUBSYSTEM_GRAPHICS);
 
     plSetDefaultGraphicsState();
-    plSetClearColour(plCreateColour4b(PL_COLOUR_RED));
+    plSetClearColour(PLColour(PL_COLOUR_RED));
 
     plEnableGraphicsStates(PL_CAPABILITY_DEPTHTEST);
 
     // An example of setting up a viewport.
     PLViewport viewport;
-    plSetupViewport(&viewport, 0, 0, 640, 480);
+    plSetupViewport(&viewport, 0, 0, width, height);
     plSetCurrentViewport(&viewport);
-
-    // Load the image up from the HDD.
-    PLImage image;
-    PLresult result = plLoadImage("./images/brickwall010d.vtf", &image);
-    if(result != PL_RESULT_SUCCESS) {
-        plMessageBox(TITLE, "Failed to load VTF!\n%s", plGetResultString(result));
-        return -1;
-    }
 
     // Create a texture slot for our new texture.
     PLTexture *image_texture = plCreateTexture();
@@ -144,14 +142,23 @@ int main(int argc, char *argv[]) {
 
     // Clear, define and upload.
     plClearMesh(cube);
+
     plSetMeshVertexPosition3f(cube, 0, 0, 0, 0);
     plSetMeshVertexST(cube, 0, 0, 0);
-    plSetMeshVertexPosition3f(cube, 1, 640, 0, 0);
+    plSetMeshVertexColour(cube, 0, PLColour(PL_COLOUR_RED));
+
+    plSetMeshVertexPosition3f(cube, 1, width, 0, 0);
     plSetMeshVertexST(cube, 1, 1, 0);
-    plSetMeshVertexPosition3f(cube, 2, 640, 480, 0);
+    plSetMeshVertexColour(cube, 1, PLColour(PL_COLOUR_GREEN));
+
+    plSetMeshVertexPosition3f(cube, 2, width, height, 0);
     plSetMeshVertexST(cube, 2, 1, 1);
-    plSetMeshVertexPosition3f(cube, 3, 0, 480, 0);
+    plSetMeshVertexColour(cube, 2, PLColour(PL_COLOUR_BLUE));
+
+    plSetMeshVertexPosition3f(cube, 3, 0, height, 0);
     plSetMeshVertexST(cube, 3, 0, 1);
+    plSetMeshVertexColour(cube, 3, PLColour(PL_COLOUR_WHITE));
+
     plUploadMesh(cube);
 
     plEnableGraphicsStates(PL_CAPABILITY_TEXTURE_2D);
@@ -162,7 +169,7 @@ int main(int argc, char *argv[]) {
         // draw stuff start
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        glOrtho(0, 640, 480, 0, 0, 1);
+        glOrtho(0, width, height, 0, 0, 1);
 
         plDrawMesh(cube);
         // draw stuff end

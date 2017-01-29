@@ -19,6 +19,7 @@ typedef enum PLPrimitive {
 typedef enum PLDrawMode {
     PL_DRAW_DYNAMIC,
     PL_DRAW_STATIC,
+    PL_DRAW_IMMEDIATE,  // Not necessarily supported in all cases, will just revert to dynamic otherwise!
 
     PL_NUM_DRAWMODES
 } PLDrawMode;
@@ -53,7 +54,7 @@ typedef struct PLTriangle {
  *  changes depending on which rendering API they want to use which
  *  makes this all slightly redundant).
  *
- *  Onc solution might be to have a seperate dynamically allocated
+ *  One solution might be to have a seperate dynamically allocated
  *  array within the platform library itself which carries all of these
  *  for us and knows which ones are assigned to which mesh objects...
  *  But that sounds so overly complicated and stupid that the better
@@ -99,6 +100,7 @@ PL_EXTERN void plSetMeshVertexPosition(PLMesh *mesh, PLuint index, PLVector3D ve
 PL_EXTERN void plSetMeshVertexPosition3f(PLMesh *mesh, PLuint index, PLfloat x, PLfloat y, PLfloat z);
 PL_EXTERN void plSetMeshVertexPosition2f(PLMesh *mesh, PLuint index, PLfloat x, PLfloat y);
 PL_EXTERN void plSetMeshVertexST(PLMesh *mesh, PLuint index, PLfloat s, PLfloat t);
+PL_EXTERN void plSetMeshVertexColour(PLMesh *mesh, PLuint index, PLColour colour);
 PL_EXTERN void plUploadMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawMesh(PLMesh *mesh);

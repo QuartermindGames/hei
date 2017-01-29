@@ -107,12 +107,6 @@ PL_EXTERN PLbool plIsValidImageSize(PLuint width, PLuint height);
 
 PL_EXTERN PLresult plLoadImage(const PLchar *path, PLImage *out);
 
-PL_EXTERN PLresult plLoadFTXImage(FILE *fin, PLImage *out);    // Ritual's FTX image format.
-PL_EXTERN PLresult plLoadPPMImage(FILE *fin, PLImage *out);    // Portable Pixel Map format.
-PL_EXTERN PLresult plLoadDTXImage(FILE *fin, PLImage *out);    // Lithtech's DTX image format.
-PL_EXTERN PLresult plLoadVTFImage(FILE *fin, PLImage *out);    // Valve's VTF image format.
-PL_EXTERN PLresult plLoadDDSImage(FILE *fin, PLImage *out);
-
 #if defined(PL_INTERNAL)
 
 PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height);
@@ -122,6 +116,14 @@ void _plFreeImage(PLImage *image);
 PLbool _plDDSFormatCheck(FILE *fin);
 PLbool _plDTXFormatCheck(FILE *fin);
 PLbool _plVTFFormatCheck(FILE *fin);
+PLbool _plTIFFFormatCheck(FILE *fin);
+
+PLresult _plLoadFTXImage(FILE *fin, PLImage *out);           // Ritual's FTX image format.
+PLresult _plLoadPPMImage(FILE *fin, PLImage *out);           // Portable Pixel Map format.
+PLresult _plLoadDTXImage(FILE *fin, PLImage *out);           // Lithtech's DTX image format.
+PLresult _plLoadVTFImage(FILE *fin, PLImage *out);           // Valve's VTF image format.
+PLresult _plLoadDDSImage(FILE *fin, PLImage *out);
+PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out);
 
 #endif
 

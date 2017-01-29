@@ -107,8 +107,8 @@ PLbool _plDTXFormatCheck(FILE *fin) {
     return (type == 0);
 }
 
-PLresult plLoadDTXImage(FILE *fin, PLImage *out) {
-    plSetErrorFunction("plLoadDTXImage");
+PLresult _plLoadDTXImage(FILE *fin, PLImage *out) {
+    plSetErrorFunction("_plLoadDTXImage");
 
     DTXHeader header;
     memset(&header, 0, sizeof(header));

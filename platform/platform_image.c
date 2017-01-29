@@ -46,18 +46,20 @@ PLresult plLoadImage(const PLchar *path, PLImage *out) {
     }
 
     if(_plDDSFormatCheck(fin)) {
-        result = plLoadDDSImage(fin, out);
+        result = _plLoadDDSImage(fin, out);
     } else if(_plVTFFormatCheck(fin)) {
-        result = plLoadVTFImage(fin, out);
+        result = _plLoadVTFImage(fin, out);
     } else if(_plDTXFormatCheck(fin)) {
-        result = plLoadDTXImage(fin, out);
+        result = _plLoadDTXImage(fin, out);
+    } else if(_plTIFFFormatCheck(fin)) {
+        result = _plLoadTIFFImage(path, out);
     } else {
         const PLchar *extension = plGetFileExtension(path);
         if(plIsValidString(extension)) {
             if (!strncmp(extension, PLIMAGE_EXTENSION_FTX, 3)) {
-                result = plLoadFTXImage(fin, out);
+                result = _plLoadFTXImage(fin, out);
             } else if (!strncmp(extension, PLIMAGE_EXTENSION_PPM, 3)) {
-                result = plLoadPPMImage(fin, out);
+                result = _plLoadPPMImage(fin, out);
             }
         }
     }

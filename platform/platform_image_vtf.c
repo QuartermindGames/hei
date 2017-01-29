@@ -231,10 +231,10 @@ PLbool _plVTFFormatCheck(FILE *fin) {
     PLchar ident[4];
     fread(ident, sizeof(PLchar), 4, fin);
 
-    return (strncmp(ident, "VTF", 3) == 0);
+    return (PLbool)(strncmp(ident, "VTF", 3) == 0);
 }
 
-PLresult plLoadVTFImage(FILE *fin, PLImage *out) {
+PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
     plFunctionStart();
 
     VTFHeader header;

@@ -62,7 +62,7 @@ PLbool _plDDSFormatCheck(FILE *fin) {
     return (strncmp(ident, "DDS", 3) == 0);
 }
 
-PLresult plLoadDDSImage(FILE *fin, PLImage *out) {
+PLresult _plLoadDDSImage(FILE *fin, PLImage *out) {
     plFunctionStart();
 
     DDSHeader header;

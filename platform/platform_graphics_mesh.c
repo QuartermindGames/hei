@@ -116,7 +116,7 @@ PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, PLuint num_tris, PL
         return NULL;
     }
 
-    mesh->primitive = primitive;
+    mesh->primitive = mesh->primitive_restore = primitive;
     mesh->numtriangles = num_tris;
     mesh->numverts = num_verts;
     mesh->mode = mode;
@@ -194,7 +194,8 @@ void plUploadMesh(PLMesh *mesh) {
     }
 
 #if defined(PL_MODE_OPENGL) && defined(_PL_USE_VERTEX_BUFFER_OBJECTS)
-    if(mesh->primitive == PL_PRIMITIVE_QUADS) {
+    if((mesh->mode == PL_DRAW_IMMEDIATE) || (mesh->primitive == PL_PRIMITIVE_QUADS)) {
+        // todo, eventually just convert quad primitives to a triangle strip or something...
         return;
     }
 
@@ -236,6 +237,7 @@ void plDrawMesh(PLMesh *mesh) {
         for(unsigned int i = 0; i < mesh->numverts; i++) {
             glVertex3f(mesh->vertices[i].position.x, mesh->vertices[i].position.y, mesh->vertices[i].position.z);
             glTexCoord2f(mesh->vertices[i].st[0].x, mesh->vertices[i].st[0].y);
+            glColor3ub(mesh->vertices[i].colour.r, mesh->vertices[i].colour.g, mesh->vertices[i].colour.b);
         }
         glEnd();
 #else

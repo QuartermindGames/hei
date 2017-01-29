@@ -369,6 +369,31 @@ const static PL_INLINE PLchar *plPrintVector3D(PLVector3D v) {
 
 typedef struct PLColour {
     PLbyte r, g, b, a;
+
+#ifdef __cplusplus
+
+    PLColour() : PLColour(PL_COLOUR_WHITE) {
+
+    }
+
+    PLColour(PLbyte c, PLbyte c2, PLbyte c3, PLbyte c4 = 255) : r(c), g(c2), b(c3), a(c4) {
+
+    }
+
+    PLColour(PLint c, PLint c2, PLint c3, PLint c4 = 255) :
+            PLColour((PLbyte) c, (PLbyte) c2, (PLbyte) c3, (PLbyte) c4) {
+
+    }
+
+    PLColour(PLfloat c, PLfloat c2, PLfloat c3, PLfloat c4 = 1) :
+    r((PLbyte) (c * 255)),
+    g((PLbyte) (c2 * 255)),
+    b((PLbyte) (c3 * 255)),
+    a((PLbyte) (c4 * 255)) {
+
+    }
+
+#endif
 } PLColour;
 
 static PL_INLINE PLColour plCreateColour4b(PLbyte r, PLbyte g, PLbyte b, PLbyte a) {
