@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 
     // Load the image up from the HDD.
     PLImage image;
-    PLresult result = plLoadImage("./images/jello.tif", &image);
+    PLresult result = plLoadImage(/*"./images/metaldoor012a.vtf"*/ "./images/grid.tif", &image);
     if(result != PL_RESULT_SUCCESS) {
         plMessageBox(TITLE, "Failed to load VTF!\n%s", plGetResultString(result));
         return -1;
@@ -126,6 +126,8 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    plEnableGraphicsStates(PL_CAPABILITY_TEXTURE_2D);
+
     // Assign that image to our texture and upload it to the GPU.
     plSetTexture(image_texture);
     plSetTextureFilter(image_texture, PL_TEXTUREFILTER_NEAREST);
@@ -160,8 +162,6 @@ int main(int argc, char *argv[]) {
     plSetMeshVertexColour(cube, 3, PLColour(PL_COLOUR_WHITE));
 
     plUploadMesh(cube);
-
-    plEnableGraphicsStates(PL_CAPABILITY_TEXTURE_2D);
 
     while(!glfwWindowShouldClose(window)) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);

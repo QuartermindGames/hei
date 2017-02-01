@@ -685,8 +685,6 @@ void plDeleteTexture(PLTexture *texture, PLbool force) {
     }
 }
 
-#define _PL_TEXTURE_LEVELS  4   // Default number of mipmap levels.
-
 PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     _PL_GRAPHICS_TRACK();
 
@@ -694,8 +692,8 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
 
 #if defined(PL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
     PLuint levels = upload->levels;
-    if(plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP) && (levels <= 1)) {
-        levels = _PL_TEXTURE_LEVELS;
+    if(!levels) {
+        levels = 1;
     }
 
     PLuint format = _plTranslateTextureFormat(upload->format);
@@ -721,14 +719,15 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
                         0,
                         upload->x, upload->y,
                         upload->width, upload->height,
-                        upload->colour_format,
+                        _plTranslateColourFormat(upload->colour_format),
                         GL_UNSIGNED_BYTE,
                         upload->data
                 );
     }
 
-    if(plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP) && (upload->levels <= 1))
+    if(plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP) && (levels > 1)) {
         glGenerateMipmap(GL_TEXTURE_2D);
+    }
 #endif
 
     return PL_RESULT_SUCCESS;
@@ -744,15 +743,16 @@ PLresult plUploadTexture(PLTexture *texture, const PLTextureInfo *upload) {
     PLuint format = _plTranslateTextureFormat(upload->format);
 
     PLuint levels = upload->levels;
-    if (plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP))
-        if (levels <= 1) levels = _PL_TEXTURE_LEVELS;
+    if(!levels) {
+        levels = 1;
+    }
 
     if (upload->initial)
         glTexStorage2D(GL_TEXTURE_2D, levels, format, upload->width, upload->height);
 
     // Check the format, to see if we're getting a compressed
     // format type.
-    if (_plIsCompressedTextureFormat(upload->format))
+    if (_plIsCompressedTextureFormat(upload->format)) {
         glCompressedTexSubImage2D
                 (
                         GL_TEXTURE_2D,
@@ -763,7 +763,7 @@ PLresult plUploadTexture(PLTexture *texture, const PLTextureInfo *upload) {
                         upload->size,
                         upload->data
                 );
-    else
+    } else {
         glTexSubImage2D
                 (
                         GL_TEXTURE_2D,
@@ -774,9 +774,11 @@ PLresult plUploadTexture(PLTexture *texture, const PLTextureInfo *upload) {
                         storage,
                         upload->data
                 );
+    }
 
-    if (plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP))
+    if (plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP) && (levels > 1)) {
         glGenerateMipmap(GL_TEXTURE_2D);
+    }
 #elif defined (VL_MODE_GLIDE)
 #elif defined (VL_MODE_DIRECT3D)
 #endif

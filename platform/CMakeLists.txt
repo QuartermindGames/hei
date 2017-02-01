@@ -33,7 +33,7 @@ file(
         include/*.h
         )
 
-add_library(platform SHARED ${PLATFORM_SOURCE_FILES} platform_image_tiff.cpp)
+add_library(platform SHARED ${PLATFORM_SOURCE_FILES})
 
 set_target_properties(platform PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 

@@ -38,6 +38,31 @@ PLbool _plTIFFFormatCheck(FILE *fin) {
     return (PLbool)((strncmp(ident, "II", 2) == 0) || (strncmp(ident, "MM", 2) == 0));
 }
 
+
+// Just for debugging for now, will likely introduce this through a dedicated API later...
+void _plWriteTIFFImage(const PLImage *in, const PLchar *path) {
+    TIFF *tif = TIFFOpen(path, "w");
+    if(!tif) {
+        return;
+    }
+
+    TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, in->width);
+    TIFFSetField(tif, TIFFTAG_IMAGELENGTH, in->height);
+    TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 4);
+    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
+    TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+    TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+    TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+
+    tsize_t line_bytes = 4 * in->width;
+
+    for(uint32 row = 0; row < in->height; row++) {
+
+    }
+
+    TIFFClose(tif);
+}
+
 PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
     plFunctionStart();
 
@@ -62,7 +87,7 @@ PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
     }
 
     size_t pixels = image.width * image.height;
-    uint32 *raster = (uint32*)calloc(pixels, sizeof(uint32));
+    uint32 *raster = (uint32*)_TIFFmalloc(pixels * sizeof(uint32));
     if(!raster) {
         TIFFClose(tif);
         return PL_RESULT_MEMORYALLOC;
@@ -72,12 +97,13 @@ PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
         plSetError("TIFFReadRGBAImage failed");
 
         TIFFClose(tif);
-        free(raster);
+        _TIFFfree(raster);
         return PL_RESULT_FILEREAD;
     }
 
     memset(out, 0, sizeof(PLImage));
     out->size           = image.width * image.height * 4;
+    out->levels         = 1;
     out->colour_format  = PL_COLOURFORMAT_RGBA;
     out->data           = new PLbyte*[1];
     out->data[0]        = new PLbyte[out->size];
@@ -86,12 +112,16 @@ PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
     out->height         = image.height;
 
     // todo, data needs to contain raster... somehow
-    memcpy(out->data[0], raster, out->size * sizeof(PLbyte));
+    memcpy(out->data[0], raster, out->size);
 
     TIFFRGBAImageEnd(&image);
     TIFFClose(tif);
 
-    free(raster);
+    _TIFFfree(raster);
+
+#if 1
+    _plWriteTIFFImage(out, "./images/test.tif");
+#endif
 
     return PL_RESULT_SUCCESS;
 }

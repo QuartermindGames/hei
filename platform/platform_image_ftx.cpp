@@ -50,8 +50,9 @@ PLresult _plLoadFTXImage(FILE *fin, PLImage *out) {
     out->data = new PLbyte*[1];
     out->data[0] = new PLbyte[out->size];
 
-    if (fread(out->data[0], sizeof(uint8_t), out->size, fin) != out->size)
+    if (fread(out->data[0], sizeof(uint8_t), out->size, fin) != out->size) {
         return PL_RESULT_FILEREAD;
+    }
 
     out->format = PL_IMAGEFORMAT_RGBA8;
     out->colour_format = PL_COLOURFORMAT_RGBA;
