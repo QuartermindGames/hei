@@ -30,6 +30,8 @@ For more information, please refer to <http://unlicense.org>
 
 using namespace pl::graphics;
 
+#define SHADER_INVALID_TYPE ((PLuint)0 - 1)
+
 unsigned int _plTranslateShaderType(ShaderType type) {
     switch(type) {
         case SHADER_VERTEX:      return GL_VERTEX_SHADER;
@@ -38,6 +40,7 @@ unsigned int _plTranslateShaderType(ShaderType type) {
 #ifndef __APPLE__
         case SHADER_COMPUTE:     return GL_COMPUTE_SHADER;
 #endif
+        default: return SHADER_INVALID_TYPE;
     }
 }
 
@@ -46,6 +49,11 @@ unsigned int _plTranslateShaderType(ShaderType type) {
 ===========================*/
 
 Shader::Shader(ShaderType type, std::string path) : type_(type) {
+    PLuint ntype = _plTranslateShaderType(type_);
+    if(ntype == SHADER_INVALID_TYPE) {
+        std::runtime_error("invalid shader type received!");
+    }
+
     id_ = glCreateShader(_plTranslateShaderType(type_));
     if(id_ == 0) {
         throw std::runtime_error("failed to create shader");
@@ -104,7 +112,7 @@ PLresult Shader::LoadFile(std::string path) {
     delete[] buf;
 
     int status;
-    glGetObjectParameterivARB(id_, GL_COMPILE_STATUS, &status);
+    glGetObjectParameterivARB(&id_, GL_COMPILE_STATUS, &status);
     if(!status) {
         int length;
         glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &length);

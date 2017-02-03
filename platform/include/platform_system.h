@@ -110,6 +110,12 @@ For more information, please refer to <http://unlicense.org>
 
 #elif defined(__APPLE__)
 
+#   ifndef PL_IGNORE_SYSTEM_HEADERS
+#       include <zconf.h>
+#       include <dirent.h>
+#       include <dlfcn.h>
+#   endif
+
 #   define PL_SYSTEM_NAME               "macOS"
 #   define PL_SYSTEM_LIBRARY_EXTENSION  ".so"
 

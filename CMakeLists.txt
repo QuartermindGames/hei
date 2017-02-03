@@ -38,11 +38,9 @@ include_directories("${CMAKE_SOURCE_DIR}/include/")           # Base include dir
 include_directories("${CMAKE_SOURCE_DIR}/platform/include/")  # Platform lib headers get used for everything.
 include_directories("${CMAKE_SOURCE_DIR}/shared/")            # Xenon shared headers.
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 add_definitions("-D_DEBUG")
-if(CMAKE_COMPILER_IS_GNUCC)
-    add_definitions("-std=c++11" "-D_DEBUG")
-endif(CMAKE_COMPILER_IS_GNUCC)
 
 add_subdirectory(platform)
 add_subdirectory(Applications/VTFViewer)

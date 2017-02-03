@@ -54,6 +54,8 @@ enum DDSFlag {
 };
 
 PLbool _plDDSFormatCheck(FILE *fin) {
+    plFunctionStart();
+
     rewind(fin);
 
     PLchar ident[4];
@@ -76,5 +78,5 @@ PLresult _plLoadDDSImage(FILE *fin, PLImage *out) {
     out->width = header.width;
     out->height = header.height;
 
-    plFunctionEnd();
+    return PL_RESULT_SUCCESS;
 }

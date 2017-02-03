@@ -264,10 +264,11 @@ void plGetWorkingDirectory(PLchar *out) {
         return;
     }
     strcat(out, "\\");
-    plFunctionEnd();
 }
 
 void plSetWorkingDirectory(const char *path) {
+    plFunctionStart();
+
     if(chdir(path) != 0) {
         switch(errno) {
             default: break;

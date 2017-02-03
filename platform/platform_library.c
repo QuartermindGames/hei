@@ -58,7 +58,6 @@ PLvoid plUnloadLibrary(PL_INSTANCE instance) {
         // Set the instance to null.
         instance = NULL;
     }
-    plFunctionEnd();
 }
 
 /*	Function to allow direct loading of an external module.
@@ -79,8 +78,6 @@ PL_INSTANCE plLoadLibrary(const PLchar *path) {
         plSetError("Failed to load module! (%s)\n%s\n", newpath, plGetSystemError());
         return NULL;
     }
-
-    plFunctionEnd();
 
     return instance;
 }

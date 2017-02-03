@@ -619,7 +619,9 @@ PLuint _plTranslateTextureFormat(PLImageFormat format) {
         case PL_IMAGEFORMAT_RGB_DXT1:     return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         case PL_IMAGEFORMAT_RGBA_DXT3:    return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
         case PL_IMAGEFORMAT_RGBA_DXT5:    return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+#ifndef __APPLE__
         case PL_IMAGEFORMAT_RGB_FXT1:     return GL_COMPRESSED_RGB_FXT1_3DFX;
+#endif
     }
 #elif defined (VL_MODE_GLIDE)
 #elif defined (VL_MODE_DIRECT3D)

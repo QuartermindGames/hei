@@ -195,11 +195,11 @@ typedef struct PLVector3D {
         z += a.z;
     }
 
-    PLbool PL_INLINE operator == (const PLVector3D &a) const {
+    PL_INLINE PLbool operator == (const PLVector3D &a) const {
         return ((x == a.x) && (y == a.y) && (z == a.z));
     }
 
-    PLbool PL_INLINE operator == (PLfloat f) const {
+    PL_INLINE PLbool operator == (PLfloat f) const {
         return ((x == f) && (y == f) && (z == f));
     }
 
@@ -629,6 +629,7 @@ typedef struct PLQuaternion {
         return PLQuaternion(-x, -y, -z, w);
     }
 
+#if 0
     PL_INLINE PLQuaternion Normalize() {
         PLfloat l = Length();
         if (l) {
@@ -636,6 +637,7 @@ typedef struct PLQuaternion {
             return Scale(i);
         }
     }
+#endif
 
 #endif
 } PLQuaternion;
