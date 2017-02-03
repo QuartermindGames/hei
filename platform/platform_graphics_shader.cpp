@@ -35,7 +35,9 @@ unsigned int _plTranslateShaderType(ShaderType type) {
         case SHADER_VERTEX:      return GL_VERTEX_SHADER;
         case SHADER_FRAGMENT:    return GL_FRAGMENT_SHADER;
         case SHADER_GEOMETRY:    return GL_GEOMETRY_SHADER;
+#ifndef __APPLE__
         case SHADER_COMPUTE:     return GL_COMPUTE_SHADER;
+#endif
     }
 }
 

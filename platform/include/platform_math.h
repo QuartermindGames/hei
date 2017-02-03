@@ -141,19 +141,19 @@ PL_INLINE static PLVector2D plCreateVector2D(PLfloat s, PLfloat t) {
     return v;
 }
 
-static PL_INLINE void plClearVector2D(PLVector2D *v) {
+PL_INLINE static void plClearVector2D(PLVector2D *v) {
     memset(v, 0, sizeof(PLVector2D));
 }
 
-static PL_INLINE void plAddVector2D(PLVector2D *v, PLVector2D v2) {
+PL_INLINE static void plAddVector2D(PLVector2D *v, PLVector2D v2) {
     v->x = v2.x; v->y = v2.y;
 }
 
-static PL_INLINE void plDivideVector2D(PLVector2D *v, PLVector2D v2) {
+PL_INLINE static void plDivideVector2D(PLVector2D *v, PLVector2D v2) {
     v->x /= v2.x; v->y /= v2.y;
 }
 
-static PL_INLINE PLbool plCompareVector2D(PLVector2D v, PLVector2D v2) {
+PL_INLINE static PLbool plCompareVector2D(PLVector2D v, PLVector2D v2) {
     return ((v.x == v2.x) && (v.y == v2.y));
 }
 

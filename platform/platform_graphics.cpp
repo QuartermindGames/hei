@@ -99,6 +99,7 @@ void _plInitOpenGL() {
 
     // todo, write our own replacement for GLEW
 
+#ifndef __APPLE__
     PLuint err = glewInit();
     if (err != GLEW_OK) {
         plGraphicsLog("Failed to initialize GLEW!\n%s\n", glewGetErrorString(err));
@@ -132,6 +133,7 @@ void _plInitOpenGL() {
             pl_gl_texture_compression_s3tc = PL_TRUE;
         }
     }
+#endif
 
     const PLchar *version = _plGetHWVersion();
     pl_gl_version_major = (unsigned int) atoi(&version[0]);
