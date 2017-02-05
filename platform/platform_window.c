@@ -306,6 +306,7 @@ void plSwapBuffers(PLWindow *window) {
 
 PLint _plHandleX11Error(Display *display, XErrorEvent *error) {
 //    XGetErrorText()
+    return 0;
 }
 
 #endif

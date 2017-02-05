@@ -1,4 +1,4 @@
-#[[
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,36 +23,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-]]
+*/
 
-cmake_minimum_required(VERSION 3.5.1)
+#include "IMGViewer.h"
 
-# Set all of our output directories.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
+int main(int argc, char *argv[]) {
+    FXApp app("Hello", "HELLO");
+    app.init(argc, argv);
 
-option(XENON_COMPILE_TOOLS "Compile Xenon utilities" ON)
+    FXMainWindow *main = new FXMainWindow(&app, "Hello", NULL, NULL, DECOR_ALL);
+    new FXButton(main, "&Hello, World!", NULL, &app, FXApp::ID_QUIT);
+    app.create();
 
-include_directories("${CMAKE_SOURCE_DIR}/include/")           # Base include directories.
-include_directories("${CMAKE_SOURCE_DIR}/platform/include/")  # Platform lib headers get used for everything.
-include_directories("${CMAKE_SOURCE_DIR}/shared/")            # Xenon shared headers.
+    main->show(PLACEMENT_SCREEN);
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/X11/lib -L/usr/X11R6/lib")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/X11/lib -L/usr/X11R6/lib")
-endif()
-
-add_definitions("-D_DEBUG")
-
-add_subdirectory(platform)
-add_subdirectory(examples/image_viewer)
-add_subdirectory(Applications/VTFViewer)
-
-#[[
-if(XENON_COMPILE_TOOLS)
-    #add_subdirectory(level)
-    #add_subdirectory(editor)
-endif(XENON_COMPILE_TOOLS)
-]]
+    return app.run();
+}

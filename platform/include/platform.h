@@ -210,6 +210,9 @@ void _plShutdownGraphics(void);
 PLresult _plInitIO(void);
 void _plShutdownIO(void);
 
+PLresult _plInitWindow(void);
+void _plShutdownWindow(void);
+
 PL_EXTERN_C_END
 
 #else

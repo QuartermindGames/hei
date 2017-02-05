@@ -25,34 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-cmake_minimum_required(VERSION 3.5.1)
+project(image_viewer)
 
-# Set all of our output directories.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
+file(GLOB IMAGEVIEWER_SOURCE_FILES *.cpp *.h)
 
-option(XENON_COMPILE_TOOLS "Compile Xenon utilities" ON)
+add_executable(image_viewer ${IMAGEVIEWER_SOURCE_FILES})
 
-include_directories("${CMAKE_SOURCE_DIR}/include/")           # Base include directories.
-include_directories("${CMAKE_SOURCE_DIR}/platform/include/")  # Platform lib headers get used for everything.
-include_directories("${CMAKE_SOURCE_DIR}/shared/")            # Xenon shared headers.
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/X11/lib -L/usr/X11R6/lib")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/X11/lib -L/usr/X11R6/lib")
-endif()
-
-add_definitions("-D_DEBUG")
-
-add_subdirectory(platform)
-add_subdirectory(examples/image_viewer)
-add_subdirectory(Applications/VTFViewer)
-
-#[[
-if(XENON_COMPILE_TOOLS)
-    #add_subdirectory(level)
-    #add_subdirectory(editor)
-endif(XENON_COMPILE_TOOLS)
-]]
+target_include_directories(image_viewer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(image_viewer platform fox-1.6)
