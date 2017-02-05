@@ -95,6 +95,8 @@ PLresult plInitialize(PLuint subsystems) {
             pl_subsystems[i].active = PL_TRUE;
         }
     }
+
+    return PL_RESULT_SUCCESS;
 }
 
 void plShutdown(void) {

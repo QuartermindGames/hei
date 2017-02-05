@@ -41,13 +41,7 @@ For more information, please refer to <http://unlicense.org>
 // todo, move these into platform_graphics.cpp
 #if defined (PL_MODE_OPENGL)
 
-#   ifdef __APPLE__
-#       include <OpenGL/gl3.h>
-#       include <OpenGL/glu.h>
-#       include <OpenGL/gl3ext.h>
-#   else
-#	    include <GL/glew.h>
-#   endif
+#   include <GL/glew.h>
 
 #	ifdef _WIN32
 #		include <GL/wglew.h>

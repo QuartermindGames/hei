@@ -22,11 +22,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /*	File System	*/
 
 PLresult _plInitIO(void) {
+    plFunctionStart();
 
+    return PL_RESULT_SUCCESS;
 }
 
 void _plShutdownIO(void) {
-
+    plFunctionStart();
 }
 
 // Checks whether a file has been modified or not.

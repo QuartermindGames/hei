@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define PL_WINDOW_HEIGHT   480
 
 PLuint plGetScreenWidth(void) {
+    plFunctionStart();
 #ifdef _WIN32
     return GetSystemMetrics(SM_CXSCREEN);
 #else
@@ -52,28 +53,27 @@ PLuint plGetScreenWidth(void) {
 }
 
 PLuint plGetScreenHeight(void) {
-    pFUNCTION_START
+    plFunctionStart();
 #ifdef _WIN32
-        return GetSystemMetrics(SM_CYSCREEN);
+    return GetSystemMetrics(SM_CYSCREEN);
 #else
-        Display *display = XOpenDisplay(NULL);
-        if (!display) {
-            plSetError("Failed to open display!\n");
-            return PL_WINDOW_HEIGHT;
-        }
+    Display *display = XOpenDisplay(NULL);
+    if (!display) {
+        plSetError("Failed to open display!\n");
+        return PL_WINDOW_HEIGHT;
+    }
 
-        Screen *screen = DefaultScreenOfDisplay(display);
-        if (!screen) {
-            plSetError("Failed to get screen of display!\n");
-            return PL_WINDOW_HEIGHT;
-        }
+    Screen *screen = DefaultScreenOfDisplay(display);
+    if (!screen) {
+        plSetError("Failed to get screen of display!\n");
+        return PL_WINDOW_HEIGHT;
+    }
 
-        return (PLuint) screen->height;
+    return (PLuint) screen->height;
 #endif
-    pFUNCTION_END
 }
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 Display *dMainDisplay;
 Window wRootWindow;
 #endif
@@ -290,3 +290,5 @@ void plSwapBuffers(PLWindow *window) {
     //glXSwapBuffers() // todo
 #endif
 }
+
+////////////////////////////////////////////////////////////////////
