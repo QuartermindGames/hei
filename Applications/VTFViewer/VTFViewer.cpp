@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 
     // Load the image up from the HDD.
     PLImage image;
-    PLresult result = plLoadImage(/*"./images/metaldoor012a.vtf"*/ "./images/grid.tif", &image);
+    PLresult result = plLoadImage("./images/cramps.tif", &image);
     if(result != PL_RESULT_SUCCESS) {
         plMessageBox(TITLE, "Failed to load VTF!\n%s", plGetResultString(result));
         return -1;

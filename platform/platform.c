@@ -105,8 +105,11 @@ void plShutdown(void) {
             continue;
         }
 
-        pl_subsystems[i].ShutdownFunction();
-        pl_subsystems[i].active = false;
+        if(pl_subsystems[i].ShutdownFunction) {
+            pl_subsystems[i].ShutdownFunction();
+        }
+
+        pl_subsystems[i].active = PL_FALSE;
     }
 }
 

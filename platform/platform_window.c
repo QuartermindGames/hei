@@ -18,6 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "platform_window.h"
+#include "platform_log.h"
 #include "platform_math.h"
 
 #if defined(__linux__)
@@ -241,42 +242,42 @@ void plMessageBox(const char *ccTitle, const char *ccMessage, ...) {
     {
         int iDefaultScreen;
         XEvent xEvent;
-        Display *dMessageDisplay;
+        Display *display;
         Window wMessageWindow;
 
-        dMessageDisplay = XOpenDisplay(NULL);
-        if (!dMessageDisplay) {
+        display = XOpenDisplay(NULL);
+        if (!display) {
             plSetError("Failed to open display!\n");
             return;
         }
 
-        iDefaultScreen = DefaultScreen(dMessageDisplay);
+        iDefaultScreen = DefaultScreen(display);
 
         wMessageWindow = XCreateSimpleWindow(
-                dMessageDisplay,
-                RootWindow(dMessageDisplay, iDefaultScreen),
+                display,
+                RootWindow(display, iDefaultScreen),
                 50, 50,
                 512, 64,
                 1,
-                BlackPixel(dMessageDisplay, iDefaultScreen),
-                WhitePixel(dMessageDisplay, iDefaultScreen));
-        XStoreName(dMessageDisplay, wMessageWindow, ccTitle);
-        XSelectInput(dMessageDisplay, wMessageWindow, ExposureMask | KeyPressMask);
-        XMapWindow(dMessageDisplay, wMessageWindow);
+                BlackPixel(display, iDefaultScreen),
+                WhitePixel(display, iDefaultScreen));
+        XStoreName(display, wMessageWindow, ccTitle);
+        XSelectInput(display, wMessageWindow, ExposureMask | KeyPressMask);
+        XMapWindow(display, wMessageWindow);
 
         for (;;) {
-            XNextEvent(dMessageDisplay, &xEvent);
+            XNextEvent(display, &xEvent);
 
             if (xEvent.type == Expose) {
-                XDrawString(dMessageDisplay, wMessageWindow, DefaultGC(dMessageDisplay, iDefaultScreen), 10, 10, cOut,
+                XDrawString(display, wMessageWindow, DefaultGC(display, iDefaultScreen), 10, 10, cOut,
                             (PLint) strlen(cOut));
-                XDrawString(dMessageDisplay, wMessageWindow, DefaultGC(dMessageDisplay, iDefaultScreen), 10, 54,
+                XDrawString(display, wMessageWindow, DefaultGC(display, iDefaultScreen), 10, 54,
                             "Press any key to continue...", 32);
             } else if (xEvent.type == KeyPress)
                 break;
         }
 
-        XCloseDisplay(dMessageDisplay);
+        XCloseDisplay(display);
     }
 #else   // Windows
     MessageBoxEx(NULL, cOut, ccTitle, MB_SETFOREGROUND | MB_ICONERROR, 0);
@@ -292,3 +293,33 @@ void plSwapBuffers(PLWindow *window) {
 }
 
 ////////////////////////////////////////////////////////////////////
+
+#include "platform_log.h"
+#define PL_WINDOW_LOG  "pl_window"
+#ifdef _DEBUG
+#	define plWindowLog(...) plWriteLog(PL_WINDOW_LOG, __VA_ARGS__)
+#else
+#   define plWindowLog(...)
+#endif
+
+#if !defined(_WIN32)
+
+PLint _plHandleX11Error(Display *display, XErrorEvent *error) {
+//    XGetErrorText()
+}
+
+#endif
+
+PLresult _plInitWindow(void) {
+    plFunctionStart();
+
+    plClearLog(PL_WINDOW_LOG);
+
+    XSetErrorHandler(_plHandleX11Error);
+
+    return PL_RESULT_SUCCESS;
+}
+
+void _plShutdownWindow(void) {
+    plFunctionStart();
+}
