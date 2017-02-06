@@ -14,7 +14,7 @@ typedef struct PLTranslatePrimitive {
 } PLTranslatePrimitive;
 
 PLTranslatePrimitive _pl_primitives[] = {
-#if defined (PL_MODE_OPENGL) || (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL)
         {PL_PRIMITIVE_LINES, GL_LINES, "LINES"},
         {PL_PRIMITIVE_POINTS, GL_POINTS, "POINTS"},
         {PL_PRIMITIVE_TRIANGLES, GL_TRIANGLES, "TRIANGLES"},

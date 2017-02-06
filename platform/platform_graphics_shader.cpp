@@ -112,15 +112,7 @@ PLresult Shader::LoadFile(std::string path) {
     delete[] buf;
 
     int status;
-    glGetObjectParameterivARB(
-#if defined(__APPLE__)
-            &id_,
-#else
-            id_,
-#endif
-            GL_COMPILE_STATUS,
-            &status
-    );
+    glGetShaderiv(id_, GL_COMPILE_STATUS, &status);
     if(!status) {
         int length;
         glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &length);

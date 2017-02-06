@@ -80,12 +80,17 @@ void DEBUGVectorDifference(PLVector3D *v, PLVector3D *v3) {
     printf("%s %s %s\n", plPrintVector3D(*v), plPrintVector3D(v2), plPrintVector3D(*v3));
 }
 
+void ViewerGLError(int code, const char *msg) {
+    plWriteLog(LOG, "GLFW reported an error! (%i)\n", code);
+    plWriteLog(LOG, msg);
+}
+
 int main(int argc, char *argv[]) {
     plClearLog(LOG);
 
     // Load the image up from the HDD.
     PLImage image;
-    PLresult result = plLoadImage("./images/vtf/72.vtf", &image);
+    PLresult result = plLoadImage("./images/tif/jello.tif", &image);
     if(result != PL_RESULT_SUCCESS) {
         plMessageBox(TITLE, "Failed to load VTF!\n%s", plGetResultString(result));
         return -1;
@@ -106,6 +111,8 @@ int main(int argc, char *argv[]) {
         plMessageBox(TITLE, "Failed to create window!\n");
         return -1;
     }
+
+    glfwSetErrorCallback(ViewerGLError);
 
     glfwMakeContextCurrent(window);
 

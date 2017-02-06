@@ -327,13 +327,22 @@ typedef struct _PLGraphicsCapabilities {
 
 _PLGraphicsCapabilities graphics_capabilities[] =
         {
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL)
+#if defined (PL_MODE_OPENGL_CORE)
+                {PL_CAPABILITY_ALPHA_TEST, 0, "ALPHA_TEST"},
+#else
                 {PL_CAPABILITY_ALPHA_TEST, GL_ALPHA_TEST, "ALPHA_TEST"},
+#endif
                 {PL_CAPABILITY_BLEND, GL_BLEND, "BLEND"},
                 {PL_CAPABILITY_DEPTHTEST, GL_DEPTH_TEST, "DEPTH_TEST"},
                 {PL_CAPABILITY_TEXTURE_2D, GL_TEXTURE_2D, "TEXTURE_2D"},
-                {VL_CAPABILITY_TEXTURE_GEN_S, GL_TEXTURE_GEN_S, "TEXTURE_GEN_S"},
+#if defined (PL_MODE_OPENGL_CORE)
+                {PL_CAPABILITY_TEXTURE_GEN_S, 0, "TEXTURE_GEN_S"},
+                {PL_CAPABILITY_TEXTURE_GEN_T, 0, "TEXTURE_GEN_T"},
+#else
+                {PL_CAPABILITY_TEXTURE_GEN_S, GL_TEXTURE_GEN_S, "TEXTURE_GEN_S"},
                 {PL_CAPABILITY_TEXTURE_GEN_T, GL_TEXTURE_GEN_T, "TEXTURE_GEN_T"},
+#endif
                 {VL_CAPABILITY_CULL_FACE, GL_CULL_FACE, "CULL_FACE"},
                 {VL_CAPABILITY_STENCIL_TEST, GL_STENCIL_TEST, "STENCIL_TEST"},
                 {VL_CAPABILITY_MULTISAMPLE, GL_MULTISAMPLE, "MULTISAMPLE"},
@@ -345,7 +354,7 @@ _PLGraphicsCapabilities graphics_capabilities[] =
         { VL_CAPABILITY_BLEND, 0, "BLEND" },
         { PL_CAPABILITY_DEPTHTEST, 0, "DEPTH_TEST" },
         { VL_CAPABILITY_TEXTURE_2D, 0, "TEXTURE_2D" },
-        { VL_CAPABILITY_TEXTURE_GEN_S, 0, "TEXTURE_GEN_S" },
+        { PL_CAPABILITY_TEXTURE_GEN_S, 0, "TEXTURE_GEN_S" },
         { PL_CAPABILITY_TEXTURE_GEN_T, 0, "TEXTURE_GEN_T" },
         { VL_CAPABILITY_CULL_FACE, 0, "CULL_FACE" },
         { VL_CAPABILITY_STENCIL_TEST, 0, "STENCIL_TEST" },
@@ -389,7 +398,7 @@ void plEnableGraphicsStates(PLuint flags) {
 #endif
 
         if ((flags & graphics_capabilities[i].pl_parm) && (graphics_capabilities[i].to_parm != 0))
-#if defined (PL_MODE_OPENGL) || (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL)
             glEnable(graphics_capabilities[i].to_parm);
 #elif defined (VL_MODE_GLIDE)
         grEnable(graphics_capabilities[i].to_parm);
@@ -423,7 +432,7 @@ void plDisableGraphicsStates(PLuint flags) {
 #endif
 
         if ((flags & graphics_capabilities[i].pl_parm) && (graphics_capabilities[i].to_parm != 0))
-#if defined (PL_MODE_OPENGL) || (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL)
             glDisable(graphics_capabilities[i].to_parm);
 #elif defined (VL_MODE_GLIDE)
         grDisable(graphics_capabilities[i].to_parm);
@@ -556,7 +565,7 @@ PLuint _plTranslateTextureTarget(PLTextureTarget target) {
 }
 
 PLuint _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL) && !defined (VL_MODE_OPENGL_CORE)
     switch (mode) {
         default:
         case PL_TEXTUREMODE_ADD:        return GL_ADD;
@@ -566,6 +575,8 @@ PLuint _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
         case PL_TEXTUREMODE_REPLACE:    return GL_REPLACE;
         case PL_TEXTUREMODE_COMBINE:    return GL_COMBINE;
     }
+#elif defined(PL_MODE_OPENGL_CORE)
+    return 0; // todo
 #elif defined (VL_MODE_GLIDE)
 #elif defined (VL_MODE_DIRECT3D)
 #else
@@ -609,7 +620,7 @@ PLuint _plTranslateTextureFormat(PLImageFormat format) {
         case PL_IMAGEFORMAT_RGB5:         return GL_RGB5;
         case PL_IMAGEFORMAT_RGB5A1:       return GL_RGB5_A1;
         case PL_IMAGEFORMAT_RGB565:       return GL_RGB565;
-        case PL_IMAGEFORMAT_RGB8:         return GL_RGB8;
+        case PL_IMAGEFORMAT_RGB8:         return GL_RGB;
         case PL_IMAGEFORMAT_RGBA8:        return GL_RGBA8;
         case PL_IMAGEFORMAT_RGBA12:       return GL_RGBA12;
         case PL_IMAGEFORMAT_RGBA16:       return GL_RGBA16;
@@ -694,6 +705,11 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
 
     plSetTexture(texture);
 
+    texture->width = upload->width;
+    texture->height = upload->height;
+    texture->format = upload->format;
+    texture->size = upload->size;
+
 #if defined(PL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
     PLuint levels = upload->levels;
     if(!levels) {
@@ -774,7 +790,7 @@ PLresult plUploadTexture(PLTexture *texture, const PLTextureInfo *upload) {
                         0,
                         upload->x, upload->y,
                         upload->width, upload->height,
-                        upload->pixel_format,
+                        _plTranslateColourFormat(upload->pixel_format),
                         storage,
                         upload->data
                 );
@@ -953,13 +969,15 @@ void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
     if (pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_envmode == mode)
         return;
 
-#if defined(PL_MODE_OPENGL)
+#if defined(PL_MODE_OPENGL) && !defined(PL_MODE_OPENGL_CORE)
     glTexEnvi
             (
                     GL_TEXTURE_ENV,
                     GL_TEXTURE_ENV_MODE,
                     _plTranslateTextureEnvironmentMode(mode)
             );
+#elif defined(PL_MODE_OPENGL_CORE)
+    // todo
 #endif
 
     pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_envmode = mode;
@@ -1027,7 +1045,9 @@ void plSetDefaultGraphicsState(void) {
 
 #if defined(PL_MODE_OPENGL)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#if !defined(GL_VERSION_3_0)
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+#endif
 
     glDepthRange(0, 1);
     glDepthFunc(GL_LEQUAL);
