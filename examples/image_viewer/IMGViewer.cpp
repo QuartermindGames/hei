@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
 
     FXMainWindow *main = new FXMainWindow(&app, "Hello", NULL, NULL, DECOR_ALL);
     new FXButton(main, "&Hello, World!", NULL, &app, FXApp::ID_QUIT);
+    new FXColorWheel(main);
     app.create();
 
     main->show(PLACEMENT_SCREEN);

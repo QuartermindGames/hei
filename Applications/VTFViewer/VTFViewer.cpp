@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
     }
 
     const unsigned int width = image.width, height = image.height;
-    GLFWwindow *window = glfwCreateWindow(width, height, TITLE, glfwGetPrimaryMonitor(), NULL);
+    GLFWwindow *window = glfwCreateWindow(width, height, TITLE, /* glfwGetPrimaryMonitor() */ NULL, NULL);
     if(!window) {
         glfwTerminate();
 

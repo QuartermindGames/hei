@@ -40,27 +40,42 @@ PLbool _plTIFFFormatCheck(FILE *fin) {
 
 
 // Just for debugging for now, will likely introduce this through a dedicated API later...
-void _plWriteTIFFImage(const PLImage *in, const PLchar *path) {
+void plWriteTIFFImage(const PLImage *in, const PLchar *path) {
     TIFF *tif = TIFFOpen(path, "w");
     if(!tif) {
         return;
     }
 
+    PLuint spp = plGetSamplesPerPixel(in->colour_format);
     TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, in->width);
     TIFFSetField(tif, TIFFTAG_IMAGELENGTH, in->height);
-    TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 4);
+    TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, spp);
     TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
     TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
     TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
     TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
 
-    tsize_t line_bytes = 4 * in->width;
+    tsize_t line_bytes = spp * in->width;
+    PLbyte *buf = (PLbyte*)_TIFFmalloc(TIFFScanlineSize(tif));
+    if(!buf) {
+        std::cerr << "Failed to allocate memory for image buffer\n";
+        std::_Exit(EXIT_FAILURE);
+    }
+
+    TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, in->width * spp));
 
     for(uint32 row = 0; row < in->height; row++) {
-
+        memcpy(buf, &in->data[0][(in->height - row - 1) * line_bytes], line_bytes);
+        if(TIFFWriteScanline(tif, buf, row, 0) < 0) {
+            break;
+        }
     }
 
     TIFFClose(tif);
+
+    if(buf) {
+        _TIFFfree(buf);
+    }
 }
 
 PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
@@ -120,7 +135,7 @@ PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
     _TIFFfree(raster);
 
 #if 1
-    _plWriteTIFFImage(out, "./images/test.tif");
+    plWriteTIFFImage(out, "./images/toast.tif");
 #endif
 
     return PL_RESULT_SUCCESS;

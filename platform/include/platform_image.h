@@ -107,6 +107,11 @@ PL_EXTERN PLbool plIsValidImageSize(PLuint width, PLuint height);
 
 PL_EXTERN PLresult plLoadImage(const PLchar *path, PLImage *out);
 
+PL_EXTERN PLuint plGetSamplesPerPixel(PLColourFormat format);
+
+// Write
+PL_EXTERN void plWriteTIFFImage(const PLImage *in, const PLchar *path);
+
 #if defined(PL_INTERNAL)
 
 PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height);
