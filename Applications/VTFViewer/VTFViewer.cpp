@@ -85,11 +85,13 @@ int main(int argc, char *argv[]) {
 
     // Load the image up from the HDD.
     PLImage image;
-    PLresult result = plLoadImage("./images/cramps.tif", &image);
+    PLresult result = plLoadImage("./images/vtf/72.vtf", &image);
     if(result != PL_RESULT_SUCCESS) {
         plMessageBox(TITLE, "Failed to load VTF!\n%s", plGetResultString(result));
         return -1;
     }
+
+    plWriteTIFFImage(&image, "./images/out/test.tif");
 
     if(!glfwInit()) {
         plMessageBox(TITLE, "Failed to initialize GLFW!\n");

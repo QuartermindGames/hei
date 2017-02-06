@@ -134,9 +134,5 @@ PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
 
     _TIFFfree(raster);
 
-#if 1
-    plWriteTIFFImage(out, "./images/toast.tif");
-#endif
-
     return PL_RESULT_SUCCESS;
 }

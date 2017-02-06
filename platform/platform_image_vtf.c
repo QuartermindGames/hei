@@ -29,14 +29,14 @@ For more information, please refer to <http://unlicense.org>
 
 /*  Valve's VTF Format (https://developer.valvesoftware.com/wiki/Valve_Texture_Format)  */
 
-typedef struct VTFHeader {
+typedef struct __attribute__((packed)) VTFHeader {
     PLuint version[2];      // Minor followed by major.
 
     PLuint headersize;      // I guess this is used to support header alterations?
 
     PLushort width, height; // Width and height of the texture.
 
-    PLint flags;
+    PLuint flags;
 
     PLushort frames;        // For animated texture sets.
     PLushort firstframe;    // Initial frame to start from.
@@ -241,21 +241,21 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
     memset(&header, 0, sizeof(VTFHeader));
 #define VTF_VERSION(maj, min)   ((maj == header.version[1] && min <= header.version[0]) || maj < header.version[0])
 
-    if (fread(&header, sizeof(VTFHeader), 1, fin) != 1)
+    if (fread(&header, sizeof(VTFHeader), 1, fin) != 1) {
         return PL_RESULT_FILEREAD;
-    else if (VTF_VERSION(7, 5))
+    } else if (VTF_VERSION(7, 5)) {
         return PL_RESULT_FILEVERSION;
-
-    else if (!plIsValidImageSize(header.width, header.height))
+    } else if (!plIsValidImageSize(header.width, header.height)) {
         return PL_RESULT_IMAGERESOLUTION;
-    else if(header.lowresimagewidth && header.lowresimageheight) {
+    } else {
+        if(header.lowresimageformat != VTF_FORMAT_DXT1) {
+            plSetError("Invalid texture format for lowresimage in VTF");
+            return PL_RESULT_IMAGEFORMAT;
+        }
+
         if ((header.lowresimagewidth > 16) || (header.lowresimageheight > 16) ||
             (header.lowresimagewidth > header.width) || (header.lowresimageheight > header.height)) {
             return PL_RESULT_IMAGERESOLUTION;
-        }
-
-        if(header.lowresimageformat != VTF_FORMAT_DXT1) {
-            return PL_RESULT_IMAGEFORMAT;
         }
     }
 
@@ -291,31 +291,35 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
         }
     } else */ {
         PLuint faces = 1;
-        if(header.flags & VTF_FLAG_ENVMAP)
+        if(header.flags & VTF_FLAG_ENVMAP) {
             faces = 6;
+        }
 
-        // VTF's typically include a tiny thumbnail image at the start, which we'll skip.
-        fseek(fin, header.lowresimagewidth * header.lowresimageheight / 2, SEEK_CUR);
+        if(header.lowresimageformat == VTF_FORMAT_DXT1) {
+            // VTF's typically include a tiny thumbnail image at the start, which we'll skip.
+            fseek(fin, header.lowresimagewidth * header.lowresimageheight / 2, SEEK_CUR);
+        }
 
         for (PLuint mipmap = 0; mipmap < header.mipmaps; ++mipmap) {
             for(PLuint frame = 0; frame < header.frames; ++frame) {
-                for(PLuint face = 0; face < faces; ++face) {
+                for(PLuint face = 0, mipw = 1, miph = 1; face < faces; ++face) {
                     // We'll just skip the smaller mipmaps for now, can generate these later.
-                    PLuint mipw = out->width / (PLuint)pow(2, mipmap); //(out->width * (mipmap + 1)) / header.mipmaps;
-                    PLuint miph = out->height / (PLuint)pow(2, mipmap); //(out->height * (mipmap + 1)) / header.mipmaps;
+                    mipw *= (PLuint)pow(2, mipmap); //(out->width * (mipmap + 1)) / header.mipmaps;
+                    miph *= (PLuint)pow(2, mipmap); //(out->height * (mipmap + 1)) / header.mipmaps;
                     PLuint mipsize = _plGetImageSize(out->format, mipw, miph);
                     if(mipmap == (header.mipmaps - 1)) {
                         out->data[0] = (PLbyte*)calloc(mipsize, sizeof(PLbyte));
                         if (fread(out->data[0], sizeof(PLbyte), mipsize, fin) != mipsize) {
-                            if(feof(fin)) {
-                                perror(PL_FUNCTION);
-                            }
-
                             _plFreeImage(out);
                             return PL_RESULT_FILEREAD;
                         }
                     } else {
                         fseek(fin, mipsize, SEEK_CUR);
+                    }
+
+                    if(feof(fin)) {
+                        perror(PL_FUNCTION);
+                        break;
                     }
                 }
             }
