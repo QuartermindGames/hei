@@ -32,4 +32,4 @@ file(GLOB IMAGEVIEWER_SOURCE_FILES *.cpp *.h)
 add_executable(image_viewer ${IMAGEVIEWER_SOURCE_FILES})
 
 target_include_directories(image_viewer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(image_viewer platform fox-1.6)
+target_link_libraries(image_viewer platform FOX-1.6)
