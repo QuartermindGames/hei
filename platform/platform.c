@@ -143,8 +143,7 @@ void plResetError(void) {
 #endif
 }
 
-/*	Sets the local error message.
-*/
+// Sets the local error message.
 void plSetError(const char *msg, ...) {
 #ifdef _DEBUG
     PLchar out[MAX_ERROR_LENGTH];
