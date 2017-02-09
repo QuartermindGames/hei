@@ -138,7 +138,6 @@ int main(int argc, char *argv[]) {
     plEnableGraphicsStates(PL_CAPABILITY_TEXTURE_2D);
 
     // Assign that image to our texture and upload it to the GPU.
-    plSetTexture(image_texture);
     plSetTextureFilter(image_texture, PL_TEXTUREFILTER_NEAREST);
     plUploadTextureImage(image_texture, &image);
 

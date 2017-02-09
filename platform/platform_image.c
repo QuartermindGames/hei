@@ -80,6 +80,8 @@ PLresult plLoadImage(const PLchar *path, PLImage *out) {
 
 // Returns the number of samples per-pixel depending on the colour format.
 PLuint plGetSamplesPerPixel(PLColourFormat format) {
+    plFunctionStart();
+
     switch(format) {
         case PL_COLOURFORMAT_ABGR:
         case PL_COLOURFORMAT_ARGB:
@@ -90,9 +92,13 @@ PLuint plGetSamplesPerPixel(PLColourFormat format) {
         case PL_COLOURFORMAT_RGB:
             return 3;
     }
+
+    return 0;
 }
 
 PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height) {
+    plFunctionStart();
+
     switch(format) {
         case PL_IMAGEFORMAT_RGB_DXT1:   return (width * height) >> 1;
         case PL_IMAGEFORMAT_RGBA_DXT1:  return width * height * 4;
@@ -127,8 +133,6 @@ void _plFreeImage(PLImage *image) {
     }
 
     free(image->data);
-
-    plFunctionEnd();
 }
 
 PLbool plIsValidImageSize(PLuint width, PLuint height) {
@@ -141,6 +145,4 @@ PLbool plIsValidImageSize(PLuint width, PLuint height) {
     }
 
     return true;
-
-    plFunctionEnd();
 }

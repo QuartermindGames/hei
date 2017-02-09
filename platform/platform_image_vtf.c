@@ -295,10 +295,8 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
             faces = 6;
         }
 
-        if(header.lowresimageformat == VTF_FORMAT_DXT1) {
-            // VTF's typically include a tiny thumbnail image at the start, which we'll skip.
-            fseek(fin, header.lowresimagewidth * header.lowresimageheight / 2, SEEK_CUR);
-        }
+        // VTF's typically include a tiny thumbnail image at the start, which we'll skip.
+        fseek(fin, header.lowresimagewidth * header.lowresimageheight / 2, SEEK_CUR);
 
         for (PLuint mipmap = 0; mipmap < header.mipmaps; ++mipmap) {
             for(PLuint frame = 0; frame < header.frames; ++frame) {

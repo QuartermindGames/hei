@@ -99,7 +99,7 @@ void _plInitOpenGL() {
 
     // todo, write our own replacement for GLEW
 
-#ifndef __APPLE__
+#if !defined(PL_MODE_OPENGL_CORE)
     PLuint err = glewInit();
     if (err != GLEW_OK) {
         plGraphicsLog("Failed to initialize GLEW!\n%s\n", glewGetErrorString(err));
@@ -630,7 +630,7 @@ PLuint _plTranslateTextureFormat(PLImageFormat format) {
         case PL_IMAGEFORMAT_RGB_DXT1:     return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         case PL_IMAGEFORMAT_RGBA_DXT3:    return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
         case PL_IMAGEFORMAT_RGBA_DXT5:    return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-#ifndef __APPLE__
+#if !defined(PL_MODE_OPENGL_CORE)
         case PL_IMAGEFORMAT_RGB_FXT1:     return GL_COMPRESSED_RGB_FXT1_3DFX;
 #endif
     }
@@ -700,17 +700,56 @@ void plDeleteTexture(PLTexture *texture, PLbool force) {
     }
 }
 
+PLint _plTranslateColourChannel(PLint channel) {
+    _PL_GRAPHICS_TRACK();
+#if defined(PL_MODE_OPENGL)
+    switch(channel) {
+        case PL_RED:    return GL_RED;
+        case PL_GREEN:  return GL_GREEN;
+        case PL_BLUE:   return GL_BLUE;
+        case PL_ALPHA:  return GL_ALPHA;
+    }
+#else
+    return channel;
+#endif
+}
+
+void plSwizzleTexture(PLTexture *texture, PLint r, PLint g, PLint b, PLint a) {
+    _PL_GRAPHICS_TRACK();
+
+    if(!texture) {
+        return;
+    }
+
+    _plSetActiveTexture(texture);
+
+#if defined(PL_MODE_OPENGL)
+    if(PL_GL_VERSION(3,3)) {
+        GLint swizzle[] = {
+                _plTranslateColourChannel(r),
+                _plTranslateColourChannel(g),
+                _plTranslateColourChannel(b),
+                _plTranslateColourChannel(a)
+        };
+        glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+    } else {
+        // todo, software implementation
+    }
+#elif defined(PL_MODE_SOFTWARE)
+#endif
+}
+
 PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     _PL_GRAPHICS_TRACK();
 
-    plSetTexture(texture);
+    _plSetActiveTexture(texture);
 
     texture->width = upload->width;
     texture->height = upload->height;
     texture->format = upload->format;
     texture->size = upload->size;
 
-#if defined(PL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
+#if defined(PL_MODE_OPENGL)
     PLuint levels = upload->levels;
     if(!levels) {
         levels = 1;
@@ -719,30 +758,32 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     PLuint format = _plTranslateTextureFormat(upload->format);
     glTexStorage2D(GL_TEXTURE_2D, levels, format, upload->width, upload->height);
 
-    // Check the format, to see if we're getting a compressed
-    // format type.
-    if (_plIsCompressedTextureFormat(upload->format)) {
-        glCompressedTexSubImage2D
-                (
-                        GL_TEXTURE_2D,
-                        0,
-                        upload->x, upload->y,
-                        upload->width, upload->height,
-                        format,
-                        upload->size,
-                        upload->data
-                );
-    } else {
-        glTexSubImage2D
-                (
-                        GL_TEXTURE_2D,
-                        0,
-                        upload->x, upload->y,
-                        upload->width, upload->height,
-                        _plTranslateColourFormat(upload->colour_format),
-                        GL_UNSIGNED_BYTE,
-                        upload->data
-                );
+    for(PLuint i = 0; i < levels; i++) {
+        if (_plIsCompressedTextureFormat(upload->format)) {
+            glCompressedTexSubImage2D
+                    (
+                            GL_TEXTURE_2D,
+                            i,
+                            upload->x, upload->y,
+                            upload->width / (PLuint)pow(2, i),
+                            upload->height / (PLuint)pow(2, i),
+                            format,
+                            upload->size,
+                            upload->data[i]
+                    );
+        } else {
+            glTexSubImage2D
+                    (
+                            GL_TEXTURE_2D,
+                            i,
+                            upload->x, upload->y,
+                            upload->width / (PLuint)pow(2, i),
+                            upload->height / (PLuint)pow(2, i),
+                            _plTranslateColourFormat(upload->colour_format),
+                            GL_UNSIGNED_BYTE,
+                            upload->data[i]
+                    );
+        }
     }
 
     if(plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP) && (levels > 1)) {
@@ -753,10 +794,10 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     return PL_RESULT_SUCCESS;
 }
 
-PLresult plUploadTexture(PLTexture *texture, const PLTextureInfo *upload) {
+PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
     _PL_GRAPHICS_TRACK();
 
-    plSetTexture(texture);
+    _plSetActiveTexture(texture);
 
 #if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     PLuint storage = _plTranslateTextureStorageFormat(upload->storage_type);
@@ -873,7 +914,7 @@ PLuint plGetMaxTextureAnistropy(void) {
 #   pragma GCC diagnostic pop
 #endif
 
-PLresult plSetTexture(PLTexture *texture) {
+PLresult _plSetActiveTexture(PLTexture *texture) {
     _PL_GRAPHICS_TRACK();
 
     if (texture->id == pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_texture) {
@@ -909,7 +950,7 @@ void plSetTextureUnit(PLuint target) {
 PLresult plSetTextureAnisotropy(PLTexture *texture, PLuint amount) {
     _PL_GRAPHICS_TRACK();
 
-    plSetTexture(texture);
+    _plSetActiveTexture(texture);
 
 #if defined (PL_MODE_OPENGL)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (PLint) amount);
@@ -921,7 +962,7 @@ PLresult plSetTextureAnisotropy(PLTexture *texture, PLuint amount) {
 PLresult plSetTextureFilter(PLTexture *texture, PLTextureFilter filter) {
     _PL_GRAPHICS_TRACK();
 
-    plSetTexture(texture);
+    _plSetActiveTexture(texture);
 
 #ifdef PL_MODE_OPENGL
     PLuint filtermin, filtermax;

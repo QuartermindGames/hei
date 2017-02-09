@@ -32,11 +32,12 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_image.h"
 
 #define     PL_MODE_OPENGL
-//			VL_MODE_OPENGL_CORE
-//			VL_MODE_OPENGL_ES
-//#define	VL_MODE_GLIDE
-//#define	VL_MODE_DIRECT3D
-//			VL_MODE_VULKAN
+//			PL_MODE_OPENGL_CORE
+//			PL_MODE_OPENGL_ES
+//#define	PL_MODE_GLIDE
+//#define	PL_MODE_DIRECT3D
+//			PL_MODE_VULKAN
+//          PL_MODE_SOFTWARE
 
 // todo, move these into platform_graphics.cpp
 #if defined (PL_MODE_OPENGL)
@@ -209,7 +210,6 @@ PL_EXTERN void plUploadTexture(PLTexture texture, const PLTextureInfo *upload);
 PL_EXTERN PLTexture plGetCurrentTexture(PLuint tmu);
 PL_EXTERN PLuint plGetCurrentTextureUnit(void);
 
-PL_EXTERN void plSetTexture(PLTexture texture);
 PL_EXTERN void plSetTextureAnisotropy(PLTexture texture, PLuint amount);
 PL_EXTERN void plSetTextureUnit(PLuint target);
 PL_EXTERN void plSetTextureFilter(PLTexture texture, PLTextureFilter filter);
@@ -218,14 +218,14 @@ PL_EXTERN void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode);
 
 PL_EXTERN PLTexture *plCreateTexture(void);
 
-PL_EXTERN PLresult plUploadTexture(PLTexture *texture, const PLTextureInfo *upload);
+PL_EXTERN PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload);
 PL_EXTERN PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload);
 
 PL_EXTERN PLuint plGetMaxTextureSize(void);
 PL_EXTERN PLuint plGetMaxTextureUnits(void);
 PL_EXTERN PLuint plGetMaxTextureAnistropy(void);
 
-PL_EXTERN PLresult plSetTexture(PLTexture *texture);
+PL_EXTERN PLresult _plSetActiveTexture(PLTexture *texture);
 PL_EXTERN PLresult plSetTextureFilter(PLTexture *texture, PLTextureFilter filter);
 PL_EXTERN PLresult plSetTextureAnisotropy(PLTexture *texture, PLuint amount);
 
@@ -316,8 +316,6 @@ PL_EXTERN_C_END
 /////////////////////////////////////////////////////
 
 typedef struct PLGraphicsState {
-    PLuint num_cards;        // Number of video cards.
-
     VLCullMode current_cullmode;
 
     PLColour current_clearcolour;
@@ -335,8 +333,6 @@ typedef struct PLGraphicsState {
     PLTextureMappingUnit *tmu;
 
     // Shader states
-
-    PLuint num_shaders;
 
     PLuint current_program;
 
