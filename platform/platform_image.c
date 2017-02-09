@@ -45,6 +45,11 @@ PLresult plLoadImage(const PLchar *path, PLImage *out) {
         return PL_RESULT_FILEREAD;
     }
 
+    if(strrchr(path, ':')) {
+        // Very likely a packaged image.
+        // example/package.wad:myimage
+    }
+
     if(_plDDSFormatCheck(fin)) {
         result = _plLoadDDSImage(fin, out);
     } else if(_plVTFFormatCheck(fin)) {
