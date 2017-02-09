@@ -85,6 +85,7 @@ void _plDrawArrays(PLPrimitive mode, PLuint first, PLuint count) {
 
 void _plDrawElements(PLPrimitive mode, PLuint count, PLuint type, const PLvoid *indices) {
     if ((count == 0) || !indices) {
+        plSetError("Invalid number of indices when drawing object!\n");
         return;
     }
 
@@ -163,6 +164,13 @@ void plDeleteMesh(PLMesh *mesh) {
 }
 
 void plClearMesh(PLMesh *mesh) {
+    plFunctionStart();
+
+    if(!mesh) {
+        plSetError("Invalid mesh!\n");
+        return;
+    }
+
     // Reset the data contained by the mesh, if we're going to begin a new draw.
     memset(mesh->vertices, 0, sizeof(PLVertex) * mesh->numverts);
     memset(mesh->triangles, 0, sizeof(PLTriangle) * mesh->numtriangles);
@@ -180,15 +188,55 @@ void plSetMeshVertexPosition2f(PLMesh *mesh, PLuint index, PLfloat x, PLfloat y)
     mesh->vertices[index].position = plCreateVector3D(x, y, 0);
 }
 
+void plSetMeshVertexPosition3fv(PLMesh *mesh, PLuint index, PLuint size, const PLfloat *v) {
+    plFunctionStart();
+
+    size += index;
+    if(size > mesh->numverts) {
+        size -= (size - mesh->numverts);
+    }
+
+    for(PLuint i = index; i < size; i++) {
+        mesh->vertices[i].position.x = v[0];
+        mesh->vertices[i].position.y = v[1];
+        mesh->vertices[i].position.z = v[2];
+    }
+}
+
 void plSetMeshVertexST(PLMesh *mesh, PLuint index, PLfloat s, PLfloat t) {
+    plFunctionStart();
+
     mesh->vertices[index].st[0] = plCreateVector2D(s, t);
 }
 
+void plSetMeshVertexSTv(PLMesh *mesh, PLbyte unit, PLuint index, PLuint size, const PLfloat *st) {
+    plFunctionStart();
+
+    if(!mesh) {
+
+        abort();
+    }
+
+    size += index;
+    if(size > mesh->numverts) {
+        size -= (size - mesh->numverts);
+    }
+
+    for(PLuint i = index; i < size; i++) {
+        mesh->vertices[i].st[unit].x = st[0];
+        mesh->vertices[i].st[unit].y = st[1];
+    }
+}
+
 void plSetMeshVertexColour(PLMesh *mesh, PLuint index, PLColour colour) {
+    plFunctionStart();
+
     mesh->vertices[index].colour = colour;
 }
 
 void plUploadMesh(PLMesh *mesh) {
+    plFunctionStart();
+
     if(!mesh) {
         return;
     }
@@ -210,7 +258,7 @@ void plDrawMesh(PLMesh *mesh) {
         return;
     }
 
-#if defined(PL_MODE_OPENGL_CORE) || (defined(PL_MODE_OPENGL) && defined(_PL_USE_VERTEX_BUFFER_OBJECTS))
+#if defined(PL_MODE_OPENGL) && (defined(PL_MODE_OPENGL_CORE) || defined(_PL_USE_VERTEX_BUFFER_OBJECTS))
     if(mesh->primitive != PL_PRIMITIVE_QUADS) {
         glBindBuffer(GL_ARRAY_BUFFER, mesh->id[_PL_MESH_VERTICES]);
 
@@ -229,10 +277,9 @@ void plDrawMesh(PLMesh *mesh) {
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-    } else {
-#endif
-#if defined(PL_MODE_OPENGL)
-#if 1
+    }
+#else
+#if 0
         glBegin(_plTranslatePrimitiveMode(mesh->primitive));
         for(unsigned int i = 0; i < mesh->numverts; i++) {
             glVertex3f(mesh->vertices[i].position.x, mesh->vertices[i].position.y, mesh->vertices[i].position.z);
@@ -279,9 +326,6 @@ void plDrawMesh(PLMesh *mesh) {
             }
         }
 #endif
-#endif
-#if defined(PL_MODE_OPENGL_CORE) || (defined(PL_MODE_OPENGL) && defined(_PL_USE_VERTEX_BUFFER_OBJECTS))
-    }
 #endif
 }
 

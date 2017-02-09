@@ -119,13 +119,13 @@ void plShutdown(void) {
 #define    MAX_ERROR_LENGTH    2048
 
 PLchar
-        sys_error[MAX_ERROR_LENGTH],
-        loc_error[MAX_ERROR_LENGTH],
-        loc_function[MAX_FUNCTION_LENGTH];
+        sys_error[MAX_ERROR_LENGTH]         = { '\0' },
+        loc_error[MAX_ERROR_LENGTH]         = { '\0' },
+        loc_function[MAX_FUNCTION_LENGTH]   = { '\0' };
 
-/*	Sets the name of the currently entered function.
-*/
+// Sets the name of the current function.
 void plSetErrorFunction(const char *function, ...) {
+#ifdef _DEBUG
     PLchar out[2048]; // todo, shitty work around because linux crap    //[MAX_FUNCTION_LENGTH];
     va_list args;
 
@@ -134,18 +134,21 @@ void plSetErrorFunction(const char *function, ...) {
     va_end(args);
 
     strncpy(loc_function, out, sizeof(function));
+#endif
 }
 
 void plResetError(void) {
-    // Set everything to "null".
-    sprintf(loc_error, "null");
-    sprintf(sys_error, "null");
-    sprintf(loc_function, "null");
+#ifdef _DEBUG
+    memset(loc_error, '\0', sizeof(PLchar) * MAX_ERROR_LENGTH);
+    memset(loc_function, '\0', sizeof(PLchar) * MAX_ERROR_LENGTH);
+    memset(sys_error, '\0', sizeof(PLchar) * MAX_ERROR_LENGTH);
+#endif
 }
 
 /*	Sets the local error message.
 */
 void plSetError(const char *msg, ...) {
+#ifdef _DEBUG
     PLchar out[MAX_ERROR_LENGTH];
     va_list args;
 
@@ -154,17 +157,17 @@ void plSetError(const char *msg, ...) {
     va_end(args);
 
     strncpy(loc_error, out, sizeof(loc_error));
+#endif
 }
 
-/*	Returns the locally generated error message.
-*/
-PLchar *plGetError(void) {
+// Returns locally generated error message.
+const PLchar * plGetError(void) {
     return loc_error;
 }
 
 /*	Returns a system error message.
 */
-PLchar *plGetSystemError(void) {
+const PLchar * plGetSystemError(void) {
 #ifdef _WIN32
     char	*buffer = NULL;
     int		error;
