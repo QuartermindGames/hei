@@ -165,11 +165,13 @@ typedef struct PLVector3D {
 
     PLVector3D() : x(0), y(0) {}
 
+#if 0
     void PL_INLINE operator = (PLVector3D a) {
         x = a.x;
         y = a.y;
         z = a.z;
     }
+#endif
 
     void PL_INLINE operator = (PLfloat a) {
         x = a;
@@ -178,21 +180,19 @@ typedef struct PLVector3D {
     }
 
     void PL_INLINE operator *= (const PLVector3D &v) {
-        x *= v.x;
-        y *= v.y;
-        z *= v.z;
+        x *= v.x; y *= v.y; z *= v.z;
     }
 
     void PL_INLINE operator *= (PLfloat a) {
-        x *= a;
-        y *= a;
-        z *= a;
+        x *= a; y *= a; z *= a;
     }
 
     void PL_INLINE operator += (PLVector3D a) {
-        x += a.x;
-        y += a.y;
-        z += a.z;
+        x += a.x; y += a.y; z += a.z;
+    }
+
+    void PL_INLINE operator += (PLfloat a) {
+        x += a; y += a; z += a;
     }
 
     PL_INLINE PLbool operator == (const PLVector3D &a) const {
@@ -288,10 +288,9 @@ typedef struct PLVector3D {
     }
 
     void PL_INLINE Set(PLfloat _x, PLfloat _y, PLfloat _z) {
-        x = _x;
-        y = _y;
-        z = _z;
+        x = _x; y = _y; z = _z;
     }
+
 #endif
 } PLVector3D;
 
