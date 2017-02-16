@@ -688,9 +688,7 @@ void plDeleteTexture(PLTexture *texture, PLbool force) {
     auto tex = _pl_graphics_textures.begin();
     while(tex != _pl_graphics_textures.end()) {
         if(tex->second == texture) {
-#if defined(PL_MODE_OPENGL)
             glDeleteTextures(1, &texture->id);
-#endif
 
             delete tex->second;
             _pl_graphics_textures.erase(tex);
@@ -702,16 +700,14 @@ void plDeleteTexture(PLTexture *texture, PLbool force) {
 
 PLint _plTranslateColourChannel(PLint channel) {
     _PL_GRAPHICS_TRACK();
-#if defined(PL_MODE_OPENGL)
+
     switch(channel) {
         case PL_RED:    return GL_RED;
         case PL_GREEN:  return GL_GREEN;
         case PL_BLUE:   return GL_BLUE;
         case PL_ALPHA:  return GL_ALPHA;
+        default:        return channel;
     }
-#else
-    return channel;
-#endif
 }
 
 void plSwizzleTexture(PLTexture *texture, PLint r, PLint g, PLint b, PLint a) {
