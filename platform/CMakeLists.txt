@@ -38,7 +38,7 @@ add_library(platform SHARED ${PLATFORM_SOURCE_FILES})
 set_target_properties(platform PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 
 target_compile_options(platform PUBLIC -fPIC -DPL_INTERNAL)
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(platform "-framework OpenGL")
 else()
     target_link_libraries(platform GL GLEW)

@@ -59,7 +59,7 @@ PLresult _plLoadTGAImage(FILE *fin, PLImage *out) {
     memset(&header, 0, sizeof(TGAHeader));
     if (fread(&header, sizeof(TGAHeader), 1, fin) != 1) {
         return PL_RESULT_FILEREAD;
-    } else if (!plIsValidImageSize(header.width, header.height)) {
+    } else if (!_plIsValidImageSize(header.width, header.height)) {
         return PL_RESULT_IMAGERESOLUTION;
     }
 
@@ -89,7 +89,9 @@ PLresult _plLoadTGAImage(FILE *fin, PLImage *out) {
                 return PL_RESULT_FILEREAD;
             }
 
-            for(PLuint swap = 0; swap < (PLint)out->size; swamp += header.)
+            for(PLuint swap = 0; swap < (PLint)out->size; swap += 4) {
+
+            }
             break;
         }
 
@@ -98,6 +100,10 @@ PLresult _plLoadTGAImage(FILE *fin, PLImage *out) {
         case TGA_TYPE_TRUECOLOUR_ENCODED: {
             break;
         }
+
+        default:break;
     }
+
+    return PL_RESULT_SUCCESS;
 }
 
