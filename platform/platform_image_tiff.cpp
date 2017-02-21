@@ -40,42 +40,44 @@ PLbool _plTIFFFormatCheck(FILE *fin) {
 
 
 // Just for debugging for now, will likely introduce this through a dedicated API later...
-void plWriteTIFFImage(const PLImage *in, const PLchar *path) {
+PLresult _plWriteTIFFImage(const PLImage *image, const PLchar *path) {
     TIFF *tif = TIFFOpen(path, "w");
     if(!tif) {
-        return;
+        return PL_RESULT_FILEPATH;
     }
 
-    PLuint spp = plGetSamplesPerPixel(in->colour_format);
-    TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, in->width);
-    TIFFSetField(tif, TIFFTAG_IMAGELENGTH, in->height);
+    PLuint spp = plGetSamplesPerPixel(image->colour_format);
+    TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, image->width);
+    TIFFSetField(tif, TIFFTAG_IMAGELENGTH, image->height);
     TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, spp);
     TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
     TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
     TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
     TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
 
-    tsize_t line_bytes = spp * in->width;
+    size_t line_bytes = spp * image->width;
     PLbyte *buf = (PLbyte*)_TIFFmalloc(TIFFScanlineSize(tif));
     if(!buf) {
-        std::cerr << "Failed to allocate memory for image buffer\n";
-        std::_Exit(EXIT_FAILURE);
+        std::cout << "Failed to allocate memory for image buffer\n";
+
+        TIFFClose(tif);
+
+        return PL_RESULT_MEMORYALLOC;
     }
 
-    TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, in->width * spp));
+    TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, image->width * spp));
 
-    for(uint32 row = 0; row < in->height; row++) {
-        memcpy(buf, &in->data[0][(in->height - row - 1) * line_bytes], line_bytes);
+    for(uint32 row = 0; row < image->height; row++) {
+        memcpy(buf, &image->data[0][(image->height - row - 1) * line_bytes], line_bytes);
         if(TIFFWriteScanline(tif, buf, row, 0) < 0) {
             break;
         }
     }
 
     TIFFClose(tif);
+    _TIFFfree(buf);
 
-    if(buf) {
-        _TIFFfree(buf);
-    }
+    return PL_RESULT_SUCCESS;
 }
 
 PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {

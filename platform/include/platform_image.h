@@ -95,6 +95,7 @@ typedef struct PLImage {
 #define PLIMAGE_EXTENSION_FTX   "ftx"   // Ritual's FTX image format
 #define PLIMAGE_EXTENSION_DTX   "dtx"   // Direct Texture (LithTech)
 #define PLIMAGE_EXTENSION_PPM   "ppm"   // Portable Pixel Map
+#define PLIMAGE_EXTENSION_TIFF  "tif"
 #define PLIMAGE_EXTENSION_KTX   "ktx"
 #define PLIMAGE_EXTENSION_TGA   "tga"
 #define PLIMAGE_EXTENSION_PNG   "png"
@@ -103,20 +104,18 @@ typedef struct PLImage {
 
 PL_EXTERN_C
 
-PL_EXTERN PLbool plIsValidImageSize(PLuint width, PLuint height);
-
 PL_EXTERN PLresult plLoadImage(const PLchar *path, PLImage *out);
+PL_EXTERN PLresult plWriteImage(const PLImage *image, const PLchar *path);
 
 PL_EXTERN PLuint plGetSamplesPerPixel(PLColourFormat format);
 
-// Write
-PL_EXTERN void plWriteTIFFImage(const PLImage *in, const PLchar *path);
-
 #if defined(PL_INTERNAL)
+
+void _plFreeImage(PLImage *image);
 
 PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height);
 
-void _plFreeImage(PLImage *image);
+PLbool _plIsValidImageSize(PLuint width, PLuint height);
 
 PLbool _plDDSFormatCheck(FILE *fin);
 PLbool _plDTXFormatCheck(FILE *fin);
@@ -129,6 +128,8 @@ PLresult _plLoadDTXImage(FILE *fin, PLImage *out);           // Lithtech's DTX i
 PLresult _plLoadVTFImage(FILE *fin, PLImage *out);           // Valve's VTF image format.
 PLresult _plLoadDDSImage(FILE *fin, PLImage *out);
 PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out);
+
+PLresult _plWriteTIFFImage(const PLImage *image, const PLchar *path);
 
 #endif
 

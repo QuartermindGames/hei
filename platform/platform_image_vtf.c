@@ -245,7 +245,7 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
         return PL_RESULT_FILEREAD;
     } else if (VTF_VERSION(7, 5)) {
         return PL_RESULT_FILEVERSION;
-    } else if (!plIsValidImageSize(header.width, header.height)) {
+    } else if (!_plIsValidImageSize(header.width, header.height)) {
         return PL_RESULT_IMAGERESOLUTION;
     } else {
         if(header.lowresimageformat != VTF_FORMAT_DXT1) {

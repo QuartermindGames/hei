@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    plWriteTIFFImage(&image, "./images/out/test.tif");
+    plWriteImage(&image, "./images/out/test.tif");
 
     if(!glfwInit()) {
         plMessageBox(TITLE, "Failed to initialize GLFW!\n");

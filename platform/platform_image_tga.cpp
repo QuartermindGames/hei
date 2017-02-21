@@ -63,15 +63,41 @@ PLresult _plLoadTGAImage(FILE *fin, PLImage *out) {
         return PL_RESULT_IMAGERESOLUTION;
     }
 
+    memset(out, 0, sizeof(PLImage));
+
+    out->width = header.width;
+    out->height = header.height;
+    if(header.pixel_depth == 24) {
+        out->colour_format = PL_COLOURFORMAT_RGBA;
+        out->format = PL_IMAGEFORMAT_RGBA4;
+    } else {
+        out->colour_format = PL_COLOURFORMAT_RGB;
+        out->format = PL_IMAGEFORMAT_RGB4;
+    }
+    out->size = header.pixel_depth * header.width * header.height;
+    out->levels = 1;
+
+    out->data = new PLbyte*[out->levels];
+    out->data[0] = new PLbyte[out->size];
+
     switch(header.image_type) {
-        case TGA_TYPE_COLOURMAPPED:
-        case TGA_TYPE_COLOURMAPPED_ENCODED:
-
         case TGA_TYPE_MONOCHROME:
-        case TGA_TYPE_MONOCHROME_ENCODED:
+        case TGA_TYPE_COLOURMAPPED:
+        case TGA_TYPE_TRUECOLOUR: {
+            if(fread(out->data[0], out->size, 1, fin) != out->size) {
+                _plFreeImage(out);
+                return PL_RESULT_FILEREAD;
+            }
 
-        case TGA_TYPE_TRUECOLOUR:
-        case TGA_TYPE_TRUECOLOUR_ENCODED:
+            for(PLuint swap = 0; swap < (PLint)out->size; swamp += header.)
+            break;
+        }
+
+        case TGA_TYPE_MONOCHROME_ENCODED:
+        case TGA_TYPE_COLOURMAPPED_ENCODED:
+        case TGA_TYPE_TRUECOLOUR_ENCODED: {
+            break;
+        }
     }
 }
 

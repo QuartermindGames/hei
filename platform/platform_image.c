@@ -37,9 +37,6 @@ PLresult plLoadImage(const PLchar *path, PLImage *out) {
 
     PLresult result = PL_RESULT_FILETYPE;
 
-    // Xenon uses a lot of long extensions, as do some other modern
-    // applications, so that's why we're using a size 16.
-
     FILE *fin = fopen(path, "rb");
     if(!fin) {
         return PL_RESULT_FILEREAD;
@@ -73,6 +70,27 @@ PLresult plLoadImage(const PLchar *path, PLImage *out) {
 
     if(result == PL_RESULT_SUCCESS) {
         strncpy(out->path, path, sizeof(out->path));
+    }
+
+    return result;
+}
+
+PLresult plWriteImage(const PLImage *image, const PLchar *path) {
+    plFunctionStart();
+
+    if (!plIsValidString(path)) {
+        return PL_RESULT_FILEPATH;
+    }
+
+    PLresult result = PL_RESULT_FILETYPE;
+
+    const PLchar *extension = plGetFileExtension(path);
+    if(plIsValidString(extension)) {
+        if (!strncmp(extension, PLIMAGE_EXTENSION_TIFF, 3)) {
+            result = _plWriteTIFFImage(image, path);
+        } else {
+            // todo, Write BMP or some other easy-to-go format.
+        }
     }
 
     return result;
@@ -117,6 +135,10 @@ PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height) {
     }
 }
 
+void _plAllocateImage(PLImage *image, PLuint size, PLuint levels) {
+    image->data = (PLbyte**)calloc(levels, sizeof(PLbyte));
+}
+
 void _plFreeImage(PLImage *image) {
     plFunctionStart();
 
@@ -135,7 +157,7 @@ void _plFreeImage(PLImage *image) {
     free(image->data);
 }
 
-PLbool plIsValidImageSize(PLuint width, PLuint height) {
+PLbool _plIsValidImageSize(PLuint width, PLuint height) {
     plFunctionStart();
 
     if((width < 2) || (height < 2)) {
