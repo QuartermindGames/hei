@@ -38,8 +38,6 @@ PLbool _plTIFFFormatCheck(FILE *fin) {
     return (PLbool)((strncmp(ident, "II", 2) == 0) || (strncmp(ident, "MM", 2) == 0));
 }
 
-
-// Just for debugging for now, will likely introduce this through a dedicated API later...
 PLresult _plWriteTIFFImage(const PLImage *image, const PLchar *path) {
     TIFF *tif = TIFFOpen(path, "w");
     if(!tif) {

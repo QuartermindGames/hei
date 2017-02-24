@@ -385,11 +385,99 @@ typedef struct PLColour {
     }
 
     PLColour(PLfloat c, PLfloat c2, PLfloat c3, PLfloat c4 = 1) :
-    r((PLbyte) (c * 255)),
-    g((PLbyte) (c2 * 255)),
-    b((PLbyte) (c3 * 255)),
-    a((PLbyte) (c4 * 255)) {
+    r(plFloatToByte(c)),
+    g(plFloatToByte(c2)),
+    b(plFloatToByte(c3)),
+    a(plFloatToByte(c4)) {
 
+    }
+
+    PL_INLINE void operator *= (const PLColour &v) {
+        r *= v.r; g *= v.g; b *= v.b; a *= v.a;
+    }
+
+    PL_INLINE void operator *= (PLfloat c) {
+        r *= plFloatToByte(c); g *= plFloatToByte(c); b *= plFloatToByte(c); a *= plFloatToByte(c);
+    }
+
+    PL_INLINE void operator *= (PLbyte c) {
+        r *= c; g *= c; g *= c; a *= c;
+    }
+
+    PL_INLINE void operator += (PLColour v) {
+        r += v.r; g += v.g; b += v.b; a += v.a;
+    }
+
+    PL_INLINE void operator += (PLfloat c) {
+        r += plFloatToByte(c); g += plFloatToByte(c); b += plFloatToByte(c); a += plFloatToByte(c);
+    }
+
+    PL_INLINE void operator /= (PLColour v) {
+        r /= v.r; g /= v.g; b /= v.b; a /= v.a;
+    }
+
+    PL_INLINE void operator /= (PLfloat c) {
+        r /= c; g /= c; b /= c; a /= c;
+    }
+
+    PL_INLINE PLColour operator - (PLColour c) const {
+        return PLColour(r - c.r, g - c.g, b - c.b, a - c.a);
+    }
+
+    PL_INLINE PLColour operator - (PLfloat c) const {
+        return PLColour(r - plFloatToByte(c), g - plFloatToByte(c), b - plFloatToByte(c), a - plFloatToByte(c));
+    }
+
+    PL_INLINE PLColour operator - (PLbyte c) const {
+        return PLColour(r - c, g - c, b - c, a - c);
+    }
+
+    PL_INLINE PLColour operator - () const {
+        return PLColour(-r, -g, -b, -a);
+    }
+
+    PL_INLINE PLColour operator * (PLColour v) const {
+        return PLColour(r * v.r, g * v.g, b * v.b, a * v.a);
+    }
+
+    PL_INLINE PLColour operator + (PLColour v) const {
+        return PLColour(r + v.r, g + v.g, b + v.b, a + v.a);
+    }
+
+    PL_INLINE PLColour operator + (PLfloat c) const {
+        return PLColour(r + plFloatToByte(c), g + plFloatToByte(c), b + plFloatToByte(c), a + plFloatToByte(c));
+    }
+
+    PL_INLINE PLColour operator / (const PLColour &v) const {
+        return PLColour(r / v.r, g / v.g, b / v.b, a / v.a);
+    }
+
+    PL_INLINE PLColour operator / (PLfloat c) const {
+        return PLColour(r / plFloatToByte(c), g / plFloatToByte(c), b / plFloatToByte(c), a / plFloatToByte(c));
+    }
+
+    PL_INLINE PLColour operator / (PLbyte c) const {
+        return PLColour(r / c, g / c, b / c, a / c);
+    }
+
+    PL_INLINE PLbyte& operator [] (const unsigned int i) {
+        return *((&r) + i);
+    }
+
+    PL_INLINE bool operator > (const PLColour &v) const {
+        return ((r > v.r) && (g > v.g) && (b > v.b) && (a > v.a));
+    }
+
+    PL_INLINE bool operator < (const PLColour &v) const {
+        return ((r < v.r) && (g < v.g) && (b < v.b) && (a < v.a));
+    }
+
+    PL_INLINE bool operator >= (const PLColour &v) const {
+        return ((r >= v.r) && (g >= v.g) && (b >= v.b) && (a >= v.a));
+    }
+
+    PL_INLINE bool operator <= (const PLColour &v) const {
+        return ((r <= v.r) && (g <= v.g) && (b <= v.b) && (a <= v.a));
     }
 
 #endif
@@ -870,3 +958,12 @@ static PL_INLINE PLfloat plInOutPow(PLfloat x, PLfloat p) {
     int sign = (int) p % 2 == 0 ? -1 : 1;
     return (sign / 2.0f * (powf(x - 2.0f, p) + sign * 2.0f));
 }
+
+//////////////////////////////////////////////////////////////////////
+// DEBUG FUNCTIONS
+
+#if defined(PL_INTERNAL)
+
+#endif
+ *
+ */
