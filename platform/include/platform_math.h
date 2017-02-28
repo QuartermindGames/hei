@@ -964,6 +964,6 @@ static PL_INLINE PLfloat plInOutPow(PLfloat x, PLfloat p) {
 
 #if defined(PL_INTERNAL)
 
+void _plDebugMath(void);
+
 #endif
- *
- */

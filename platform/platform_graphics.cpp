@@ -343,9 +343,9 @@ _PLGraphicsCapabilities graphics_capabilities[] =
                 {PL_CAPABILITY_TEXTURE_GEN_S, GL_TEXTURE_GEN_S, "TEXTURE_GEN_S"},
                 {PL_CAPABILITY_TEXTURE_GEN_T, GL_TEXTURE_GEN_T, "TEXTURE_GEN_T"},
 #endif
-                {VL_CAPABILITY_CULL_FACE, GL_CULL_FACE, "CULL_FACE"},
-                {VL_CAPABILITY_STENCIL_TEST, GL_STENCIL_TEST, "STENCIL_TEST"},
-                {VL_CAPABILITY_MULTISAMPLE, GL_MULTISAMPLE, "MULTISAMPLE"},
+                {PL_CAPABILITY_CULL_FACE, GL_CULL_FACE, "CULL_FACE"},
+                {PL_CAPABILITY_STENCILTEST, GL_STENCIL_TEST, "STENCIL_TEST"},
+                {PL_CAPABILITY_MULTISAMPLE, GL_MULTISAMPLE, "MULTISAMPLE"},
                 {PL_CAPABILITY_SCISSORTEST, GL_SCISSOR_TEST, "SCISSOR_TEST"},
 
                 {PL_CAPABILITY_GENERATEMIPMAP, 0, "GENERATE_MIPMAP"},
@@ -356,9 +356,9 @@ _PLGraphicsCapabilities graphics_capabilities[] =
         { VL_CAPABILITY_TEXTURE_2D, 0, "TEXTURE_2D" },
         { PL_CAPABILITY_TEXTURE_GEN_S, 0, "TEXTURE_GEN_S" },
         { PL_CAPABILITY_TEXTURE_GEN_T, 0, "TEXTURE_GEN_T" },
-        { VL_CAPABILITY_CULL_FACE, 0, "CULL_FACE" },
-        { VL_CAPABILITY_STENCIL_TEST, 0, "STENCIL_TEST" },
-        { VL_CAPABILITY_MULTISAMPLE, 0, "MULTISAMPLE" },
+        { PL_CAPABILITY_CULL_FACE, 0, "CULL_FACE" },
+        { PL_CAPABILITY_STENCILTEST, 0, "STENCIL_TEST" },
+        { PL_CAPABILITY_MULTISAMPLE, 0, "MULTISAMPLE" },
 #endif
 
                 {0}
@@ -388,12 +388,12 @@ void plEnableGraphicsStates(PLuint flags) {
         if (flags & PL_CAPABILITY_TEXTURE_2D)
             pl_graphics_state.tmu[pl_graphics_state.current_textureunit].active = PL_TRUE;
 #if defined (VL_MODE_GLIDE)
-        if (flags & VL_CAPABILITY_FOG)
+        if (flags & PL_CAPABILITY_FOG)
             // TODO: need to check this is supported...
             grFogMode(GR_FOG_WITH_TABLE_ON_FOGCOORD_EXT);
         if (flags & PL_CAPABILITY_DEPTHTEST)
             grDepthBufferMode(GR_DEPTHBUFFER_ZBUFFER);
-        if (flags & VL_CAPABILITY_CULL_FACE)
+        if (flags & PL_CAPABILITY_CULL_FACE)
             grCullMode(graphics_state.current_cullmode);
 #endif
 
@@ -423,11 +423,11 @@ void plDisableGraphicsStates(PLuint flags) {
         if (flags & PL_CAPABILITY_TEXTURE_2D)
             pl_graphics_state.tmu[pl_graphics_state.current_textureunit].active = PL_FALSE;
 #if defined (VL_MODE_GLIDE)
-        if (flags & VL_CAPABILITY_FOG)
+        if (flags & PL_CAPABILITY_FOG)
             grFogMode(GR_FOG_DISABLE);
         if (flags & PL_CAPABILITY_DEPTHTEST)
             grDepthBufferMode(GR_DEPTHBUFFER_DISABLE);
-        if (flags & VL_CAPABILITY_CULL_FACE)
+        if (flags & PL_CAPABILITY_CULL_FACE)
             grCullMode(graphics_state.current_cullmode);
 #endif
 
@@ -456,7 +456,7 @@ void plSetBlendMode(PLBlend modea, PLBlend modeb) {
 #endif
 }
 
-void plSetCullMode(VLCullMode mode) {
+void plSetCullMode(PLCullMode mode) {
     _PL_GRAPHICS_TRACK();
 
     if (mode == pl_graphics_state.current_cullmode)

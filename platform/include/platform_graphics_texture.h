@@ -80,6 +80,30 @@ typedef struct PLTexture {
     PLuint size;
 
     PLImageFormat format;
+
+#ifdef __cplusplus
+
+    PL_INLINE PLuint GetFlags() const {
+        return flags;
+    }
+
+    PL_INLINE void AddFlags(PLuint f) {
+        flags |= f;
+    }
+
+    PL_INLINE void SetFlags(PLuint f) {
+        flags = f;
+    }
+
+    PL_INLINE void RemoveFlags(PLuint f) {
+        flags &= ~f;
+    }
+
+    PL_INLINE void ClearFlags() {
+        flags = 0;
+    }
+
+#endif
 } PLTexture;
 
 PL_EXTERN_C

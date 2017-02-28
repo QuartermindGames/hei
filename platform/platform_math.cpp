@@ -109,9 +109,9 @@ void _plDebugMath(void) {
     c0 /= green;
 
     // Print out all our variables.
-    printf(plPrintColour(c0));
-    printf(plPrintColour(c1));
-    printf(plPrintColour(red));
-    printf(plPrintColour(green));
-    printf(plPrintColour(blue));
+    printf("%s", plPrintColour(c0));
+    printf("%s", plPrintColour(c1));
+    printf("%s", plPrintColour(red));
+    printf("%s", plPrintColour(green));
+    printf("%s", plPrintColour(blue));
 }

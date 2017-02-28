@@ -114,7 +114,7 @@ typedef enum VLCullMode {
     VL_CULL_NEGATIVE,
 
     VL_CULL_END
-} VLCullMode;
+} PLCullMode;
 
 // Blending Modes
 typedef enum PLBlend {
@@ -165,16 +165,16 @@ typedef enum PLBlend {
 // Capabilities
 
 typedef enum PLGraphicsCapability {
-    VL_CAPABILITY_FOG = (1 << 0),           // Fog.
+    PL_CAPABILITY_FOG = (1 << 0),           // Fog.
     PL_CAPABILITY_ALPHA_TEST = (1 << 1),    // Alpha-testing.
     PL_CAPABILITY_BLEND = (1 << 2),         // Blending.
     PL_CAPABILITY_TEXTURE_2D = (1 << 3),    // Enables/disables textures.
     PL_CAPABILITY_TEXTURE_GEN_S = (1 << 4), // Generate S coordinate.
     PL_CAPABILITY_TEXTURE_GEN_T = (1 << 5), // Generate T coordinate.
     PL_CAPABILITY_DEPTHTEST = (1 << 6),    // Depth-testing.
-    VL_CAPABILITY_STENCIL_TEST = (1 << 7),  // Stencil-testing.
-    VL_CAPABILITY_MULTISAMPLE = (1 << 8),   // Multisampling.
-    VL_CAPABILITY_CULL_FACE = (1 << 9),     // Automatically cull faces.
+    PL_CAPABILITY_STENCILTEST = (1 << 7),  // Stencil-testing.
+    PL_CAPABILITY_MULTISAMPLE = (1 << 8),   // Multisampling.
+    PL_CAPABILITY_CULL_FACE = (1 << 9),     // Automatically cull faces.
     PL_CAPABILITY_SCISSORTEST = (1 << 10),  // Scissor test for buffer clear.
 
     // Texture Generation
@@ -228,6 +228,10 @@ PL_EXTERN PLuint plGetMaxTextureAnistropy(void);
 PL_EXTERN PLresult _plSetActiveTexture(PLTexture *texture);
 PL_EXTERN PLresult plSetTextureFilter(PLTexture *texture, PLTextureFilter filter);
 PL_EXTERN PLresult plSetTextureAnisotropy(PLTexture *texture, PLuint amount);
+
+// Legacy
+PL_EXTERN void plSetTextureUnit(PLuint target);
+PL_EXTERN void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode);
 
 #endif
 
@@ -307,6 +311,8 @@ PL_EXTERN PLuint plGetCurrentShaderProgram(void);
 PL_EXTERN void plEnableShaderProgram(unsigned int program);
 PL_EXTERN void plDisableShaderProgram(unsigned int program);
 
+PL_EXTERN void plSetCullMode(PLCullMode mode);
+
 PL_EXTERN_C_END
 
 #include "platform_graphics_shader.h"
@@ -316,7 +322,7 @@ PL_EXTERN_C_END
 /////////////////////////////////////////////////////
 
 typedef struct PLGraphicsState {
-    VLCullMode current_cullmode;
+    PLCullMode current_cullmode;
 
     PLColour current_clearcolour;
     PLColour current_colour;        // Current global colour.
