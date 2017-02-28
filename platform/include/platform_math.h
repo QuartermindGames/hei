@@ -162,7 +162,9 @@ typedef struct PLVector3D {
 
 #ifdef __cplusplus
     PLVector3D(PLfloat _x, PLfloat _y, PLfloat _z) : x(_x), y(_y), z(_z) {}
-
+    PLVector3D(PLfloat *v) {
+        x = v[0]; y = v[1]; z = v[2];
+    }
     PLVector3D() : x(0), y(0) {}
 
 #if 0

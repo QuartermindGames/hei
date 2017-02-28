@@ -804,8 +804,9 @@ PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
         levels = 1;
     }
 
-    if (upload->initial)
+    if (upload->initial) {
         glTexStorage2D(GL_TEXTURE_2D, levels, format, upload->width, upload->height);
+    }
 
     // Check the format, to see if we're getting a compressed
     // format type.

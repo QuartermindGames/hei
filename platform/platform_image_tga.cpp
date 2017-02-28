@@ -59,7 +59,7 @@ PLresult _plLoadTGAImage(FILE *fin, PLImage *out) {
     memset(&header, 0, sizeof(TGAHeader));
     if (fread(&header, sizeof(TGAHeader), 1, fin) != 1) {
         return PL_RESULT_FILEREAD;
-    } else if (!_plIsValidImageSize(header.width, header.height)) {
+    } else if (!plIsValidImageSize(header.width, header.height)) {
         return PL_RESULT_IMAGERESOLUTION;
     }
 

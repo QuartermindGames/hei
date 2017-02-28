@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_math.h"
 
 // GLM
-
+#if 0
 #   ifndef PLATFORM_EXCLUDE_GLM
 #       ifdef _MSC_VER
 #           pragma warning(disable: 4201)
@@ -45,6 +45,7 @@ For more information, please refer to <http://unlicense.org>
 #           pragma warning(default: 4201)
 #       endif
 #   endif
+#endif
 
 void _plDebugVector3D(PLVector3D *v, PLVector3D *v3) {
     PLVector3D v2(0, 0, 1), v4;

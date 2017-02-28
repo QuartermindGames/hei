@@ -157,7 +157,7 @@ void _plFreeImage(PLImage *image) {
     free(image->data);
 }
 
-PLbool _plIsValidImageSize(PLuint width, PLuint height) {
+PLbool plIsValidImageSize(PLuint width, PLuint height) {
     plFunctionStart();
 
     if((width < 2) || (height < 2)) {
