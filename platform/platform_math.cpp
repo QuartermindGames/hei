@@ -47,6 +47,8 @@ For more information, please refer to <http://unlicense.org>
 #   endif
 #endif
 
+#ifdef _DEBUG
+
 void _plDebugVector3D(PLVector3D *v, PLVector3D *v3) {
     PLVector3D v2(0, 0, 1), v4;
 
@@ -116,3 +118,5 @@ void _plDebugMath(void) {
     printf("%s", plPrintColour(green));
     printf("%s", plPrintColour(blue));
 }
+
+#endif

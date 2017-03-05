@@ -39,7 +39,7 @@ set_target_properties(platform PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURC
 
 target_compile_options(platform PUBLIC -fPIC -DPL_INTERNAL)
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_link_libraries(platform "-framework OpenGL")
+    target_link_libraries(platform "-framework OpenGL" -L/usr/X11/lib -L/usr/X11R6/lib)
 else()
     target_link_libraries(platform GL GLEW)
 endif()

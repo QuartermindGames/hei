@@ -39,10 +39,6 @@ include_directories("${CMAKE_SOURCE_DIR}/platform/include/")  # Platform lib hea
 include_directories("${CMAKE_SOURCE_DIR}/shared/")            # Xenon shared headers.
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/X11/lib -L/usr/X11R6/lib")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/X11/lib -L/usr/X11R6/lib")
-endif()
 
 add_definitions("-D_DEBUG")
 
