@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #include "IMGViewer.h"
 
 int main(int argc, char *argv[]) {
-    FXApp app("Hello", "HELLO");
+    FXApp app("Image Viewer", "Xenon");
     app.init(argc, argv);
 
     FXMainWindow *main = new FXMainWindow(&app, "Hello", NULL, NULL, DECOR_ALL);

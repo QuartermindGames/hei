@@ -92,7 +92,7 @@ PLbool pl_gl_fragment_program = PL_FALSE;
 PLuint pl_gl_version_major = 0;
 PLuint pl_gl_version_minor = 0;
 
-#define PL_GL_VERSION(maj, min)    ((maj == pl_gl_version_major && min <= pl_gl_version_minor) || maj < pl_gl_version_major)
+#define PL_GL_VERSION(maj, min) ((maj == pl_gl_version_major && min <= pl_gl_version_minor) || maj < pl_gl_version_major)
 
 void _plInitOpenGL() {
     _PL_GRAPHICS_TRACK();
@@ -376,17 +376,20 @@ PLbool plIsGraphicsStateEnabled(PLuint flags) {
 void plEnableGraphicsStates(PLuint flags) {
     _PL_GRAPHICS_TRACK();
 
-    if (plIsGraphicsStateEnabled(flags))
+    if (plIsGraphicsStateEnabled(flags)) {
         return;
+    }
 
     for (PLint i = 0; i < sizeof(graphics_capabilities); i++) {
         if (graphics_capabilities[i].pl_parm == 0) break;
 
-        if (pl_graphics_state.mode_debug)
+        if (pl_graphics_state.mode_debug) {
             plGraphicsLog("Enabling %s\n", graphics_capabilities[i].ident);
+        }
 
-        if (flags & PL_CAPABILITY_TEXTURE_2D)
+        if (flags & PL_CAPABILITY_TEXTURE_2D) {
             pl_graphics_state.tmu[pl_graphics_state.current_textureunit].active = PL_TRUE;
+        }
 #if defined (VL_MODE_GLIDE)
         if (flags & PL_CAPABILITY_FOG)
             // TODO: need to check this is supported...
@@ -397,12 +400,13 @@ void plEnableGraphicsStates(PLuint flags) {
             grCullMode(graphics_state.current_cullmode);
 #endif
 
-        if ((flags & graphics_capabilities[i].pl_parm) && (graphics_capabilities[i].to_parm != 0))
+        if ((flags & graphics_capabilities[i].pl_parm) && (graphics_capabilities[i].to_parm != 0)) {
 #if defined (PL_MODE_OPENGL)
             glEnable(graphics_capabilities[i].to_parm);
 #elif defined (VL_MODE_GLIDE)
-        grEnable(graphics_capabilities[i].to_parm);
+            grEnable(graphics_capabilities[i].to_parm);
 #endif
+        }
 
         pl_graphics_state.current_capabilities |= graphics_capabilities[i].pl_parm;
     }
@@ -411,17 +415,20 @@ void plEnableGraphicsStates(PLuint flags) {
 void plDisableGraphicsStates(PLuint flags) {
     _PL_GRAPHICS_TRACK();
 
-    if (!plIsGraphicsStateEnabled(flags))
+    if (!plIsGraphicsStateEnabled(flags)) {
         return;
+    }
 
     for (PLint i = 0; i < sizeof(graphics_capabilities); i++) {
         if (graphics_capabilities[i].pl_parm == 0) break;
 
-        if (pl_graphics_state.mode_debug)
+        if (pl_graphics_state.mode_debug) {
             plGraphicsLog("Disabling %s\n", graphics_capabilities[i].ident);
+        }
 
-        if (flags & PL_CAPABILITY_TEXTURE_2D)
+        if (flags & PL_CAPABILITY_TEXTURE_2D) {
             pl_graphics_state.tmu[pl_graphics_state.current_textureunit].active = PL_FALSE;
+        }
 #if defined (VL_MODE_GLIDE)
         if (flags & PL_CAPABILITY_FOG)
             grFogMode(GR_FOG_DISABLE);
@@ -431,12 +438,13 @@ void plDisableGraphicsStates(PLuint flags) {
             grCullMode(graphics_state.current_cullmode);
 #endif
 
-        if ((flags & graphics_capabilities[i].pl_parm) && (graphics_capabilities[i].to_parm != 0))
+        if ((flags & graphics_capabilities[i].pl_parm) && (graphics_capabilities[i].to_parm != 0)) {
 #if defined (PL_MODE_OPENGL)
             glDisable(graphics_capabilities[i].to_parm);
 #elif defined (VL_MODE_GLIDE)
-        grDisable(graphics_capabilities[i].to_parm);
+            grDisable(graphics_capabilities[i].to_parm);
 #endif
+        }
 
         pl_graphics_state.current_capabilities &= ~graphics_capabilities[i].pl_parm;
     }
@@ -494,8 +502,9 @@ unsigned int plGetCurrentShaderProgram(void) {
 void plEnableShaderProgram(unsigned int program) {
     _PL_GRAPHICS_TRACK();
 
-    if (program == pl_graphics_state.current_program)
+    if (program == pl_graphics_state.current_program) {
         return;
+    }
 
 #if defined (PL_MODE_OPENGL)
     glUseProgram(program);
@@ -790,6 +799,7 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     return PL_RESULT_SUCCESS;
 }
 
+#if 0
 PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
     _PL_GRAPHICS_TRACK();
 
@@ -843,6 +853,7 @@ PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
 
     return PL_RESULT_SUCCESS;
 }
+#endif
 
 PLTexture *plGetCurrentTexture(PLuint tmu) {
     _PL_GRAPHICS_TRACK();

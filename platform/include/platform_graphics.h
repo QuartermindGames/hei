@@ -218,7 +218,7 @@ PL_EXTERN void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode);
 
 PL_EXTERN PLTexture *plCreateTexture(void);
 
-PL_EXTERN PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload);
+//PL_EXTERN PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload);
 PL_EXTERN PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload);
 
 PL_EXTERN PLuint plGetMaxTextureSize(void);

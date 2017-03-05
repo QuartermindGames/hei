@@ -54,32 +54,23 @@ typedef struct PLTextureMappingUnit {
     PLTextureEnvironmentMode current_envmode;
 } PLTextureMappingUnit;
 
-typedef struct PLTextureInfo {
-    PLbyte *data;
-
-    PLuint x, y;
-    PLuint width, height;
-    PLuint size;
-    PLuint levels;
-
-    PLColourFormat pixel_format;
-    PLDataFormat storage_type;
-    PLImageFormat format;
-
-    PLbool initial;
-
-    PLuint flags;
-} PLTextureInfo;
-
 typedef struct PLTexture {
     PLuint id;
 
     PLuint flags;
+
+    PLuint x, y;
     PLuint width, height;
 
     PLuint size;
+    PLuint levels;
+    //PLuint crc;
+
+    const char *path;
 
     PLImageFormat format;
+    PLDataFormat storage;
+    PLColourFormat pixel;
 
 #ifdef __cplusplus
 
