@@ -90,7 +90,7 @@ namespace pl {
 
         class PL_DLL ShaderUniform {
         public:
-            ShaderUniform(ShaderProgram *parent, std::string name);
+            ShaderUniform(ShaderProgram *parent, std::string name, ShaderUniformType type);
 
             void Set(float x);
             void Set(float x, float y);
@@ -103,6 +103,8 @@ namespace pl {
         protected:
         private:
             unsigned int id_;
+
+            ShaderUniformType type_;
 
             ShaderProgram *parent_;
         };
@@ -131,7 +133,7 @@ namespace pl {
             ShaderProgram();
             ~ShaderProgram();
 
-            void RegisterUniform(std::string name);
+            void RegisterUniform(std::string name, ShaderUniformType type);
             void RegisterAttribute(std::string name);
 
             void LoadShaders(std::string vertex, std::string fragment);

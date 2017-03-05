@@ -133,7 +133,7 @@ PLresult Shader::LoadFile(std::string path) {
 	SHADER UNIFORM
 ===========================*/
 
-ShaderUniform::ShaderUniform(ShaderProgram *parent, std::string name) {
+ShaderUniform::ShaderUniform(ShaderProgram *parent, std::string name, ShaderUniformType type) {
     if(!parent) {
         throw std::runtime_error("invalid shader program");
     } else if(parent->GetInstance() == 0) {
@@ -153,30 +153,65 @@ ShaderUniform::ShaderUniform(ShaderProgram *parent, std::string name) {
 }
 
 void ShaderUniform::Set(float x) {
+    if(type_ != UNIFORM_FLOAT) {
+        plGraphicsLog("Invalid shader uniform type! (%i)", type_);
+        return;
+    }
+
     glUniform1f(id_, x);
 }
 
 void ShaderUniform::Set(float x, float y) {
+    if(type_ != UNIFORM_VEC2) {
+        plGraphicsLog("Invalid shader uniform type! (%i)", type_);
+        return;
+    }
+
     glUniform2f(id_, x, y);
 }
 
 void ShaderUniform::Set(float x, float y, float z) {
+    if(type_ != UNIFORM_VEC3) {
+        plGraphicsLog("Invalid shader uniform type! (%i)", type_);
+        return;
+    }
+
     glUniform3f(id_, x, y, z);
 }
 
 void ShaderUniform::Set(float x, float y, float z, float w) {
+    if(type_ != UNIFORM_VEC4) {
+        plGraphicsLog("Invalid shader uniform type! (%i)", type_);
+        return;
+    }
+
     glUniform4f(id_, x, y, z, w);
 }
 
 void ShaderUniform::Set(int x) {
+    if(type_ != UNIFORM_INT) {
+        plGraphicsLog("Invalid shader uniform type! (%i)", type_);
+        return;
+    }
+
     glUniform1i(id_, x);
 }
 
 void ShaderUniform::Set(int x, int y) {
+    if(type_ != UNIFORM_VEC2) {
+        plGraphicsLog("Invalid shader uniform type! (%i)", type_);
+        return;
+    }
+
     glUniform2i(id_, x, y);
 }
 
 void ShaderUniform::Set(int x, int y, int z) {
+    if(type_ != UNIFORM_VEC3) {
+        plGraphicsLog("Invalid shader uniform type! (%i)", type_);
+        return;
+    }
+
     glUniform3i(id_, x, y, z);
 }
 
@@ -260,7 +295,7 @@ void ShaderProgram::Disable() {
     plDisableShaderProgram(id_);
 }
 
-void ShaderProgram::RegisterUniform(std::string name) {
+void ShaderProgram::RegisterUniform(std::string name, ShaderUniformType type) {
     if(name.empty()) {
         plGraphicsLog("Attempted to register a uniform with an invalid name!\n");
         return;
@@ -272,7 +307,7 @@ void ShaderProgram::RegisterUniform(std::string name) {
         return;
     }
 
-    uniforms.emplace(name, ShaderUniform(this, name));
+    uniforms.emplace(name, ShaderUniform(this, name, type));
 }
 
 void ShaderProgram::RegisterAttribute(std::string name) {
