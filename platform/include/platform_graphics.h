@@ -313,6 +313,8 @@ PL_EXTERN void plDisableShaderProgram(unsigned int program);
 
 PL_EXTERN void plSetCullMode(PLCullMode mode);
 
+PL_EXTERN void plSetBlendMode(PLBlend modea, PLBlend modeb);
+
 PL_EXTERN_C_END
 
 #include "platform_graphics_shader.h"

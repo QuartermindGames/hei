@@ -179,4 +179,14 @@ namespace pl {
     }
 }
 
+typedef pl::graphics::ShaderUniform PLShaderUniform;
+typedef pl::graphics::ShaderProgram PLShaderProgram;
+typedef pl::graphics::Shader PLShader;
+
+#else
+
+typedef struct PLShaderUniform PLShaderUniform;
+typedef struct PLShaderProgram PLShaderProgram;
+typedef struct PLShader PLShader;
+
 #endif
