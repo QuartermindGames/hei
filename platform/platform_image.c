@@ -28,25 +28,13 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_image.h"
 #include "platform_filesystem.h"
 
-PLresult plLoadImage(const PLchar *path, PLImage *out) {
-    plFunctionStart();
-
-    if (!plIsValidString(path)) {
-        return PL_RESULT_FILEPATH;
-    }
-
-    PLresult result = PL_RESULT_FILETYPE;
-
-    FILE *fin = fopen(path, "rb");
+PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     if(!fin) {
+        plSetError("invalid file handle");
         return PL_RESULT_FILEREAD;
     }
 
-    if(strrchr(path, ':')) {
-        // Very likely a packaged image.
-        // example/package.wad:myimage
-    }
-
+    PLresult result = PL_RESULT_FILETYPE;
     if(_plDDSFormatCheck(fin)) {
         result = _plLoadDDSImage(fin, out);
     } else if(_plVTFFormatCheck(fin)) {
@@ -66,11 +54,33 @@ PLresult plLoadImage(const PLchar *path, PLImage *out) {
         }
     }
 
-    fclose(fin);
-
     if(result == PL_RESULT_SUCCESS) {
         strncpy(out->path, path, sizeof(out->path));
     }
+
+    return result;
+}
+
+PLresult plLoadImage(const PLchar *path, PLImage *out) {
+    plFunctionStart();
+
+    if (!plIsValidString(path)) {
+        return PL_RESULT_FILEPATH;
+    }
+
+    FILE *fin = fopen(path, "rb");
+    if(!fin) {
+        return PL_RESULT_FILEREAD;
+    }
+
+    if(strrchr(path, ':')) {
+        // Very likely a packaged image.
+        // example/package.wad:myimage
+    }
+
+    PLresult result = plLoadImagef(fin, path, out);
+
+    fclose(fin);
 
     return result;
 }

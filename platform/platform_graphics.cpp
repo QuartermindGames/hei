@@ -494,8 +494,6 @@ void plSetCullMode(PLCullMode mode) {
 ===========================*/
 
 unsigned int plGetCurrentShaderProgram(void) {
-    _PL_GRAPHICS_TRACK();
-
     return pl_graphics_state.current_program;
 }
 
@@ -726,7 +724,7 @@ void plSwizzleTexture(PLTexture *texture, PLint r, PLint g, PLint b, PLint a) {
         return;
     }
 
-    _plSetActiveTexture(texture);
+    plBindTexture(texture);
 
 #if defined(PL_MODE_OPENGL)
     if(PL_GL_VERSION(3,3)) {
@@ -747,7 +745,7 @@ void plSwizzleTexture(PLTexture *texture, PLint r, PLint g, PLint b, PLint a) {
 PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     _PL_GRAPHICS_TRACK();
 
-    _plSetActiveTexture(texture);
+    plBindTexture(texture);
 
     texture->width = upload->width;
     texture->height = upload->height;
@@ -922,11 +920,11 @@ PLuint plGetMaxTextureAnistropy(void) {
 #   pragma GCC diagnostic pop
 #endif
 
-PLresult _plSetActiveTexture(PLTexture *texture) {
+void plBindTexture(PLTexture *texture) {
     _PL_GRAPHICS_TRACK();
 
     if (texture->id == pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_texture) {
-        return PL_RESULT_SUCCESS;
+        return;
     }
 
 #if defined (PL_MODE_OPENGL)
@@ -934,8 +932,6 @@ PLresult _plSetActiveTexture(PLTexture *texture) {
 #endif
 
     pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_texture = texture->id;
-
-    return PL_RESULT_SUCCESS;
 }
 
 void plSetTextureUnit(PLuint target) {
@@ -958,7 +954,7 @@ void plSetTextureUnit(PLuint target) {
 PLresult plSetTextureAnisotropy(PLTexture *texture, PLuint amount) {
     _PL_GRAPHICS_TRACK();
 
-    _plSetActiveTexture(texture);
+    plBindTexture(texture);
 
 #if defined (PL_MODE_OPENGL)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (PLint) amount);
@@ -970,7 +966,7 @@ PLresult plSetTextureAnisotropy(PLTexture *texture, PLuint amount) {
 PLresult plSetTextureFilter(PLTexture *texture, PLTextureFilter filter) {
     _PL_GRAPHICS_TRACK();
 
-    _plSetActiveTexture(texture);
+    plBindTexture(texture);
 
 #ifdef PL_MODE_OPENGL
     PLuint filtermin, filtermax;

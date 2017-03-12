@@ -33,6 +33,7 @@ using namespace pl::graphics;
 #define SHADER_INVALID_TYPE ((PLuint)0 - 1)
 
 unsigned int _plTranslateShaderType(ShaderType type) {
+#if defined(PL_MODE_OPENGL)
     switch(type) {
         case SHADER_VERTEX:      return GL_VERTEX_SHADER;
         case SHADER_FRAGMENT:    return GL_FRAGMENT_SHADER;
@@ -42,7 +43,66 @@ unsigned int _plTranslateShaderType(ShaderType type) {
 #endif
         default: return SHADER_INVALID_TYPE;
     }
+#else
+    return type;
+#endif
 }
+
+unsigned int _plTranslateUniformType(ShaderUniformType type) {
+#if defined(PL_MODE_OPENGL)
+    switch(type) {
+        case UNIFORM_DOUBLE:    return GL_DOUBLE;
+        case UNIFORM_BOOL:      return GL_BOOL;
+        case UNIFORM_FLOAT:     return GL_FLOAT;
+        case UNIFORM_INT:       return GL_INT;
+        case UNIFORM_UINT:      return GL_UNSIGNED_INT;
+
+        case UNIFORM_SAMPLER1D:         return GL_SAMPLER_1D;
+        case UNIFORM_SAMPLER1DSHADOW:   return GL_SAMPLER_1D_SHADOW;
+        case UNIFORM_SAMPLER2D:         return GL_SAMPLER_2D;
+        case UNIFORM_SAMPLER2DSHADOW:   return GL_SAMPLER_2D_SHADOW;
+        case UNIFORM_SAMPLER3D:         return GL_SAMPLER_3D;
+        case UNIFORM_SAMPLERCUBE:       return GL_SAMPLER_CUBE;
+
+        case UNIFORM_VEC2:  return GL_FLOAT_VEC2;
+        case UNIFORM_VEC3:  return GL_FLOAT_VEC3;
+        case UNIFORM_VEC4:  return GL_FLOAT_VEC4;
+
+        case UNIFORM_MAT3:  return GL_FLOAT_MAT3;
+
+        default:    return GL_ZERO;
+    }
+#else
+    return type;
+#endif
+}
+
+#if defined(PL_MODE_OPENGL)
+ShaderUniformType _plTranslateGLUniformType(unsigned int type) {
+    switch(type) {
+        case GL_DOUBLE:         return UNIFORM_DOUBLE;
+        case GL_BOOL:           return UNIFORM_BOOL;
+        case GL_FLOAT:          return UNIFORM_FLOAT;
+        case GL_INT:            return UNIFORM_INT;
+        case GL_UNSIGNED_INT:   return UNIFORM_UINT;
+
+        case GL_SAMPLER_1D:         return UNIFORM_SAMPLER1D;
+        case GL_SAMPLER_1D_SHADOW:  return UNIFORM_SAMPLER1DSHADOW;
+        case GL_SAMPLER_2D:         return UNIFORM_SAMPLER2D;
+        case GL_SAMPLER_2D_SHADOW:  return UNIFORM_SAMPLER2DSHADOW;
+        case GL_SAMPLER_3D:         return UNIFORM_SAMPLER3D;
+        case GL_SAMPLER_CUBE:       return UNIFORM_SAMPLERCUBE;
+
+        case GL_FLOAT_VEC2: return UNIFORM_VEC2;
+        case GL_FLOAT_VEC3: return UNIFORM_VEC3;
+        case GL_FLOAT_VEC4: return UNIFORM_VEC4;
+
+        case GL_FLOAT_MAT3: return UNIFORM_MAT3;
+
+        default: return UNIFORM_END;
+    }
+}
+#endif
 
 /*===========================
 	SHADER
@@ -54,16 +114,24 @@ Shader::Shader(ShaderType type, std::string path) : type_(type) {
         std::runtime_error("invalid shader type received!");
     }
 
+#if defined(PL_MODE_OPENGL)
     id_ = glCreateShader(_plTranslateShaderType(type_));
     if(id_ == 0) {
         throw std::runtime_error("failed to create shader");
     } else if(!path.empty() && (LoadFile(path) != PL_RESULT_SUCCESS)) {
         throw std::runtime_error("failed to load shader");
     }
+#endif
 }
 
 Shader::~Shader() {
+#if defined(PL_MODE_OPENGL)
+    if(program_) {
+        glDetachShader(program_->GetInstance(), id_);
+    }
+
     glDeleteShader(id_);
+#endif
 }
 
 PLresult Shader::LoadFile(std::string path) {
@@ -150,6 +218,19 @@ ShaderUniform::ShaderUniform(ShaderProgram *parent, std::string name, ShaderUnif
         throw std::runtime_error("failed to get uniform location");
     }
     id_ = static_cast<unsigned int>(location);
+
+    type_ = type;
+}
+
+void ShaderUniform::Set(double x) {
+    if(type_ != UNIFORM_DOUBLE) {
+        plGraphicsLog("Invalid shader uniform type! (%i)", type_);
+        return;
+    }
+
+#if defined(PL_MODE_OPENGL)
+    glUniform1d(id_, x);
+#endif
 }
 
 void ShaderUniform::Set(float x) {
@@ -158,7 +239,9 @@ void ShaderUniform::Set(float x) {
         return;
     }
 
+#if defined(PL_MODE_OPENGL)
     glUniform1f(id_, x);
+#endif
 }
 
 void ShaderUniform::Set(float x, float y) {
@@ -167,7 +250,9 @@ void ShaderUniform::Set(float x, float y) {
         return;
     }
 
+#if defined(PL_MODE_OPENGL)
     glUniform2f(id_, x, y);
+#endif
 }
 
 void ShaderUniform::Set(float x, float y, float z) {
@@ -176,7 +261,9 @@ void ShaderUniform::Set(float x, float y, float z) {
         return;
     }
 
+#if defined(PL_MODE_OPENGL)
     glUniform3f(id_, x, y, z);
+#endif
 }
 
 void ShaderUniform::Set(float x, float y, float z, float w) {
@@ -185,7 +272,35 @@ void ShaderUniform::Set(float x, float y, float z, float w) {
         return;
     }
 
+#if defined(PL_MODE_OPENGL)
     glUniform4f(id_, x, y, z, w);
+#endif
+}
+
+void ShaderUniform::Set(float *x, unsigned int size) {
+    if(size < 1 || size > 4) {
+        throw std::out_of_range("invalid size");
+    }
+
+    switch(size) {
+        default:
+        case 1: {
+            Set(x[0]);
+            break;
+        }
+        case 2: {
+            Set(x[0], x[1]);
+            break;
+        }
+        case 3: {
+            Set(x[0], x[1], x[2]);
+            break;
+        }
+        case 4: {
+            Set(x[0], x[1], x[2], x[3]);
+            break;
+        }
+    }
 }
 
 void ShaderUniform::Set(int x) {
@@ -194,7 +309,9 @@ void ShaderUniform::Set(int x) {
         return;
     }
 
+#if defined(PL_MODE_OPENGL)
     glUniform1i(id_, x);
+#endif
 }
 
 void ShaderUniform::Set(int x, int y) {
@@ -203,7 +320,9 @@ void ShaderUniform::Set(int x, int y) {
         return;
     }
 
+#if defined(PL_MODE_OPENGL)
     glUniform2i(id_, x, y);
+#endif
 }
 
 void ShaderUniform::Set(int x, int y, int z) {
@@ -212,7 +331,42 @@ void ShaderUniform::Set(int x, int y, int z) {
         return;
     }
 
+#if defined(PL_MODE_OPENGL)
     glUniform3i(id_, x, y, z);
+#endif
+}
+
+void ShaderUniform::Set(unsigned int x) {
+    if(type_ != UNIFORM_UINT) {
+        plGraphicsLog("Invalid shader uniform type! (%i)", type_);
+        return;
+    }
+
+#if defined(PL_MODE_OPENGL)
+    glUniform1ui(id_, x);
+#endif
+}
+
+void ShaderUniform::Set(PLVector2D x) {
+    if(type_ != UNIFORM_VEC2) {
+        plGraphicsLog("Invalid shader uniform type! (%i)", type_);
+        return;
+    }
+
+#if defined(PL_MODE_OPENGL)
+    glUniform2f(id_, x.x, x.y);
+#endif
+}
+
+void ShaderUniform::Set(PLVector3D x) {
+    if(type_ != UNIFORM_VEC3) {
+        plGraphicsLog("Invalid shader uniform type! (%i)", type_);
+        return;
+    }
+
+#if defined(PL_MODE_OPENGL)
+    glUniform3f(id_, x.x, x.y, x.z);
+#endif
 }
 
 /*===========================
@@ -310,6 +464,21 @@ void ShaderProgram::RegisterUniform(std::string name, ShaderUniformType type) {
     uniforms.emplace(name, ShaderUniform(this, name, type));
 }
 
+void ShaderProgram::RegisterUniforms() {
+    int uniforms;
+    glGetProgramiv(id_, GL_ACTIVE_UNIFORMS, &uniforms);
+    for(int i = 0; i < uniforms; ++i) {
+
+        unsigned int type = 0;
+        int size = 0, length = 0;
+        char name[256] = { 0 };
+        glGetActiveUniform(id_, unsigned(i), sizeof(name) - 1, &length, &size, &type, name);
+        name[length] = 0;
+
+        RegisterUniform(name, _plTranslateGLUniformType(type));
+    }
+}
+
 void ShaderProgram::RegisterAttribute(std::string name) {
     if(name.empty()) {
         plGraphicsLog("Attempted to register an attribute with an invalid name!\n");
@@ -348,4 +517,3 @@ void ShaderProgram::LoadShaders(std::string vertex, std::string fragment) {
     AttachShader(new Shader(SHADER_FRAGMENT, fragment));
     AttachShader(new Shader(SHADER_VERTEX, vertex));
 }
-

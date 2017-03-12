@@ -1,6 +1,8 @@
 
 #pragma once
 
+typedef struct PLImage PLImage;
+
 // Texture Environment Modes
 typedef enum PLTextureEnvironmentMode {
     PL_TEXTUREMODE_ADD,
@@ -54,6 +56,51 @@ typedef struct PLTextureMappingUnit {
     PLTextureEnvironmentMode current_envmode;
 } PLTextureMappingUnit;
 
+typedef struct PLTexture PLTexture;
+
+PL_EXTERN_C
+
+#if 0 // Legacy API
+
+PL_EXTERN void plCreateTexture(PLTexture *texture);
+PL_EXTERN void plDeleteTexture(PLTexture *texture);
+
+PL_EXTERN void plUploadTexture(PLTexture texture, const PLTextureInfo *upload);
+
+
+
+PL_EXTERN PLTexture plGetCurrentTexture(PLuint tmu);
+PL_EXTERN PLuint plGetCurrentTextureUnit(void);
+
+PL_EXTERN void plSetTextureAnisotropy(PLTexture texture, PLuint amount);
+PL_EXTERN void plSetTextureUnit(PLuint target);
+PL_EXTERN void plSetTextureFilter(PLTexture texture, PLTextureFilter filter);
+PL_EXTERN void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode);
+
+#else
+
+PL_EXTERN PLTexture *plCreateTexture(void);
+
+//PL_EXTERN PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload);
+PL_EXTERN PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload);
+
+PL_EXTERN PLuint plGetMaxTextureSize(void);
+PL_EXTERN PLuint plGetMaxTextureUnits(void);
+PL_EXTERN PLuint plGetMaxTextureAnistropy(void);
+
+PL_EXTERN void plBindTexture(PLTexture *texture);
+
+PL_EXTERN PLresult plSetTextureFilter(PLTexture *texture, PLTextureFilter filter);
+PL_EXTERN PLresult plSetTextureAnisotropy(PLTexture *texture, PLuint amount);
+
+// Legacy
+PL_EXTERN void plSetTextureUnit(PLuint target);
+PL_EXTERN void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode);
+
+#endif
+
+PL_EXTERN_C_END
+
 typedef struct PLTexture {
     PLuint id;
 
@@ -64,7 +111,7 @@ typedef struct PLTexture {
 
     PLuint size;
     PLuint levels;
-    //PLuint crc;
+    PLuint crc;
 
     const char *path;
 
@@ -73,6 +120,10 @@ typedef struct PLTexture {
     PLColourFormat pixel;
 
 #ifdef __cplusplus
+
+    PL_INLINE void Bind() {
+        plBindTexture(this);
+    }
 
     PL_INLINE PLuint GetFlags() const {
         return flags;
