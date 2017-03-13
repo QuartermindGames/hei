@@ -147,6 +147,7 @@ namespace pl {
         class PL_DLL ShaderProgram {
         public:
             ShaderProgram();
+            ShaderProgram(std::string name) : reference(name) {}
             ~ShaderProgram();
 
             void RegisterUniform(std::string name, ShaderUniformType type);
@@ -186,6 +187,8 @@ namespace pl {
             }
 
             unsigned int GetInstance() { return id_; }
+
+            std::string reference;
 
         protected:
         private:
