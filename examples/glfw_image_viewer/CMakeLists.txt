@@ -1,4 +1,4 @@
-/*
+#[[
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,60 +23,13 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-*/
+]]
 
-#include "platform_image.h"
+project(GLFW_IMAGE_VIEWER)
 
-struct DDSPixelFormat {
-    uint32_t size;
-    uint32_t flags;
-    uint32_t fourcc;
-    uint32_t rgbbitcount;
-};
+file(GLOB GLFW_IMAGE_VIEWER_SOURCE_FILES *.cpp *.h)
 
-struct DDSHeader {
-    uint32_t size;          // Should always be 124.
-    uint32_t flags;
-    uint32_t height, width;
-    uint32_t pitchlinear;
-    uint32_t depth;
-    uint32_t levels;
-    uint32_t reserved1[11];
+add_executable(GLFW_IMAGE_VIEWER ${GLFW_IMAGE_VIEWER_SOURCE_FILES})
 
-    //
-
-    uint32_t caps, caps2, caps3, caps4;
-    uint32_t reserved2;
-};
-
-enum DDSFlag {
-    DDS_CAPS,
-};
-
-PLbool _plDDSFormatCheck(FILE *fin) {
-    plFunctionStart();
-
-    rewind(fin);
-
-    PLchar ident[4];
-    fread(ident, sizeof(PLchar), 4, fin);
-
-    return (strncmp(ident, "DDS", 3) == 0);
-}
-
-PLresult _plLoadDDSImage(FILE *fin, PLImage *out) {
-    plFunctionStart();
-
-    DDSHeader header;
-    memset(&header, 0, sizeof(DDSHeader));
-    if(fread(&header, sizeof(DDSHeader), 1, fin) != 1) {
-        return PL_RESULT_FILEREAD;
-    }
-
-    memset(out, 0, sizeof(PLImage));
-
-    out->width = header.width;
-    out->height = header.height;
-
-    return PL_RESULT_SUCCESS;
-}
+target_include_directories(GLFW_IMAGE_VIEWER PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(GLFW_IMAGE_VIEWER platform glfw)

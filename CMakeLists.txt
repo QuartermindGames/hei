@@ -44,7 +44,7 @@ add_definitions("-D_DEBUG")
 
 add_subdirectory(platform)
 add_subdirectory(examples/image_viewer)
-add_subdirectory(Applications/VTFViewer)
+add_subdirectory(examples/glfw_image_viewer)
 
 #[[
 if(XENON_COMPILE_TOOLS)

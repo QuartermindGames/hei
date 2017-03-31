@@ -1,4 +1,4 @@
-#[[
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,13 +23,64 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-]]
+*/
 
-project(VTFViewer)
+#include "platform_image.h"
 
-file(GLOB VTFVIEWER_SOURCE_FILES *.cpp *.h)
+struct DDSPixelFormat {
+    uint32_t size;
+    uint32_t flags;
+    uint32_t fourcc;
+    uint32_t rgbbitcount;
+};
 
-add_executable(VTFViewer ${VTFVIEWER_SOURCE_FILES})
+typedef struct DDSHeader {
+    uint32_t size;          // Should always be 124.
+    uint32_t flags;
+    uint32_t height, width;
+    uint32_t pitchlinear;
+    uint32_t depth;
+    uint32_t levels;
+    uint32_t reserved1[11];
 
-target_include_directories(VTFViewer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(VTFViewer platform glfw)
+    //
+
+    uint32_t caps, caps2, caps3, caps4;
+    uint32_t reserved2;
+} DDSHeader;
+
+enum DDSFlag {
+    DDS_CAPS,
+};
+
+PLbool _plDDSFormatCheck(FILE *fin) {
+    plFunctionStart();
+
+    rewind(fin);
+
+    PLchar ident[4];
+    fread(ident, sizeof(PLchar), 4, fin);
+
+    return (PLbool)(strncmp(ident, "DDS", 3) == 0);
+
+    plFunctionEnd();
+}
+
+PLresult _plLoadDDSImage(FILE *fin, PLImage *out) {
+    plFunctionStart();
+
+    DDSHeader header;
+    memset(&header, 0, sizeof(DDSHeader));
+    if(fread(&header, sizeof(DDSHeader), 1, fin) != 1) {
+        return PL_RESULT_FILEREAD;
+    }
+
+    memset(out, 0, sizeof(PLImage));
+
+    out->width = header.width;
+    out->height = header.height;
+
+    return PL_RESULT_SUCCESS;
+
+    plFunctionEnd();
+}

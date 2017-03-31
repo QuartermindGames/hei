@@ -88,9 +88,14 @@ void _plDebugVector3D(PLVector3D *v, PLVector3D *v3) {
     }
 
     printf("%s %s %s\n", plPrintVector3D(*v), plPrintVector3D(v2), plPrintVector3D(*v3));
+
+    plAddVector3D(v, v2);
+
+    printf("%s (including %s)\n", plPrintVector3D(*v), plPrintVector3D(v2));
 }
 
 void _plDebugMath(void) {
+plFunctionStart();
 
     PLVector3D v1, v2;
     _plDebugVector3D(&v1, &v2);
@@ -117,6 +122,8 @@ void _plDebugMath(void) {
     printf("%s", plPrintColour(red));
     printf("%s", plPrintColour(green));
     printf("%s", plPrintColour(blue));
+
+    plFunctionEnd();
 }
 
 #endif

@@ -198,9 +198,33 @@ plSetErrorFunction(PL_FUNCTION);
 #endif
 #define pFUNCTION_END   }
 
-#define plFunctionStart()    \
-    plResetError(); plSetErrorFunction(PL_FUNCTION)
+// C Exceptions, Inspired by the following
+// http://www.di.unipi.it/~nids/docs/longjump_try_trow_catch.html
+
+#include <setjmp.h>
+
+#if 1
+
+#define plFunctionStart()
 #define plFunctionEnd()
+
+#else
+
+#ifdef __cplusplus
+
+    plFunctionStart() try { \
+        plResetError(); plSetErrorFunction(PL_FUNCTION)
+    plFunctionEnd() catch(...) { }
+
+#else
+
+#define plFunctionStart() do { jmp_buf ex_buf__; if(!setjmp(ex_buf__)) { \
+    plResetError(); plSetErrorFunction(PL_FUNCTION)
+#define plFunctionEnd() } else { } } } while(0)
+
+#endif
+
+#endif
 
 PL_EXTERN_C
 
