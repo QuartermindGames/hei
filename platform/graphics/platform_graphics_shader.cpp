@@ -111,7 +111,7 @@ ShaderUniformType _plTranslateGLUniformType(unsigned int type) {
 Shader::Shader(ShaderType type, std::string path) : type_(type) {
     PLuint ntype = _plTranslateShaderType(type_);
     if(ntype == SHADER_INVALID_TYPE) {
-        std::runtime_error("invalid shader type received!");
+        throw std::runtime_error("invalid shader type received!");
     }
 
 #if defined(PL_MODE_OPENGL)

@@ -104,5 +104,7 @@ PL_EXTERN void plSetMeshVertexColour(PLMesh *mesh, PLuint index, PLColour colour
 PL_EXTERN void plUploadMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawMesh(PLMesh *mesh);
+PL_EXTERN void plDrawRectangle(PLint x, PLint y, PLuint width, PLuint height);
+PL_EXTERN void plDrawTriangle(PLint x, PLint y, PLuint width, PLuint height);
 
 PL_EXTERN_C_END

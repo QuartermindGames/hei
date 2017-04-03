@@ -2,54 +2,6 @@
 #include "platform_graphics.h"
 #include "platform_filesystem.h"
 
-void plSetupViewport(PLViewport *viewport, PLint x, PLint y, PLuint width, PLuint height) {
-    memset(viewport, 0, sizeof(PLViewport));
-
-    plSetViewportPosition(viewport, x, y);
-    plSetViewportSize(viewport, width, height);
-}
-
-void plSetViewportPosition(PLViewport *viewport, PLint x, PLint y) {
-    if((viewport->x == x) && (viewport->y == y)) {
-        return;
-    }
-
-    viewport->x = x;
-    viewport->y = y;
-
-    // todo, update children
-}
-
-void plSetViewportSize(PLViewport *viewport, PLuint width, PLuint height) {
-    if((viewport->width == width) && (viewport->height == height)) {
-        return;
-    }
-
-    if(width == 0) {
-        width = 1;
-    }
-
-    if(height == 0) {
-        height = 1;
-    }
-
-    viewport->width = width;
-    viewport->height = height;
-
-    // todo, update camera fov
-}
-
-void plSetCurrentViewport(PLViewport *viewport) {
-    if(!viewport || (pl_graphics_state.current_viewport == viewport)) {
-        return;
-    }
-
-    plViewport(viewport->x, viewport->y, viewport->width, viewport->height);
-    plScissor(viewport->x, viewport->y, viewport->width, viewport->height);
-
-    pl_graphics_state.current_viewport = viewport;
-}
-
 #if 0
 #define PL_PATH_SCREENSHOTS "./screenshots" // todo, this SHOULDN'T be hardcoded like this :(
 

@@ -329,6 +329,10 @@ static PL_INLINE void plClearVector3D(PLVector3D *v) {
     memset(v, 0, sizeof(PLVector3D));
 }
 
+PL_INLINE static PLbool plCompareVector3D(PLVector3D v, PLVector3D v2) {
+    return ((v.x == v2.x) && (v.y == v2.y) && (v.z == v2.z));
+}
+
 static PL_INLINE PLVector3D plVector3DCrossProduct(PLVector3D v, PLVector3D v2) {
       return plCreateVector3D(
               v.y * v2.z - v.z * v2.y,
@@ -730,6 +734,16 @@ typedef struct PLQuaternion {
 
 #endif
 } PLQuaternion;
+
+// Bounding Boxes
+
+typedef struct PLBBox3D {
+    PLVector3D mins, maxs;
+} PLBBox3D;
+
+typedef struct PLBBox2D {
+    PLVector2D mins, maxs;
+} PLBBox2D;
 
 // Randomisation
 

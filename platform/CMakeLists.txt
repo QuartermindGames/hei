@@ -30,6 +30,9 @@ project(platform)
 file(
         GLOB PLATFORM_SOURCE_FILES
         *.cpp *.c
+
+        graphics/*.*
+
         include/*.h
         )
 

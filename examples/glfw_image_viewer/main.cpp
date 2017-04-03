@@ -82,10 +82,12 @@ int main(int argc, char *argv[]) {
 
     plEnableGraphicsStates(PL_CAPABILITY_DEPTHTEST);
 
-    // An example of setting up a viewport.
-    PLViewport viewport;
-    plSetupViewport(&viewport, 0, 0, width, height);
-    plSetCurrentViewport(&viewport);
+    PLCamera *camera = plCreateCamera();
+    if(!camera) {
+        plMessageBox(TITLE, "Failed to create camera!");
+        return -1;
+    }
+    camera->mode = PL_CAMERAMODE_ORTHOGRAPHIC;
 
     // Create a texture slot for our new texture.
     PLTexture *image_texture = plCreateTexture();
@@ -134,11 +136,10 @@ int main(int argc, char *argv[]) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
         // draw stuff start
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(0, width, height, 0, 0, 1);
+        plSetupCamera(camera);
 
         plDrawMesh(cube);
+        plDrawRectangle(0, 0, width / 2, height / 2);
         // draw stuff end
 
         glfwSwapBuffers(window);
@@ -147,6 +148,7 @@ int main(int argc, char *argv[]) {
 
     plDeleteTexture(image_texture, true);
     plDeleteMesh(cube);
+    plDeleteCamera(camera);
 
     glfwTerminate();
 
