@@ -40,13 +40,23 @@ PLCamera *plCreateCamera(void) {
     memset(camera, 0, sizeof(PLCamera));
     camera->fov     = 90.f;
     camera->mode    = PL_CAMERAMODE_PERSPECTIVE;
-    camera->width   = PL_CAMERA_DEFAULT_WIDTH;
-    camera->height  = PL_CAMERA_DEFAULT_HEIGHT;
+
+    /*  XY * * * * W
+     *  *
+     *  *
+     *  *
+     *  *
+     *  H
+     */
+    camera->viewport.width   = PL_CAMERA_DEFAULT_WIDTH;
+    camera->viewport.height  = PL_CAMERA_DEFAULT_HEIGHT;
 
     camera->bounds.mins = plCreateVector3D(
             -PL_CAMERA_DEFAULT_BOUNDS, -PL_CAMERA_DEFAULT_BOUNDS, -PL_CAMERA_DEFAULT_BOUNDS);
     camera->bounds.maxs = plCreateVector3D(
             PL_CAMERA_DEFAULT_BOUNDS, PL_CAMERA_DEFAULT_BOUNDS, PL_CAMERA_DEFAULT_BOUNDS);
+
+    return camera;
 }
 
 void plDeleteCamera(PLCamera *camera) {
@@ -62,8 +72,8 @@ void plSetupCamera(PLCamera *camera) {
         return;
     }
 
-    plViewport(camera->x, camera->y, camera->width, camera->height);
-    plScissor(camera->x, camera->y, camera->width, camera->height);
+    plViewport(camera->viewport.x, camera->viewport.y, camera->viewport.width, camera->viewport.height);
+    plScissor(camera->viewport.x, camera->viewport.y, camera->viewport.width, camera->viewport.height);
 
     // todo, modernize...
 
@@ -78,7 +88,7 @@ void plSetupCamera(PLCamera *camera) {
             break;
         }
         case PL_CAMERAMODE_ORTHOGRAPHIC: {
-            glOrtho(0, camera->width, camera->height, 0, 0, 1000);
+            glOrtho(0, camera->viewport.width, camera->viewport.height, 0, 0, 1000);
             break;
         }
         case PL_CAMERAMODE_ISOMETRIC: {
@@ -95,18 +105,6 @@ void plSetupCamera(PLCamera *camera) {
         }
     }
 #endif
-}
-
-// Simplistic camera movement with interpolation.
-void plMoveCamera(PLCamera *camera, PLVector3D position) {
-
-    PLVector3D vec_dist = position;
-    plSubtractVector3D(&vec_dist, camera->position);
-    float dist = plVector3DLength(vec_dist);
-    if(dist <= 0) {
-        return;
-    }
-    // something something, todo
 }
 
 void plSetCameraPosition(PLCamera *camera, PLVector3D position) {

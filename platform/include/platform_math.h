@@ -745,6 +745,11 @@ typedef struct PLBBox2D {
     PLVector2D mins, maxs;
 } PLBBox2D;
 
+typedef struct PLRectangle {
+    PLint x, y;
+    PLuint width, height;
+} PLRectangle;
+
 // Randomisation
 
 // http://stackoverflow.com/questions/7978759/generate-float-random-values-also-negative

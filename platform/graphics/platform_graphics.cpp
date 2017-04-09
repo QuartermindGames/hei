@@ -1031,57 +1031,45 @@ void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
 /*===========================
 	LIGHTING
 ===========================*/
-#if 0
-void plApplyLighting(PLDraw *object, PLLight *light, PLVector3f position) {
-#if 0
-    // Calculate the distance.
-    PLVector3f distvec = { 0 };
-    plVectorSubtract3fv(position, light->position, distvec);
-    float distance = (light->radius - plLengthf(distvec)) / 100.0f;
 
-    for(PLuint i = 0; i < object->numverts; i++)
-    {
-        float x = object->vertices[i].normal[0];
-        float y = object->vertices[i].normal[1];
-        float z = object->vertices[i].normal[2];
-
-        float angle = (distance * ((x * distvec[0]) + (y * distvec[1]) + (z * distvec[2])));
-        if(angle < 0)
-            object->vertices[i].colour.Clear();
-        else
-        {
-            object->vertices[i].colour[PL_RED]      = light->colour[PL_RED] * angle;
-            object->vertices[i].colour[PL_GREEN]    = light->colour[PL_GREEN] * angle;
-            object->vertices[i].colour[PL_BLUE]     = light->colour[PL_BLUE] * angle;
-        }
-
-        /*
-        x = Object->Vertices_normalStat[count].x;
-        y = Object->Vertices_normalStat[count].y;
-        z = Object->Vertices_normalStat[count].z;
-
-        angle = (LightDist*((x * Object->Spotlight.x) + (y * Object->Spotlight.y) + (z * Object->Spotlight.z) ));
-        if (angle<0 )
-        {
-        Object->Vertices_screen[count].r = 0;
-        Object->Vertices_screen[count].b = 0;
-        Object->Vertices_screen[count].g = 0;
-        }
-        else
-        {
-        Object->Vertices_screen[count].r = Object->Vertices_local[count].r * angle;
-        Object->Vertices_screen[count].b = Object->Vertices_local[count].b * angle;
-        Object->Vertices_screen[count].g = Object->Vertices_local[count].g * angle;
-        }
-        */
+PLLight *plCreateLight(void) {
+    PLLight *light = (PLLight*)calloc(sizeof(PLLight), 1);
+    if(!light) {
+        plGraphicsLog("Failed to create light!\n");
+        return NULL;
     }
-#endif
+
+    memset(light, 0, sizeof(PLLight));
+
+    pl_graphics_state.num_lights++;
+    light->colour = plCreateColour4b(255, 255, 255, 255);
+    light->radius = 128.f;
+    light->type = PL_LIGHT_OMNI;
+
+    return light;
 }
-#endif
+
+void plDeleteLight(PLLight *light) {
+    if(!light) {
+        return;
+    }
+
+    pl_graphics_state.num_lights--;
+    free(light);
+}
 
 /*===========================
 	UTILITY FUNCTIONS
 ===========================*/
+
+#if 0
+void plScreenshot(PLViewport *viewport, const PLchar *path) {
+    PLbyte *buffer = (PLbyte*)calloc(viewport->height * viewport->width * 3, sizeof(PLbyte));
+    glReadPixels(viewport->x, viewport->y, viewport->width, viewport->height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+
+    free(buffer);
+}
+#endif
 
 void plSetDefaultGraphicsState(void) {
     plSetClearColour(plCreateColour4b(PL_COLOUR_BLACK));
@@ -1112,11 +1100,6 @@ void plViewport(PLint x, PLint y, PLuint width, PLuint height) {
 
 #if defined (PL_MODE_OPENGL)
     glViewport(x, y, width, height);
-
-    pl_graphics_state.viewport_x = x;
-    pl_graphics_state.viewport_y = y;
-    pl_graphics_state.viewport_width = width;
-    pl_graphics_state.viewport_height = height;
 #elif defined (VL_MODE_DIRECT3D)
     D3D11_VIEWPORT viewport;
     memset(&viewport, 0, sizeof(D3D11_VIEWPORT));
@@ -1128,6 +1111,11 @@ void plViewport(PLint x, PLint y, PLuint width, PLuint height) {
 
     vl_d3d_context->lpVtbl->RSSetViewports(vl_d3d_context, 1, &viewport);
 #endif
+
+    pl_graphics_state.viewport_x        = x;
+    pl_graphics_state.viewport_y        = y;
+    pl_graphics_state.viewport_width    = width;
+    pl_graphics_state.viewport_height   = height;
 }
 
 void plScissor(PLint x, PLint y, PLuint width, PLuint height) {

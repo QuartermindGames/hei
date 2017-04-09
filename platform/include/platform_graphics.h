@@ -280,7 +280,6 @@ PL_EXTERN_C_END
 
 #include "platform_graphics_shader.h"
 #include "platform_graphics_camera.h"
-#include "platform_graphics_viewport.h"
 
 /////////////////////////////////////////////////////
 
@@ -293,11 +292,7 @@ typedef struct PLGraphicsState {
     PLuint current_capabilities;    // Enabled capabilities.
     PLuint current_textureunit;
 
-    // Viewport
-
-    PLViewport *current_viewport;
-
-    // Texture states
+    // Textures
 
     PLTextureMappingUnit *tmu;
 
@@ -315,6 +310,10 @@ typedef struct PLGraphicsState {
     PLuint hw_maxtexturesize;
     PLuint hw_maxtextureunits;
     PLuint hw_maxtextureanistropy;
+    
+    // Lighting
+    
+    PLuint num_lights;
 
     ////////////////////////////////////////
 

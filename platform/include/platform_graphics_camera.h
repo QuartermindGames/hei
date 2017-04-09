@@ -41,8 +41,7 @@ typedef struct PLCamera {
     PLuint mode;
 
     // Viewport
-    PLint x, y;
-    PLuint width, height;
+    PLRectangle viewport;
 
     PLVector3D angles, position;
 

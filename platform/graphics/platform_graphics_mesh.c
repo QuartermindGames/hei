@@ -99,6 +99,59 @@ PLuint _plTranslateDrawMode(PLDrawMode mode) {
 #endif
 }
 
+void _plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3D position) {
+    PLVector3D distvec = position;
+    plSubtractVector3D(&distvec, light->position);
+    PLfloat distance = (light->radius - plVector3DLength(distvec)) / 100.f;
+
+    for(PLuint i = 0; i < mesh->numverts; i++) {
+    }
+
+#if 0
+    // Calculate the distance.
+    PLVector3f distvec = { 0 };
+    plVectorSubtract3fv(position, light->position, distvec);
+    float distance = (light->radius - plLengthf(distvec)) / 100.0f;
+
+    for(PLuint i = 0; i < object->numverts; i++)
+    {
+        float x = object->vertices[i].normal[0];
+        float y = object->vertices[i].normal[1];
+        float z = object->vertices[i].normal[2];
+
+        float angle = (distance * ((x * distvec[0]) + (y * distvec[1]) + (z * distvec[2])));
+        if(angle < 0)
+            object->vertices[i].colour.Clear();
+        else
+        {
+            object->vertices[i].colour[PL_RED]      = light->colour[PL_RED] * angle;
+            object->vertices[i].colour[PL_GREEN]    = light->colour[PL_GREEN] * angle;
+            object->vertices[i].colour[PL_BLUE]     = light->colour[PL_BLUE] * angle;
+        }
+
+        /*
+        x = Object->Vertices_normalStat[count].x;
+        y = Object->Vertices_normalStat[count].y;
+        z = Object->Vertices_normalStat[count].z;
+
+        angle = (LightDist*((x * Object->Spotlight.x) + (y * Object->Spotlight.y) + (z * Object->Spotlight.z) ));
+        if (angle<0 )
+        {
+        Object->Vertices_screen[count].r = 0;
+        Object->Vertices_screen[count].b = 0;
+        Object->Vertices_screen[count].g = 0;
+        }
+        else
+        {
+        Object->Vertices_screen[count].r = Object->Vertices_local[count].r * angle;
+        Object->Vertices_screen[count].b = Object->Vertices_local[count].b * angle;
+        Object->Vertices_screen[count].g = Object->Vertices_local[count].g * angle;
+        }
+        */
+    }
+#endif
+}
+
 void _plDrawArrays(PLPrimitive mode, PLuint first, PLuint count) {
     if ((count == 0) || (first > count)) {
         return;
@@ -132,7 +185,7 @@ PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, PLuint num_tris, PL
     }
 
     PLuint umode = _plTranslateDrawMode(mode);
-    if(!umode) {
+    if(!umode && (mode != PL_DRAW_IMMEDIATE)) {
         plSetError("Invalid/unsupported draw mode! (%d)\n", mode);
         return NULL;
     }
@@ -166,7 +219,9 @@ PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, PLuint num_tris, PL
     }
 
 #if defined(PL_MODE_OPENGL) && defined(_PL_USE_VERTEX_BUFFER_OBJECTS)
-    glGenBuffers(1, &mesh->id[_PL_MESH_VERTICES]);
+    if(mode != PL_DRAW_IMMEDIATE) {
+        glGenBuffers(1, &mesh->id[_PL_MESH_VERTICES]);
+    }
 #endif
 
     return mesh;
@@ -191,11 +246,6 @@ void plDeleteMesh(PLMesh *mesh) {
 
 void plClearMesh(PLMesh *mesh) {
     plFunctionStart();
-
-    if(!mesh) {
-        plSetError("Invalid mesh!\n");
-        return;
-    }
 
     // Reset the data contained by the mesh, if we're going to begin a new draw.
     memset(mesh->vertices, 0, sizeof(PLVertex) * mesh->numverts);
@@ -238,11 +288,6 @@ void plSetMeshVertexST(PLMesh *mesh, PLuint index, PLfloat s, PLfloat t) {
 void plSetMeshVertexSTv(PLMesh *mesh, PLbyte unit, PLuint index, PLuint size, const PLfloat *st) {
     plFunctionStart();
 
-    if(!mesh) {
-
-        abort();
-    }
-
     size += index;
     if(size > mesh->numverts) {
         size -= (size - mesh->numverts);
@@ -263,10 +308,6 @@ void plSetMeshVertexColour(PLMesh *mesh, PLuint index, PLColour colour) {
 void plUploadMesh(PLMesh *mesh) {
     plFunctionStart();
 
-    if(!mesh) {
-        return;
-    }
-
 #if defined(PL_MODE_OPENGL) && defined(_PL_USE_VERTEX_BUFFER_OBJECTS)
     if((mesh->mode == PL_DRAW_IMMEDIATE) || (mesh->primitive == PL_PRIMITIVE_QUADS)) {
         // todo, eventually just convert quad primitives to a triangle strip or something...
@@ -280,34 +321,15 @@ void plUploadMesh(PLMesh *mesh) {
 }
 
 void plDrawMesh(PLMesh *mesh) {
-    if(!mesh || !mesh->numverts) {
+    if(!mesh->numverts) {
         return;
     }
 
 #if defined(PL_MODE_OPENGL) && (defined(PL_MODE_OPENGL_CORE) || defined(_PL_USE_VERTEX_BUFFER_OBJECTS))
-    if(mesh->primitive != PL_PRIMITIVE_QUADS) {
-        glBindBuffer(GL_ARRAY_BUFFER, mesh->id[_PL_MESH_VERTICES]);
-
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-        if (mesh->primitive == PL_PRIMITIVE_TRIANGLES) {
-            _plDrawElements(
-                    mesh->primitive,
-                    mesh->numtriangles * 3,
-                    GL_UNSIGNED_BYTE,
-                    mesh->indices
-            );
-        } else {
-            _plDrawArrays(mesh->primitive, 0, mesh->numverts);
-        }
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-#else
-#if 0
+    if(mesh->mode == PL_DRAW_IMMEDIATE) {
+#if 1
         glBegin(_plTranslatePrimitiveMode(mesh->primitive));
-        for(unsigned int i = 0; i < mesh->numverts; i++) {
+        for(PLuint i = 0; i < mesh->numverts; i++) {
             glVertex3f(mesh->vertices[i].position.x, mesh->vertices[i].position.y, mesh->vertices[i].position.z);
             glTexCoord2f(mesh->vertices[i].st[0].x, mesh->vertices[i].st[0].y);
             glColor3ub(mesh->vertices[i].colour.r, mesh->vertices[i].colour.g, mesh->vertices[i].colour.b);
@@ -352,6 +374,27 @@ void plDrawMesh(PLMesh *mesh) {
             }
         }
 #endif
+    } else if(mesh->primitive != PL_PRIMITIVE_QUADS) {
+        glBindBuffer(GL_ARRAY_BUFFER, mesh->id[_PL_MESH_VERTICES]);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+        if (mesh->primitive == PL_PRIMITIVE_TRIANGLES) {
+            _plDrawElements(
+                    mesh->primitive,
+                    mesh->numtriangles * 3,
+                    GL_UNSIGNED_BYTE,
+                    mesh->indices
+            );
+        } else {
+            _plDrawArrays(mesh->primitive, 0, mesh->numverts);
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+#else
+
 #endif
 }
 
@@ -401,15 +444,17 @@ void plDraw(PLDraw *draw) {
 
 // Utility Functions
 
-// Draw plain rectangle.
-void plDrawRectangle(PLint x, PLint y, PLuint width, PLuint height) {
-    static PLMesh *mesh = NULL;
+void plCreateSphereMesh() {}
+void plCreateCubeMesh() {}
+
+PLMesh *plCreateRectangleMesh(PLint x, PLint y, PLuint width, PLuint height) {
+    PLMesh *mesh = plCreateMesh(
+            PL_PRIMITIVE_TRIANGLE_STRIP,
+            PL_DRAW_IMMEDIATE, // todo, use dynamic!!
+            2, 4
+    );
     if(!mesh) {
-        mesh = plCreateMesh(
-                PL_PRIMITIVE_TRIANGLE_STRIP,
-                PL_DRAW_IMMEDIATE, // todo, use dynamic!!
-                2, 4
-        );
+        return NULL;
     }
 
     plClearMesh(mesh);
@@ -419,24 +464,27 @@ void plDrawRectangle(PLint x, PLint y, PLuint width, PLuint height) {
     plSetMeshVertexPosition2f(mesh, 3, x + width, y);
     plUploadMesh(mesh);
 
-    plDrawMesh(mesh);
+    return mesh;
 }
 
-void plDrawTriangle(PLint x, PLint y, PLuint width, PLuint height) {
-    static PLMesh *mesh = NULL;
+PLMesh *plCreateTriangleMesh(PLint x, PLint y, PLuint width, PLuint height) {
+    PLMesh *mesh = plCreateMesh(
+            PL_PRIMITIVE_TRIANGLE_FAN,
+            PL_DRAW_IMMEDIATE, // todo, use dynamic!!
+            1, 3
+    );
     if(!mesh) {
-        mesh = plCreateMesh(
-                PL_PRIMITIVE_TRIANGLE_FAN,
-                PL_DRAW_IMMEDIATE, // todo, use dynamic!!
-                1, 3
-        );
+        return NULL;
     }
 
     plClearMesh(mesh);
     plSetMeshVertexPosition2f(mesh, 0, x, y + height);
+    plSetMeshVertexColour(mesh, 0, plCreateColour4b(255, 0, 0, 255));
     plSetMeshVertexPosition2f(mesh, 1, x + width / 2, x);
+    plSetMeshVertexColour(mesh, 1, plCreateColour4b(0, 255, 0, 255));
     plSetMeshVertexPosition2f(mesh, 2, x + width, y + height);
+    plSetMeshVertexColour(mesh, 2, plCreateColour4b(0, 0, 255, 255));
     plUploadMesh(mesh);
 
-    plDrawMesh(mesh);
+    return mesh;
 }

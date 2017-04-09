@@ -46,8 +46,8 @@ typedef struct PLModelFrame {
 
 // Static animated mesh.
 typedef struct PLStaticModel {
-    unsigned int num_triangles;
-    unsigned int num_vertices;
+    PLuint num_triangles;
+    PLuint num_vertices;
 
     PLPrimitive primitive;
 
@@ -56,9 +56,9 @@ typedef struct PLStaticModel {
 
 // Per-vertex animated mesh.
 typedef struct PLAnimatedModel {
-    unsigned int num_triangles;
-    unsigned int num_vertices;
-    unsigned int num_frames;
+    PLuint num_triangles;
+    PLuint num_vertices;
+    PLuint num_frames;
 
     PLPrimitive primitive;
 
@@ -67,8 +67,8 @@ typedef struct PLAnimatedModel {
 
 // Mesh with bone structure.
 typedef struct PLSkeletalModel {
-    unsigned int num_triangles;
-    unsigned int num_vertices;
+    PLuint num_triangles;
+    PLuint num_vertices;
 
     PLPrimitive primitive;
 
@@ -82,15 +82,15 @@ PL_EXTERN_C
 
 // Static
 PLStaticModel *plCreateStaticModel(void);
-PLStaticModel *plLoadStaticModel(const char *path);
+PLStaticModel *plLoadStaticModel(const PLchar *path);
 void plDeleteStaticModel(PLStaticModel *model);
 
 // Animated
 PLAnimatedModel *plCreateAnimatedModel(void);
-PLAnimatedModel *plLoadAnimatedModel(const char *path);
+PLAnimatedModel *plLoadAnimatedModel(const PLchar *path);
 void plDeleteAnimatedModel(PLAnimatedModel *model);
 
-PLAnimatedModel *plLoadU3DModel(const char *path);
+PLAnimatedModel *plLoadU3DModel(const PLchar *path);
 
 // Utility
 void plGenerateStaticModelNormals(PLStaticModel *model);

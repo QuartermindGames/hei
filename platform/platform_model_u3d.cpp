@@ -51,10 +51,10 @@ typedef struct U3DDataHeader_s {
     PLuint32 unused[3];
 } U3DDataHeader;
 
-#define    U3D_FLAG_UNLIT            16
-#define    U3D_FLAG_FLAT            32
-#define    U3D_FLAG_ENVIRONMENT    64
-#define    U3D_FLAG_NEAREST        128
+#define    U3D_FLAG_UNLIT       16
+#define    U3D_FLAG_FLAT        32
+#define    U3D_FLAG_ENVIRONMENT 64
+#define    U3D_FLAG_NEAREST     128
 
 enum U3DType {
     U3D_TYPE_NORMAL,

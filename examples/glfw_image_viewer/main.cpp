@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
     plInitialize(PL_SUBSYSTEM_GRAPHICS);
 
     plSetDefaultGraphicsState();
-    plSetClearColour(PLColour(PL_COLOUR_RED));
+    plSetClearColour(PLColour(PL_COLOUR_BLACK));
 
     plEnableGraphicsStates(PL_CAPABILITY_DEPTHTEST);
 
@@ -88,6 +88,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
     camera->mode = PL_CAMERAMODE_ORTHOGRAPHIC;
+    camera->viewport.width = width; camera->viewport.height = height;
 
     // Create a texture slot for our new texture.
     PLTexture *image_texture = plCreateTexture();
@@ -132,6 +133,12 @@ int main(int argc, char *argv[]) {
 
     plUploadMesh(cube);
 
+    PLMesh *texture_primitive = plCreateTriangleMesh(0, 0, width / 2, height / 2);
+    if(!texture_primitive) {
+        plMessageBox(TITLE, "Failed to create mesh!\n%s", plGetError());
+        return -1;
+    }
+
     while(!glfwWindowShouldClose(window)) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
@@ -139,7 +146,7 @@ int main(int argc, char *argv[]) {
         plSetupCamera(camera);
 
         plDrawMesh(cube);
-        plDrawRectangle(0, 0, width / 2, height / 2);
+        plDrawMesh(texture_primitive);
         // draw stuff end
 
         glfwSwapBuffers(window);
