@@ -44,7 +44,7 @@ void ViewerGLError(int code, const char *msg) {
     plWriteLog(LOG, msg);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char **argv) {
     plClearLog(LOG);
 
     // Load the image up from the HDD.
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 
     glfwMakeContextCurrent(window);
 
-    plInitialize(PL_SUBSYSTEM_GRAPHICS);
+    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS);
 
     plSetDefaultGraphicsState();
     plSetClearColour(PLColour(PL_COLOUR_BLACK));

@@ -122,12 +122,14 @@ PLbool _plDDSFormatCheck(FILE *fin);
 PLbool _plDTXFormatCheck(FILE *fin);
 PLbool _plVTFFormatCheck(FILE *fin);
 PLbool _plTIFFFormatCheck(FILE *fin);
+PLbool _plTIMFormatCheck(FILE *fin);
 
 PLresult _plLoadFTXImage(FILE *fin, PLImage *out);           // Ritual's FTX image format.
 PLresult _plLoadPPMImage(FILE *fin, PLImage *out);           // Portable Pixel Map format.
 PLresult _plLoadDTXImage(FILE *fin, PLImage *out);           // Lithtech's DTX image format.
 PLresult _plLoadVTFImage(FILE *fin, PLImage *out);           // Valve's VTF image format.
 PLresult _plLoadDDSImage(FILE *fin, PLImage *out);
+PLresult _plLoadTIMImage(FILE *fin, PLImage *out);
 PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out);
 
 PLresult _plWriteTIFFImage(const PLImage *image, const PLchar *path);

@@ -82,7 +82,15 @@ PLSubSystem pl_subsystems[]= {
         }
 };
 
-PLresult plInitialize(PLuint subsystems) {
+typedef struct PLArguments {
+    const char *app_name;
+
+    PLuint num_arguments;
+} PLArguments;
+
+PLArguments pl_arguments;
+
+PLresult plInitialize(PLint argc, PLchar **argv, PLuint subsystems) {
     for(PLuint i = 0; i < plArrayElements(pl_subsystems); i++) {
         if(!pl_subsystems[i].active && (subsystems & pl_subsystems[i].subsystem)) {
             if(pl_subsystems[i].InitFunction) {
@@ -96,7 +104,26 @@ PLresult plInitialize(PLuint subsystems) {
         }
     }
 
+    // todo, parse any command-line arguments...
+
+    memset(&pl_arguments, 0, sizeof(PLArguments));
+    pl_arguments.num_arguments = (unsigned int)argc;
+    if(plIsValidString(argv[0])) {
+        pl_arguments.app_name = argv[0];
+    }
+
     return PL_RESULT_SUCCESS;
+}
+
+PLbool plGetCommandLineArgument(const PLchar *arg) {
+    if(pl_arguments.num_arguments < 2) {
+        return false;
+    } else if(!plIsValidString(arg)) {
+        // todo, get current log output and print warning there?
+        return false;
+    }
+
+
 }
 
 void plShutdown(void) {

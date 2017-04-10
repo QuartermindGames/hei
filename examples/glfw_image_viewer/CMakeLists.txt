@@ -25,11 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-project(GLFW_IMAGE_VIEWER)
+project(glfw_image_viewer)
 
 file(GLOB GLFW_IMAGE_VIEWER_SOURCE_FILES *.cpp *.h)
 
-add_executable(GLFW_IMAGE_VIEWER ${GLFW_IMAGE_VIEWER_SOURCE_FILES})
+add_executable(glfw_image_viewer ${GLFW_IMAGE_VIEWER_SOURCE_FILES})
 
-target_include_directories(GLFW_IMAGE_VIEWER PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(GLFW_IMAGE_VIEWER platform glfw)
+target_include_directories(glfw_image_viewer PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(glfw_image_viewer platform glfw)

@@ -177,12 +177,12 @@ typedef enum {
 
 enum {
     PL_SUBSYSTEM_GRAPHICS   = (1 << 0), // Graphics/rendering
-    PL_SUBSYSTEM_IO         = (2 << 0), // Filesystem I/O
-    PL_SUBSYSTEM_IMAGE      = (3 << 0), // Image loaders
-    PL_SUBSYSTEM_LIBRARY    = (4 << 0), // Module/library management
-    PL_SUBSYSTEM_LOG        = (5 << 0), // Logging
-    PL_SUBSYSTEM_MODEL      = (6 << 0), // Model loaders
-    PL_SUBSYSTEM_WINDOW     = (7 << 0), // Windowing
+    PL_SUBSYSTEM_IO         = (1 << 1), // Filesystem I/O
+    PL_SUBSYSTEM_IMAGE      = (1 << 2), // Image loaders
+    PL_SUBSYSTEM_LIBRARY    = (1 << 3), // Module/library management
+    PL_SUBSYSTEM_LOG        = (1 << 4), // Logging
+    PL_SUBSYSTEM_MODEL      = (1 << 5), // Model loaders
+    PL_SUBSYSTEM_WINDOW     = (1 << 6), // Windowing
 };
 
 #if defined(PL_INTERNAL)
@@ -247,7 +247,7 @@ PL_EXTERN_C_END
 
 PL_EXTERN_C
 
-PL_EXTERN PLresult plInitialize(PLuint subsystems);
+PL_EXTERN PLresult plInitialize(PLint argc, PLchar **argv, PLuint subsystems);
 PL_EXTERN void plShutdown(void);
 
 PL_EXTERN void plResetError(void); // Resets the error message to "null", so you can ensure you have the correct message from the library.
