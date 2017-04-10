@@ -33,22 +33,22 @@ For more information, please refer to <http://unlicense.org>
  */
 
 typedef struct TIMHeader {
-    PLuint32 type;
-    PLuint32 offset;
+    uint32_t type;
+    uint32_t offset;
 } TIMHeader;
 
 typedef struct TIMHeader4 {
-    PLuint16 palette_org_x;
-    PLuint16 palette_org_y;
-    PLuint16 palette_colours;
-    PLuint16 num_palettes;
+    uint16_t palette_org_x;
+    uint16_t palette_org_y;
+    uint16_t palette_colours;
+    uint16_t num_palettes;
 } TIMHeader4;
 
 typedef struct TIMImageInfo {
-    PLuint16 org_x;
-    PLuint16 org_y;
-    PLuint16 width;
-    PLuint16 height;
+    uint16_t org_x;
+    uint16_t org_y;
+    uint16_t width;
+    uint16_t height;
 } TIMImageInfo;
 
 enum TIMType {
@@ -58,17 +58,17 @@ enum TIMType {
     TIM_TYPE_24BPP  = 0x03,
 };
 
-#define TIM_IDENT   0x10
+#define TIM_IDENT   16
 
 PLbool _plTIMFormatCheck(FILE *fin) {
     rewind(fin);
 
-    PLuint32 ident;
-    if(fread(&ident, sizeof(PLuint32), 1, fin) != 1) {
+    uint32_t ident;
+    if(fread(&ident, sizeof(uint32_t), 1, fin) != 1) {
         return false;
     }
 
-    return (PLbool)(ident & TIM_IDENT);
+    return (PLbool)(ident == TIM_IDENT);
 }
 
 PLresult _plLoadTIMImage(FILE *fin, PLImage *out) {
@@ -90,9 +90,9 @@ PLresult _plLoadTIMImage(FILE *fin, PLImage *out) {
                 return PL_RESULT_FILEREAD;
             }
 
-            PLbyte palettes[header4.num_palettes][header4.palette_colours];
+            uint32_t palettes[header4.num_palettes][header4.palette_colours];
             for(PLuint i = 0; i < header4.num_palettes; i++) {
-                if(fread(palettes[i], sizeof(PLbyte), header4.palette_colours, fin) != header4.palette_colours) {
+                if(fread(palettes[i], sizeof(uint32_t), header4.palette_colours, fin) != header4.palette_colours) {
                     return PL_RESULT_FILEREAD;
                 }
             }
@@ -109,8 +109,8 @@ PLresult _plLoadTIMImage(FILE *fin, PLImage *out) {
             out->levels = 1;
             // The width of the image depends on its type.
             out->width = (PLuint) (header.type == TIM_TYPE_4BPP ?
-                                   (PLuint32) (image_info.width * 4) :
-                                   (PLuint32) (image_info.width * 2));
+                                   (PLuint) (image_info.width * 4) :
+                                   (PLuint) (image_info.width * 2));
             out->height = image_info.height;
 
             PLuint size = (PLuint)(image_info.width * image_info.height / 2);
