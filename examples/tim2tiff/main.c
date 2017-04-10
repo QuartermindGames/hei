@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     plClearLog(LOG);
 
     PLImage image;
-    PLresult result = plLoadImage("./images/tim/eyes007.tim", &image);
+    PLresult result = plLoadImage("./images/tim/CRATE4.TIM", &image);
     if(result != PL_RESULT_SUCCESS) {
         plWriteLog(LOG, "Failed to load image!\n%s", plGetResultString(result));
         return -1;

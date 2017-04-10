@@ -29,13 +29,13 @@ For more information, please refer to <http://unlicense.org>
 
 #include <tiffio.h>
 
-PLbool _plTIFFFormatCheck(FILE *fin) {
+bool _plTIFFFormatCheck(FILE *fin) {
     rewind(fin);
 
     PLchar ident[2];
     fread(ident, sizeof(PLchar), 2, fin);
 
-    return (PLbool)((strncmp(ident, "II", 2) == 0) || (strncmp(ident, "MM", 2) == 0));
+    return (bool)((strncmp(ident, "II", 2) == 0) || (strncmp(ident, "MM", 2) == 0));
 }
 
 PLresult _plWriteTIFFImage(const PLImage *image, const PLchar *path) {

@@ -36,9 +36,9 @@ enum {
 };
 
 typedef struct PLCamera {
-    PLfloat fov, fovx, fovy;
+    float fov, fovx, fovy;
 
-    PLuint mode;
+    unsigned int mode;
 
     // Viewport
     PLRectangle viewport;

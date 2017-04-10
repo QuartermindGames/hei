@@ -444,7 +444,6 @@ void plDraw(PLDraw *draw) {
 
 // Utility Functions
 
-void plCreateSphereMesh() {}
 void plCreateCubeMesh() {}
 
 PLMesh *plCreateRectangleMesh(PLint x, PLint y, PLuint width, PLuint height) {

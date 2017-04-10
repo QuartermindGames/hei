@@ -95,12 +95,12 @@ PLbyte _plGetDTXFormat(DTXHeader *dtx) {
     return dtx->extra[2];
 }
 
-PLbool _plDTXFormatCheck(FILE *fin) {
+bool _plDTXFormatCheck(FILE *fin) {
     rewind(fin);
 
     // Try reading in the type first, as Lithtech has "resource types" rather than idents.
-    PLint type;
-    if((fread(&type, sizeof(PLint), 1, fin) != 1)) {
+    int type;
+    if((fread(&type, sizeof(int), 1, fin) != 1)) {
         return false;
     }
 

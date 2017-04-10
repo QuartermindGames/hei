@@ -118,11 +118,11 @@ void _plFreeImage(PLImage *image);
 
 PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height);
 
-PLbool _plDDSFormatCheck(FILE *fin);
-PLbool _plDTXFormatCheck(FILE *fin);
-PLbool _plVTFFormatCheck(FILE *fin);
-PLbool _plTIFFFormatCheck(FILE *fin);
-PLbool _plTIMFormatCheck(FILE *fin);
+bool _plDDSFormatCheck(FILE *fin);
+bool _plDTXFormatCheck(FILE *fin);
+bool _plVTFFormatCheck(FILE *fin);
+bool _plTIFFFormatCheck(FILE *fin);
+bool _plTIMFormatCheck(FILE *fin);
 
 PLresult _plLoadFTXImage(FILE *fin, PLImage *out);           // Ritual's FTX image format.
 PLresult _plLoadPPMImage(FILE *fin, PLImage *out);           // Portable Pixel Map format.

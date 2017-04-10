@@ -225,13 +225,13 @@ void _plConvertVTFFormat(PLImage *image, PLuint in) {
     }
 }
 
-PLbool _plVTFFormatCheck(FILE *fin) {
+bool _plVTFFormatCheck(FILE *fin) {
     rewind(fin);
 
     PLchar ident[4];
     fread(ident, sizeof(PLchar), 4, fin);
 
-    return (PLbool)(strncmp(ident, "VTF", 3) == 0);
+    return (bool)(strncmp(ident, "VTF", 3) == 0);
 }
 
 PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {

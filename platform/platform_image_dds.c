@@ -53,7 +53,7 @@ enum DDSFlag {
     DDS_CAPS,
 };
 
-PLbool _plDDSFormatCheck(FILE *fin) {
+bool _plDDSFormatCheck(FILE *fin) {
     plFunctionStart();
 
     rewind(fin);

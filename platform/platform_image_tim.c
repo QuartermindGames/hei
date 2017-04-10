@@ -1,4 +1,3 @@
-
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -37,12 +36,12 @@ typedef struct TIMHeader {
     uint32_t offset;
 } TIMHeader;
 
-typedef struct TIMHeader4 {
+typedef struct TIMPaletteInfo {
     uint16_t palette_org_x;
     uint16_t palette_org_y;
     uint16_t palette_colours;
     uint16_t num_palettes;
-} TIMHeader4;
+} TIMPaletteInfo;
 
 typedef struct TIMImageInfo {
     uint16_t org_x;
@@ -60,7 +59,7 @@ enum TIMType {
 
 #define TIM_IDENT   16
 
-PLbool _plTIMFormatCheck(FILE *fin) {
+bool _plTIMFormatCheck(FILE *fin) {
     rewind(fin);
 
     uint32_t ident;
@@ -68,7 +67,15 @@ PLbool _plTIMFormatCheck(FILE *fin) {
         return false;
     }
 
-    return (PLbool)(ident == TIM_IDENT);
+    return (bool)(ident == TIM_IDENT);
+}
+
+PLresult plWriteTIMImage(const PLImage *image, const char *path) {
+    if(!plIsValidString(path)) {
+        return PL_RESULT_FILEPATH;
+    }
+
+    return PL_RESULT_SUCCESS;
 }
 
 PLresult _plLoadTIMImage(FILE *fin, PLImage *out) {
@@ -85,14 +92,14 @@ PLresult _plLoadTIMImage(FILE *fin, PLImage *out) {
 
         case TIM_TYPE_4BPP:
         case TIM_TYPE_8BPP: {
-            TIMHeader4 header4;
-            if(fread(&header4, sizeof(TIMHeader4), 1, fin) != 1) {
+            TIMPaletteInfo palette_info;
+            if(fread(&palette_info, sizeof(TIMPaletteInfo), 1, fin) != 1) {
                 return PL_RESULT_FILEREAD;
             }
 
-            uint32_t palettes[header4.num_palettes][header4.palette_colours];
-            for(PLuint i = 0; i < header4.num_palettes; i++) {
-                if(fread(palettes[i], sizeof(uint32_t), header4.palette_colours, fin) != header4.palette_colours) {
+            uint16_t palettes[palette_info.num_palettes][palette_info.palette_colours];
+            for(PLuint i = 0; i < palette_info.num_palettes; i++) {
+                if(fread(palettes[i], sizeof(uint16_t), palette_info.palette_colours, fin) != palette_info.palette_colours) {
                     return PL_RESULT_FILEREAD;
                 }
             }
@@ -102,41 +109,72 @@ PLresult _plLoadTIMImage(FILE *fin, PLImage *out) {
             TIMImageInfo image_info;
             if(fread(&image_info, sizeof(TIMImageInfo), 1, fin) != 1) {
                 return PL_RESULT_FILEREAD;
-            } else if(!plIsValidImageSize(image_info.width, image_info.height)) {
+            }
+
+            // The width of the image depends on its type.
+            out->width = (header.type == TIM_TYPE_4BPP ?
+                                   (unsigned int) (image_info.width * 4) :
+                                   (unsigned int) (image_info.width * 2));
+            out->height = image_info.height;
+            if(!out->width || !out->height) {
                 return PL_RESULT_IMAGERESOLUTION;
             }
 
-            out->levels = 1;
-            // The width of the image depends on its type.
-            out->width = (PLuint) (header.type == TIM_TYPE_4BPP ?
-                                   (PLuint) (image_info.width * 4) :
-                                   (PLuint) (image_info.width * 2));
-            out->height = image_info.height;
+            uint32_t size;
+            if(header.type == TIM_TYPE_4BPP) {
+                size = (uint32_t)(out->width * out->height / 2);
+            } else { // 8bpp
+                size = out->width * out->height;
+            }
 
-            PLuint size = (PLuint)(image_info.width * image_info.height / 2);
-            out->data = (PLbyte**)calloc(1, sizeof(PLbyte*));
-            out->data[0] = (PLbyte*)calloc(size, sizeof(PLbyte));
-
-            PLbyte img[size];
-            if(fread(img, sizeof(PLbyte), size, fin) != 1) {
+            uint8_t img[size];
+            if(fread(img, sizeof(uint8_t), size, fin) != size) {
                 _plFreeImage(out);
                 return PL_RESULT_FILEREAD;
             }
 
-            for(PLuint i = 0; i < size; i++) {
-                out->data[0][i] = palettes[0][img[i]];
+            out->size = _plGetImageSize(PL_IMAGEFORMAT_RGB5A1, out->width, out->height);
+            out->levels = 1;
+
+            out->data = (uint8_t**)calloc(out->levels, sizeof(uint8_t*));
+            out->data[0] = (uint8_t*)calloc(out->size, sizeof(uint8_t));
+#if 1
+            for(unsigned int i = 0; i < palette_info.palette_colours; i++) {
+                out->data[0][i] = (uint8_t) (palettes[0][i] & 0x00FF);
             }
+#else
+            if(header.type == TIM_TYPE_4BPP) {
+                for (unsigned int i = 0, k = 0; i < size; i++, k++) {
+                    out->data[0][k] = (uint8_t)palettes[0][(img[i] & 0x0F)]; k++;
+                    out->data[0][k] = (uint8_t)palettes[0][(img[i] & 0xF0) >> 4];
+                }
+            } else { // 8bpp
+
+            }
+#endif
 
             out->format = PL_IMAGEFORMAT_RGB5A1;
+            out->colour_format = PL_COLOURFORMAT_ABGR;
 
             break;
         }
 
         case TIM_TYPE_16BPP:
         case TIM_TYPE_24BPP: {
-            TIMImageInfo image_info;
+            fseek(fin, 4, SEEK_CUR);
 
-            printf("fuck...\n");
+            TIMImageInfo image_info;
+            if(fread(&image_info, sizeof(TIMImageInfo), 1, fin) != 1) {
+                return PL_RESULT_FILEREAD;
+            }
+
+            out->levels = 1;
+
+            out->width = image_info.width;
+            out->height = image_info.height;
+            if(!out->width || !out->height) {
+                return PL_RESULT_IMAGERESOLUTION;
+            }
 
             break;
         }
