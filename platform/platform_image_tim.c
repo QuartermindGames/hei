@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#include <platform_math.h>
 #include "platform_image.h"
 
 /*  http://rewiki.regengedanken.de/wiki/.TIM
@@ -129,27 +130,24 @@ PLresult _plLoadTIMImage(FILE *fin, PLImage *out) {
 
             uint8_t img[size];
             if(fread(img, sizeof(uint8_t), size, fin) != size) {
-                _plFreeImage(out);
                 return PL_RESULT_FILEREAD;
             }
 
-
             out->format = PL_IMAGEFORMAT_RGB5A1;
-            out->colour_format = PL_COLOURFORMAT_ABGR;
             out->size = _plGetImageSize(out->format, out->width, out->height);
             out->levels = 1;
 
             out->data = (uint8_t**)calloc(out->levels, sizeof(uint8_t*));
             out->data[0] = (uint8_t*)calloc(out->size, sizeof(uint8_t));
-#if 1
+#if 1 // copy out the palette...
             for(unsigned int i = 0; i < palette_info.palette_colours; i++) {
-                out->data[0][i] = (uint8_t) (palettes[0][i] & 0x00FF);
+                ((uint16_t**)(out->data))[0][i] = palettes[0][i];
             }
-#else
+#else // each 'pixel' within our image is actually an index...
             if(header.type == TIM_TYPE_4BPP) {
                 for (unsigned int i = 0, k = 0; i < size; i++, k++) {
-                    out->data[0][k] = (uint8_t)palettes[0][(img[i] & 0x0F)]; k++;
-                    out->data[0][k] = (uint8_t)palettes[0][(img[i] & 0xF0) >> 4];
+                    ((uint16_t**)(out->data))[0][k] = palettes[0][(img[i] & 0x0F)]; k++; //out->data[0][k] = (uint8_t)palettes[0][(img[i] & 0x0F)]; k++;
+                    ((uint16_t**)(out->data))[0][k] = palettes[0][(img[i] & 0xF0)];      //out->data[0][k] = (uint8_t)palettes[0][(img[i] & 0xF0) >> 4];
                 }
             } else { // 8bpp
 

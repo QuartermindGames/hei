@@ -126,6 +126,18 @@ PLuint plGetSamplesPerPixel(PLColourFormat format) {
     return 0;
 }
 
+void plConvertImageFormat(PLImage *image, PLColourFormat dest_colour, PLImageFormat dest_pixel) {
+    switch(image->format) {
+        default: {
+            return;
+        }
+
+        case PL_IMAGEFORMAT_RGB5A1: {
+
+        }
+    }
+}
+
 PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height) {
     plFunctionStart();
 

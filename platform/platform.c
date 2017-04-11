@@ -83,8 +83,14 @@ PLSubSystem pl_subsystems[]= {
         }
 };
 
+typedef struct PLArgument {
+    const char *parm;
+
+    void*(*Callback)();
+} PLArgument;
+
 typedef struct PLArguments {
-    const char *app_name;
+    const char *exe_name;
     const char *arguments[256];
 
     unsigned int num_arguments;
@@ -106,12 +112,10 @@ PLresult plInitialize(PLint argc, PLchar **argv, PLuint subsystems) {
         }
     }
 
-    // todo, parse any command-line arguments...
-
     memset(&pl_arguments, 0, sizeof(PLArguments));
     pl_arguments.num_arguments = (unsigned int)argc;
     if(plIsValidString(argv[0])) {
-        pl_arguments.app_name = plGetFileName(argv[0]);
+        pl_arguments.exe_name = plGetFileName(argv[0]);
     }
 
     //pl_arguments.arguments = (const char**)calloc(pl_arguments.num_arguments, sizeof(char*));
@@ -126,8 +130,9 @@ PLresult plInitialize(PLint argc, PLchar **argv, PLuint subsystems) {
     return PL_RESULT_SUCCESS;
 }
 
-const char *plGetCommandLine() {
-
+// Returns the name of the current executable.
+const char *plGetExecutableName(void) {
+    return pl_arguments.exe_name;
 }
 
 bool plGetCommandLineArgument(const PLchar *arg) {

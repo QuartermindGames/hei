@@ -30,20 +30,28 @@ For more information, please refer to <http://unlicense.org>
 
 #define LOG "tim2tiff"
 
-#define OUT "./images/out/"__TIME__".tif"
-
 int main(int argc, char **argv) {
     plInitialize(argc, argv, PL_SUBSYSTEM_IMAGE | PL_SUBSYSTEM_LOG);
 
     PLImage image;
+#if 1
     PLresult result = plLoadImage("./images/tim/CRATE4.TIM", &image);
+#else
+    // do by arg
+#endif
     if(result != PL_RESULT_SUCCESS) {
         printf("Failed to load image!\n%s", plGetResultString(result));
         return -1;
     }
 
-    printf("Writing TIFF to %s\n", OUT);
-    plWriteImage(&image, OUT);
+#if 1
+    char opath[PL_SYSTEM_MAX_PATH] = { '\0' };
+    snprintf(opath, sizeof(opath), "./images/out/%d.tif", (int)(time(NULL) % 1000));
+    printf("Writing TIFF to %s\n", opath);
+    plWriteImage(&image, opath);
+#else
+    // do by arg
+#endif
 
     _plFreeImage(&image);
 
