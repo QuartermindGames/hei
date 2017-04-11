@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#include <platform_filesystem.h>
 #include "platform.h"
 
 /*	Generic functions for platform, such as	error handling.	*/
@@ -84,14 +85,15 @@ PLSubSystem pl_subsystems[]= {
 
 typedef struct PLArguments {
     const char *app_name;
+    const char *arguments[256];
 
-    PLuint num_arguments;
+    unsigned int num_arguments;
 } PLArguments;
 
 PLArguments pl_arguments;
 
 PLresult plInitialize(PLint argc, PLchar **argv, PLuint subsystems) {
-    for(PLuint i = 0; i < plArrayElements(pl_subsystems); i++) {
+    for(unsigned int i = 0; i < plArrayElements(pl_subsystems); i++) {
         if(!pl_subsystems[i].active && (subsystems & pl_subsystems[i].subsystem)) {
             if(pl_subsystems[i].InitFunction) {
                 PLresult out = pl_subsystems[i].InitFunction();
@@ -109,13 +111,26 @@ PLresult plInitialize(PLint argc, PLchar **argv, PLuint subsystems) {
     memset(&pl_arguments, 0, sizeof(PLArguments));
     pl_arguments.num_arguments = (unsigned int)argc;
     if(plIsValidString(argv[0])) {
-        pl_arguments.app_name = argv[0];
+        pl_arguments.app_name = plGetFileName(argv[0]);
+    }
+
+    //pl_arguments.arguments = (const char**)calloc(pl_arguments.num_arguments, sizeof(char*));
+    for(unsigned int i = 0; i < pl_arguments.num_arguments; i++) {
+        if(!plIsValidString(argv[i])) {
+            continue;
+        }
+
+        pl_arguments.arguments[i] = argv[i];
     }
 
     return PL_RESULT_SUCCESS;
 }
 
-PLbool plGetCommandLineArgument(const PLchar *arg) {
+const char *plGetCommandLine() {
+
+}
+
+bool plGetCommandLineArgument(const PLchar *arg) {
     if(pl_arguments.num_arguments < 2) {
         return false;
     } else if(!plIsValidString(arg)) {
@@ -123,7 +138,13 @@ PLbool plGetCommandLineArgument(const PLchar *arg) {
         return false;
     }
 
+    for(unsigned int i = 0; i < pl_arguments.num_arguments; i++) {
+        if(!strcmp(pl_arguments.arguments[i], arg)) {
+            return true;
+        }
+    }
 
+    return false;
 }
 
 void plShutdown(void) {

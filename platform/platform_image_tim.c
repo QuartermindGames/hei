@@ -133,7 +133,10 @@ PLresult _plLoadTIMImage(FILE *fin, PLImage *out) {
                 return PL_RESULT_FILEREAD;
             }
 
-            out->size = _plGetImageSize(PL_IMAGEFORMAT_RGB5A1, out->width, out->height);
+
+            out->format = PL_IMAGEFORMAT_RGB5A1;
+            out->colour_format = PL_COLOURFORMAT_ABGR;
+            out->size = _plGetImageSize(out->format, out->width, out->height);
             out->levels = 1;
 
             out->data = (uint8_t**)calloc(out->levels, sizeof(uint8_t*));
@@ -152,9 +155,6 @@ PLresult _plLoadTIMImage(FILE *fin, PLImage *out) {
 
             }
 #endif
-
-            out->format = PL_IMAGEFORMAT_RGB5A1;
-            out->colour_format = PL_COLOURFORMAT_ABGR;
 
             break;
         }
