@@ -109,28 +109,24 @@ support.
 
 // These are usually expected to be defined already, but in-case they're not then we define them here.
 #ifndef BOOL
-#	define BOOL    bool
+#	define BOOL     bool
 #endif
 #ifndef TRUE
-#	define TRUE true
+#	define TRUE     true
 #endif
 #ifndef FALSE
-#	define FALSE false
+#	define FALSE    false
 #endif
 #define PL_BOOL     BOOL
 #define PL_TRUE     TRUE
 #define PL_FALSE    FALSE
 
 typedef int                     PLint;
-typedef char                    PLint8;
-typedef short int               PLint16;
 typedef long int                PLint32;
-typedef long long int           PLint64;
 typedef unsigned int            PLuint;
 typedef unsigned char           PLuint8;
 typedef unsigned short int      PLuint16;
 typedef unsigned long int       PLuint32;
-typedef unsigned long long int  PLuint64;
 typedef char                    PLchar;
 typedef unsigned char           PLuchar, PLbyte;
 #ifdef __cplusplus
@@ -144,7 +140,7 @@ typedef double                  PLdouble;
 typedef short                   PLshort;
 typedef unsigned short          PLushort;
 
-#define plArrayElements(a)  (sizeof(a) / sizeof(*(a)))    // Returns the number of elements within an array.
+#define plArrayElements(a)  (sizeof(a) / sizeof(*(a)))          // Returns the number of elements within an array.
 #define plIsValidString(a)  ((a[0] != '\0') && (a[0] != ' '))
 
 //////////////////////////////////////////////////////////////////

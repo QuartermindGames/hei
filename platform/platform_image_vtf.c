@@ -30,41 +30,41 @@ For more information, please refer to <http://unlicense.org>
 /*  Valve's VTF Format (https://developer.valvesoftware.com/wiki/Valve_Texture_Format)  */
 
 typedef struct __attribute__((packed)) VTFHeader {
-    PLuint version[2];      // Minor followed by major.
+    unsigned int version[2];      // Minor followed by major.
 
-    PLuint headersize;      // I guess this is used to support header alterations?
+    unsigned int headersize;      // I guess this is used to support header alterations?
 
-    PLushort width, height; // Width and height of the texture.
+    unsigned short width, height; // Width and height of the texture.
 
-    PLuint flags;
+    unsigned int flags;
 
-    PLushort frames;        // For animated texture sets.
-    PLushort firstframe;    // Initial frame to start from.
+    unsigned short frames;        // For animated texture sets.
+    unsigned short firstframe;    // Initial frame to start from.
 
-    PLuchar padding0[4];
+    unsigned char padding0[4];
 
-    PLfloat reflectivity[3];
+    float reflectivity[3];
 
-    PLuchar padding1[4];
+    unsigned char padding1[4];
 
-    PLfloat bumpmapscale;
+    float bumpmapscale;
 
-    PLuint highresimageformat;
+    unsigned int highresimageformat;
 
-    PLuchar mipmaps;
+    unsigned char mipmaps;
 
-    PLuint lowresimageformat;
-    PLuchar lowresimagewidth;
-    PLuchar lowresimageheight;
+    unsigned int lowresimageformat;
+    unsigned char lowresimagewidth;
+    unsigned char lowresimageheight;
 } VTFHeader;
 
 typedef struct VTFHeader72 {
-    PLushort depth;
+    unsigned short depth;
 } VTFHeader72;
 
 typedef struct VTFHeader73 {
-    PLuchar padding2[3];
-    PLuint numresources;
+    unsigned char padding2[3];
+    unsigned int numresources;
 } VTFHeader73;
 
 #define VTF_VERSION_MAJOR   7
@@ -144,7 +144,7 @@ enum VTFFormat {
     VTF_FORMAT_UVLX8888
 } VTFFormat;
 
-void _plConvertVTFFormat(PLImage *image, PLuint in) {
+void _plConvertVTFFormat(PLImage *image, unsigned int in) {
     switch(in) {
         case VTF_FORMAT_A8:
             image->format = PL_IMAGEFORMAT_RGB4;
@@ -290,7 +290,7 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
             // todo, support for later VTF versions.
         }
     } else */ {
-        PLuint faces = 1;
+        unsigned int faces = 1;
         if(header.flags & VTF_FLAG_ENVMAP) {
             faces = 6;
         }
@@ -298,12 +298,12 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
         // VTF's typically include a tiny thumbnail image at the start, which we'll skip.
         fseek(fin, header.lowresimagewidth * header.lowresimageheight / 2, SEEK_CUR);
 
-        for (PLuint mipmap = 0; mipmap < header.mipmaps; ++mipmap) {
-            for(PLuint frame = 0; frame < header.frames; ++frame) {
-                for(PLuint face = 0, mipw = 1, miph = 1; face < faces; ++face) {
+        for (unsigned int mipmap = 0; mipmap < header.mipmaps; ++mipmap) {
+            for(unsigned int frame = 0; frame < header.frames; ++frame) {
+                for(unsigned int face = 0, mipw = 1, miph = 1; face < faces; ++face) {
                     // We'll just skip the smaller mipmaps for now, can generate these later.
-                    mipw *= (PLuint)pow(2, mipmap); //(out->width * (mipmap + 1)) / header.mipmaps;
-                    miph *= (PLuint)pow(2, mipmap); //(out->height * (mipmap + 1)) / header.mipmaps;
+                    mipw *= (unsigned int)pow(2, mipmap); //(out->width * (mipmap + 1)) / header.mipmaps;
+                    miph *= (unsigned int)pow(2, mipmap); //(out->height * (mipmap + 1)) / header.mipmaps;
                     PLuint mipsize = _plGetImageSize(out->format, mipw, miph);
                     if(mipmap == (header.mipmaps - 1)) {
                         out->data[0] = (PLbyte*)calloc(mipsize, sizeof(PLbyte));

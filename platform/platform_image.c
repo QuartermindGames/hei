@@ -99,7 +99,7 @@ PLresult plWriteImage(const PLImage *image, const PLchar *path) {
     const PLchar *extension = plGetFileExtension(path);
     if(plIsValidString(extension)) {
         if (!strncmp(extension, PLIMAGE_EXTENSION_TIFF, 3)) {
-            result = _plWriteTIFFImage(image, path);
+            result = plWriteTIFFImage(image, path);
         } else {
             // todo, Write BMP or some other easy-to-go format.
         }

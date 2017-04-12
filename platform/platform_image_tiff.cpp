@@ -38,7 +38,7 @@ bool _plTIFFFormatCheck(FILE *fin) {
     return (bool)((strncmp(ident, "II", 2) == 0) || (strncmp(ident, "MM", 2) == 0));
 }
 
-PLresult _plWriteTIFFImage(const PLImage *image, const PLchar *path) {
+PLresult plWriteTIFFImage(const PLImage *image, const PLchar *path) {
     TIFF *tif = TIFFOpen(path, "w");
     if(!tif) {
         return PL_RESULT_FILEPATH;

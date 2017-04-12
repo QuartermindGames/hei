@@ -132,8 +132,8 @@ PLresult _plLoadDDSImage(FILE *fin, PLImage *out);
 PLresult _plLoadTIMImage(FILE *fin, PLImage *out);
 PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out);
 
-PLresult _plWriteTIFFImage(const PLImage *image, const PLchar *path);
-
 #endif
+
+PLresult plWriteTIFFImage(const PLImage *image, const PLchar *path);
 
 PL_EXTERN_C_END
