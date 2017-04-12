@@ -186,12 +186,8 @@ void plGetUserName(PLchar *out) {
 /*	Scans the given directory.
 	On each found file it calls the given function to handle the file.
 */
-void plScanDirectory(const PLchar *path, const PLchar *extension, void(*Function)(PLchar *filepath)) {
+void plScanDirectory(const char *path, const char *extension, void(*Function)(const char *filepath)) {
     plFunctionStart();
-    if (path[0] == ' ') {
-        plSetError("Invalid path!\n");
-        return;
-    }
 
     char filestring[PL_SYSTEM_MAX_PATH];
 #ifdef _WIN32
@@ -216,21 +212,17 @@ void plScanDirectory(const PLchar *path, const PLchar *extension, void(*Function
         } while(FindNextFile(find, &finddata));
     }
 #else
-    {
-        DIR *dDirectory;
-        struct dirent *dEntry;
-
-        dDirectory = opendir(path);
-        if (dDirectory) {
-            while ((dEntry = readdir(dDirectory))) {
-                if (strstr(dEntry->d_name, extension)) {
-                    sprintf(filestring, "%s/%s", path, dEntry->d_name);
-                    Function(filestring);
-                }
+    DIR *directory = opendir(path);
+    if (directory) {
+        struct dirent *entry;
+        while ((entry = readdir(directory))) {
+            if (strstr(entry->d_name, extension)) {
+                sprintf(filestring, "%s/%s", path, entry->d_name);
+                Function(filestring);
             }
-
-            closedir(dDirectory);
         }
+
+        closedir(directory);
     }
 #endif
     plFunctionEnd();

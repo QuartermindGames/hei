@@ -325,7 +325,8 @@ void plDrawMesh(PLMesh *mesh) {
         return;
     }
 
-#if defined(PL_MODE_OPENGL) && (defined(PL_MODE_OPENGL_CORE) || defined(_PL_USE_VERTEX_BUFFER_OBJECTS))
+#if defined(PL_MODE_OPENGL)
+#if !defined(PL_MODE_OPENGL_CORE) && !defined(_PL_USE_VERTEX_BUFFER_OBJECTS)
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
 #if 1
         glBegin(_plTranslatePrimitiveMode(mesh->primitive));
@@ -375,6 +376,9 @@ void plDrawMesh(PLMesh *mesh) {
         }
 #endif
     } else if(mesh->primitive != PL_PRIMITIVE_QUADS) {
+#else
+    {
+#endif
         glBindBuffer(GL_ARRAY_BUFFER, mesh->id[_PL_MESH_VERTICES]);
 
         glEnableVertexAttribArray(0);
@@ -393,8 +397,6 @@ void plDrawMesh(PLMesh *mesh) {
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
-#else
-
 #endif
 }
 
@@ -449,7 +451,7 @@ void plCreateCubeMesh() {}
 PLMesh *plCreateRectangleMesh(PLint x, PLint y, PLuint width, PLuint height) {
     PLMesh *mesh = plCreateMesh(
             PL_PRIMITIVE_TRIANGLE_STRIP,
-            PL_DRAW_IMMEDIATE, // todo, use dynamic!!
+            PL_DRAW_DYNAMIC, // todo, use dynamic!!
             2, 4
     );
     if(!mesh) {
@@ -469,7 +471,7 @@ PLMesh *plCreateRectangleMesh(PLint x, PLint y, PLuint width, PLuint height) {
 PLMesh *plCreateTriangleMesh(PLint x, PLint y, PLuint width, PLuint height) {
     PLMesh *mesh = plCreateMesh(
             PL_PRIMITIVE_TRIANGLE_FAN,
-            PL_DRAW_IMMEDIATE, // todo, use dynamic!!
+            PL_DRAW_DYNAMIC, // todo, use dynamic!!
             1, 3
     );
     if(!mesh) {

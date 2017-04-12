@@ -257,6 +257,9 @@ PL_EXTERN const PLchar *plGetResultString(PLresult result);
 PL_EXTERN const PLchar * plGetSystemError(void);  // Returns the error message currently given by the operating system.
 PL_EXTERN const PLchar * plGetError(void);        // Returns the last recorded error.
 
+// CL Arguments
+PL_EXTERN const char *plGetCommandLineArgument(const char *arg);
+
 PL_EXTERN_C_END
 
 //////////////////////////////////////////////////////////////////

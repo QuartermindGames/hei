@@ -25,33 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-cmake_minimum_required(VERSION 3.5.1)
+project(hog_loader)
 
-# Set all of our output directories.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
+file(GLOB HOG_SOURCE_FILES *.c *.h)
 
-#option(XENON_COMPILE_TOOLS "Compile Xenon utilities" ON)
+add_executable(hog_loader ${HOG_SOURCE_FILES})
 
-include_directories("${CMAKE_SOURCE_DIR}/include/")           # Base include directories.
-include_directories("${CMAKE_SOURCE_DIR}/platform/include/")  # Platform lib headers get used for everything.
-include_directories("${CMAKE_SOURCE_DIR}/shared/")            # Xenon shared headers.
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-
-add_definitions("-D_DEBUG")
-
-add_subdirectory(platform)
-
-add_subdirectory(examples/image_viewer)
-add_subdirectory(examples/glfw_image_viewer)
-add_subdirectory(examples/tim2tiff)
-add_subdirectory(examples/hog_loader)
-
-#[[
-if(XENON_COMPILE_TOOLS)
-    #add_subdirectory(level)
-    #add_subdirectory(editor)
-endif(XENON_COMPILE_TOOLS)
-]]
+target_include_directories(hog_loader PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(hog_loader platform)

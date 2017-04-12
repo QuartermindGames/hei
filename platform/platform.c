@@ -135,21 +135,21 @@ const char *plGetExecutableName(void) {
     return pl_arguments.exe_name;
 }
 
-bool plGetCommandLineArgument(const PLchar *arg) {
+const char *plGetCommandLineArgument(const char *arg) {
     if(pl_arguments.num_arguments < 2) {
-        return false;
+        return '\0';
     } else if(!plIsValidString(arg)) {
         // todo, get current log output and print warning there?
-        return false;
+        return '\0';
     }
 
     for(unsigned int i = 0; i < pl_arguments.num_arguments; i++) {
         if(!strcmp(pl_arguments.arguments[i], arg)) {
-            return true;
+            return pl_arguments.arguments[i + 1];
         }
     }
 
-    return false;
+    return '\0';
 }
 
 void plShutdown(void) {
