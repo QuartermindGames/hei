@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
         // draw stuff start
         plSetupCamera(camera);
 
-        plDrawMesh(cube);
+        //plDrawMesh(cube);
         plDrawMesh(texture_primitive);
         // draw stuff end
 
