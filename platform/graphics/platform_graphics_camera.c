@@ -77,14 +77,20 @@ void plSetupCamera(PLCamera *camera) {
 
     // todo, modernize...
 
-#if defined(PL_MODE_OPENGL_CORE)
-#elif defined(PL_MODE_OPENGL)
+//#if defined(PL_MODE_OPENGL_CORE)
+
+//#elif defined(PL_MODE_OPENGL)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
     switch(camera->mode) {
         default:
         case PL_CAMERAMODE_PERSPECTIVE: {
+            gluLookAt(
+                    camera->position.x, camera->position.y, camera->position.z,
+                    0, 0, 0,
+                    0, 1, 0
+            );
             break;
         }
         case PL_CAMERAMODE_ORTHOGRAPHIC: {
@@ -104,7 +110,7 @@ void plSetupCamera(PLCamera *camera) {
             break;
         }
     }
-#endif
+//#endif
 }
 
 void plSetCameraPosition(PLCamera *camera, PLVector3D position) {

@@ -32,24 +32,24 @@ void _plShutdownIO(void) {
 }
 
 // Checks whether a file has been modified or not.
-PLbool plIsFileModified(time_t oldtime, const PLchar *path) {
+bool plIsFileModified(time_t oldtime, const char *path) {
     plFunctionStart();
     if (!oldtime) {
         plSetError("Invalid time, skipping check!\n");
-        return PL_FALSE;
+        return false;
     }
 
     struct stat attributes;
     if (stat(path, &attributes) == -1) {
         plSetError("Failed to get file stats!\n");
-        return PL_FALSE;
+        return false;
     }
 
     if (attributes.st_mtime > oldtime) {
-        return PL_TRUE;
+        return true;
     }
 
-    return PL_FALSE;
+    return false;
     plFunctionEnd();
 }
 
@@ -64,7 +64,7 @@ time_t plGetFileModifiedTime(const PLchar *path) {
     plFunctionEnd();
 }
 
-void plLowerCasePath(PLchar *out) {
+void plLowerCasePath(char *out) {
     plFunctionStart();
     for (int i = 0; out[i]; i++) {
         out[i] = (PLchar) tolower(out[i]);
@@ -73,11 +73,11 @@ void plLowerCasePath(PLchar *out) {
 }
 
 // Creates a folder at the given path.
-PLbool plCreateDirectory(const PLchar *path) {
+bool plCreateDirectory(const char *path) {
     plFunctionStart();
 #ifdef _WIN32
     if(CreateDirectory(path, NULL) || (GetLastError() == ERROR_ALREADY_EXISTS))
-        return PL_TRUE;
+        return true;
     else if(GetLastError() == ERROR_PATH_NOT_FOUND)
         plSetError("Failed to find an intermediate directory! (%s)\n", path);
     else    // Assume it already exists.
@@ -87,7 +87,7 @@ PLbool plCreateDirectory(const PLchar *path) {
         struct stat buffer;
         if (stat(path, &buffer) == -1) {
             if (mkdir(path, 0777) == 0)
-                return PL_TRUE;
+                return true;
             else {
                 switch (errno) {
                     case EACCES:
@@ -102,12 +102,11 @@ PLbool plCreateDirectory(const PLchar *path) {
             }
         } else
             // Path already exists, so this is fine.
-            return PL_TRUE;
+            return true;
     }
 #endif
 
-    return PL_FALSE;
-    plFunctionEnd();
+    return false;
 }
 
 // Returns the extension for the file.
@@ -149,10 +148,7 @@ const PLchar *plGetFileName(const PLchar *path) {
     return path;
 }
 
-/*	Returns the name of the systems	current user.
-	TODO:
-		Move this into platform_system
-*/
+// Returns the name of the systems current user.
 void plGetUserName(PLchar *out) {
     plFunctionStart();
 #ifdef _WIN32
@@ -290,21 +286,21 @@ void plSetWorkingDirectory(const char *path) {
 /*	File I/O	*/
 
 // Checks if a file exists or not.
-PLbool plFileExists(const PLchar *path) {
+bool plFileExists(const char *path) {
     struct stat buffer;
-    return (PLbool) (stat(path, &buffer) == 0);
+    return (bool) (stat(path, &buffer) == 0);
 }
 
-PLint plGetLittleShort(FILE *fin) {
-    PLint b1 = fgetc(fin);
-    PLint b2 = fgetc(fin);
-    return (PLshort) (b1 + b2 * 256);
+int16_t plGetLittleShort(FILE *fin) {
+    int b1 = fgetc(fin);
+    int b2 = fgetc(fin);
+    return (int16_t) (b1 + b2 * 256);
 }
 
-PLint plGetLittleLong(FILE *fin) {
-    PLint b1 = fgetc(fin);
-    PLint b2 = fgetc(fin);
-    PLint b3 = fgetc(fin);
-    PLint b4 = fgetc(fin);
+int32_t plGetLittleLong(FILE *fin) {
+    int b1 = fgetc(fin);
+    int b2 = fgetc(fin);
+    int b3 = fgetc(fin);
+    int b4 = fgetc(fin);
     return b1 + (b2 << 8) + (b3 << 16) + (b4 << 24);
 }

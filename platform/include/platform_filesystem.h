@@ -43,20 +43,19 @@ PL_EXTERN const PLchar *plGetFileName(const PLchar *path);
 
 PL_EXTERN void plScanDirectory(const PLchar *path, const PLchar *extension, void(*Function)(const char *filepath));
 
-PL_EXTERN void plLowerCasePath(PLchar *out);
+PL_EXTERN void plLowerCasePath(char *out);
 
-PL_EXTERN PLbool plCreateDirectory(const PLchar *path);
+PL_EXTERN bool plCreateDirectory(const char *path);
 
 // File I/O ...
 
-PL_EXTERN PLbool plFileExists(const PLchar *path);
+PL_EXTERN bool plFileExists(const char *path);
 
-PL_EXTERN PLbool plIsFileModified(time_t oldtime, const PLchar *path);
+PL_EXTERN bool plIsFileModified(time_t oldtime, const char *path);
 
 PL_EXTERN time_t plGetFileModifiedTime(const PLchar *path);
 
-PL_EXTERN PLint plGetLittleShort(FILE *fin);
-
-PL_EXTERN PLint plGetLittleLong(FILE *fin);
+PL_EXTERN int16_t plGetLittleShort(FILE *fin);
+PL_EXTERN int32_t plGetLittleLong(FILE *fin);
 
 PL_EXTERN_C_END

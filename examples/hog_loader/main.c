@@ -30,14 +30,20 @@ For more information, please refer to <http://unlicense.org>
 
 // BEHOLD! The sloppiest application ever written!!
 
-typedef struct FACHeader {
-    uint32_t unknown0[4];
-    uint32_t unknown1; // Number of FACUnknownSection0
+typedef struct FACHeader { // 00000000 00000000 00000000 00000000 0A000000 101E0219 081E3700 4D004200
+    uint32_t blank[4];   // This is always blank
+    uint32_t num_blocks; // Number of FACThingy0s
+    uint32_t unknown2;
+    uint32_t unknown3;
+    uint32_t unknown4;
 } FACHeader;
 
-typedef struct FACUnknownSection0 {
-
-};
+typedef struct FACThingy0 {
+    /* Seems to be some struct that provides an id among some other data... Probably the size of each?
+     * So the id might be 65, further down the file there's a block to correspond to this.
+     */
+    uint32_t crap[8];
+} FACThingy0;
 
 #define LOG "hog_loader"
 
@@ -57,21 +63,34 @@ void load_fac_file(const char *path) {
 
     if(fread(&header, sizeof(FACHeader), 1, file) != 1) {
         PRINT("Invalid file header...\n");
+        goto CLEANUP;
     }
 
-    PRINT("unknown0: %d %d %d %d\n",
-          header.unknown0[0],
-          header.unknown0[1],
-          header.unknown0[2],
-          header.unknown0[3]
-    );
-    PRINT("unknown1: %d\n", header.unknown1);
+    for(int i = 0; i < plArrayElements(header.blank); i++) {
+        if(header.blank[0] != 0) {
+            PRINT("Invalid FAC file!\n");
+            goto CLEANUP;
+        }
+    }
 
+    PRINT("num_blocks: %d\n", header.num_blocks);
+    PRINT("unknown2: %d\n", header.unknown2);
+
+    if(header.num_blocks != 0) {
+        FACThingy0 thingy0[header.num_blocks];
+        if(fread(thingy0, sizeof(FACThingy0), header.num_blocks, file) != header.num_blocks) {
+            PRINT("Invalid thingy size!!\n");
+            goto CLEANUP;
+        }
+        printf("Got thingies!\n");
+    }
+
+    CLEANUP:
     fclose(file);
 }
 
 int main(int argc, char **argv) {
-    plInitialize(argc, argv, PL_SUBSYSTEM_IMAGE | PL_SUBSYSTEM_LOG);
+    plInitialize(argc, argv, PL_SUBSYSTEM_LOG);
 
     plClearLog(LOG);
 

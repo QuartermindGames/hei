@@ -99,6 +99,7 @@ void _plInitOpenGL() {
 
     // todo, write our own replacement for GLEW
 
+#if 0
 #if !defined(PL_MODE_OPENGL_CORE)
     PLuint err = glewInit();
     if (err != GLEW_OK) {
@@ -133,6 +134,7 @@ void _plInitOpenGL() {
             pl_gl_texture_compression_s3tc = PL_TRUE;
         }
     }
+#endif
 #endif
 
     const PLchar *version = _plGetHWVersion();
@@ -626,20 +628,21 @@ PLuint _plTranslateTextureFormat(PLImageFormat format) {
         case PL_IMAGEFORMAT_RGBA4:        return GL_RGBA4;
         case PL_IMAGEFORMAT_RGB5:         return GL_RGB5;
         case PL_IMAGEFORMAT_RGB5A1:       return GL_RGB5_A1;
+#if defined(PL_MODE_OPENGL_CORE)
         case PL_IMAGEFORMAT_RGB565:       return GL_RGB565;
+#endif
         case PL_IMAGEFORMAT_RGB8:         return GL_RGB;
         case PL_IMAGEFORMAT_RGBA8:        return GL_RGBA8;
         case PL_IMAGEFORMAT_RGBA12:       return GL_RGBA12;
         case PL_IMAGEFORMAT_RGBA16:       return GL_RGBA16;
+#if defined(PL_MODE_OPENGL_CORE)
         case PL_IMAGEFORMAT_RGBA16F:      return GL_RGBA16F;
+#endif
 
         case PL_IMAGEFORMAT_RGBA_DXT1:    return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
         case PL_IMAGEFORMAT_RGB_DXT1:     return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         case PL_IMAGEFORMAT_RGBA_DXT3:    return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
         case PL_IMAGEFORMAT_RGBA_DXT5:    return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-#if !defined(PL_MODE_OPENGL_CORE)
-        case PL_IMAGEFORMAT_RGB_FXT1:     return GL_COMPRESSED_RGB_FXT1_3DFX;
-#endif
     }
 #elif defined (VL_MODE_GLIDE)
 #elif defined (VL_MODE_DIRECT3D)
@@ -726,7 +729,7 @@ void plSwizzleTexture(PLTexture *texture, PLint r, PLint g, PLint b, PLint a) {
 
     plBindTexture(texture);
 
-#if defined(PL_MODE_OPENGL)
+#if defined(PL_MODE_OPENGL_CORE)
     if(PL_GL_VERSION(3,3)) {
         GLint swizzle[] = {
                 _plTranslateColourChannel(r),
@@ -759,7 +762,11 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     }
 
     PLuint format = _plTranslateTextureFormat(upload->format);
+#if defined(PL_MODE_OPENGL_CORE)
     glTexStorage2D(GL_TEXTURE_2D, levels, format, upload->width, upload->height);
+#else
+    // todo, upload storage for immediate gl
+#endif
 
     for(PLuint i = 0; i < levels; i++) {
         if (_plIsCompressedTextureFormat(upload->format)) {

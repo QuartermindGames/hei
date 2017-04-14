@@ -43,11 +43,18 @@ For more information, please refer to <http://unlicense.org>
 #if defined (PL_MODE_OPENGL)
 
 #   ifdef __APPLE__
-#       include <OpenGL/gl3.h>
-#       include <OpenGL/gl3ext.h>
+#       if 0
+#           include <OpenGL/gl3.h>
+#           include <OpenGL/gl3ext.h>
 
-#       define VL_MODE_OPENGL_CORE
-#       define PL_MODE_OPENGL_CORE
+#           define VL_MODE_OPENGL_CORE
+#           define PL_MODE_OPENGL_CORE
+
+#       else
+#           include <OpenGL/gl.h>
+#           include <OpenGL/glext.h>
+#           include <OpenGL/glu.h>      // todo, remove me, pls
+#       endif
 #   else
 #	    include <GL/glew.h>
 #   endif

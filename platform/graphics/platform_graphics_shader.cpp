@@ -37,7 +37,9 @@ unsigned int _plTranslateShaderType(ShaderType type) {
     switch(type) {
         case SHADER_VERTEX:      return GL_VERTEX_SHADER;
         case SHADER_FRAGMENT:    return GL_FRAGMENT_SHADER;
+#if defined(PL_MODE_OPENGL_CORE)
         case SHADER_GEOMETRY:    return GL_GEOMETRY_SHADER;
+#endif
 #ifndef __APPLE__
         case SHADER_COMPUTE:     return GL_COMPUTE_SHADER;
 #endif
@@ -228,7 +230,7 @@ void ShaderUniform::Set(double x) {
         return;
     }
 
-#if defined(PL_MODE_OPENGL)
+#if defined(PL_MODE_OPENGL_CORE)
     glUniform1d(id_, x);
 #endif
 }
@@ -342,7 +344,7 @@ void ShaderUniform::Set(unsigned int x) {
         return;
     }
 
-#if defined(PL_MODE_OPENGL)
+#if defined(PL_MODE_OPENGL_CORE)
     glUniform1ui(id_, x);
 #endif
 }
