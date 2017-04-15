@@ -63,7 +63,7 @@ typedef struct __attribute__((packed)) FACBlock {
 
     uint16_t indices[3];    // Vertex indices
     uint16_t normal[3];     // Normals
-    uint16_t texture[2];    // UV coords?
+    uint16_t texture[2];    // UV coords? Texture index?
 
     uint16_t padding;
 
@@ -73,19 +73,26 @@ typedef struct __attribute__((packed)) FACBlock {
     uint32_t unknown4;
 } FACBlock;
 
-typedef struct FACTriangle {
-    // ???????? ???????? ???????? ???????? A0  A1   A2  B0   B1  B2   ???????? ????????
-    // 000000EB 0000023B 00090000 1B001B09 09000700 0B000D00 09000700 0B000D00 5A000000
-    int32_t block0;
-    int32_t block1;
-    int32_t block2;
-    int32_t block3;
+typedef struct __attribute__((packed)) FACTriangle {
 
-    uint16_t indices[3];
-    uint16_t indices1[3]; // again?
+    // ???????? ???????? ????????
+    // 05BA0100 000085D2 1E000000
+    // ???????? ????????     I0   I1  I2   N0  N1   N2  U0   U1
+    // 07040700 04000304 0B000100 02000C00 0B000100 02000C00 62000000 66268901 000002EB
 
-    int32_t block5;
-    int32_t block6;
+    uint32_t unknown0;
+    uint32_t unknown1;
+
+    uint16_t unknown2;
+
+    uint16_t indices[3];    // Vertex indices
+    uint16_t normal[3];     // Normals
+    uint16_t texture[2];    // UV coords? Texture index?
+
+    uint16_t padding;
+
+    int32_t unknown3;
+    int32_t unknown4;
 } FACTriangle;
 
 typedef struct PIGModel {
@@ -145,7 +152,7 @@ void load_fac_file(const char *path) {
     }
 
     // Something unknown dangling after the blocks...
-    fseek(file, 4, SEEK_CUR);
+    fseek(file, 8, SEEK_CUR);
 
     FACTriangle triangles[2048];
     memset(triangles, 0, sizeof(FACTriangle));
@@ -156,9 +163,9 @@ void load_fac_file(const char *path) {
               triangles[i].indices[1],
               triangles[i].indices[2]);
         PRINT("%d : I0(%d) I1(%d) I2(%d)\n", i,
-              triangles[i].indices1[0],
-              triangles[i].indices1[1],
-              triangles[i].indices1[2]);
+              triangles[i].normal[0],
+              triangles[i].normal[1],
+              triangles[i].normal[2]);
     }
 
     model.num_triangles = header.num_blocks + num_triangles;
@@ -217,7 +224,7 @@ void load_fac_file(const char *path) {
 #endif
     }
 
-#if 0
+#if 1
     for(unsigned int i = 0; i < num_triangles; i++, cur_vert++) {
 
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
@@ -260,12 +267,12 @@ void load_fac_file(const char *path) {
         PRINT(" %d 0(%d %d %d) 1(%d %d %d) 2(%d %d %d)\n",
               i,
 
-              model.coords[triangles[i].indices1[0]].x,
-              model.coords[triangles[i].indices1[0]].y,
-              model.coords[triangles[i].indices1[0]].z,
+              model.coords[triangles[i].normal[0]].x,
+              model.coords[triangles[i].normal[0]].y,
+              model.coords[triangles[i].normal[0]].z,
 
-              model.coords[triangles[i].indices1[1]].x,
-              model.coords[triangles[i].indices1[1]].y,
+              model.coords[triangles[i].normal[1]].x,
+              model.coords[triangles[i].normal[1]].y,
               model.coords[triangles[i].indices[1]].z,
 
               model.coords[triangles[i].indices[2]].x,
