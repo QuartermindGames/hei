@@ -314,9 +314,11 @@ void plUploadMesh(PLMesh *mesh) {
         return;
     }
 
+#if defined(PL_MODE_OPENGL_CORE)
     // Fill our buffer with data.
     glBindBuffer(GL_ARRAY_BUFFER, mesh->id[_PL_MESH_VERTICES]);
     glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)sizeof(PLVertex), &mesh->vertices[0].position.x, _plTranslateDrawMode(mesh->mode));
+#endif
 #endif
 }
 

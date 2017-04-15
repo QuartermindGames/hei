@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org>
 // BEHOLD! The sloppiest application ever written!!
 
 typedef struct FACHeader { // 00000000 00000000 00000000 00000000 0A000000 101E0219 081E3700 4D004200
-    uint32_t blank[4];   // This is always blank
+    uint32_t padding[4];   // This is always blank
     uint32_t num_blocks; // Number of FACThingy0s
     uint32_t unknown2;
     uint32_t unknown3;
@@ -66,8 +66,8 @@ void load_fac_file(const char *path) {
         goto CLEANUP;
     }
 
-    for(int i = 0; i < plArrayElements(header.blank); i++) {
-        if(header.blank[0] != 0) {
+    for(int i = 0; i < plArrayElements(header.padding); i++) {
+        if(header.padding[0] != 0) {
             PRINT("Invalid FAC file!\n");
             goto CLEANUP;
         }

@@ -39,32 +39,71 @@ For more information, please refer to <http://unlicense.org>
 #define WIDTH 1024
 #define HEIGHT 768
 
+typedef struct VTXCoord {
+    int16_t x;
+    int16_t y;
+    int16_t z;
+    int16_t padding;
+} VTXCoord;
+
 typedef struct FACHeader {
-    uint32_t blank[4];   // This is always blank
-    uint32_t num_blocks; // Number of FACBlocks
-    uint32_t unknown2;
+    uint32_t padding[4];    // This is always blank
+    uint32_t num_blocks;    // Number of FACBlocks
+    //uint32_t unknown2;
     uint32_t unknown3;
     uint32_t unknown4;
 } FACHeader;
 
-typedef struct FACBlock {
-    /* Seems to be some struct that provides an id among some other data... Probably the size of each?
-     * So the id might be 65, further down the file there's a block to correspond to this.
-     */
-    uint32_t crap[8];
+
+// BLANK    BLANK    BLANK    BLANK    BLOCKS   UNKNOWN      I0   I1  I2
+// 00000000 00000000 00000000 00000000 04000000 19120E1C 01120F00 0E001000
+// NM0 NM1  NM2 UV1  UV2 PAD  UNKNOWN  UNKNOWN  UN  NM0      I0   I1  I2
+// 0F000E00 100025FF 59000000 1A83F81A 00008A4A 19120112 0E1C1300 14000E00
+// 13001400 0E005152 59000000 00000085 000009B8 01120E1C 01121000 0E001400
+typedef struct __attribute__((packed)) FACBlock {
+    uint32_t unknown0;
+
+    uint16_t indices[3];    // Vertex indices
+    uint16_t normal[3];     // Normals
+    uint16_t texture[2];    // UV coords?
+
+    uint16_t padding;
+
+    int32_t unknown1;
+    int32_t unknown2;
 } FACBlock;
 
 typedef struct FACTriangle {
-    // ???????? ???????? ???????? ???????? I0  I1   I2  ?    ?   ?    ???????? ????????
+    // ???????? ???????? ???????? ???????? A0  A1   A2  B0   B1  B2   ???????? ????????
     // 000000EB 0000023B 00090000 1B001B09 09000700 0B000D00 09000700 0B000D00 5A000000
+    int32_t block0;
+    int32_t block1;
+    int32_t block2;
+    int32_t block3;
 
+    uint16_t indices[3];
+    uint16_t indices1[3]; // again?
+
+    int32_t block5;
+    int32_t block6;
 } FACTriangle;
+
+typedef struct PIGModel {
+    VTXCoord coords[2048];
+
+    unsigned int num_vertices;
+    unsigned int num_triangles;
+
+    PLMesh *tri_mesh;
+} PIGModel;
+
+PIGModel model;
 
 void load_fac_file(const char *path) {
     FACHeader header;
     memset(&header, 0, sizeof(FACHeader));
 
-    PRINT("Opening %s\n", path);
+    PRINT("\nOpening %s\n", path);
 
     FILE *file = fopen(path, "r");
     if(!file) {
@@ -74,48 +113,176 @@ void load_fac_file(const char *path) {
 
     if(fread(&header, sizeof(FACHeader), 1, file) != 1) {
         PRINT("Invalid file header...\n");
-        goto CLEANUP;
+        fclose(file);
+        return;
     }
 
-    for(int i = 0; i < plArrayElements(header.blank); i++) {
-        if(header.blank[0] != 0) {
+    for(int i = 0; i < plArrayElements(header.padding); i++) {
+        if(header.padding[0] != 0) {
             PRINT("Invalid FAC file!\n");
-            goto CLEANUP;
+            fclose(file);
+            return;
         }
     }
 
     PRINT("num_blocks: %d\n", header.num_blocks);
-    PRINT("unknown2: %d\n", header.unknown2);
 
+    PRINT("FacBlock Size = %d\n", (int)sizeof(FACBlock));
+
+    FACBlock block[header.num_blocks];
     if(header.num_blocks != 0) {
-        FACBlock thingy0[header.num_blocks];
-        if(fread(thingy0, sizeof(FACBlock), header.num_blocks, file) != header.num_blocks) {
-            PRINT("Invalid thingy size!!\n");
+        if(fread(block, sizeof(FACBlock), header.num_blocks, file) != header.num_blocks) {
+            PRINT("Unexpected block size!\n");
             goto CLEANUP;
         }
-        printf("Got thingies!\n");
+
+        for(unsigned int i = 0; i < header.num_blocks; i++) {
+            PRINT("BLOCK %d\n", i);
+            PRINT("    indices(%d %d %d)\n", block[i].indices[0], block[i].indices[1], block[i].indices[2]);
+            PRINT("    normal(%d %d %d)\n", block[i].normal[0], block[i].normal[1], block[i].normal[2]);
+            PRINT("    uv(%d %d)\n", block[i].texture[0], block[i].texture[1]);
+        }
     }
+
+    // Something unknown dangling after the blocks...
+    fseek(file, 4, SEEK_CUR);
+
+    FACTriangle triangles[2048];
+    memset(triangles, 0, sizeof(FACTriangle));
+    unsigned int num_triangles = (unsigned int) fread(triangles, sizeof(FACTriangle), 2048, file);
+    for(unsigned int i = 0; i < num_triangles; i++) {
+        PRINT("%d : I0(%d) I1(%d) I2(%d)\n", i,
+              triangles[i].indices[0],
+              triangles[i].indices[1],
+              triangles[i].indices[2]);
+        PRINT("%d : I0(%d) I1(%d) I2(%d)\n", i,
+              triangles[i].indices1[0],
+              triangles[i].indices1[1],
+              triangles[i].indices1[2]);
+    }
+
+    model.num_triangles = header.num_blocks + num_triangles;
+
+    PRINT("Triangles: %d\n", model.num_triangles);
+
+    model.tri_mesh = plCreateMesh(
+            PL_PRIMITIVE_TRIANGLES,
+            PL_DRAW_IMMEDIATE,
+            model.num_triangles,
+#if 1
+            model.num_triangles * 3
+#else
+            model.num_vertices
+#endif
+    );
+    unsigned int cur_vert = 0;
+    for(unsigned int i = 0; i < header.num_blocks; i++, cur_vert++) {
+        plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
+                                  model.coords[block[i].indices[0]].x,
+                                  model.coords[block[i].indices[0]].y,
+                                  model.coords[block[i].indices[0]].z
+        );
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_RED));
+        cur_vert++;
+        plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
+                                  model.coords[block[i].indices[1]].x,
+                                  model.coords[block[i].indices[1]].y,
+                                  model.coords[block[i].indices[1]].z
+        );
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_GREEN));
+        cur_vert++;
+        plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
+                                  model.coords[block[i].indices[2]].x,
+                                  model.coords[block[i].indices[2]].y,
+                                  model.coords[block[i].indices[2]].z
+        );
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_BLUE));
+
+#if 1
+        PRINT(" %d 0(%d %d %d) 1(%d %d %d) 2(%d %d %d)\n",
+              i,
+
+              model.coords[block[i].indices[0]].x,
+              model.coords[block[i].indices[0]].y,
+              model.coords[block[i].indices[0]].z,
+
+              model.coords[block[i].indices[1]].x,
+              model.coords[block[i].indices[1]].y,
+              model.coords[block[i].indices[1]].z,
+
+              model.coords[block[i].indices[2]].x,
+              model.coords[block[i].indices[2]].y,
+              model.coords[block[i].indices[2]].z
+        );
+#endif
+    }
+
+    for(unsigned int i = 0; i < num_triangles; i++, cur_vert++) {
+
+        plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
+                                  model.coords[triangles[i].indices[0]].x,
+                                  model.coords[triangles[i].indices[0]].y,
+                                  model.coords[triangles[i].indices[0]].z
+        );
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_RED));
+        cur_vert++;
+        plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
+                                  model.coords[triangles[i].indices[1]].x,
+                                  model.coords[triangles[i].indices[1]].y,
+                                  model.coords[triangles[i].indices[1]].z
+        );
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_GREEN));
+        cur_vert++;
+        plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
+                                  model.coords[triangles[i].indices[2]].x,
+                                  model.coords[triangles[i].indices[2]].y,
+                                  model.coords[triangles[i].indices[2]].z
+        );
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_BLUE));
+
+#if 1
+        PRINT(" %d 0(%d %d %d) 1(%d %d %d) 2(%d %d %d)\n",
+              i,
+
+              model.coords[triangles[i].indices[0]].x,
+              model.coords[triangles[i].indices[0]].y,
+              model.coords[triangles[i].indices[0]].z,
+
+              model.coords[triangles[i].indices[1]].x,
+              model.coords[triangles[i].indices[1]].y,
+              model.coords[triangles[i].indices[1]].z,
+
+              model.coords[triangles[i].indices[2]].x,
+              model.coords[triangles[i].indices[2]].y,
+              model.coords[triangles[i].indices[2]].z
+        );
+        PRINT(" %d 0(%d %d %d) 1(%d %d %d) 2(%d %d %d)\n",
+              i,
+
+              model.coords[triangles[i].indices1[0]].x,
+              model.coords[triangles[i].indices1[0]].y,
+              model.coords[triangles[i].indices1[0]].z,
+
+              model.coords[triangles[i].indices1[1]].x,
+              model.coords[triangles[i].indices1[1]].y,
+              model.coords[triangles[i].indices[1]].z,
+
+              model.coords[triangles[i].indices[2]].x,
+              model.coords[triangles[i].indices[2]].y,
+              model.coords[triangles[i].indices[2]].z
+        );
+#endif
+    }
+
+    plUploadMesh(model.tri_mesh);
 
     CLEANUP:
     fclose(file);
 }
 
-typedef struct VTXCoord {
-    int16_t x;
-    int16_t y;
-    int16_t z;
-    int16_t padding;
-} VTXCoord;
-
-typedef struct PIGModel {
-    VTXCoord coords[2048];
-
-    unsigned int num_vertices;
-} PIGModel;
-
-PIGModel model;
-
 PLMesh *load_vtx_file(const char *path) {
+    PRINT("\nOpening %s\n", path);
+
     FILE *file = fopen(path, "r");
     if(!file) {
         PRINT("Failed to load file %s!\n", path);
@@ -163,8 +330,9 @@ int main(int argc, char **argv) {
 
     if(argc < 2) {
         PRINT("Arguments:\n");
-        PRINT("    -path - specifies path to model.\n");
-        PRINT("    -folder - scans a directory and prints out information.\n");
+        PRINT("    -path <file path>        specifies path to model.\n");
+        PRINT("    -folder <folder path>    scans a directory and prints out information.\n");
+        PRINT("    -review <file path>      will print out information regarding model without displaying it.\n");
     }
 
     memset(&model, 0, sizeof(PIGModel));
@@ -172,6 +340,20 @@ int main(int argc, char **argv) {
     const char *folder_arg = plGetCommandLineArgument("-folder");
     if(folder_arg && folder_arg[0] != '\0') {
         plScanDirectory(folder_arg, ".fac", load_fac_file);
+    }
+
+    const char *scan_arg = plGetCommandLineArgument("-review");
+    if(scan_arg && scan_arg[0] != '\0') {
+
+        char vtx_path[PL_SYSTEM_MAX_PATH] = { '\0' };
+        snprintf(vtx_path, sizeof(vtx_path), "%s.vtx", scan_arg);
+        char fac_path[PL_SYSTEM_MAX_PATH] = { '\0' };
+        snprintf(fac_path, sizeof(fac_path), "%s.fac", scan_arg);
+        char no2_path[PL_SYSTEM_MAX_PATH] = { '\0' };
+        snprintf(no2_path, sizeof(no2_path), "%s.no2", scan_arg);
+
+        load_vtx_file(vtx_path);
+        load_fac_file(fac_path);
     }
 
     const char *path_arg = plGetCommandLineArgument("-path");
@@ -204,18 +386,16 @@ int main(int argc, char **argv) {
         char no2_path[PL_SYSTEM_MAX_PATH] = { '\0' };
         snprintf(no2_path, sizeof(no2_path), "%s.no2", path_arg);
 
-        load_fac_file(fac_path);
-
         PLMesh *meshypiggy = load_vtx_file(vtx_path);
         if(!meshypiggy) {
             PRINT("Invalid mesh!\n");
             return -1;
         }
 
+        load_fac_file(fac_path);
+
         plSetDefaultGraphicsState();
         plSetClearColour(plCreateColour4b(0, 0, 128, 255));
-
-        plEnableGraphicsStates(PL_CAPABILITY_DEPTHTEST);
 
         PLCamera *camera = plCreateCamera();
         if(!camera) {
@@ -228,7 +408,8 @@ int main(int argc, char **argv) {
 
         plSetCameraPosition(camera, plCreateVector3D(0, 12, -500));
 
-        glPointSize(2.f);
+        glPointSize(5.f);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         float angles = 0;
         while(!glfwWindowShouldClose(window)) {
@@ -239,10 +420,19 @@ int main(int argc, char **argv) {
             // draw stuff start
             plSetupCamera(camera);
 
+            plEnableGraphicsStates(PL_CAPABILITY_DEPTHTEST);
+            glDepthFunc(GL_LEQUAL);
+
             glLoadIdentity();
             glRotatef(angles, 0, 1, 0);
+            glRotatef(180.f, 0, 0, 1);
 
             plDrawMesh(meshypiggy);
+            if(model.tri_mesh) {
+                plDrawMesh(model.tri_mesh);
+            } else {
+
+            }
 
             glfwSwapBuffers(window);
             glfwPollEvents();
