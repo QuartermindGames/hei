@@ -115,7 +115,15 @@ int main(int argc, char **argv) {
 
     plSetCameraPosition(camera, plCreateVector3D(0, 12, -500));
 
-    PLMesh *meshypiggy = load_vtx_file(VTX_PATH);
+    const char *arg = plGetCommandLineArgument("-path");
+    if(!arg || arg[0] == '\0') {
+        PRINT("Please specify a path using the -path argument!\n");
+        return -1;
+    }
+
+    glfwSetWindowTitle(window, arg);
+
+    PLMesh *meshypiggy = load_vtx_file(arg);
     if(!meshypiggy) {
         PRINT("Invalid mesh!\n");
         return -1;
