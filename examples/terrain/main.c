@@ -63,14 +63,18 @@ typedef struct FACHeader {
 typedef struct __attribute__((packed)) FACBlock {
     uint32_t unknown0;
 
+    //uint16_t unknown1;
+
     uint16_t indices[3];    // Vertex indices
     uint16_t normal[3];     // Normals
     uint16_t texture[2];    // UV coords?
 
     uint16_t padding;
 
-    int32_t unknown1;
     int32_t unknown2;
+    int32_t unknown3;
+
+    uint16_t unknown4;
 } FACBlock;
 
 typedef struct FACTriangle {
@@ -217,6 +221,7 @@ void load_fac_file(const char *path) {
 #endif
     }
 
+#if 1
     for(unsigned int i = 0; i < num_triangles; i++, cur_vert++) {
 
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
@@ -273,7 +278,7 @@ void load_fac_file(const char *path) {
         );
 #endif
     }
-
+#endif
     plUploadMesh(model.tri_mesh);
 
     CLEANUP:
