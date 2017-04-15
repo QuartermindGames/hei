@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 project(terrain)
 
-file(GLOB TERRAIN_SOURCE_FILES *.c *.h)
+file(GLOB TERRAIN_SOURCE_FILES *.c *.cpp *.h)
 
 add_executable(terrain ${TERRAIN_SOURCE_FILES})
 

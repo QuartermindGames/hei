@@ -86,11 +86,16 @@ void plSetupCamera(PLCamera *camera) {
     switch(camera->mode) {
         default:
         case PL_CAMERAMODE_PERSPECTIVE: {
-            gluLookAt(
-                    camera->position.x, camera->position.y, camera->position.z,
-                    0, 0, 0,
-                    0, 1, 0
-            );
+            gluPerspective(camera->fov, camera->viewport.width / camera->viewport.height, 0.1f, 1000.f);
+
+            glRotatef(camera->angles.y, 1, 0, 0);
+            glRotatef(camera->angles.x, 0, 1, 0);
+            glRotatef(camera->angles.z, 0, 0, 1);
+            glTranslatef(camera->position.x, camera->position.y, camera->position.z);
+
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
+
             break;
         }
         case PL_CAMERAMODE_ORTHOGRAPHIC: {

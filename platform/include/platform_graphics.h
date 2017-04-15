@@ -53,7 +53,10 @@ For more information, please refer to <http://unlicense.org>
 #       else
 #           include <OpenGL/gl.h>
 #           include <OpenGL/glext.h>
-#           include <OpenGL/glu.h>      // todo, remove me, pls
+#           include <OpenGL/glu.h>
+
+#           include <OpenGL/gl3.h>
+#           include <OpenGL/gl3ext.h>
 #       endif
 #   else
 #	    include <GL/glew.h>

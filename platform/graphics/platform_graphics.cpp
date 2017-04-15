@@ -137,9 +137,9 @@ void _plInitOpenGL() {
 #endif
 #endif
 
-    const PLchar *version = _plGetHWVersion();
-    pl_gl_version_major = (unsigned int) atoi(&version[0]);
-    pl_gl_version_minor = (unsigned int) atoi(&version[2]);
+    //const PLchar *version = _plGetHWVersion();
+    //pl_gl_version_major = (unsigned int) atoi(&version[0]);
+    //pl_gl_version_minor = (unsigned int) atoi(&version[2]);
 }
 
 void _plShutdownOpenGL() {}

@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS);
 
     plSetDefaultGraphicsState();
-    plSetClearColour(PLColour(PL_COLOUR_BLACK));
+    plSetClearColour(PLColour(PL_COLOUR_BLUE));
 
     plEnableGraphicsStates(PL_CAPABILITY_DEPTHTEST);
 

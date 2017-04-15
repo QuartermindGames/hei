@@ -326,7 +326,7 @@ void plDrawMesh(PLMesh *mesh) {
     }
 
 #if defined(PL_MODE_OPENGL)
-#if !defined(PL_MODE_OPENGL_CORE) && !defined(_PL_USE_VERTEX_BUFFER_OBJECTS)
+#if !defined(PL_MODE_OPENGL_CORE) //&& !defined(_PL_USE_VERTEX_BUFFER_OBJECTS)
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
 #if 1
         glBegin(_plTranslatePrimitiveMode(mesh->primitive));
@@ -451,7 +451,7 @@ void plCreateCubeMesh() {}
 PLMesh *plCreateRectangleMesh(PLint x, PLint y, PLuint width, PLuint height) {
     PLMesh *mesh = plCreateMesh(
             PL_PRIMITIVE_TRIANGLE_STRIP,
-            PL_DRAW_DYNAMIC, // todo, use dynamic!!
+            PL_DRAW_IMMEDIATE, // todo, use dynamic!!
             2, 4
     );
     if(!mesh) {
@@ -460,6 +460,7 @@ PLMesh *plCreateRectangleMesh(PLint x, PLint y, PLuint width, PLuint height) {
 
     plClearMesh(mesh);
     plSetMeshVertexPosition2f(mesh, 0, x, y + height);
+    plSetMeshVertexColour(mesh, 0, plCreateColour4b(255, 0, 0, 255));
     plSetMeshVertexPosition2f(mesh, 1, x, y);
     plSetMeshVertexPosition2f(mesh, 2, x + width, y + height);
     plSetMeshVertexPosition2f(mesh, 3, x + width, y);
@@ -471,7 +472,7 @@ PLMesh *plCreateRectangleMesh(PLint x, PLint y, PLuint width, PLuint height) {
 PLMesh *plCreateTriangleMesh(PLint x, PLint y, PLuint width, PLuint height) {
     PLMesh *mesh = plCreateMesh(
             PL_PRIMITIVE_TRIANGLE_FAN,
-            PL_DRAW_DYNAMIC, // todo, use dynamic!!
+            PL_DRAW_IMMEDIATE, // todo, use dynamic!!
             1, 3
     );
     if(!mesh) {
