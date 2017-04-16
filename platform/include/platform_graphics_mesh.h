@@ -101,6 +101,7 @@ PL_EXTERN void plClearMesh(PLMesh *mesh);
 PL_EXTERN void plSetMeshVertexPosition(PLMesh *mesh, PLuint index, PLVector3D vector);
 PL_EXTERN void plSetMeshVertexPosition3f(PLMesh *mesh, PLuint index, PLfloat x, PLfloat y, PLfloat z);
 PL_EXTERN void plSetMeshVertexPosition2f(PLMesh *mesh, PLuint index, PLfloat x, PLfloat y);
+PL_EXTERN void plSetMeshVertexNormal3f(PLMesh *mesh, unsigned int index, float x, float y, float z);
 PL_EXTERN void plSetMeshVertexST(PLMesh *mesh, PLuint index, PLfloat s, PLfloat t);
 PL_EXTERN void plSetMeshVertexColour(PLMesh *mesh, PLuint index, PLColour colour);
 PL_EXTERN void plUploadMesh(PLMesh *mesh);

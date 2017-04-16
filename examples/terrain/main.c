@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org>
 #include <platform_filesystem.h>
 
 #include <GLFW/glfw3.h>
+#include <platform_model.h>
 
 #define TITLE "H0G Loader"
 #define LOG "hog_loader"
@@ -58,12 +59,17 @@ typedef struct FACHeader {
 // NM0 NM1  NM2 UV1  UV2 PAD  UNKNOWN  UNKNOWN  UN  NM0      I0   I1  I2
 // 0F000E00 100025FF 59000000 1A83F81A 00008A4A 19120112 0E1C1300 14000E00
 // 13001400 0E005152 59000000 00000085 000009B8 01120E1C 01121000 0E001400
+/* I believe that the blocks act as the base parts of the mesh
+ * and otherwise have no specific bone influences other than the parent
+ * bone.
+ */
 typedef struct __attribute__((packed)) FACBlock {
     uint16_t unknown1;
 
     uint16_t indices[3];    // Vertex indices
     uint16_t normal[3];     // Normals
-    uint16_t texture[2];    // UV coords? Texture index?
+    uint16_t unknown11;     // UV coords? Texture index?
+    uint16_t texture_index; // Matches TIM listed in MTD package.
 
     uint16_t padding;
 
@@ -73,6 +79,10 @@ typedef struct __attribute__((packed)) FACBlock {
     uint32_t unknown4;
 } FACBlock;
 
+/* These are likely triangles that are influenced by
+ * bone weights, so they will move with specific bones
+ * as part of the skeleton. Needs to be confirmed though!
+ */
 typedef struct __attribute__((packed)) FACTriangle {
 
     // ???????? ???????? ????????
@@ -80,19 +90,25 @@ typedef struct __attribute__((packed)) FACTriangle {
     // ???????? ????????     I0   I1  I2   N0  N1   N2  U0   U1
     // 07040700 04000304 0B000100 02000C00 0B000100 02000C00 62000000 66268901 000002EB
 
-    uint32_t unknown0;
-    uint32_t unknown1;
-
-    uint16_t unknown2;
+    // ???????? ???????? I0  I2   I2   ?   N0  N1   N2  ?
+    // 00000000 00000000 01000200 03000000 01000200 03000000 57000000 33392033 00003335
 
     uint16_t indices[3];    // Vertex indices
+
+    uint16_t unknown1;
+
     uint16_t normal[3];     // Normals
     uint16_t texture[2];    // UV coords? Texture index?
 
     uint16_t padding;
 
+    uint16_t unknown2;
+
+
+    uint32_t unknown0;
+    uint32_t unknown5;
     int32_t unknown3;
-    int32_t unknown4;
+    int16_t unknown4;
 } FACTriangle;
 
 typedef struct PIGModel {
@@ -147,7 +163,7 @@ void load_fac_file(const char *path) {
             PRINT("BLOCK %d\n", i);
             PRINT("    indices(%d %d %d)\n", block[i].indices[0], block[i].indices[1], block[i].indices[2]);
             PRINT("    normal(%d %d %d)\n", block[i].normal[0], block[i].normal[1], block[i].normal[2]);
-            PRINT("    uv(%d %d)\n", block[i].texture[0], block[i].texture[1]);
+            PRINT("    texture index(%d)\n", block[i].texture_index);
         }
     }
 
@@ -177,32 +193,49 @@ void load_fac_file(const char *path) {
             PL_DRAW_IMMEDIATE,
             model.num_triangles,
 #if 1
-            model.num_triangles * 3
+            model.num_triangles * 10
 #else
             model.num_vertices
 #endif
     );
     unsigned int cur_vert = 0;
     for(unsigned int i = 0; i < header.num_blocks; i++, cur_vert++) {
+
+        PLVector3D va = plCreateVector3D(model.coords[block[i].indices[0]].x,
+                                         model.coords[block[i].indices[0]].y,
+                                         model.coords[block[i].indices[0]].z);
+        PLVector3D vb = plCreateVector3D(model.coords[block[i].indices[1]].x,
+                                         model.coords[block[i].indices[1]].y,
+                                         model.coords[block[i].indices[1]].z);
+        PLVector3D vc = plCreateVector3D(model.coords[block[i].indices[2]].x,
+                                         model.coords[block[i].indices[2]].y,
+                                         model.coords[block[i].indices[2]].z);
+        PLVector3D normal = plGenerateVertexNormal(va, vb, vc);
+
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
                                   model.coords[block[i].indices[0]].x,
                                   model.coords[block[i].indices[0]].y,
                                   model.coords[block[i].indices[0]].z
         );
+        plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
         plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_RED));
         cur_vert++;
+
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
                                   model.coords[block[i].indices[1]].x,
                                   model.coords[block[i].indices[1]].y,
                                   model.coords[block[i].indices[1]].z
         );
+        plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
         plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_GREEN));
         cur_vert++;
+
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
                                   model.coords[block[i].indices[2]].x,
                                   model.coords[block[i].indices[2]].y,
                                   model.coords[block[i].indices[2]].z
         );
+        plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
         plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_BLUE));
 
 #if 1
@@ -224,29 +257,72 @@ void load_fac_file(const char *path) {
 #endif
     }
 
-#if 1
+    srand(num_triangles);
+#if 0
     for(unsigned int i = 0; i < num_triangles; i++, cur_vert++) {
+
+        PLbyte r = (PLbyte)(rand() / 255), g = (PLbyte)(rand() / 255), b = (PLbyte)(rand() / 255);
+
+        PLVector3D va = plCreateVector3D(model.coords[triangles[i].indices[0]].x,
+                                        model.coords[triangles[i].indices[0]].y,
+                                        model.coords[triangles[i].indices[0]].z);
+        PLVector3D vb = plCreateVector3D(model.coords[triangles[i].indices[1]].x,
+                                        model.coords[triangles[i].indices[1]].y,
+                                        model.coords[triangles[i].indices[1]].z);
+        PLVector3D vc = plCreateVector3D(model.coords[triangles[i].indices[2]].x,
+                                        model.coords[triangles[i].indices[2]].y,
+                                        model.coords[triangles[i].indices[2]].z);
+        PLVector3D normal = plGenerateVertexNormal(va, vb, vc);
 
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
                                   model.coords[triangles[i].indices[0]].x,
                                   model.coords[triangles[i].indices[0]].y,
                                   model.coords[triangles[i].indices[0]].z
         );
-        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_RED));
+        plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(r, g, b, 255));
         cur_vert++;
+
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
                                   model.coords[triangles[i].indices[1]].x,
                                   model.coords[triangles[i].indices[1]].y,
                                   model.coords[triangles[i].indices[1]].z
         );
-        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_GREEN));
+        plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(r, g, b, 255));
         cur_vert++;
+
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
                                   model.coords[triangles[i].indices[2]].x,
                                   model.coords[triangles[i].indices[2]].y,
                                   model.coords[triangles[i].indices[2]].z
         );
-        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_BLUE));
+        plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(r, g, b, 255));
+
+#if 0
+        cur_vert++;
+        plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
+                                  model.coords[triangles[i].normal[0]].x,
+                                  model.coords[triangles[i].normal[0]].y,
+                                  model.coords[triangles[i].normal[0]].z
+        );
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(r, g, b, 255));
+        cur_vert++;
+        plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
+                                  model.coords[triangles[i].normal[1]].x,
+                                  model.coords[triangles[i].normal[1]].y,
+                                  model.coords[triangles[i].normal[1]].z
+        );
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(r, g, b, 255));
+        cur_vert++;
+        plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
+                                  model.coords[triangles[i].normal[2]].x,
+                                  model.coords[triangles[i].normal[2]].y,
+                                  model.coords[triangles[i].normal[2]].z
+        );
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(r, g, b, 255));
+#endif
 
 #if 1
         PRINT(" %d 0(%d %d %d) 1(%d %d %d) 2(%d %d %d)\n",
@@ -405,6 +481,22 @@ int main(int argc, char **argv) {
         plSetDefaultGraphicsState();
         plSetClearColour(plCreateColour4b(0, 0, 128, 255));
 
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+
+#if 1 // ol' gl lighting, just for testing
+        GLfloat light_ambient[] = { 0.6f, 0.6f, 0.6f, 1.f };
+        glEnable(GL_LIGHTING);
+        glEnable(GL_LIGHT0);
+        glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+        glEnable(GL_LIGHT1);
+        GLfloat light_colour_red[] = { 0.5f, 0, 0, 1.f };
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, light_colour_red);
+        GLfloat light_position[] = { 0, 12.f, -800.f };
+        glLightfv(GL_LIGHT1, GL_POSITION, light_position);
+        glShadeModel(GL_FLAT);
+#endif
+
         PLCamera *camera = plCreateCamera();
         if(!camera) {
             PRINT("Failed to create camera!");
@@ -417,19 +509,28 @@ int main(int argc, char **argv) {
         plSetCameraPosition(camera, plCreateVector3D(0, 12, -500));
 
         glPointSize(5.f);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         float angles = 0;
         while(!glfwWindowShouldClose(window)) {
+            // Keyboard handlers start..
+            int key_state = glfwGetKey(window, GLFW_KEY_2);
+            if (key_state == GLFW_PRESS) {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glDisable(GL_LIGHTING);
+            }
+            key_state = glfwGetKey(window, GLFW_KEY_1);
+            if(key_state == GLFW_PRESS) {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                glEnable(GL_LIGHTING);
+            }
+            // Keyboard handlers end...
+
             plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
             angles += 0.5f;
 
             // draw stuff start
             plSetupCamera(camera);
-
-            plEnableGraphicsStates(PL_CAPABILITY_DEPTHTEST);
-            glDepthFunc(GL_LEQUAL);
 
             glLoadIdentity();
             glRotatef(angles, 0, 1, 0);

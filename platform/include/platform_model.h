@@ -97,4 +97,6 @@ void plGenerateStaticModelNormals(PLStaticModel *model);
 void plGenerateAnimatedModelNormals(PLAnimatedModel *model);
 void plGenerateSkeletalModelNormals(PLSkeletalModel *model);
 
+PLVector3D plGenerateVertexNormal(PLVector3D a, PLVector3D b, PLVector3D c);
+
 PL_EXTERN_C_END

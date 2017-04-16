@@ -31,7 +31,7 @@ using namespace pl::graphics;
 
 /*	PLATFORM MODEL LOADER	*/
 
-PLVector3D plGenerateNormal(PLVector3D a, PLVector3D b, PLVector3D c) {
+PLVector3D plGenerateVertexNormal(PLVector3D a, PLVector3D b, PLVector3D c) {
     PLVector3D x = c - b;
     PLVector3D y = a - b;
 

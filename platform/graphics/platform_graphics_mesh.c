@@ -279,6 +279,10 @@ void plSetMeshVertexPosition3fv(PLMesh *mesh, PLuint index, PLuint size, const P
     }
 }
 
+void plSetMeshVertexNormal3f(PLMesh *mesh, unsigned int index, float x, float y, float z) {
+    mesh->vertices[index].normal = plCreateVector3D(x, y, z);
+}
+
 void plSetMeshVertexST(PLMesh *mesh, PLuint index, PLfloat s, PLfloat t) {
     plFunctionStart();
 
@@ -336,6 +340,7 @@ void plDrawMesh(PLMesh *mesh) {
             glVertex3f(mesh->vertices[i].position.x, mesh->vertices[i].position.y, mesh->vertices[i].position.z);
             glTexCoord2f(mesh->vertices[i].st[0].x, mesh->vertices[i].st[0].y);
             glColor3ub(mesh->vertices[i].colour.r, mesh->vertices[i].colour.g, mesh->vertices[i].colour.b);
+            glNormal3f(mesh->vertices[i].normal.x, mesh->vertices[i].normal.y, mesh->vertices[i].normal.z);
         }
         glEnd();
 #else
