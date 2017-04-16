@@ -38,7 +38,7 @@ typedef struct FACHeader { // 00000000 00000000 00000000 00000000 0A000000 101E0
     uint32_t unknown4;
 } FACHeader;
 
-typedef struct FACBlock {
+typedef struct FACTriangle {
     /* Seems to be some struct that provides an id among some other data... Probably the size of each?
      * So the id might be 65, further down the file there's a block to correspond to this.
      */
@@ -77,8 +77,8 @@ void load_fac_file(const char *path) {
     PRINT("unknown2: %d\n", header.unknown2);
 
     if(header.num_blocks != 0) {
-        FACBlock thingy0[header.num_blocks];
-        if(fread(thingy0, sizeof(FACBlock), header.num_blocks, file) != header.num_blocks) {
+        FACTriangle thingy0[header.num_blocks];
+        if(fread(thingy0, sizeof(FACTriangle), header.num_blocks, file) != header.num_blocks) {
             PRINT("Invalid thingy size!!\n");
             goto CLEANUP;
         }
