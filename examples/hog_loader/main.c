@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org>
 
 typedef struct FACHeader { // 00000000 00000000 00000000 00000000 0A000000 101E0219 081E3700 4D004200
     uint32_t padding[4];   // This is always blank
-    uint32_t num_blocks; // Number of FACThingy0s
+    uint32_t num_triangles; // Number of FACThingy0s
     uint32_t unknown2;
     uint32_t unknown3;
     uint32_t unknown4;
@@ -73,12 +73,12 @@ void load_fac_file(const char *path) {
         }
     }
 
-    PRINT("num_blocks: %d\n", header.num_blocks);
+    PRINT("num_blocks: %d\n", header.num_triangles);
     PRINT("unknown2: %d\n", header.unknown2);
 
-    if(header.num_blocks != 0) {
-        FACTriangle thingy0[header.num_blocks];
-        if(fread(thingy0, sizeof(FACTriangle), header.num_blocks, file) != header.num_blocks) {
+    if(header.num_triangles != 0) {
+        FACTriangle thingy0[header.num_triangles];
+        if(fread(thingy0, sizeof(FACTriangle), header.num_triangles, file) != header.num_triangles) {
             PRINT("Invalid thingy size!!\n");
             goto CLEANUP;
         }
