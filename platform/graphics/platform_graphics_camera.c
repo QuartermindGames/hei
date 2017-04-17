@@ -86,7 +86,7 @@ void plSetupCamera(PLCamera *camera) {
     switch(camera->mode) {
         default:
         case PL_CAMERAMODE_PERSPECTIVE: {
-            gluPerspective(camera->fov, camera->viewport.width / camera->viewport.height, 0.1f, 1000.f);
+            gluPerspective(camera->fov, camera->viewport.width / camera->viewport.height, 0.1f, 100000.f);
 
             glRotatef(camera->angles.y, 1, 0, 0);
             glRotatef(camera->angles.x, 0, 1, 0);
