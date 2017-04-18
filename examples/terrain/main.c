@@ -141,6 +141,8 @@ typedef struct PIGModel {
     PLMesh *tri_mesh;       // Our actual output!
     PLMesh *skeleton_mesh;  // preview of skeleton
     PLMesh *vertex_mesh;    // preview of vertices
+
+    PLVector3D angles;
 } PIGModel;
 
 PIGModel model;
@@ -261,6 +263,7 @@ void load_fac_file(const char *path) {
             model.num_vertices
     );
     unsigned int cur_vert = 0; uint8_t r, g, b;
+    PLVector3D normal;
     for(unsigned int i = 0; i < header.num_triangles; i++, cur_vert++) {
 
         PLVector3D va = plCreateVector3D(model.coords[triangles[i].indices[0]].x,
@@ -272,7 +275,7 @@ void load_fac_file(const char *path) {
         PLVector3D vc = plCreateVector3D(model.coords[triangles[i].indices[2]].x,
                                          model.coords[triangles[i].indices[2]].y,
                                          model.coords[triangles[i].indices[2]].z);
-        PLVector3D normal = plGenerateVertexNormal(va, vb, vc);
+        normal = plGenerateVertexNormal(va, vb, vc);
 
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
                                   model.coords[triangles[i].indices[0]].x +
@@ -283,7 +286,7 @@ void load_fac_file(const char *path) {
                                   model.bones[model.coords[triangles[i].indices[0]].bone_index].coords[2]
         );
         plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
-        srand(model.coords[triangles[i].indices[2]].bone_index);
+        srand(model.coords[triangles[i].indices[0]].bone_index);
         r = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
         g = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
         b = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
@@ -299,7 +302,7 @@ void load_fac_file(const char *path) {
                                   model.bones[model.coords[triangles[i].indices[1]].bone_index].coords[2]
         );
         plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
-        srand(model.coords[triangles[i].indices[2]].bone_index);
+        srand(model.coords[triangles[i].indices[1]].bone_index);
         r = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
         g = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
         b = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
@@ -352,60 +355,113 @@ void load_fac_file(const char *path) {
         PLVector3D vc = plCreateVector3D(model.coords[quads[i].normal[2]].x,
                                         model.coords[quads[i].normal[2]].y,
                                         model.coords[quads[i].normal[2]].z);
-        PLVector3D normal = plGenerateVertexNormal(va, vb, vc);
+        normal = plGenerateVertexNormal(va, vb, vc);
 
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
-                                  model.coords[quads[i].indices[0]].x,
-                                  model.coords[quads[i].indices[0]].y,
-                                  model.coords[quads[i].indices[0]].z
+                                  model.coords[quads[i].indices[0]].x +
+                                  model.bones[model.coords[quads[i].indices[0]].bone_index].coords[0],
+                                  model.coords[quads[i].indices[0]].y +
+                                  model.bones[model.coords[quads[i].indices[0]].bone_index].coords[1],
+                                  model.coords[quads[i].indices[0]].z +
+                                  model.bones[model.coords[quads[i].indices[0]].bone_index].coords[2]
         );
         plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
-        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_BLACK));
+        srand(model.coords[quads[i].indices[0]].bone_index);
+        r = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        g = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        b = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(r, g, b, 255));
         cur_vert++;
 
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
-                                  model.coords[quads[i].indices[1]].x,
-                                  model.coords[quads[i].indices[1]].y,
-                                  model.coords[quads[i].indices[1]].z
+                                  model.coords[quads[i].indices[1]].x +
+                                  model.bones[model.coords[quads[i].indices[1]].bone_index].coords[0],
+                                  model.coords[quads[i].indices[1]].y +
+                                  model.bones[model.coords[quads[i].indices[1]].bone_index].coords[1],
+                                  model.coords[quads[i].indices[1]].z +
+                                  model.bones[model.coords[quads[i].indices[1]].bone_index].coords[2]
         );
         plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
-        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_BLACK));
+        srand(model.coords[quads[i].indices[1]].bone_index);
+        r = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        g = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        b = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(r, g, b, 255));
         cur_vert++;
 
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
-                                  model.coords[quads[i].indices[2]].x,
-                                  model.coords[quads[i].indices[2]].y,
-                                  model.coords[quads[i].indices[2]].z
+                                  model.coords[quads[i].indices[2]].x +
+                                  model.bones[model.coords[quads[i].indices[2]].bone_index].coords[0],
+                                  model.coords[quads[i].indices[2]].y +
+                                  model.bones[model.coords[quads[i].indices[2]].bone_index].coords[1],
+                                  model.coords[quads[i].indices[2]].z +
+                                  model.bones[model.coords[quads[i].indices[2]].bone_index].coords[2]
         );
         plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
-        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_BLACK));
+        srand(model.coords[quads[i].indices[2]].bone_index);
+        r = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        g = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        b = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(r, g, b, 255));
+        cur_vert++;
+
+        va = plCreateVector3D(model.coords[quads[i].normal[2]].x,
+                                         model.coords[quads[i].normal[2]].y,
+                                         model.coords[quads[i].normal[2]].z);
+        vb = plCreateVector3D(model.coords[quads[i].normal[3]].x,
+                                         model.coords[quads[i].normal[3]].y,
+                                         model.coords[quads[i].normal[3]].z);
+        vc = plCreateVector3D(model.coords[quads[i].normal[0]].x,
+                                         model.coords[quads[i].normal[0]].y,
+                                         model.coords[quads[i].normal[0]].z);
+        normal = plGenerateVertexNormal(va, vb, vc);
+
+        plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
+                                  model.coords[quads[i].indices[2]].x +
+                                  model.bones[model.coords[quads[i].indices[2]].bone_index].coords[0],
+                                  model.coords[quads[i].indices[2]].y +
+                                  model.bones[model.coords[quads[i].indices[2]].bone_index].coords[1],
+                                  model.coords[quads[i].indices[2]].z +
+                                  model.bones[model.coords[quads[i].indices[2]].bone_index].coords[2]
+        );
+        plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
+        srand(model.coords[quads[i].indices[2]].bone_index);
+        r = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        g = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        b = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(r, g, b, 255));
         cur_vert++;
 
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
-                                  model.coords[quads[i].indices[2]].x,
-                                  model.coords[quads[i].indices[2]].y,
-                                  model.coords[quads[i].indices[2]].z
+                                  model.coords[quads[i].indices[3]].x +
+                                  model.bones[model.coords[quads[i].indices[3]].bone_index].coords[0],
+                                  model.coords[quads[i].indices[3]].y +
+                                  model.bones[model.coords[quads[i].indices[3]].bone_index].coords[1],
+                                  model.coords[quads[i].indices[3]].z +
+                                  model.bones[model.coords[quads[i].indices[3]].bone_index].coords[2]
         );
         plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
-        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_BLACK));
+        srand(model.coords[quads[i].indices[3]].bone_index);
+        r = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        g = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        b = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(r, g, b, 255));
         cur_vert++;
 
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
-                                  model.coords[quads[i].indices[3]].x,
-                                  model.coords[quads[i].indices[3]].y,
-                                  model.coords[quads[i].indices[3]].z
+                                  model.coords[quads[i].indices[0]].x +
+                                  model.bones[model.coords[quads[i].indices[0]].bone_index].coords[0],
+                                  model.coords[quads[i].indices[0]].y +
+                                  model.bones[model.coords[quads[i].indices[0]].bone_index].coords[1],
+                                  model.coords[quads[i].indices[0]].z +
+                                  model.bones[model.coords[quads[i].indices[0]].bone_index].coords[2]
         );
         plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
-        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_BLACK));
-        cur_vert++;
-
-        plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
-                                  model.coords[quads[i].indices[0]].x,
-                                  model.coords[quads[i].indices[0]].y,
-                                  model.coords[quads[i].indices[0]].z
-        );
-        plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
-        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(PL_COLOUR_BLACK));
+        srand(model.coords[quads[i].indices[0]].bone_index);
+        r = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        g = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        b = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
+        plSetMeshVertexColour(model.tri_mesh, cur_vert, plCreateColour4b(r, g, b, 255));
     }
 #endif
     plUploadMesh(model.tri_mesh);
@@ -469,6 +525,65 @@ void load_vtx_file(const char *path) {
     upload_vtx();
 }
 
+enum {
+    VIEW_MODE_LIT,
+    VIEW_MODE_WIREFRAME,
+    VIEW_MODE_POINTS,
+    VIEW_MODE_WEIGHTS,
+    VIEW_MODE_SKELETON
+};
+int view_mode = VIEW_MODE_LIT;
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
+
+    switch(key) {
+        default: break;
+
+        case GLFW_KEY_1: {
+            if(action == GLFW_PRESS) {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                view_mode = VIEW_MODE_LIT;
+            }
+            break;
+        }
+        case GLFW_KEY_2: {
+            if((action == GLFW_PRESS) && (mode != VIEW_MODE_WIREFRAME)) {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glDisable(GL_LIGHTING);
+                view_mode = VIEW_MODE_WIREFRAME;
+            }
+            break;
+        }
+        case GLFW_KEY_3: {
+            if((action == GLFW_PRESS) && (mode != VIEW_MODE_POINTS)) {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glDisable(GL_LIGHTING);
+                view_mode = VIEW_MODE_POINTS;
+            }
+            break;
+        }
+        case GLFW_KEY_4: {
+            if((action == GLFW_PRESS) && (mode != VIEW_MODE_WEIGHTS)) {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                view_mode = VIEW_MODE_WEIGHTS;
+            }
+            break;
+        }
+        case GLFW_KEY_5: {
+            if((action == GLFW_PRESS) && (mode != VIEW_MODE_SKELETON)) {
+                view_mode = VIEW_MODE_SKELETON;
+            }
+            break;
+        }
+
+        case GLFW_KEY_ESCAPE: {
+            if(action == GLFW_PRESS) {
+                glfwSetWindowShouldClose(window, true);
+            }
+            break;
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     plInitialize(argc, argv, PL_SUBSYSTEM_LOG);
     plClearLog(LOG);
@@ -479,31 +594,10 @@ int main(int argc, char **argv) {
 
     if(argc < 2) {
         PRINT("Arguments:\n");
-        PRINT("    -path <file path>        specifies path to model.\n");
-        PRINT("    -folder <folder path>    scans a directory and prints out information.\n");
-        PRINT("    -review <file path>      will print out information regarding model without displaying it.\n");
+        PRINT("    -preview <file path>        opens up model for previewing.\n");
     }
 
     memset(&model, 0, sizeof(PIGModel));
-
-    const char *folder_arg = plGetCommandLineArgument("-folder");
-    if(folder_arg && folder_arg[0] != '\0') {
-        plScanDirectory(folder_arg, ".fac", load_fac_file);
-    }
-
-    const char *scan_arg = plGetCommandLineArgument("-review");
-    if(scan_arg && scan_arg[0] != '\0') {
-
-        char vtx_path[PL_SYSTEM_MAX_PATH] = { '\0' };
-        snprintf(vtx_path, sizeof(vtx_path), "%s.vtx", scan_arg);
-        char fac_path[PL_SYSTEM_MAX_PATH] = { '\0' };
-        snprintf(fac_path, sizeof(fac_path), "%s.fac", scan_arg);
-        char no2_path[PL_SYSTEM_MAX_PATH] = { '\0' };
-        snprintf(no2_path, sizeof(no2_path), "%s.no2", scan_arg);
-
-        load_vtx_file(vtx_path);
-        load_fac_file(fac_path);
-    }
 
     const char *path_arg = plGetCommandLineArgument("-path");
     if(path_arg && path_arg[0] != '\0') {
@@ -521,6 +615,8 @@ int main(int argc, char **argv) {
             plMessageBox(TITLE, "Failed to create window!\n");
             return -1;
         }
+
+        glfwSetKeyCallback(window, key_callback);
 
         glfwMakeContextCurrent(window);
 
@@ -571,55 +667,21 @@ int main(int argc, char **argv) {
         glPointSize(5.f);
         glLineWidth(2.f);
 
-        enum {
-            VIEW_MODE_LIT,
-            VIEW_MODE_WIREFRAME,
-            VIEW_MODE_POINTS,
-            VIEW_MODE_WEIGHTS,
-            VIEW_MODE_SKELETON
-        };
-        int mode = VIEW_MODE_LIT;
-
         while(!glfwWindowShouldClose(window)) {
-            static PLVector3D angles = { 0, 0, 0 };
+
+            glfwPollEvents();
 
             // input handlers start..
-            int state = glfwGetKey(window, GLFW_KEY_1);
-            if(state == GLFW_PRESS) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                mode = VIEW_MODE_LIT;
-            }
-            state = glfwGetKey(window, GLFW_KEY_2);
-            if (state == GLFW_PRESS) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                glDisable(GL_LIGHTING);
-                mode = VIEW_MODE_WIREFRAME;
-            }
-            state = glfwGetKey(window, GLFW_KEY_3);
-            if(state == GLFW_PRESS) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                glDisable(GL_LIGHTING);
-                mode = VIEW_MODE_POINTS;
-            }
-            state = glfwGetKey(window, GLFW_KEY_4);
-            if(state == GLFW_PRESS) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                mode = VIEW_MODE_WEIGHTS;
-            }
-            state = glfwGetKey(window, GLFW_KEY_5);
-            if(state == GLFW_PRESS) {
-                mode = VIEW_MODE_SKELETON;
-            }
 
             double xpos, ypos;
             glfwGetCursorPos(window, &xpos, &ypos);
 
             // Camera rotation
             static double oldmpos[2] = { 0, 0 };
-            state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+            int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
             if (state == GLFW_PRESS) {
                 double nxpos = xpos - oldmpos[0]; double nypos = ypos - oldmpos[1];
-                angles.x += (nxpos / 100.f); angles.y += (nypos / 100.f);
+                model.angles.x += (nxpos / 100.f); model.angles.y += (nypos / 100.f);
             } else {
                 oldmpos[0] = xpos; oldmpos[1] = ypos;
             }
@@ -642,33 +704,42 @@ int main(int argc, char **argv) {
             plSetupCamera(camera);
 
             glLoadIdentity();
-            glRotatef(angles.y, 1, 0, 0);
-            glRotatef(angles.x, 0, 1, 0);
-            glRotatef(angles.z + 180.f, 0, 0, 1);
+            glRotatef(model.angles.y, 1, 0, 0);
+            glRotatef(model.angles.x, 0, 1, 0);
+            glRotatef(model.angles.z + 180.f, 0, 0, 1);
 
-            if(mode == VIEW_MODE_SKELETON) {
-                plDrawMesh(model.tri_mesh);
-                glDisable(GL_DEPTH_TEST);
-                plDrawMesh(model.skeleton_mesh);
-                glEnable(GL_DEPTH_TEST);
-            } else {
-                if (mode != VIEW_MODE_POINTS) {
-                    if (mode == VIEW_MODE_LIT) {
-                        glEnable(GL_LIGHTING);
-                        glShadeModel(GL_FLAT);
-                    }
+            switch(view_mode) {
+                case VIEW_MODE_LIT: {
+                    glEnable(GL_LIGHTING);
+                    glShadeModel(GL_FLAT);
+
                     plDrawMesh(model.tri_mesh);
-                    if (mode == VIEW_MODE_LIT) {
-                        glDisable(GL_LIGHTING);
-                        glShadeModel(GL_SMOOTH);
-                    }
-                } else if (mode == VIEW_MODE_POINTS) {
+
+                    glShadeModel(GL_SMOOTH);
+                    glDisable(GL_LIGHTING);
+                    break;
+                }
+
+                case VIEW_MODE_POINTS: {
                     plDrawMesh(model.vertex_mesh);
+                    break;
+                }
+
+                case VIEW_MODE_WEIGHTS:
+                case VIEW_MODE_WIREFRAME: {
+                    plDrawMesh(model.tri_mesh);
+                    break;
+                }
+
+                case VIEW_MODE_SKELETON: {
+                    plDrawMesh(model.tri_mesh);
+                    glDisable(GL_DEPTH_TEST);
+                    plDrawMesh(model.skeleton_mesh);
+                    glEnable(GL_DEPTH_TEST);
                 }
             }
 
             glfwSwapBuffers(window);
-            glfwPollEvents();
         }
 
         plDeleteCamera(camera);
