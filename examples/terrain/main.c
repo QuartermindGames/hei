@@ -275,9 +275,12 @@ void load_fac_file(const char *path) {
         PLVector3D normal = plGenerateVertexNormal(va, vb, vc);
 
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
-                                  model.coords[triangles[i].indices[0]].x,
-                                  model.coords[triangles[i].indices[0]].y,
-                                  model.coords[triangles[i].indices[0]].z
+                                  model.coords[triangles[i].indices[0]].x +
+                                  model.bones[model.coords[triangles[i].indices[0]].bone_index].coords[0],
+                                  model.coords[triangles[i].indices[0]].y +
+                                  model.bones[model.coords[triangles[i].indices[0]].bone_index].coords[1],
+                                  model.coords[triangles[i].indices[0]].z +
+                                  model.bones[model.coords[triangles[i].indices[0]].bone_index].coords[2]
         );
         plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
         srand(model.coords[triangles[i].indices[2]].bone_index);
@@ -288,9 +291,12 @@ void load_fac_file(const char *path) {
         cur_vert++;
 
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
-                                  model.coords[triangles[i].indices[1]].x,
-                                  model.coords[triangles[i].indices[1]].y,
-                                  model.coords[triangles[i].indices[1]].z
+                                  model.coords[triangles[i].indices[1]].x +
+                                  model.bones[model.coords[triangles[i].indices[1]].bone_index].coords[0],
+                                  model.coords[triangles[i].indices[1]].y +
+                                  model.bones[model.coords[triangles[i].indices[1]].bone_index].coords[1],
+                                  model.coords[triangles[i].indices[1]].z +
+                                  model.bones[model.coords[triangles[i].indices[1]].bone_index].coords[2]
         );
         plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
         srand(model.coords[triangles[i].indices[2]].bone_index);
@@ -301,9 +307,12 @@ void load_fac_file(const char *path) {
         cur_vert++;
 
         plSetMeshVertexPosition3f(model.tri_mesh, cur_vert,
-                                  model.coords[triangles[i].indices[2]].x,
-                                  model.coords[triangles[i].indices[2]].y,
-                                  model.coords[triangles[i].indices[2]].z
+                                  model.coords[triangles[i].indices[2]].x +
+                                  model.bones[model.coords[triangles[i].indices[2]].bone_index].coords[0],
+                                  model.coords[triangles[i].indices[2]].y +
+                                  model.bones[model.coords[triangles[i].indices[2]].bone_index].coords[1],
+                                  model.coords[triangles[i].indices[2]].z +
+                                  model.bones[model.coords[triangles[i].indices[2]].bone_index].coords[2]
         );
         plSetMeshVertexNormal3f(model.tri_mesh, cur_vert, normal.x, normal.y, normal.z);
         srand(model.coords[triangles[i].indices[2]].bone_index);
@@ -546,7 +555,6 @@ int main(int argc, char **argv) {
         glLightfv(GL_LIGHT1, GL_DIFFUSE, light_colour_red);
         GLfloat light_position[] = { 0, 12.f, -800.f };
         glLightfv(GL_LIGHT1, GL_POSITION, light_position);
-        glShadeModel(GL_FLAT);
 #endif
 
         PLCamera *camera = plCreateCamera();
@@ -639,15 +647,20 @@ int main(int argc, char **argv) {
             glRotatef(angles.z + 180.f, 0, 0, 1);
 
             if(mode == VIEW_MODE_SKELETON) {
+                plDrawMesh(model.tri_mesh);
+                glDisable(GL_DEPTH_TEST);
                 plDrawMesh(model.skeleton_mesh);
+                glEnable(GL_DEPTH_TEST);
             } else {
                 if (mode != VIEW_MODE_POINTS) {
                     if (mode == VIEW_MODE_LIT) {
                         glEnable(GL_LIGHTING);
+                        glShadeModel(GL_FLAT);
                     }
                     plDrawMesh(model.tri_mesh);
                     if (mode == VIEW_MODE_LIT) {
                         glDisable(GL_LIGHTING);
+                        glShadeModel(GL_SMOOTH);
                     }
                 } else if (mode == VIEW_MODE_POINTS) {
                     plDrawMesh(model.vertex_mesh);
