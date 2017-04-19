@@ -50,6 +50,7 @@ PL_EXTERN bool plCreateDirectory(const char *path);
 // File I/O ...
 
 PL_EXTERN bool plFileExists(const char *path);
+PL_EXTERN bool plPathExists(const char *path);
 
 PL_EXTERN bool plIsFileModified(time_t oldtime, const char *path);
 

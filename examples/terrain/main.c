@@ -36,7 +36,7 @@ For more information, please refer to <http://unlicense.org>
 
 #define TITLE "H0G Loader"
 #define LOG "hog_loader"
-#define PRINT(...) printf(__VA_ARGS__); plWriteLog(LOG, __VA_ARGS__);
+#define PRINT(...) printf(__VA_ARGS__); plWriteLog(LOG, __VA_ARGS__)
 #define WIDTH 1024
 #define HEIGHT 768
 
@@ -98,15 +98,22 @@ typedef struct __attribute__((packed)) FACQuad {
 } FACQuad;
 
 /*  NO2 Format Specification    */
-/* The NO2 format is used by HOW to store pre-calculated normals
+/* The NO2 format is used by Hogs of War to store pre-calculated normals
  * for the mesh, as far as we've determined.
  */
 
-typedef struct NO2Header {
-    // todo
-} NO2Header;
+typedef struct NO2Index { // todo
+    // D2C7003F 7EE456BD 38D75CBF 00004041
+
+    int32_t unknown0;
+    int32_t unknown1;
+    int32_t unknown2;
+    int32_t unknown3;
+} NO2Index;
 
 /*  HIR Format Specification    */
+/* Used to store our piggy bones.
+ */
 
 // P        X   Y    Z   ?    ?   ?    ?   ?
 
@@ -127,22 +134,139 @@ typedef struct __attribute__((packed)) HIRBone {
     int32_t unknown1;
 } HIRBone;
 
+/*  SRL Format Specification        */
+/* The SRL format is used as an index for sounds used
+ * by the game. It's just a text-based format, nothing
+ * particular special.
+ */
+
+void load_srl_file(const char *path) {
+    // todo, parse srl file format
+    // 099 < number of sounds in the document
+    // 000 < ???
+    // 000 < ???
+}
+
+/*  MAD/MTD Format Specification    */
+/* The MAD/MTD format is the package format used by
+ * Hogs of War to store and index content used by
+ * the game.
+ *
+ * Files within these packages are expected to be in
+ * a specific order, as both the game and other assets
+ * within the game rely on this order so that they, for
+ * example, will know which textures to load in / use.
+ *
+ * Because of this, any package that's recreated will need
+ * to be done so in a way that preserves the original file
+ * order.
+ *
+ * Thanks to solemnwarning for his help on this one!
+ */
+
+typedef struct __attribute__((packed)) MADIndex {
+    // F                          P        O
+    // 65796573 3030312E 74696D00 00000000 50010000 8C020000
+
+    char file[12];
+
+    int32_t padding0;
+
+    uint32_t offset;
+    uint32_t length;
+} MADIndex;
+
+bool check_mad_file_name(const char *path) {
+    for(unsigned int i = 0; i < 12; i++) {
+        if(!isalpha(path[i] && !isnumber(path[i]))) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void extract_mad_file(const char *path) {
+    PRINT("\nOpening %s\n", path);
+
+    char outpath[PL_SYSTEM_MAX_PATH] = { 0 };
+    plStripExtension(outpath, path);
+    snprintf(outpath, sizeof(outpath), "./%s", outpath);
+    if(!plCreateDirectory(outpath)) {
+        PRINT("Failed to create directory!\n%s\n", plGetError());
+        return;
+    }
+
+    FILE *file = fopen(path, "rb");
+    if(!file) {
+        PRINT("Failed to load file %s!\n", path);
+        return;
+    }
+
+    unsigned int lowest_offset = UINT32_MAX; fpos_t position;
+    do {
+        MADIndex index;
+        if(fread(&index, sizeof(MADIndex), 1, file) != 1) {
+            PRINT("Invalid index size!\n");
+            break;
+        }
+
+        if(lowest_offset > index.offset) {
+            lowest_offset = index.offset;
+        }
+
+        char foutpath[PL_SYSTEM_MAX_PATH];
+        snprintf(foutpath, sizeof(foutpath), "%s/%s", outpath, index.file);
+        if(plFileExists(foutpath)) {
+            continue;
+        }
+
+        PRINT("    Exporting %s...", index.file);
+
+        fgetpos(file, &position);
+
+        fseek(file, index.offset, SEEK_SET);
+        uint8_t *data = calloc(index.length, sizeof(uint8_t));
+        if(fread(data, sizeof(uint8_t), index.length, file) == index.length) {
+            FILE *out = fopen(foutpath, "wb");
+            if(out && fwrite(data, sizeof(uint8_t), index.length, out) == index.length) {
+                PRINT("Done!\n");
+            } else {
+                PRINT("Failed!\n");
+            }
+            fclose(out);
+        }
+
+        fsetpos(file, &position);
+
+    } while(position < lowest_offset);
+
+    fclose(file);
+}
+
 //////////////////////////////////////////////////////
 
+#define MAX_VERTICES    2048
+#define MAX_TRIANGLES   4096
+#define MAX_QUADS       4096
+#define MAX_BONES       32
+
 typedef struct PIGModel {
-    VTXCoord coords[2048];
+    VTXCoord coords[MAX_VERTICES];
+    HIRBone bones[MAX_BONES];
+    FACTriangle triangles[MAX_TRIANGLES];
+    FACQuad quads[MAX_QUADS];
 
     unsigned int num_vertices;
-    unsigned int num_triangles;
+    unsigned int num_triangles; // triangles * (quads * 2)
     unsigned int num_bones;
-
-    HIRBone bones[32];
 
     PLMesh *tri_mesh;       // Our actual output!
     PLMesh *skeleton_mesh;  // preview of skeleton
     PLMesh *vertex_mesh;    // preview of vertices
 
     PLVector3D angles;
+    PLVector3D position;
 } PIGModel;
 
 PIGModel model;
@@ -156,8 +280,12 @@ void load_hir_file(const char *path) {
         return;
     }
 
-    memset(model.bones, 0, sizeof(HIRBone) * 32);
+    memset(model.bones, 0, sizeof(HIRBone) * MAX_BONES);
     model.num_bones = (unsigned int) fread(model.bones, sizeof(HIRBone), 32, file);
+    if(model.num_bones > MAX_BONES) {
+        PRINT("Unexpected number of bones, greater than 32! (%d)\n", model.num_bones);
+        model.num_bones = MAX_BONES;
+    }
 
     model.skeleton_mesh = plCreateMesh(
             PL_PRIMITIVE_POINTS,
@@ -584,32 +712,49 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
+/* Hogs of War directory structure...
+ *     Audio
+ *     Chars
+ *     FEBmps
+ *     FESounds
+ *     FEText
+ *     Maps
+ *     Skys
+ *     Speech
+ */
+
 int main(int argc, char **argv) {
-    plInitialize(argc, argv, PL_SUBSYSTEM_LOG);
+
+    plInitialize(argc, argv, PL_SUBSYSTEM_LOG | PL_SUBSYSTEM_LOG);
     plClearLog(LOG);
 
     PRINT(" = = = = = = = = = = = = = = = = = = = = = = =\n");
     PRINT("   H0G Loader, created by Mark \"hogsy\" Sowden\n");
-    PRINT(" = = = = = = = = = = = = = = = = = = = = = = =\n")
+    PRINT(" = = = = = = = = = = = = = = = = = = = = = = =\n");
+    //PRINT("Arguments:\n");
+    //PRINT("    -gamedir <path>      required path to your Hogs of War directory (e.g. \"C:\\Hogs of War\").\n");
+    PRINT("    -model <path>        opens up model for previewing (exclude file extension).\n");
+    //PRINT("    -setup <path>        extracts content from packages.\n");
+    PRINT("\n");
 
-    if(argc < 2) {
-        PRINT("Arguments:\n");
-        PRINT("    -preview <file path>        opens up model for previewing.\n");
-    }
+    plScanDirectory("./Chars/", ".MAD", extract_mad_file);
+    plScanDirectory("./Chars/", ".MTD", extract_mad_file);
+    plScanDirectory("./Maps/", ".MAD", extract_mad_file);
+    plScanDirectory("./Maps/", ".MTD", extract_mad_file);
 
-    memset(&model, 0, sizeof(PIGModel));
+    const char *arg;
+    if ((arg = plGetCommandLineArgument("-model")) && (arg[0] != '\0')) {
+        memset(&model, 0, sizeof(PIGModel));
 
-    const char *path_arg = plGetCommandLineArgument("-path");
-    if(path_arg && path_arg[0] != '\0') {
-        if(!glfwInit()) {
+        if (!glfwInit()) {
             plMessageBox(TITLE, "Failed to initialize GLFW!\n");
             return -1;
         }
 
         glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-        GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, TITLE, NULL, NULL);
-        if(!window) {
+        GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, arg, NULL, NULL);
+        if (!window) {
             glfwTerminate();
 
             plMessageBox(TITLE, "Failed to create window!\n");
@@ -617,98 +762,102 @@ int main(int argc, char **argv) {
         }
 
         glfwSetKeyCallback(window, key_callback);
-
         glfwMakeContextCurrent(window);
 
         plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS);
 
-        glfwSetWindowTitle(window, path_arg);
+        char vtx_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+        snprintf(vtx_path, sizeof(vtx_path), "./%s.vtx", arg);
+        char fac_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+        snprintf(fac_path, sizeof(fac_path), "./%s.fac", arg);
+        char no2_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+        snprintf(no2_path, sizeof(no2_path), "./%s.no2", arg);
 
-        char vtx_path[PL_SYSTEM_MAX_PATH] = { '\0' };
-        snprintf(vtx_path, sizeof(vtx_path), "%s.vtx", path_arg);
-        char fac_path[PL_SYSTEM_MAX_PATH] = { '\0' };
-        snprintf(fac_path, sizeof(fac_path), "%s.fac", path_arg);
-        char no2_path[PL_SYSTEM_MAX_PATH] = { '\0' };
-        snprintf(no2_path, sizeof(no2_path), "%s.no2", path_arg);
-
-        load_hir_file("./models/vtx/pig.HIR");
+        load_hir_file("./Chars/pig.HIR");
         load_vtx_file(vtx_path);
         load_fac_file(fac_path);
 
         plSetDefaultGraphicsState();
         plSetClearColour(plCreateColour4b(0, 0, 128, 255));
 
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-
-#if 1 // ol' gl lighting, just for testing
-        GLfloat light_ambient[] = { 0.6f, 0.6f, 0.6f, 1.f };
-        glEnable(GL_LIGHTING);
-        glEnable(GL_LIGHT0);
-        glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-        glEnable(GL_LIGHT1);
-        GLfloat light_colour_red[] = { 0.5f, 0, 0, 1.f };
-        glLightfv(GL_LIGHT1, GL_DIFFUSE, light_colour_red);
-        GLfloat light_position[] = { 0, 12.f, -800.f };
-        glLightfv(GL_LIGHT1, GL_POSITION, light_position);
-#endif
-
         PLCamera *camera = plCreateCamera();
-        if(!camera) {
+        if (!camera) {
             PRINT("Failed to create camera!");
             return -1;
         }
         camera->mode = PL_CAMERAMODE_PERSPECTIVE;
-        glfwGetFramebufferSize(window, (int *) &camera->viewport.width, (int *) &camera->viewport.height);
         camera->fov = 90.f;
+
+        glfwGetFramebufferSize(window, (int *) &camera->viewport.width, (int *) &camera->viewport.height);
 
         plSetCameraPosition(camera, plCreateVector3D(0, 12, -500));
 
+#if 1
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+
+        // ol' gl lighting, just for testing
+        GLfloat light_ambient[] = {0.6f, 0.6f, 0.6f, 1.f};
+        glEnable(GL_LIGHTING);
+        glEnable(GL_LIGHT0);
+        glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+        glEnable(GL_LIGHT1);
+        GLfloat light_colour_red[] = {0.5f, 0, 0, 1.f};
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, light_colour_red);
+        GLfloat light_position[] = {0, 12.f, -800.f};
+        glLightfv(GL_LIGHT1, GL_POSITION, light_position);
+
         glPointSize(5.f);
         glLineWidth(2.f);
+#endif
 
-        while(!glfwWindowShouldClose(window)) {
+        while (!glfwWindowShouldClose(window)) {
 
             glfwPollEvents();
 
             // input handlers start..
-
             double xpos, ypos;
             glfwGetCursorPos(window, &xpos, &ypos);
 
             // Camera rotation
-            static double oldmpos[2] = { 0, 0 };
+            static double oldmpos[2] = {0, 0};
             int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
             if (state == GLFW_PRESS) {
-                double nxpos = xpos - oldmpos[0]; double nypos = ypos - oldmpos[1];
-                model.angles.x += (nxpos / 100.f); model.angles.y += (nypos / 100.f);
+                double nxpos = xpos - oldmpos[0];
+                double nypos = ypos - oldmpos[1];
+                model.angles.x += (nxpos / 100.f);
+                model.angles.y += (nypos / 100.f);
             } else {
-                oldmpos[0] = xpos; oldmpos[1] = ypos;
+                oldmpos[0] = xpos;
+                oldmpos[1] = ypos;
             }
 
             // Zoom in and out thing...
-            static double oldrmpos[2] = { 0, 0 };
+            static double oldrmpos[2] = {0, 0};
             state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
-            if(state == GLFW_PRESS) {
+            if (state == GLFW_PRESS) {
                 double nypos = ypos - oldrmpos[1];
                 camera->position.z += (nypos / 20.f);
             } else {
-                oldrmpos[0] = xpos; oldrmpos[1] = ypos;
+                oldrmpos[0] = xpos;
+                oldrmpos[1] = ypos;
             }
-
             // input handlers end...
 
             plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
-            // draw stuff start
             plSetupCamera(camera);
 
+#if 1
             glLoadIdentity();
             glRotatef(model.angles.y, 1, 0, 0);
             glRotatef(model.angles.x, 0, 1, 0);
             glRotatef(model.angles.z + 180.f, 0, 0, 1);
 
-            switch(view_mode) {
+            switch (view_mode) {
+                default:
+                    break;
+
                 case VIEW_MODE_LIT: {
                     glEnable(GL_LIGHTING);
                     glShadeModel(GL_FLAT);
@@ -738,9 +887,14 @@ int main(int argc, char **argv) {
                     glEnable(GL_DEPTH_TEST);
                 }
             }
+#endif
 
             glfwSwapBuffers(window);
         }
+
+        plDeleteMesh(model.tri_mesh);
+        plDeleteMesh(model.vertex_mesh);
+        plDeleteMesh(model.skeleton_mesh);
 
         plDeleteCamera(camera);
 

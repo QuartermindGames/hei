@@ -126,7 +126,7 @@ const PLchar *plGetFileExtension(const PLchar *in) {
 }
 
 // Strips the extension from the filename.
-void plStripExtension(PLchar *dest, const PLchar *in) {
+void plStripExtension(char *dest, const char *in) {
     plFunctionStart();
     if (!plIsValidString(in)) {
         *dest = 0;
@@ -289,6 +289,15 @@ void plSetWorkingDirectory(const char *path) {
 bool plFileExists(const char *path) {
     struct stat buffer;
     return (bool) (stat(path, &buffer) == 0);
+}
+
+bool plPathExists(const char *path) {
+    DIR *dir = opendir(path);
+    if(dir) {
+        closedir(dir);
+        return true;
+    }
+    return false;
 }
 
 int16_t plGetLittleShort(FILE *fin) {
