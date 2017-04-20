@@ -45,6 +45,8 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
         result = _plLoadDTXImage(fin, out);
     } else if(_plTIFFFormatCheck(fin)) {
         result = _plLoadTIFFImage(path, out);
+    } else if(_plBMPFormatCheck(fin)) {
+        result = _plLoadBMPImage(path, out);
     } else {
         const PLchar *extension = plGetFileExtension(path);
         if(plIsValidString(extension)) {

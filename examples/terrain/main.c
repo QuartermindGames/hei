@@ -25,18 +25,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <platform_log.h>
-#include <platform_window.h>
-#include <platform_graphics.h>
-#include <platform_graphics_mesh.h>
-#include <platform_filesystem.h>
+#include "main.h"
+
+#include "mad.h"
+
+#include <IL/il.h>
+#include <IL/ilu.h>
+#include <IL/ilut.h>
 
 #include <GLFW/glfw3.h>
-#include <platform_model.h>
 
-#define TITLE "H0G Loader"
-#define LOG "hog_loader"
-#define PRINT(...) printf(__VA_ARGS__); plWriteLog(LOG, __VA_ARGS__)
 #define WIDTH 1024
 #define HEIGHT 768
 
@@ -111,6 +109,24 @@ typedef struct NO2Index { // todo
     int32_t unknown3;
 } NO2Index;
 
+/*  ANIM Format Specification   */
+/* Don't actually have a name / extension
+ * for this one, so we'll just dub it 'anim'
+ * for now.
+ */
+
+/*
+ * 00000000 8AFFFFFF 02000000 00000000 00000000 00000000 00000000 00000000
+ * 8C8BD5BD EE4695BC B88630BE 0000803F 3DDD9D3C CD372CBD 4E1FA9BE 0000803F
+ * 51E1B8BC A3E2303D 87D81F3C 0000803F 9FBCA43F F246B83E FDAFBB3D 0000803F
+ * D11BA13B 509AFABE 8D244E3C 0000803F 2E9B8D3E FD10D23D D640B1BE 0000803F
+ * F0045DBF 72A5843E 66EECBBE 0000803F 62CD4740 3C4AA73F 151A4840 0000803F
+ * F5F14ABF 3BB1593E 0815BA3E 0000803F 5E4425BE 86B3F33D 5EED7FBD 0000803F
+ * F30AC93A ADA5B137 C43162BC 0000803F 7ACA8F3E E3682C3E E724033E 0000803F
+ * E92BA3BA BC220BBE DA57963E 0000803F FB0BC9BA DFE89DB7 CB0F49BC 0000803F
+ * EF5F9C3D FD2C27BC 1A2BB5BD 0000803F
+ */
+
 /*  HIR Format Specification    */
 /* Used to store our piggy bones.
  */
@@ -125,7 +141,8 @@ typedef struct NO2Index { // todo
 // 01000000 FEFF9BFF A9FF0000 00000000 00000000
 
 typedef struct __attribute__((packed)) HIRBone {
-    uint32_t parent;
+    uint32_t parent; // not 100% on this, links in with
+                     // animations from the looks of it, urgh...
 
     int16_t coords[3];
     int16_t padding;
@@ -147,55 +164,18 @@ void load_srl_file(const char *path) {
     // 000 < ???
 }
 
-/*  MAD/MTD Format Specification    */
-/* The MAD/MTD format is the package format used by
- * Hogs of War to store and index content used by
- * the game.
- *
- * Files within these packages are expected to be in
- * a specific order, as both the game and other assets
- * within the game rely on this order so that they, for
- * example, will know which textures to load in / use.
- *
- * Because of this, any package that's recreated will need
- * to be done so in a way that preserves the original file
- * order.
- *
- * Thanks to solemnwarning for his help on this one!
- */
+/*  TAB Format Specification        */
+typedef struct TABIndex {
+    // C0035A00 02001E00
 
-typedef struct __attribute__((packed)) MADIndex {
-    // F                          P        O
-    // 65796573 3030312E 74696D00 00000000 50010000 8C020000
+    int32_t unknown0;
 
-    char file[12];
+    uint16_t width;
+    uint16_t height;
+} TABIndex;
 
-    int32_t padding0;
-
-    uint32_t offset;
-    uint32_t length;
-} MADIndex;
-
-bool check_mad_file_name(const char *path) {
-    for(unsigned int i = 0; i < 12; i++) {
-        if(!isalpha(path[i] && !isnumber(path[i]))) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-void extract_mad_file(const char *path) {
+void load_tab_file(const char *path) {
     PRINT("\nOpening %s\n", path);
-
-    char outpath[PL_SYSTEM_MAX_PATH] = { 0 };
-    plStripExtension(outpath, path);
-    snprintf(outpath, sizeof(outpath), "./%s", outpath);
-    if(!plCreateDirectory(outpath)) {
-        PRINT("Failed to create directory!\n%s\n", plGetError());
-        return;
-    }
 
     FILE *file = fopen(path, "rb");
     if(!file) {
@@ -203,45 +183,14 @@ void extract_mad_file(const char *path) {
         return;
     }
 
-    unsigned int lowest_offset = UINT32_MAX; fpos_t position;
-    do {
-        MADIndex index;
-        if(fread(&index, sizeof(MADIndex), 1, file) != 1) {
-            PRINT("Invalid index size!\n");
-            break;
-        }
+    // Seem to have some blank crap at the start...
+    fseek(file, 16, SEEK_SET);
 
-        if(lowest_offset > index.offset) {
-            lowest_offset = index.offset;
-        }
 
-        char foutpath[PL_SYSTEM_MAX_PATH];
-        snprintf(foutpath, sizeof(foutpath), "%s/%s", outpath, index.file);
-        if(plFileExists(foutpath)) {
-            continue;
-        }
+}
 
-        PRINT("    Exporting %s...", index.file);
-
-        fgetpos(file, &position);
-
-        fseek(file, index.offset, SEEK_SET);
-        uint8_t *data = calloc(index.length, sizeof(uint8_t));
-        if(fread(data, sizeof(uint8_t), index.length, file) == index.length) {
-            FILE *out = fopen(foutpath, "wb");
-            if(out && fwrite(data, sizeof(uint8_t), index.length, out) == index.length) {
-                PRINT("Done!\n");
-            } else {
-                PRINT("Failed!\n");
-            }
-            fclose(out);
-        }
-
-        fsetpos(file, &position);
-
-    } while(position < lowest_offset);
-
-    fclose(file);
+void load_fonts(void) {
+    plScanDirectory("./FEFonts/", ".tab", load_tab_file);
 }
 
 //////////////////////////////////////////////////////
@@ -263,7 +212,6 @@ typedef struct PIGModel {
 
     PLMesh *tri_mesh;       // Our actual output!
     PLMesh *skeleton_mesh;  // preview of skeleton
-    PLMesh *vertex_mesh;    // preview of vertices
 
     PLVector3D angles;
     PLVector3D position;
@@ -288,7 +236,7 @@ void load_hir_file(const char *path) {
     }
 
     model.skeleton_mesh = plCreateMesh(
-            PL_PRIMITIVE_POINTS,
+            PL_PRIMITIVE_LINES,
             PL_DRAW_IMMEDIATE,
             0,
             model.num_bones * 2
@@ -303,20 +251,11 @@ void load_hir_file(const char *path) {
               model.bones[i].coords[2]);
 #endif
 
-#if 0
-        plSetMeshVertexPosition3f(model.skeleton_mesh, i,
-                                  model.bones[model.bones[i].parent].coords[0],
-                                  model.bones[model.bones[i].parent].coords[1],
-                                  model.bones[model.bones[i].parent].coords[2]);
-        plSetMeshVertexColour(model.skeleton_mesh, i, plCreateColour4b(PL_COLOUR_RED));
-#endif
-
         plSetMeshVertexPosition3f(model.skeleton_mesh, i,
                                   model.bones[i].coords[0],
                                   model.bones[i].coords[1],
                                   model.bones[i].coords[2]);
         plSetMeshVertexColour(model.skeleton_mesh, i, plCreateColour4b(PL_COLOUR_RED));
-
     }
 
     fclose(file);
@@ -598,40 +537,6 @@ void load_fac_file(const char *path) {
     fclose(file);
 }
 
-void upload_vtx(void) {
-    model.vertex_mesh = plCreateMesh(
-            PL_PRIMITIVE_POINTS,
-            PL_DRAW_IMMEDIATE,
-            0,
-            model.num_vertices
-    );
-
-    for(unsigned int i = 0; i < model.num_vertices; i++) {
-#if 0
-        PRINT("VERTEX %d\n", i);
-        PRINT("    position(%d %d %d)\n", model.coords[i].x, model.coords[i].y, model.coords[i].z);
-        PRINT("    bone(%d(%d %d %d))\n", model.coords[i].bone_index,
-              model.bones[model.coords[i].bone_index].coords[0],
-              model.bones[model.coords[i].bone_index].coords[1],
-              model.bones[model.coords[i].bone_index].coords[2]
-        );
-#endif
-
-        plSetMeshVertexPosition3f(model.vertex_mesh, i, model.coords[i].x, model.coords[i].y, model.coords[i].z);
-        if(model.coords[i].bone_index > 0) {
-            srand(model.coords[i].bone_index);
-            uint8_t r = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
-            uint8_t g = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
-            uint8_t b = (uint8_t)((rand() % 255) * ((rand() % 254) + 1));
-            plSetMeshVertexColour(model.vertex_mesh, i, plCreateColour4b(r, g, b, 255));
-        } else {
-            plSetMeshVertexColour(model.vertex_mesh, i, plCreateColour4b(PL_COLOUR_RED));
-        }
-    }
-
-    plUploadMesh(model.vertex_mesh);
-}
-
 void load_vtx_file(const char *path) {
     PRINT("\nOpening %s\n", path);
 
@@ -649,8 +554,6 @@ void load_vtx_file(const char *path) {
     }
 
     PRINT("Vertices: %d\n", model.num_vertices);
-
-    upload_vtx();
 }
 
 enum {
@@ -723,48 +626,97 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
  *     Speech
  */
 
+typedef struct GlobalVars {
+    bool is_psx;
+} GlobalVars;
+
+GlobalVars g_status;
+
 int main(int argc, char **argv) {
+
+    memset(&g_status, 0, sizeof(GlobalVars));
 
     plInitialize(argc, argv, PL_SUBSYSTEM_LOG | PL_SUBSYSTEM_LOG);
     plClearLog(LOG);
 
-    PRINT(" = = = = = = = = = = = = = = = = = = = = = = =\n");
-    PRINT("   H0G Loader, created by Mark \"hogsy\" Sowden\n");
-    PRINT(" = = = = = = = = = = = = = = = = = = = = = = =\n");
-    //PRINT("Arguments:\n");
-    //PRINT("    -gamedir <path>      required path to your Hogs of War directory (e.g. \"C:\\Hogs of War\").\n");
-    PRINT("    -model <path>        opens up model for previewing (exclude file extension).\n");
-    //PRINT("    -setup <path>        extracts content from packages.\n");
-    PRINT("\n");
+    // Check if it's the PSX content or PC content.
+    if(plFileExists("./system.cnf")) {
+        PRINT("Found system.cnf, assuming PSX version...\n");
+        g_status.is_psx = true;
+    }
 
-    plScanDirectory("./Chars/", ".MAD", extract_mad_file);
-    plScanDirectory("./Chars/", ".MTD", extract_mad_file);
-    plScanDirectory("./Maps/", ".MAD", extract_mad_file);
-    plScanDirectory("./Maps/", ".MTD", extract_mad_file);
+    // Ensure that all of the game's content has been extracted
+    if(g_status.is_psx) { // tidy file paths
+        plScanDirectory("./tims/", ".mad", ExtractMADPackage);
+        plScanDirectory("./fe/", ".mad", ExtractMADPackage);
+        plScanDirectory("./chars/", ".mad", ExtractMADPackage);
+    } else { // sloppy file paths
+        plScanDirectory("./Chars/", ".MAD", ExtractMADPackage);
+#ifndef _WIN32
+        plScanDirectory("./Chars/", ".mad", ExtractMADPackage);
+#endif
+        plScanDirectory("./Chars/", ".MTD", ExtractMADPackage);
+#ifndef _WIN32
+        plScanDirectory("./Chars/", ".mtd", ExtractMADPackage);
+#endif
+        plScanDirectory("./Maps/", ".MAD", ExtractMADPackage);
+#ifndef _WIN32
+        plScanDirectory("./Maps/", ".mad", ExtractMADPackage);
+#endif
+        plScanDirectory("./Maps/", ".MTD", ExtractMADPackage);
+#ifndef _WIN32
+        plScanDirectory("./Maps/", ".mtd", ExtractMADPackage);
+#endif
+    }
+
+    // Initialize GLFW...
+
+    if (!glfwInit()) {
+        plMessageBox(TITLE, "Failed to initialize GLFW!\n");
+        return -1;
+    }
+
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
+    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Piggy Viewer", NULL, NULL);
+    if (!window) {
+        glfwTerminate();
+
+        plMessageBox(TITLE, "Failed to create window!\n");
+        return -1;
+    }
+
+    glfwSetKeyCallback(window, key_callback);
+    glfwMakeContextCurrent(window);
+
+    // Initialize DevIL...
+
+    ilInit ();
+    iluInit();
+
+    ilEnable (IL_CONV_PAL);
+
+    ////////////////////////////////////////////////////
+
+    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS);
+
+    plSetDefaultGraphicsState();
+    plSetClearColour(plCreateColour4b(0, 0, 128, 255));
+
+    PLCamera *camera = plCreateCamera();
+    if (!camera) {
+        PRINT("Failed to create camera!");
+        return -1;
+    }
+
+    camera->mode = PL_CAMERAMODE_PERSPECTIVE;
+    camera->fov = 90.f;
+
+    glfwGetFramebufferSize(window, (int *) &camera->viewport.width, (int *) &camera->viewport.height);
 
     const char *arg;
     if ((arg = plGetCommandLineArgument("-model")) && (arg[0] != '\0')) {
         memset(&model, 0, sizeof(PIGModel));
-
-        if (!glfwInit()) {
-            plMessageBox(TITLE, "Failed to initialize GLFW!\n");
-            return -1;
-        }
-
-        glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
-        GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, arg, NULL, NULL);
-        if (!window) {
-            glfwTerminate();
-
-            plMessageBox(TITLE, "Failed to create window!\n");
-            return -1;
-        }
-
-        glfwSetKeyCallback(window, key_callback);
-        glfwMakeContextCurrent(window);
-
-        plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS);
 
         char vtx_path[PL_SYSTEM_MAX_PATH] = {'\0'};
         snprintf(vtx_path, sizeof(vtx_path), "./%s.vtx", arg);
@@ -776,19 +728,6 @@ int main(int argc, char **argv) {
         load_hir_file("./Chars/pig.HIR");
         load_vtx_file(vtx_path);
         load_fac_file(fac_path);
-
-        plSetDefaultGraphicsState();
-        plSetClearColour(plCreateColour4b(0, 0, 128, 255));
-
-        PLCamera *camera = plCreateCamera();
-        if (!camera) {
-            PRINT("Failed to create camera!");
-            return -1;
-        }
-        camera->mode = PL_CAMERAMODE_PERSPECTIVE;
-        camera->fov = 90.f;
-
-        glfwGetFramebufferSize(window, (int *) &camera->viewport.width, (int *) &camera->viewport.height);
 
         plSetCameraPosition(camera, plCreateVector3D(0, 12, -500));
 
@@ -869,11 +808,6 @@ int main(int argc, char **argv) {
                     break;
                 }
 
-                case VIEW_MODE_POINTS: {
-                    plDrawMesh(model.vertex_mesh);
-                    break;
-                }
-
                 case VIEW_MODE_WEIGHTS:
                 case VIEW_MODE_WIREFRAME: {
                     plDrawMesh(model.tri_mesh);
@@ -893,13 +827,12 @@ int main(int argc, char **argv) {
         }
 
         plDeleteMesh(model.tri_mesh);
-        plDeleteMesh(model.vertex_mesh);
         plDeleteMesh(model.skeleton_mesh);
-
-        plDeleteCamera(camera);
 
         glfwTerminate();
     }
+
+    plDeleteCamera(camera);
 
     plShutdown();
 
