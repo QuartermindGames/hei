@@ -32,6 +32,7 @@ file(
         *.cpp *.c
 
         graphics/*.*
+        image/*.*
 
         include/*.h
         )

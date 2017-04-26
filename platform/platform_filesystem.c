@@ -212,7 +212,7 @@ void plScanDirectory(const char *path, const char *extension, void(*Function)(co
     if (directory) {
         struct dirent *entry;
         while ((entry = readdir(directory))) {
-            if (strstr(entry->d_name, extension)) {
+            if (strcasestr(entry->d_name, extension)) {
                 sprintf(filestring, "%s/%s", path, entry->d_name);
                 Function(filestring);
             }

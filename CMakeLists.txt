@@ -47,8 +47,6 @@ add_subdirectory(platform)
 add_subdirectory(examples/image_viewer)
 add_subdirectory(examples/glfw_image_viewer)
 add_subdirectory(examples/tim2tiff)
-add_subdirectory(examples/hog_loader)
-add_subdirectory(examples/terrain)
 
 #[[
 if(XENON_COMPILE_TOOLS)
