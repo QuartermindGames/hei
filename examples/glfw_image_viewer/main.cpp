@@ -90,6 +90,8 @@ int main(int argc, char **argv) {
     camera->mode = PL_CAMERAMODE_ORTHOGRAPHIC;
     camera->viewport.width = width; camera->viewport.height = height;
 
+    glfwGetFramebufferSize(window, (int*)&camera->viewport.width, (int*)&camera->viewport.height);
+
     // Create a texture slot for our new texture.
     PLTexture *image_texture = plCreateTexture();
     if(!image_texture) {
@@ -105,39 +107,15 @@ int main(int argc, char **argv) {
 
     _plFreeImage(&image);
 
-    // Allocate our mesh object.
-    PLMesh *cube = plCreateMesh(PL_PRIMITIVE_QUADS, PL_DRAW_STATIC, 2, 4);
-    if(!cube) {
-        plMessageBox(TITLE, "Failed to create mesh!\n%s", plGetError());
-        return -1;
-    }
-
-    // Clear, define and upload.
-    plClearMesh(cube);
-
-    plSetMeshVertexPosition3f(cube, 0, 0, 0, 0);
-    plSetMeshVertexST(cube, 0, 0, 0);
-    plSetMeshVertexColour(cube, 0, PLColour(PL_COLOUR_RED));
-
-    plSetMeshVertexPosition3f(cube, 1, width, 0, 0);
-    plSetMeshVertexST(cube, 1, 1, 0);
-    plSetMeshVertexColour(cube, 1, PLColour(PL_COLOUR_GREEN));
-
-    plSetMeshVertexPosition3f(cube, 2, width, height, 0);
-    plSetMeshVertexST(cube, 2, 1, 1);
-    plSetMeshVertexColour(cube, 2, PLColour(PL_COLOUR_BLUE));
-
-    plSetMeshVertexPosition3f(cube, 3, 0, height, 0);
-    plSetMeshVertexST(cube, 3, 0, 1);
-    plSetMeshVertexColour(cube, 3, PLColour(PL_COLOUR_WHITE));
-
-    plUploadMesh(cube);
-
-    PLMesh *texture_primitive = plCreateTriangleMesh(0, 0, width / 2, height / 2);
+    PLMesh *texture_primitive = plCreateRectangleMesh(PL_DRAW_IMMEDIATE);
     if(!texture_primitive) {
         plMessageBox(TITLE, "Failed to create mesh!\n%s", plGetError());
         return -1;
     }
+
+    plSetupRectangleMesh(texture_primitive, 0, 0, camera->viewport.width, camera->viewport.height);
+
+    plBindTexture(image_texture);
 
     while(!glfwWindowShouldClose(window)) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
@@ -145,7 +123,6 @@ int main(int argc, char **argv) {
         // draw stuff start
         plSetupCamera(camera);
 
-        //plDrawMesh(cube);
         plDrawMesh(texture_primitive);
         // draw stuff end
 
@@ -154,7 +131,7 @@ int main(int argc, char **argv) {
     }
 
     plDeleteTexture(image_texture, true);
-    plDeleteMesh(cube);
+    plDeleteMesh(texture_primitive);
     plDeleteCamera(camera);
 
     glfwTerminate();

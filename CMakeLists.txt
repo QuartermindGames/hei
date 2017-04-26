@@ -32,7 +32,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
 
-#option(XENON_COMPILE_TOOLS "Compile Xenon utilities" ON)
+option(PL_BUILD_EXAMPLES "Build examples" ON)
 
 include_directories("${CMAKE_SOURCE_DIR}/include/")           # Base include directories.
 include_directories("${CMAKE_SOURCE_DIR}/platform/include/")  # Platform lib headers get used for everything.
@@ -44,13 +44,8 @@ add_definitions("-D_DEBUG")
 
 add_subdirectory(platform)
 
-add_subdirectory(examples/image_viewer)
-add_subdirectory(examples/glfw_image_viewer)
-add_subdirectory(examples/tim2tiff)
-
-#[[
-if(XENON_COMPILE_TOOLS)
-    #add_subdirectory(level)
-    #add_subdirectory(editor)
-endif(XENON_COMPILE_TOOLS)
-]]
+if(PL_BUILD_EXAMPLES)
+    add_subdirectory(examples/image_viewer)
+    add_subdirectory(examples/glfw_image_viewer)
+    add_subdirectory(examples/tim2tiff)
+endif(PL_BUILD_EXAMPLES)
