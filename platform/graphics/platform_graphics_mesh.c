@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_graphics.h"
 
 #if defined(PL_MODE_OPENGL)
-#   define _PL_USE_VERTEX_BUFFER_OBJECTS
+#   define _PLGL_USE_VERTEX_BUFFER_OBJECTS
 #endif
 
 typedef struct PLTranslatePrimitive {
@@ -213,9 +213,9 @@ PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, unsigned int num_tr
         return NULL;
     }
 
-#if defined(PL_MODE_OPENGL) && defined(_PL_USE_VERTEX_BUFFER_OBJECTS)
+#if defined(PL_MODE_OPENGL) && defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
     if(mode != PL_DRAW_IMMEDIATE) {
-        glGenBuffers(1, &mesh->id[_PL_MESH_VERTICES]);
+        glGenBuffers(_PLGL_BUFFERS, mesh->_buffers);
     }
 #endif
 
@@ -296,15 +296,15 @@ void plSetMeshVertexColour(PLMesh *mesh, PLuint index, PLColour colour) {
 }
 
 void plUploadMesh(PLMesh *mesh) {
-#if defined(PL_MODE_OPENGL) && defined(_PL_USE_VERTEX_BUFFER_OBJECTS)
+#if defined(PL_MODE_OPENGL) && defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
     if((mesh->mode == PL_DRAW_IMMEDIATE) || (mesh->primitive == PL_PRIMITIVE_QUADS)) {
         // todo, eventually just convert quad primitives to triangles
         return;
     }
 
-#if defined(PL_MODE_OPENGL_CORE)
+#if defined(PL_MODE_OPENGL_CORE) || defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
     // Fill our buffer with data.
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->id[_PL_MESH_VERTICES]);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->_buffers[_PLGL_BUFFER_VERTICES]);
     glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)sizeof(PLVertex), &mesh->vertices[0].position.x, _plTranslateDrawMode(mesh->mode));
 #endif
 #endif
@@ -314,7 +314,7 @@ void plDrawMesh(PLMesh *mesh) {
     plAssert(mesh->num_verts);
 
 #if defined(PL_MODE_OPENGL)
-#if !defined(PL_MODE_OPENGL_CORE) //&& !defined(_PL_USE_VERTEX_BUFFER_OBJECTS)
+#if !defined(PL_MODE_OPENGL_CORE) && !defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
 #if 1
         glBegin(_plTranslatePrimitiveMode(mesh->primitive));
@@ -368,9 +368,8 @@ void plDrawMesh(PLMesh *mesh) {
 #else
     {
 #endif
-        glBindBuffer(GL_ARRAY_BUFFER, mesh->id[_PL_MESH_VERTICES]);
-
         glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh->_buffers[_PLGL_BUFFER_VERTICES]);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
         if (mesh->primitive == PL_PRIMITIVE_TRIANGLES) {
