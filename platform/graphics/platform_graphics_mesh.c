@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_graphics.h"
+#include "PL/platform_graphics.h"
 
 #if defined(PL_MODE_OPENGL)
 #   define _PLGL_USE_VERTEX_BUFFER_OBJECTS
@@ -390,27 +390,31 @@ void plDrawMesh(PLMesh *mesh) {
 
 // Utility Functions
 
-void plCreateCubeMesh() {}
+void plDrawCube() {} // todo
 
 /*  Textured Rectangle Mesh  */
 
-void plSetupRectangleMesh(PLMesh *mesh, int x, int y, unsigned int width, unsigned int height) {
-    plAssert(mesh);
-    plAssert(mesh->num_verts == 4);
-    plAssert(mesh->num_triangles == 2);
-    plAssert(mesh->primitive == PL_PRIMITIVE_TRIANGLE_STRIP);
+void plDrawRectangle(PLRectangle rect) {
+    static PLMesh *mesh = NULL;
+    if(!mesh) {
+        mesh = plCreateMesh(
+                PL_PRIMITIVE_TRIANGLE_STRIP,
+                PL_DRAW_IMMEDIATE, // todo, update to dynamic
+                2, 4
+        );
+    }
 
     plClearMesh(mesh);
 
-    plSetMeshVertexPosition2f(mesh, 0, x, y + height);
-    plSetMeshVertexPosition2f(mesh, 1, x, y);
-    plSetMeshVertexPosition2f(mesh, 2, x + width, y + height);
-    plSetMeshVertexPosition2f(mesh, 3, x + width, y);
+    plSetMeshVertexPosition2f(mesh, 0, rect.x, rect.y + rect.height);
+    plSetMeshVertexPosition2f(mesh, 1, rect.x, rect.y);
+    plSetMeshVertexPosition2f(mesh, 2, rect.x + rect.width, rect.y + rect.height);
+    plSetMeshVertexPosition2f(mesh, 3, rect.x + rect.width, rect.y);
 
-    plSetMeshVertexColour(mesh, 0, plCreateColour4b(255, 255, 255, 255));
-    plSetMeshVertexColour(mesh, 1, plCreateColour4b(255, 255, 255, 255));
-    plSetMeshVertexColour(mesh, 2, plCreateColour4b(255, 255, 255, 255));
-    plSetMeshVertexColour(mesh, 3, plCreateColour4b(255, 255, 255, 255));
+    plSetMeshVertexColour(mesh, 0, rect.ll);
+    plSetMeshVertexColour(mesh, 1, rect.ul);
+    plSetMeshVertexColour(mesh, 2, rect.lr);
+    plSetMeshVertexColour(mesh, 3, rect.ur);
 
     plSetMeshVertexST(mesh, 0, 0, 0);
     plSetMeshVertexST(mesh, 1, 0, 1);
@@ -418,43 +422,33 @@ void plSetupRectangleMesh(PLMesh *mesh, int x, int y, unsigned int width, unsign
     plSetMeshVertexST(mesh, 3, 1, 0);
 
     plUploadMesh(mesh);
-}
 
-PLMesh *plCreateRectangleMesh(PLDrawMode mode) {
-    PLMesh *mesh;
-    return (mesh = plCreateMesh(
-            PL_PRIMITIVE_TRIANGLE_STRIP,
-            mode,
-            2, 4
-    ));
+    plDrawMesh(mesh);
 }
 
 /*  Triangle Mesh   */
 
-void plSetupTriangleMesh(PLMesh *mesh, int x, int y, unsigned int width, unsigned int height) {
-    plAssert(mesh);
-    plAssert(mesh->num_verts == 3);
-    plAssert(mesh->num_triangles == 1);
-    plAssert(mesh->primitive == PL_PRIMITIVE_TRIANGLE_FAN);
+void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
+    static PLMesh *mesh = NULL;
+    if (!mesh) {
+        mesh = plCreateMesh(
+                PL_PRIMITIVE_TRIANGLE_FAN,
+                PL_DRAW_IMMEDIATE, // todo, update to dynamic
+                1, 3
+        );
+    }
 
     plClearMesh(mesh);
 
-    plSetMeshVertexPosition2f(mesh, 0, x, y + height);
-    plSetMeshVertexPosition2f(mesh, 1, x + width / 2, x);
-    plSetMeshVertexPosition2f(mesh, 2, x + width, y + height);
+    plSetMeshVertexPosition2f(mesh, 0, x, y + h);
+    plSetMeshVertexPosition2f(mesh, 1, x + w / 2, x);
+    plSetMeshVertexPosition2f(mesh, 2, x + w, y + h);
 
     plSetMeshVertexColour(mesh, 0, plCreateColour4b(255, 0, 0, 255));
     plSetMeshVertexColour(mesh, 1, plCreateColour4b(0, 255, 0, 255));
     plSetMeshVertexColour(mesh, 2, plCreateColour4b(0, 0, 255, 255));
 
     plUploadMesh(mesh);
-}
 
-PLMesh *plCreateTriangleMesh(PLDrawMode mode) {
-    PLMesh *mesh;
-    return (mesh = plCreateMesh(
-            PL_PRIMITIVE_TRIANGLE_FAN,
-            mode,
-            1, 3
-    ));
+    plDrawMesh(mesh);
 }

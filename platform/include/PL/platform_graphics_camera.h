@@ -27,7 +27,32 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include "PL/platform.h"
+#include "platform.h"
 
-#include <fox-1.6/fx.h>
-#include <fox-1.6/fx3d.h>
+enum {
+    PL_CAMERAMODE_PERSPECTIVE,
+    PL_CAMERAMODE_ORTHOGRAPHIC,
+    PL_CAMERAMODE_ISOMETRIC
+};
+
+typedef struct PLCamera {
+    float fov, fovx, fovy;
+
+    unsigned int mode;
+
+    // Viewport
+    PLRectangle viewport;
+
+    PLVector3D angles, position;
+
+    PLBBox3D bounds;
+} PLCamera;
+
+PL_EXTERN_C
+
+PL_EXTERN PLCamera *plCreateCamera(void);
+PL_EXTERN void plDeleteCamera(PLCamera *camera);
+
+PL_EXTERN void plSetupCamera(PLCamera *camera);
+
+PL_EXTERN_C_END

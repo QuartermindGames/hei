@@ -25,39 +25,49 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#pragma once
+#include <PL/platform_console.h>
+#include <PL/platform_graphics.h>
 
-#include "platform.h"
+#include <GLFW/glfw3.h>
 
-enum {
-    PL_CAMERAMODE_PERSPECTIVE,
-    PL_CAMERAMODE_ORTHOGRAPHIC,
-    PL_CAMERAMODE_ISOMETRIC
-};
+/* Example of console API, minus error handling :) */
 
-typedef struct PLCamera {
-    float fov, fovx, fovy;
+#define TITLE "Console"
 
-    unsigned int mode;
+int main(int argc, char **argv) {
+    glfwInit();
 
-    // Viewport
-    PLRectangle viewport;
+    GLFWwindow *window = glfwCreateWindow(640, 480, TITLE, NULL, NULL);
+    glfwMakeContextCurrent(window);
 
-    PLVector3D angles, position;
+    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS | PL_SUBSYSTEM_CONSOLE);
 
-    PLBBox3D bounds;
-} PLCamera;
+    plSetupConsole(4);
 
-PL_EXTERN_C
+    plSetConsoleColour(1, plCreateColour4b(128, 0, 0, 128));
+    plSetConsoleColour(2, plCreateColour4b(0, 128, 0, 128));
+    plSetConsoleColour(3, plCreateColour4b(0, 0, 128, 128));
+    plSetConsoleColour(4, plCreateColour4b(0, 0, 0, 128));
 
-PL_EXTERN PLCamera *plCreateCamera(void);
-PL_EXTERN void plDeleteCamera(PLCamera *camera);
+    plSetDefaultGraphicsState();
 
-PL_EXTERN void plSetupCamera(PLCamera *camera);
+    PLCamera *camera = plCreateCamera();
+    camera->mode = PL_CAMERAMODE_ORTHOGRAPHIC;
+    glfwGetFramebufferSize(window, (int*)&camera->viewport.width, (int*)&camera->viewport.height);
 
-PL_EXTERN void plPrintCameraAngles(PLCamera *camera);
+    while(!glfwWindowShouldClose(window)) {
+        plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
 
-PL_EXTERN void plSetCameraPosition(PLCamera *camera, PLVector3D position);
-PL_EXTERN void plSetCameraAngles(PLCamera *camera, PLVector3D angles);
+        plSetupCamera(camera);
+        plDrawConsole();
 
-PL_EXTERN_C_END
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+
+    plShutdown();
+
+    return 0;
+}

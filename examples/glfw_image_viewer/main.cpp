@@ -25,10 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_image.h"
-#include "platform_window.h"
-#include "platform_graphics.h"
-#include "platform_log.h"
+#include "PL/platform_image.h"
+#include "PL/platform_window.h"
+#include "PL/platform_graphics.h"
+#include "PL/platform_log.h"
 
 #include <GLFW/glfw3.h>
 
@@ -107,15 +107,8 @@ int main(int argc, char **argv) {
 
     _plFreeImage(&image);
 
-    PLMesh *texture_primitive = plCreateRectangleMesh(PL_DRAW_IMMEDIATE);
-    if(!texture_primitive) {
-        plMessageBox(TITLE, "Failed to create mesh!\n%s", plGetError());
-        return -1;
-    }
-
-    plSetupRectangleMesh(texture_primitive, 0, 0, camera->viewport.width, camera->viewport.height);
-
-    plBindTexture(image_texture);
+    PLRectangle rectangle = { 0, 0, width, height };
+    plSetRectangleUniformColour(&rectangle, plCreateColour4b(PL_COLOUR_WHITE));
 
     while(!glfwWindowShouldClose(window)) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
@@ -123,7 +116,8 @@ int main(int argc, char **argv) {
         // draw stuff start
         plSetupCamera(camera);
 
-        plDrawMesh(texture_primitive);
+        plBindTexture(image_texture);
+        plDrawRectangle(rectangle);
         // draw stuff end
 
         glfwSwapBuffers(window);
@@ -131,7 +125,6 @@ int main(int argc, char **argv) {
     }
 
     plDeleteTexture(image_texture, true);
-    plDeleteMesh(texture_primitive);
     plDeleteCamera(camera);
 
     glfwTerminate();

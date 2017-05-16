@@ -67,12 +67,10 @@ typedef struct PLMesh {
 PL_EXTERN_C
 
 PL_EXTERN PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, PLuint num_tris, PLuint num_verts);
-PL_EXTERN PLMesh *plCreateRectangleMesh(PLDrawMode mode);
-PL_EXTERN PLMesh *plCreateTriangleMesh(PLDrawMode mode);
 PL_EXTERN void plDeleteMesh(PLMesh *mesh);
 
-PL_EXTERN void plSetupRectangleMesh(PLMesh *mesh, int x, int y, unsigned int width, unsigned int height);
-PL_EXTERN void plSetupTriangleMesh(PLMesh *mesh, int x, int y, unsigned int width, unsigned int height);
+PL_EXTERN void plDrawRectangle(PLRectangle rect);
+PL_EXTERN void plDrawTriangle(int x, int y, unsigned int w, unsigned int h);
 
 PL_EXTERN void plClearMesh(PLMesh *mesh);
 PL_EXTERN void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3D vector);

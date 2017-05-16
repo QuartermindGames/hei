@@ -39,6 +39,7 @@ include_directories("${CMAKE_SOURCE_DIR}/platform/include/")  # Platform lib hea
 include_directories("${CMAKE_SOURCE_DIR}/shared/")            # Xenon shared headers.
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -std=c11)
 
 add_definitions("-D_DEBUG")
 
@@ -48,4 +49,5 @@ if(PL_BUILD_EXAMPLES)
     add_subdirectory(examples/image_viewer)
     add_subdirectory(examples/glfw_image_viewer)
     add_subdirectory(examples/tim2tiff)
+    add_subdirectory(examples/console)
 endif(PL_BUILD_EXAMPLES)

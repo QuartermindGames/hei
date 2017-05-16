@@ -1,4 +1,4 @@
-/*
+#[[
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,11 +23,13 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-*/
+]]
 
-#pragma once
+project(example_console)
 
-#include "PL/platform.h"
+file(GLOB EXAMPLE_CONSOLE_SOURCE_FILES *.*)
 
-#include <fox-1.6/fx.h>
-#include <fox-1.6/fx3d.h>
+add_executable(example_console ${EXAMPLE_CONSOLE_SOURCE_FILES})
+
+target_include_directories(example_console PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(example_console platform glfw)

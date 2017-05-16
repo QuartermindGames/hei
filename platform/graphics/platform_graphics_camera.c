@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_graphics.h"
+#include "PL/platform_graphics.h"
 
 #define PL_CAMERA_DEFAULT_WIDTH     640
 #define PL_CAMERA_DEFAULT_HEIGHT    480
@@ -86,6 +86,7 @@ void plSetupCamera(PLCamera *camera) {
     switch(camera->mode) {
         default:
         case PL_CAMERAMODE_PERSPECTIVE: {
+            // todo, update start
             gluPerspective(camera->fov, camera->viewport.width / camera->viewport.height, 0.1f, 100000.f);
 
             glRotatef(camera->angles.y, 1, 0, 0);
@@ -95,6 +96,7 @@ void plSetupCamera(PLCamera *camera) {
 
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
+            // todo, update end
 
             break;
         }
@@ -105,6 +107,7 @@ void plSetupCamera(PLCamera *camera) {
         case PL_CAMERAMODE_ISOMETRIC: {
             glOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
 
+            // todo, update start
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
@@ -112,24 +115,9 @@ void plSetupCamera(PLCamera *camera) {
             glRotatef(camera->angles.x, 0, 1, 0);
 
             glTranslatef(camera->position.x, camera->position.y, camera->position.z);
+            // todo, update end
             break;
         }
     }
 //#endif
-}
-
-void plSetCameraPosition(PLCamera *camera, PLVector3D position) {
-    if(!camera || plCompareVector3D(camera->position, position)) {
-        return;
-    }
-
-    camera->position = position;
-}
-
-void plSetCameraAngles(PLCamera *camera, PLVector3D angles) {
-    if(!camera || plCompareVector3D(camera->angles, angles)) {
-        return;
-    }
-
-    camera->angles = angles;
 }

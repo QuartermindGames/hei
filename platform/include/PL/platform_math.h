@@ -34,31 +34,31 @@ For more information, please refer to <http://unlicense.org>
 #define PL_PI   3.14159265358979323846
 
 enum {
-    PL_X,
-    PL_Y,
-    PL_Z
-};
+    PL_X, PL_Y, PL_Z,
 
-enum {
-    PL_WIDTH,
-    PL_HEIGHT
-};
-
-enum {
-    PL_PITCH,
+    PL_PITCH = 0,
     PL_YAW,
-    PL_ROLL
-};
+    PL_ROLL,
 
-enum {
-    PL_RED,
+    // Directions
+    PL_UP = 0,
+    PL_DOWN,
+    PL_LEFT,
+    PL_RIGHT,
+
+    // Colours
+    PL_RED = 0,
     PL_GREEN,
     PL_BLUE,
-    PL_ALPHA
+    PL_ALPHA,
 };
 
 #define plFloatToByte(a)    (PLbyte)round(a * 255)
 #define plByteToFloat(a)    (a / (PLfloat)255)
+
+PL_INLINE static PLbool plIsPowerOfTwo(PLuint num) {
+    return (PLbool)((num != 0) && ((num & (~num + 1)) == num));
+}
 
 // Vectors
 
@@ -748,7 +748,28 @@ typedef struct PLBBox2D {
 typedef struct PLRectangle {
     PLint x, y;
     PLuint width, height;
+    PLColour ul, ur, ll, lr;
 } PLRectangle;
+
+PL_INLINE static PLRectangle plCreateRectangle(
+        int x, int y, unsigned int w, unsigned int h,
+        PLColour ul, PLColour ur,
+        PLColour ll, PLColour lr
+) {
+    PLRectangle rect = {
+            x, y, w, h,
+            ul, ur, ll, lr
+    };
+    return rect;
+}
+
+PL_INLINE static void plClearRectangle(PLRectangle *r) {
+    memset(r, 0, sizeof(PLRectangle));
+}
+
+PL_INLINE static void plSetRectangleUniformColour(PLRectangle *r, PLColour colour) {
+    r->ll = r->lr = r->ul = r->ur = colour;
+}
 
 // Randomisation
 
