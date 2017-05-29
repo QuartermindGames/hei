@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     // do by arg
 #endif
 
-    _plFreeImage(&image);
+    plFreeImage(&image);
 
     return 0;
 }

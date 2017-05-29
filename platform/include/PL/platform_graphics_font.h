@@ -25,4 +25,30 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "PL/platform_graphics.h"
+#pragma once
+
+#include <PL/platform_graphics.h>
+
+typedef struct PLBitmapFontChar {
+    int x, y;
+    unsigned int w, h;
+
+    //char character;
+
+    float s, t;
+} PLBitmapFontChar;
+
+#define PLFONT_MAX_CHARS    256
+
+typedef struct PLBitmapFont {
+    PLTexture *texture;
+
+    PLBitmapFontChar chars[PLFONT_MAX_CHARS];
+} PLBitmapFont;
+
+PL_EXTERN_C
+
+PL_EXTERN PLBitmapFont *plCreateBitmapFont(const char *path);
+PL_EXTERN void plDeleteBitmapFont(PLBitmapFont *font);
+
+PL_EXTERN_C_END

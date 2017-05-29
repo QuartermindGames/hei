@@ -27,18 +27,24 @@ For more information, please refer to <http://unlicense.org>
 
 #include "PL/platform_graphics.h"
 
-#define PL_CAMERA_DEFAULT_WIDTH     640
-#define PL_CAMERA_DEFAULT_HEIGHT    480
-#define PL_CAMERA_DEFAULT_BOUNDS    5
+#define PLCAMERA_DEFAULT_WIDTH      640
+#define PLCAMERA_DEFAULT_HEIGHT     480
+#define PLCAMERA_DEFAULT_BOUNDS     5
+#define PLCAMERA_DEFAULT_FOV        90
+#define PLCAMERA_DEFAULT_NEAR       0.1
+#define PLCAMERA_DEFAULT_FAR        100000
 
 PLCamera *plCreateCamera(void) {
     PLCamera *camera = (PLCamera*)calloc(1, sizeof(PLCamera));
     if(!camera) {
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Camera, %d!\n", sizeof(PLCamera));
         return NULL;
     }
 
     memset(camera, 0, sizeof(PLCamera));
-    camera->fov     = 90.f;
+    camera->fov     = PLCAMERA_DEFAULT_FOV;
+    camera->near    = PLCAMERA_DEFAULT_NEAR;
+    camera->far     = PLCAMERA_DEFAULT_FAR;
     camera->mode    = PL_CAMERAMODE_PERSPECTIVE;
 
     /*  XY * * * * W
@@ -48,13 +54,13 @@ PLCamera *plCreateCamera(void) {
      *  *
      *  H
      */
-    camera->viewport.width   = PL_CAMERA_DEFAULT_WIDTH;
-    camera->viewport.height  = PL_CAMERA_DEFAULT_HEIGHT;
+    camera->viewport.width   = PLCAMERA_DEFAULT_WIDTH;
+    camera->viewport.height  = PLCAMERA_DEFAULT_HEIGHT;
 
     camera->bounds.mins = plCreateVector3D(
-            -PL_CAMERA_DEFAULT_BOUNDS, -PL_CAMERA_DEFAULT_BOUNDS, -PL_CAMERA_DEFAULT_BOUNDS);
+            -PLCAMERA_DEFAULT_BOUNDS, -PLCAMERA_DEFAULT_BOUNDS, -PLCAMERA_DEFAULT_BOUNDS);
     camera->bounds.maxs = plCreateVector3D(
-            PL_CAMERA_DEFAULT_BOUNDS, PL_CAMERA_DEFAULT_BOUNDS, PL_CAMERA_DEFAULT_BOUNDS);
+            PLCAMERA_DEFAULT_BOUNDS, PLCAMERA_DEFAULT_BOUNDS, PLCAMERA_DEFAULT_BOUNDS);
 
     return camera;
 }
@@ -75,20 +81,17 @@ void plSetupCamera(PLCamera *camera) {
     plViewport(camera->viewport.x, camera->viewport.y, camera->viewport.width, camera->viewport.height);
     plScissor(camera->viewport.x, camera->viewport.y, camera->viewport.width, camera->viewport.height);
 
-    // todo, modernize...
-
-//#if defined(PL_MODE_OPENGL_CORE)
-
-//#elif defined(PL_MODE_OPENGL)
+    // todo, modernize start
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+    // modernize end
 
     switch(camera->mode) {
         default:
         case PL_CAMERAMODE_PERSPECTIVE: {
-            // todo, update start
-            gluPerspective(camera->fov, camera->viewport.width / camera->viewport.height, 0.1f, 100000.f);
+            plPerspective(camera->fov, camera->viewport.width / camera->viewport.height, 0.1, 100000);
 
+            // todo, modernize start
             glRotatef(camera->angles.y, 1, 0, 0);
             glRotatef(camera->angles.x, 0, 1, 0);
             glRotatef(camera->angles.z, 0, 0, 1);
@@ -96,7 +99,7 @@ void plSetupCamera(PLCamera *camera) {
 
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
-            // todo, update end
+            // modernize end
 
             break;
         }
@@ -107,7 +110,7 @@ void plSetupCamera(PLCamera *camera) {
         case PL_CAMERAMODE_ISOMETRIC: {
             glOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
 
-            // todo, update start
+            // todo, modernize start
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
@@ -115,9 +118,8 @@ void plSetupCamera(PLCamera *camera) {
             glRotatef(camera->angles.x, 0, 1, 0);
 
             glTranslatef(camera->position.x, camera->position.y, camera->position.z);
-            // todo, update end
+            // modernize end
             break;
         }
     }
-//#endif
 }

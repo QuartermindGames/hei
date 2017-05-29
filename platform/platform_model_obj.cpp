@@ -54,11 +54,11 @@ void _plUnloadOBJModel() {
 }
 
 PLStaticModel *plLoadOBJModel(const PLchar *path) {
-    plSetErrorFunction("plLoadOBJModel");
+    _plSetCurrentFunction("plLoadOBJModel");
 
     pl_obj_data.open(path, std::ifstream::binary);
     if (!pl_obj_data) {
-        plSetError("Failed to load file! (%s)\n", path);
+        _plSetErrorMessage("Failed to load file! (%s)\n", path);
         return nullptr;
     }
 
@@ -69,7 +69,7 @@ PLStaticModel *plLoadOBJModel(const PLchar *path) {
     if (length <= 0) {
         _plUnloadOBJModel();
 
-        plSetError("Invalid OBJ model! (%s)\n", path);
+        _plSetErrorMessage("Invalid OBJ model! (%s)\n", path);
         return nullptr;
     }
 
@@ -108,7 +108,7 @@ PLStaticModel *plLoadOBJModel(const PLchar *path) {
 
     PLStaticModel *model = plCreateStaticModel();
     if (!model) {
-        plSetError("Failed to create static model!\n");
+        _plSetErrorMessage("Failed to create static model!\n");
 
         _plUnloadOBJModel();
         return nullptr;

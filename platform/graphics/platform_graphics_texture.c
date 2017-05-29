@@ -25,35 +25,5 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#pragma once
+#include <PL/platform_graphics.h>
 
-#include "platform.h"
-
-enum {
-    PL_CAMERAMODE_PERSPECTIVE,
-    PL_CAMERAMODE_ORTHOGRAPHIC,
-    PL_CAMERAMODE_ISOMETRIC
-};
-
-typedef struct PLCamera {
-    double fov;
-    double near, far;
-
-    unsigned int mode;
-
-    // Viewport
-    PLRectangle viewport;
-
-    PLVector3D angles, position;
-
-    PLBBox3D bounds;
-} PLCamera;
-
-PL_EXTERN_C
-
-PL_EXTERN PLCamera *plCreateCamera(void);
-PL_EXTERN void plDeleteCamera(PLCamera *camera);
-
-PL_EXTERN void plSetupCamera(PLCamera *camera);
-
-PL_EXTERN_C_END

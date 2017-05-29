@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_console.h>
 #include <PL/platform_graphics.h>
+#include <PL/platform_graphics_font.h>
 
 /* Multi Console Manager */
 // todo, should the console be case-sensitive?
@@ -51,11 +52,11 @@ IMPLEMENT_COMMAND(HELPCommand) {}
 
 PLConsoleCommand **_pl_commands = NULL;
 PLConsoleCommand _pl_base_commands[]={
-        { "CLS", CLSCommand, "Clears the console buffer." },
-        { "COLOUR", COLOURCommand, "Changes the colour of the current console." },
-        { "TIME", TIMECommand },
-        { "MEM", MEMCommand },
-        { "HELP", HELPCommand },
+        { "cls", CLSCommand, "Clears the console buffer." },
+        { "colour", COLOURCommand, "Changes the colour of the current console." },
+        { "time", TIMECommand },
+        { "mem", MEMCommand },
+        { "help", HELPCommand },
 };
 
 size_t _pl_num_commands = 0;
@@ -77,7 +78,8 @@ void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
             if (!cmd) {
                 cmd = (PLConsoleCommand *) malloc(sizeof(PLConsoleCommand));
                 if (!cmd) {
-                    plSetError("malloc(%d)\n", sizeof(PLConsoleCommand));
+                    _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
+                                   sizeof(PLConsoleCommand));
                     break;
                 }
                 memcpy(cmd, &cmds[i], sizeof(PLConsoleCommand));
@@ -87,39 +89,50 @@ void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
     }
 }
 
-void plRegisterConsoleCommand(PLConsoleCommand cmd) {
-
-}
-
 /////////////////////////////////////////////////////////////////////////////////////
 
 #define PLCONSOLE_MAX_INSTANCES 4
 
 #define PLCONSOLE_DEFAULT_COLOUR 128, 0, 0, 128
 
-typedef struct PLConsole {
+typedef struct PLConsolePane {
     PLRectangle display;
 
-    bool is_active;
-
     char buffer[4096];
-} PLConsole;
+} PLConsolePane;
 
-PLConsole _pl_console_pane[PLCONSOLE_MAX_INSTANCES];
+PLConsolePane _pl_console_pane[PLCONSOLE_MAX_INSTANCES];
 unsigned int _pl_num_console_panes;
+unsigned int _pl_active_console_pane = 0;
+
+bool _pl_console_visible = false;
 
 /////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE
 
-PLresult _plInitConsole(void) {
-    plFunctionStart();
+PLMesh *_pl_mesh_line = NULL;
+PLBitmapFont *_pl_console_font = NULL;
 
-    memset(&_pl_console_pane, 0, sizeof(PLConsole) * PLCONSOLE_MAX_INSTANCES);
-    _pl_num_console_panes = 0;
+PLresult _plInitConsole(void) {
+    _pl_console_visible = false;
+
+    _pl_console_font = plCreateBitmapFont("fonts/console.font");
+    if(!_pl_console_font) {
+        return PL_RESULT_MEMORYALLOC;
+    }
+
+    memset(&_pl_console_pane, 0, sizeof(PLConsolePane) * PLCONSOLE_MAX_INSTANCES);
+    _pl_active_console_pane = _pl_num_console_panes = 0;
+
+    _pl_mesh_line = plCreateMesh(PL_PRIMITIVE_LINES, PL_DRAW_IMMEDIATE, 0, 4);
+    if(!_pl_mesh_line) {
+        return PL_RESULT_MEMORYALLOC;
+    }
 
     _pl_commands = (PLConsoleCommand**)malloc(sizeof(PLConsoleCommand) * _pl_commands_size);
     if(!_pl_commands) {
-        plSetError("malloc(%d * %d)\n", sizeof(PLConsoleCommand), _pl_commands_size);
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand array, %d!\n",
+                       sizeof(PLConsoleCommand) * _pl_commands_size);
         return PL_RESULT_MEMORYALLOC;
     }
 
@@ -129,8 +142,12 @@ PLresult _plInitConsole(void) {
 }
 
 void _plShutdownConsole(void) {
-    memset(&_pl_console_pane, 0, sizeof(PLConsole) * PLCONSOLE_MAX_INSTANCES);
-    _pl_num_console_panes = 0;
+    _pl_console_visible = false;
+
+    plDeleteBitmapFont(_pl_console_font);
+
+    memset(&_pl_console_pane, 0, sizeof(PLConsolePane) * PLCONSOLE_MAX_INSTANCES);
+    _pl_active_console_pane = _pl_num_console_panes = 0;
 
     if(_pl_commands) {
         PLConsoleCommand *cmd = _pl_commands[0];
@@ -147,20 +164,29 @@ void _plShutdownConsole(void) {
     }
 }
 
+#define _MAX_ROWS       2
+#define _MAX_COLUMNS    2
+
 // todo, correctly handle rows and columns.
 void _plResizeConsoles(void) {
-    unsigned int position_x = 0, position_y = 0;
     unsigned int screen_w = pl_graphics_state.viewport_width, screen_h = pl_graphics_state.viewport_height;
     if(screen_w == 0 || screen_h == 0) {
         screen_w = 640;
         screen_h = 480;
     }
-    unsigned int width = screen_w / _pl_num_console_panes;
-    unsigned int height = screen_h / _pl_num_console_panes;
+    unsigned int width = screen_w; // / _pl_num_console_panes;
+    if(_pl_num_console_panes > 1) {
+        width = screen_w / 2;
+    }
+    unsigned int height = screen_h;
+    if(_pl_num_console_panes > 2) {
+        height = screen_h / 2;
+    }
+    unsigned int position_x = 0, position_y = 0;
     for(unsigned int i = 0; i < _pl_num_console_panes; i++) {
         if(i > 0) {
             position_x += width;
-            if(position_x > screen_h) {
+            if(position_x >= screen_w) {
                 // Move onto the next row
                 position_x = 0;
                 position_y += height;
@@ -179,7 +205,9 @@ void _plResizeConsoles(void) {
 }
 
 bool _plConsolePaneVisible(unsigned int id) {
-    if(
+    if(!_pl_console_visible) {
+        return false;
+    } else if(
         _pl_console_pane[id].display.ll.a == 0 &&
         _pl_console_pane[id].display.lr.a == 0 &&
         _pl_console_pane[id].display.ul.a == 0 &&
@@ -190,28 +218,38 @@ bool _plConsolePaneVisible(unsigned int id) {
     return true;
 }
 
+// INPUT
+
+void _plConsoleInput(int m_x, int m_y) {
+
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC
+
+// GENERAL
 
 void plSetupConsole(unsigned int num_instances) {
     if(num_instances == 0) {
         return;
     }
 
-    num_instances -= 1;
     if(num_instances > PLCONSOLE_MAX_INSTANCES) {
         num_instances = PLCONSOLE_MAX_INSTANCES;
     }
 
-    memset(&_pl_console_pane, 0, sizeof(PLConsole) * num_instances);
+    memset(&_pl_console_pane, 0, sizeof(PLConsolePane) * num_instances);
 
     for(unsigned int i = 0; i < num_instances; i++) {
-        _pl_console_pane[i].is_active = true;
         plSetRectangleUniformColour(&_pl_console_pane[i].display, plCreateColour4b(PLCONSOLE_DEFAULT_COLOUR));
     }
 
     _pl_num_console_panes = num_instances;
     _plResizeConsoles();
+}
+
+void plShowConsole(bool show) {
+    _pl_console_visible = show;
 }
 
 void plSetConsoleColour(unsigned int id, PLColour colour) {
@@ -222,7 +260,7 @@ void plSetConsoleColour(unsigned int id, PLColour colour) {
 // todo, multiple warning/error levels?
 // todo, correctly adjust buffer.
 void plPrintConsoleMessage(unsigned int id, const char *msg, ...) {
-    if((id > PLCONSOLE_MAX_INSTANCES) || (_pl_console_pane[id].is_active == false)) {
+    if(id > PLCONSOLE_MAX_INSTANCES) {
         return;
     }
 
@@ -248,12 +286,14 @@ void plPrintConsoleMessage(unsigned int id, const char *msg, ...) {
 #define _COLOUR_HEADER_ACTIVE_BOTTOM    82, 0, 0, _COLOUR_ACTIVE_ALPHA_BOTTOM
 
 void plDrawConsole(void) {
+    _plResizeConsoles();
+
     for(unsigned int i = 0; i < _pl_num_console_panes; i++) {
         if(!_plConsolePaneVisible(i)) {
             continue;
         }
 
-        if(_pl_console_pane[i].is_active) {
+        if(i == _pl_active_console_pane) {
             plDrawRectangle(_pl_console_pane[i].display);
 
             plDrawRectangle(plCreateRectangle(

@@ -27,10 +27,11 @@ For more information, please refer to <http://unlicense.org>
 
 #include "PL/platform_image.h"
 #include "PL/platform_filesystem.h"
+#include <PL/platform_math.h>
 
 PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     if(!fin) {
-        plSetError("invalid file handle");
+        _plSetErrorMessage("invalid file handle");
         return PL_RESULT_FILEREAD;
     }
 
@@ -65,16 +66,18 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     return result;
 }
 
-PLresult plLoadImage(const PLchar *path, PLImage *out) {
+bool plLoadImage(const PLchar *path, PLImage *out) {
     plFunctionStart();
 
     if (!plIsValidString(path)) {
-        return PL_RESULT_FILEPATH;
+        _plReportError(PL_RESULT_FILEPATH, "Invalid path, %s, passed for image!\n", path);
+        return false;
     }
 
     FILE *fin = fopen(path, "rb");
     if(!fin) {
-        return PL_RESULT_FILEREAD;
+        _plReportError(PL_RESULT_FILEREAD, "Failed to load image, %s!\n", path);
+        return false;
     }
 
     if(strrchr(path, ':')) {
@@ -90,8 +93,6 @@ PLresult plLoadImage(const PLchar *path, PLImage *out) {
 }
 
 PLresult plWriteImage(const PLImage *image, const PLchar *path) {
-    plFunctionStart();
-
     if (!plIsValidString(path)) {
         return PL_RESULT_FILEPATH;
     }
@@ -111,9 +112,7 @@ PLresult plWriteImage(const PLImage *image, const PLchar *path) {
 }
 
 // Returns the number of samples per-pixel depending on the colour format.
-PLuint plGetSamplesPerPixel(PLColourFormat format) {
-    plFunctionStart();
-
+unsigned int plGetSamplesPerPixel(PLColourFormat format) {
     switch(format) {
         case PL_COLOURFORMAT_ABGR:
         case PL_COLOURFORMAT_ARGB:
@@ -140,9 +139,7 @@ void plConvertImageFormat(PLImage *image, PLColourFormat dest_colour, PLImageFor
     }
 }
 
-PLuint _plGetImageSize(PLImageFormat format, PLuint width, PLuint height) {
-    plFunctionStart();
-
+unsigned int _plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height) {
     switch(format) {
         case PL_IMAGEFORMAT_RGB_DXT1:   return (width * height) >> 1;
         case PL_IMAGEFORMAT_RGBA_DXT1:  return width * height * 4;
@@ -165,7 +162,7 @@ void _plAllocateImage(PLImage *image, PLuint size, PLuint levels) {
     image->data = (PLbyte**)calloc(levels, sizeof(PLbyte));
 }
 
-void _plFreeImage(PLImage *image) {
+void plFreeImage(PLImage *image) {
     plFunctionStart();
 
     if (!image || !image->data) {
@@ -183,12 +180,8 @@ void _plFreeImage(PLImage *image) {
     free(image->data);
 }
 
-PLbool plIsValidImageSize(PLuint width, PLuint height) {
-    plFunctionStart();
-
-    if((width < 2) || (height < 2)) {
-        return false;
-    } else if(!plIsPowerOfTwo(width) || !plIsPowerOfTwo(height)) {
+bool plIsValidImageSize(PLuint width, PLuint height) {
+    if(((width < 2) || (height < 2)) || (!plIsPowerOfTwo(width) || !plIsPowerOfTwo(height))) {
         return false;
     }
 

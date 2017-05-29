@@ -1090,6 +1090,21 @@ void plSetDefaultGraphicsState(void) {
     plEnableGraphicsStates(PL_CAPABILITY_SCISSORTEST);
 }
 
+void plFinish(void) {
+    _PL_GRAPHICS_TRACK();
+
+#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+    glFinish();
+#elif defined (VL_MODE_GLIDE)
+    grFinish();
+#elif defined (VL_MODE_DIRECT3D)
+    // Not supported, or rather, we don't need this.
+#endif
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// VIEWPORT/CAMERA
+
 void plViewport(PLint x, PLint y, PLuint width, PLuint height) {
     _PL_GRAPHICS_TRACK();
 
@@ -1122,7 +1137,7 @@ void plViewport(PLint x, PLint y, PLuint width, PLuint height) {
 void plScissor(PLint x, PLint y, PLuint width, PLuint height) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined (PL_MODE_OPENGL)
     glScissor(x, y, width, height);
 #elif defined (VL_MODE_DIRECT3D)
     D3D11_RECT scissor_region;
@@ -1133,14 +1148,13 @@ void plScissor(PLint x, PLint y, PLuint width, PLuint height) {
 #endif
 }
 
-void plFinish(void) {
+// http://nehe.gamedev.net/article/replacement_for_gluperspective/21002/
+void plPerspective(double fov_y, double aspect, double near, double far) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    glFinish();
-#elif defined (VL_MODE_GLIDE)
-    grFinish();
-#elif defined (VL_MODE_DIRECT3D)
-    // Not supported, or rather, we don't need this.
+#if defined(PL_MODE_OPENGL)
+    double h = tan(fov_y / 360 * PL_PI) * near;
+    double w = h * aspect;
+    glFrustum(-w, w, -h, h, near, far);
 #endif
 }

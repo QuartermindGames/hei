@@ -25,35 +25,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#pragma once
+PL_INLINE static void plGetLowerCaseString(char *out, const char *in, unsigned int length) {
+    for(unsigned int i = 0; i < length; i++) {
+        out[i] = (char)tolower(in[i]);
+    }
+}
 
-#include "platform.h"
+#if 0
+PL_INLINE static void plGetStringExtension(char *out, const char *in, unsigned int length) {
+    const char *s = strrchr(in, '.');
+    if(!s || s[0] == '\0') {
+        return;
+    }
 
-enum {
-    PL_CAMERAMODE_PERSPECTIVE,
-    PL_CAMERAMODE_ORTHOGRAPHIC,
-    PL_CAMERAMODE_ISOMETRIC
-};
+    strncpy(out, s + 1, length);
+}
 
-typedef struct PLCamera {
-    double fov;
-    double near, far;
-
-    unsigned int mode;
-
-    // Viewport
-    PLRectangle viewport;
-
-    PLVector3D angles, position;
-
-    PLBBox3D bounds;
-} PLCamera;
-
-PL_EXTERN_C
-
-PL_EXTERN PLCamera *plCreateCamera(void);
-PL_EXTERN void plDeleteCamera(PLCamera *camera);
-
-PL_EXTERN void plSetupCamera(PLCamera *camera);
-
-PL_EXTERN_C_END
+PL_INLINE static void plStripStringExtension(char *out, const char *in, unsigned int length) {
+    const char *s = strrchr(in, '.');
+    while(in < s) {
+        *out++ = *in++;
+    }
+    *out = 0;
+}
+#endif

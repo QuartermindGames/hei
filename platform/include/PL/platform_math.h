@@ -554,7 +554,7 @@ PL_INLINE static const char *plPrintColour(PLColour c) {
 // Matrices
 // todo, none of this is correct yet
 
-typedef PLfloat PLMatrix3[3][3], PLMatrix4[4][4];
+typedef float PLMatrix3[3][3], PLMatrix4[4][4];
 
 PL_INLINE static void plClearMatrix4(PLMatrix4 m) {
     memset(m, 0, sizeof(m[0][0]) * 8);
@@ -744,35 +744,12 @@ typedef struct PLBBox2D {
     PLVector2D mins, maxs;
 } PLBBox2D;
 
-// TRIANGLE
+/////////////////////////////////////////////////////////////////////////////////////
+// Primitives
 
-typedef struct PLTriangle {
-    int x, y;
-    unsigned int width, height;
+// Line
 
-    PLColour uc, ll, lr;
-} PLTriangle;
-
-PL_INLINE static PLTriangle plCreateTriangle(
-        int x, int y, unsigned int w, unsigned int h,
-        PLColour uc, PLColour ll, PLColour lr
-) {
-    PLTriangle tri = {
-            x, y, w, h,
-            uc, ll, lr
-    };
-    return tri;
-}
-
-PL_INLINE static void plClearTriangle(PLTriangle *tri) {
-    memset(tri, 0, sizeof(PLTriangle));
-}
-
-PL_INLINE static void plSetTriangleUniformColour(PLTriangle *tri, PLColour colour) {
-    tri->ll = tri->lr = tri->uc = colour;
-}
-
-// RECTANGLE
+// Rectangle
 
 typedef struct PLRectangle {
     int x, y;
@@ -801,25 +778,27 @@ PL_INLINE static void plSetRectangleUniformColour(PLRectangle *r, PLColour colou
     r->ll = r->lr = r->ul = r->ur = colour;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////
 // Randomisation
 
 // http://stackoverflow.com/questions/7978759/generate-float-random-values-also-negative
-static PL_INLINE double plUniform0To1Random(void) {
-    return (random()) / ((double) RAND_MAX + 1);
+PL_INLINE static double plUniform0To1Random(void) {
+    return (rand()) / ((double) RAND_MAX + 1);
 }
 
-static PL_INLINE double plGenerateUniformRandom(double minmax) {
+PL_INLINE static double plGenerateUniformRandom(double minmax) {
     return (minmax * 2) * plUniform0To1Random() - minmax;
 }
 
-static PL_INLINE double plGenerateRandomd(double max) {
-    return (PLdouble) (rand()) / (RAND_MAX / max);
+PL_INLINE static double plGenerateRandomd(double max) {
+    return (double) (rand()) / (RAND_MAX / max);
 }
 
-static PL_INLINE float plGenerateRandomf(float max) {
+PL_INLINE static float plGenerateRandomf(float max) {
     return (float) (rand()) / (RAND_MAX / max);
 }
 
+/////////////////////////////////////////////////////////////////////////////////////
 // Interpolation
 // http://paulbourke.net/miscellaneous/interpolation/
 
@@ -963,11 +942,11 @@ static PL_INLINE float plRebound(float x) {
     }
 }
 
-static PL_INLINE PLfloat plExpPulse(PLfloat x, PLfloat k, PLfloat n) {
+static PL_INLINE float plExpPulse(float x, float k, float n) {
     return expf(-k * powf(x, n));
 }
 
-static PL_INLINE PLfloat plInOutBack(PLfloat x) {
+static PL_INLINE float plInOutBack(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {

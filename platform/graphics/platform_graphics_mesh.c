@@ -85,7 +85,7 @@ unsigned int _plTranslatePrimitiveMode(PLPrimitive mode) {
     return _pl_primitives[0].target;
 }
 
-PLuint _plTranslateDrawMode(PLDrawMode mode) {
+unsigned int _plTranslateDrawMode(PLDrawMode mode) {
 #if defined(PL_MODE_OPENGL)
     if(mode == PL_DRAW_DYNAMIC) {
         return GL_DYNAMIC_DRAW;
@@ -99,36 +99,24 @@ PLuint _plTranslateDrawMode(PLDrawMode mode) {
 #endif
 }
 
-void _plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3D position) {
+void plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3D position) {
     PLVector3D distvec = position;
     plSubtractVector3D(&distvec, light->position);
     PLfloat distance = (light->radius - plVector3DLength(distvec)) / 100.f;
 
     for(PLuint i = 0; i < mesh->num_verts; i++) {
+        PLVector3D normal = mesh->vertices[i].normal;
+        float angle = (distance * ((normal.x * distvec.x) + (normal.y * distvec.y) + (normal.z * distvec.z)));
+        if(angle < 0) {
+            plClearColour(&mesh->vertices[i].colour);
+        } else {
+            mesh->vertices[i].colour.r = light->colour.r * plFloatToByte(angle);
+            mesh->vertices[i].colour.g = light->colour.g * plFloatToByte(angle);
+            mesh->vertices[i].colour.b = light->colour.b * plFloatToByte(angle);
+        }
     }
 
 #if 0
-    // Calculate the distance.
-    PLVector3f distvec = { 0 };
-    plVectorSubtract3fv(position, light->position, distvec);
-    float distance = (light->radius - plLengthf(distvec)) / 100.0f;
-
-    for(PLuint i = 0; i < object->numverts; i++)
-    {
-        float x = object->vertices[i].normal[0];
-        float y = object->vertices[i].normal[1];
-        float z = object->vertices[i].normal[2];
-
-        float angle = (distance * ((x * distvec[0]) + (y * distvec[1]) + (z * distvec[2])));
-        if(angle < 0)
-            object->vertices[i].colour.Clear();
-        else
-        {
-            object->vertices[i].colour[PL_RED]      = light->colour[PL_RED] * angle;
-            object->vertices[i].colour[PL_GREEN]    = light->colour[PL_GREEN] * angle;
-            object->vertices[i].colour[PL_BLUE]     = light->colour[PL_BLUE] * angle;
-        }
-
         /*
         x = Object->Vertices_normalStat[count].x;
         y = Object->Vertices_normalStat[count].y;
@@ -148,11 +136,10 @@ void _plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3D position) {
         Object->Vertices_screen[count].g = Object->Vertices_local[count].g * angle;
         }
         */
-    }
 #endif
 }
 
-void _plDrawArrays(PLPrimitive mode, PLuint first, PLuint count) {
+void _plDrawArrays(PLPrimitive mode, unsigned int first, unsigned int count) {
     plAssert(count); plAssert(first > count);
 
 #if defined(PL_MODE_OPENGL)
@@ -171,23 +158,21 @@ void _plDrawElements(PLPrimitive mode, unsigned int count, unsigned int type, co
 PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, unsigned int num_tris, unsigned int num_verts) {
     plAssert(num_verts);
 
-    if(primitive == PL_PRIMITIVE_IGNORE) {
-        plSetError("Primitive cannot be set to 'ignore' upon creation!\n");
-        return NULL;
-    } else if((primitive < PL_PRIMITIVE_IGNORE) || (primitive > PL_NUM_PRIMITIVES)) {
-        plSetError("Invalid primitive! (%d)\n", primitive);
+    if((primitive == PL_PRIMITIVE_IGNORE) || (primitive < PL_PRIMITIVE_IGNORE) ||
+            (primitive > PL_NUM_PRIMITIVES)) {
+        _plReportError(PL_RESULT_DRAW_PRIMITIVE, "Invalid mesh primitive, %d!\n", primitive);
         return NULL;
     }
 
     PLuint umode = _plTranslateDrawMode(mode);
     if(!umode && (mode != PL_DRAW_IMMEDIATE)) {
-        plSetError("Invalid/unsupported draw mode! (%d)\n", mode);
+        _plReportError(PL_RESULT_DRAW_MODE, "Invalid mesh draw mode, %d!\n", mode);
         return NULL;
     }
 
     PLMesh *mesh = (PLMesh*)calloc(1, sizeof(PLMesh));
     if(!mesh) {
-        plSetError("Failed to create mesh!\n");
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Mesh, %d!\n", sizeof(PLMesh));
         return NULL;
     }
 
@@ -199,7 +184,8 @@ PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, unsigned int num_tr
     if(num_tris > 0) {
         mesh->triangles = (PLTriangle*)calloc(num_tris, sizeof(PLTriangle));
         if(!mesh->triangles) {
-            plSetError("Failed to allocate triangles for mesh! (%i)\n", num_tris);
+            _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Triangle, %d!\n",
+                           sizeof(PLTriangle) * num_tris);
 
             plDeleteMesh(mesh);
             return NULL;
@@ -207,7 +193,8 @@ PLMesh *plCreateMesh(PLPrimitive primitive, PLDrawMode mode, unsigned int num_tr
     }
     mesh->vertices = (PLVertex*)calloc(num_verts, sizeof(PLVertex));
     if(!mesh->vertices) {
-        plSetError("Failed to allocate vertices for mesh! (%i)\n", num_verts);
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Vertex, %d!\n",
+            sizeof(PLVertex) * num_verts);
 
         plDeleteMesh(mesh);
         return NULL;
@@ -250,15 +237,15 @@ void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3D vector
     mesh->vertices[index].position = vector;
 }
 
-void plSetMeshVertexPosition3f(PLMesh *mesh, unsigned int index, PLfloat x, PLfloat y, PLfloat z) {
+void plSetMeshVertexPosition3f(PLMesh *mesh, unsigned int index, float x, float y, float z) {
     mesh->vertices[index].position = plCreateVector3D(x, y, z);
 }
 
-void plSetMeshVertexPosition2f(PLMesh *mesh, unsigned int index, PLfloat x, PLfloat y) {
+void plSetMeshVertexPosition2f(PLMesh *mesh, unsigned int index, float x, float y) {
     mesh->vertices[index].position = plCreateVector3D(x, y, 0);
 }
 
-void plSetMeshVertexPosition3fv(PLMesh *mesh, unsigned int index, unsigned int size, const PLfloat *v) {
+void plSetMeshVertexPosition3fv(PLMesh *mesh, unsigned int index, unsigned int size, const float *v) {
     size += index;
     if(size > mesh->num_verts) {
         size -= (size - mesh->num_verts);
@@ -279,7 +266,7 @@ void plSetMeshVertexST(PLMesh *mesh, unsigned int index, float s, float t) {
     mesh->vertices[index].st[0] = plCreateVector2D(s, t);
 }
 
-void plSetMeshVertexSTv(PLMesh *mesh, PLbyte unit, PLuint index, PLuint size, const PLfloat *st) {
+void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st) {
     size += index;
     if(size > mesh->num_verts) {
         size -= (size - mesh->num_verts);
@@ -291,7 +278,7 @@ void plSetMeshVertexSTv(PLMesh *mesh, PLbyte unit, PLuint index, PLuint size, co
     }
 }
 
-void plSetMeshVertexColour(PLMesh *mesh, PLuint index, PLColour colour) {
+void plSetMeshVertexColour(PLMesh *mesh, unsigned int index, PLColour colour) {
     mesh->vertices[index].colour = colour;
 }
 
@@ -314,7 +301,7 @@ void plDrawMesh(PLMesh *mesh) {
     plAssert(mesh->num_verts);
 
 #if defined(PL_MODE_OPENGL)
-#if !defined(PL_MODE_OPENGL_CORE) && !defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
+#if !defined(PL_MODE_OPENGL_CORE) //&& !defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
 #if 1
         glBegin(_plTranslatePrimitiveMode(mesh->primitive));

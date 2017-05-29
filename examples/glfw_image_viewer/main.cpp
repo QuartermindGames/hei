@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
     plSetTextureFilter(image_texture, PL_TEXTUREFILTER_NEAREST);
     plUploadTextureImage(image_texture, &image);
 
-    _plFreeImage(&image);
+    plFreeImage(&image);
 
     PLRectangle rectangle = { 0, 0, width, height };
     plSetRectangleUniformColour(&rectangle, plCreateColour4b(PL_COLOUR_WHITE));
