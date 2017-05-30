@@ -286,7 +286,8 @@ void plSetWorkingDirectory(const char *path) {
     }
 }
 
-/*	File I/O	*/
+/////////////////////////////////////////////////////////////////////////////////////
+// FILE I/O
 
 // Checks if a file exists or not.
 bool plFileExists(const char *path) {

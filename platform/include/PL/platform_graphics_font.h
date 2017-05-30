@@ -51,4 +51,6 @@ PL_EXTERN_C
 PL_EXTERN PLBitmapFont *plCreateBitmapFont(const char *path);
 PL_EXTERN void plDeleteBitmapFont(PLBitmapFont *font);
 
+PL_EXTERN void plDrawCharacter(PLBitmapFont *font, int x, int y, float scale, int8_t character);
+
 PL_EXTERN_C_END

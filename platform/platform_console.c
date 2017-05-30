@@ -364,4 +364,15 @@ void plDrawConsole(void) {
         // todo, display buffer size display
         // todo, display buffer text
     }
+
+    glEnable(GL_TEXTURE_RECTANGLE);
+
+    glBindTexture(GL_TEXTURE_RECTANGLE, _pl_console_font->texture->id);
+
+    plDrawCharacter(_pl_console_font, 20, 20, 2, 'A');
+    plDrawCharacter(_pl_console_font, 20, 30, 2, 'B');
+    plDrawCharacter(_pl_console_font, 20, 40, 2, 'C');
+    plDrawCharacter(_pl_console_font, 20, 50, 4, 'D');
+
+    glEnable(GL_TEXTURE_RECTANGLE);
 }

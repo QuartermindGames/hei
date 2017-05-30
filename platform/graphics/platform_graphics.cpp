@@ -573,7 +573,7 @@ PLuint _plTranslateTextureTarget(PLTextureTarget target) {
 #endif
 }
 
-PLuint _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
+unsigned int _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
 #if defined (PL_MODE_OPENGL) && !defined (VL_MODE_OPENGL_CORE)
     switch (mode) {
         default:
@@ -594,7 +594,7 @@ PLuint _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
 #endif
 }
 
-PLuint _plTranslateColourFormat(PLColourFormat format) {
+unsigned int _plTranslateColourFormat(PLColourFormat format) {
     _PL_GRAPHICS_TRACK();
 
     switch(format) {
@@ -618,7 +618,7 @@ PLuint _plTranslateColourFormat(PLColourFormat format) {
     }
 }
 
-PLuint _plTranslateTextureFormat(PLImageFormat format) {
+unsigned int _plTranslateTextureFormat(PLImageFormat format) {
     _PL_GRAPHICS_TRACK();
 
 #if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
@@ -755,6 +755,11 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     texture->format = upload->format;
     texture->size = upload->size;
 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
 #if defined(PL_MODE_OPENGL)
     PLuint levels = upload->levels;
     if(!levels) {
@@ -762,12 +767,6 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     }
 
     PLuint format = _plTranslateTextureFormat(upload->format);
-#if defined(PL_MODE_OPENGL_CORE)
-    glTexStorage2D(GL_TEXTURE_2D, levels, format, upload->width, upload->height);
-#else
-    // todo, upload storage for immediate gl
-#endif
-
     for(PLuint i = 0; i < levels; i++) {
         if (_plIsCompressedTextureFormat(upload->format)) {
             glCompressedTexSubImage2D
@@ -782,7 +781,7 @@ PLresult plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
                             upload->data[i]
                     );
         } else {
-            glTexSubImage2D
+            glTexImage2D
                     (
                             GL_TEXTURE_2D,
                             i,

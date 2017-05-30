@@ -1,6 +1,8 @@
 VERSION 1
 ./fonts/zx.tiff
 
+FILTER 0
+
 -- First row
 ! 8 0 8 8
 " 16 0 8 8

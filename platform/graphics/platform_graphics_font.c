@@ -36,35 +36,26 @@ For more information, please refer to <http://unlicense.org>
 
 #define _PLFONT_MAX_LINE    256
 
-typedef struct _PLFontScript {
+struct PLFontScript {
     char buffer[_PLFONT_MAX_LENGTH];
     char line_buffer[_PLFONT_MAX_LINE];
 
     unsigned int position;
     unsigned int line, line_position;
     unsigned int length;
-} _PLFontScript;
-
-_PLFontScript _pl_font_script;
-
-#define _BUFFER         _pl_font_script.buffer
-#define _BUFFER_LINE    _pl_font_script.line_buffer
-#define _LENGTH         _pl_font_script.length
-#define _POSITION       _pl_font_script.position
-#define _LINE_POSITION  _pl_font_script.line_position
-#define _LINE           _pl_font_script.line
+} _pl_font;
 
 void _plResetFontParser(void) {
-    memset(&_pl_font_script, 0, sizeof(_PLFontScript));
+    memset(&_pl_font, 0, sizeof(_pl_font));
 }
 
 void _plNextFontLine(void) {
-    _LINE++;
-    _LINE_POSITION = 0;
+    _pl_font.line++;
+    _pl_font.line_position = 0;
 }
 
 bool _plFontEOF(void) {
-    if(_POSITION >= _LENGTH) {
+    if(_pl_font.position >= _pl_font.length) {
         return true;
     }
 
@@ -72,39 +63,39 @@ bool _plFontEOF(void) {
 }
 
 void _plSkipFontComment(void) {
-    while(!_plFontEOF() && (_BUFFER[_POSITION] != '\n')) {
-        _POSITION++;
+    while(!_plFontEOF() && (_pl_font.buffer[_pl_font.position] != '\n')) {
+        _pl_font.position++;
     }
 
-    _POSITION++;
+    _pl_font.position++;
     _plNextFontLine();
 }
 
 void _plParseFontLine(void) {
-    if(_POSITION >= _LENGTH) {
+    if(_pl_font.position >= _pl_font.length) {
         return;
     }
 
     while(!_plFontEOF()) {
-        if((_BUFFER[_POSITION] == '-') && ((_BUFFER[_POSITION + 1] == '-'))) {
+        if((_pl_font.buffer[_pl_font.position] == '-') && ((_pl_font.buffer[_pl_font.position + 1] == '-'))) {
             _plSkipFontComment();
             continue;
-        } else if((_LINE_POSITION == 0) && (_BUFFER[_POSITION] == '\n')) {
-            _POSITION++;
+        } else if((_pl_font.line_position == 0) && (_pl_font.buffer[_pl_font.position] == '\n')) {
+            _pl_font.position++;
             continue;
-        } else if(_BUFFER[_POSITION] == '\t') {
-            _POSITION++;
+        } else if(_pl_font.buffer[_pl_font.position] == '\t') {
+            _pl_font.position++;
             continue;
-        } else if(_BUFFER[_POSITION] == '\n') {
-            _BUFFER_LINE[_LINE_POSITION + 1] = '\0';
+        } else if(_pl_font.buffer[_pl_font.position] == '\n') {
+            _pl_font.line_buffer[_pl_font.line_position + 1] = '\0';
 
             _plNextFontLine();
-            _POSITION++;
+            _pl_font.position++;
             break;
         }
 
-        _BUFFER_LINE[_LINE_POSITION] = _BUFFER[_POSITION];
-        _POSITION++; _LINE_POSITION++;
+        _pl_font.line_buffer[_pl_font.line_position] = _pl_font.buffer[_pl_font.position];
+        _pl_font.position++; _pl_font.line_position++;
     }
 }
 
@@ -122,17 +113,17 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
         return NULL;
     }
 
-    _pl_font_script.length = (unsigned int)fread(_pl_font_script.buffer, 1, _PLFONT_MAX_LENGTH, file);
+    _pl_font.length = (unsigned int)fread(_pl_font.buffer, 1, _PLFONT_MAX_LENGTH, file);
     fclose(file);
 
-    if(_pl_font_script.length < _PLFONT_MIN_LENGTH) {
-        _plReportError(PL_RESULT_FILESIZE, "Invalid length, %d, for %s!\n", _LENGTH, path);
+    if(_pl_font.length < _PLFONT_MIN_LENGTH) {
+        _plReportError(PL_RESULT_FILESIZE, "Invalid length, %d, for %s!\n", _pl_font.length, path);
         return NULL;
     }
 
     _plParseFontLine();
-    if(!strncmp(_BUFFER_LINE, "VERSION ", 8)) {
-        int version = atoi(_BUFFER_LINE + 8);
+    if(!strncmp(_pl_font.line_buffer, "VERSION ", 8)) {
+        int version = atoi(_pl_font.line_buffer + 8);
         if (version <= 0 || version > _PLFONT_FORMAT_VERSION) {
             _plReportError(PL_RESULT_FILEVERSION, "Expected version %d, received %d, for %s!\n",
                            _PLFONT_FORMAT_VERSION, version, path);
@@ -144,41 +135,42 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     }
 
     _plParseFontLine();
-    if(!plFileExists(_BUFFER_LINE)) {
-        _plReportError(PL_RESULT_FILEPATH, "Failed to find texture at %s, for %s!\n", _BUFFER_LINE, path);
+    if(!plFileExists(_pl_font.line_buffer)) {
+        _plReportError(PL_RESULT_FILEPATH, "Failed to find texture at %s, for %s!\n", _pl_font.line_buffer, path);
         return NULL;
     }
 
-    PLTexture *texture = plCreateTexture();
-    if(!texture) {
-        return NULL;
-    }
-
-    PLImage image;
-    if(plLoadImage(_BUFFER_LINE, &image) != PL_RESULT_SUCCESS) {
-        return NULL;
-    }
-
-    plUploadTextureImage(texture, &image);
+    char image_path[PL_SYSTEM_MAX_PATH] = { 0 };
+    strncpy(image_path, _pl_font.line_buffer, sizeof(image_path));
 
     PLBitmapFont *font = (PLBitmapFont*)malloc(sizeof(PLBitmapFont));
     if(!font) {
-        plDeleteTexture(texture, false);
-        plFreeImage(&image);
-
         _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for BitmapFont, %d!\n", sizeof(PLBitmapFont));
         return NULL;
     }
+    memset(font, 0, sizeof(PLBitmapFont));
 
-    font->texture = texture;
-
+    bool enable_filter = false;
     while(!_plFontEOF()) {
         _plParseFontLine();
 
-        //font->chars[_BUFFER_LINE[0]].character = _BUFFER_LINE[0];
-        sscanf(_BUFFER_LINE + 2, "%d %d %d %d",
-                         &font->chars[_BUFFER_LINE[0]].x, &font->chars[_BUFFER_LINE[0]].y,
-                         &font->chars[_BUFFER_LINE[0]].w, &font->chars[_BUFFER_LINE[0]].h
+        if(!strncmp(_pl_font.line_buffer, "FILTER ", 7)) {
+            if(_pl_font.line_buffer[8] == '1') {
+                enable_filter = true;
+            } else if(_pl_font.line_buffer[8] != '0') {
+                // todo, output a warning for this
+            }
+            continue;
+        }
+
+        int8_t character = _pl_font.line_buffer[0];
+        if(character == ' ') {
+            continue;
+        }
+
+        sscanf(_pl_font.line_buffer + 2, "%d %d %d %d",
+                         &font->chars[character].x, &font->chars[character].y,
+                         &font->chars[character].w, &font->chars[character].h
         );
 
 #if 0
@@ -192,7 +184,46 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
 #endif
     }
 
-    return NULL;
+    PLImage image;
+    if(plLoadImage(_pl_font.line_buffer, &image) != PL_RESULT_SUCCESS) {
+        plDeleteBitmapFont(font);
+        return NULL;
+    }
+
+    font->texture = plCreateTexture();
+    if(!font->texture) {
+        plDeleteBitmapFont(font);
+        plFreeImage(&image);
+        return NULL;
+    }
+
+    glBindTexture(GL_TEXTURE_RECTANGLE, font->texture->id);
+
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    if(enable_filter) {
+        glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    } else {
+        glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    }
+
+    glTexImage2D(
+            GL_TEXTURE_RECTANGLE,
+            0,
+            _plTranslateColourFormat(image.colour_format),
+            image.width,
+            image.height,
+            0,
+            _plTranslateTextureFormat(image.format),
+            GL_UNSIGNED_BYTE,
+            image.data[0]
+    );
+
+//    plFreeImage(&image);
+
+    return font;
 }
 
 void plDeleteBitmapFont(PLBitmapFont *font) {
@@ -201,4 +232,65 @@ void plDeleteBitmapFont(PLBitmapFont *font) {
     }
 
     plDeleteTexture(font->texture, false);
+
+    free(font);
+}
+
+void plDrawCharacter(PLBitmapFont *font, int x, int y, float scale, int8_t character) {
+    if((character == ' ') || (character == '\n') || (character == '\t') ||
+            !font->chars[character].w || !font->chars[character].h) {
+        return;
+    }
+
+    static PLMesh *mesh = NULL;
+    if(!mesh) {
+        if(!(mesh = plCreateMesh(
+                PL_PRIMITIVE_TRIANGLES,
+                PL_DRAW_IMMEDIATE,
+                2, 6
+        ))) {
+            return;
+        }
+    }
+
+    float w = font->chars[character].w * scale;
+    float h = font->chars[character].h * scale;
+
+    plClearMesh(mesh);
+
+    plSetMeshVertexPosition2f(mesh, 0, x, y + h);
+    plSetMeshVertexPosition2f(mesh, 1, x, y);
+    plSetMeshVertexPosition2f(mesh, 2, x + w, y);
+
+    plSetMeshVertexPosition2f(mesh, 3, x, y + h);
+    plSetMeshVertexPosition2f(mesh, 4, x + w, y);
+    plSetMeshVertexPosition2f(mesh, 5, x + w, y + h);
+
+    plSetMeshVertexST(mesh, 0, 0, 0);
+    plSetMeshVertexST(mesh, 1, 0, 1);
+    plSetMeshVertexST(mesh, 2, 1, 1);
+
+    plSetMeshVertexST(mesh, 3, 0, 0);
+    plSetMeshVertexST(mesh, 4, 1, 1);
+    plSetMeshVertexST(mesh, 5, 1, 0);
+
+    plUploadMesh(mesh);
+    plDrawMesh(mesh);
+}
+
+void plDrawString(PLBitmapFont *font, int x, int y, float scale, const char *msg) {
+    plAssert(scale > 0);
+
+    if(x < 0 || y > pl_graphics_state.viewport_width || y < 0 || y > pl_graphics_state.viewport_height) {
+        return;
+    }
+
+    unsigned int length = (unsigned int)strlen(msg);
+    if(length == 0) {
+        return;
+    }
+
+    for(unsigned int i = 0; i < length; i++) {
+
+    }
 }
