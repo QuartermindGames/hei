@@ -246,7 +246,7 @@ const PLchar *_plGetHWVersion(void) {
 #endif
 }
 
-PLbool plHWSupportsMultitexture(void) {
+bool plHWSupportsMultitexture(void) {
     _PL_GRAPHICS_TRACK();
 
 #if defined(PL_MODE_OPENGL)
@@ -258,7 +258,7 @@ PLbool plHWSupportsMultitexture(void) {
 #endif
 }
 
-PLbool plHWSupportsShaders(void) {
+bool plHWSupportsShaders(void) {
     _PL_GRAPHICS_TRACK();
 
 #if defined(PL_MODE_OPENGL)
@@ -366,13 +366,10 @@ _PLGraphicsCapabilities graphics_capabilities[] =
                 {0}
         };
 
-PLbool plIsGraphicsStateEnabled(PLuint flags) {
+bool plIsGraphicsStateEnabled(PLuint flags) {
     _PL_GRAPHICS_TRACK();
 
-    if (flags & pl_graphics_state.current_capabilities)
-        return PL_TRUE;
-
-    return PL_FALSE;
+    return (bool)(flags & pl_graphics_state.current_capabilities);
 }
 
 void plEnableGraphicsStates(PLuint flags) {
@@ -1044,7 +1041,7 @@ PLLight *plCreateLight(void) {
     pl_graphics_state.num_lights++;
     light->colour = plCreateColour4b(255, 255, 255, 255);
     light->radius = 128.f;
-    light->type = PL_LIGHT_OMNI;
+    light->type = PLLIGHT_TYPE_OMNI;
 
     return light;
 }

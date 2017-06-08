@@ -116,7 +116,7 @@ PLStaticModel *plLoadOBJModel(const PLchar *path) {
 
     model->num_triangles = 0;
     model->num_vertices = (unsigned int) vertices.size();
-    model->primitive = PL_PRIMITIVE_POINTS;
+    model->primitive = PLMESH_POINTS;
 
     // Allocate vertex/triangle arrays.
     model->frame.vertices = new PLVertex[model->num_vertices];

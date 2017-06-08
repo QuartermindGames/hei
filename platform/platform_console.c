@@ -124,7 +124,7 @@ PLresult _plInitConsole(void) {
     memset(&_pl_console_pane, 0, sizeof(PLConsolePane) * PLCONSOLE_MAX_INSTANCES);
     _pl_active_console_pane = _pl_num_console_panes = 0;
 
-    _pl_mesh_line = plCreateMesh(PL_PRIMITIVE_LINES, PL_DRAW_IMMEDIATE, 0, 4);
+    _pl_mesh_line = plCreateMesh(PLMESH_LINES, PL_DRAW_IMMEDIATE, 0, 4);
     if(!_pl_mesh_line) {
         return PL_RESULT_MEMORYALLOC;
     }
@@ -317,28 +317,28 @@ void plDrawConsole(void) {
                     _pl_console_pane[i].display.width,
                     _pl_console_pane[i].display.height,
 
-                    plCreateColour4b(
+                    PLColour(
                             (uint8_t) (_pl_console_pane[i].display.ul.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.ul.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.ul.b / 2),
                             _COLOUR_INACTIVE_ALPHA_TOP
                     ),
 
-                    plCreateColour4b(
+                    PLColour(
                             (uint8_t) (_pl_console_pane[i].display.ur.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.ur.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.ur.b / 2),
                             _COLOUR_INACTIVE_ALPHA_TOP
                     ),
 
-                    plCreateColour4b(
+                    PLColour(
                             (uint8_t) (_pl_console_pane[i].display.ll.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.ll.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.ll.b / 2),
                             _COLOUR_INACTIVE_ALPHA_BOTTOM
                     ),
 
-                    plCreateColour4b(
+                    PLColour(
                             (uint8_t) (_pl_console_pane[i].display.lr.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.lr.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.lr.b / 2),

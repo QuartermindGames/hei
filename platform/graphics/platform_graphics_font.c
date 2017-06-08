@@ -245,7 +245,7 @@ void plDrawCharacter(PLBitmapFont *font, int x, int y, float scale, int8_t chara
     static PLMesh *mesh = NULL;
     if(!mesh) {
         if(!(mesh = plCreateMesh(
-                PL_PRIMITIVE_TRIANGLES,
+                PLMESH_TRIANGLES,
                 PL_DRAW_IMMEDIATE,
                 2, 6
         ))) {

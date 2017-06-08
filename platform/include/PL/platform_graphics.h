@@ -195,7 +195,7 @@ typedef enum PLGraphicsCapability {
 
 PL_EXTERN_C
 
-PL_EXTERN PLbool plIsGraphicsStateEnabled(unsigned int flags);
+PL_EXTERN bool plIsGraphicsStateEnabled(unsigned int flags);
 
 PL_EXTERN void plEnableGraphicsStates(unsigned int flags);
 PL_EXTERN void plDisableGraphicsStates(unsigned int flags);
@@ -245,8 +245,8 @@ PL_EXTERN_C_END
 // Lighting
 
 typedef enum PLLightType {
-    PL_LIGHT_SPOT,  // Spotlight
-    PL_LIGHT_OMNI   // Omni-directional
+    PLLIGHT_TYPE_SPOT,  // Spotlight
+    PLLIGHT_TYPE_OMNI   // Omni-directional
 } PLLightType;
 
 typedef struct PLLight {
@@ -286,8 +286,8 @@ PL_EXTERN const char *_plGetHWRenderer(void);
 PL_EXTERN const char *_plGetHWVendor(void);
 PL_EXTERN const char *_plGetHWVersion(void);
 
-PL_EXTERN PLbool plHWSupportsMultitexture(void);
-PL_EXTERN PLbool plHWSupportsShaders(void);
+PL_EXTERN bool plHWSupportsMultitexture(void);
+PL_EXTERN bool plHWSupportsShaders(void);
 
 PL_EXTERN unsigned int plGetCurrentShaderProgram(void);
 
