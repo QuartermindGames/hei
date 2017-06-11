@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
     plSetClearColour(plCreateColour4b(0, 0, 0, 255));
 
     PLCamera *camera = plCreateCamera();
-    camera->mode = PL_CAMERAMODE_ORTHOGRAPHIC;
+    camera->mode = PLCAMERA_MODE_ORTHOGRAPHIC;
     glfwGetFramebufferSize(window, (int*)&camera->viewport.width, (int*)&camera->viewport.height);
 
     while(!glfwWindowShouldClose(window)) {

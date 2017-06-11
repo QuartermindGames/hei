@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "PL/platform_graphics.h"
+#include <PL/platform_graphics.h>
 
 #define PLCAMERA_DEFAULT_WIDTH      640
 #define PLCAMERA_DEFAULT_HEIGHT     480
@@ -45,7 +45,7 @@ PLCamera *plCreateCamera(void) {
     camera->fov     = PLCAMERA_DEFAULT_FOV;
     camera->near    = PLCAMERA_DEFAULT_NEAR;
     camera->far     = PLCAMERA_DEFAULT_FAR;
-    camera->mode    = PL_CAMERAMODE_PERSPECTIVE;
+    camera->mode    = PLCAMERA_MODE_PERSPECTIVE;
 
     /*  XY * * * * W
      *  *
@@ -87,8 +87,7 @@ void plSetupCamera(PLCamera *camera) {
     // modernize end
 
     switch(camera->mode) {
-        default:
-        case PL_CAMERAMODE_PERSPECTIVE: {
+        case PLCAMERA_MODE_PERSPECTIVE: {
             plPerspective(camera->fov, camera->viewport.width / camera->viewport.height, 0.1, 100000);
 
             // todo, modernize start
@@ -103,11 +102,13 @@ void plSetupCamera(PLCamera *camera) {
 
             break;
         }
-        case PL_CAMERAMODE_ORTHOGRAPHIC: {
+            
+        case PLCAMERA_MODE_ORTHOGRAPHIC: {
             glOrtho(0, camera->viewport.width, camera->viewport.height, 0, 0, 1000);
             break;
         }
-        case PL_CAMERAMODE_ISOMETRIC: {
+        
+        case PLCAMERA_MODE_ISOMETRIC: {
             glOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
 
             // todo, modernize start
@@ -121,5 +122,7 @@ void plSetupCamera(PLCamera *camera) {
             // modernize end
             break;
         }
+
+        default: break;
     }
 }

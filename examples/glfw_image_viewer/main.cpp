@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "PL/platform_image.h"
-#include "PL/platform_window.h"
-#include "PL/platform_graphics.h"
+#include <PL/platform_image.h>
+#include <PL/platform_window.h>
+#include <PL/platform_graphics.h>
 #include "PL/platform_log.h"
 
 #include <GLFW/glfw3.h>
@@ -49,9 +49,8 @@ int main(int argc, char **argv) {
 
     // Load the image up from the HDD.
     PLImage image;
-    PLresult result = plLoadImage("./images/tif/jello.tif", &image);
-    if(result != PL_RESULT_SUCCESS) {
-        plMessageBox(TITLE, "Failed to load VTF!\n%s", plGetResultString(result));
+    if(!plLoadImage("./images/tif/jello.tif", &image)) {
+        plMessageBox(TITLE, "Failed to load VTF!\n%s", plGetResultString(plGetFunctionResult()));
         return -1;
     }
 
@@ -87,7 +86,7 @@ int main(int argc, char **argv) {
         plMessageBox(TITLE, "Failed to create camera!");
         return -1;
     }
-    camera->mode = PL_CAMERAMODE_ORTHOGRAPHIC;
+    camera->mode = PLCAMERA_MODE_ORTHOGRAPHIC;
     camera->viewport.width = width; camera->viewport.height = height;
 
     glfwGetFramebufferSize(window, (int*)&camera->viewport.width, (int*)&camera->viewport.height);

@@ -79,8 +79,21 @@ PLSubSystem pl_subsystems[]= {
 typedef struct PLArgument {
     const char *parm;
 
-    void*(*Callback)();
+    void*(*Callback)(const char *arg);
 } PLArgument;
+
+PLArgument arguments[]={
+        { "arg0" },
+        { "arg1" },
+};
+
+void plParseArguments(PLArgument arguments[], unsigned int size) {
+    for(unsigned int i = 0; i < size; i++) {
+        if(arguments[i].Callback) {
+            arguments[i].Callback("");
+        }
+    }
+}
 
 typedef struct PLArguments {
     const char *exe_name;
@@ -128,6 +141,7 @@ const char *plGetExecutableName(void) {
     return pl_arguments.exe_name;
 }
 
+// Returns result for a single command line argument.
 const char *plGetCommandLineArgument(const char *arg) {
     if(pl_arguments.num_arguments < 2) {
         return '\0';

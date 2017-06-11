@@ -67,8 +67,6 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
 }
 
 bool plLoadImage(const PLchar *path, PLImage *out) {
-    plFunctionStart();
-
     if (!plIsValidString(path)) {
         _plReportError(PL_RESULT_FILEPATH, "Invalid path, %s, passed for image!\n", path);
         return false;

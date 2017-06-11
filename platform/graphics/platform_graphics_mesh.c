@@ -272,7 +272,7 @@ void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index, unsigned
         size -= (size - mesh->num_verts);
     }
 
-    for(PLuint i = index; i < size; i++) {
+    for(unsigned int i = index; i < size; i++) {
         mesh->vertices[i].st[unit].x = st[0];
         mesh->vertices[i].st[unit].y = st[1];
     }
