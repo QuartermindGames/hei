@@ -304,6 +304,39 @@ bool plPathExists(const char *path) {
     return false;
 }
 
+bool plCopyFile(const char *path, const char *dest) {
+    FILE *fold = fopen(path, "rb");
+    if(!fold) {
+        _plReportError(PL_RESULT_FILEREAD, "Failed to open %s!", path);
+        return false;
+    }
+
+    fseek(fold, 0, SEEK_END);
+    size_t file_size = (size_t)ftell(fold);
+    fseek(fold, 0, SEEK_SET);
+
+    uint8_t *data = calloc(file_size, 1);
+    if(!data) {
+        fclose(fold);
+
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate buffer for %s, with size %d!", path, file_size);
+        return false;
+    }
+
+    fread(data, 1, file_size, fold);
+
+    FILE *out = fopen(dest, "wb");
+    if(!out || (fwrite(data, 1, file_size, out) != file_size)) {
+        fclose(fold);
+
+        _plReportError(PL_RESULT_FILEREAD, "Failed to write %s!", dest);
+        return false;
+    }
+    fclose(out);
+
+    return true;
+}
+
 int16_t plGetLittleShort(FILE *fin) {
     int b1 = fgetc(fin);
     int b2 = fgetc(fin);

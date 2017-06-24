@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_console.h>
 #include <PL/platform_graphics.h>
 #include <PL/platform_graphics_font.h>
+#include <PL/platform_input.h>
 
 /* Multi Console Manager */
 // todo, should the console be case-sensitive?
@@ -220,8 +221,60 @@ bool _plConsolePaneVisible(unsigned int id) {
 
 // INPUT
 
-void _plConsoleInput(int m_x, int m_y) {
+void _plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) {
+    if(!is_pressed) {
+        return;
+    }
 
+    for(unsigned int i = 0; i < _pl_num_console_panes; i++) {
+        if(!_plConsolePaneVisible(i)) {
+            continue;
+        }
+
+        PLConsolePane *pane = &_pl_console_pane[i];
+
+        int pane_min_x = pane->display.x;
+        int pane_max_x = pane_min_x + pane->display.width;
+        if(m_x < pane_min_x || m_x > pane_max_x) {
+            continue;
+        }
+
+        int pane_min_y = pane->display.y;
+        int pane_max_y = pane_min_y + pane->display.height;
+        if(m_y < pane_min_y || m_y > pane_max_y) {
+            continue;
+        }
+
+        if(m_buttons & PLINPUT_MOUSE_LEFT) {
+            _pl_active_console_pane = i;
+
+            pane->display.x += m_x; pane->display.y += m_y;
+            if(pane->display.x <= pl_graphics_state.viewport_x) {
+                pane->display.x = pl_graphics_state.viewport_x + 1;
+            } else if(pane->display.x >= pl_graphics_state.viewport_width) {
+                pane->display.x = pl_graphics_state.viewport_width - 1;
+            } else if(pane->display.y <= pl_graphics_state.viewport_y) {
+                pane->display.y = pl_graphics_state.viewport_y + 1;
+            } else if(pane->display.y >= pl_graphics_state.viewport_height) {
+                pane->display.y = pl_graphics_state.viewport_height - 1;
+            }
+
+            static int old_x = 0, old_y = 0;
+
+            return;
+        } else if(m_buttons & PLINPUT_MOUSE_RIGHT) {
+        // todo, display context menu
+            return;
+        }
+
+        return;
+    }
+
+    // If we reached here, then we failed to hit anything...
+
+    if(m_buttons & PLINPUT_MOUSE_RIGHT) {
+    // todo, display context menu
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -250,6 +303,10 @@ void plSetupConsole(unsigned int num_instances) {
 
 void plShowConsole(bool show) {
     _pl_console_visible = show;
+}
+
+bool plIsConsoleVisible(void) {
+    return _pl_console_visible;
 }
 
 void plSetConsoleColour(unsigned int id, PLColour colour) {

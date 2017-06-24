@@ -114,7 +114,7 @@ PLresult plInitialize(int argc, char **argv, unsigned int subsystems) {
                 }
             }
 
-            pl_subsystems[i].active = PL_TRUE;
+            pl_subsystems[i].active = true;
         }
     }
 
@@ -160,7 +160,7 @@ const char *plGetCommandLineArgument(const char *arg) {
 }
 
 void plShutdown(void) {
-    for(PLuint i = 0; i < plArrayElements(pl_subsystems); i++) {
+    for(unsigned int i = 0; i < plArrayElements(pl_subsystems); i++) {
         if(!pl_subsystems[i].active) {
             continue;
         }
@@ -178,7 +178,7 @@ void plShutdown(void) {
 #define    MAX_FUNCTION_LENGTH    64
 #define    MAX_ERROR_LENGTH    2048
 
-PLchar
+char
         sys_error[MAX_ERROR_LENGTH]         = { '\0' },
         loc_error[MAX_ERROR_LENGTH]         = { '\0' },
         loc_function[MAX_FUNCTION_LENGTH]   = { '\0' };
@@ -188,7 +188,7 @@ PLresult _pl_global_result = PL_RESULT_SUCCESS;
 // Sets the name of the current function.
 void _plSetCurrentFunction(const char *function, ...) {
 #ifdef _DEBUG
-    PLchar out[2048]; // todo, shitty work around because linux crap    //[MAX_FUNCTION_LENGTH];
+    char out[2048]; // todo, shitty work around because linux crap    //[MAX_FUNCTION_LENGTH];
     va_list args;
 
     va_start(args, function);
@@ -206,7 +206,7 @@ void _plSetFunctionResult(PLresult result) {
 // Sets the local error message.
 void _plSetErrorMessage(const char *msg, ...) {
 #ifdef _DEBUG
-    PLchar out[MAX_ERROR_LENGTH];
+    char out[MAX_ERROR_LENGTH];
     va_list args;
 
     va_start(args, msg);
@@ -218,13 +218,13 @@ void _plSetErrorMessage(const char *msg, ...) {
 }
 
 // Returns locally generated error message.
-const PLchar * plGetError(void) {
+const char * plGetError(void) {
     return loc_error;
 }
 
 /*	Returns a system error message.
 */
-const PLchar * plGetSystemError(void) {
+const char * plGetSystemError(void) {
 #ifdef _WIN32
     char	*buffer = NULL;
     int		error;

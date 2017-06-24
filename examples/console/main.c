@@ -56,6 +56,11 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
             Shutdown();
         }
 
+        case GLFW_KEY_TAB: {
+            plShowConsole(!plIsConsoleVisible());
+            break;
+        }
+
         case GLFW_KEY_1: {
             plSetupConsole(1);
             break;
@@ -82,6 +87,7 @@ int main(int argc, char **argv) {
     glfwMakeContextCurrent(window);
 
     glfwSetKeyCallback(window, KeyCallback);
+    glfwSetMouseButtonCallback(window, )
 
     plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS | PL_SUBSYSTEM_CONSOLE);
 
@@ -93,7 +99,6 @@ int main(int argc, char **argv) {
 #endif
 
     plSetupConsole(1);
-    plShowConsole(true);
 
     plSetConsoleColour(1, plCreateColour4b(128, 0, 0, 128));
     plSetConsoleColour(2, plCreateColour4b(0, 128, 0, 128));
@@ -113,7 +118,15 @@ int main(int argc, char **argv) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
         plSetupCamera(camera);
-        plDrawConsole();
+
+        if(plIsConsoleVisible()) {
+            double x, y;
+            glfwGetCursorPos(window, &x, &y);
+
+
+
+            plDrawConsole();
+        }
 
         glfwSwapBuffers(window);
     }

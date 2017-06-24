@@ -164,7 +164,7 @@ PLresult _plInitGraphics(void) {
 
     pl_graphics_state.tmu = (PLTextureMappingUnit*)calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));
     memset(pl_graphics_state.tmu, 0, sizeof(PLTextureMappingUnit));
-    for (PLuint i = 0; i < plGetMaxTextureUnits(); i++) {
+    for (unsigned int i = 0; i < plGetMaxTextureUnits(); i++) {
         pl_graphics_state.tmu[i].current_envmode = PL_TEXTUREMODE_REPLACE;
     }
 
