@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
     glfwMakeContextCurrent(window);
 
     glfwSetKeyCallback(window, KeyCallback);
-    glfwSetMouseButtonCallback(window, )
+    //glfwSetMouseButtonCallback(window, )
 
     plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS | PL_SUBSYSTEM_CONSOLE);
 

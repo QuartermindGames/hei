@@ -29,6 +29,10 @@ For more information, please refer to <http://unlicense.org>
 #include "PL/platform_log.h"
 #include "PL/platform_image.h"
 
+#if defined(PL_USE_SDL2)
+#   include <SDL2/SDL.h>
+#endif
+
 using namespace pl::graphics;
 
 /*	Graphics	*/
@@ -77,20 +81,20 @@ void _plInitVulkan() {
 
 #elif defined (PL_MODE_OPENGL)
 
-PLbool pl_gl_generate_mipmap = PL_FALSE;
-PLbool pl_gl_depth_texture = PL_FALSE;
-PLbool pl_gl_shadow = PL_FALSE;
-PLbool pl_gl_vertex_buffer_object = PL_FALSE;
-PLbool pl_gl_texture_compression = PL_FALSE;
-PLbool pl_gl_texture_compression_s3tc = PL_FALSE;
-PLbool pl_gl_multitexture = PL_FALSE;
-PLbool pl_gl_texture_env_combine = PL_FALSE;
-PLbool pl_gl_texture_env_add = PL_FALSE;
-PLbool pl_gl_vertex_program = PL_FALSE;
-PLbool pl_gl_fragment_program = PL_FALSE;
+bool pl_gl_generate_mipmap = PL_FALSE;
+bool pl_gl_depth_texture = PL_FALSE;
+bool pl_gl_shadow = PL_FALSE;
+bool pl_gl_vertex_buffer_object = PL_FALSE;
+bool pl_gl_texture_compression = PL_FALSE;
+bool pl_gl_texture_compression_s3tc = PL_FALSE;
+bool pl_gl_multitexture = PL_FALSE;
+bool pl_gl_texture_env_combine = PL_FALSE;
+bool pl_gl_texture_env_add = PL_FALSE;
+bool pl_gl_vertex_program = PL_FALSE;
+bool pl_gl_fragment_program = PL_FALSE;
 
-PLuint pl_gl_version_major = 0;
-PLuint pl_gl_version_minor = 0;
+unsigned int pl_gl_version_major = 0;
+unsigned int pl_gl_version_minor = 0;
 
 #define PL_GL_VERSION(maj, min) ((maj == pl_gl_version_major && min <= pl_gl_version_minor) || maj < pl_gl_version_major)
 
@@ -98,6 +102,15 @@ void _plInitOpenGL() {
     _PL_GRAPHICS_TRACK();
 
     // todo, write our own replacement for GLEW
+
+#if defined(PL_USE_SDL2)
+    if(!_plIsSubSystemActive(PL_SUBSYSTEM_WINDOW)) {
+        if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) {
+            plGraphicsLog("Failed to initialize SDL2 video! (%s)\n", SDL_GetError());
+            return;
+        }
+    }
+#endif
 
 #if 0
 #if !defined(PL_MODE_OPENGL_CORE)
@@ -144,6 +157,14 @@ void _plInitOpenGL() {
 
 void _plShutdownOpenGL() {}
 
+#else
+
+void _plInitSoftware(void) {
+}
+
+void _plShutdownSoftware(void) {
+}
+
 #endif
 
 PLresult _plInitGraphics(void) {
@@ -160,6 +181,8 @@ PLresult _plInitGraphics(void) {
     _plInitGlide();
 #elif defined (VL_MODE_DIRECT3D)
     _plInitDirect3D();
+#else
+    _plInitSoftware();
 #endif
 
     pl_graphics_state.tmu = (PLTextureMappingUnit*)calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));

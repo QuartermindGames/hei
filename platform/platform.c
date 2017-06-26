@@ -65,8 +65,8 @@ PLSubSystem pl_subsystems[]= {
 
         {
                 PL_SUBSYSTEM_WINDOW,
-                NULL,
-                NULL
+                &_plInitWindow,
+                &_plShutdownWindow
         },
 
         {
@@ -157,6 +157,16 @@ const char *plGetCommandLineArgument(const char *arg) {
     }
 
     return '\0';
+}
+
+bool _plIsSubSystemActive(unsigned int subsystem) {
+    for(unsigned int i = 0; i < plArrayElements(pl_subsystems); i++) {
+        if(pl_subsystems[i].subsystem == subsystem) {
+            return pl_subsystems[i].active;
+        }
+    }
+
+    return false;
 }
 
 void plShutdown(void) {

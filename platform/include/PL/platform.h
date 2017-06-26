@@ -168,6 +168,9 @@ typedef enum {
     PL_RESULT_DRAW_MODE,        // Invalid mesh draw mode!
     PL_RESULT_DRAW_PRIMITIVE,   // Invalid mesh primitive!
 
+    // WINDOW
+    PL_RESULT_DISPLAY,  // Failed to open/create display!
+
     // IMAGE
     PL_RESULT_IMAGERESOLUTION,  // Invalid image resolution!
     PL_RESULT_IMAGEFORMAT,      // Unsupported image format!
@@ -276,6 +279,12 @@ PL_EXTERN const char * plGetError(void);        // Returns the last recorded err
 PL_EXTERN const char *plGetCommandLineArgument(const char *arg);
 
 #if defined(PL_INTERNAL)
+
+#define PL_USE_SDL2
+
+PL_EXTERN bool _plIsSubSystemActive(unsigned int subsystem);
+
+//////////////////////////////////////////////////////////////////
 
 PL_EXTERN void _plSetFunctionResult(PLresult result);
 
