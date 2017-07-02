@@ -213,7 +213,7 @@ void plScanDirectory(const char *path, const char *extension, void(*Function)(co
     if (directory) {
         struct dirent *entry;
         while ((entry = readdir(directory))) {
-            if (strcasestr(entry->d_name, extension)) {
+            if (pl_strcasestr(entry->d_name, extension)) {
                 sprintf(filestring, "%s/%s", path, entry->d_name);
                 Function(filestring);
             }
@@ -304,6 +304,7 @@ bool plPathExists(const char *path) {
     return false;
 }
 
+// todo, return plresult instead
 bool plCopyFile(const char *path, const char *dest) {
     FILE *fold = fopen(path, "rb");
     if(!fold) {

@@ -99,8 +99,9 @@ int main(int argc, char **argv) {
 #endif
 
     plSetupConsole(1);
+    plShowConsole(true);
 
-    plSetConsoleColour(1, plCreateColour4b(128, 0, 0, 128));
+    plSetConsoleColour(1, plCreateColour4b(128, 128, 0, 128));
     plSetConsoleColour(2, plCreateColour4b(0, 128, 0, 128));
     plSetConsoleColour(3, plCreateColour4b(0, 0, 128, 128));
     plSetConsoleColour(4, plCreateColour4b(0, 0, 0, 128));
@@ -119,14 +120,10 @@ int main(int argc, char **argv) {
 
         plSetupCamera(camera);
 
-        if(plIsConsoleVisible()) {
-            double x, y;
-            glfwGetCursorPos(window, &x, &y);
+        double x, y;
+        glfwGetCursorPos(window, &x, &y);
 
-
-
-            plDrawConsole();
-        }
+        plDrawConsole();
 
         glfwSwapBuffers(window);
     }

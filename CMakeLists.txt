@@ -51,3 +51,5 @@ if(PL_BUILD_EXAMPLES)
     add_subdirectory(examples/tim2tiff)
     add_subdirectory(examples/console)
 endif(PL_BUILD_EXAMPLES)
+
+add_subdirectory(examples/critters)

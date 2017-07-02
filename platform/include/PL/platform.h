@@ -298,6 +298,15 @@ PL_EXTERN void _plSetFunctionResult(PLresult result);
 
 #include <PL/platform_string.h>
 
+//////////////////////////////////////////////////////////////////
+
+#define PRINT(...)          printf(__VA_ARGS__)
+#ifdef _DEBUG
+#   define DPRINT(...)      PRINT(__VA_ARGS__)
+#else
+#   define DPRINT(...)      (__VA_ARGS__)
+#endif
+
 PL_EXTERN_C_END
 
 //////////////////////////////////////////////////////////////////

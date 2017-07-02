@@ -201,10 +201,12 @@ void plDeleteWindow(PLWindow *window) {
         return;
     }
 
+#if defined(PL_USE_SDL2)
     SDL_Window *sdl_window = SDL_GetWindowFromID(window->sys_id);
     if(sdl_window) {
         SDL_DestroyWindow(sdl_window);
     }
+#endif
 
     // todo, remove from global pool
     free(window);
