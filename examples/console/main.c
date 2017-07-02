@@ -27,9 +27,8 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_console.h>
 #include <PL/platform_graphics.h>
-
-#include <GLFW/glfw3.h>
 #include <PL/platform_filesystem.h>
+#include <PL/platform_window.h>
 
 /* Example of console API, minus error handling :) */
 
@@ -38,12 +37,12 @@ For more information, please refer to <http://unlicense.org>
 #define HEIGHT  768
 
 void Shutdown(void) {
-    glfwTerminate();
     plShutdown();
 
     exit(0);
 }
 
+#if 0
 void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if(action != GLFW_PRESS) {
         return;
@@ -79,24 +78,16 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
         }
     }
 }
+#endif
 
 int main(int argc, char **argv) {
-    glfwInit();
+    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS | PL_SUBSYSTEM_CONSOLE | PL_SUBSYSTEM_WINDOW);
 
-    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, TITLE, NULL, NULL);
-    glfwMakeContextCurrent(window);
-
-    glfwSetKeyCallback(window, KeyCallback);
-    //glfwSetMouseButtonCallback(window, )
-
-    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS | PL_SUBSYSTEM_CONSOLE);
-
-#if 1 // debug stuff, ignore this
-    const char *path = { "./example/path.mine" };
-    char npath[PL_SYSTEM_MAX_PATH];
-    plStripExtension(npath, path);
-    printf("path %s\n", npath);
-#endif
+    PLWindow *window = plCreateWindow(TITLE, 0, 0, WIDTH, HEIGHT);
+    if(!window) {
+        printf(plGetError());
+        return -1;
+    }
 
     plSetupConsole(1);
     plShowConsole(true);
@@ -111,22 +102,22 @@ int main(int argc, char **argv) {
 
     PLCamera *camera = plCreateCamera();
     camera->mode = PLCAMERA_MODE_ORTHOGRAPHIC;
-    glfwGetFramebufferSize(window, (int*)&camera->viewport.width, (int*)&camera->viewport.height);
+    camera->viewport.width = window->width;
+    camera->viewport.height = window->height;
 
-    while(!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
-
+#if 0
+    while(/* todo, replacement for this */) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
         plSetupCamera(camera);
 
-        double x, y;
-        glfwGetCursorPos(window, &x, &y);
+        // todo, input??
 
         plDrawConsole();
 
-        glfwSwapBuffers(window);
+        plSwapBuffers(window);
     }
+#endif
 
     Shutdown();
     return 0;

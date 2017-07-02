@@ -32,4 +32,4 @@ file(GLOB EXAMPLE_CONSOLE_SOURCE_FILES *.*)
 add_executable(example_console ${EXAMPLE_CONSOLE_SOURCE_FILES})
 
 target_include_directories(example_console PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(example_console platform glfw)
+target_link_libraries(example_console platform)

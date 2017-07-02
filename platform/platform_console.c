@@ -92,6 +92,10 @@ void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
+// todo, console variable implementation goes here!
+
+/////////////////////////////////////////////////////////////////////////////////////
+
 #define PLCONSOLE_MAX_INSTANCES 4
 
 #define PLCONSOLE_DEFAULT_COLOUR 128, 0, 0, 128
@@ -431,5 +435,5 @@ void plDrawConsole(void) {
     plDrawCharacter(_pl_console_font, 20, 40, 2, 'C');
     plDrawCharacter(_pl_console_font, 20, 50, 4, 'D');
 
-    glEnable(GL_TEXTURE_RECTANGLE);
+    glDisable(GL_TEXTURE_RECTANGLE);
 }
