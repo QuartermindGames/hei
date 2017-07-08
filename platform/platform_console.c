@@ -43,29 +43,28 @@ typedef struct PLConsoleCommand {
     char description[512];
 } PLConsoleCommand;
 
-#define IMPLEMENT_COMMAND(a) void a(unsigned int argc, char *argv[])
-
-IMPLEMENT_COMMAND(CLSCommand) {}
-IMPLEMENT_COMMAND(COLOURCommand) {}
-IMPLEMENT_COMMAND(TIMECommand) {}
-IMPLEMENT_COMMAND(MEMCommand) {}
-IMPLEMENT_COMMAND(HELPCommand) {}
-
 PLConsoleCommand **_pl_commands = NULL;
-PLConsoleCommand _pl_base_commands[]={
-        { "cls", CLSCommand, "Clears the console buffer." },
-        { "colour", COLOURCommand, "Changes the colour of the current console." },
-        { "time", TIMECommand },
-        { "mem", MEMCommand },
-        { "help", HELPCommand },
-};
-
 size_t _pl_num_commands = 0;
 size_t _pl_commands_size = 512;
 
-void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
-    if(num_cmds > _pl_commands_size) {
+#define IMPLEMENT_COMMAND(NAME, DESC) \
+    void NAME ## _func(unsigned int argc, char *argv[]); \
+    PLConsoleCommand NAME ## _var = {#NAME, NAME ## _func, DESC}; \
+    void NAME ## _func(unsigned int argc, char *argv[])
 
+void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
+
+    // Deal with resizing the array dynamically...
+    if((num_cmds + _pl_num_commands) > _pl_commands_size) {
+        PLConsoleCommand **old_mem = _pl_commands;
+        _pl_commands = (PLConsoleCommand**)realloc(_pl_commands, (_pl_commands_size += 128) * sizeof(PLConsoleCommand));
+        if(!_pl_commands) {
+            _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n",
+                           _pl_commands_size * sizeof(PLConsoleCommand));
+            _pl_commands = old_mem;
+            _pl_commands_size -= 128;
+            return;
+        }
     }
 
     for(unsigned int i = 0; i < num_cmds; i++) {
@@ -73,19 +72,15 @@ void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
             continue;
         }
 
-        // todo, necessary to scan through? We know where the last slot was...
-        PLConsoleCommand *cmd = _pl_commands[0];
-        for (size_t j = 0; j < _pl_commands_size; j++, cmd++) {
-            if (!cmd) {
-                cmd = (PLConsoleCommand *) malloc(sizeof(PLConsoleCommand));
-                if (!cmd) {
-                    _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
-                                   sizeof(PLConsoleCommand));
-                    break;
-                }
-                memcpy(cmd, &cmds[i], sizeof(PLConsoleCommand));
+        if(_pl_num_commands < _pl_commands_size) {
+            _pl_commands[_pl_num_commands] = (PLConsoleCommand*)malloc(sizeof(PLConsoleCommand));
+            if(!_pl_commands[_pl_num_commands]) {
+                _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
+                               sizeof(PLConsoleCommand));
                 break;
             }
+            memcpy(_pl_commands[_pl_num_commands], &cmds[i], sizeof(PLConsoleCommand));
+            _pl_num_commands++;
         }
     }
 }
@@ -93,6 +88,68 @@ void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
 /////////////////////////////////////////////////////////////////////////////////////
 
 // todo, console variable implementation goes here!
+
+enum {
+    PL_VAR_FLOAT,
+    PL_VAR_INTEGER,
+    PL_VAR_STRING,
+    PL_VAR_BOOLEAN,
+};
+
+typedef struct PLConsoleVariable {
+    const char *var, *value;
+
+    unsigned int type;
+
+    char description[512];
+
+    void(*Callback)(unsigned int argc, char *argv[]);
+
+    /////////////////////////////
+
+    const char *default_value;
+} PLConsoleVariable;
+
+PLConsoleVariable **_pl_variables = NULL;
+size_t _pl_num_variables = 0;
+size_t _pl_variables_size = 512;
+
+void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars) {
+
+    // Deal with resizing the array dynamically...
+    if((num_vars + _pl_num_variables) > _pl_variables_size) {
+        PLConsoleVariable **old_mem = _pl_variables;
+        _pl_variables = (PLConsoleVariable**)realloc(_pl_variables, (_pl_variables_size += 128) * sizeof(PLConsoleVariable));
+        if(!_pl_variables) {
+            _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n",
+                           _pl_variables_size * sizeof(PLConsoleVariable));
+            _pl_variables = old_mem;
+            _pl_variables_size -= 128;
+            return;
+        }
+    }
+
+    for(unsigned int i = 0; i < num_vars; i++) {
+        if((vars[i].var[0] == '\0') || !(vars[i].Callback)) {
+            continue;
+        }
+
+        if(_pl_num_variables < _pl_variables_size) {
+            _pl_variables[_pl_num_variables] = (PLConsoleVariable*)malloc(sizeof(PLConsoleVariable));
+            if(!_pl_variables[_pl_num_variables]) {
+                _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
+                               sizeof(PLConsoleVariable));
+                break;
+            }
+            memcpy(_pl_variables[_pl_num_variables], &vars[i], sizeof(PLConsoleVariable));
+            _pl_num_variables++;
+        }
+    }
+}
+
+#define plAddConsoleVariable(NAME, ...) \
+    PLConsoleVariable NAME = { #NAME, __VA_ARGS__ }; \
+    plRegisterConsoleVariables(&NAME, 1);
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -115,6 +172,37 @@ bool _pl_console_visible = false;
 /////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE
 
+IMPLEMENT_COMMAND(cls, "Clears the console buffer.") {
+
+}
+IMPLEMENT_COMMAND(colour, "Changes the colour of the current console.") {
+
+}
+IMPLEMENT_COMMAND(time, "Prints out the current time.") {
+
+}
+IMPLEMENT_COMMAND(mem, "") {
+
+}
+IMPLEMENT_COMMAND(cmds, "Produces list of existing commands.") {
+    for(PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd) {
+        printf(" %-20s : %-20s\n", (*cmd)->cmd, (*cmd)->description);
+    }
+    printf("%zu commands in total\n", _pl_num_commands);
+}
+IMPLEMENT_COMMAND(vars, "Produces list of existing variables.") {
+    for(PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var) {
+        printf(" %-20s : %-5s / %-15s : %-20s\n",
+               (*var)->var, (*var)->value, (*var)->default_value, (*var)->description);
+    }
+    printf("%zu variables in total\n", _pl_num_commands);
+}
+IMPLEMENT_COMMAND(help, "") {
+    if(argc > 1) { // looking for assistance on a command probably...
+
+    }
+}
+
 PLMesh *_pl_mesh_line = NULL;
 PLBitmapFont *_pl_console_font = NULL;
 
@@ -134,14 +222,32 @@ PLresult _plInitConsole(void) {
         return PL_RESULT_MEMORYALLOC;
     }
 
-    _pl_commands = (PLConsoleCommand**)malloc(sizeof(PLConsoleCommand) * _pl_commands_size);
-    if(!_pl_commands) {
+    if(!(_pl_commands = (PLConsoleCommand**)malloc(sizeof(PLConsoleCommand*) * _pl_commands_size))) {
         _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand array, %d!\n",
                        sizeof(PLConsoleCommand) * _pl_commands_size);
         return PL_RESULT_MEMORYALLOC;
     }
 
-    plRegisterConsoleCommands(_pl_base_commands, plArrayElements(_pl_base_commands));
+    if(!(_pl_variables = (PLConsoleVariable**)malloc(sizeof(PLConsoleVariable*) * _pl_variables_size))) {
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleVariable array, %d!\n",
+                       sizeof(PLConsoleCommand) * _pl_commands_size);
+        return PL_RESULT_MEMORYALLOC;
+    }
+
+    PLConsoleCommand base_commands[]={
+            cls_var,
+            help_var,
+            time_var,
+            mem_var,
+            colour_var,
+    };
+    plRegisterConsoleCommands(base_commands, plArrayElements(base_commands));
+
+    plAddConsoleVariable(MyVar, "true", PL_VAR_BOOLEAN);
+
+    // todo, temporary
+    cmds_func(0, NULL);
+    vars_func(0, NULL);
 
     return PL_RESULT_SUCCESS;
 }
@@ -155,8 +261,7 @@ void _plShutdownConsole(void) {
     _pl_active_console_pane = _pl_num_console_panes = 0;
 
     if(_pl_commands) {
-        PLConsoleCommand *cmd = _pl_commands[0];
-        for (size_t i = 0; i < _pl_num_commands; i++, cmd++) {
+        for (PLConsoleCommand *cmd = _pl_commands; cmd < _pl_commands + _pl_commands_size; cmd++) {
             // todo, should we return here; assume it's the end?
             if (!cmd) {
                 continue;

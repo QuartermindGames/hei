@@ -33,6 +33,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
 
 option(PL_BUILD_EXAMPLES "Build examples" ON)
+option(PL_BUILD_UTILITIES "Build utilities" ON)
 
 include_directories("${CMAKE_SOURCE_DIR}/include/")           # Base include directories.
 include_directories("${CMAKE_SOURCE_DIR}/platform/include/")  # Platform lib headers get used for everything.
@@ -50,6 +51,16 @@ if(PL_BUILD_EXAMPLES)
     add_subdirectory(examples/glfw_image_viewer)
     add_subdirectory(examples/tim2tiff)
     add_subdirectory(examples/console)
+
+    #[[
+    add_subdirectory(examples/critters)
+    add_subdirectory(examples/starbreeze)
+    ]]
 endif(PL_BUILD_EXAMPLES)
 
-add_subdirectory(examples/critters)
+#[[
+if(PL_BUILD_UTILITIES)
+    add_subdirectory(utilities/plang)
+endif(PL_BUILD_UTILITIES)
+]]
+

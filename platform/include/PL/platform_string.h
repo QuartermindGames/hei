@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 #if 0
 PL_INLINE static void plGetStringExtension(char *out, const char *in, unsigned int length) {
-    const char *s = strrchr(in, '.');
+    const char *s = strrchr(in, '.');type
     if(!s || s[0] == '\0') {
         return;
     }

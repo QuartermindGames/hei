@@ -104,9 +104,8 @@ int main(int argc, char **argv) {
     camera->mode = PLCAMERA_MODE_ORTHOGRAPHIC;
     camera->viewport.width = window->width;
     camera->viewport.height = window->height;
-
 #if 0
-    while(/* todo, replacement for this */) {
+    while(/* todo, replacement for this */ 1) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
         plSetupCamera(camera);
@@ -117,8 +116,8 @@ int main(int argc, char **argv) {
 
         plSwapBuffers(window);
     }
-#endif
 
     Shutdown();
+#endif
     return 0;
 }
