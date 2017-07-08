@@ -130,7 +130,7 @@ void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars)
     }
 
     for(unsigned int i = 0; i < num_vars; i++) {
-        if((vars[i].var[0] == '\0') || !(vars[i].Callback)) {
+        if(vars[i].var[0] == '\0') {
             continue;
         }
 
@@ -195,7 +195,7 @@ IMPLEMENT_COMMAND(vars, "Produces list of existing variables.") {
         printf(" %-20s : %-5s / %-15s : %-20s\n",
                (*var)->var, (*var)->value, (*var)->default_value, (*var)->description);
     }
-    printf("%zu variables in total\n", _pl_num_commands);
+    printf("%zu variables in total\n", _pl_num_variables);
 }
 IMPLEMENT_COMMAND(help, "") {
     if(argc > 1) { // looking for assistance on a command probably...
