@@ -43,9 +43,7 @@ typedef struct PLCamera {
 
     // Viewport
     PLRectangle viewport;
-
     PLVector3D angles, position;
-
     PLBBox3D bounds;
 } PLCamera;
 

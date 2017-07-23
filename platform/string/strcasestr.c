@@ -47,7 +47,7 @@ char *pl_strcasestr(const char *s, const char *find) {
     size_t len;
 
     if ((c = *find++) != 0) {
-        c = tolower((unsigned char) c);
+        c = (char) tolower((unsigned char) c);
         len = strlen(find);
         do {
             do {

@@ -27,6 +27,10 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_filesystem.h>
 
+#if defined(PL_USE_SDL2)
+#   include <SDL2/SDL.h>
+#endif
+
 /*	Generic functions for platform, such as	error handling.	*/
 
 typedef struct PLSubSystem {
@@ -105,6 +109,10 @@ typedef struct PLArguments {
 PLArguments pl_arguments;
 
 PLresult plInitialize(int argc, char **argv, unsigned int subsystems) {
+#if defined(PL_USE_SDL2)
+    SDL_Init(SDL_INIT_EVERYTHING);
+#endif
+
     for(unsigned int i = 0; i < plArrayElements(pl_subsystems); i++) {
         if(!pl_subsystems[i].active && (subsystems & pl_subsystems[i].subsystem)) {
             if(pl_subsystems[i].InitFunction) {
@@ -145,7 +153,9 @@ const char *plGetExecutableName(void) {
 const char *plGetCommandLineArgument(const char *arg) {
     if(pl_arguments.num_arguments < 2) {
         return '\0';
-    } else if(!plIsValidString(arg)) {
+    }
+
+    if(!plIsValidString(arg)) {
         // todo, get current log output and print warning there?
         return '\0';
     }
@@ -179,7 +189,7 @@ void plShutdown(void) {
             pl_subsystems[i].ShutdownFunction();
         }
 
-        pl_subsystems[i].active = PL_FALSE;
+        pl_subsystems[i].active = false;
     }
 }
 

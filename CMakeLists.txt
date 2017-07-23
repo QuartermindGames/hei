@@ -35,6 +35,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
 option(PL_BUILD_EXAMPLES "Build examples" ON)
 option(PL_BUILD_UTILITIES "Build utilities" ON)
 
+option(PL_USE_SDL2 "Use SDL2" ON)
+
 include_directories("${CMAKE_SOURCE_DIR}/include/")           # Base include directories.
 include_directories("${CMAKE_SOURCE_DIR}/platform/include/")  # Platform lib headers get used for everything.
 include_directories("${CMAKE_SOURCE_DIR}/shared/")            # Xenon shared headers.
@@ -43,6 +45,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -std=c11)
 
 add_definitions("-D_DEBUG")
+if(PL_USE_SDL2)
+    add_definitions(-DPL_USE_SDL2)
+endif(PL_USE_SDL2)
 
 add_subdirectory(platform)
 
@@ -52,15 +57,15 @@ if(PL_BUILD_EXAMPLES)
     add_subdirectory(examples/tim2tiff)
     add_subdirectory(examples/console)
 
+    add_subdirectory(examples/triangle)
+
     #[[
     add_subdirectory(examples/critters)
     add_subdirectory(examples/starbreeze)
     ]]
 endif(PL_BUILD_EXAMPLES)
 
-#[[
 if(PL_BUILD_UTILITIES)
-    add_subdirectory(utilities/plang)
+    add_subdirectory(utilities/plevel)
 endif(PL_BUILD_UTILITIES)
-]]
 

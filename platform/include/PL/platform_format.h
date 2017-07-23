@@ -28,43 +28,22 @@ For more information, please refer to <http://unlicense.org>
 #pragma once
 
 #include <PL/platform.h>
-#include <PL/platform_math.h>
 
 enum {
-    PL_VAR_FLOAT,
-    PL_VAR_INTEGER,
-    PL_VAR_STRING,
-    PL_VAR_BOOLEAN,
+    PLFORMAT_CONTENT_LEVEL,
+    PLFORMAT_CONTENT_MODEL,
 };
 
-typedef struct PLConsoleVariable {
-    const char *var, *value;
+typedef struct { // (PACKAGE)
+    uint8_t     identity[4];    // Descriptor/name of the data type. "PACK"
+    uint16_t    version[2];     // Version of this type. "2.16"
 
-    unsigned int type;
+    uint32_t    num_indexes;    // Number of data indexes (each _should_ be a fixed size?)
+} PLDataHeader;
 
-    void(*Callback)(unsigned int argc, char *argv[]);
+typedef struct {
+    uint16_t type;
+    uint32_t length;
 
-    char description[512];
-
-    /////////////////////////////
-
-    const char *default_value;
-} PLConsoleVariable;
-
-PL_EXTERN_C
-
-PL_EXTERN void plSetupConsole(unsigned int num_instances);
-
-PL_EXTERN void plSetConsoleColour(unsigned int id, PLColour colour);
-
-PL_EXTERN void plShowConsole(bool show);
-PL_EXTERN void plDrawConsole(void);
-
-// CONSOLE VARIABLES
-void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars);
-
-#define plAddConsoleVariable(NAME, ...) \
-    PLConsoleVariable NAME = { #NAME, __VA_ARGS__ }; \
-    plRegisterConsoleVariables(&NAME, 1);
-
-PL_EXTERN_C_END
+    // followed by type-specific index information
+} PLDataIndex;

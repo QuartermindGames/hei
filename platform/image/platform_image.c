@@ -90,14 +90,14 @@ bool plLoadImage(const PLchar *path, PLImage *out) {
     return result;
 }
 
-PLresult plWriteImage(const PLImage *image, const PLchar *path) {
+PLresult plWriteImage(const PLImage *image, const char *path) {
     if (!plIsValidString(path)) {
         return PL_RESULT_FILEPATH;
     }
 
     PLresult result = PL_RESULT_FILETYPE;
 
-    const PLchar *extension = plGetFileExtension(path);
+    const char *extension = plGetFileExtension(path);
     if(plIsValidString(extension)) {
         if (!strncmp(extension, PLIMAGE_EXTENSION_TIFF, 3)) {
             result = plWriteTIFFImage(image, path);
@@ -157,7 +157,7 @@ unsigned int _plGetImageSize(PLImageFormat format, unsigned int width, unsigned 
 }
 
 void _plAllocateImage(PLImage *image, PLuint size, PLuint levels) {
-    image->data = (PLbyte**)calloc(levels, sizeof(PLbyte));
+    image->data = (uint8_t**)calloc(levels, sizeof(uint8_t));
 }
 
 void plFreeImage(PLImage *image) {

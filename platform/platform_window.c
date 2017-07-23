@@ -51,12 +51,7 @@ PLresult _plInitWindow(void) {
     plClearLog(PL_WINDOW_LOG);
 
 #if defined(PL_USE_SDL2)
-    if(!_plIsSubSystemActive(PL_SUBSYSTEM_GRAPHICS)) {
-        if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) {
-            _plSetErrorMessage("Failed to initialize SDL2 video! (%s)\n", SDL_GetError());
-            return PL_RESULT_DISPLAY;
-        }
-    }
+
 
     SDL_DisableScreenSaver();
 
@@ -261,7 +256,7 @@ void plMessageBox(const char *ccTitle, const char *ccMessage, ...) {
 
             if (xEvent.type == Expose) {
                 XDrawString(display, wMessageWindow, DefaultGC(display, iDefaultScreen), 10, 10, cOut,
-                            (PLint) strlen(cOut));
+                            (int) strlen(cOut));
                 XDrawString(display, wMessageWindow, DefaultGC(display, iDefaultScreen), 10, 54,
                             "Press any key to continue...", 32);
             } else if (xEvent.type == KeyPress)

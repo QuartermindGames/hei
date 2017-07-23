@@ -25,6 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#include "platform_graphics_private.h"
+
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_filesystem.h>
 
@@ -36,7 +38,7 @@ For more information, please refer to <http://unlicense.org>
 
 #define _PLFONT_MAX_LINE    256
 
-struct PLFontScript {
+struct {
     char buffer[_PLFONT_MAX_LENGTH];
     char line_buffer[_PLFONT_MAX_LINE];
 
@@ -80,13 +82,19 @@ void _plParseFontLine(void) {
         if((_pl_font.buffer[_pl_font.position] == '-') && ((_pl_font.buffer[_pl_font.position + 1] == '-'))) {
             _plSkipFontComment();
             continue;
-        } else if((_pl_font.line_position == 0) && (_pl_font.buffer[_pl_font.position] == '\n')) {
+        }
+
+        if((_pl_font.line_position == 0) && (_pl_font.buffer[_pl_font.position] == '\n')) {
             _pl_font.position++;
             continue;
-        } else if(_pl_font.buffer[_pl_font.position] == '\t') {
+        }
+
+        if(_pl_font.buffer[_pl_font.position] == '\t') {
             _pl_font.position++;
             continue;
-        } else if(_pl_font.buffer[_pl_font.position] == '\n') {
+        }
+
+        if(_pl_font.buffer[_pl_font.position] == '\n') {
             _pl_font.line_buffer[_pl_font.line_position + 1] = '\0';
 
             _plNextFontLine();
@@ -123,7 +131,7 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
 
     _plParseFontLine();
     if(!strncmp(_pl_font.line_buffer, "VERSION ", 8)) {
-        int version = atoi(_pl_font.line_buffer + 8);
+        long version = strtol(_pl_font.line_buffer + 8, NULL, 0);
         if (version <= 0 || version > _PLFONT_FORMAT_VERSION) {
             _plReportError(PL_RESULT_FILEVERSION, "Expected version %d, received %d, for %s!\n",
                            _PLFONT_FORMAT_VERSION, version, path);
@@ -157,8 +165,6 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
         if(!strncmp(_pl_font.line_buffer, "FILTER ", 7)) {
             if(_pl_font.line_buffer[8] == '1') {
                 enable_filter = true;
-            } else if(_pl_font.line_buffer[8] != '0') {
-                // todo, output a warning for this
             }
             continue;
         }

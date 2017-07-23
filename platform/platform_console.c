@@ -25,8 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#include "graphics/platform_graphics_private.h"
+
 #include <PL/platform_console.h>
-#include <PL/platform_graphics.h>
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_input.h>
 
@@ -89,27 +90,6 @@ void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
 
 // todo, console variable implementation goes here!
 
-enum {
-    PL_VAR_FLOAT,
-    PL_VAR_INTEGER,
-    PL_VAR_STRING,
-    PL_VAR_BOOLEAN,
-};
-
-typedef struct PLConsoleVariable {
-    const char *var, *value;
-
-    unsigned int type;
-
-    char description[512];
-
-    void(*Callback)(unsigned int argc, char *argv[]);
-
-    /////////////////////////////
-
-    const char *default_value;
-} PLConsoleVariable;
-
 PLConsoleVariable **_pl_variables = NULL;
 size_t _pl_num_variables = 0;
 size_t _pl_variables_size = 512;
@@ -142,14 +122,11 @@ void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars)
                 break;
             }
             memcpy(_pl_variables[_pl_num_variables], &vars[i], sizeof(PLConsoleVariable));
+            _pl_variables[_pl_num_variables]->default_value = _pl_variables[_pl_num_variables]->value;
             _pl_num_variables++;
         }
     }
 }
-
-#define plAddConsoleVariable(NAME, ...) \
-    PLConsoleVariable NAME = { #NAME, __VA_ARGS__ }; \
-    plRegisterConsoleVariables(&NAME, 1);
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -181,7 +158,7 @@ IMPLEMENT_COMMAND(colour, "Changes the colour of the current console.") {
 IMPLEMENT_COMMAND(time, "Prints out the current time.") {
 
 }
-IMPLEMENT_COMMAND(mem, "") {
+IMPLEMENT_COMMAND(mem, "Prints out current memory usage.") {
 
 }
 IMPLEMENT_COMMAND(cmds, "Produces list of existing commands.") {
@@ -243,11 +220,15 @@ PLresult _plInitConsole(void) {
     };
     plRegisterConsoleCommands(base_commands, plArrayElements(base_commands));
 
-    plAddConsoleVariable(MyVar, "true", PL_VAR_BOOLEAN);
+    plAddConsoleVariable(MyVar, "true", PL_VAR_BOOLEAN, NULL, "Example console variable, that does nothing!");
+    plAddConsoleVariable(YourVar, "false", PL_VAR_BOOLEAN, NULL, "Example console variable, that does nothing!");
+    plAddConsoleVariable(HisVar, "apple", PL_VAR_BOOLEAN, NULL, "Example console variable, that does nothing!");
 
     // todo, temporary
     cmds_func(0, NULL);
     vars_func(0, NULL);
+
+    // todo, parse config
 
     return PL_RESULT_SUCCESS;
 }
@@ -261,15 +242,26 @@ void _plShutdownConsole(void) {
     _pl_active_console_pane = _pl_num_console_panes = 0;
 
     if(_pl_commands) {
-        for (PLConsoleCommand *cmd = _pl_commands; cmd < _pl_commands + _pl_commands_size; cmd++) {
+        for(PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd) {
             // todo, should we return here; assume it's the end?
-            if (!cmd) {
+            if (!(*cmd)) {
                 continue;
             }
 
-            free(cmd);
+            free((*cmd));
         }
+        free(_pl_commands);
+    }
 
+    if(_pl_variables) {
+        for(PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var) {
+            // todo, should we return here; assume it's the end?
+            if (!(*var)) {
+                continue;
+            }
+
+            free((*var));
+        }
         free(_pl_commands);
     }
 }
@@ -314,10 +306,12 @@ void _plResizeConsoles(void) {
     }
 }
 
-bool _plConsolePaneVisible(unsigned int id) {
+bool _plIsConsolePaneVisible(unsigned int id) {
     if(!_pl_console_visible) {
         return false;
-    } else if(
+    }
+
+    if(
         _pl_console_pane[id].display.ll.a == 0 &&
         _pl_console_pane[id].display.lr.a == 0 &&
         _pl_console_pane[id].display.ul.a == 0 &&
@@ -336,7 +330,7 @@ void _plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) 
     }
 
     for(unsigned int i = 0; i < _pl_num_console_panes; i++) {
-        if(!_plConsolePaneVisible(i)) {
+        if(!_plIsConsolePaneVisible(i)) {
             continue;
         }
 
@@ -371,7 +365,9 @@ void _plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) 
             static int old_x = 0, old_y = 0;
 
             return;
-        } else if(m_buttons & PLINPUT_MOUSE_RIGHT) {
+        }
+
+        if(m_buttons & PLINPUT_MOUSE_RIGHT) {
         // todo, display context menu
             return;
         }
@@ -414,10 +410,6 @@ void plShowConsole(bool show) {
     _pl_console_visible = show;
 }
 
-bool plIsConsoleVisible(void) {
-    return _pl_console_visible;
-}
-
 void plSetConsoleColour(unsigned int id, PLColour colour) {
     plSetRectangleUniformColour(&_pl_console_pane[id-1].display, colour);
 }
@@ -455,7 +447,7 @@ void plDrawConsole(void) {
     _plResizeConsoles();
 
     for(unsigned int i = 0; i < _pl_num_console_panes; i++) {
-        if(!_plConsolePaneVisible(i)) {
+        if(!_plIsConsolePaneVisible(i)) {
             continue;
         }
 

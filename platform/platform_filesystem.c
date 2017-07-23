@@ -89,17 +89,16 @@ bool plCreateDirectory(const char *path) {
         if (stat(path, &buffer) == -1) {
             if (mkdir(path, 0777) == 0)
                 return true;
-            else {
-                switch (errno) {
-                    case EACCES:
-                        _plSetErrorMessage("Failed to get permission! (%s)\n", path);
-                    case EROFS:
-                        _plSetErrorMessage("File system is read only! (%s)\n", path);
-                    case ENAMETOOLONG:
-                        _plSetErrorMessage("Path is too long! (%s)\n", path);
-                    default:
-                        _plSetErrorMessage("Failed to create directory! (%s)\n", path);
-                }
+
+            switch (errno) {
+                case EACCES:
+                    _plSetErrorMessage("Failed to get permission! (%s)\n", path);
+                case EROFS:
+                    _plSetErrorMessage("File system is read only! (%s)\n", path);
+                case ENAMETOOLONG:
+                    _plSetErrorMessage("Path is too long! (%s)\n", path);
+                default:
+                    _plSetErrorMessage("Failed to create directory! (%s)\n", path);
             }
         } else
             // Path already exists, so this is fine.
