@@ -1,5 +1,5 @@
 
-#include "platform_graphics_private.h"
+#include "graphics_private.h"
 
 PLLight *plCreateLight(void) {
     PLLight *light = (PLLight*)malloc(sizeof(PLLight));
@@ -11,8 +11,7 @@ PLLight *plCreateLight(void) {
     memset(light, 0, sizeof(PLLight));
 
     pl_graphics_state.num_lights++;
-    light->colour   = plCreateColour4b(255, 255, 255, 255);
-    light->radius   = 128.f;
+    light->colour   = plCreateColour4b(255, 255, 255, 128.f);
     light->type     = PLLIGHT_TYPE_OMNI;
     return light;
 }
@@ -27,7 +26,7 @@ void plDeleteLight(PLLight *light) {
 }
 
 void plDrawLight(PLLight *light) {
-    if(light->radius <= 0 || light->colour.a == 0) {
+    if(light->colour.a <= 0) {
         return;
     }
 }

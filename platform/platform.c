@@ -26,9 +26,18 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include <PL/platform_filesystem.h>
+#include <PL/platform_graphics.h>
+#include <PL/platform_game.h>
 
 #if defined(PL_USE_SDL2)
+
 #   include <SDL2/SDL.h>
+
+#else
+
+#   include <bits/time.h>
+#   include <Xos.h>
+
 #endif
 
 /*	Generic functions for platform, such as	error handling.	*/
@@ -73,11 +82,13 @@ PLSubSystem pl_subsystems[]= {
                 &_plShutdownWindow
         },
 
+#if 0 // initialised by default, used by seperate sub-systems...
         {
                 PL_SUBSYSTEM_CONSOLE,
                 &_plInitConsole,
                 &_plShutdownConsole
         }
+#endif
 };
 
 typedef struct PLArgument {
@@ -109,9 +120,14 @@ typedef struct PLArguments {
 PLArguments pl_arguments;
 
 PLresult plInitialize(int argc, char **argv, unsigned int subsystems) {
+    static bool is_initialized = false;
 #if defined(PL_USE_SDL2)
     SDL_Init(SDL_INIT_EVERYTHING);
 #endif
+
+    if(!is_initialized) {
+        _plInitConsole();
+    }
 
     for(unsigned int i = 0; i < plArrayElements(pl_subsystems); i++) {
         if(!pl_subsystems[i].active && (subsystems & pl_subsystems[i].subsystem)) {
@@ -140,6 +156,8 @@ PLresult plInitialize(int argc, char **argv, unsigned int subsystems) {
 
         pl_arguments.arguments[i] = argv[i];
     }
+
+    is_initialized = true;
 
     return PL_RESULT_SUCCESS;
 }
@@ -191,6 +209,8 @@ void plShutdown(void) {
 
         pl_subsystems[i].active = false;
     }
+
+    _plShutdownConsole();
 }
 
 /*	ERROR HANDLING	*/
@@ -310,4 +330,38 @@ const char *plGetResultString(PLresult result) {
 void plResetError(void) {
     loc_function[0] = loc_error[0] = sys_error[0] = '\0';
     _pl_global_result = PL_RESULT_SUCCESS;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Loop
+
+bool plIsRunning(void) {
+    return true;
+}
+
+double plGetDeltaTime(void) {
+#if defined(PL_USE_SDL2)
+    static uint64_t now = 0, last;
+    last = now;
+    now = SDL_GetPerformanceCounter();
+    return ((now - last) * 1000 / (double)SDL_GetPerformanceFrequency());
+#else // currently untested, probably only works on linux...
+    static struct timeval last, now = { 0 };
+    last = now;
+    gettimeofday(&now, NULL);
+    return (now.tv_sec - last.tv_sec) * 1000;
+#endif
+}
+
+double accumulator = 0;
+
+void plProcess(double delta) {
+    // todo, game logic @ locked 60fps (rendering is UNLOCKED?)
+
+    while(accumulator >= delta) {
+        plProcessObjects();
+        plProcessPhysics();
+    }
+
+    plProcessGraphics();
 }

@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "graphics/platform_graphics_private.h"
+#include "graphics/graphics_private.h"
 
 #include <PL/platform_console.h>
 #include <PL/platform_graphics_font.h>
@@ -95,6 +95,7 @@ size_t _pl_num_variables = 0;
 size_t _pl_variables_size = 512;
 
 void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars) {
+    plAssert(_pl_variables);
 
     // Deal with resizing the array dynamically...
     if((num_vars + _pl_num_variables) > _pl_variables_size) {
@@ -186,16 +187,14 @@ PLBitmapFont *_pl_console_font = NULL;
 PLresult _plInitConsole(void) {
     _pl_console_visible = false;
 
-    _pl_console_font = plCreateBitmapFont("fonts/console.font");
-    if(!_pl_console_font) {
-        return PL_RESULT_MEMORYALLOC;
+    if(!(_pl_console_font = plCreateBitmapFont("fonts/console.font"))) {
+        // todo, print warning...
     }
 
     memset(&_pl_console_pane, 0, sizeof(PLConsolePane) * PLCONSOLE_MAX_INSTANCES);
     _pl_active_console_pane = _pl_num_console_panes = 0;
 
-    _pl_mesh_line = plCreateMesh(PLMESH_LINES, PL_DRAW_IMMEDIATE, 0, 4);
-    if(!_pl_mesh_line) {
+    if(!(_pl_mesh_line = plCreateMesh(PLMESH_LINES, PL_DRAW_IMMEDIATE, 0, 4))) {
         return PL_RESULT_MEMORYALLOC;
     }
 
@@ -523,14 +522,22 @@ void plDrawConsole(void) {
         // todo, display buffer text
     }
 
+    if(!_pl_console_font) {
+        return;
+    }
+
+#if defined(PL_MODE_OPENGL)
     glEnable(GL_TEXTURE_RECTANGLE);
 
     glBindTexture(GL_TEXTURE_RECTANGLE, _pl_console_font->texture->id);
+#endif
 
     plDrawCharacter(_pl_console_font, 20, 20, 2, 'A');
     plDrawCharacter(_pl_console_font, 20, 30, 2, 'B');
     plDrawCharacter(_pl_console_font, 20, 40, 2, 'C');
     plDrawCharacter(_pl_console_font, 20, 50, 4, 'D');
 
+#if defined(PL_MODE_OPENGL)
     glDisable(GL_TEXTURE_RECTANGLE);
+#endif
 }

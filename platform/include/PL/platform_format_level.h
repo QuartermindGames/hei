@@ -33,3 +33,8 @@ For more information, please refer to <http://unlicense.org>
 
 typedef struct {
 } PLLevelIndex;
+
+typedef struct {
+    uint32_t num_triangles;
+    uint32_t num_portals;
+} PLLevelSector;

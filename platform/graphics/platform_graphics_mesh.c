@@ -101,9 +101,9 @@ unsigned int _plTranslateDrawMode(PLMeshDrawMode mode) {
 void plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3D position) {
     PLVector3D distvec = position;
     plSubtractVector3D(&distvec, light->position);
-    float distance = (light->radius - plVector3DLength(distvec)) / 100.f;
+    float distance = (light->colour.a - plVector3DLength(distvec)) / 100.f;
 
-    for(PLuint i = 0; i < mesh->num_verts; i++) {
+    for(unsigned int i = 0; i < mesh->num_verts; i++) {
         PLVector3D normal = mesh->vertices[i].normal;
         float angle = (distance * ((normal.x * distvec.x) + (normal.y * distvec.y) + (normal.z * distvec.z)));
         if(angle < 0) {

@@ -25,57 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_graphics.h>
+#include <PL/platform_game.h>
 
-typedef struct PLGraphicsState {
-    PLCullMode current_cullmode;
+void plProcessObjects(void) {
 
-    PLColour current_clearcolour;
-    PLColour current_colour;        // Current global colour.
+}
 
-    unsigned int current_capabilities;    // Enabled capabilities.
-    unsigned int current_textureunit;
+void plProcessPhysics(void) {
 
-    // Textures
-
-    PLTextureMappingUnit    *tmu;
-    PLTexture               **textures;
-
-    unsigned int num_textures;
-    unsigned int max_textures;
-
-    // Shader states
-
-    unsigned int current_program;
-
-    // Hardware / Driver information
-
-    const char *hw_vendor;
-    const char *hw_renderer;
-    const char *hw_version;
-    const char *hw_extensions;
-
-    unsigned int hw_maxtexturesize;
-    unsigned int hw_maxtextureunits;
-    unsigned int hw_maxtextureanistropy;
-
-    // Lighting
-
-    unsigned int num_lights;
-
-    ////////////////////////////////////////
-
-    int viewport_x, viewport_y;
-    unsigned int viewport_width, viewport_height;
-
-    bool mode_debug;
-} PLGraphicsState;
-
-PL_EXTERN_C
-
-PL_EXTERN PLGraphicsState pl_graphics_state;
-
-PL_EXTERN unsigned int _plTranslateColourFormat(PLColourFormat format);
-PL_EXTERN unsigned int _plTranslateTextureFormat(PLImageFormat format);
-
-PL_EXTERN_C_END
+}

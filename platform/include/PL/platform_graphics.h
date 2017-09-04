@@ -59,7 +59,15 @@ For more information, please refer to <http://unlicense.org>
 #           include <OpenGL/gl3ext.h>
 #       endif
 #   else
-#	    include <GL/glew.h>
+//#	    include <GL/glew.h>
+#       if !defined(PL_MODE_OPENGL_CORE)
+#           define GL_GLEXT_PROTOTYPES
+#           include <GL/gl.h>
+#           include <GL/glcorearb.h>
+#           include <GL/glext.h>
+#       else
+#           include <GL/glcorearb.h>
+#       endif
 #   endif
 
 #	ifdef _WIN32
@@ -103,8 +111,8 @@ For more information, please refer to <http://unlicense.org>
 #   endif
 #endif
 
-typedef PLuint PLVertexArray;
-typedef PLuint PLRenderBuffer;
+typedef unsigned int PLVertexArray;
+typedef unsigned int PLRenderBuffer;
 
 typedef struct PLFrameBuffer {
 #if defined(PL_MODE_OPENGL)
@@ -116,6 +124,8 @@ typedef enum PLDataFormat {
 #if defined (PL_MODE_OPENGL)
     PL_UNSIGNED_BYTE                = GL_UNSIGNED_BYTE,
     PL_UNSIGNED_INT_8_8_8_8_REV     = GL_UNSIGNED_INT_8_8_8_8_REV,
+#else
+    PL_UNSIGNED_BYTE,
 #endif
 } PLDataFormat;
 
@@ -271,8 +281,6 @@ typedef struct PLLight {
 
     PLColour colour;
 
-    float radius;
-
     PLLightType type;
 } PLLight;
 
@@ -313,6 +321,8 @@ PL_EXTERN void plDisableShaderProgram(unsigned int program);
 PL_EXTERN void plSetCullMode(PLCullMode mode);
 
 PL_EXTERN void plSetBlendMode(PLBlend modea, PLBlend modeb);
+
+PL_EXTERN void plProcessGraphics(void);
 
 PL_EXTERN_C_END
 

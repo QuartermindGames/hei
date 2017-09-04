@@ -182,6 +182,7 @@ PLWindow *plCreateWindow(const char *title, int x, int y, unsigned int w, unsign
         plDeleteWindow(window);
         return NULL;
     }
+    SDL_GL_MakeCurrent(sdl_window, SDL_GL_CreateContext(sdl_window));
 
     window->sys_id = SDL_GetWindowID(sdl_window);
 #endif

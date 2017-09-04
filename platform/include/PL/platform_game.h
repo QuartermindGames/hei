@@ -1,4 +1,4 @@
-#[[
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,41 +23,25 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-]]
+*/
 
-cmake_minimum_required(VERSION 3.5.1)
+#pragma once
 
-# Set all of our output directories.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
+#include <PL/platform_math.h>
 
-option(PL_BUILD_EXAMPLES "Build examples" ON)
-option(PL_BUILD_UTILITIES "Build utilities" ON)
+typedef struct {
+    PLVector3D position, angles, velocity;
+    PLBBox3D bounds;
 
-option(PL_USE_SDL2 "Use SDL2" ON)
+    void *custom_vars;
+} PLGameObject;
 
-include_directories("${CMAKE_SOURCE_DIR}/include/")           # Base include directories.
-include_directories("${CMAKE_SOURCE_DIR}/platform/include/")  # Platform lib headers get used for everything.
-include_directories("${CMAKE_SOURCE_DIR}/shared/")            # Xenon shared headers.
+PL_EXTERN_C
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -std=c11)
+PL_EXTERN PLGameObject *plCreateObject(void);
+PL_EXTERN void plDeleteObject(PLGameObject *object);
 
-add_definitions("-D_DEBUG")
-if(PL_USE_SDL2)
-    add_definitions(-DPL_USE_SDL2)
-endif(PL_USE_SDL2)
+PL_EXTERN void plProcessObjects(void);
+PL_EXTERN void plProcessPhysics(void);
 
-add_subdirectory(platform)
-
-if(PL_BUILD_EXAMPLES)
-    add_subdirectory(examples/console)
-
-    add_subdirectory(examples/game_lrj17)
-endif(PL_BUILD_EXAMPLES)
-
-if(PL_BUILD_UTILITIES)
-    add_subdirectory(utilities/plevel)
-endif(PL_BUILD_UTILITIES)
-
+PL_EXTERN_C_END

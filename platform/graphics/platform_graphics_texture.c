@@ -25,12 +25,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_graphics_private.h"
+#include "graphics_private.h"
 
 #include <PL/platform_image.h>
 #include <PL/platform_console.h>
 
 PLConsoleVariable pl_texture_anisotropy = { "gr_texture_anisotropy", "16", PL_VAR_INTEGER };
+
+#define FREE_TEXTURE    ((unsigned int)-1)
 
 void _plInitTextures(void) {
     pl_graphics_state.tmu = (PLTextureMappingUnit*)calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));
@@ -40,7 +42,8 @@ void _plInitTextures(void) {
     }
 
     pl_graphics_state.max_textures  = 1024;
-    pl_graphics_state.textures      = (PLTexture**)malloc(sizeof(PLTexture) * pl_graphics_state.max_textures);
+    pl_graphics_state.textures      = (PLTexture**)malloc(sizeof(PLTexture*) * pl_graphics_state.max_textures);
+    memset(pl_graphics_state.textures, 0, sizeof(PLTexture*) * pl_graphics_state.max_textures);
     pl_graphics_state.num_textures  = 0;
 
     plRegisterConsoleVariables(&pl_texture_anisotropy, 1);
@@ -191,12 +194,12 @@ PLTexture *plCreateTexture(void) {
             break;
         }
 
-        if((*texture)->id == ((unsigned int)-1)) {
+        if((*texture)->id == FREE_TEXTURE) {
             break;
         }
     }
 
-    if(!(*texture)) { // ran out of available slots... ?
+    if(texture >= pl_graphics_state.textures + pl_graphics_state.max_textures) { // ran out of available slots... ?
         PLTexture **old_mem = pl_graphics_state.textures;
         pl_graphics_state.textures = (PLTexture**)realloc(
                 pl_graphics_state.textures,
@@ -208,6 +211,7 @@ PLTexture *plCreateTexture(void) {
             pl_graphics_state.textures = old_mem;
             pl_graphics_state.max_textures -= 512;
         }
+        memset(pl_graphics_state.textures + (sizeof(PLTexture) * (pl_graphics_state.max_textures - 512)), 0, sizeof(PLTexture*) * 512);
         return plCreateTexture();
     }
 
@@ -232,10 +236,11 @@ void plDeleteTexture(PLTexture *texture, bool force) {
 
     if(!force) {
         memset(texture, 0, sizeof(PLTexture));
-        texture->id = ((unsigned int)-1);
+        texture->id = FREE_TEXTURE;
         return;
     }
 
+    pl_graphics_state.textures[texture->id] = NULL;
     free(texture);
 
 #if 0 // our original c++ implementation
@@ -427,7 +432,7 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
 
     unsigned int format = _plTranslateTextureFormat(upload->format);
     for(unsigned int i = 0; i < levels; i++) {
-        if (_plIsCompressedImageFormat(upload->format)) {
+        if (plIsCompressedImageFormat(upload->format)) {
             glCompressedTexSubImage2D
                     (
                             GL_TEXTURE_2D,
@@ -467,9 +472,8 @@ void plSwizzleTexture(PLTexture *texture, int r, int g, int b, int a) {
 
     plBindTexture(texture);
 
-#if defined(PL_MODE_OPENGL_CORE)
-    if(PL_GL_VERSION(3,3)) {
-        GLint swizzle[] = {
+    if(_PLGL_VERSION(3,3)) {
+        int swizzle[] = {
                 _plTranslateColourChannel(r),
                 _plTranslateColourChannel(g),
                 _plTranslateColourChannel(b),
@@ -479,6 +483,4 @@ void plSwizzleTexture(PLTexture *texture, int r, int g, int b, int a) {
     } else {
         // todo, software implementation
     }
-#elif defined(PL_MODE_SOFTWARE)
-#endif
 }

@@ -185,3 +185,15 @@ bool plIsValidImageSize(PLuint width, PLuint height) {
 
     return true;
 }
+
+bool plIsCompressedImageFormat(PLImageFormat format) {
+    switch (format) {
+        default:    return false;
+        case PL_IMAGEFORMAT_RGBA_DXT1:
+        case PL_IMAGEFORMAT_RGBA_DXT3:
+        case PL_IMAGEFORMAT_RGBA_DXT5:
+        case PL_IMAGEFORMAT_RGB_DXT1:
+        case PL_IMAGEFORMAT_RGB_FXT1:
+            return true;
+    }
+}

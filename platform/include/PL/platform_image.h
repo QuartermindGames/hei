@@ -102,19 +102,9 @@ typedef struct PLImage {
 #define PLIMAGE_EXTENSION_DDS   "dds"
 #define PLIMAGE_EXTENSION_VTF   "vtf"   // Valve Texture Format (Source Engine)
 
-PL_INLINE bool _plIsCompressedImageFormat(PLImageFormat format) {
-    switch (format) {
-        default:    return false;
-        case PL_IMAGEFORMAT_RGBA_DXT1:
-        case PL_IMAGEFORMAT_RGBA_DXT3:
-        case PL_IMAGEFORMAT_RGBA_DXT5:
-        case PL_IMAGEFORMAT_RGB_DXT1:
-        case PL_IMAGEFORMAT_RGB_FXT1:
-            return true;
-    }
-}
-
 PL_EXTERN_C
+
+
 
 PL_EXTERN bool plLoadImage(const char *path, PLImage *out);
 PL_EXTERN PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out);
@@ -123,6 +113,7 @@ PL_EXTERN PLresult plWriteImage(const PLImage *image, const char *path);
 PL_EXTERN unsigned int plGetSamplesPerPixel(PLColourFormat format);
 
 PL_EXTERN bool plIsValidImageSize(unsigned int width, unsigned int height);
+PL_EXTERN bool plIsCompressedImageFormat(PLImageFormat format);
 
 #if defined(PL_INTERNAL)
 

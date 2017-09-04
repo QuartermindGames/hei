@@ -124,10 +124,6 @@ typedef char                    PLchar;
 #define plArrayElements(a)  (sizeof(a) / sizeof(*(a)))          // Returns the number of elements within an array.
 #define plIsValidString(a)  (((a)[0] != '\0') && ((a)[0] != ' '))
 
-#if defined(PL_USE_SDL2)
-#   include <SDL2/SDL.h>
-#endif
-
 //////////////////////////////////////////////////////////////////
 
 // Error return values
@@ -168,7 +164,7 @@ enum {
     PL_SUBSYSTEM_LIBRARY    = (1 << 3), // Module/library management
     PL_SUBSYSTEM_LOG        = (1 << 4), // Logging
     PL_SUBSYSTEM_WINDOW     = (1 << 5), // Windowing
-    PL_SUBSYSTEM_CONSOLE    = (1 << 6), // Console
+    //PL_SUBSYSTEM_CONSOLE    = (1 << 6), // Console
 };
 
 #if defined(PL_INTERNAL)
@@ -290,6 +286,12 @@ PL_EXTERN void _plSetFunctionResult(PLresult result);
 #else
 #   define DPRINT(...)      (__VA_ARGS__)
 #endif
+
+PL_EXTERN bool plIsRunning(void);
+
+PL_EXTERN double plGetDeltaTime(void);
+
+PL_EXTERN void plProcess(double delta);
 
 PL_EXTERN_C_END
 

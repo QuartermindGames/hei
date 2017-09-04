@@ -81,7 +81,7 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 #endif
 
 int main(int argc, char **argv) {
-    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS | PL_SUBSYSTEM_CONSOLE | PL_SUBSYSTEM_WINDOW);
+    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS | PL_SUBSYSTEM_WINDOW);
 
     PLWindow *window = plCreateWindow(TITLE, 0, 0, WIDTH, HEIGHT);
     if(!window) {
@@ -100,11 +100,15 @@ int main(int argc, char **argv) {
     plSetDefaultGraphicsState();
     plSetClearColour(plCreateColour4b(0, 0, 0, 255));
 
-    PLCamera *camera = plCreateCamera();
-    camera->mode = PLCAMERA_MODE_ORTHOGRAPHIC;
-    camera->viewport.width = window->width;
+    PLCamera *camera        = plCreateCamera();
+    if(camera == NULL) {
+
+    }
+
+    camera->mode            = PLCAMERA_MODE_ORTHOGRAPHIC;
+    camera->viewport.width  = window->width;
     camera->viewport.height = window->height;
-#if 0
+#if 1
     while(/* todo, replacement for this */ 1) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 

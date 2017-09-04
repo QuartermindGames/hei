@@ -27,8 +27,9 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_log.h>
 #include <PL/platform_image.h>
+#include <PL/platform_console.h>
 
-#include "platform_graphics_private.h"
+#include "graphics_private.h"
 
 /*	Graphics	*/
 
@@ -93,8 +94,6 @@ bool pl_gl_fragment_program             = false;
 unsigned int pl_gl_version_major = 0;
 unsigned int pl_gl_version_minor = 0;
 
-#define PL_GL_VERSION(maj, min) (((maj) == pl_gl_version_major && (min) <= pl_gl_version_minor) || (maj) < pl_gl_version_major)
-
 void _plInitOpenGL(void) {
     _PL_GRAPHICS_TRACK();
 
@@ -138,9 +137,11 @@ void _plInitOpenGL(void) {
 #endif
 #endif
 
-    const PLchar *version = _plGetHWVersion();
+#if 0 // todo, move post window initialization... ?
+    const char *version = _plGetHWVersion();
     pl_gl_version_major = (unsigned int) atoi(&version[0]);
     pl_gl_version_minor = (unsigned int) atoi(&version[2]);
+#endif
 }
 
 void _plShutdownOpenGL() {}
@@ -167,6 +168,7 @@ void _plShutdownSoftware(void) {
 #endif
 
 void _plInitTextures(void); // platform_graphics_texture
+void _plInitCameras(void);  // platform_graphics_camera
 
 PLresult _plInitGraphics(void) {
     _PL_GRAPHICS_TRACK();
@@ -186,6 +188,7 @@ PLresult _plInitGraphics(void) {
     _plInitSoftware();
 #endif
 
+    _plInitCameras();
     _plInitTextures();
 
     // Get any information that will be presented later.
@@ -201,7 +204,8 @@ PLresult _plInitGraphics(void) {
     return PL_RESULT_SUCCESS;
 }
 
-void _plShutdownTextures(void);
+void _plShutdownTextures(void); // platform_graphics_texture
+void _plShutdownCameras(void);  // platform_graphics_camera
 
 void _plShutdownGraphics(void) {
     _PL_GRAPHICS_TRACK();
@@ -214,6 +218,7 @@ void _plShutdownGraphics(void) {
     _plShutdownSoftware();
 #endif
 
+    _plShutdownCameras();
     _plShutdownTextures();
 }
 
@@ -224,7 +229,7 @@ void _plShutdownGraphics(void) {
 const PLchar *_plGetHWExtensions(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined(PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined(PL_MODE_OPENGL)
     return (const PLchar *) glGetString(GL_EXTENSIONS);
     // TODO: this works differently in core; use glGetStringi instead!
 #elif defined (VL_MODE_GLIDE)
@@ -237,7 +242,7 @@ const PLchar *_plGetHWExtensions(void) {
 const PLchar *_plGetHWRenderer(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined(PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined(PL_MODE_OPENGL)
     return (const PLchar *) glGetString(GL_RENDERER);
 #elif defined (VL_MODE_GLIDE)
     return grGetString(GR_RENDERER);
@@ -249,7 +254,7 @@ const PLchar *_plGetHWRenderer(void) {
 const PLchar *_plGetHWVendor(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined(PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined(PL_MODE_OPENGL)
     return (const PLchar *) glGetString(GL_VENDOR);
 #elif defined (VL_MODE_GLIDE)
     return grGetString(GR_VENDOR);
@@ -258,11 +263,11 @@ const PLchar *_plGetHWVendor(void) {
 #endif
 }
 
-const PLchar *_plGetHWVersion(void) {
+const char *_plGetHWVersion(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined(PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    return (const PLchar *) glGetString(GL_VERSION);
+#if defined(PL_MODE_OPENGL)
+    return (const char *) glGetString(GL_VERSION);
 #elif defined (VL_MODE_GLIDE)
     return grGetString(GR_VERSION);
 #else
@@ -769,4 +774,13 @@ void plPerspective(double fov_y, double aspect, double near, double far) {
 /* DRAWING  */
 
 void plDrawPixel(int x, int y, PLColour colour) {
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+void plProcessGraphics(void) {
+    plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
+
+    plDrawConsole();
+    plDrawPerspective();
 }

@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_graphics_private.h"
+#include "graphics_private.h"
 
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_filesystem.h>
@@ -174,18 +174,19 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
             continue;
         }
 
-        sscanf(_pl_font.line_buffer + 2, "%d %d %d %d",
-                         &font->chars[character].x, &font->chars[character].y,
-                         &font->chars[character].w, &font->chars[character].h
-        );
+        char *pos;
+        font->chars[character].x = (int)strtol(_pl_font.line_buffer + 2, &pos, 10);
+        font->chars[character].y = (int)strtol(pos, &pos, 10);
+        font->chars[character].w = (int)strtoul(pos, &pos, 10);
+        font->chars[character].h = (int)strtoul(pos, &pos, 10);
 
-#if 0
+#if 1
         printf("CHAR(%c) X(%d) Y(%d) W(%d) H(%d)\n",
-               font->chars[_BUFFER_LINE[0]].character,
-               font->chars[_BUFFER_LINE[0]].x,
-               font->chars[_BUFFER_LINE[0]].y,
-               font->chars[_BUFFER_LINE[0]].w,
-               font->chars[_BUFFER_LINE[0]].h
+               character,
+               font->chars[character].x,
+               font->chars[character].y,
+               font->chars[character].w,
+               font->chars[character].h
         );
 #endif
     }
@@ -196,13 +197,13 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
         return NULL;
     }
 
-    font->texture = plCreateTexture();
-    if(!font->texture) {
+    if(!(font->texture = plCreateTexture())) {
         plDeleteBitmapFont(font);
         plFreeImage(&image);
         return NULL;
     }
 
+#if defined(PL_MODE_OPENGL)
     glBindTexture(GL_TEXTURE_RECTANGLE, font->texture->id);
 
     glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -226,6 +227,7 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
             GL_UNSIGNED_BYTE,
             image.data[0]
     );
+#endif
 
 //    plFreeImage(&image);
 
