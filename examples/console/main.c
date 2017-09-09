@@ -102,12 +102,13 @@ int main(int argc, char **argv) {
 
     PLCamera *camera        = plCreateCamera();
     if(camera == NULL) {
-
+        exit(-1);
     }
 
     camera->mode            = PLCAMERA_MODE_ORTHOGRAPHIC;
-    camera->viewport.width  = window->width;
-    camera->viewport.height = window->height;
+    camera->viewport.w      = window->width;
+    camera->viewport.h      = window->height;
+
 #if 1
     while(/* todo, replacement for this */ 1) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
