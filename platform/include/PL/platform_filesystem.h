@@ -33,7 +33,7 @@ PL_EXTERN_C
 
 PL_EXTERN void plGetUserName(PLchar *out);
 
-PL_EXTERN void plGetWorkingDirectory(PLchar *out);
+PL_EXTERN const char *plGetWorkingDirectory(void);
 PL_EXTERN void plSetWorkingDirectory(const char *path);
 
 PL_EXTERN void plStripExtension(PLchar *dest, const PLchar *in);

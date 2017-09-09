@@ -53,8 +53,6 @@ add_subdirectory(platform)
 
 if(PL_BUILD_EXAMPLES)
     add_subdirectory(examples/console)
-
-    add_subdirectory(examples/game_lrj17)
 endif(PL_BUILD_EXAMPLES)
 
 if(PL_BUILD_UTILITIES)
