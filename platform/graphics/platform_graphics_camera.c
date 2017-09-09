@@ -69,8 +69,8 @@ PLCamera *plCreateCamera(void) {
      *  *
      *  H
      */
-    camera->viewport.x          = PLCAMERA_DEFAULT_WIDTH;
-    camera->viewport.y          = PLCAMERA_DEFAULT_HEIGHT;
+    camera->viewport.w          = PLCAMERA_DEFAULT_WIDTH;
+    camera->viewport.h          = PLCAMERA_DEFAULT_HEIGHT;
     camera->viewport.r_width    = 0;
     camera->viewport.r_height   = 0;
 
