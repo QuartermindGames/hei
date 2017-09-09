@@ -559,7 +559,7 @@ PL_INLINE static void plDivideColourf(PLColour *c, float a) {
 }
 
 PL_INLINE static const char *plPrintColour(PLColour c) {
-    static char s[16] = {0};
+    static char s[16] = { '\0' };
     snprintf(s, 16, "%i %i %i %i", c.r, c.g, c.b, c.a);
     return s;
 }
@@ -574,63 +574,53 @@ PL_INLINE static const char *plPrintColour(PLColour c) {
 // Matrices
 // todo, none of this is correct yet
 
-typedef float PLMatrix3[3][3], PLMatrix4[4][4];
+typedef float PLMatrix4[16];
 
 PL_INLINE static void plClearMatrix4(PLMatrix4 m) {
-    memset(m, 0, sizeof(m[0][0]) * 8);
+    memset(m, 0, sizeof(PLMatrix4));
 }
 
 PL_INLINE static void plAddMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 4; j++) {
-            m[i][j] += m2[i][j];
-        }
+    for(int i = 0; i < 16; i++) {
+        m[i] += m2[i];
     }
 }
 
 PL_INLINE static void plMultiplyMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 4; j++) {
-            m[i][j] *= m2[i][j];
-        }
+    for(int i = 0; i < 16; i++) {
+        m[i] *= m2[i];
     }
 }
 
 PL_INLINE static void plMultiplyMatrix4f(PLMatrix4 m, float a) {
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 4; j++) {
-            m[i][j] *= a;
-        }
+    for(int i = 0; i < 16; i++) {
+        m[i] *= a;
     }
 }
 
 PL_INLINE static void plDivisionMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 4; j++) {
-            m[i][j] /= m2[i][j];
-        }
+    for(int i = 0; i < 16; i++) {
+        m[i] /= m2[i];
     }
 }
 
 PL_INLINE static void plDivisionMatrix4f(PLMatrix4 m, float a) {
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 4; j++) {
-            m[i][j] /= a;
-        }
+    for(int i = 0; i < 16; i++) {
+        m[i] /= a;
     }
 }
 
-PL_INLINE static const PLchar *plPrintMatrix4(const PLMatrix4 m) {
-    static PLchar s[256] = {0};
+PL_INLINE static const char *plPrintMatrix4(const PLMatrix4 m) {
+    static char s[256] = { '\0' };
     snprintf(s, 256,
             "%i %i %i %i\n"
             "%i %i %i %i\n"
             "%i %i %i %i\n"
             "%i %i %i %i",
-            (int)m[0][0], (int)m[0][1], (int)m[0][2], (int)m[0][3],
-            (int)m[1][0], (int)m[1][1], (int)m[1][2], (int)m[1][3],
-            (int)m[2][0], (int)m[2][1], (int)m[2][2], (int)m[2][3],
-            (int)m[3][0], (int)m[3][1], (int)m[3][2], (int)m[3][3]
+            (int)m[0], (int)m[4], (int)m[8], (int)m[12],
+            (int)m[1], (int)m[5], (int)m[9], (int)m[13],
+            (int)m[2], (int)m[6], (int)m[10], (int)m[14],
+            (int)m[3], (int)m[7], (int)m[11], (int)m[15]
             );
     return s;
 }
