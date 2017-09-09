@@ -238,7 +238,7 @@ void plScanDirectory(const char *path, const char *extension, void (*Function)(c
 
 const char *plGetWorkingDirectory(void) {
     static char out[PL_SYSTEM_MAX_PATH] = { '\0' };
-    if (!getcwd(out, PL_SYSTEM_MAX_PATH)) {
+    if (getcwd(out, PL_SYSTEM_MAX_PATH) == NULL) {
         switch (errno) { // todo, fix cases for Windows
             default: break;
 
@@ -264,7 +264,6 @@ const char *plGetWorkingDirectory(void) {
         }
         return NULL;
     }
-    strcat(out, "\\");
     return out;
 }
 
