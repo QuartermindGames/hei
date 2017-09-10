@@ -100,9 +100,9 @@ int main(int argc, char **argv) {
     plSetDefaultGraphicsState();
     plSetClearColour(plCreateColour4b(0, 0, 0, 255));
 
-    PLCamera *camera        = plCreateCamera();
+    PLCamera *camera = plCreateCamera();
     if(camera == NULL) {
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     camera->mode            = PLCAMERA_MODE_ORTHOGRAPHIC;
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
     camera->viewport.h      = window->height;
 
 #if 1
-    while(/* todo, replacement for this */ 1) {
+    while(plIsRunning()) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
         plSetupCamera(camera);
@@ -124,5 +124,5 @@ int main(int argc, char **argv) {
 
     Shutdown();
 #endif
-    return 0;
+    return EXIT_SUCCESS;
 }
