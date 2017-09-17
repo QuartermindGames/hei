@@ -51,36 +51,137 @@ typedef struct __attribute__((packed)) MADIndex {
     uint32_t length;
 } MADIndex;
 
-bool _plMADFormatCheck(const char *path, FILE *fin) {
-    rewind(fin);
+PLPackage *_plLoadMADPackage(const char *filename, bool precache) {
+    FILE *fh = NULL;
+    PLPackage *package = NULL;
 
-    // fetch the size...
-    size_t length = plGetFileSize(path);
+    fh = fopen(filename, "rb");
+    if(fh == NULL) {
+        goto FAILED;
+    }
+
+    size_t file_size = plGetFileSize(filename);
     if(plGetFunctionResult() != PL_RESULT_SUCCESS) {
-        return false;
+        goto FAILED;
     }
 
-    // attempt to read in the first index of the MAD package...
-    MADIndex index;
-    if(fread(&index, sizeof(MADIndex), 1, fin) != 1) {
-        return false;
+    /* Figure out the number of headers in the MAD file by reading them in until we cross into the data region of one
+     * we've previously loaded. Checks each header is valid.
+     */
+
+    size_t data_begin = file_size;
+    unsigned int num_indices = 0;
+
+    while((num_indices + 1) * sizeof(MADIndex) <= data_begin) {
+        MADIndex index;
+        if(fread(&index, sizeof(MADIndex), 1, fh) != 1) {
+            /* EOF, or read error */
+            goto FAILED;
+        }
+
+        // ensure the file name is valid...
+        for(unsigned int i = 0; i < 16; ++i) {
+            if(isprint(index.file[i]) == 0 && index.file[i] != '\0') {
+                goto FAILED;
+            }
+        }
+
+        if(index.offset >= file_size || (uint64_t)(index.offset) + (uint64_t)(index.length) > file_size) {
+            /* File offset/length falls beyond end of file */
+            goto FAILED;
+        }
+
+        if(index.offset < data_begin)
+        {
+            data_begin = index.offset;
+        }
+
+        ++num_indices;
     }
 
-    // ensure the file name is valid...
-    for(unsigned int i = 0; i < 16; ++i) {
-        if(isprint(index.file[i]) == 0 && index.file[i] != '\0') {
-            return false;
+    /* Allocate the basic package structure now we know how many files are in the archive. */
+
+    package = malloc(sizeof(PLPackage));
+    if(package == NULL) {
+        goto FAILED;
+    }
+
+    memset(package, 0, sizeof(package));
+
+    package->path = malloc(strlen(filename) + 1);
+    if(package->path == NULL) {
+        goto FAILED;
+    }
+
+    strcpy(package->path, filename);
+
+    package->table_size = num_indices;
+    package->table      = calloc(num_indices, sizeof(struct PLPackageIndex));
+    if(package->table == NULL) {
+        goto FAILED;
+    }
+
+    /* Rewind the file handle and populate package->table with the metadata from the headers. */
+
+    rewind(fh);
+
+    for(unsigned int i = 0; i < num_indices; ++i) {
+        MADIndex index;
+        if(fread(&index, sizeof(MADIndex), 1, fh) != 1) {
+            /* EOF, or read error */
+            goto FAILED;
+        }
+
+        strncpy(package->table[i].name, index.file, sizeof(index.file));
+        package->table[i].name[sizeof(index.file)] = '\0';
+
+        package->table[i].length = index.length;
+        package->table[i].offset = index.offset;
+    }
+
+    /* Read in each file's data */
+
+    if(precache) {
+        for (unsigned int i = 0; i < num_indices; ++i) {
+            _plLoadMADPackageFile(fh, &(package->table[i]));
         }
     }
 
-    // check we have a sane offset and length...
-    if(index.offset > sizeof(MADIndex) || index.offset >= length || index.length == 0 || index.length > length) {
+    fclose(fh);
+
+    return package;
+
+    FAILED:
+
+    if(package != NULL) {
+        for(unsigned int i = 0; i < package->table_size; ++i) {
+            free(package->table[i].data);
+        }
+
+        free(package->table);
+        free(package->path);
+        free(package);
+    }
+
+    if(fh != NULL) {
+        fclose(fh);
+    }
+
+    return NULL;
+}
+
+bool _plLoadMADPackageFile(FILE *fh, PLPackageIndex *pi) {
+    pi->data = malloc(pi->length);
+    if(pi->data == NULL) {
+        return false;
+    }
+
+    if(fseek(fh, pi->offset, SEEK_SET) != 0 || fread(pi->data, pi->length, 1, fh) != 1) {
+        free(pi->data);
+        pi->data = NULL;
+
         return false;
     }
 
     return true;
-}
-
-PLPackage *_plLoadMADPackage(FILE *fin) {
-
 }

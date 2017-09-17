@@ -32,6 +32,8 @@ For more information, please refer to <http://unlicense.org>
 
 PL_EXTERN_C
 
-bool _plMADFormatCheck(const char *path, FILE *fin);
+PLPackage *_plLoadMADPackage(const char *filename, bool precache);
+
+bool _plLoadMADPackageFile(FILE *fh, PLPackageIndex *pi);
 
 PL_EXTERN_C_END
