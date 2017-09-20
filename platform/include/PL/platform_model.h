@@ -37,6 +37,8 @@ enum {
     PL_MODELTYPE_SKELETAL
 };
 
+#define PLMODEL_MAX_MESHES   32
+
 typedef struct PLModelFrame {
     PLTriangle  *triangles;
     PLVertex    *vertices;
@@ -44,21 +46,23 @@ typedef struct PLModelFrame {
     PLVector3D mins, maxs; // Bounds
 } PLModelFrame;
 
-// Static animated mesh.
+// Static mesh.
 typedef struct PLStaticModel {
-    PLuint num_triangles;
-    PLuint num_vertices;
+    unsigned int num_triangles;
+    unsigned int num_vertices;
 
-    PLMeshPrimitive primitive;
+    PLMesh mesh[PLMODEL_MAX_MESHES];
 
-    PLModelFrame frame;
+    PLBBox3D bounds;
+
+    PLModelFrame frame; // todo, remove! Obsolete by above!
 } PLStaticModel;
 
 // Per-vertex animated mesh.
 typedef struct PLAnimatedModel {
-    PLuint num_triangles;
-    PLuint num_vertices;
-    PLuint num_frames;
+    unsigned int num_triangles;
+    unsigned int num_vertices;
+    unsigned int num_frames;
 
     PLMeshPrimitive primitive;
 
@@ -67,8 +71,8 @@ typedef struct PLAnimatedModel {
 
 // Mesh with bone structure.
 typedef struct PLSkeletalModel {
-    PLuint num_triangles;
-    PLuint num_vertices;
+    unsigned int num_triangles;
+    unsigned int num_vertices;
 
     PLMeshPrimitive primitive;
 
@@ -91,6 +95,8 @@ PLAnimatedModel *plLoadAnimatedModel(const char *path);
 void plDeleteAnimatedModel(PLAnimatedModel *model);
 
 PLAnimatedModel *plLoadU3DModel(const char *path);
+
+void plDrawStaticModel(PLStaticModel *model);
 
 // Utility
 void plGenerateStaticModelNormals(PLStaticModel *model);

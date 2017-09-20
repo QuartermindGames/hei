@@ -170,7 +170,7 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
     }
 
     PLMesh *mesh = (PLMesh*)calloc(1, sizeof(PLMesh));
-    if(!mesh) {
+    if(mesh == NULL) {
         _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Mesh, %d!\n", sizeof(PLMesh));
         return NULL;
     }
@@ -191,7 +191,7 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
         }
     }
     mesh->vertices = (PLVertex*)calloc(num_verts, sizeof(PLVertex));
-    if(!mesh->vertices) {
+    if(mesh->vertices == NULL) {
         _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Vertex, %d!\n",
             sizeof(PLVertex) * num_verts);
 
