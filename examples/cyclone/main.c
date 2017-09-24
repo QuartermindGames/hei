@@ -79,32 +79,38 @@ For more information, please refer to <http://unlicense.org>
  *
  *  ?? ?? X  ?? ?? ?? Y  ?? ?? ?? Z  ??
  *  7E 71 41 3F 4C 1E 0D BC 9F 3C A8 3F
+ *
+ *  ????X X  ????Y Y  ????Z Z
+ *  7E71413F 4C1E0DBC 9F3CA83F
  */
 
 #define MAX_MODEL_NAME      128
 #define MAX_TEXTURE_NAME    64
 
-#define MAX_VERTICES        2048
-#define MAX_QUADS           4096
-
 typedef struct __attribute__((packed)) MDLVertex {
     uint8_t unknown0[2];
+    uint8_t x_;
     int8_t x;
-    uint8_t unknown1[3];
+    uint8_t unknown1[2];
+    uint8_t y_;
     int8_t y;
-    uint8_t unknown2[3];
+    uint8_t unknown2[2];
+    uint8_t z_;
     int8_t z;
-    uint8_t unknown3;
 } MDLVertex;
 
-typedef struct __attribute__((packed)) MDLQuad { // Quads are 60 bytes long; immediately follow vertices
-    uint32_t unknown0; // typically seeing this as 4?
+typedef struct __attribute__((packed)) MDLFace { // Quads are 60 bytes long; immediately follow vertices
+    uint8_t unknown0;  // typically seeing this as 4?
+                        // could be number of verts per face?
+    uint8_t unknown000;
+    uint16_t unknown00;
+
     uint8_t unknown1[16]; // completely no clue for now!
 
     uint16_t indices[4];
 
     uint8_t unknown2[32]; // no clue either!
-} MDLQuad;
+} MDLFace;
 
 #if defined(DEBUG_VERSIONS)
 static int version_position = 0;
@@ -176,8 +182,8 @@ PLMesh *load_mdl(const char *path) {
         ABORT_LOAD("Failed to load all the vertices for this model, fuck!\n");
     }
 
-    MDLQuad quads[num_quads];
-    if(fread(quads, sizeof(MDLQuad), num_quads, file) != num_quads) {
+    MDLFace quads[num_quads];
+    if(fread(quads, sizeof(MDLFace), num_quads, file) != num_quads) {
         ABORT_LOAD("Failed to load all the quads!\n");
     }
 
@@ -194,7 +200,10 @@ PLMesh *load_mdl(const char *path) {
     srand(num_vertices);
     for(unsigned int i = 0; i < num_vertices; ++i) {
         PRINT("%d - X: %d Y: %d Z: %d\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
-        plSetMeshVertexPosition3f(out, i, vertices[i].x, vertices[i].y, vertices[i].z);
+        plSetMeshVertexPosition3f(out, i,
+                                  (vertices[i].x_ + vertices[i].x) / 10,
+                                  (vertices[i].y_ + vertices[i].y) / 10,
+                                  (vertices[i].z_ + vertices[i].z) / 10);
         plSetMeshVertexColour(out, i, plCreateColour4b(
                 (uint8_t) (rand() % 255), (uint8_t) (rand() % 255), (uint8_t) (rand() % 255), 255)
         );
@@ -217,13 +226,14 @@ PLMesh *load_mdl(const char *path) {
 
     PRINT("\nQuads...\n");
     for(unsigned int i = 0; i < num_quads; ++i) {
-        PRINT("%d - 0: %d 1: %d 2: %d 3: %d\n", i,
-              quads[i].indices[0], quads[i].indices[1], quads[i].indices[2], quads[i].indices[3]);
+        PRINT("%d - 0: %d 1: %d 2: %d 3: %d (unknown0: %d)\n", i,
+              quads[i].indices[0], quads[i].indices[1], quads[i].indices[2], quads[i].indices[3], quads[i].unknown0);
     }
 
     return out;
 }
 
+// loads a model in and then frees it
 void load_mdl_temp(const char *path) {
     PLMesh *mesh = load_mdl(path);
     if(mesh != NULL) {
@@ -374,7 +384,7 @@ int main(int argc, char **argv) {
                            (int*)&main_camera->viewport.w,
                            (int*)&main_camera->viewport.h);
 
-#if 1
+#if 0
 #if defined(DEBUG_VERSIONS)
     memset(&versions, 0, sizeof(versions));
 #endif
@@ -391,7 +401,7 @@ int main(int argc, char **argv) {
     }
 #endif
 #else
-    PLMesh *cur_model = load_mdl("./Models/medkit.mdl");
+    PLMesh *cur_model = load_mdl("./Models/arm.mdl");
     if(cur_model == NULL) {
         PRINT_ERROR("Failed to load model!\n");
     }
