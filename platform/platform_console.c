@@ -269,7 +269,7 @@ void _plShutdownConsole(void) {
 
             free((*var));
         }
-        free(_pl_commands);
+        free(_pl_variables);
     }
 }
 

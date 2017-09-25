@@ -89,19 +89,36 @@ For more information, please refer to <http://unlicense.org>
 
 typedef struct __attribute__((packed)) MDLVertex {
     uint8_t unknown0[2];
-    uint8_t x_;
+    int8_t x_;
     int8_t x;
     uint8_t unknown1[2];
-    uint8_t y_;
+    int8_t y_;
     int8_t y;
     uint8_t unknown2[2];
-    uint8_t z_;
+    int8_t z_;
     int8_t z;
 } MDLVertex;
 
-typedef struct __attribute__((packed)) MDLFace { // Quads are 60 bytes long; immediately follow vertices
+// 04:00:00:00:B4:BC:79:00:00:00:00:00:00:00:00:00:
+// BC:BC:79:00:1C:00:1F:00:1B:00:19:00:57:D0:76:00:
+// 66:42:1B:00:B0:21:78:00:70:E4:19:00:5C:35:6C:00:
+// A1:D5:1C:00:9C:48:6A:00:36:DF:1E:00
+// Quads are 60 bytes long; immediately follow vertices
+
+// 03:00:00:00:14:BD:79:00:00:00:00:00:01:00:00:00:
+// 1A:BD:79:00:05:00:01:00:06:00:E6:25:12:00:A1:DE:
+// 22:00:92:CB:08:00:09:C3:17:00:B6:65:22:00:D8:E0:
+// 09:00
+// Triangles are 50 bytes long
+
+typedef struct MDLFace {
+    uint8_t num_indices;
+    uint16_t indices[5];
+} MDLFace;
+
+#if 0
     uint8_t unknown0;  // typically seeing this as 4?
-                        // could be number of verts per face?
+    // could be number of verts per face?
     uint8_t unknown000;
     uint16_t unknown00;
 
@@ -110,7 +127,7 @@ typedef struct __attribute__((packed)) MDLFace { // Quads are 60 bytes long; imm
     uint16_t indices[4];
 
     uint8_t unknown2[32]; // no clue either!
-} MDLFace;
+#endif
 
 #if defined(DEBUG_VERSIONS)
 static int version_position = 0;
@@ -168,47 +185,96 @@ PLMesh *load_mdl(const char *path) {
         ABORT_LOAD("Invalid number of vertices!\n");
     }
     PRINT("   num_vertices: %d\n", num_vertices);
+
+    // skip over two unknown bytes...
     fseek(file, 2, SEEK_CUR);
 
-    uint32_t num_quads;
-    fread(&num_quads, sizeof(uint32_t), 1, file);
-    if(num_quads == 0) {
+    uint32_t num_faces;
+    fread(&num_faces, sizeof(uint32_t), 1, file);
+    if(num_faces == 0) {
         ABORT_LOAD("Invalid number of quads!\n");
     }
-    PRINT("   num_quads: %d\n", num_quads);
 
     MDLVertex vertices[num_vertices];
     if(fread(vertices, sizeof(MDLVertex), num_vertices, file) != num_vertices) {
         ABORT_LOAD("Failed to load all the vertices for this model, fuck!\n");
     }
 
-    MDLFace quads[num_quads];
-    if(fread(quads, sizeof(MDLFace), num_quads, file) != num_quads) {
+    PRINT("Loading faces (%d)...\n", num_faces);
+#if 0
+    MDLQuad quads[num_faces];
+    if(fread(quads, sizeof(MDLQuad), num_faces, file) != num_faces) {
+        // this assumes all faces within the model are
+        // quads, which has since been proven wrong...
         ABORT_LOAD("Failed to load all the quads!\n");
     }
+#else // Models in Requiem support both quads and triangles? And pentagons too, apparently (god have mercy on us all)
+    unsigned int num_triangles = 0;
+
+    MDLFace faces[num_faces];
+    memset(faces, 0, sizeof(MDLFace) * num_faces);
+    for(unsigned int i = 0; i < num_faces; ++i) {
+        long pos = ftell(file);
+        fread(&faces[i].num_indices, sizeof(uint32_t), 1, file);
+        if(faces[i].num_indices < 3 || faces[i].num_indices > 5) {
+            ABORT_LOAD("Invalid number of vertices, %d, required for face at index %d! (offset: %ld)\n",
+                       faces[i].num_indices, i, ftell(file));
+        }
+        num_triangles += faces[i].num_indices - 2;
+
+        fseek(file, 16, SEEK_CUR); // skip over unknown bytes for now
+        fread(faces[i].indices, sizeof(uint16_t), faces[i].num_indices, file);
+
+        if(faces[i].num_indices == 5) {
+            fseek(file, 42, SEEK_CUR); // skip over unknown bytes for now
+        } else if(faces[i].num_indices == 4) {
+            fseek(file, 32, SEEK_CUR); // skip over unknown bytes for now
+        } else if(faces[i].num_indices == 3) {
+            fseek(file, 24, SEEK_CUR); // skip over unknown bytes for now
+        }
+
+        long npos = ftell(file);
+        PRINT(" Read %ld bytes for face %d (indices %d)\n", npos - pos, i, faces[i].num_indices);
+    }
+    PRINT("%d triangles in total\n", num_triangles);
+#endif
 
     fclose(file);
 
-    unsigned int num_triangles = (unsigned int)(num_vertices / 3);
+#if 1
     PLMesh *out = plCreateMesh(PLMESH_POINTS, PL_DRAW_IMMEDIATE, num_triangles, num_vertices);
     if(out == NULL) {
         PRINT_ERROR(plGetError());
     }
 
-#if 1
     PRINT("\nVertices...\n");
     srand(num_vertices);
     for(unsigned int i = 0; i < num_vertices; ++i) {
-        PRINT("%d - X: %d Y: %d Z: %d\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
+        PRINT("%d - X: %d Y: %d Z: %d\n", i, vertices[i].x_, vertices[i].y_, vertices[i].z_);
+#if 0
         plSetMeshVertexPosition3f(out, i,
                                   (vertices[i].x_ + vertices[i].x) / 10,
                                   (vertices[i].y_ + vertices[i].y) / 10,
                                   (vertices[i].z_ + vertices[i].z) / 10);
+#else
+        plSetMeshVertexPosition3f(out, i,
+                                  vertices[i].x_ * vertices[i].x,
+                                  vertices[i].y_ * vertices[i].y,
+                                  vertices[i].z_ * vertices[i].z);
+#endif
         plSetMeshVertexColour(out, i, plCreateColour4b(
                 (uint8_t) (rand() % 255), (uint8_t) (rand() % 255), (uint8_t) (rand() % 255), 255)
         );
     }
 #else
+    PLMesh *out = plCreateMesh(PLMESH_POINTS, PL_DRAW_IMMEDIATE, num_triangles, num_vertices);
+    if(out == NULL) {
+        PRINT_ERROR(plGetError());
+    }
+
+    PRINT("\nVertices...\n");
+    srand(num_vertices);
+
     for(unsigned int i = 0, cur_vert = 0; i < num_triangles; ++i, ++cur_vert) {
         PRINT("X: %d Y: %d Z: %d\n", vertices[i].x, vertices[i].y, vertices[i].z);
 
@@ -224,10 +290,12 @@ PLMesh *load_mdl(const char *path) {
     }
 #endif
 
-    PRINT("\nQuads...\n");
-    for(unsigned int i = 0; i < num_quads; ++i) {
-        PRINT("%d - 0: %d 1: %d 2: %d 3: %d (unknown0: %d)\n", i,
-              quads[i].indices[0], quads[i].indices[1], quads[i].indices[2], quads[i].indices[3], quads[i].unknown0);
+    PRINT("\nFaces...\n");
+    for(unsigned int i = 0; i < num_faces; ++i) {
+        PRINT("%d - 0: %d 1: %d 2: %d 3: %d 4: %d (num indices: %d)\n", i,
+              faces[i].indices[0], faces[i].indices[1], faces[i].indices[2], faces[i].indices[3], faces[i].indices[5],
+              faces[i].num_indices
+        );
     }
 
     return out;
@@ -401,7 +469,7 @@ int main(int argc, char **argv) {
     }
 #endif
 #else
-    PLMesh *cur_model = load_mdl("./Models/arm.mdl");
+    PLMesh *cur_model = load_mdl("./Models/medkit.mdl");
     if(cur_model == NULL) {
         PRINT_ERROR("Failed to load model!\n");
     }
