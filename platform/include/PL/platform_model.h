@@ -48,21 +48,20 @@ typedef struct PLModelFrame {
 
 // Static mesh.
 typedef struct PLStaticModel {
-    unsigned int num_triangles;
-    unsigned int num_vertices;
+    uint32_t num_triangles;
+    uint32_t num_vertices;
+    uint32_t num_meshes;
 
-    PLMesh mesh[PLMODEL_MAX_MESHES];
+    PLMesh meshes[PLMODEL_MAX_MESHES];
 
     PLBBox3D bounds;
-
-    PLModelFrame frame; // todo, remove! Obsolete by above!
 } PLStaticModel;
 
 // Per-vertex animated mesh.
 typedef struct PLAnimatedModel {
-    unsigned int num_triangles;
-    unsigned int num_vertices;
-    unsigned int num_frames;
+    uint32_t num_triangles;
+    uint32_t num_vertices;
+    uint32_t num_frames;
 
     PLMeshPrimitive primitive;
 
@@ -79,13 +78,9 @@ typedef struct PLSkeletalModel {
     // Unfinished...
 } PLSkeletalModel;
 
-#include "platform_model_u3d.h"
-#include "platform_model_obj.h"
-
 PL_EXTERN_C
 
 // Static
-PLStaticModel *plCreateStaticModel(void);
 PLStaticModel *plLoadStaticModel(const char *path);
 void plDeleteStaticModel(PLStaticModel *model);
 
@@ -102,7 +97,5 @@ void plDrawStaticModel(PLStaticModel *model);
 void plGenerateStaticModelNormals(PLStaticModel *model);
 void plGenerateAnimatedModelNormals(PLAnimatedModel *model);
 void plGenerateSkeletalModelNormals(PLSkeletalModel *model);
-
-PLVector3D plGenerateVertexNormal(PLVector3D a, PLVector3D b, PLVector3D c);
 
 PL_EXTERN_C_END

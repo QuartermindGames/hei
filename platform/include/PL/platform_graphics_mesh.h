@@ -83,4 +83,6 @@ PL_EXTERN void plUploadMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawMesh(PLMesh *mesh);
 
+PL_EXTERN PLVector3D plGenerateVertexNormal(PLVector3D a, PLVector3D b, PLVector3D c);
+
 PL_EXTERN_C_END

@@ -98,6 +98,25 @@ unsigned int _plTranslateDrawMode(PLMeshDrawMode mode) {
 #endif
 }
 
+PLVector3D plGenerateVertexNormal(PLVector3D a, PLVector3D b, PLVector3D c) {
+#if 0
+    PLVector3D x = c - b;
+    PLVector3D y = a - b;
+    return x.CrossProduct(y).Normalize();
+#else
+    return plNormalizeVector3D(
+            plVector3DCrossProduct(
+                    plCreateVector3D(
+                            c.x - b.x, c.y - b.y, c.z - b.z
+                    ),
+                    plCreateVector3D(
+                            a.x - b.x, a.y - b.y, a.z - b.z
+                    )
+            )
+    );
+#endif
+}
+
 void plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3D position) {
     PLVector3D distvec = position;
     plSubtractVector3D(&distvec, light->position);

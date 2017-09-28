@@ -548,7 +548,7 @@ void plDrawConsole(void) {
         // todo, display buffer text
     }
 
-    if(!_pl_console_font) {
+    if(_pl_console_font == NULL) {
         return;
     }
 

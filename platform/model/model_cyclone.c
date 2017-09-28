@@ -25,10 +25,46 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#pragma once
+#include "model_private.h"
 
-PL_EXTERN_C
+enum {
+    MDL_FLAG_FLAT   = (1 << 0),
+    MDL_FLAG_UNLIT  = (1 << 1),
+};
 
-PLAnimatedModel *plLoadU3DModel(const char *path);
+#define MAX_MODEL_NAME      128
+#define MAX_TEXTURE_NAME    64
 
-PL_EXTERN_C_END
+typedef struct __attribute__((packed)) MDLVertex {
+    uint8_t unknown0[2];
+    int8_t x_;
+    int8_t x;
+    uint8_t unknown1[2];
+    int8_t y_;
+    int8_t y;
+    uint8_t unknown2[2];
+    int8_t z_;
+    int8_t z;
+} MDLVertex;
+
+typedef struct MDLFace {
+    uint8_t num_indices;
+    uint16_t indices[5];
+} MDLFace;
+
+FILE *_plLoadRequiemModel(const char *path) {
+    FILE *file = fopen(path, "rb");
+    if(file == NULL) {
+        _plReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
+        return NULL;
+    }
+}
+
+PLStaticModel *_plLoadStaticRequiemModel(const char *path) {
+    FILE *file = _plLoadRequiemModel(path);
+    if(file == NULL) {
+        return NULL;
+    }
+
+
+}
