@@ -34,30 +34,28 @@ For more information, please refer to <http://unlicense.org>
 typedef struct PLModelInterface {
     const char *extension;
 
-    PLStaticModel*(*LoadStatic)(const char *path);
-    PLAnimatedModel*(*LoadAnimated)(const char *path);
-    PLSkeletalModel*(*LoadSkeletal)(const char *path);
+    PLModel*(*LoadStatic)(const char *path);
 } PLModelInterface;
 
 PLModelInterface model_interfaces[]= {
-        { "mdl", _plLoadStaticRequiemModel, NULL, /*_plLoadSkeletalRequiemModel*/NULL },
-        //{ "vtx", _plLoadStaticHOWModel, NULL, _plLoadSkeletalHOWModel },
-        //{ "mdl", _plLoadStaticSourceModel, NULL, _plLoadSkeletalSourceModel },
-        //{ "mdl", _plLoadStaticGoldSrcModel, NULL, _plLoadSkeletalGoldSrcModel },
-        //{ "smd", _plLoadStaticSMDModel, NULL, _plLoadSkeletalSMDModel },
-        //{ "obj", _plLoadOBJModel, NULL, NULL },
+        { "mdl", _plLoadRequiemModel },
+        //{ "vtx", _plLoadStaticHOWModel },
+        //{ "mdl", _plLoadStaticSourceModel },
+        //{ "mdl", _plLoadStaticGoldSrcModel },
+        //{ "smd", _plLoadStaticSMDModel },
+        //{ "obj", _plLoadOBJModel },
 };
 
 ///////////////////////////////////////
 
-void _plGenerateStaticModelNormals(PLStaticModel *model) {
+void _plGenerateModelNormals(PLModel *model) {
     plAssert(model);
     for(unsigned int i = 0; i < model->num_meshes; ++i) {
         plGenerateMeshNormals(model->meshes[i]);
     }
 }
 
-void _plGenerateStaticModelAABB(PLStaticModel *model) {
+void _plGenerateModelAABB(PLModel *model) {
     plAssert(model);
     for(unsigned int i = 0; i < model->num_meshes; ++i) {
         plAddAABB(&model->bounds, plCalculateMeshAABB(model->meshes[i]));
@@ -73,17 +71,11 @@ void _plGenerateAnimatedModelNormals(PLAnimatedModel *model) {
     }
 }
 
-void _plGenerateSkeletalModelNormals(PLSkeletalModel *model) {
-    plAssert(model);
-
-    // todo
-}
-
 ///////////////////////////////////////
 
 /*	Static Model    */
 
-PLStaticModel *plLoadStaticModel(const char *path) {
+PLModel *plLoadModel(const char *path) {
     if(!plFileExists(path)) {
         _plReportError(PL_RESULT_FILEREAD, "Failed to load model, %s!", path);
         return NULL;
@@ -97,7 +89,7 @@ PLStaticModel *plLoadStaticModel(const char *path) {
 
         if(model_interfaces[i].extension != '\0') {
             if (!strcmp(extension, model_interfaces[i].extension)) {
-                PLStaticModel *model = model_interfaces[i].LoadStatic(path);
+                PLModel *model = model_interfaces[i].LoadStatic(path);
                 if(model != NULL) {
                     return model;
                 }
@@ -108,7 +100,7 @@ PLStaticModel *plLoadStaticModel(const char *path) {
     return NULL;
 }
 
-void plDeleteStaticModel(PLStaticModel *model) {
+void plDeleteModel(PLModel *model) {
     plAssert(model);
     for(unsigned int i = 0; i < model->num_meshes; ++i) {
         if(model->meshes[i] == NULL) {
@@ -121,7 +113,7 @@ void plDeleteStaticModel(PLStaticModel *model) {
     free(model);
 }
 
-void plDrawStaticModel(PLStaticModel *model) {
+void plDrawModel(PLModel *model) {
     plAssert(model);
     for(unsigned int i = 0; i < model->num_meshes; ++i) {
         plDrawMesh(model->meshes[i]);

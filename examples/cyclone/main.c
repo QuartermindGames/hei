@@ -44,9 +44,9 @@ For more information, please refer to <http://unlicense.org>
 
 // loads a model in and then frees it
 void load_mdl_temp(const char *path) {
-    PLStaticModel *model = plLoadStaticModel(path);
+    PLModel *model = plLoadModel(path);
     if(model != NULL) {
-        plDeleteStaticModel(model);
+        plDeleteModel(model);
     }
 }
 
@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
 
     return EXIT_SUCCESS;
 #else
-    PLStaticModel *model = plLoadStaticModel("./Models/medkit.mdl");
+    PLModel *model = plLoadModel("./Models/medkit.mdl");
     if(model == NULL) {
         PRINT_ERROR("Failed to load model!\n");
     }
@@ -251,7 +251,7 @@ int main(int argc, char **argv) {
                 glEnable(GL_LIGHTING);
                 glShadeModel(GL_FLAT);
 
-                plDrawStaticModel(model);
+                plDrawModel(model);
 
                 glShadeModel(GL_SMOOTH);
                 glDisable(GL_LIGHTING);
@@ -260,7 +260,7 @@ int main(int argc, char **argv) {
 
             case VIEW_MODE_WEIGHTS:
             case VIEW_MODE_WIREFRAME: {
-                plDrawStaticModel(model);
+                plDrawModel(model);
                 break;
             }
 
@@ -279,7 +279,7 @@ int main(int argc, char **argv) {
         glfwSwapBuffers(window);
     }
 
-    plDeleteStaticModel(model);
+    plDeleteModel(model);
     plDeleteCamera(main_camera);
 
     plShutdown();

@@ -31,25 +31,20 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_math.h"
 #include "platform_graphics.h"
 
-enum {
-    PL_MODELTYPE_STATIC,
-    PL_MODELTYPE_ANIMATED,
-    PL_MODELTYPE_SKELETAL
-};
-
 #define PLMODEL_MAX_MESHES  32
 #define PLMODEL_MAX_FRAMES  512
 
-// Static mesh.
-typedef struct PLStaticModel {
-    uint32_t num_triangles;
-    uint32_t num_vertices;
-    uint32_t num_meshes;
+// Standard mesh
+typedef struct PLModel {
+    unsigned int num_triangles;
+    unsigned int num_vertices;
+    unsigned int num_meshes;
+    unsigned int num_animations;
 
     PLMesh *meshes[PLMODEL_MAX_MESHES];
 
     PLPhysicsAABB bounds;
-} PLStaticModel;
+} PLModel;
 
 // Per-vertex animated mesh.
 typedef struct PLModelFrame {
@@ -61,36 +56,20 @@ typedef struct PLModelFrame {
 } PLModelFrame;
 
 typedef struct PLAnimatedModel {
-    uint32_t num_triangles;
-    uint32_t num_vertices;
-    uint32_t num_frames;
+    unsigned int num_triangles;
+    unsigned int num_vertices;
+    unsigned int num_frames;
 
     PLMeshPrimitive primitive;
 
     PLModelFrame frames[PLMODEL_MAX_FRAMES];
 } PLAnimatedModel;
 
-// Mesh with bone structure.
-typedef struct PLSkeletalModel {
-    unsigned int num_triangles;
-    unsigned int num_vertices;
-    unsigned int num_meshes;
-
-    PLMesh *meshes[PLMODEL_MAX_MESHES];
-
-    PLPhysicsAABB bounds;
-} PLSkeletalModel;
-
 PL_EXTERN_C
 
-// Static
-PLStaticModel *plLoadStaticModel(const char *path);
+PLModel *plLoadModel(const char *path);
 
-void plDeleteStaticModel(PLStaticModel *model);
-void plDrawStaticModel(PLStaticModel *model);
-
-// Animated
-PLAnimatedModel *plLoadAnimatedModel(const char *path);
-void plDeleteAnimatedModel(PLAnimatedModel *model);
+void plDeleteModel(PLModel *model);
+void plDrawModel(PLModel *model);
 
 PL_EXTERN_C_END

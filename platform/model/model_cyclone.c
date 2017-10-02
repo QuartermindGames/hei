@@ -116,7 +116,7 @@ typedef struct MDLFace {
 
 /////////////////////////////////////////////////////////////////
 
-FILE *_plLoadRequiemModel(const char *path) {
+PLModel *_plLoadRequiemModel(const char *path) {
     FILE *file = fopen(path, "rb");
     if(file == NULL) {
         _plReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
@@ -124,15 +124,6 @@ FILE *_plLoadRequiemModel(const char *path) {
     }
 
     // attempt to figure out if it's valid or not... ho boy...
-
-    return file;
-}
-
-PLStaticModel *_plLoadStaticRequiemModel(const char *path) {
-    FILE *file = _plLoadRequiemModel(path);
-    if(file == NULL) {
-        return NULL;
-    }
 
     _plDebugPrint("%s\n", path);
 
@@ -264,27 +255,20 @@ PLStaticModel *_plLoadStaticRequiemModel(const char *path) {
     }
 #endif
 
-    PLStaticModel *model = malloc(sizeof(PLStaticModel));
+    PLModel *model = malloc(sizeof(PLModel));
     if(model == NULL) {
         _plReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
         return NULL;
     }
 
-    memset(model, 0, sizeof(PLStaticModel));
+    memset(model, 0, sizeof(PLModel));
     model->num_meshes       = 1;
     model->num_vertices     = num_vertices;
     model->num_triangles    = num_triangles;
     model->meshes[0]        = mesh;
 
-    _plGenerateStaticModelNormals(model);
-    _plGenerateStaticModelAABB(model);
+    _plGenerateModelNormals(model);
+    _plGenerateModelAABB(model);
 
     return model;
-}
-
-PLSkeletalModel *_plLoadSkeletalRequiemModel(const char *path) {
-    FILE *file = _plLoadRequiemModel(path);
-    if(file == NULL) {
-        return NULL;
-    }
 }

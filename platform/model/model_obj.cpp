@@ -53,7 +53,7 @@ void _plUnloadOBJModel() {
     normals.shrink_to_fit();
 }
 
-PLStaticModel *_plLoadOBJModel(const PLchar *path) {
+PLModel *_plLoadOBJModel(const PLchar *path) {
     _plSetCurrentFunction("plLoadOBJModel");
 
     pl_obj_data.open(path, std::ifstream::binary);
@@ -107,7 +107,7 @@ PLStaticModel *_plLoadOBJModel(const PLchar *path) {
         }
     }
 
-    PLStaticModel *model = (PLStaticModel*)malloc(sizeof(PLStaticModel));
+    PLModel *model = (PLModel*)malloc(sizeof(PLModel));
     if (model == NULL) {
         _plReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
 
