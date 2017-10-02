@@ -35,6 +35,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <GLFW/glfw3.h>
 #include <PL/platform_filesystem.h>
+#include <PL/platform_model.h>
 
 #include "../shared.h"
 
@@ -208,7 +209,8 @@ PLMesh *load_mdl(const char *path) {
         // quads, which has since been proven wrong...
         ABORT_LOAD("Failed to load all the quads!\n");
     }
-#else // Models in Requiem support both quads and triangles? And pentagons too, apparently (god have mercy on us all)
+#else   // Models in Requiem support both quads and triangles? And pentagons too, apparently (god have mercy on us all)
+        // holy tits batman, we've got hexagons!
     unsigned int num_triangles = 0;
 
     MDLFace faces[num_faces];
@@ -452,6 +454,14 @@ int main(int argc, char **argv) {
                            (int*)&main_camera->viewport.w,
                            (int*)&main_camera->viewport.h);
 
+#if 1
+
+    PLStaticModel *model = plLoadStaticModel("./Models/medkit.mdl");
+    if(model == NULL) {
+        PRINT_ERROR("Failed to load model!\n");
+    }
+
+#else
 #if 0
 #if defined(DEBUG_VERSIONS)
     memset(&versions, 0, sizeof(versions));
@@ -473,6 +483,8 @@ int main(int argc, char **argv) {
     if(cur_model == NULL) {
         PRINT_ERROR("Failed to load model!\n");
     }
+#endif
+#endif
 
     //glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -542,7 +554,11 @@ int main(int argc, char **argv) {
                 glEnable(GL_LIGHTING);
                 glShadeModel(GL_FLAT);
 
+#if 1
+                plDrawStaticModel(model);
+#else
                 plDrawMesh(cur_model);
+#endif
 
                 glShadeModel(GL_SMOOTH);
                 glDisable(GL_LIGHTING);
@@ -551,7 +567,11 @@ int main(int argc, char **argv) {
 
             case VIEW_MODE_WEIGHTS:
             case VIEW_MODE_WIREFRAME: {
+#if 1
+                plDrawStaticModel(model);
+#else
                 plDrawMesh(cur_model);
+#endif
                 break;
             }
 
@@ -571,9 +591,12 @@ int main(int argc, char **argv) {
         glfwSwapBuffers(window);
     }
 
+#if 1
+    plDeleteStaticModel(model);
+#else
     plDeleteMesh(cur_model);
-    plDeleteCamera(main_camera);
 #endif
+    plDeleteCamera(main_camera);
 
     plShutdown();
 

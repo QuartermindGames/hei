@@ -279,14 +279,16 @@ PL_EXTERN void _plSetFunctionResult(PLresult result);
 
 #include <PL/platform_string.h>
 
-//////////////////////////////////////////////////////////////////
-
-#define PRINT(...)          printf(__VA_ARGS__)
+// these exist so that internal logging crap can be wedged in... until
+// we have a better system in place
+#define _plPrint(...) printf(__VA_ARGS__)
 #ifdef _DEBUG
-#   define DPRINT(...)      PRINT(__VA_ARGS__)
+#   define _plDebugPrint(...)      _plPrint(__VA_ARGS__)
 #else
-#   define DPRINT(...)      (__VA_ARGS__)
+#   define _plDebugPrint(...)      (__VA_ARGS__)
 #endif
+
+//////////////////////////////////////////////////////////////////
 
 PL_EXTERN bool plIsRunning(void);
 

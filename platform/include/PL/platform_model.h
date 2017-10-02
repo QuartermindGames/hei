@@ -37,14 +37,8 @@ enum {
     PL_MODELTYPE_SKELETAL
 };
 
-#define PLMODEL_MAX_MESHES   32
-
-typedef struct PLModelFrame {
-    PLTriangle  *triangles;
-    PLVertex    *vertices;
-
-    PLVector3D mins, maxs; // Bounds
-} PLModelFrame;
+#define PLMODEL_MAX_MESHES  32
+#define PLMODEL_MAX_FRAMES  512
 
 // Static mesh.
 typedef struct PLStaticModel {
@@ -52,12 +46,20 @@ typedef struct PLStaticModel {
     uint32_t num_vertices;
     uint32_t num_meshes;
 
-    PLMesh meshes[PLMODEL_MAX_MESHES];
+    PLMesh *meshes[PLMODEL_MAX_MESHES];
 
-    PLBBox3D bounds;
+    PLPhysicsAABB bounds;
 } PLStaticModel;
 
 // Per-vertex animated mesh.
+typedef struct PLModelFrame {
+    unsigned int num_meshes;
+
+    PLMesh *meshes[PLMODEL_MAX_MESHES];
+
+    PLPhysicsAABB bounds;
+} PLModelFrame;
+
 typedef struct PLAnimatedModel {
     uint32_t num_triangles;
     uint32_t num_vertices;
@@ -65,37 +67,30 @@ typedef struct PLAnimatedModel {
 
     PLMeshPrimitive primitive;
 
-    PLModelFrame *frames;
+    PLModelFrame frames[PLMODEL_MAX_FRAMES];
 } PLAnimatedModel;
 
 // Mesh with bone structure.
 typedef struct PLSkeletalModel {
     unsigned int num_triangles;
     unsigned int num_vertices;
+    unsigned int num_meshes;
 
-    PLMeshPrimitive primitive;
+    PLMesh *meshes[PLMODEL_MAX_MESHES];
 
-    // Unfinished...
+    PLPhysicsAABB bounds;
 } PLSkeletalModel;
 
 PL_EXTERN_C
 
 // Static
 PLStaticModel *plLoadStaticModel(const char *path);
+
 void plDeleteStaticModel(PLStaticModel *model);
-
-// Animated
-PLAnimatedModel *plCreateAnimatedModel(void);
-PLAnimatedModel *plLoadAnimatedModel(const char *path);
-void plDeleteAnimatedModel(PLAnimatedModel *model);
-
-PLAnimatedModel *plLoadU3DModel(const char *path);
-
 void plDrawStaticModel(PLStaticModel *model);
 
-// Utility
-void plGenerateStaticModelNormals(PLStaticModel *model);
-void plGenerateAnimatedModelNormals(PLAnimatedModel *model);
-void plGenerateSkeletalModelNormals(PLSkeletalModel *model);
+// Animated
+PLAnimatedModel *plLoadAnimatedModel(const char *path);
+void plDeleteAnimatedModel(PLAnimatedModel *model);
 
 PL_EXTERN_C_END

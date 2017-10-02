@@ -41,66 +41,45 @@ typedef struct PLModelInterface {
 
 PLModelInterface model_interfaces[]= {
         { "mdl", _plLoadStaticRequiemModel, NULL, /*_plLoadSkeletalRequiemModel*/NULL },
+        //{ "vtx", _plLoadStaticHOWModel, NULL, _plLoadSkeletalHOWModel },
         //{ "mdl", _plLoadStaticSourceModel, NULL, _plLoadSkeletalSourceModel },
         //{ "mdl", _plLoadStaticGoldSrcModel, NULL, _plLoadSkeletalGoldSrcModel },
         //{ "smd", _plLoadStaticSMDModel, NULL, _plLoadSkeletalSMDModel },
-        { "obj", _plLoadOBJModel, NULL, NULL },
+        //{ "obj", _plLoadOBJModel, NULL, NULL },
 };
 
 ///////////////////////////////////////
 
-void plGenerateStaticModelNormals(PLStaticModel *model) {
-    if(model == NULL) {
-        return;
-    }
-
+void _plGenerateStaticModelNormals(PLStaticModel *model) {
+    plAssert(model);
     for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        PLMesh *mesh = &model->meshes[i];
-#if 1 // per face...
-        for (unsigned int j = 0; j < model->num_triangles; j++) {
-            mesh->triangles[j].normal = plGenerateVertexNormal(
-                    mesh->vertices[mesh->triangles[j].indices[0]].position,
-                    mesh->vertices[mesh->triangles[j].indices[1]].position,
-                    mesh->vertices[mesh->triangles[j].indices[2]].position
-            );
-        }
-#else // per vertex... todo
-        for (PLVertex *vertex = &mesh->vertices[0]; vertex; ++vertex) {
-            for (PLTriangle *triangle = &mesh->triangles[0]; triangle; ++triangle) {
-
-            }
-        }
-#endif
+        plGenerateMeshNormals(model->meshes[i]);
     }
 }
 
-void plGenerateAnimatedModelNormals(PLAnimatedModel *model) {
-    if (model == NULL) {
-        return;
+void _plGenerateStaticModelAABB(PLStaticModel *model) {
+    plAssert(model);
+    for(unsigned int i = 0; i < model->num_meshes; ++i) {
+        plAddAABB(&model->bounds, plCalculateMeshAABB(model->meshes[i]));
     }
+}
 
-    // Calculate normals for each frame... Can't we transform these? I guess that's
-    // only feasible with skeletal animation formats where we can get the transform
-    // but hell, if there's a way to abstractily grab the direction of a face then
-    // surely we could figure that out.
-#if 0 // todo
+void _plGenerateAnimatedModelNormals(PLAnimatedModel *model) {
+    plAssert(model);
     for (PLModelFrame *frame = &model->frames[0]; frame; ++frame) {
-        for (PLVertex *vertex = &frame->vertices[0]; vertex; ++vertex) {
-            for (PLTriangle *triangle = &frame->triangles[0]; triangle; ++triangle) {
-
-            }
+        for(unsigned int i = 0; i < frame->num_meshes; ++i) {
+            plGenerateMeshNormals(frame->meshes[i]);
         }
     }
-#endif
 }
 
-void plGenerateSkeletalModelNormals(PLSkeletalModel *model) {
-    if (model == NULL) {
-        return;
-    }
+void _plGenerateSkeletalModelNormals(PLSkeletalModel *model) {
+    plAssert(model);
 
     // todo
 }
+
+///////////////////////////////////////
 
 /*	Static Model    */
 
@@ -130,17 +109,21 @@ PLStaticModel *plLoadStaticModel(const char *path) {
 }
 
 void plDeleteStaticModel(PLStaticModel *model) {
-    if (model == NULL) {
-        return;
-    }
-
+    plAssert(model);
     for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        if(&model->meshes[i] == NULL) {
+        if(model->meshes[i] == NULL) {
             continue;
         }
 
-        plDeleteMesh(&model->meshes[i]);
+        plDeleteMesh(model->meshes[i]);
     }
 
     free(model);
+}
+
+void plDrawStaticModel(PLStaticModel *model) {
+    plAssert(model);
+    for(unsigned int i = 0; i < model->num_meshes; ++i) {
+        plDrawMesh(model->meshes[i]);
+    }
 }
