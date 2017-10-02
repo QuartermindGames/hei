@@ -32,4 +32,4 @@ file(GLOB EXAMPLE_CYCLONE_SOURCE_FILES *.*)
 add_executable(example_cyclone ${EXAMPLE_CYCLONE_SOURCE_FILES})
 
 target_include_directories(example_cyclone PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(example_cyclone platform glfw IL ILU ILUT)
+target_link_libraries(example_cyclone platform glfw)

@@ -38,6 +38,40 @@ enum {
 #define MAX_INDICES_PER_FACE    6
 #define MIN_INDICES_PER_FACE    3
 
+/* There seem to be two seperate model formats
+ * used within the game, those that are static
+ * and then a completely different type of header
+ * for those that aren't.
+ *
+ * The texture names don't used fixed sizes in either,
+ * in the static model the length of these is declared
+ * but it doesn't appear this is the case in the animated
+ * model format; the animated model format also seems
+ * to support multiple textures.
+ *
+ * The first byte in the model format, is a flag which appears to
+ * control how the model will be displayed within the game.
+ *
+ * Within medkit.mdl
+ *  OFFSET ?? is X coord of vertex 1
+ *  OFFSET 66 is Y coord of vertex 1
+ *  OFFSET 6A is Z coord of vertex 1
+ *  OFFSET 6E is X coord of vertex 2
+ *  OFFSET 72 is Y coord of vertex 2
+ *
+ *  3 bytes between each vertex coord
+ *  12 bytes for each coord set?
+ *
+ *  First 32bit int after texture name
+ *  appears to be number of vertices
+ *
+ *  ?? ?? X  ?? ?? ?? Y  ?? ?? ?? Z  ??
+ *  7E 71 41 3F 4C 1E 0D BC 9F 3C A8 3F
+ *
+ *  ????X X  ????Y Y  ????Z Z
+ *  7E71413F 4C1E0DBC 9F3CA83F
+ */
+
 typedef struct __attribute__((packed)) MDLVertex {
     uint8_t unknown0[2];
     int8_t x_;
@@ -99,6 +133,8 @@ PLStaticModel *_plLoadStaticRequiemModel(const char *path) {
     if(file == NULL) {
         return NULL;
     }
+
+    _plDebugPrint("%s\n", path);
 
 #define AbortLoad(...) _plDebugPrint(__VA_ARGS__); _plReportError(PL_RESULT_FILEREAD, __VA_ARGS__); fclose(file)
 
