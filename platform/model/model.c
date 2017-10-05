@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org>
 typedef struct PLModelInterface {
     const char *extension;
 
-    PLModel*(*LoadStatic)(const char *path);
+    PLModel*(*Load)(const char *path);
 } PLModelInterface;
 
 PLModelInterface model_interfaces[]= {
@@ -73,8 +73,6 @@ void _plGenerateAnimatedModelNormals(PLAnimatedModel *model) {
 
 ///////////////////////////////////////
 
-/*	Static Model    */
-
 PLModel *plLoadModel(const char *path) {
     if(!plFileExists(path)) {
         _plReportError(PL_RESULT_FILEREAD, "Failed to load model, %s!", path);
@@ -83,13 +81,13 @@ PLModel *plLoadModel(const char *path) {
 
     const char *extension = plGetFileExtension(path);
     for(unsigned int i = 0; i < plArrayElements(model_interfaces); ++i) {
-        if(model_interfaces[i].LoadStatic == NULL) {
+        if(model_interfaces[i].Load == NULL) {
             continue;
         }
 
         if(model_interfaces[i].extension != '\0') {
             if (!strcmp(extension, model_interfaces[i].extension)) {
-                PLModel *model = model_interfaces[i].LoadStatic(path);
+                PLModel *model = model_interfaces[i].Load(path);
                 if(model != NULL) {
                     return model;
                 }
