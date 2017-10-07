@@ -53,3 +53,10 @@ char *pl_strcasestr(const char *s, const char *find);
 
 int pl_strcasecmp(const char *s1, const char *s2);
 int pl_strncasecmp(const char *s1, const char *s2, size_t n);
+
+int pl_strisalpha(const char *s);
+int pl_strnisalpha(const char *s, unsigned int n);
+int pl_strisalnum(const char *s);
+int pl_strnisalnum(const char *s, unsigned int n);
+int pl_strisdigit(const char *s);
+int pl_strnisdigit(const char *s, unsigned int n);
