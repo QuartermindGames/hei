@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_image.h>
 #include <PL/platform_console.h>
 
-PLConsoleVariable pl_texture_anisotropy = { "gr_texture_anisotropy", "16", PL_VAR_INTEGER };
+PLConsoleVariable pl_texture_anisotropy = { "gr_texture_anisotropy", "16", pl_int_var };
 
 #define FREE_TEXTURE    ((unsigned int)-1)
 

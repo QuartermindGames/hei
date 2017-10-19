@@ -151,6 +151,9 @@ int main(int argc, char **argv) {
     plShowConsole(true);
     plSetConsoleColour(1, plCreateColour4b(128, 0, 0, 128));
 
+    plParseConsoleString("cmds");
+    plParseConsoleString("vars");
+
     PLCamera *main_camera = plCreateCamera();
     if (main_camera == NULL) {
         PRINT_ERROR("Failed to create camera!\n");

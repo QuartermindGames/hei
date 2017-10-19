@@ -30,31 +30,43 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform.h>
 #include <PL/platform_math.h>
 
-enum {
-    PL_VAR_FLOAT,
-    PL_VAR_INTEGER,
-    PL_VAR_STRING,
-    PL_VAR_BOOLEAN,
-};
+typedef enum PLVariableType {
+    pl_float_var,
+    pl_int_var,
+    pl_string_var,
+    pl_bool_var,    // 0,1 true,false
+} PLVariableType;
 
 typedef struct PLConsoleVariable {
     const char *var, *default_value;
 
-    unsigned int type;
+    PLVariableType type;
 
-    void(*Callback)(unsigned int argc, char *argv[]);
+    void(*Callback)(void);
 
-    char description[512];
+    const char *description;
 
     /////////////////////////////
+
+    union {
+        float f_value;
+        int i_value;
+        const char *s_value;
+        bool b_value;
+    };
 
     char value[1024];
 } PLConsoleVariable;
 
+#define plGetConsoleVariableValue(var) \
+    switch(var->type) {}
+
 PL_EXTERN_C
 
 void plGetConsoleVariables(PLConsoleVariable *** const vars, size_t * const num_vars);
+
 PLConsoleVariable *plGetConsoleVariable(const char *name);
+void plSetConsoleVariable(PLConsoleVariable *var, const char *value);
 
 void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars);
 
@@ -77,6 +89,9 @@ typedef struct PLConsoleCommand {
 PL_EXTERN_C
 
 void plGetConsoleCommands(PLConsoleCommand *** const cmds, size_t * const num_cmds);
+
+void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars);
+
 PLConsoleCommand *plGetConsoleCommand(const char *name);
 
 PL_EXTERN_C_END

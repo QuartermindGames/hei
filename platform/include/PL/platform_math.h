@@ -73,42 +73,20 @@ typedef struct PLVector2D {
     PLVector2D(float a, float b) : x(a), y(b) {}
     PLVector2D() : x(0), y(0) {}
 
-    void operator=(PLVector2D a) {
-        x = a.x;
-        y = a.y;
-    }
+    void operator=(PLVector2D a) { x = a.x; y = a.y; }
+    void operator=(float a) { x = a; y = a; }
 
-    void operator=(float a) {
-        x = a;
-        y = a;
-    }
+    void operator*=(PLVector2D a) { x *= a.x; y *= a.y; }
+    void operator*=(float a) { x *= a; y *= a; }
 
-    void operator*=(PLVector2D a) {
-        x *= a.x;
-        y *= a.y;
-    }
+    void operator/=(PLVector2D a) { x /= a.x; y /= a.y; }
+    void operator/=(float a) { x /= a; y /= a; }
 
-    void operator*=(float a) {
-        x *= a;
-        y *= a;
-    }
-
-    void operator/=(PLVector2D a) {
-        x /= a.x;
-        y /= a.y;
-    }
-
-    void operator/=(float a) {
-        x /= a;
-        y /= a;
-    }
-
-    void operator+=(PLVector2D a) {
-        x += a.x;
-        y += a.y;
-    }
+    void operator+=(PLVector2D a) { x += a.x; y += a.y; }
+    void operator+=(float a) { x += a; y += a; }
 
     bool operator==(PLVector2D a) const { return ((x == a.x) && (y == a.y)); }
+    bool operator==(float a) const { return ((x == a) && (y == a)); }
 
     PLVector2D operator*(PLVector2D a) const { return PLVector2D(x * a.x, y * a.y); }
     PLVector2D operator*(float a) const { return PLVector2D(x * a, y * a); }
@@ -116,12 +94,15 @@ typedef struct PLVector2D {
     PLVector2D operator/(PLVector2D a) const { return PLVector2D(x / a.x, y / a.y); }
     PLVector2D operator/(float a) const { return PLVector2D(x / a, y / a); }
 
+    PLVector2D operator+(PLVector2D a) const { return PLVector2D(x + a.x, y + a.y); }
+    PLVector2D operator+(float a) const { return PLVector2D(x + a, y + a); }
+
     PLVector2D operator-(PLVector2D a) const { return PLVector2D(x - a.x, y - a.y); }
     PLVector2D operator-(float a) const { return PLVector2D(x - a, y - a); }
 
-    PL_INLINE float Length() { return std::sqrt(x * x + y * y); }
+    float Length() { return std::sqrt(x * x + y * y); }
 
-    PL_INLINE PLVector2D Normalize() {
+    PLVector2D Normalize() {
         PLVector2D out;
         float length = Length();
         if (length != 0) {
@@ -130,13 +111,8 @@ typedef struct PLVector2D {
         return out;
     }
 
-    PL_INLINE void Set(float a, float b) {
-        x = a; y = b;
-    }
-
-    PL_INLINE void Clear() {
-        x = 0; y = 0;
-    }
+    void Set(float a, float b) { x = a; y = b; }
+    void Clear() { x = 0; y = 0; }
 #endif
 } PLVector2D;
 

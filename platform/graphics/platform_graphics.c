@@ -33,16 +33,6 @@ For more information, please refer to <http://unlicense.org>
 
 /*	Graphics	*/
 
-/*	todo,
-		replace glew with our own internal solution.
-		make everything more scalable depending on current hw.
-		decide if we're going to cut support for earlier versions of OpenGL.
-		are we going to continue with Glide implementation?
-		internal lighting system?? should not be shader-based; just cheap CPU solution.
-		how are we going to deal with the fact that Glide doesn't support shaders? Funky SW-based shader solution?
-		support for SW rendering? could be neat.
-*/
-
 PLGraphicsState pl_graphics_state;
 
 /*	TODO:
@@ -64,18 +54,6 @@ data for each of these functions
 /*===========================
 	INITIALIZATION
 ===========================*/
-
-#if defined (VL_MODE_GLIDE)
-
-#elif defined (VL_MODE_DIRECT3D)
-
-#elif defined(PL_MODE_VULKAN)
-
-void _plInitVulkan() {
-
-}
-
-#elif defined (PL_MODE_OPENGL)
 
 #if !defined(PL_MODE_OPENGL_CORE)
 bool pl_gl_generate_mipmap              = false;
@@ -137,38 +115,21 @@ void _plInitOpenGL(void) {
 #endif
 #endif
 
-#if 0 // todo, move post window initialization... ?
-    const char *version = _plGetHWVersion();
-    pl_gl_version_major = (unsigned int) atoi(&version[0]);
-    pl_gl_version_minor = (unsigned int) atoi(&version[2]);
-#endif
+    // Get any information that will be presented later.
+    pl_graphics_state.hw_extensions     = (const char *) glGetString(GL_EXTENSIONS);
+    pl_graphics_state.hw_renderer       = (const char *) glGetString(GL_RENDERER);
+    pl_graphics_state.hw_vendor         = (const char *) glGetString(GL_VENDOR);
+    pl_graphics_state.hw_version        = (const char *) glGetString(GL_VERSION);
+
+    pl_gl_version_major = (unsigned int) atoi(&pl_graphics_state.hw_version[0]);
+    pl_gl_version_minor = (unsigned int) atoi(&pl_graphics_state.hw_version[2]);
 }
 
 void _plShutdownOpenGL() {}
 
-#else
-
-#define DEFAULT_BUFFER_WIDTH    320
-#define DEFAULT_BUFFER_HEIGHT   240
-
-uint8_t *pl_sw_backbuffer;
-uint32_t pl_sw_backbuffer_size = DEFAULT_BUFFER_WIDTH * DEFAULT_BUFFER_HEIGHT * 4;
-uint8_t *pl_sw_frontbuffer;
-
-void _plInitSoftware(void) {
-    if(!(pl_sw_backbuffer = (uint8_t*)malloc(pl_sw_backbuffer_size))) {
-        _plReportError(PL_RESULT_MEMORYALLOC, "", NULL);
-        return;
-    }
-}
-
-void _plShutdownSoftware(void) {
-}
-
-#endif
-
-void _plInitTextures(void); // platform_graphics_texture
-void _plInitCameras(void);  // platform_graphics_camera
+void _plInitTextures(void);     // platform_graphics_texture
+void _plInitCameras(void);      // platform_graphics_camera
+void _plInitMaterials(void);    // material
 
 PLresult _plInitGraphics(void) {
     _PL_GRAPHICS_TRACK();
@@ -178,24 +139,12 @@ PLresult _plInitGraphics(void) {
 
     memset(&pl_graphics_state, 0, sizeof(PLGraphicsState));
 
-#if defined (PL_MODE_OPENGL)
     _plInitOpenGL();
-#elif defined (VL_MODE_GLIDE)
-    _plInitGlide();
-#elif defined (VL_MODE_DIRECT3D)
-    _plInitDirect3D();
-#else
-    _plInitSoftware();
-#endif
 
     _plInitCameras();
     _plInitTextures();
+    _plInitMaterials();
 
-    // Get any information that will be presented later.
-    pl_graphics_state.hw_extensions     = _plGetHWExtensions();
-    pl_graphics_state.hw_renderer       = _plGetHWRenderer();
-    pl_graphics_state.hw_vendor         = _plGetHWVendor();
-    pl_graphics_state.hw_version        = _plGetHWVersion();
     plGraphicsLog(" HARDWARE/DRIVER INFORMATION\n");
     plGraphicsLog("  RENDERER: %s\n", pl_graphics_state.hw_renderer);
     plGraphicsLog("  VENDOR:   %s\n", pl_graphics_state.hw_vendor);
@@ -210,14 +159,6 @@ void _plShutdownCameras(void);  // platform_graphics_camera
 void _plShutdownGraphics(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (PL_MODE_OPENGL)
-#elif defined (VL_MODE_GLIDE)
-#elif defined (VL_MODE_DIRECT3D)
-    _plShutdownDirect3D();
-#elif defined (PL_MODE_SOFTWARE)
-    _plShutdownSoftware();
-#endif
-
     _plShutdownCameras();
     _plShutdownTextures();
 }
@@ -226,75 +167,15 @@ void _plShutdownGraphics(void) {
 	HARDWARE INFORMATION
 ===========================*/
 
-const PLchar *_plGetHWExtensions(void) {
-    _PL_GRAPHICS_TRACK();
-
-#if defined(PL_MODE_OPENGL)
-    return (const PLchar *) glGetString(GL_EXTENSIONS);
-    // TODO: this works differently in core; use glGetStringi instead!
-#elif defined (VL_MODE_GLIDE)
-    return grGetString(GR_EXTENSION);
-#else
-    return "";
-#endif
-}
-
-const PLchar *_plGetHWRenderer(void) {
-    _PL_GRAPHICS_TRACK();
-
-#if defined(PL_MODE_OPENGL)
-    return (const PLchar *) glGetString(GL_RENDERER);
-#elif defined (VL_MODE_GLIDE)
-    return grGetString(GR_RENDERER);
-#else
-    return "";
-#endif
-}
-
-const PLchar *_plGetHWVendor(void) {
-    _PL_GRAPHICS_TRACK();
-
-#if defined(PL_MODE_OPENGL)
-    return (const PLchar *) glGetString(GL_VENDOR);
-#elif defined (VL_MODE_GLIDE)
-    return grGetString(GR_VENDOR);
-#else
-    return "";
-#endif
-}
-
-const char *_plGetHWVersion(void) {
-    _PL_GRAPHICS_TRACK();
-
-#if defined(PL_MODE_OPENGL)
-    return (const char *) glGetString(GL_VERSION);
-#elif defined (VL_MODE_GLIDE)
-    return grGetString(GR_VERSION);
-#else
-    return "";
-#endif
-}
-
 bool plHWSupportsMultitexture(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined(PL_MODE_OPENGL)
     return pl_gl_multitexture;
-#elif defined(VL_MODE_GLIDE)
-    return true;
-#else
-    return false;
-#endif
 }
 
 bool plHWSupportsShaders(void) {
     _PL_GRAPHICS_TRACK();
-
-#if defined(PL_MODE_OPENGL)
     return (pl_gl_fragment_program && pl_gl_vertex_program);
-#else
-    return false;
-#endif
 }
 
 /*===========================
@@ -308,14 +189,12 @@ PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h) {
         return NULL;
     }
 
-#if defined(PL_MODE_OPENGL)
     glGenFramebuffers(1, &buffer->fbo);
     glGenRenderbuffers(1, &buffer->rbo);
     glBindRenderbuffer(GL_RENDERBUFFER, buffer->rbo);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, w, h);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer->fbo);
     glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->rbo);
-#endif
 
     return buffer;
 }
@@ -325,10 +204,8 @@ void plDeleteFrameBuffer(PLFrameBuffer *buffer) {
         return;
     }
 
-#if defined(PL_MODE_OPENGL)
     glDeleteFramebuffers(1, &buffer->fbo);
     glDeleteRenderbuffers(1, &buffer->rbo);
-#endif
 }
 
 void plBindFrameBuffer(PLFrameBuffer *buffer) {
@@ -347,17 +224,12 @@ void plSetClearColour(PLColour rgba) {
         return;
     }
 
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     glClearColor(
             plByteToFloat(rgba.r),
             plByteToFloat(rgba.g),
             plByteToFloat(rgba.b),
             plByteToFloat(rgba.a)
     );
-#elif defined (VL_MODE_DIRECT3D)
-    // Don't need to do anything specific here, colour is set on clear call.
-#else // Software
-#endif
 
     plCopyColour(&pl_graphics_state.current_clearcolour, rgba);
 }
@@ -534,11 +406,7 @@ void plDisableGraphicsStates(PLuint flags) {
 void plSetBlendMode(PLBlend modea, PLBlend modeb) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     glBlendFunc(modea, modeb);
-#elif defined (VL_MODE_GLIDE)
-    grAlphaBlendFunction(modea, modeb, modea, modeb);
-#endif
 }
 
 void plSetCullMode(PLCullMode mode) {
@@ -546,7 +414,7 @@ void plSetCullMode(PLCullMode mode) {
 
     if (mode == pl_graphics_state.current_cullmode)
         return;
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+
     glCullFace(GL_BACK);
     switch (mode) {
         default:
@@ -557,12 +425,6 @@ void plSetCullMode(PLCullMode mode) {
             glFrontFace(GL_CCW);
             break;
     }
-#elif defined (VL_MODE_DIRECT3D)
-    // todo, create new render state and somehow get the properties of the
-    // current but update them to reflect the new cull mode.
-
-    vl_d3d_context->lpVtbl->RSSetState(vl_d3d_context, vl_d3d_state);
-#endif
     pl_graphics_state.current_cullmode = mode;
 }
 
@@ -581,9 +443,7 @@ void plEnableShaderProgram(unsigned int program) {
         return;
     }
 
-#if defined (PL_MODE_OPENGL)
     glUseProgram(program);
-#endif
 
     pl_graphics_state.current_program = program;
 }
@@ -595,9 +455,7 @@ void plDisableShaderProgram(unsigned int program) {
         return;
     }
 
-#if defined(PL_MODE_OPENGL)
     glUseProgram(0);
-#endif
 
     pl_graphics_state.current_program = 0;
 }
@@ -705,13 +563,7 @@ void plSetDefaultGraphicsState(void) {
 void plFinish(void) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
     glFinish();
-#elif defined (VL_MODE_GLIDE)
-    grFinish();
-#elif defined (VL_MODE_DIRECT3D)
-    // Not supported, or rather, we don't need this.
-#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -726,19 +578,7 @@ void plViewport(int x, int y, unsigned int width, unsigned int height) {
          (height == pl_graphics_state.viewport_height)))
         return;
 
-#if defined (PL_MODE_OPENGL)
     glViewport(x, y, width, height);
-#elif defined (VL_MODE_DIRECT3D)
-    D3D11_VIEWPORT viewport;
-    memset(&viewport, 0, sizeof(D3D11_VIEWPORT));
-
-    pl_graphics_state.viewport_x = viewport.TopLeftX = x;
-    pl_graphics_state.viewport_y = viewport.TopLeftY = y;
-    pl_graphics_state.viewport_width = viewport.Width = width;
-    pl_graphics_state.viewport_height = viewport.Height = height;
-
-    vl_d3d_context->lpVtbl->RSSetViewports(vl_d3d_context, 1, &viewport);
-#endif
 
     pl_graphics_state.viewport_x        = x;
     pl_graphics_state.viewport_y        = y;
@@ -749,15 +589,7 @@ void plViewport(int x, int y, unsigned int width, unsigned int height) {
 void plScissor(int x, int y, unsigned int width, unsigned int height) {
     _PL_GRAPHICS_TRACK();
 
-#if defined (PL_MODE_OPENGL)
     glScissor(x, y, width, height);
-#elif defined (VL_MODE_DIRECT3D)
-    D3D11_RECT scissor_region;
-    memset(&scissor_region, 0, sizeof(D3D11_RECT));
-    scissor_region.bottom	= height;
-    scissor_region.right	= width;
-    vl_d3d_context->lpVtbl->RSSetScissorRects(vl_d3d_context, 0, &scissor_region);
-#endif
 }
 
 // http://nehe.gamedev.net/article/replacement_for_gluperspective/21002/

@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_console.h>
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_input.h>
+#include <PL/platform_filesystem.h>
 
 #define _CONSOLE_MAX_ARGUMENTS 8
 
@@ -91,6 +92,7 @@ PLConsoleCommand *plGetConsoleCommand(const char *name) {
             return (*cmd);
         }
     }
+    return NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -130,8 +132,7 @@ void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars)
                 break;
             }
             memcpy(_pl_variables[_pl_num_variables], &vars[i], sizeof(PLConsoleVariable));
-            strncpy(_pl_variables[_pl_num_variables]->value, _pl_variables[_pl_num_variables]->default_value,
-                    sizeof(_pl_variables[_pl_num_variables]->value));
+            plSetConsoleVariable(_pl_variables[_pl_num_variables], _pl_variables[_pl_num_variables]->default_value);
             _pl_num_variables++;
         }
     }
@@ -147,6 +148,53 @@ PLConsoleVariable *plGetConsoleVariable(const char *name) {
         if(pl_strcasecmp(name, (*var)->var) == 0) {
             return (*var);
         }
+    }
+    return NULL;
+}
+
+// Set console variable, with sanity checks...
+void plSetConsoleVariable(PLConsoleVariable *var, const char *value) {
+    plAssert(var);
+    switch(var->type) {
+        default: {
+            _plPrint("Unknown variable type %d, failed to set!\n", var->type);
+        } return;
+
+        case pl_int_var: {
+            if(pl_strisdigit(value) == -1) {
+                _plPrint("Unknown argument type %s, failed to set!\n", value);
+                return;
+            }
+
+            var->i_value = (int)strtol(value, NULL, 8);
+        } break;
+
+        case pl_string_var: {
+            var->s_value = &var->value[0];
+        } break;
+
+        case pl_float_var: {
+            var->f_value = strtof(value, NULL);
+        } break;
+
+        case pl_bool_var: {
+            if(pl_strisalnum(value) == -1) {
+                _plPrint("Unknown argument type %s, failed to set!\n", value);
+                return;
+            }
+
+            if(strcmp(value, "true") == 0 || strcmp(value, "1") == 0) {
+                var->b_value = true;
+            } else {
+                var->b_value = false;
+            }
+        } break;
+    }
+
+    strncpy(var->value, value, sizeof(var->value));
+
+    if(var->Callback != NULL) {
+        var->Callback();
     }
 }
 
@@ -173,7 +221,18 @@ bool _pl_console_visible = false;
 /////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE
 
-IMPLEMENT_COMMAND(cls, "Clears the console buffer.") {
+IMPLEMENT_COMMAND(pwd, "Print current working directory.") {
+    _plPrint("%s\n", plGetWorkingDirectory());
+}
+
+IMPLEMENT_COMMAND(echo, "Prints out string to console.") {
+    for(unsigned int i = 0; i < (argc - 1); ++i) {
+        _plPrint("%s ", argv[i]);
+    }
+    _plPrint("\n");
+}
+
+IMPLEMENT_COMMAND(clear, "Clears the console buffer.") {
     memset(_pl_console_pane[_pl_active_console_pane].buffer, 0, 4096);
 }
 
@@ -262,22 +321,25 @@ PLresult _plInitConsole(void) {
     }
 
     PLConsoleCommand base_commands[]={
-            cls_var,
+            clear_var,
             help_var,
             time_var,
             mem_var,
             colour_var,
+            cmds_var,
+            vars_var,
+            pwd_var,
     };
     plRegisterConsoleCommands(base_commands, plArrayElements(base_commands));
 
-    plAddConsoleVariable(MyVar, "true", PL_VAR_BOOLEAN, NULL, "Example console variable, that does nothing!");
-    plAddConsoleVariable(YourVar, "false", PL_VAR_BOOLEAN, NULL, "Example console variable, that does nothing!");
-    plAddConsoleVariable(HisVar, "apple", PL_VAR_BOOLEAN, NULL, "Example console variable, that does nothing!");
+    plAddConsoleVariable(MyVar, "true", pl_bool_var, NULL, "Example console variable, that does nothing!");
+    plAddConsoleVariable(YourVar, "false", pl_bool_var, NULL, "Example console variable, that does nothing!");
+    plAddConsoleVariable(HisVar, "apple", pl_string_var, NULL, "Example console variable, that does nothing!");
 
     // todo, temporary
-    cmds_func(0, NULL);
-    vars_func(0, NULL);
-    time_func(0, NULL);
+    //cmds_func(0, NULL);
+    //vars_func(0, NULL);
+    //time_func(0, NULL);
 
     // todo, parse config
 
@@ -316,6 +378,12 @@ void _plShutdownConsole(void) {
         free(_pl_variables);
     }
 }
+
+void plSetConsoleOutCallback(void(Callback)(unsigned int )) {
+
+}
+
+/////////////////////////////////////////////////////
 
 void plParseConsoleString(const char *string) {
     if(string == NULL || string[0] == '\0') {
@@ -356,10 +424,8 @@ void plParseConsoleString(const char *string) {
     if((var = plGetConsoleVariable(argv[0])) != NULL) {
         // todo, should the var not be set by defacto here?
 
-        if(var->Callback != NULL) {
-            var->Callback(argc, argv);
-        } else if(argc > 1) {
-            strncpy(var->value, argv[1], sizeof(var->value));
+        if(argc > 1) {
+            plSetConsoleVariable(var, argv[1]);
         } else {
             _plPrint("    %s\n", var->var);
             _plPrint("    %s\n", var->description);
