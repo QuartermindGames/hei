@@ -110,8 +110,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 int main(int argc, char **argv) {
-    plInitialize(argc, argv, PL_SUBSYSTEM_WINDOW | PL_SUBSYSTEM_GRAPHICS);
-
     PRINT("\n " TITLE " : Version %d.%d (" __DATE__ ")\n", VERSION_MAJOR, VERSION_MINOR     );
     PRINT(" Developed by...\n"                                                              );
     PRINT("   Mark \"hogsy\" Sowden (http://talonbrave.info/)\n"                            );
@@ -136,6 +134,8 @@ int main(int argc, char **argv) {
 
         PRINT_ERROR("Failed to create window!\n");
     }
+
+    plInitialize(argc, argv, PL_SUBSYSTEM_WINDOW | PL_SUBSYSTEM_GRAPHICS);
 
     glfwSetKeyCallback(window, key_callback);
     glfwMakeContextCurrent(window);
