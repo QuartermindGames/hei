@@ -135,8 +135,6 @@ int main(int argc, char **argv) {
         PRINT_ERROR("Failed to create window!\n");
     }
 
-    plInitialize(argc, argv, PL_SUBSYSTEM_WINDOW | PL_SUBSYSTEM_GRAPHICS);
-
     glfwSetKeyCallback(window, key_callback);
     glfwMakeContextCurrent(window);
 
