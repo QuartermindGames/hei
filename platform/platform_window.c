@@ -210,8 +210,7 @@ void plDeleteWindow(PLWindow *window) {
 
 ///////////////////////////////////////////////////////////
 
-/*	Displays a simple dialogue window.
-*/
+/* Displays a simple dialogue window. */
 void plMessageBox(const char *ccTitle, const char *ccMessage, ...) {
     char cOut[2048];
     va_list vlArguments;
@@ -222,50 +221,39 @@ void plMessageBox(const char *ccTitle, const char *ccMessage, ...) {
     vsprintf(cOut, ccMessage, vlArguments);
     va_end(vlArguments);
 
-    // Also print a message out, on the off chance the message box fails.
-    printf("Platform: %s", cOut);
-
 #ifndef _WIN32
-    {
-        int iDefaultScreen;
-        XEvent xEvent;
-        Display *display;
-        Window wMessageWindow;
-
-        display = XOpenDisplay(NULL);
-        if (!display) {
-            _plSetErrorMessage("Failed to open display!\n");
-            return;
-        }
-
-        iDefaultScreen = DefaultScreen(display);
-
-        wMessageWindow = XCreateSimpleWindow(
-                display,
-                RootWindow(display, iDefaultScreen),
-                50, 50,
-                512, 64,
-                1,
-                BlackPixel(display, iDefaultScreen),
-                WhitePixel(display, iDefaultScreen));
-        XStoreName(display, wMessageWindow, ccTitle);
-        XSelectInput(display, wMessageWindow, ExposureMask | KeyPressMask);
-        XMapWindow(display, wMessageWindow);
-
-        for (;;) {
-            XNextEvent(display, &xEvent);
-
-            if (xEvent.type == Expose) {
-                XDrawString(display, wMessageWindow, DefaultGC(display, iDefaultScreen), 10, 10, cOut,
-                            (int) strlen(cOut));
-                XDrawString(display, wMessageWindow, DefaultGC(display, iDefaultScreen), 10, 54,
-                            "Press any key to continue...", 32);
-            } else if (xEvent.type == KeyPress)
-                break;
-        }
-
-        XCloseDisplay(display);
+    Display *display = XOpenDisplay(NULL);
+    if (!display) {
+        _plSetErrorMessage("Failed to open display!\n");
+        return;
     }
+
+    int default_screen = DefaultScreen(display);
+    Window message_window = XCreateSimpleWindow(
+            display,
+            RootWindow(display, default_screen),
+            50, 50,
+            512, 64,
+            1,
+            BlackPixel(display, default_screen),
+            WhitePixel(display, default_screen));
+    XStoreName(display, message_window, ccTitle);
+    XSelectInput(display, message_window, ExposureMask | KeyPressMask);
+    XMapWindow(display, message_window);
+
+    for (;;) {
+        XEvent xEvent;
+        XNextEvent(display, &xEvent);
+        if (xEvent.type == Expose) {
+            XDrawString(display, message_window, DefaultGC(display, default_screen), 10, 10, cOut,
+                        (int) strlen(cOut));
+            XDrawString(display, message_window, DefaultGC(display, default_screen), 10, 54,
+                        "Press any key to continue...", 32);
+        } else if (xEvent.type == KeyPress)
+            break;
+    }
+
+    XCloseDisplay(display);
 #else   // Windows
     MessageBoxEx(NULL, cOut, ccTitle, MB_SETFOREGROUND | MB_ICONERROR, 0);
 #endif
