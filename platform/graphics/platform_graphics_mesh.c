@@ -413,11 +413,11 @@ void plDrawMesh(PLMesh *mesh) {
 
 // Utility Functions
 
-PLPhysicsAABB plCalculateMeshAABB(PLMesh *mesh) {
+PLAABB plCalculateMeshAABB(PLMesh *mesh) {
     plAssert(mesh);
 
-    static PLPhysicsAABB bounds;
-    memset(&bounds, 0, sizeof(PLPhysicsAABB));
+    static PLAABB bounds;
+    memset(&bounds, 0, sizeof(PLAABB));
 
     for(unsigned int i = 0; i < mesh->num_verts; ++i) {
         if(bounds.maxs.x < mesh->vertices[i].position.x) {

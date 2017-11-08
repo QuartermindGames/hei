@@ -129,6 +129,7 @@ PLresult plInitialize(int argc, char **argv, unsigned int subsystems) {
 
     if(!is_initialized) {
         _plInitConsole();
+        _plInitInput();
     }
 
     for(unsigned int i = 0; i < plArrayElements(pl_subsystems); i++) {
@@ -383,7 +384,7 @@ void plProcess(double delta) {
     // todo, game logic @ locked 60fps (rendering is UNLOCKED?)
 
     while(accumulator >= delta) {
-        plProcessObjects();
+        plProcessActors();
         plProcessPhysics();
     }
 

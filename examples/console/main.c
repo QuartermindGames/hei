@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
 
     PLWindow *window = plCreateWindow(TITLE, 0, 0, WIDTH, HEIGHT);
     if(!window) {
-        printf(plGetError());
+        printf("%s\n", plGetError());
         return -1;
     }
 

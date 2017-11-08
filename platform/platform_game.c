@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_game.h>
 
-void plProcessObjects(void) {
+void plProcessActors(void) {
 
 }
 

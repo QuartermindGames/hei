@@ -297,6 +297,28 @@ PL_EXTERN void plPerspective(double fov_y, double aspect, double near, double fa
 PL_EXTERN_C_END
 
 //-----------------
+// Shaders
+
+typedef int PLSampler1D, PLSampler2D, PLSampler3D;
+typedef int PLSamplerCube;
+typedef int PLSampler1DShadow, PLSampler2DShadow;
+
+enum {
+    PLSHADER_TYPE_VERTEX,
+    PLSHADER_TYPE_FRAGMENT,
+    PLSHADER_TYPE_GEOMETRY,
+    PLSHADER_TYPE_COMPUTE,
+};
+
+typedef struct PLShaderProgram {
+
+} PLShaderProgram;
+
+typedef struct PLShader {
+    unsigned int id;
+} PLShader;
+
+//-----------------
 
 PL_EXTERN_C
 

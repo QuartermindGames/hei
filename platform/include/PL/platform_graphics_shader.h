@@ -27,10 +27,6 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-typedef int PLSampler1D, PLSampler2D, PLSampler3D;
-typedef int PLSamplerCube;
-typedef int PLSampler1DShadow, PLSampler2DShadow;
-
 #ifdef __cplusplus
 
 namespace pl {
@@ -201,15 +197,5 @@ namespace pl {
 
     }
 }
-
-typedef pl::graphics::ShaderUniform PLShaderUniform;
-typedef pl::graphics::ShaderProgram PLShaderProgram;
-typedef pl::graphics::Shader PLShader;
-
-#else
-
-typedef struct PLShaderUniform PLShaderUniform;
-typedef struct PLShaderProgram PLShaderProgram;
-typedef struct PLShader PLShader;
 
 #endif

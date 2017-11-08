@@ -27,6 +27,15 @@ For more information, please refer to <http://unlicense.org>
 
 project(platform)
 
+option(PL_USE_SDL2 "Use SDL2" ON)
+option(PL_USE_ZLIB "ZLIB" ON)
+option(PL_USE_PNG "Support PNG" ON)
+
+add_definitions("-D_DEBUG")
+if(PL_USE_SDL2)
+    add_definitions(-DPL_USE_SDL2)
+endif(PL_USE_SDL2)
+
 file(
         GLOB PLATFORM_SOURCE_FILES
         *.cpp *.c
@@ -36,6 +45,7 @@ file(
         model/*.*
         string/*.*
         package/*.*
+        memory/*.*
 
         include/*.h
         include/PL/*.h
@@ -49,7 +59,7 @@ target_compile_options(platform PUBLIC -fPIC -DPL_INTERNAL)
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(platform "-framework OpenGL" -L/usr/X11/lib -L/usr/X11R6/lib)
 else()
-    target_link_libraries(platform GL GLU GLEW)
+    target_link_libraries(platform GL GLU)
 endif()
 target_include_directories(platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
 target_link_libraries(platform m dl tiff X11 SDL2)

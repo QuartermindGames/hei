@@ -43,7 +43,7 @@ typedef struct PLModel {
 
     PLMesh *meshes[PLMODEL_MAX_MESHES];
 
-    PLPhysicsAABB bounds;
+    PLAABB bounds;
 } PLModel;
 
 // Per-vertex animated mesh.
@@ -52,7 +52,7 @@ typedef struct PLModelFrame {
 
     PLMesh *meshes[PLMODEL_MAX_MESHES];
 
-    PLPhysicsAABB bounds;
+    PLAABB bounds;
 } PLModelFrame;
 
 typedef struct PLAnimatedModel {

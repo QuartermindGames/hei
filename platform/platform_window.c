@@ -211,15 +211,12 @@ void plDeleteWindow(PLWindow *window) {
 ///////////////////////////////////////////////////////////
 
 /* Displays a simple dialogue window. */
-void plMessageBox(const char *ccTitle, const char *ccMessage, ...) {
-    char cOut[2048];
-    va_list vlArguments;
-
-    plFunctionStart();
-
-    va_start(vlArguments, ccMessage);
-    vsprintf(cOut, ccMessage, vlArguments);
-    va_end(vlArguments);
+void plMessageBox(const char *title, const char *msg, ...) {
+    char buf[2048];
+    va_list args;
+    va_start(args, msg);
+    vsprintf(buf, msg, args);
+    va_end(args);
 
 #ifndef _WIN32
     Display *display = XOpenDisplay(NULL);
@@ -237,7 +234,7 @@ void plMessageBox(const char *ccTitle, const char *ccMessage, ...) {
             1,
             BlackPixel(display, default_screen),
             WhitePixel(display, default_screen));
-    XStoreName(display, message_window, ccTitle);
+    XStoreName(display, message_window, title);
     XSelectInput(display, message_window, ExposureMask | KeyPressMask);
     XMapWindow(display, message_window);
 
@@ -245,8 +242,8 @@ void plMessageBox(const char *ccTitle, const char *ccMessage, ...) {
         XEvent xEvent;
         XNextEvent(display, &xEvent);
         if (xEvent.type == Expose) {
-            XDrawString(display, message_window, DefaultGC(display, default_screen), 10, 10, cOut,
-                        (int) strlen(cOut));
+            XDrawString(display, message_window, DefaultGC(display, default_screen), 10, 10, buf,
+                        (int) strlen(buf));
             XDrawString(display, message_window, DefaultGC(display, default_screen), 10, 54,
                         "Press any key to continue...", 32);
         } else if (xEvent.type == KeyPress)

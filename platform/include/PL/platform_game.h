@@ -31,17 +31,17 @@ For more information, please refer to <http://unlicense.org>
 
 typedef struct {
     PLVector3D position, angles, velocity;
-    PLPhysicsAABB bounds;
+    PLAABB bounds;
 
     void *custom_vars;
-} PLGameObject;
+} PLActor;
 
 PL_EXTERN_C
 
-PL_EXTERN PLGameObject *plCreateObject(void);
-PL_EXTERN void plDeleteObject(PLGameObject *object);
+PL_EXTERN PLActor *plCreateActor(void);
+PL_EXTERN void plDeleteActor(PLActor *object);
 
-PL_EXTERN void plProcessObjects(void);
+PL_EXTERN void plProcessActors(void);
 PL_EXTERN void plProcessPhysics(void);
 
 PL_EXTERN_C_END

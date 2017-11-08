@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include <PL/platform_input.h>
+#include <PL/platform_window.h>
 
 #include <SDL2/SDL.h>
 
@@ -35,51 +36,6 @@ For more information, please refer to <http://unlicense.org>
 #define INPUT_MAX_VIBRATION     65535   // todo, make configurable?
 #define INPUT_MAX_ZONE          32767   // todo, make configurable
 #define INPUT_MIN_ZONE          3000    // todo, make configurable
-
-enum {
-    PL_KEY_BS       = 8,
-    PL_KEY_TAB      = 9,
-    PL_KEY_CR       = 13,
-    PL_KEY_ESCAPE   = 27,
-    PL_KEY_SPACE    = 32,
-    PL_KEY_DELETE   = 127,
-
-    PL_KEY_F1,
-    PL_KEY_F2,
-    PL_KEY_F3,
-    PL_KEY_F4,
-    PL_KEY_F5,
-    PL_KEY_F6,
-    PL_KEY_F7,
-    PL_KEY_F8,
-    PL_KEY_F9,
-    PL_KEY_F10,
-    PL_KEY_F11,
-    PL_KEY_F12,
-
-    PL_KEY_PAUSE,
-
-    PL_KEY_UP,
-    PL_KEY_DOWN,
-    PL_KEY_LEFT,
-    PL_KEY_RIGHT,
-
-    PL_KEY_CTRL,
-    PL_KEY_ALT,
-    PL_KEY_SHIFT,
-
-    PL_KEY_INSERT,
-    PL_KEY_HOME,
-    PL_KEY_END,
-    PL_KEY_PAGEUP,
-    PL_KEY_PAGEDOWN,
-
-    PL_KEY_PRINTSCREEN,
-
-    PL_MOUSE_LEFT = 0,
-    PL_MOUSE_MIDDLE,
-    PL_MOUSE_RIGHT,
-};
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -101,26 +57,76 @@ struct {
     bool mouse_state[3]; // left, middle, right
 
     // Keyboard
-    bool key_state[256];
+    struct {
+        bool state;
+        unsigned int stage;
+    } keys[256];
 } _pl_input;
 
 /////////////////////////////////////////////////////////////////////////////////////
 // KEYBOARD
 
+void(*InputKeyboardCallback)(bool state, char key);
+
+void plSetKeyboardCallback(void(*Callback)(bool state, char key)) {
+    if(Callback == NULL) {
+        _plPrint("Passed invalid keyboard callback!\n");
+        return;
+    }
+    InputKeyboardCallback = Callback;
+}
+
 void plClearKeyboardState(void) {
-    memset(&_pl_input.key_state, 0, sizeof(bool) * 256);
+    memset(&_pl_input.keys, 0, sizeof(_pl_input.keys));
 }
 
 /* Returns true if pressed, false otherwise */
 bool plGetKeyState(char key) {
-    return _pl_input.key_state[key];
+    return _pl_input.keys[key].state;
 }
 
 // MOUSE
 
+void(*InputMouseCallback)(bool state, char button, int x, int y);
+
+void plSetMouseCallback(void(*Callback)(bool state, char button, int x, int y)) {
+    if(Callback == NULL) {
+        _plPrint("Passed invalid mouse callback!\n");
+        return;
+    }
+    InputMouseCallback = Callback;
+}
+
+/* If window provided is null, give global position. */
+void plGetCursorPosition(PLWindow *window, int *x, int *y) {
+    if(window == NULL) {
+        *x = _pl_input.cursor_position[0];
+        *y = _pl_input.cursor_position[1];
+        return;
+    }
+
+    static int last_position[2] = {0,0};
+    int cur_x = _pl_input.cursor_position[0];
+    int cur_y = _pl_input.cursor_position[1];
+    if(cur_x > window->x && cur_x < window->x + window->width &&
+       cur_y > window->y && cur_y < window->y + window->height) {
+        last_position[0] = cur_x;
+        last_position[1] = cur_y;
+    }
+
+    *x = last_position[0];
+    *y = last_position[1];
+}
+
+bool plGetMouseState(char button) {
+    return _pl_input.mouse_state[button];
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 void _plInitInput(void) {
+    _plPrint("Initializing input...\n");
+
     memset(&_pl_input, 0, sizeof(_pl_input));
 
 #if defined(PL_USE_SDL2)
@@ -145,14 +151,12 @@ void _plInitInput(void) {
         _plDebugPrint("Failed to initialise controller support!\n%s", SDL_GetError());
     }
 #endif
+
+    _plPrint(" SUCCESS!\n");
 }
 
 void _plShutdownInput(void) {
-#if 0 // we are initializing all the subsystems now instead...
-#if defined(PL_USE_SDL2)
-    SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
-#endif
-#endif
+
 }
 
 #if defined(PL_USE_SDL2)
@@ -240,10 +244,7 @@ char _plConvertSDL2Key(int key) {
 }
 #endif
 
-void(*InputKeyboardCallback)(bool state, char key);
-void(*InputMouseCallback)(bool state, char button, int x, int y);
-
-void _plInputFrame(void) {
+void plProcessInput(void) {
 #if defined(PL_USE_SDL2)
     SDL_Event event;
     while(SDL_PollEvent(&event)) {
@@ -268,10 +269,10 @@ void _plInputFrame(void) {
             case SDL_KEYDOWN:
             case SDL_KEYUP: {
                 char key = _plConvertSDL2Key(event.key.keysym.sym);
-                _pl_input.key_state[key] = (event.key.state == SDL_PRESSED);
+                _pl_input.keys[key].state = (event.key.state == SDL_PRESSED);
                 if(InputKeyboardCallback) {
                     InputKeyboardCallback(
-                            _pl_input.key_state[key],
+                            _pl_input.keys[key].state,
                             key
                     );
                 }

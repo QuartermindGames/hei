@@ -31,11 +31,9 @@ For more information, please refer to <http://unlicense.org>
 
 // Base Defines
 
-#define PL_PI   3.14159265358979323846
+#define PL_PI   3.14159265358979323846f
 
 enum {
-    PL_X, PL_Y, PL_Z,
-
     PL_PITCH = 0,
     PL_YAW,
     PL_ROLL,
@@ -732,16 +730,16 @@ static PL_INLINE const char *plPrintQuaternion(PLQuaternion q) {
 
 // Bounding Boxes
 
-typedef struct PLPhysicsAABB {
+typedef struct PLAABB {
     PLVector3D mins, maxs;
-} PLPhysicsAABB;
+} PLAABB;
 
-PL_INLINE static void plAddAABB(PLPhysicsAABB *b, PLPhysicsAABB b2) {
+PL_INLINE static void plAddAABB(PLAABB *b, PLAABB b2) {
     plAddVector3D(&b->maxs, b2.maxs);
     plAddVector3D(&b->mins, b2.mins);
 }
 
-PL_INLINE static bool plIntersectAABB(PLPhysicsAABB b, PLPhysicsAABB b2) {
+PL_INLINE static bool plIntersectAABB(PLAABB b, PLAABB b2) {
     PLVector3D dist_a = b2.mins;
     plSubtractVector3D(&dist_a, b.maxs);
     PLVector3D dist_b = b.mins;
@@ -749,8 +747,8 @@ PL_INLINE static bool plIntersectAABB(PLPhysicsAABB b, PLPhysicsAABB b2) {
     PLVector3D dist = plVector3DMax(dist_a, dist_b);
 }
 
-PL_INLINE static void plClearAABB(PLPhysicsAABB *b) {
-    memset(b, 0, sizeof(PLPhysicsAABB));
+PL_INLINE static void plClearAABB(PLAABB *b) {
+    memset(b, 0, sizeof(PLAABB));
 }
 
 typedef struct PLBBox2D {
@@ -880,7 +878,6 @@ static PL_INLINE float plLinear(float x) {
     } else if (x > 1.0f) {
         return 1.0f;
     }
-
     return x;
 }
 
@@ -890,7 +887,6 @@ static PL_INLINE float plInPow(float x, float p) {
     } else if (x > 1.0f) {
         return 1.0f;
     }
-
     return powf(x, p);
 }
 
@@ -900,7 +896,6 @@ static PL_INLINE float plInSin(float x) {
     } else if (x > 1.0f) {
         return 1.0f;
     }
-
     return -cosf(x * ((float) PL_PI / 2.0f)) + 1.0f;
 }
 
@@ -910,7 +905,6 @@ static PL_INLINE float plOutSin(float x) {
     } else if (x > 1.0f) {
         return 1.0f;
     }
-
     return sinf(x * ((float) PL_PI / 2.0f));
 }
 
@@ -930,7 +924,6 @@ static PL_INLINE float plOutExp(float x) {
     } else if (x > 1.0f) {
         return 1.0f;
     }
-
     return -powf(2.0f, -1.0f * x) + 1.0f;
 }
 
@@ -940,7 +933,6 @@ static PL_INLINE float plInOutExp(float x) {
     } else if (x > 1.0f) {
         return 1.0f;
     }
-
     return x < 0.5f ? 0.5f * powf(2.0f, 10.0f * (2.0f * x - 1.0f)) :
            0.5f * (-powf(2.0f, 10.0f * (-2.0f * x + 1.0f)) + 1.0f);
 }
@@ -951,7 +943,6 @@ static PL_INLINE float plInCirc(float x) {
     } else if (x > 1.0f) {
         return 1.0f;
     }
-
     return -(sqrtf(1.0f - x * x) - 1.0f);
 }
 
@@ -961,7 +952,6 @@ static PL_INLINE float plOutBack(float x) {
     } else if (x > 1.0f) {
         return 1.0f;
     }
-
     return (x - 1.0f) * (x - 1.0f) * ((1.70158f + 1.0f) * (x - 1.0f) + 1.70158f) + 1.0f;
 }
 
@@ -1058,6 +1048,33 @@ static PL_INLINE float plInOutPow(float x, float p) {
 
     int sign = (int) p % 2 == 0 ? -1 : 1;
     return (sign / 2.0f * (powf(x - 2.0f, p) + sign * 2.0f));
+}
+
+//////////////////////////////////////////////////////////////////////
+// UTILITY FUNCTIONS
+
+static PL_INLINE float plToRadians(float degrees) {
+    return degrees * (PL_PI / 180.f);
+}
+
+static PL_INLINE float plClampFloat(float min, float value, float max) {
+    float result = value;
+    if(result < min) {
+        result = min;
+    } else if(result > max) {
+        result = max;
+    }
+    return result;
+}
+
+static PL_INLINE int plClampInt(int min, int value, int max) {
+    int result = value;
+    if(result < min) {
+        result = min;
+    } else if(result > max) {
+        result = max;
+    }
+    return result;
 }
 
 //////////////////////////////////////////////////////////////////////

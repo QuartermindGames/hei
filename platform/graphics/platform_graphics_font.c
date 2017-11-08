@@ -116,7 +116,7 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     _plResetFontParser();
 
     FILE *file = fopen(path, "r");
-    if(!file) {
+    if(file == NULL) {
         _plReportError(PL_RESULT_FILEPATH, "Failed to open %s!\n", path);
         return NULL;
     }
@@ -152,7 +152,7 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     strncpy(image_path, _pl_font.line_buffer, sizeof(image_path));
 
     PLBitmapFont *font = (PLBitmapFont*)malloc(sizeof(PLBitmapFont));
-    if(!font) {
+    if(font == NULL) {
         _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for BitmapFont, %d!\n", sizeof(PLBitmapFont));
         return NULL;
     }

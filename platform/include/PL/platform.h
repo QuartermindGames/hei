@@ -222,6 +222,9 @@ void _plShutdownWindow(void);
 PLresult _plInitConsole(void);
 void _plShutdownConsole(void);
 
+void _plInitInput(void);
+void _plShutdownInput(void);
+
 PL_EXTERN_C_END
 
 #else

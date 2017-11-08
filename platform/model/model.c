@@ -85,7 +85,7 @@ PLModel *plLoadModel(const char *path) {
             continue;
         }
 
-        if(model_interfaces[i].extension != '\0') {
+        if(model_interfaces[i].extension[0] != '\0') {
             if (!strcmp(extension, model_interfaces[i].extension)) {
                 PLModel *model = model_interfaces[i].Load(path);
                 if(model != NULL) {

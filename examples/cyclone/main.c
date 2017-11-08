@@ -29,8 +29,8 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_console.h>
 #include <PL/platform_graphics.h>
 #include <PL/platform_model.h>
-
-#include <GLFW/glfw3.h>
+#include <PL/platform_window.h>
+#include <PL/platform_input.h>
 
 #include "../shared.h"
 
@@ -120,27 +120,13 @@ int main(int argc, char **argv) {
     PRINT("  Middle - move camera up, down, left and right\n\n"                             );
     PRINT("\n-------------------------------------------------------------------------\n\n" );
 
-    // Initialize GLFW...
+    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS | PL_SUBSYSTEM_WINDOW);
 
-    if (!glfwInit()) {
-        PRINT_ERROR("Failed to initialize GLFW!\n");
-    }
-
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
-    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Cyclone Viewer", NULL, NULL);
-    if (!window) {
-        glfwTerminate();
-
-        PRINT_ERROR("Failed to create window!\n");
-    }
-
-    glfwSetKeyCallback(window, key_callback);
-    glfwMakeContextCurrent(window);
-
-    // And now for ours...
-
-    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS);
+    PLWindow *window = plCreateWindow(
+            "Cyclone Viewer",
+            plGetScreenWidth() / 2, plGetScreenHeight() / 2,
+            WIDTH, HEIGHT
+    );
 
     plSetDefaultGraphicsState();
     plSetClearColour(plCreateColour4b(0, 0, 128, 255));
@@ -159,9 +145,8 @@ int main(int argc, char **argv) {
     main_camera->mode = PLCAMERA_MODE_PERSPECTIVE;
     main_camera->fov = 90.f;
     main_camera->position = plCreateVector3D(0, 12, -500);
-    glfwGetFramebufferSize(window,
-                           (int*)&main_camera->viewport.w,
-                           (int*)&main_camera->viewport.h);
+    main_camera->viewport.w = WIDTH;
+    main_camera->viewport.h = HEIGHT;
 
 #if 0
     plScanDirectory("./Models/", "mdl", load_mdl_temp, false);
@@ -188,19 +173,19 @@ int main(int argc, char **argv) {
     glPointSize(5.f);
     glLineWidth(2.f);
 
-    while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
+    while (plIsRunning()) {
+        plProcessInput();
 
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
         // input handlers start..
         double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
+        plGetCursorPosition(window, (int*)&xpos, (int*)&ypos);
 
         // Camera rotation
         static double oldlmpos[2] = {0, 0};
         static PLVector3D angles = { 0, 0 };
-        int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+        bool state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
         if (state == GLFW_PRESS) {
             double nxpos = xpos - oldlmpos[0];
             double nypos = ypos - oldlmpos[1];
@@ -277,15 +262,14 @@ int main(int argc, char **argv) {
 
         //plDrawConsole();
 
-        glfwSwapBuffers(window);
+        plSwapBuffers(window);
     }
 
     plDeleteModel(model);
     plDeleteCamera(main_camera);
+    plDeleteWindow(window);
 
     plShutdown();
-
-    glfwTerminate();
 
     return 0;
 #endif

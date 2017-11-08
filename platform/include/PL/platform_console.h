@@ -63,7 +63,7 @@ typedef struct PLConsoleVariable {
 
 PL_EXTERN_C
 
-void plGetConsoleVariables(PLConsoleVariable *** const vars, size_t * const num_vars);
+void plGetConsoleVariables(PLConsoleVariable ***vars, size_t *num_vars);
 
 PLConsoleVariable *plGetConsoleVariable(const char *name);
 void plSetConsoleVariable(PLConsoleVariable *var, const char *value);
@@ -88,9 +88,9 @@ typedef struct PLConsoleCommand {
 
 PL_EXTERN_C
 
-void plGetConsoleCommands(PLConsoleCommand *** const cmds, size_t * const num_cmds);
+void plGetConsoleCommands(PLConsoleCommand ***cmds, size_t *num_cmds);
 
-void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars);
+void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds);
 
 PLConsoleCommand *plGetConsoleCommand(const char *name);
 
