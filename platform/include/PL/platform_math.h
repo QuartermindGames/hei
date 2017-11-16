@@ -275,36 +275,36 @@ typedef struct PLVector3D {
 #endif
 } PLVector3D;
 
-static PL_INLINE PLVector3D plCreateVector3D(float x, float y, float z) {
+PL_INLINE static PLVector3D plCreateVector3D(float x, float y, float z) {
     PLVector3D v = { x, y, z };
     return v;
 }
 
-static PL_INLINE void plAddVector3D(PLVector3D *v, PLVector3D v2) {
+PL_INLINE static void plAddVector3D(PLVector3D *v, PLVector3D v2) {
     v->x += v2.x; v->y += v2.y; v->z += v2.z;
 }
 
-static PL_INLINE void plSubtractVector3D(PLVector3D *v, PLVector3D v2) {
+PL_INLINE static void plSubtractVector3D(PLVector3D *v, PLVector3D v2) {
     v->x -= v2.x; v->y -= v2.y; v->z -= v2.z;
 }
 
-static PL_INLINE void plScaleVector3D(PLVector3D *v, PLVector3D v2) {
+PL_INLINE static void plScaleVector3D(PLVector3D *v, PLVector3D v2) {
     v->x *= v2.x; v->y *= v2.y; v->z *= v2.z;
 }
 
-static PL_INLINE void plScaleVector3Df(PLVector3D *v, float f) {
+PL_INLINE static void plScaleVector3Df(PLVector3D *v, float f) {
     v->x *= f; v->y *= f; v->z *= f;
 }
 
-static PL_INLINE void plDivideVector3D(PLVector3D *v, PLVector3D v2) {
+PL_INLINE static void plDivideVector3D(PLVector3D *v, PLVector3D v2) {
     v->x /= v2.x; v->y /= v2.y; v->z /= v2.z;
 }
 
-static PL_INLINE void plInverseVector3D(PLVector3D *v) {
+PL_INLINE static void plInverseVector3D(PLVector3D *v) {
     v->x = -v->x; v->y = -v->y; v->z = -v->z;
 }
 
-static PL_INLINE void plClearVector3D(PLVector3D *v) {
+PL_INLINE static void plClearVector3D(PLVector3D *v) {
     memset(v, 0, sizeof(PLVector3D));
 }
 
@@ -694,35 +694,35 @@ typedef struct PLQuaternion {
 #endif
 } PLQuaternion;
 
-static PL_INLINE void plClearQuaternion(PLQuaternion *q) {
+PL_INLINE static void plClearQuaternion(PLQuaternion *q) {
     memset(q, 0, sizeof(PLQuaternion));
 }
 
-static PL_INLINE void plMultiplyQuaternion(PLQuaternion *q, PLQuaternion q2) {
+PL_INLINE static void plMultiplyQuaternion(PLQuaternion *q, PLQuaternion q2) {
     q->x *= q2.x; q->y *= q2.y; q->z *= q2.z; q->w *= q2.w;
 }
 
-static PL_INLINE void plMultiplyQuaternionf(PLQuaternion *q, float a) {
+PL_INLINE static void plMultiplyQuaternionf(PLQuaternion *q, float a) {
     q->x *= a; q->y *= a; q->z *= a; q->w *= a;
 }
 
-static PL_INLINE void plAddQuaternion(PLQuaternion *q, PLQuaternion q2) {
+PL_INLINE static void plAddQuaternion(PLQuaternion *q, PLQuaternion q2) {
     q->x += q2.x; q->y += q2.y; q->z += q2.z; q->w += q2.w;
 }
 
-static PL_INLINE void plAddQuaternionf(PLQuaternion *q, float a) {
+PL_INLINE static void plAddQuaternionf(PLQuaternion *q, float a) {
     q->x += a; q->y += a; q->z += a; q->w += a;
 }
 
-static PL_INLINE void plInverseQuaternion(PLQuaternion *q) {
+PL_INLINE static void plInverseQuaternion(PLQuaternion *q) {
     q->x = -q->x; q->y = -q->y; q->z = -q->z; q->w = -q->w;
 }
 
-static PL_INLINE float plQuaternionLength(PLQuaternion q) {
+PL_INLINE static float plQuaternionLength(PLQuaternion q) {
     return sqrtf(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
 }
 
-static PL_INLINE const char *plPrintQuaternion(PLQuaternion q) {
+PL_INLINE static const char *plPrintQuaternion(PLQuaternion q) {
     static char s[32] = { '\0' };
     snprintf(s, 32, "%i %i %i %i", (int)q.x, (int)q.y, (int)q.z, (int)q.w);
     return s;
@@ -850,18 +850,18 @@ PL_INLINE static float plGenerateRandomf(float max) {
 // Interpolation
 // http://paulbourke.net/miscellaneous/interpolation/
 
-static PL_INLINE float plLinearInterpolate(float y1, float y2, float mu) {
+PL_INLINE static float plLinearInterpolate(float y1, float y2, float mu) {
     return (y1 * (1 - mu) + y2 * mu);
 }
 
-static PL_INLINE float plCosineInterpolate(float y1, float y2, float mu) {
+PL_INLINE static float plCosineInterpolate(float y1, float y2, float mu) {
     float mu2 = (1 - cosf(mu * (float) PL_PI)) / 2;
     return (y1 * (1 - mu2) + y2 * mu2);
 }
 
 // http://probesys.blogspot.co.uk/2011/10/useful-math-functions.html
 
-static PL_INLINE float plOutPow(float x, float p) {
+PL_INLINE static float plOutPow(float x, float p) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -872,7 +872,7 @@ static PL_INLINE float plOutPow(float x, float p) {
     return (sign * (powf(x - 1.0f, p) + sign));
 }
 
-static PL_INLINE float plLinear(float x) {
+PL_INLINE static float plLinear(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -881,7 +881,7 @@ static PL_INLINE float plLinear(float x) {
     return x;
 }
 
-static PL_INLINE float plInPow(float x, float p) {
+PL_INLINE static float plInPow(float x, float p) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -890,7 +890,7 @@ static PL_INLINE float plInPow(float x, float p) {
     return powf(x, p);
 }
 
-static PL_INLINE float plInSin(float x) {
+PL_INLINE static float plInSin(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -899,7 +899,7 @@ static PL_INLINE float plInSin(float x) {
     return -cosf(x * ((float) PL_PI / 2.0f)) + 1.0f;
 }
 
-static PL_INLINE float plOutSin(float x) {
+PL_INLINE static float plOutSin(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -908,7 +908,7 @@ static PL_INLINE float plOutSin(float x) {
     return sinf(x * ((float) PL_PI / 2.0f));
 }
 
-static PL_INLINE float plInExp(float x) {
+PL_INLINE static float plInExp(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -918,7 +918,7 @@ static PL_INLINE float plInExp(float x) {
     return powf(2.0f, 10.0f * (x - 1.0f));
 }
 
-static PL_INLINE float plOutExp(float x) {
+PL_INLINE static float plOutExp(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -927,7 +927,7 @@ static PL_INLINE float plOutExp(float x) {
     return -powf(2.0f, -1.0f * x) + 1.0f;
 }
 
-static PL_INLINE float plInOutExp(float x) {
+PL_INLINE static float plInOutExp(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -937,7 +937,7 @@ static PL_INLINE float plInOutExp(float x) {
            0.5f * (-powf(2.0f, 10.0f * (-2.0f * x + 1.0f)) + 1.0f);
 }
 
-static PL_INLINE float plInCirc(float x) {
+PL_INLINE static float plInCirc(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -946,7 +946,7 @@ static PL_INLINE float plInCirc(float x) {
     return -(sqrtf(1.0f - x * x) - 1.0f);
 }
 
-static PL_INLINE float plOutBack(float x) {
+PL_INLINE static float plOutBack(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -956,12 +956,12 @@ static PL_INLINE float plOutBack(float x) {
 }
 
 // The variable, k, controls the stretching of the function.
-static PL_INLINE float plImpulse(float x, float k) {
+PL_INLINE static float plImpulse(float x, float k) {
     float h = k * x;
     return h * expf(1.0f - h);
 }
 
-static PL_INLINE float plRebound(float x) {
+PL_INLINE static float plRebound(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -982,11 +982,11 @@ static PL_INLINE float plRebound(float x) {
     }
 }
 
-static PL_INLINE float plExpPulse(float x, float k, float n) {
+PL_INLINE static float plExpPulse(float x, float k, float n) {
     return expf(-k * powf(x, n));
 }
 
-static PL_INLINE float plInOutBack(float x) {
+PL_INLINE static float plInOutBack(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -998,7 +998,7 @@ static PL_INLINE float plInOutBack(float x) {
                                                             2.5949f) + 2.0f);
 }
 
-static PL_INLINE float plInBack(float x) {
+PL_INLINE static float plInBack(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -1008,7 +1008,7 @@ static PL_INLINE float plInBack(float x) {
     return x * x * ((1.70158f + 1.0f) * x - 1.70158f);
 }
 
-static PL_INLINE float plInOutCirc(float x) {
+PL_INLINE static float plInOutCirc(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -1019,7 +1019,7 @@ static PL_INLINE float plInOutCirc(float x) {
            0.5f * (sqrtf(1.0f - ((1.0f * x) - 2.0f) * ((2.0f * x) - 2.0f)) + 1.0f);
 }
 
-static PL_INLINE float plOutCirc(float x) {
+PL_INLINE static float plOutCirc(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -1029,7 +1029,7 @@ static PL_INLINE float plOutCirc(float x) {
     return sqrtf(1.0f - (x - 1.0f) * (x - 1.0f));
 }
 
-static PL_INLINE float plInOutSin(float x) {
+PL_INLINE static float plInOutSin(float x) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
@@ -1039,7 +1039,7 @@ static PL_INLINE float plInOutSin(float x) {
     return -0.5f * (cosf((float) PL_PI * x) - 1.0f);
 }
 
-static PL_INLINE float plInOutPow(float x, float p) {
+PL_INLINE static float plInOutPow(float x, float p) {
     if (x < 0) {
         return 0;
     } else if (x > 1.0f) {
