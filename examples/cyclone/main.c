@@ -42,6 +42,8 @@ For more information, please refer to <http://unlicense.org>
 #define WIDTH   800
 #define HEIGHT  600
 
+PLWindow *main_window = NULL;
+
 // loads a model in and then frees it
 void load_mdl_temp(const char *path) {
     PLModel *model = plLoadModel(path);
@@ -58,54 +60,58 @@ enum {
     VIEW_MODE_SKELETON
 };
 int view_mode = VIEW_MODE_WIREFRAME;
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
+void key_callback(PLWindow* window, bool state, char key) {
+    if(window != main_window) {
+        return;
+    }
 
     switch(key) {
         default: break;
 
-        case GLFW_KEY_1: {
-            if(action == GLFW_PRESS) {
+        case '1': {
+            if(state) {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 view_mode = VIEW_MODE_LIT;
             }
             break;
         }
-        case GLFW_KEY_2: {
-            if((action == GLFW_PRESS) && (mode != VIEW_MODE_WIREFRAME)) {
+        case '2': {
+            if(state && (view_mode != VIEW_MODE_WIREFRAME)) {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                 glDisable(GL_LIGHTING);
                 view_mode = VIEW_MODE_WIREFRAME;
             }
             break;
         }
-        case GLFW_KEY_3: {
-            if((action == GLFW_PRESS) && (mode != VIEW_MODE_POINTS)) {
+        case '3': {
+            if(state && (view_mode != VIEW_MODE_POINTS)) {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
                 glDisable(GL_LIGHTING);
                 view_mode = VIEW_MODE_POINTS;
             }
             break;
         }
-        case GLFW_KEY_4: {
-            if((action == GLFW_PRESS) && (mode != VIEW_MODE_WEIGHTS)) {
+        case '4': {
+            if(state && (view_mode != VIEW_MODE_WEIGHTS)) {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 view_mode = VIEW_MODE_WEIGHTS;
             }
             break;
         }
-        case GLFW_KEY_5: {
-            if((action == GLFW_PRESS) && (mode != VIEW_MODE_SKELETON)) {
+        case '5': {
+            if(state && (view_mode != VIEW_MODE_SKELETON)) {
                 view_mode = VIEW_MODE_SKELETON;
             }
             break;
         }
-
+#if 0
         case GLFW_KEY_ESCAPE: {
-            if(action == GLFW_PRESS) {
+            if(state) {
                 glfwSetWindowShouldClose(window, true);
             }
             break;
         }
+#endif
     }
 }
 
@@ -120,13 +126,17 @@ int main(int argc, char **argv) {
     PRINT("  Middle - move camera up, down, left and right\n\n"                             );
     PRINT("\n-------------------------------------------------------------------------\n\n" );
 
-    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS | PL_SUBSYSTEM_WINDOW);
+    plInitialize(argc, argv, PL_SUBSYSTEM_WINDOW);
 
-    PLWindow *window = plCreateWindow(
+    main_window = plCreateWindow(
             "Cyclone Viewer",
             plGetScreenWidth() / 2, plGetScreenHeight() / 2,
             WIDTH, HEIGHT
     );
+
+    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS);
+
+    plSetKeyboardCallback(key_callback);
 
     plSetDefaultGraphicsState();
     plSetClearColour(plCreateColour4b(0, 0, 128, 255));
@@ -179,14 +189,14 @@ int main(int argc, char **argv) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
         // input handlers start..
-        double xpos, ypos;
-        plGetCursorPosition(window, (int*)&xpos, (int*)&ypos);
+        int xpos, ypos;
+        plGetCursorPosition(main_window, &xpos, &ypos);
 
         // Camera rotation
         static double oldlmpos[2] = {0, 0};
         static PLVector3D angles = { 0, 0 };
-        bool state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-        if (state == GLFW_PRESS) {
+        bool state = plGetMouseState(PLINPUT_MOUSE_LEFT);
+        if (state) {
             double nxpos = xpos - oldlmpos[0];
             double nypos = ypos - oldlmpos[1];
             angles.x += (nxpos / 100.f);
@@ -198,8 +208,8 @@ int main(int argc, char **argv) {
 
         // Zoom in and out thing...
         static double oldrmpos[2] = {0, 0};
-        state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
-        if (state == GLFW_PRESS) {
+        state = plGetMouseState(PLINPUT_MOUSE_RIGHT);
+        if (state) {
             double nypos = ypos - oldrmpos[1];
             main_camera->position.z += (nypos / 10.f);
         } else {
@@ -208,8 +218,8 @@ int main(int argc, char **argv) {
         }
 
         static double oldmmpos[2] = {0, 0};
-        state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
-        if(state == GLFW_PRESS) {
+        state = plGetMouseState(PLINPUT_MOUSE_MIDDLE);
+        if(state) {
             double nxpos = xpos - oldmmpos[0];
             double nypos = ypos - oldmmpos[1];
             main_camera->position.y += (nypos / 5.f);
@@ -223,15 +233,15 @@ int main(int argc, char **argv) {
         plSetupCamera(main_camera);
 
         glLoadIdentity();
-
         glPushMatrix();
         glRotatef(angles.y, 1, 0, 0);
         glRotatef(angles.x, 0, 1, 0);
         glRotatef(angles.z + 180.f, 0, 0, 1);
 
         switch (view_mode) {
-            default:
-                break;
+            default: {
+
+            } break;
 
             case VIEW_MODE_LIT: {
                 glEnable(GL_LIGHTING);
@@ -241,33 +251,31 @@ int main(int argc, char **argv) {
 
                 glShadeModel(GL_SMOOTH);
                 glDisable(GL_LIGHTING);
-                break;
-            }
+            } break;
 
             case VIEW_MODE_WEIGHTS:
             case VIEW_MODE_WIREFRAME: {
                 plDrawModel(model);
-                break;
-            }
+            } break;
 
             case VIEW_MODE_SKELETON: {
                // plDrawMesh(cur_model);
                // glDisable(GL_DEPTH_TEST);
                // plDrawMesh(model.skeleton_mesh);
                // glEnable(GL_DEPTH_TEST);
-            }
+            } break;
         }
 
         glPopMatrix();
 
         //plDrawConsole();
 
-        plSwapBuffers(window);
+        plSwapBuffers(main_window);
     }
 
     plDeleteModel(model);
     plDeleteCamera(main_camera);
-    plDeleteWindow(window);
+    plDeleteWindow(main_window);
 
     plShutdown();
 

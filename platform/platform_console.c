@@ -294,9 +294,11 @@ PLBitmapFont *_pl_console_font = NULL;
 PLresult _plInitConsole(void) {
     _pl_console_visible = false;
 
+#if 0
     if((_pl_console_font = plCreateBitmapFont("fonts/console.font")) == NULL) {
         // todo, print warning...
     }
+#endif
 
     memset(&_pl_console_pane, 0, sizeof(PLConsolePane) * PLCONSOLE_MAX_INSTANCES);
     _pl_active_console_pane = _pl_num_console_panes = 0;

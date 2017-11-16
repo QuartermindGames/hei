@@ -62,11 +62,12 @@ typedef struct PLWindow PLWindow;
 PL_EXTERN_C
 
 PL_EXTERN void plClearKeyboardState(void);
-PL_EXTERN void plSetKeyboardCallback(void(*Callback)(bool state, char key));
+PL_EXTERN void plSetKeyboardCallback(void(*Callback)(PLWindow *window, bool state, char key));
 
 PL_EXTERN bool plGetKeyState(char key);
+PL_EXTERN bool plGetMouseState(char button);
 
-PL_EXTERN void plSetMouseCallback(void(*Callback)(bool state, char button, int x, int y));
+PL_EXTERN void plSetMouseCallback(void(*Callback)(PLWindow *window, bool state, char button, int x, int y));
 PL_EXTERN void plGetCursorPosition(PLWindow *window, int *x, int *y);
 
 PL_EXTERN void plProcessInput(void);

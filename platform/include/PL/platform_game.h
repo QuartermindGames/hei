@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_math.h>
 
-typedef struct {
+typedef struct PLActor {
     PLVector3D position, angles, velocity;
     PLAABB bounds;
 

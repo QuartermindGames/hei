@@ -120,9 +120,10 @@ void _plInitOpenGL(void) {
     pl_graphics_state.hw_renderer       = (const char *) glGetString(GL_RENDERER);
     pl_graphics_state.hw_vendor         = (const char *) glGetString(GL_VENDOR);
     pl_graphics_state.hw_version        = (const char *) glGetString(GL_VERSION);
-
+#if 0
     pl_gl_version_major = (unsigned int) atoi(&pl_graphics_state.hw_version[0]);
     pl_gl_version_minor = (unsigned int) atoi(&pl_graphics_state.hw_version[2]);
+#endif
 }
 
 void _plShutdownOpenGL() {}

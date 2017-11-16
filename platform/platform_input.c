@@ -66,9 +66,9 @@ struct {
 /////////////////////////////////////////////////////////////////////////////////////
 // KEYBOARD
 
-void(*InputKeyboardCallback)(bool state, char key);
+void(*InputKeyboardCallback)(PLWindow *window, bool state, char key);
 
-void plSetKeyboardCallback(void(*Callback)(bool state, char key)) {
+void plSetKeyboardCallback(void(*Callback)(PLWindow *window, bool state, char key)) {
     if(Callback == NULL) {
         _plPrint("Passed invalid keyboard callback!\n");
         return;
@@ -87,9 +87,9 @@ bool plGetKeyState(char key) {
 
 // MOUSE
 
-void(*InputMouseCallback)(bool state, char button, int x, int y);
+void(*InputMouseCallback)(PLWindow *window, bool state, char button, int x, int y);
 
-void plSetMouseCallback(void(*Callback)(bool state, char button, int x, int y)) {
+void plSetMouseCallback(void(*Callback)(PLWindow *window, bool state, char button, int x, int y)) {
     if(Callback == NULL) {
         _plPrint("Passed invalid mouse callback!\n");
         return;
@@ -100,11 +100,16 @@ void plSetMouseCallback(void(*Callback)(bool state, char button, int x, int y)) 
 /* If window provided is null, give global position. */
 void plGetCursorPosition(PLWindow *window, int *x, int *y) {
     if(window == NULL) {
+#if defined(PL_USE_SDL2)
+        SDL_GetGlobalMouseState(x, y);
+#else
         *x = _pl_input.cursor_position[0];
         *y = _pl_input.cursor_position[1];
+#endif
         return;
     }
 
+#if 0
     static int last_position[2] = {0,0};
     int cur_x = _pl_input.cursor_position[0];
     int cur_y = _pl_input.cursor_position[1];
@@ -116,6 +121,10 @@ void plGetCursorPosition(PLWindow *window, int *x, int *y) {
 
     *x = last_position[0];
     *y = last_position[1];
+#else
+    *x = _pl_input.cursor_position[0];
+    *y = _pl_input.cursor_position[1];
+#endif
 }
 
 bool plGetMouseState(char button) {
@@ -148,11 +157,9 @@ void _plInitInput(void) {
             }
         }
     } else {
-        _plDebugPrint("Failed to initialise controller support!\n%s", SDL_GetError());
+        _plDebugPrint("Failed to initialise controller support!\n%s\n", SDL_GetError());
     }
 #endif
-
-    _plPrint(" SUCCESS!\n");
 }
 
 void _plShutdownInput(void) {
@@ -272,6 +279,7 @@ void plProcessInput(void) {
                 _pl_input.keys[key].state = (event.key.state == SDL_PRESSED);
                 if(InputKeyboardCallback) {
                     InputKeyboardCallback(
+                            NULL,
                             _pl_input.keys[key].state,
                             key
                     );
@@ -286,6 +294,7 @@ void plProcessInput(void) {
                 _pl_input.cursor_position[1] = event.motion.y;
                 if(InputMouseCallback) {
                     InputMouseCallback(
+                            NULL,
                             false, -1,
                             _pl_input.cursor_position[0],
                             _pl_input.cursor_position[1]
@@ -303,11 +312,25 @@ void plProcessInput(void) {
                 if(event.button.button > SDL_BUTTON_RIGHT) {
                     break;
                 }
-                _pl_input.mouse_state[event.button.button] = (event.key.state == SDL_PRESSED);
+
+                // translate mouse button
+                char button = PLINPUT_MOUSE_MIDDLE;
+                switch(event.button.button) {
+                    case SDL_BUTTON_LEFT:
+                        button = PLINPUT_MOUSE_LEFT;
+                        break;
+                    case SDL_BUTTON_RIGHT:
+                        button = PLINPUT_MOUSE_RIGHT;
+                        break;
+                    default:break;
+                }
+
+                _pl_input.mouse_state[button] = (event.button.state == SDL_PRESSED);
                 if(InputMouseCallback) {
                     InputMouseCallback(
-                            _pl_input.mouse_state[event.button.button],
-                            event.button.button,
+                            NULL,
+                            _pl_input.mouse_state[button],
+                            button,
                             _pl_input.cursor_position[0],
                             _pl_input.cursor_position[1]
                     );

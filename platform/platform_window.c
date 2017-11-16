@@ -165,9 +165,25 @@ unsigned int plGetScreenCount(void) {
 /*	Window Creation */
 
 PLWindow *plCreateWindow(const char *title, int x, int y, unsigned int w, unsigned int h) {
-    plFunctionStart();
+#if defined(PL_USE_SDL2)
+    SDL_Window *sdl_window = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_OPENGL);
+    if(sdl_window == NULL) {
+        _plReportError(PL_RESULT_DISPLAY, "SDL2: %s\n", SDL_GetError());
+        return NULL;
+    }
 
-    // todo, add to global pool
+    SDL_GLContext context = SDL_GL_CreateContext(sdl_window);
+    if(context == NULL) {
+        _plReportError(PL_RESULT_DISPLAY, "SDL2: %s\n", SDL_GetError());
+        return NULL;
+    }
+
+    SDL_GL_MakeCurrent(sdl_window, context);
+    if(SDL_GL_SetSwapInterval(-1) == -1) {
+        SDL_GL_SetSwapInterval(1);
+    }
+#endif
+
     PLWindow *window = (PLWindow*)malloc(sizeof(PLWindow));
     if (!window) { // Make sure the window has been initialized.
         _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate window! (%d)\n", sizeof(PLWindow));
@@ -177,23 +193,15 @@ PLWindow *plCreateWindow(const char *title, int x, int y, unsigned int w, unsign
     memset(window, 0, sizeof(PLWindow));
 
 #if defined(PL_USE_SDL2)
-    SDL_Window *sdl_window = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_OPENGL);
-    if(!sdl_window) {
-        plDeleteWindow(window);
-        return NULL;
-    }
-    SDL_GL_MakeCurrent(sdl_window, SDL_GL_CreateContext(sdl_window));
-
     window->sys_id = SDL_GetWindowID(sdl_window);
 #endif
-
     window->is_active = true;
 
     return window;
 }
 
 void plDeleteWindow(PLWindow *window) {
-    if(!window) {
+    if(window == NULL) {
         return;
     }
 
