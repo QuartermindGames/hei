@@ -16,14 +16,7 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
 #pragma once
 
-#include "platform.h"
-
-#ifdef _WIN32
-#else	// Linux
-
-#	include <X11/Xlib.h>
-
-#endif
+#include <PL/platform.h>
 
 typedef struct PLWindow {
     unsigned int sys_id;

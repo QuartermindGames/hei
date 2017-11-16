@@ -360,13 +360,13 @@ PL_INLINE const static char *plPrintVector3D(PLVector3D v) {
 
 #ifndef __cplusplus
 
-#   define PLVector3D(x, y, z) plCreateVector3D(x, y, z)
-#   define PLVector2D(x, y)    plCreateVector2D(x, y)
+#   define PLVector3D(x, y, z) (PLVector3D){x, y, z}
+#   define PLVector2D(x, y)    (PLVector2D){x, y}
 
 #endif
 
-#define PLMATH_ORIGIN3D plCreateVector3D(0, 0, 0)
-#define PLMATH_ORIGIN2D plCreateVector2D(0, 0)
+#define PLMATH_ORIGIN3D (PLVector3D){0, 0, 0}
+#define PLMATH_ORIGIN2D (PLVector2D){0, 0}
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Colour

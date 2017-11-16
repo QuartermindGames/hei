@@ -39,6 +39,20 @@ For more information, please refer to <http://unlicense.org>
 //			PL_MODE_VULKAN
 //#define   PL_MODE_SOFTWARE
 
+typedef enum PLGraphicsMode {
+    PLGFX_MODE_SOFTWARE,
+
+    PLGFX_MODE_OPENGL,
+    PLGFX_MODE_OPENGL_CORE,
+    PLGFX_MODE_OPENGL_ES,
+
+    PLGFX_MODE_VULKAN,
+
+    PLGFX_MODE_GLIDE,
+
+    PLGFX_MODE_DIRECT3D,
+} PLGraphicsMode;
+
 // todo, move these into platform_graphics.cpp
 #if defined (PL_MODE_OPENGL)
 

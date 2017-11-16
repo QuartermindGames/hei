@@ -136,6 +136,11 @@ int main(int argc, char **argv) {
 
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS | PL_SUBSYSTEM_INPUT);
 
+#if 0 // quick little vector test thingy!
+    PLVector3D testy = PLVector3D(0, 10, 20);
+    printf("%s\n", plPrintVector3D(PLVector3D(100, 200, 300)));
+#endif
+
     plSetKeyboardCallback(key_callback);
 
     plSetDefaultGraphicsState();
@@ -217,6 +222,7 @@ int main(int argc, char **argv) {
             oldrmpos[1] = ypos;
         }
 
+        // panning thing
         static double oldmmpos[2] = {0, 0};
         state = plGetMouseState(PLINPUT_MOUSE_MIDDLE);
         if(state) {
