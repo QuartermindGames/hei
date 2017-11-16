@@ -1053,29 +1053,11 @@ static PL_INLINE float plInOutPow(float x, float p) {
 //////////////////////////////////////////////////////////////////////
 // UTILITY FUNCTIONS
 
-static PL_INLINE float plToRadians(float degrees) {
+PL_INLINE static float plToRadians(float degrees) {
     return degrees * (PL_PI / 180.f);
 }
 
-static PL_INLINE float plClampFloat(float min, float value, float max) {
-    float result = value;
-    if(result < min) {
-        result = min;
-    } else if(result > max) {
-        result = max;
-    }
-    return result;
-}
-
-static PL_INLINE int plClampInt(int min, int value, int max) {
-    int result = value;
-    if(result < min) {
-        result = min;
-    } else if(result > max) {
-        result = max;
-    }
-    return result;
-}
+#define plClamp(min, val, max) (val) < (min) ? (min) : ((val) > (max) ? (max) : (val))
 
 //////////////////////////////////////////////////////////////////////
 // DEBUG FUNCTIONS
