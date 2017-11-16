@@ -162,9 +162,7 @@ enum {
     PL_SUBSYSTEM_IO         = (1 << 1), // Filesystem I/O
     PL_SUBSYSTEM_IMAGE      = (1 << 2), // Image loaders
     PL_SUBSYSTEM_LIBRARY    = (1 << 3), // Module/library management
-    PL_SUBSYSTEM_LOG        = (1 << 4), // Logging
-    PL_SUBSYSTEM_WINDOW     = (1 << 5), // Windowing
-    //PL_SUBSYSTEM_CONSOLE    = (1 << 6), // Console
+    PL_SUBSYSTEM_INPUT      = (1 << 4), // Input
 };
 
 #if defined(PL_INTERNAL)
@@ -216,13 +214,10 @@ void _plShutdownGraphics(void);
 PLresult _plInitIO(void);
 void _plShutdownIO(void);
 
-PLresult _plInitWindow(void);
-void _plShutdownWindow(void);
-
 PLresult _plInitConsole(void);
 void _plShutdownConsole(void);
 
-void _plInitInput(void);
+PLresult _plInitInput(void);
 void _plShutdownInput(void);
 
 PL_EXTERN_C_END
@@ -235,7 +230,8 @@ PL_EXTERN_C_END
 
 PL_EXTERN_C
 
-PL_EXTERN PLresult plInitialize(int argc, char **argv, unsigned int subsystems);
+PL_EXTERN PLresult plInitialize(int argc, char **argv);
+PL_EXTERN PLresult plInitializeSubSystems(unsigned int subsystems);
 PL_EXTERN void plShutdown(void);
 
 // todo, kill start

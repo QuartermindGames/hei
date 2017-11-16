@@ -133,12 +133,13 @@ bool plGetMouseState(char button) {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-void _plInitInput(void) {
+PLresult _plInitInput(void) {
     _plPrint("Initializing input...\n");
 
     memset(&_pl_input, 0, sizeof(_pl_input));
 
-#if defined(PL_USE_SDL2)
+    SDL_ClearError();
+
     if(SDL_WasInit(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) == 0) {
         _pl_input.controller_support = true;
 
@@ -159,7 +160,8 @@ void _plInitInput(void) {
     } else {
         _plDebugPrint("Failed to initialise controller support!\n%s\n", SDL_GetError());
     }
-#endif
+
+    return PL_RESULT_SUCCESS;
 }
 
 void _plShutdownInput(void) {

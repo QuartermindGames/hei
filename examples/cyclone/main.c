@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
     PRINT("  Middle - move camera up, down, left and right\n\n"                             );
     PRINT("\n-------------------------------------------------------------------------\n\n" );
 
-    plInitialize(argc, argv, PL_SUBSYSTEM_WINDOW);
+    plInitialize(argc, argv);
 
     main_window = plCreateWindow(
             "Cyclone Viewer",
@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
             WIDTH, HEIGHT
     );
 
-    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS);
+    plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS | PL_SUBSYSTEM_INPUT);
 
     plSetKeyboardCallback(key_callback);
 

@@ -81,7 +81,7 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 #endif
 
 int main(int argc, char **argv) {
-    plInitialize(argc, argv, PL_SUBSYSTEM_GRAPHICS | PL_SUBSYSTEM_WINDOW);
+    plInitialize(argc, argv);
 
     PLWindow *window = plCreateWindow(TITLE, 0, 0, WIDTH, HEIGHT);
     if(!window) {

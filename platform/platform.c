@@ -61,6 +61,12 @@ PLSubSystem pl_subsystems[]= {
         },
 
         {
+                PL_SUBSYSTEM_INPUT,
+                &_plInitInput,
+                &_plShutdownInput
+        },
+
+        {
                 PL_SUBSYSTEM_IO,
                 &_plInitIO,
                 &_plShutdownIO
@@ -76,13 +82,7 @@ PLSubSystem pl_subsystems[]= {
                 PL_SUBSYSTEM_LIBRARY,
                 NULL,
                 NULL
-        },
-
-        {
-                PL_SUBSYSTEM_WINDOW,
-                &_plInitWindow,
-                &_plShutdownWindow
-        },
+        }
 
 #if 0 // initialised by default, used by seperate sub-systems...
         {
@@ -121,28 +121,14 @@ typedef struct PLArguments {
 
 PLArguments pl_arguments;
 
-PLresult plInitialize(int argc, char **argv, unsigned int subsystems) {
+PLresult plInitialize(int argc, char **argv) {
     static bool is_initialized = false;
-#if defined(PL_USE_SDL2)
-    SDL_Init(SDL_INIT_EVERYTHING);
-#endif
-
     if(!is_initialized) {
         _plInitConsole();
-        _plInitInput();
-    }
 
-    for(unsigned int i = 0; i < plArrayElements(pl_subsystems); i++) {
-        if(!pl_subsystems[i].active && (subsystems & pl_subsystems[i].subsystem)) {
-            if(pl_subsystems[i].InitFunction) {
-                PLresult out = pl_subsystems[i].InitFunction();
-                if (out != PL_RESULT_SUCCESS) {
-                    return out;
-                }
-            }
-
-            pl_subsystems[i].active = true;
-        }
+#if defined(PL_USE_SDL2)
+        SDL_Init(SDL_INIT_EVERYTHING);
+#endif
     }
 
     memset(&pl_arguments, 0, sizeof(PLArguments));
@@ -161,6 +147,23 @@ PLresult plInitialize(int argc, char **argv, unsigned int subsystems) {
     }
 
     is_initialized = true;
+
+    return PL_RESULT_SUCCESS;
+}
+
+PLresult plInitializeSubSystems(unsigned int subsystems) {
+    for(unsigned int i = 0; i < plArrayElements(pl_subsystems); i++) {
+        if(!pl_subsystems[i].active && (subsystems & pl_subsystems[i].subsystem)) {
+            if(pl_subsystems[i].InitFunction) {
+                PLresult out = pl_subsystems[i].InitFunction();
+                if (out != PL_RESULT_SUCCESS) {
+                    return out;
+                }
+            }
+
+            pl_subsystems[i].active = true;
+        }
+    }
 
     return PL_RESULT_SUCCESS;
 }
