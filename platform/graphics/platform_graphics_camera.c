@@ -38,9 +38,9 @@ For more information, please refer to <http://unlicense.org>
 #define PLCAMERA_BUFFER_DEPTH   1
 
 void _plInitCameras(void) {
-    pl_graphics_state.max_cameras   = 1024;
-    pl_graphics_state.cameras       = (PLCamera**)malloc(sizeof(PLCamera) * pl_graphics_state.max_cameras);
-    pl_graphics_state.num_cameras   = 0;
+    gfx_state.max_cameras   = 1024;
+    gfx_state.cameras       = (PLCamera**)malloc(sizeof(PLCamera) * gfx_state.max_cameras);
+    gfx_state.num_cameras   = 0;
 }
 
 void _plShutdownCameras(void) {
@@ -208,8 +208,8 @@ void plSetupCamera(PLCamera *camera) {
 /////////////////////////////////////////////////////////////////////////////////////
 
 void plDrawPerspective(void) {
-    for(PLCamera **camera = pl_graphics_state.cameras;
-        camera < pl_graphics_state.cameras + pl_graphics_state.num_cameras; ++camera) {
+    for(PLCamera **camera = gfx_state.cameras;
+        camera < gfx_state.cameras + gfx_state.num_cameras; ++camera) {
         plAssert(camera);
 
         plSetupCamera((*camera));

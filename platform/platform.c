@@ -61,12 +61,6 @@ PLSubSystem pl_subsystems[]= {
         },
 
         {
-                PL_SUBSYSTEM_INPUT,
-                &_plInitInput,
-                &_plShutdownInput
-        },
-
-        {
                 PL_SUBSYSTEM_IO,
                 &_plInitIO,
                 &_plShutdownIO
@@ -83,14 +77,6 @@ PLSubSystem pl_subsystems[]= {
                 NULL,
                 NULL
         }
-
-#if 0 // initialised by default, used by seperate sub-systems...
-        {
-                PL_SUBSYSTEM_CONSOLE,
-                &_plInitConsole,
-                &_plShutdownConsole
-        }
-#endif
 };
 
 typedef struct PLArgument {
@@ -234,7 +220,7 @@ PLresult _pl_global_result = PL_RESULT_SUCCESS;
 // Sets the name of the current function.
 void _plSetCurrentFunction(const char *function, ...) {
 #ifdef _DEBUG
-    char out[2048]; // todo, shitty work around because linux crap    //[MAX_FUNCTION_LENGTH];
+    char out[2048]; // todo, shitty work around because linux crap
     va_list args;
 
     va_start(args, function);

@@ -358,7 +358,7 @@ void plDrawMesh(PLMesh *mesh) {
         glColorPointer(4, GL_FLOAT, 0, &vert->colour);
         glNormalPointer(GL_FLOAT, 0, &vert->normal);
         for(int i = 0; i < plGetMaxTextureUnits(); i++) {
-            if (pl_graphics_state.tmu[i].active) {
+            if (gfx_state.tmu[i].active) {
                 glClientActiveTexture((GLenum) GL_TEXTURE0 + i);
                 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
                 glTexCoordPointer(2, GL_FLOAT, 0, vert->st);
@@ -381,7 +381,7 @@ void plDrawMesh(PLMesh *mesh) {
         glDisableClientState(GL_VERTEX_ARRAY);
         glDisableClientState(GL_NORMAL_ARRAY);
         for(int i = 0; i < plGetMaxTextureUnits(); i++) {
-            if(pl_graphics_state.tmu[i].active) {
+            if(gfx_state.tmu[i].active) {
                 glClientActiveTexture((GLenum)GL_TEXTURE0 + i);
                 glDisableClientState(GL_TEXTURE_COORD_ARRAY);
             }
@@ -502,9 +502,9 @@ void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
     plSetMeshVertexPosition2f(mesh, 1, x + w / 2, x);
     plSetMeshVertexPosition2f(mesh, 2, x + w, y + h);
 
-    plSetMeshVertexColour(mesh, 0, plCreateColour4b(255, 0, 0, 255));
-    plSetMeshVertexColour(mesh, 1, plCreateColour4b(0, 255, 0, 255));
-    plSetMeshVertexColour(mesh, 2, plCreateColour4b(0, 0, 255, 255));
+    plSetMeshVertexColour(mesh, 0, PLColour(255, 0, 0, 255));
+    plSetMeshVertexColour(mesh, 1, PLColour(0, 255, 0, 255));
+    plSetMeshVertexColour(mesh, 2, PLColour(0, 0, 255, 255));
 
     plUploadMesh(mesh);
 

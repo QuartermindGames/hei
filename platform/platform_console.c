@@ -29,7 +29,6 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_console.h>
 #include <PL/platform_graphics_font.h>
-#include <PL/platform_input.h>
 #include <PL/platform_filesystem.h>
 
 #define _CONSOLE_MAX_ARGUMENTS 8
@@ -451,7 +450,7 @@ void plParseConsoleString(const char *string) {
 
 // todo, correctly handle rows and columns.
 void _plResizeConsoles(void) {
-    unsigned int screen_w = pl_graphics_state.viewport_width, screen_h = pl_graphics_state.viewport_height;
+    unsigned int screen_w = gfx_state.viewport_width, screen_h = gfx_state.viewport_height;
     if(screen_w == 0 || screen_h == 0) {
         screen_w = 640;
         screen_h = 480;
@@ -528,18 +527,19 @@ void _plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) 
             continue;
         }
 
+#if 0
         if(m_buttons & PLINPUT_MOUSE_LEFT) {
             _pl_active_console_pane = i;
 
             pane->display.xy.x += m_x; pane->display.xy.y += m_y;
-            if(pane->display.xy.x <= pl_graphics_state.viewport_x) {
-                pane->display.xy.x = pl_graphics_state.viewport_x + 1;
-            } else if(pane->display.xy.x >= pl_graphics_state.viewport_width) {
-                pane->display.xy.x = pl_graphics_state.viewport_width - 1;
-            } else if(pane->display.xy.y <= pl_graphics_state.viewport_y) {
-                pane->display.xy.y = pl_graphics_state.viewport_y + 1;
-            } else if(pane->display.xy.y >= pl_graphics_state.viewport_height) {
-                pane->display.xy.y = pl_graphics_state.viewport_height - 1;
+            if(pane->display.xy.x <= gfx_state.viewport_x) {
+                pane->display.xy.x = gfx_state.viewport_x + 1;
+            } else if(pane->display.xy.x >= gfx_state.viewport_width) {
+                pane->display.xy.x = gfx_state.viewport_width - 1;
+            } else if(pane->display.xy.y <= gfx_state.viewport_y) {
+                pane->display.xy.y = gfx_state.viewport_y + 1;
+            } else if(pane->display.xy.y >= gfx_state.viewport_height) {
+                pane->display.xy.y = gfx_state.viewport_height - 1;
             }
 
             static int old_x = 0, old_y = 0;
@@ -551,15 +551,18 @@ void _plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) 
         // todo, display context menu
             return;
         }
+#endif
 
         return;
     }
 
     // If we reached here, then we failed to hit anything...
 
+#if 0
     if(m_buttons & PLINPUT_MOUSE_RIGHT) {
     // todo, display context menu
     }
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -668,28 +671,28 @@ void plDrawConsole(void) {
                             _pl_console_pane[i].display.wh.y
                     ),
 
-                    plCreateColour4b(
+                    PLColour(
                             (uint8_t) (_pl_console_pane[i].display.ul.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.ul.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.ul.b / 2),
                             _COLOUR_INACTIVE_ALPHA_TOP
                     ),
 
-                    plCreateColour4b(
+                    PLColour(
                             (uint8_t) (_pl_console_pane[i].display.ur.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.ur.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.ur.b / 2),
                             _COLOUR_INACTIVE_ALPHA_TOP
                     ),
 
-                    plCreateColour4b(
+                    PLColour(
                             (uint8_t) (_pl_console_pane[i].display.ll.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.ll.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.ll.b / 2),
                             _COLOUR_INACTIVE_ALPHA_BOTTOM
                     ),
 
-                    plCreateColour4b(
+                    PLColour(
                             (uint8_t) (_pl_console_pane[i].display.lr.r / 2),
                             (uint8_t) (_pl_console_pane[i].display.lr.g / 2),
                             (uint8_t) (_pl_console_pane[i].display.lr.b / 2),

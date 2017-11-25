@@ -36,8 +36,8 @@ PLLight *plCreateLight(void) {
 
     memset(light, 0, sizeof(PLLight));
 
-    pl_graphics_state.num_lights++;
-    light->colour   = plCreateColour4b(255, 255, 255, 128);
+    gfx_state.num_lights++;
+    light->colour   = PLColour(255, 255, 255, 128);
     light->type     = PLLIGHT_TYPE_OMNI;
     return light;
 }
@@ -47,7 +47,7 @@ void plDeleteLight(PLLight *light) {
         return;
     }
 
-    pl_graphics_state.num_lights--;
+    gfx_state.num_lights--;
     free(light);
 }
 

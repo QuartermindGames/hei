@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #include "model_private.h"
 
 enum {
@@ -74,14 +73,11 @@ enum {
 
 typedef struct __attribute__((packed)) MDLVertex {
     uint8_t unknown0[2];
-    int8_t x_;
-    int8_t x;
+    int16_t x;
     uint8_t unknown1[2];
-    int8_t y_;
-    int8_t y;
+    int16_t y;
     uint8_t unknown2[2];
-    int8_t z_;
-    int8_t z;
+    int16_t z;
 } MDLVertex;
 
 // 04:00:00:00:B4:BC:79:00:00:00:00:00:00:00:00:00:
@@ -137,24 +133,24 @@ PLModel *_plLoadRequiemModel(const char *path) {
 
     uint32_t texture_name_length = 0;
     if(fread(&texture_name_length, sizeof(uint32_t), 1, file) != 1) {
-        AbortLoad("Invalid file length, failed to get texture name length!");
+        AbortLoad("Invalid file length, failed to get texture name length!\n");
         return NULL;
     }
 
     if(texture_name_length > MAX_TEXTURE_NAME || texture_name_length == 0) {
-        AbortLoad("Invalid texture name length, %d!", texture_name_length);
+        AbortLoad("Invalid texture name length, %d!\n", texture_name_length);
         return NULL;
     }
 
     char texture_name[texture_name_length];
     if(fread(texture_name, sizeof(char), texture_name_length, file) != texture_name_length) {
-        AbortLoad("Invalid file length, failed to get texture name!");
+        AbortLoad("Invalid file length, failed to get texture name!\n");
         return NULL;
     }
 
     uint16_t num_vertices;
     if(fread(&num_vertices, sizeof(uint16_t), 1, file) != 1) {
-        AbortLoad("Invalid file length, failed to get number of vertices!");
+        AbortLoad("Invalid file length, failed to get number of vertices!\n");
         return NULL;
     }
 
@@ -163,18 +159,18 @@ PLModel *_plLoadRequiemModel(const char *path) {
 
     uint32_t num_faces;
     if(fread(&num_faces, sizeof(uint32_t), 1, file) != 1) {
-        AbortLoad("Invalid file length, failed to get number of faces!");
+        AbortLoad("Invalid file length, failed to get number of faces!\n");
         return NULL;
     }
 
     if(num_faces == 0) {
-        AbortLoad("Invalid number of faces, %d!", num_faces);
+        AbortLoad("Invalid number of faces, %d!\n", num_faces);
         return NULL;
     }
 
     MDLVertex vertices[num_vertices];
     if(fread(vertices, sizeof(MDLVertex), num_vertices, file) != num_vertices) {
-        AbortLoad("Invalid file length, failed to load vertices!");
+        AbortLoad("Invalid file length, failed to load vertices!\n");
         return NULL;
     }
 
@@ -184,12 +180,12 @@ PLModel *_plLoadRequiemModel(const char *path) {
     for(unsigned int i = 0; i < num_faces; ++i) {
         long pos = ftell(file);
         if(fread(&faces[i].num_indices, sizeof(uint32_t), 1, file) != 1) {
-            AbortLoad("Invalid file length, failed to load number of indices! (offset: %ld)", ftell(file));
+            AbortLoad("Invalid file length, failed to load number of indices! (offset: %ld)\n", ftell(file));
             return NULL;
         }
 
-        if(faces[i].num_indices < 3 || faces[i].num_indices > MAX_INDICES_PER_FACE) {
-            AbortLoad("Invalid number of indices, %d, required for face %d! (offset: %ld)",
+        if(faces[i].num_indices < MIN_INDICES_PER_FACE || faces[i].num_indices > MAX_INDICES_PER_FACE) {
+            AbortLoad("Invalid number of indices, %d, required for face %d! (offset: %ld)\n",
                       faces[i].num_indices, i, ftell(file));
             return NULL;
         }
@@ -198,7 +194,7 @@ PLModel *_plLoadRequiemModel(const char *path) {
 
         fseek(file, 16, SEEK_CUR); // todo, figure these out
         if(fread(faces[i].indices, sizeof(uint16_t), faces[i].num_indices, file) != faces[i].num_indices) {
-            AbortLoad("Invalid file length, failed to load indices!");
+            AbortLoad("Invalid file length, failed to load indices!\n");
             return NULL;
         }
 
@@ -245,11 +241,11 @@ PLModel *_plLoadRequiemModel(const char *path) {
                                   (vertices[i].z_ + vertices[i].z) / 10);
 #else
         plSetMeshVertexPosition3f(mesh, i,
-                                  vertices[i].x_ * vertices[i].x,
-                                  vertices[i].y_ * vertices[i].y,
-                                  vertices[i].z_ * vertices[i].z);
+                                  vertices[i].x / 100,
+                                  vertices[i].y / 100,
+                                  vertices[i].z / 100);
 #endif
-        plSetMeshVertexColour(mesh, i, plCreateColour4b(
+        plSetMeshVertexColour(mesh, i, PLColour(
                 (uint8_t) (rand() % 255), (uint8_t) (rand() % 255), (uint8_t) (rand() % 255), 255)
         );
     }

@@ -25,32 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-cmake_minimum_required(VERSION 3.5.1)
+project(model_viewer)
 
-# Set all of our output directories.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
+file(GLOB EXAMPLE_MODEL_SOURCE_FILES *.*)
 
-option(PL_BUILD_EXAMPLES "Build examples" ON)
-option(PL_BUILD_UTILITIES "Build utilities" ON)
+add_executable(model_viewer ${EXAMPLE_MODEL_SOURCE_FILES})
 
-include_directories("${CMAKE_SOURCE_DIR}/include/")           # Base include directories.
-include_directories("${CMAKE_SOURCE_DIR}/platform/include/")  # Platform lib headers get used for everything.
-include_directories("${CMAKE_SOURCE_DIR}/shared/")            # Xenon shared headers.
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -std=c11)
-
-add_subdirectory(platform)
-
-if(PL_BUILD_EXAMPLES)
-    add_subdirectory(examples/console)
-    add_subdirectory(examples/model_viewer)
-    add_subdirectory(examples/package)
-endif(PL_BUILD_EXAMPLES)
-
-if(PL_BUILD_UTILITIES)
-    add_subdirectory(utilities/ibsp2level)
-endif(PL_BUILD_UTILITIES)
-
+target_include_directories(model_viewer PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(model_viewer platform SDL2)

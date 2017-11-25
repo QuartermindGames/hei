@@ -174,7 +174,7 @@ void plGetUserName(char *out) {
 	On each found file it calls the given function to handle the file.
 */
 void plScanDirectory(const char *path, const char *extension, void (*Function)(const char *), bool recursive) {
-    char filestring[PL_SYSTEM_MAX_PATH];
+    char filestring[PL_SYSTEM_MAX_PATH + 1];
 #ifdef _WIN32
         WIN32_FIND_DATA	finddata;
         HANDLE			find;

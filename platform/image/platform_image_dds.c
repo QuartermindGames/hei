@@ -32,7 +32,7 @@ struct DDSPixelFormat {
     uint32_t flags;
     uint32_t fourcc;
     uint32_t rgbbitcount;
-};
+} DDSPixelFormat;
 
 typedef struct DDSHeader {
     uint32_t size;          // Should always be 124.

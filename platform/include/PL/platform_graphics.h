@@ -31,15 +31,9 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_math.h"
 #include "platform_image.h"
 
-#define     PL_MODE_OPENGL
-//			PL_MODE_OPENGL_CORE
-//			PL_MODE_OPENGL_ES
-//#define	PL_MODE_GLIDE
-//#define	PL_MODE_DIRECT3D
-//			PL_MODE_VULKAN
-//#define   PL_MODE_SOFTWARE
+#define PL_MODE_OPENGL
 
-typedef enum PLGraphicsMode {
+typedef enum PLGfxMode {
     PLGFX_MODE_SOFTWARE,
 
     PLGFX_MODE_OPENGL,
@@ -51,7 +45,9 @@ typedef enum PLGraphicsMode {
     PLGFX_MODE_GLIDE,
 
     PLGFX_MODE_DIRECT3D,
-} PLGraphicsMode;
+
+    PLGFX_MODE_OTHER,
+} PLGfxMode;
 
 // todo, move these into platform_graphics.cpp
 #if defined (PL_MODE_OPENGL)
@@ -127,6 +123,8 @@ typedef enum PLGraphicsMode {
 
 typedef unsigned int PLVertexArray;
 typedef unsigned int PLRenderBuffer;
+
+typedef void PLGraphicsContext;
 
 typedef struct PLFrameBuffer {
 #if defined(PL_MODE_OPENGL)
@@ -250,7 +248,7 @@ PL_EXTERN_C_END
 //-----------------
 // Meshes
 
-#include "platform_graphics_mesh.h"
+#include "graphics_mesh.h"
 
 //-----------------
 // Framebuffers
@@ -355,8 +353,7 @@ PL_EXTERN void plEnableShaderProgram(unsigned int program);
 PL_EXTERN void plDisableShaderProgram(unsigned int program);
 
 PL_EXTERN void plSetCullMode(PLCullMode mode);
-
-PL_EXTERN void plSetBlendMode(PLBlend modea, PLBlend modeb);
+PL_EXTERN void plSetBlendMode(PLBlend a, PLBlend b);
 
 PL_EXTERN void plProcessGraphics(void);
 

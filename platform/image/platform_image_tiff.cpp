@@ -54,7 +54,7 @@ PLresult plWriteTIFFImage(const PLImage *image, const PLchar *path) {
     TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
 
     size_t line_bytes = spp * image->width;
-    uint8_t *buf = (uint8_t*)_TIFFmalloc(TIFFScanlineSize(tif));
+    auto *buf = (uint8_t*)_TIFFmalloc(TIFFScanlineSize(tif));
     if(!buf) {
         std::cout << "Failed to allocate memory for image buffer\n";
 
@@ -79,8 +79,6 @@ PLresult plWriteTIFFImage(const PLImage *image, const PLchar *path) {
 }
 
 PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
-    plFunctionStart();
-
     if(!plIsValidString(path)) {
         return PL_RESULT_FILEPATH;
     }
@@ -90,7 +88,7 @@ PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
         return PL_RESULT_FILEREAD;
     }
 
-    TIFFRGBAImage image;
+    TIFFRGBAImage image{};
     memset(&image, 0, sizeof(TIFFRGBAImage));
 
     char error_message[1024];
@@ -102,7 +100,7 @@ PLresult _plLoadTIFFImage(const PLchar *path, PLImage *out) {
     }
 
     size_t pixels = image.width * image.height;
-    uint32 *raster = (uint32*)_TIFFmalloc(pixels * sizeof(uint32));
+    auto *raster = (uint32_t*)_TIFFmalloc(pixels * sizeof(uint32));
     if(!raster) {
         TIFFClose(tif);
         return PL_RESULT_MEMORYALLOC;

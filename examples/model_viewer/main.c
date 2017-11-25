@@ -29,8 +29,9 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_console.h>
 #include <PL/platform_graphics.h>
 #include <PL/platform_model.h>
-#include <PL/platform_window.h>
-#include <PL/platform_input.h>
+#include <PL/platform_filesystem.h>
+
+#include <SDL2/SDL.h>
 
 #include "../shared.h"
 
@@ -42,7 +43,52 @@ For more information, please refer to <http://unlicense.org>
 #define WIDTH   800
 #define HEIGHT  600
 
-PLWindow *main_window = NULL;
+//////////////////////////////////////////
+
+SDL_Window *window = NULL;
+void create_window(void) {
+    window = SDL_CreateWindow(
+            TITLE,
+            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+            WIDTH, HEIGHT,
+            SDL_WINDOW_OPENGL
+    );
+    if(window == NULL) {
+        PRINT_ERROR("SDL2: %s\n", SDL_GetError());
+    }
+
+    PLGraphicsContext *context = SDL_GL_CreateContext(window);
+    if(context == NULL) {
+        PRINT_ERROR("SDL2: %s\n", SDL_GetError());
+    }
+
+    SDL_GL_MakeCurrent(window, context);
+    if(SDL_GL_SetSwapInterval(-1) == -1) {
+        SDL_GL_SetSwapInterval(1);
+    }
+
+    SDL_DisableScreenSaver();
+}
+
+void destroy_window(void) {
+    if(window == NULL) {
+        return;
+    }
+
+    SDL_DestroyWindow(window);
+}
+
+/* Displays a simple dialogue window. */
+void message_box(const char *title, const char *msg, ...) {
+    char buf[4096];
+    va_list args;
+    va_start(args, msg);
+    vsprintf(buf, msg, args);
+    va_end(args);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, buf, NULL);
+}
+
+//////////////////////////////////////////
 
 // loads a model in and then frees it
 void load_mdl_temp(const char *path) {
@@ -60,58 +106,28 @@ enum {
     VIEW_MODE_SKELETON
 };
 int view_mode = VIEW_MODE_WIREFRAME;
-void key_callback(PLWindow* window, bool state, char key) {
-    if(window != main_window) {
-        return;
+void process_keyboard(void) {
+    const uint8_t *state = SDL_GetKeyboardState(NULL);
+    if(state[SDL_SCANCODE_1]) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        view_mode = VIEW_MODE_LIT;
+    } else if(state[SDL_SCANCODE_2]) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDisable(GL_LIGHTING);
+        view_mode = VIEW_MODE_WIREFRAME;
+    } else if(state[SDL_SCANCODE_3]) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+        glDisable(GL_LIGHTING);
+        view_mode = VIEW_MODE_POINTS;
+    } else if(state[SDL_SCANCODE_4]) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        view_mode = VIEW_MODE_WEIGHTS;
+    } else if(state[SDL_SCANCODE_5]) {
+        view_mode = VIEW_MODE_SKELETON;
     }
 
-    switch(key) {
-        default: break;
-
-        case '1': {
-            if(state) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                view_mode = VIEW_MODE_LIT;
-            }
-            break;
-        }
-        case '2': {
-            if(state && (view_mode != VIEW_MODE_WIREFRAME)) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                glDisable(GL_LIGHTING);
-                view_mode = VIEW_MODE_WIREFRAME;
-            }
-            break;
-        }
-        case '3': {
-            if(state && (view_mode != VIEW_MODE_POINTS)) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-                glDisable(GL_LIGHTING);
-                view_mode = VIEW_MODE_POINTS;
-            }
-            break;
-        }
-        case '4': {
-            if(state && (view_mode != VIEW_MODE_WEIGHTS)) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                view_mode = VIEW_MODE_WEIGHTS;
-            }
-            break;
-        }
-        case '5': {
-            if(state && (view_mode != VIEW_MODE_SKELETON)) {
-                view_mode = VIEW_MODE_SKELETON;
-            }
-            break;
-        }
-#if 0
-        case GLFW_KEY_ESCAPE: {
-            if(state) {
-                glfwSetWindowShouldClose(window, true);
-            }
-            break;
-        }
-#endif
+    if(state[SDL_SCANCODE_ESCAPE]) {
+        exit(EXIT_SUCCESS);
     }
 }
 
@@ -128,27 +144,21 @@ int main(int argc, char **argv) {
 
     plInitialize(argc, argv);
 
-    main_window = plCreateWindow(
-            "Cyclone Viewer",
-            plGetScreenWidth() / 2, plGetScreenHeight() / 2,
-            WIDTH, HEIGHT
-    );
+    create_window();
 
-    plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS | PL_SUBSYSTEM_INPUT);
+    plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
 
 #if 0 // quick little vector test thingy!
     PLVector3D testy = PLVector3D(0, 10, 20);
     printf("%s\n", plPrintVector3D(PLVector3D(100, 200, 300)));
 #endif
 
-    plSetKeyboardCallback(key_callback);
-
     plSetDefaultGraphicsState();
-    plSetClearColour(plCreateColour4b(0, 0, 128, 255));
+    plSetClearColour(PLColour(0, 0, 128, 255));
 
     plSetupConsole(1);
     plShowConsole(true);
-    plSetConsoleColour(1, plCreateColour4b(128, 0, 0, 128));
+    plSetConsoleColour(1, PLColour(128, 0, 0, 128));
 
     plParseConsoleString("cmds");
     plParseConsoleString("vars");
@@ -168,7 +178,22 @@ int main(int argc, char **argv) {
 
     return EXIT_SUCCESS;
 #else
-    PLModel *model = plLoadModel("./Models/medkit.mdl");
+
+    /* debris3
+     * debris2
+     * armor1
+     * shellcasing2sm
+     * medkit
+     * lamp7
+     * lamp
+     * medlab
+     * lion
+     * ctable
+     * throne
+     * lamp4
+     */
+
+    PLModel *model = plLoadModel("./Models/throne.mdl");
     if(model == NULL) {
         PRINT_ERROR("Failed to load model!\n");
     }
@@ -189,19 +214,16 @@ int main(int argc, char **argv) {
     glLineWidth(2.f);
 
     while (plIsRunning()) {
-        plProcessInput();
-
-        plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
+        SDL_PumpEvents();
 
         // input handlers start..
         int xpos, ypos;
-        plGetCursorPosition(main_window, &xpos, &ypos);
+        unsigned int state = SDL_GetMouseState(&xpos, &ypos);
 
         // Camera rotation
         static double oldlmpos[2] = {0, 0};
         static PLVector3D angles = { 0, 0 };
-        bool state = plGetMouseState(PLINPUT_MOUSE_LEFT);
-        if (state) {
+        if (state & SDL_BUTTON(SDL_BUTTON_LEFT)) {
             double nxpos = xpos - oldlmpos[0];
             double nypos = ypos - oldlmpos[1];
             angles.x += (nxpos / 100.f);
@@ -213,8 +235,7 @@ int main(int argc, char **argv) {
 
         // Zoom in and out thing...
         static double oldrmpos[2] = {0, 0};
-        state = plGetMouseState(PLINPUT_MOUSE_RIGHT);
-        if (state) {
+        if (state & SDL_BUTTON(SDL_BUTTON_RIGHT)) {
             double nypos = ypos - oldrmpos[1];
             main_camera->position.z += (nypos / 10.f);
         } else {
@@ -224,8 +245,7 @@ int main(int argc, char **argv) {
 
         // panning thing
         static double oldmmpos[2] = {0, 0};
-        state = plGetMouseState(PLINPUT_MOUSE_MIDDLE);
-        if(state) {
+        if(state & SDL_BUTTON(SDL_BUTTON_MIDDLE)) {
             double nxpos = xpos - oldmmpos[0];
             double nypos = ypos - oldmmpos[1];
             main_camera->position.y += (nypos / 5.f);
@@ -235,6 +255,10 @@ int main(int argc, char **argv) {
             oldmmpos[1] = ypos;
         }
         // input handlers end...
+
+        process_keyboard();
+
+        plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
         plSetupCamera(main_camera);
 
@@ -276,12 +300,13 @@ int main(int argc, char **argv) {
 
         //plDrawConsole();
 
-        plSwapBuffers(main_window);
+        SDL_GL_SwapWindow(window);
     }
 
     plDeleteModel(model);
     plDeleteCamera(main_camera);
-    plDeleteWindow(main_window);
+
+    destroy_window();
 
     plShutdown();
 

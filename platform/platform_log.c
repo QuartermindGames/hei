@@ -37,7 +37,7 @@ void plWriteLog(const char *path, const char *msg, ...) {
     char newpath[PL_SYSTEM_MAX_PATH];
     sprintf(newpath, "%s"LOG_FILE_EXTENSION, path);
 
-    static char buffer[4096] = { '\0' };
+    static char buffer[16384] = { '\0' };
     va_list args;
     va_start(args, msg);
     vsnprintf(buffer, sizeof(buffer), msg, args);

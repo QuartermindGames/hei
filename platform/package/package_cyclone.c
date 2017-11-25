@@ -24,17 +24,41 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+#include "package_private.h"
 
-#pragma once
+/* Reverse Engineering of Cyclone's ART packages
+ * usages:
+ *  Requiem Avenging Angel
+ *
+ * Seems to be made up of a combination of both
+ * an ART package and DAT package? One assumes
+ * that ART contains the actual texture data and
+ * the other, DAT, contains indexes?
+ *
+ * The textures in the game are referred to by name
+ * which means there's potentially some compression
+ * going on here :(
+ */
 
-#include <PL/platform_format.h>
+typedef struct DATIndex {
 
-/*  Platform Level Format   */
+} DATIndex;
 
-typedef struct {
-} PLLevelIndex;
+/* First two bytes are different depending upon
+ * the type of ART package it is, followed by two
+ * blank bytes. Can be assumed this
+ */
+typedef struct ARTHeader {
+    uint32_t unknown0;
+    uint32_t unknown2;
+} ARTHeader;
 
-typedef struct {
-    uint32_t num_triangles;
-    uint32_t num_portals;
-} PLLevelSector;
+PLPackage *_plLoadARTPackage(const char *filename, bool precache) {
+    char art_path[PL_SYSTEM_MAX_PATH] = { '\0' };
+    char dat_path[PL_SYSTEM_MAX_PATH] = { '\0' };
+
+    const char *extension = plGetFileExtension(filename);
+    if(!strcmp(extension, "art")) {
+
+    }
+}

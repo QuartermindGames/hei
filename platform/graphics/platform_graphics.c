@@ -33,7 +33,8 @@ For more information, please refer to <http://unlicense.org>
 
 /*	Graphics	*/
 
-PLGraphicsState pl_graphics_state;
+GfxState gfx_state;
+GfxLayer gfx_layer;
 
 /*	TODO:
 - Add somewhere we can store tracking
@@ -44,7 +45,7 @@ data for each of these functions
 #define    _PL_GRAPHICS_TRACK()                     \
     {                                               \
         unsigned static int _t = 0;                 \
-        if(pl_graphics_state.mode_debug)            \
+        if(gfx_state.mode_debug)            \
         {                                           \
             plGraphicsLog(" %s\n", PL_FUNCTION);    \
             _t++;                                   \
@@ -54,79 +55,6 @@ data for each of these functions
 /*===========================
 	INITIALIZATION
 ===========================*/
-
-#if !defined(PL_MODE_OPENGL_CORE)
-bool pl_gl_generate_mipmap              = false;
-bool pl_gl_depth_texture                = false;
-bool pl_gl_shadow                       = false;
-bool pl_gl_vertex_buffer_object         = false;
-bool pl_gl_texture_compression          = false;
-bool pl_gl_texture_compression_s3tc     = false;
-bool pl_gl_multitexture                 = false;
-bool pl_gl_texture_env_combine          = false;
-bool pl_gl_texture_env_add              = false;
-bool pl_gl_vertex_program               = false;
-bool pl_gl_fragment_program             = false;
-#endif
-
-unsigned int pl_gl_version_major = 0;
-unsigned int pl_gl_version_minor = 0;
-
-void _plInitOpenGL(void) {
-    _PL_GRAPHICS_TRACK();
-
-    // todo, write our own replacement for GLEW
-
-#if 0
-#if !defined(PL_MODE_OPENGL_CORE)
-    PLuint err = glewInit();
-    if (err != GLEW_OK) {
-        plGraphicsLog("Failed to initialize GLEW!\n%s\n", glewGetErrorString(err));
-    }
-
-    // Check that the required capabilities are supported.
-    if (GLEW_ARB_multitexture) pl_gl_multitexture = true;
-    else plGraphicsLog("Video hardware incapable of multi-texturing!\n");
-    if (GLEW_ARB_texture_env_combine || GLEW_EXT_texture_env_combine) pl_gl_texture_env_combine = true;
-    else plGraphicsLog("ARB/EXT_texture_env_combine isn't supported by your hardware!\n");
-    if (GLEW_ARB_texture_env_add || GLEW_EXT_texture_env_add) pl_gl_texture_env_add = true;
-    else plGraphicsLog("ARB/EXT_texture_env_add isn't supported by your hardware!\n");
-    if (GLEW_ARB_vertex_program || GLEW_ARB_fragment_program) {
-        pl_gl_vertex_program = true;
-        pl_gl_fragment_program = true;
-    }
-    else plGraphicsLog("Shaders aren't supported by this hardware!\n");
-    if (GLEW_SGIS_generate_mipmap) pl_gl_generate_mipmap = true;
-    else plGraphicsLog("Hardware mipmap generation isn't supported!\n");
-    if (GLEW_ARB_depth_texture) pl_gl_depth_texture = true;
-    else plGraphicsLog("ARB_depth_texture isn't supported by your hardware!\n");
-    if (GLEW_ARB_shadow) pl_gl_shadow = true;
-    else plGraphicsLog("ARB_shadow isn't supported by your hardware!\n");
-    if (GLEW_ARB_vertex_buffer_object) pl_gl_vertex_buffer_object = true;
-    else plGraphicsLog("Hardware doesn't support Vertex Buffer Objects!\n");
-
-    // If HW compression isn't supported then we'll need to do
-    // all of this in software later.
-    if (GLEW_ARB_texture_compression) {
-        if (GLEW_EXT_texture_compression_s3tc) {
-            pl_gl_texture_compression_s3tc = true;
-        }
-    }
-#endif
-#endif
-
-    // Get any information that will be presented later.
-    pl_graphics_state.hw_extensions     = (const char *) glGetString(GL_EXTENSIONS);
-    pl_graphics_state.hw_renderer       = (const char *) glGetString(GL_RENDERER);
-    pl_graphics_state.hw_vendor         = (const char *) glGetString(GL_VENDOR);
-    pl_graphics_state.hw_version        = (const char *) glGetString(GL_VERSION);
-#if 0
-    pl_gl_version_major = (unsigned int) atoi(&pl_graphics_state.hw_version[0]);
-    pl_gl_version_minor = (unsigned int) atoi(&pl_graphics_state.hw_version[2]);
-#endif
-}
-
-void _plShutdownOpenGL() {}
 
 void _plInitTextures(void);     // platform_graphics_texture
 void _plInitCameras(void);      // platform_graphics_camera
@@ -138,18 +66,29 @@ PLresult _plInitGraphics(void) {
     plClearLog(PL_GRAPHICS_LOG);
     plGraphicsLog("Initializing graphics abstraction layer...\n");
 
-    memset(&pl_graphics_state, 0, sizeof(PLGraphicsState));
+    memset(&gfx_state, 0, sizeof(GfxState));
 
-    _plInitOpenGL();
+    gfx_layer.mode = PLGFX_MODE_OPENGL; // todo, temp
+    switch(gfx_layer.mode) {
+        default: {
+            _plReportError(PL_RESULT_GRAPHICSINIT, "Invalid graphics layer, %d, selected!\n", gfx_layer.mode);
+            _plDebugPrint("Reverting to software mode...\n");
+            gfx_layer.mode = PLGFX_MODE_SOFTWARE;
+            return _plInitGraphics();
+        }
+
+        case PLGFX_MODE_DIRECT3D: break;
+
+        case PLGFX_MODE_OPENGL_CORE:
+        case PLGFX_MODE_OPENGL_ES:
+        case PLGFX_MODE_OPENGL: {
+            InitOpenGL();
+        } break;
+    }
 
     _plInitCameras();
     _plInitTextures();
     _plInitMaterials();
-
-    plGraphicsLog(" HARDWARE/DRIVER INFORMATION\n");
-    plGraphicsLog("  RENDERER: %s\n", pl_graphics_state.hw_renderer);
-    plGraphicsLog("  VENDOR:   %s\n", pl_graphics_state.hw_vendor);
-    plGraphicsLog("  VERSION:  %s\n\n", pl_graphics_state.hw_version);
 
     return PL_RESULT_SUCCESS;
 }
@@ -171,12 +110,21 @@ void _plShutdownGraphics(void) {
 bool plHWSupportsMultitexture(void) {
     _PL_GRAPHICS_TRACK();
 
-    return pl_gl_multitexture;
+    if(gfx_layer.HWSupportsMultitexture) {
+        return gfx_layer.HWSupportsMultitexture();
+    }
+
+    return false;
 }
 
 bool plHWSupportsShaders(void) {
     _PL_GRAPHICS_TRACK();
-    return (pl_gl_fragment_program && pl_gl_vertex_program);
+
+    if(gfx_layer.HWSupportsShaders) {
+        return gfx_layer.HWSupportsShaders();
+    }
+
+    return false;
 }
 
 /*===========================
@@ -221,7 +169,7 @@ void plBindFrameBuffer(PLFrameBuffer *buffer) {
 }
 
 void plSetClearColour(PLColour rgba) {
-    if (plCompareColour(rgba, pl_graphics_state.current_clearcolour)) {
+    if (plCompareColour(rgba, gfx_state.current_clearcolour)) {
         return;
     }
 
@@ -232,7 +180,7 @@ void plSetClearColour(PLColour rgba) {
             plByteToFloat(rgba.a)
     );
 
-    plCopyColour(&pl_graphics_state.current_clearcolour, rgba);
+    plCopyColour(&gfx_state.current_clearcolour, rgba);
 }
 
 void plClearBuffers(unsigned int buffers) {
@@ -259,10 +207,10 @@ void plClearBuffers(unsigned int buffers) {
 #elif defined (PL_MODE_SOFTWARE)
     if(buffers & PL_BUFFER_COLOUR) {
         for (unsigned int i = 0; i < pl_sw_backbuffer_size; i += 4) {
-            pl_sw_backbuffer[i] = pl_graphics_state.current_clearcolour.r;
-            pl_sw_backbuffer[i + 1] = pl_graphics_state.current_clearcolour.g;
-            pl_sw_backbuffer[i + 2] = pl_graphics_state.current_clearcolour.b;
-            pl_sw_backbuffer[i + 3] = pl_graphics_state.current_clearcolour.a;
+            pl_sw_backbuffer[i] = gfx_state.current_clearcolour.r;
+            pl_sw_backbuffer[i + 1] = gfx_state.current_clearcolour.g;
+            pl_sw_backbuffer[i + 2] = gfx_state.current_clearcolour.b;
+            pl_sw_backbuffer[i + 3] = gfx_state.current_clearcolour.a;
         }
     }
 #endif
@@ -320,7 +268,7 @@ _PLGraphicsCapabilities graphics_capabilities[] =
 bool plIsGraphicsStateEnabled(PLuint flags) {
     _PL_GRAPHICS_TRACK();
 
-    return (bool)(flags & pl_graphics_state.current_capabilities);
+    return (bool)(flags & gfx_state.current_capabilities);
 }
 
 void plEnableGraphicsStates(PLuint flags) {
@@ -333,12 +281,12 @@ void plEnableGraphicsStates(PLuint flags) {
     for (int i = 0; i < sizeof(graphics_capabilities); i++) {
         if (graphics_capabilities[i].pl_parm == 0) break;
 
-        if (pl_graphics_state.mode_debug) {
+        if (gfx_state.mode_debug) {
             plGraphicsLog("Enabling %s\n", graphics_capabilities[i].ident);
         }
 
         if (flags & PL_CAPABILITY_TEXTURE_2D) {
-            pl_graphics_state.tmu[pl_graphics_state.current_textureunit].active = true;
+            gfx_state.tmu[gfx_state.current_textureunit].active = true;
         }
 #if defined (VL_MODE_GLIDE)
         if (flags & PL_CAPABILITY_FOG)
@@ -358,7 +306,7 @@ void plEnableGraphicsStates(PLuint flags) {
 #endif
         }
 
-        pl_graphics_state.current_capabilities |= graphics_capabilities[i].pl_parm;
+        gfx_state.current_capabilities |= graphics_capabilities[i].pl_parm;
     }
 }
 
@@ -372,12 +320,12 @@ void plDisableGraphicsStates(PLuint flags) {
     for (int i = 0; i < sizeof(graphics_capabilities); i++) {
         if (graphics_capabilities[i].pl_parm == 0) break;
 
-        if (pl_graphics_state.mode_debug) {
+        if (gfx_state.mode_debug) {
             plGraphicsLog("Disabling %s\n", graphics_capabilities[i].ident);
         }
 
         if (flags & PL_CAPABILITY_TEXTURE_2D) {
-            pl_graphics_state.tmu[pl_graphics_state.current_textureunit].active = false;
+            gfx_state.tmu[gfx_state.current_textureunit].active = false;
         }
 #if defined (VL_MODE_GLIDE)
         if (flags & PL_CAPABILITY_FOG)
@@ -396,7 +344,7 @@ void plDisableGraphicsStates(PLuint flags) {
 #endif
         }
 
-        pl_graphics_state.current_capabilities &= ~graphics_capabilities[i].pl_parm;
+        gfx_state.current_capabilities &= ~graphics_capabilities[i].pl_parm;
     }
 }
 
@@ -404,29 +352,16 @@ void plDisableGraphicsStates(PLuint flags) {
 	DRAW
 ===========================*/
 
-void plSetBlendMode(PLBlend modea, PLBlend modeb) {
-    _PL_GRAPHICS_TRACK();
-
-    glBlendFunc(modea, modeb);
+void plSetBlendMode(PLBlend a, PLBlend b) {
+    if(gfx_layer.SetBlendMode) {
+        gfx_layer.SetBlendMode(a, b);
+    }
 }
 
 void plSetCullMode(PLCullMode mode) {
-    _PL_GRAPHICS_TRACK();
-
-    if (mode == pl_graphics_state.current_cullmode)
-        return;
-
-    glCullFace(GL_BACK);
-    switch (mode) {
-        default:
-        case PL_CULL_NEGATIVE:
-            glFrontFace(GL_CW);
-            break;
-        case PL_CULL_POSTIVE:
-            glFrontFace(GL_CCW);
-            break;
+    if(gfx_layer.SetCullMode) {
+        gfx_layer.SetCullMode(mode);
     }
-    pl_graphics_state.current_cullmode = mode;
 }
 
 /*===========================
@@ -434,31 +369,31 @@ void plSetCullMode(PLCullMode mode) {
 ===========================*/
 
 unsigned int plGetCurrentShaderProgram(void) {
-    return pl_graphics_state.current_program;
+    return gfx_state.current_program;
 }
 
 void plEnableShaderProgram(unsigned int program) {
     _PL_GRAPHICS_TRACK();
 
-    if (program == pl_graphics_state.current_program) {
+    if (program == gfx_state.current_program) {
         return;
     }
 
     glUseProgram(program);
 
-    pl_graphics_state.current_program = program;
+    gfx_state.current_program = program;
 }
 
 void plDisableShaderProgram(unsigned int program) {
     _PL_GRAPHICS_TRACK();
 
-    if(program != pl_graphics_state.current_program) {
+    if(program != gfx_state.current_program) {
         return;
     }
 
     glUseProgram(0);
 
-    pl_graphics_state.current_program = 0;
+    gfx_state.current_program = 0;
 }
 
 /*===========================
@@ -573,18 +508,18 @@ void plFinish(void) {
 void plViewport(int x, int y, unsigned int width, unsigned int height) {
     _PL_GRAPHICS_TRACK();
 
-    if (((x == pl_graphics_state.viewport_x) &&
-         (y == pl_graphics_state.viewport_y)) &&
-        ((width == pl_graphics_state.viewport_width) &&
-         (height == pl_graphics_state.viewport_height)))
+    if (((x == gfx_state.viewport_x) &&
+         (y == gfx_state.viewport_y)) &&
+        ((width == gfx_state.viewport_width) &&
+         (height == gfx_state.viewport_height)))
         return;
 
     glViewport(x, y, width, height);
 
-    pl_graphics_state.viewport_x        = x;
-    pl_graphics_state.viewport_y        = y;
-    pl_graphics_state.viewport_width    = width;
-    pl_graphics_state.viewport_height   = height;
+    gfx_state.viewport_x        = x;
+    gfx_state.viewport_y        = y;
+    gfx_state.viewport_width    = width;
+    gfx_state.viewport_height   = height;
 }
 
 void plScissor(int x, int y, unsigned int width, unsigned int height) {

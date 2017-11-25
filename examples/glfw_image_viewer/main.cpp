@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include <PL/platform_image.h>
-#include <PL/platform_window.h>
+#include <PL/platform_display.h>
 #include <PL/platform_graphics.h>
 #include "PL/platform_log.h"
 
@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
     plFreeImage(&image);
 
     PLRectangle rectangle = { 0, 0, width, height };
-    plSetRectangleUniformColour(&rectangle, plCreateColour4b(PL_COLOUR_WHITE));
+    plSetRectangleUniformColour(&rectangle, PLColour(PL_COLOUR_WHITE));
 
     while(!glfwWindowShouldClose(window)) {
         plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);

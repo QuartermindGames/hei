@@ -25,11 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-project(example_cyclone)
+project(example_package)
 
-file(GLOB EXAMPLE_CYCLONE_SOURCE_FILES *.*)
+file(GLOB EXAMPLE_PACKAGE_SOURCE_FILES *.*)
 
-add_executable(example_cyclone ${EXAMPLE_CYCLONE_SOURCE_FILES})
+add_executable(example_package ${EXAMPLE_PACKAGE_SOURCE_FILES})
 
-target_include_directories(example_cyclone PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(example_cyclone platform glfw)
+target_include_directories(example_package PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(example_package platform)

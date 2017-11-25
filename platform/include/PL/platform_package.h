@@ -27,6 +27,8 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
+#include <PL/platform.h>
+
 typedef struct PLPackageIndex {
     char name[256];
     size_t length;
@@ -36,8 +38,17 @@ typedef struct PLPackageIndex {
 } PLPackageIndex;
 
 typedef struct PLPackage {
-    char *path;
+    char path[PL_SYSTEM_MAX_PATH];
 
     unsigned int table_size;
     PLPackageIndex *table;
 } PLPackage;
+
+PL_EXTERN_C
+
+PL_EXTERN PLPackage *plLoadPackage(const char *path, bool cache);
+PL_EXTERN void plDeletePackage(PLPackage *package, bool purge);
+
+PL_EXTERN PLPackage *plCreatePackage(const char *dest);
+
+PL_EXTERN_C_END

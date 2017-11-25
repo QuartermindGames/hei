@@ -51,11 +51,8 @@ typedef struct __attribute__((packed)) MADIndex {
     uint32_t length;
 } MADIndex;
 
-PLPackage *_plLoadMADPackage(const char *filename, bool precache) {
-    FILE *fh = NULL;
-    PLPackage *package = NULL;
-
-    fh = fopen(filename, "rb");
+PLPackage *LoadMADPackage(const char *filename, bool cache) {
+    FILE *fh = fopen(filename, "rb");
     if(fh == NULL) {
         goto FAILED;
     }
@@ -101,19 +98,21 @@ PLPackage *_plLoadMADPackage(const char *filename, bool precache) {
 
     /* Allocate the basic package structure now we know how many files are in the archive. */
 
-    package = malloc(sizeof(PLPackage));
+    PLPackage *package = malloc(sizeof(PLPackage));
     if(package == NULL) {
         goto FAILED;
     }
 
     memset(package, 0, sizeof(package));
 
+#if 0 // done after package load now
     package->path = malloc(strlen(filename) + 1);
     if(package->path == NULL) {
         goto FAILED;
     }
 
     strcpy(package->path, filename);
+#endif
 
     package->table_size = num_indices;
     package->table      = calloc(num_indices, sizeof(struct PLPackageIndex));
@@ -141,9 +140,9 @@ PLPackage *_plLoadMADPackage(const char *filename, bool precache) {
 
     /* Read in each file's data */
 
-    if(precache) {
+    if(cache) {
         for (unsigned int i = 0; i < num_indices; ++i) {
-            _plLoadMADPackageFile(fh, &(package->table[i]));
+            LoadMADPackageFile(fh, &(package->table[i]));
         }
     }
 
@@ -154,13 +153,7 @@ PLPackage *_plLoadMADPackage(const char *filename, bool precache) {
     FAILED:
 
     if(package != NULL) {
-        for(unsigned int i = 0; i < package->table_size; ++i) {
-            free(package->table[i].data);
-        }
-
-        free(package->table);
-        free(package->path);
-        free(package);
+        plDeletePackage(package, true);
     }
 
     if(fh != NULL) {
@@ -170,9 +163,10 @@ PLPackage *_plLoadMADPackage(const char *filename, bool precache) {
     return NULL;
 }
 
-bool _plLoadMADPackageFile(FILE *fh, PLPackageIndex *pi) {
+bool LoadMADPackageFile(FILE *fh, PLPackageIndex *pi) {
     pi->data = malloc(pi->length);
     if(pi->data == NULL) {
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n", pi->length);
         return false;
     }
 

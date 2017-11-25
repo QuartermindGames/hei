@@ -76,19 +76,35 @@ typedef struct PLGraphicsState {
     unsigned int viewport_width, viewport_height;
 
     bool mode_debug;
-} PLGraphicsState;
+} GfxState;
+
+typedef struct GfxLayer {
+    PLGfxMode mode;    // Current gfx interface
+
+    bool(*HWSupportsMultitexture)(void);
+    bool(*HWSupportsShaders)(void);
+
+    void(*SetBlendMode)(PLBlend a, PLBlend b);
+    void(*SetCullMode)(PLCullMode mode);
+} GfxLayer;
 
 PL_EXTERN_C
 
+PL_EXTERN GfxState gfx_state;
+PL_EXTERN GfxLayer gfx_layer;
+
 #if defined(PL_MODE_OPENGL)
 
-PL_EXTERN unsigned int pl_gl_version_major;
-PL_EXTERN unsigned int pl_gl_version_minor;
+PL_EXTERN int pl_gl_version_major;
+PL_EXTERN int pl_gl_version_minor;
 #define _PLGL_VERSION(maj, min) (((maj) == pl_gl_version_major && (min) <= pl_gl_version_minor) || (maj) < pl_gl_version_major)
 
 #endif
 
-PL_EXTERN PLGraphicsState pl_graphics_state;
+void InitOpenGL(void);
+void ShutdownOpenGL(void);
+
+//////////////////////////////////////////////////////////////
 
 unsigned int _plTranslateColourFormat(PLColourFormat format);
 unsigned int _plTranslateTextureFormat(PLImageFormat format);

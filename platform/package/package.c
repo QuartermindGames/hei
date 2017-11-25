@@ -27,29 +27,107 @@ For more information, please refer to <http://unlicense.org>
 
 #include "package_private.h"
 
-PLPackage *plLoadPackage(const char *path, bool precache) {
+PLPackage *plCreatePackage(const char *dest) {
+
+}
+
+void PurgePackageData(PLPackage *package) {
+    plAssert(package);
+
+    for(unsigned int i = 0; i < package->table_size; ++i) {
+        if(package->table[i].data != NULL) {
+            free(package->table[i].data);
+            package->table[i].data = NULL;
+        }
+    }
+}
+
+/* Unloads package from memory -
+ * if purge is true then it will free up any loaded files from memory too
+ */
+void plDeletePackage(PLPackage *package, bool purge) {
+    plAssert(package);
+
+    if(purge) {
+        PurgePackageData(package);
+    }
+
+    free(package->table);
+    free(package);
+}
+
+void plWritePackage(PLPackage *package) {
+
+}
+
+/////////////////////////////////////////////////////////////////
+
+typedef struct PLPackageLoader {
+    const char *extensions[32];
+    unsigned int num_extensions;
+
+    PLPackage*(*LoadPackage)(const char *path, bool precache);
+} PLPackageLoader;
+
+PLPackageLoader load_packs[]= {
+        { { "package" }, 1, NULL },
+
+        // Third-party package formats
+        { { "mad", "mtd" }, 2, LoadMADPackage },
+        { { "dat", "art" }, 2, LoadARTPackage },
+};
+unsigned int num_load_packs = plArrayElements(load_packs);
+
+PLPackage *plLoadPackage(const char *path, bool cache) {
     if(!plFileExists(path)) {
         _plReportError(PL_RESULT_FILEREAD, "Failed to load package, %s!", path);
         return NULL;
     }
 
+#if 1
+    const char *ext = plGetFileExtension(path);
+    if(ext != '\0') {
+        for(unsigned int i = 0; i < num_load_packs; ++i) {
+            for (unsigned int j = 0; j < load_packs[i].num_extensions; ++j) {
+                if (strcmp(ext, load_packs[i].extensions[j]) == 0) {
+                    PLPackage *package = load_packs[i].LoadPackage(path, cache);
+                    if (package != NULL) {
+                        strncpy(package->path, path, sizeof(package->path));
+                        return package;
+                    }
+                    break;
+                }
+            }
+        }
+    } else {
+        for(unsigned int i = 0; i < num_load_packs; ++i) {
+            PLPackage *package = load_packs[i].LoadPackage(path, cache);
+            if(package != NULL) {
+                strncpy(package->path, path, sizeof(package->path));
+                return package;
+            }
+        }
+    }
+#else
     PLPackage *package;
-
     const char *extension = plGetFileExtension(path);
     if(extension[0] != '\0') {
-        if((!strcmp(extension, "mad") || !strcmp(extension, "mtd")) && (package = _plLoadMADPackage(path, precache)) != NULL) {
+        if((!strcmp(extension, "mad") || !strcmp(extension, "mtd")) && (package = LoadMADPackage(path, cache)) != NULL) {
             return package;
         }
+        if(!strcmp(extension, "dat") || !strcmp(extension, "art")) {
+            if((package = LoadARTPackage(path, cache))) {
+                return package;
+            }
+        }
     } else { // probably less safe loading solution, your funeral!
-        if((package = _plLoadMADPackage(path, precache)) != NULL) {
+        if((package = LoadMADPackage(path, cache)) != NULL) {
             return package;
         }
     }
+#endif
 
     return NULL;
-}
-
-void plUnloadPackage(PLPackage *package) {
 }
 
 bool plLoadPackageFile(PLPackage *package, const char *file, const uint8_t **data, size_t *size) {
@@ -61,7 +139,7 @@ bool plLoadPackageFile(PLPackage *package, const char *file, const uint8_t **dat
                     return false;
                 }
 
-                if (!_plLoadMADPackageFile(fh, &(package->table[i]))) {
+                if (!LoadMADPackageFile(fh, &(package->table[i]))) {
                     fclose(fh);
                     return false;
                 }
@@ -69,7 +147,6 @@ bool plLoadPackageFile(PLPackage *package, const char *file, const uint8_t **dat
 
             *data = package->table[i].data;
             *size = package->table[i].length;
-
             return true;
         }
     }

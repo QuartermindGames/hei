@@ -144,9 +144,6 @@ typedef enum {
     PL_RESULT_DRAW_MODE,        // Invalid mesh draw mode!
     PL_RESULT_DRAW_PRIMITIVE,   // Invalid mesh primitive!
 
-    // WINDOW
-    PL_RESULT_DISPLAY,  // Failed to open/create display!
-
     // IMAGE
     PL_RESULT_IMAGERESOLUTION,  // Invalid image resolution!
     PL_RESULT_IMAGEFORMAT,      // Unsupported image format!
@@ -162,7 +159,6 @@ enum {
     PL_SUBSYSTEM_IO         = (1 << 1), // Filesystem I/O
     PL_SUBSYSTEM_IMAGE      = (1 << 2), // Image loaders
     PL_SUBSYSTEM_LIBRARY    = (1 << 3), // Module/library management
-    PL_SUBSYSTEM_INPUT      = (1 << 4), // Input
 };
 
 #if defined(PL_INTERNAL)
@@ -216,9 +212,6 @@ void _plShutdownIO(void);
 
 PLresult _plInitConsole(void);
 void _plShutdownConsole(void);
-
-PLresult _plInitInput(void);
-void _plShutdownInput(void);
 
 PL_EXTERN_C_END
 

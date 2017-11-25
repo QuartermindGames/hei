@@ -35,52 +35,52 @@ PLConsoleVariable pl_texture_anisotropy = { "gr_texture_anisotropy", "16", pl_in
 #define FREE_TEXTURE    ((unsigned int)-1)
 
 void _plInitTextures(void) {
-    pl_graphics_state.tmu = (PLTextureMappingUnit*)calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));
-    memset(pl_graphics_state.tmu, 0, sizeof(PLTextureMappingUnit));
+    gfx_state.tmu = (PLTextureMappingUnit*)calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));
+    memset(gfx_state.tmu, 0, sizeof(PLTextureMappingUnit));
     for (unsigned int i = 0; i < plGetMaxTextureUnits(); i++) {
-        pl_graphics_state.tmu[i].current_envmode = PL_TEXTUREMODE_REPLACE;
+        gfx_state.tmu[i].current_envmode = PL_TEXTUREMODE_REPLACE;
     }
 
-    pl_graphics_state.max_textures  = 1024;
-    pl_graphics_state.textures      = (PLTexture**)malloc(sizeof(PLTexture*) * pl_graphics_state.max_textures);
-    memset(pl_graphics_state.textures, 0, sizeof(PLTexture*) * pl_graphics_state.max_textures);
-    pl_graphics_state.num_textures  = 0;
+    gfx_state.max_textures  = 1024;
+    gfx_state.textures      = (PLTexture**)malloc(sizeof(PLTexture*) * gfx_state.max_textures);
+    memset(gfx_state.textures, 0, sizeof(PLTexture*) * gfx_state.max_textures);
+    gfx_state.num_textures  = 0;
 
     plRegisterConsoleVariables(&pl_texture_anisotropy, 1);
 }
 
 void _plShutdownTextures(void) {
-    if(pl_graphics_state.tmu) {
-        free(pl_graphics_state.tmu);
+    if(gfx_state.tmu) {
+        free(gfx_state.tmu);
     }
 
-    if(pl_graphics_state.textures) {
-        for(PLTexture **texture = pl_graphics_state.textures;
-            texture < pl_graphics_state.textures + pl_graphics_state.num_textures; ++texture) {
+    if(gfx_state.textures) {
+        for(PLTexture **texture = gfx_state.textures;
+            texture < gfx_state.textures + gfx_state.num_textures; ++texture) {
             if ((*texture)) {
                 plDeleteTexture((*texture), true);
             }
         }
-        free(pl_graphics_state.textures);
+        free(gfx_state.textures);
     }
 }
 
 /////////////////////////////////////////////////////
 
 unsigned int plGetMaxTextureSize(void) {
-    if (pl_graphics_state.hw_maxtexturesize != 0) {
-        return pl_graphics_state.hw_maxtexturesize;
+    if (gfx_state.hw_maxtexturesize != 0) {
+        return gfx_state.hw_maxtexturesize;
     }
 
 #if defined (PL_MODE_OPENGL) || defined (PL_MODE_OPENGL_CORE)
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, (GLint*)&pl_graphics_state.hw_maxtexturesize);
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, (GLint*)&gfx_state.hw_maxtexturesize);
 #elif defined (PL_MODE_GLIDE)
-    grGet(GR_MAX_TEXTURE_SIZE, sizeof(pl_graphics_state.hw_maxtexturesize), &pl_graphics_state.hw_maxtexturesize);
+    grGet(GR_MAX_TEXTURE_SIZE, sizeof(gfx_state.hw_maxtexturesize), &gfx_state.hw_maxtexturesize);
 #else // Software
-    pl_graphics_state.hw_maxtexturesize = 4096;
+    gfx_state.hw_maxtexturesize = 4096;
 #endif
 
-    return pl_graphics_state.hw_maxtexturesize;
+    return gfx_state.hw_maxtexturesize;
 }
 
 /////////////////////////////////////////////////////
@@ -181,8 +181,8 @@ int _plTranslateColourChannel(int channel) {
 /////////////////////////////////////////////////////
 
 PLTexture *plCreateTexture(void) {
-    PLTexture **texture = pl_graphics_state.textures; unsigned int slot;
-    for(slot = 0; texture < pl_graphics_state.textures + pl_graphics_state.max_textures; ++texture, ++slot) {
+    PLTexture **texture = gfx_state.textures; unsigned int slot;
+    for(slot = 0; texture < gfx_state.textures + gfx_state.max_textures; ++texture, ++slot) {
         if(!(*texture)) {
             (*texture) = (PLTexture*)malloc(sizeof(PLTexture));
             if(!(*texture)) {
@@ -199,19 +199,19 @@ PLTexture *plCreateTexture(void) {
         }
     }
 
-    if(texture >= pl_graphics_state.textures + pl_graphics_state.max_textures) { // ran out of available slots... ?
-        PLTexture **old_mem = pl_graphics_state.textures;
-        pl_graphics_state.textures = (PLTexture**)realloc(
-                pl_graphics_state.textures,
-                (pl_graphics_state.max_textures += 512) * sizeof(PLTexture)
+    if(texture >= gfx_state.textures + gfx_state.max_textures) { // ran out of available slots... ?
+        PLTexture **old_mem = gfx_state.textures;
+        gfx_state.textures = (PLTexture**)realloc(
+                gfx_state.textures,
+                (gfx_state.max_textures += 512) * sizeof(PLTexture)
         );
-        if(!pl_graphics_state.textures) {
+        if(!gfx_state.textures) {
             _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n",
-                           pl_graphics_state.max_textures * sizeof(PLTexture));
-            pl_graphics_state.textures = old_mem;
-            pl_graphics_state.max_textures -= 512;
+                           gfx_state.max_textures * sizeof(PLTexture));
+            gfx_state.textures = old_mem;
+            gfx_state.max_textures -= 512;
         }
-        memset(pl_graphics_state.textures + (sizeof(PLTexture) * (pl_graphics_state.max_textures - 512)), 0, sizeof(PLTexture*) * 512);
+        memset(gfx_state.textures + (sizeof(PLTexture) * (gfx_state.max_textures - 512)), 0, sizeof(PLTexture*) * 512);
         return plCreateTexture();
     }
 
@@ -240,7 +240,7 @@ void plDeleteTexture(PLTexture *texture, bool force) {
         return;
     }
 
-    pl_graphics_state.textures[texture->id] = NULL;
+    gfx_state.textures[texture->id] = NULL;
     free(texture);
 
 #if 0 // our original c++ implementation
@@ -261,9 +261,9 @@ void plDeleteTexture(PLTexture *texture, bool force) {
 /////////////////////////////////////////////////////
 
 PLTexture *plGetCurrentTexture(unsigned int tmu) {
-    for(PLTexture **texture = pl_graphics_state.textures;
-        texture < pl_graphics_state.textures + pl_graphics_state.num_textures; ++texture) {
-        if(pl_graphics_state.tmu[tmu].current_texture == (*texture)->id) {
+    for(PLTexture **texture = gfx_state.textures;
+        texture < gfx_state.textures + gfx_state.num_textures; ++texture) {
+        if(gfx_state.tmu[tmu].current_texture == (*texture)->id) {
             return (*texture);
         }
     }
@@ -271,27 +271,27 @@ PLTexture *plGetCurrentTexture(unsigned int tmu) {
 }
 
 unsigned int plGetMaxTextureUnits(void) {
-    if (pl_graphics_state.hw_maxtextureunits != 0) {
-        return pl_graphics_state.hw_maxtextureunits;
+    if (gfx_state.hw_maxtextureunits != 0) {
+        return gfx_state.hw_maxtextureunits;
     }
 
 #ifdef PL_MODE_OPENGL
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint*)&pl_graphics_state.hw_maxtextureunits);
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint*)&gfx_state.hw_maxtextureunits);
 #elif defined (VL_MODE_GLIDE)
     grGet(GR_NUM_TMU, sizeof(param), (FxI32*)graphics_state.hw_maxtextureunits);
 #else
-    pl_graphics_state.hw_maxtextureunits = PLGRAPHICS_SW_MAX_TEXTUREUNITS;
+    gfx_state.hw_maxtextureunits = PLGRAPHICS_SW_MAX_TEXTUREUNITS;
 #endif
 
-    return pl_graphics_state.hw_maxtextureunits;
+    return gfx_state.hw_maxtextureunits;
 }
 
 unsigned int plGetCurrentTextureUnit(void) {
-    return pl_graphics_state.current_textureunit;
+    return gfx_state.current_textureunit;
 }
 
 void plSetTextureUnit(unsigned int target) {
-    if (target == pl_graphics_state.current_textureunit)
+    if (target == gfx_state.current_textureunit)
         return;
 
     if (target > plGetMaxTextureUnits()) {
@@ -304,21 +304,21 @@ void plSetTextureUnit(unsigned int target) {
     glActiveTexture(_plTranslateTextureUnit(target));
 #endif
 
-    pl_graphics_state.current_textureunit = target;
+    gfx_state.current_textureunit = target;
 }
 
 unsigned int plGetMaxTextureAnistropy(void) {
-    if (pl_graphics_state.hw_maxtextureanistropy != 0) {
-        return pl_graphics_state.hw_maxtextureanistropy;
+    if (gfx_state.hw_maxtextureanistropy != 0) {
+        return gfx_state.hw_maxtextureanistropy;
     }
 
 #if defined (PL_MODE_OPENGL)
-    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, (GLfloat*)&pl_graphics_state.hw_maxtextureanistropy);
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, (GLfloat*)&gfx_state.hw_maxtextureanistropy);
 #else
-    pl_graphics_state.hw_maxtextureanistropy = 1;
+    gfx_state.hw_maxtextureanistropy = 1;
 #endif
 
-    return pl_graphics_state.hw_maxtextureanistropy;
+    return gfx_state.hw_maxtextureanistropy;
 }
 
 // todo, hook this up with var
@@ -335,7 +335,7 @@ void plSetTextureAnisotropy(PLTexture *texture, unsigned int amount) {
 void plBindTexture(PLTexture *texture) {
     plAssert(texture);
 
-    if (texture->id == pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_texture) {
+    if (texture->id == gfx_state.tmu[plGetCurrentTextureUnit()].current_texture) {
         return;
     }
 
@@ -343,7 +343,7 @@ void plBindTexture(PLTexture *texture) {
     glBindTexture(GL_TEXTURE_2D, texture->id);
 #endif
 
-    pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_texture = texture->id;
+    gfx_state.tmu[plGetCurrentTextureUnit()].current_texture = texture->id;
 }
 
 void plSetTextureFilter(PLTexture *texture, PLTextureFilter filter) {
@@ -390,7 +390,7 @@ void plSetTextureFilter(PLTexture *texture, PLTextureFilter filter) {
 }
 
 void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
-    if (pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_envmode == mode)
+    if (gfx_state.tmu[plGetCurrentTextureUnit()].current_envmode == mode)
         return;
 
 #if defined(PL_MODE_OPENGL) && !defined(PL_MODE_OPENGL_CORE)
@@ -404,7 +404,7 @@ void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
     // todo
 #endif
 
-    pl_graphics_state.tmu[plGetCurrentTextureUnit()].current_envmode = mode;
+    gfx_state.tmu[plGetCurrentTextureUnit()].current_envmode = mode;
 }
 
 /////////////////////

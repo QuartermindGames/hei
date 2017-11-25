@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_console.h>
 #include <PL/platform_graphics.h>
 #include <PL/platform_filesystem.h>
-#include <PL/platform_window.h>
+#include <PL/platform_display.h>
 
 /* Example of console API, minus error handling :) */
 
@@ -92,13 +92,13 @@ int main(int argc, char **argv) {
     plSetupConsole(1);
     plShowConsole(true);
 
-    plSetConsoleColour(1, plCreateColour4b(128, 128, 0, 128));
-    plSetConsoleColour(2, plCreateColour4b(0, 128, 0, 128));
-    plSetConsoleColour(3, plCreateColour4b(0, 0, 128, 128));
-    plSetConsoleColour(4, plCreateColour4b(0, 0, 0, 128));
+    plSetConsoleColour(1, PLColour(128, 128, 0, 128));
+    plSetConsoleColour(2, PLColour(0, 128, 0, 128));
+    plSetConsoleColour(3, PLColour(0, 0, 128, 128));
+    plSetConsoleColour(4, PLColour(0, 0, 0, 128));
 
     plSetDefaultGraphicsState();
-    plSetClearColour(plCreateColour4b(0, 0, 0, 255));
+    plSetClearColour(PLColour(0, 0, 0, 255));
 
     PLCamera *camera = plCreateCamera();
     if(camera == NULL) {

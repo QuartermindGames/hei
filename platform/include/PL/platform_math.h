@@ -556,7 +556,7 @@ PL_INLINE static const char *plPrintColour(PLColour c) {
 
 #ifndef __cplusplus
 
-#   define PLColour(r, g, b, a) plCreateColour4b(r, g, b, a)
+#   define PLColour(r, g, b, a) (PLColour){r, g, b, a}
 
 #endif
 
