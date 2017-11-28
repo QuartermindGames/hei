@@ -34,7 +34,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
 #include <ctype.h>
 #include <string.h>
 #include <PL/platform_string.h>

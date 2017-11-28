@@ -69,7 +69,7 @@ PL_EXTERN_C
 PL_EXTERN PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, PLuint num_tris, PLuint num_verts);
 PL_EXTERN void plDeleteMesh(PLMesh *mesh);
 
-PL_EXTERN void plDrawRectangle(PLRectangle rect);
+PL_EXTERN void plDrawRectangle(PLRectangle2D rect);
 PL_EXTERN void plDrawTriangle(int x, int y, unsigned int w, unsigned int h);
 
 PL_EXTERN void plClearMesh(PLMesh *mesh);

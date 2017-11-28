@@ -1,29 +1,36 @@
 /*
-Copyright (C) 2011-2016 OldTimes Software
+This is free and unencumbered software released into the public domain.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
 
-See the GNU General Public License for more details.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+For more information, please refer to <http://unlicense.org>
 */
-
 #ifndef _WIN32
-#include <sys/stat.h>
+#   include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
 
-#include "PL/platform_filesystem.h"
+#include <PL/platform_filesystem.h>
 
 /*	File System	*/
 
@@ -81,25 +88,27 @@ bool plCreateDirectory(const char *path) {
     else    // Assume it already exists.
         plSetError("Unknown error! (%s)\n", path);
 #else
-    {
-        struct stat buffer;
-        if (stat(path, &buffer) == -1) {
-            if (mkdir(path, 0777) == 0)
-                return true;
-
-            switch (errno) {
-                case EACCES:
-                    _plSetErrorMessage("Failed to get permission! (%s)\n", path);
-                case EROFS:
-                    _plSetErrorMessage("File system is read only! (%s)\n", path);
-                case ENAMETOOLONG:
-                    _plSetErrorMessage("Path is too long! (%s)\n", path);
-                default:
-                    _plSetErrorMessage("Failed to create directory! (%s)\n", path);
-            }
-        } else
-            // Path already exists, so this is fine.
+    struct stat buffer;
+    if (stat(path, &buffer) == -1) {
+        if (mkdir(path, 0777) == 0)
             return true;
+
+        switch (errno) {
+            case EACCES:
+                _plSetErrorMessage("Failed to get permission! (%s)\n", path);
+                break;
+            case EROFS:
+                _plSetErrorMessage("File system is read only! (%s)\n", path);
+                break;
+            case ENAMETOOLONG:
+                _plSetErrorMessage("Path is too long! (%s)\n", path);
+                break;
+            default:
+                _plSetErrorMessage("Failed to create directory! (%s)\n", path);
+                break;
+        }
+    } else { // Path already exists, so this is fine.
+        return true;
     }
 #endif
 
@@ -112,7 +121,7 @@ const char *plGetFileExtension(const char *in) {
         return "";
     }
 
-    const PLchar *s = strrchr(in, '.');
+    const char *s = strrchr(in, '.');
     if(!s || s == in) {
         return "";
     }
@@ -315,7 +324,7 @@ bool plPathExists(const char *path) {
 // todo, return plresult instead
 bool plCopyFile(const char *path, const char *dest) {
     FILE *fold = fopen(path, "rb");
-    if(!fold) {
+    if(fold == NULL) {
         _plReportError(PL_RESULT_FILEREAD, "Failed to open %s!", path);
         return false;
     }
@@ -325,23 +334,24 @@ bool plCopyFile(const char *path, const char *dest) {
     fseek(fold, 0, SEEK_SET);
 
     uint8_t *data = calloc(file_size, 1);
-    if(!data) {
+    if(data == NULL) {
         fclose(fold);
-
         _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate buffer for %s, with size %d!", path, file_size);
         return false;
     }
 
     fread(data, 1, file_size, fold);
+    fclose(fold);
 
     FILE *out = fopen(dest, "wb");
-    if(!out || (fwrite(data, 1, file_size, out) != file_size)) {
-        fclose(fold);
-
+    if(out == NULL || (fwrite(data, 1, file_size, out) != file_size)) {
+        free(data);
         _plReportError(PL_RESULT_FILEREAD, "Failed to write %s!", dest);
         return false;
     }
     fclose(out);
+
+    free(data);
 
     return true;
 }
@@ -357,6 +367,8 @@ size_t plGetFileSize(const char *path) {
 
     return (size_t)buf.st_size;
 }
+
+///////////////////////////////////////////
 
 int16_t plGetLittleShort(FILE *fin) {
     int b1 = fgetc(fin);

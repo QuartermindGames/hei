@@ -36,15 +36,15 @@ typedef struct PLBuffer {
 
 PL_EXTERN_C
 
-PL_EXTERN void plGetUserName(PLchar *out);
+PL_EXTERN void plGetUserName(char *out);
 
 PL_EXTERN const char *plGetWorkingDirectory(void);
 PL_EXTERN void plSetWorkingDirectory(const char *path);
 
-PL_EXTERN void plStripExtension(PLchar *dest, const PLchar *in);
+PL_EXTERN void plStripExtension(char *dest, const char *in);
 
-PL_EXTERN const PLchar *plGetFileExtension(const PLchar *in);
-PL_EXTERN const PLchar *plGetFileName(const PLchar *path);
+PL_EXTERN const char *plGetFileExtension(const char *in);
+PL_EXTERN const char *plGetFileName(const char *path);
 
 PL_EXTERN void plScanDirectory(const char *path, const char *extension, void (*Function)(const char *), bool recursive);
 
@@ -61,7 +61,7 @@ PL_EXTERN bool plCopyFile(const char *path, const char *dest);
 
 PL_EXTERN bool plIsFileModified(time_t oldtime, const char *path);
 
-PL_EXTERN time_t plGetFileModifiedTime(const PLchar *path);
+PL_EXTERN time_t plGetFileModifiedTime(const char *path);
 
 PL_EXTERN size_t plGetFileSize(const char *path);
 

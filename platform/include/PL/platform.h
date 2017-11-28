@@ -83,7 +83,7 @@ support.
 // C++
 #	ifndef PL_IGNORE_STD_HEADERS
 #		ifdef __cplusplus
-#			include <stdint.h>
+#			include <cstdint>
 #			include <memory>
 #			include <string>
 #			include <vector>

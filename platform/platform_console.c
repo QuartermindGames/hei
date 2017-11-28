@@ -204,7 +204,7 @@ void plSetConsoleVariable(PLConsoleVariable *var, const char *value) {
 #define PLCONSOLE_DEFAULT_COLOUR 128, 0, 0, 128
 
 typedef struct PLConsolePane {
-    PLRectangle display;
+    PLRectangle2D display;
     PLColour colour;
 
     char buffer[4096];

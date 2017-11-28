@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #pragma once
 
 #include "platform.h"
@@ -71,8 +70,7 @@ typedef struct PLVector2D {
     PLVector2D(float a, float b) : x(a), y(b) {}
     PLVector2D() : x(0), y(0) {}
 
-    void operator=(PLVector2D a) { x = a.x; y = a.y; }
-    void operator=(float a) { x = a; y = a; }
+    PLVector2D &operator=(float a) { x = a; y = a; return *this; }
 
     void operator*=(PLVector2D a) { x *= a.x; y *= a.y; }
     void operator*=(float a) { x *= a; y *= a; }
@@ -141,24 +139,23 @@ typedef struct PLVector3D {
     float x, y, z;
 
 #ifdef __cplusplus
-    PLVector3D(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
-    PLVector3D(float *v) {
+    PL_INLINE PLVector3D() : x(0), y(0), z(0) {}
+    PL_INLINE PLVector3D(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+    PL_INLINE explicit PLVector3D(const float *v) {
         x = v[0]; y = v[1]; z = v[2];
     }
-    PLVector3D() : x(0), y(0) {}
 
-#if 0
-    void PL_INLINE operator = (PLVector3D a) {
-        x = a.x;
-        y = a.y;
-        z = a.z;
+    PL_INLINE PLVector3D &operator = (PLVector2D v) {
+        x = v.x;
+        y = v.y;
+        return *this;
     }
-#endif
 
-    PL_INLINE void operator = (float a) {
+    PL_INLINE PLVector3D &operator = (float a) {
         x = a;
         y = a;
         z = a;
+        return *this;
     }
 
     PL_INLINE void operator *= (const PLVector3D &v) {
@@ -193,59 +190,59 @@ typedef struct PLVector3D {
         return ((x != f) && (y != f) && (z != f));
     }
 
-    PLVector3D PL_INLINE operator * (PLVector3D a) const {
-        return PLVector3D(x * a.x, y * a.y, z * a.z);
+    PL_INLINE PLVector3D operator * (PLVector3D a) const {
+        return {x * a.x, y * a.y, z * a.z};
     }
 
-    PLVector3D PL_INLINE operator * (float a) const {
-        return PLVector3D(x * a, y * a, z * a);
+    PL_INLINE PLVector3D operator * (float a) const {
+        return {x * a, y * a, z * a};
     }
 
-    PLVector3D PL_INLINE operator - (PLVector3D a) const {
-        return PLVector3D(x - a.x, y - a.y, z - a.z);
+    PL_INLINE PLVector3D operator - (PLVector3D a) const {
+        return {x - a.x, y - a.y, z - a.z};
     }
 
-    PLVector3D PL_INLINE operator - (float a) const {
-        return PLVector3D(x - a, y - a, z - a);
+    PL_INLINE PLVector3D operator - (float a) const {
+        return {x - a, y - a, z - a};
     }
 
     PLVector3D PL_INLINE operator - () const {
-        return PLVector3D(-x, -y, -z);
+        return {-x, -y, -z};
     }
 
     PLVector3D PL_INLINE operator + (PLVector3D a) const {
-        return PLVector3D(x + a.x, y + a.y, z + a.z);
+        return {x + a.x, y + a.y, z + a.z};
     }
 
     PLVector3D PL_INLINE operator + (float a) const {
-        return PLVector3D(x + a, y + a, z + a);
+        return {x + a, y + a, z + a};
     }
 
     PLVector3D PL_INLINE operator / (const PLVector3D &a) const {
-        return PLVector3D(x / a.x, y / a.y, z / a.z);
+        return {x / a.x, y / a.y, z / a.z};
     }
 
     PLVector3D PL_INLINE operator / (float a) const {
-        return PLVector3D(x / a, y / a, z / a);
+        return {x / a, y / a, z / a};
     }
 
     PL_INLINE float& operator [] (const unsigned int i) {
         return *((&x) + i);
     }
 
-    bool PL_INLINE operator > (const PLVector3D &v) const {
+    PL_INLINE bool operator > (const PLVector3D &v) const {
         return ((x > v.x) && (y > v.y) && (z > v.z));
     }
 
-    bool PL_INLINE operator < (const PLVector3D &v) const {
+    PL_INLINE bool operator < (const PLVector3D &v) const {
         return ((x < v.x) && (y < v.y) && (z < v.z));
     }
 
-    bool PL_INLINE operator >= (const PLVector3D &v) const {
+    PL_INLINE bool operator >= (const PLVector3D &v) const {
         return ((x >= v.x) && (y >= v.y) && (z >= v.z));
     }
 
-    bool PL_INLINE operator <= (const PLVector3D &v) const {
+    PL_INLINE bool operator <= (const PLVector3D &v) const {
         return ((x <= v.x) && (y <= v.y) && (z <= v.z));
     }
 
@@ -258,7 +255,7 @@ typedef struct PLVector3D {
     }
 
     PL_INLINE PLVector3D CrossProduct(PLVector3D a) const {
-        return PLVector3D(y * a.z - z * a.y, z * a.x - x * a.z, x * a.y - y * a.x);
+        return {y * a.z - z * a.y, z * a.x - x * a.z, x * a.y - y * a.x};
     }
 
     PL_INLINE PLVector3D Normalize() const {
@@ -321,19 +318,19 @@ PL_INLINE static PLVector3D plVector3DCrossProduct(PLVector3D v, PLVector3D v2) 
 }
 
 PL_INLINE static PLVector3D plVector3DMax(PLVector3D v, PLVector3D v2) {
-    return plCreateVector3D(
-        v.x > v2.x ? v.x : v2.x,
-        v.y > v2.y ? v.y : v2.y,
-        v.z > v2.z ? v.z : v2.z
-    );
+    return (PLVector3D) {
+            v.x > v2.x ? v.x : v2.x,
+            v.y > v2.y ? v.y : v2.y,
+            v.z > v2.z ? v.z : v2.z
+    };
 }
 
 PL_INLINE static PLVector3D plVector3DMin(PLVector3D v, PLVector3D v2) {
-    return plCreateVector3D(
-        v.x < v2.x ? v.x : v2.x,
-        v.y < v2.y ? v.y : v2.y,
-        v.z < v2.z ? v.z : v2.z
-    );
+    return (PLVector3D) {
+            v.x < v2.x ? v.x : v2.x,
+            v.y < v2.y ? v.y : v2.y,
+            v.z < v2.z ? v.z : v2.z
+    };
 }
 
 PL_INLINE static float plVector3DDotProduct(PLVector3D v, PLVector3D v2) {
@@ -431,15 +428,15 @@ typedef struct PLColour {
     }
 
     PL_INLINE PLColour operator - (PLColour c) const {
-        return PLColour(r - c.r, g - c.g, b - c.b, a - c.a);
+        return {r - c.r, g - c.g, b - c.b, a - c.a};
     }
 
     PL_INLINE PLColour operator - (float c) const {
-        return PLColour(r - plFloatToByte(c), g - plFloatToByte(c), b - plFloatToByte(c), a - plFloatToByte(c));
+        return {r - plFloatToByte(c), g - plFloatToByte(c), b - plFloatToByte(c), a - plFloatToByte(c)};
     }
 
     PL_INLINE PLColour operator - (uint8_t c) const {
-        return PLColour(r - c, g - c, b - c, a - c);
+        return {r - c, g - c, b - c, a - c};
     }
 
     PL_INLINE PLColour operator - () const {
@@ -455,11 +452,11 @@ typedef struct PLColour {
     }
 
     PL_INLINE PLColour operator + (float c) const {
-        return PLColour(r + plFloatToByte(c), g + plFloatToByte(c), b + plFloatToByte(c), a + plFloatToByte(c));
+        return {r + plFloatToByte(c), g + plFloatToByte(c), b + plFloatToByte(c), a + plFloatToByte(c)};
     }
 
     PL_INLINE PLColour operator / (const PLColour &v) const {
-        return PLColour(r / v.r, g / v.g, b / v.b, a / v.a);
+        return {r / v.r, g / v.g, b / v.b, a / v.a};
     }
 
     PL_INLINE PLColour operator / (float c) const {
@@ -570,34 +567,42 @@ PL_INLINE static void plClearMatrix4(PLMatrix4 m) {
     memset(m, 0, sizeof(PLMatrix4));
 }
 
+PL_INLINE static void plMatrix4Identity(PLMatrix4 m) {
+    plClearMatrix4(m);
+
+    m[0] = 1; m[5] = 1; m[10] = 1; m[15] = 1;
+}
+
 PL_INLINE static void plAddMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    for(int i = 0; i < 16; i++) {
-        m[i] += m2[i];
-    }
+    m[0] += m2[0]; m[4] += m2[4]; m[8] += m2[8];
+    m[1] += m2[1]; m[5] += m2[5]; m[9] += m2[9];
+    m[2] += m2[2]; m[6] += m2[6]; m[10] += m2[10];
 }
 
 PL_INLINE static void plMultiplyMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    for(int i = 0; i < 16; i++) {
-        m[i] *= m2[i];
-    }
+    m[0] *= m2[0]; m[4] *= m2[4]; m[8] *= m2[8];
+    m[1] *= m2[1]; m[5] *= m2[5]; m[9] *= m2[9];
+    m[2] *= m2[2]; m[6] *= m2[6]; m[10] *= m2[10];
+}
+
+PL_INLINE static void plMultiplyMatrix4v(PLMatrix4 m, PLVector3D v) {
+    m[0] *= v.x; m[4] *= v.y; m[8] *= v.z;
+    m[1] *= v.x; m[5] *= v.y; m[9] *= v.z;
+    m[2] *= v.x; m[6] *= v.y; m[10] *= v.z;
 }
 
 PL_INLINE static void plMultiplyMatrix4f(PLMatrix4 m, float a) {
-    for(int i = 0; i < 16; i++) {
-        m[i] *= a;
-    }
+    m[0] *= a; m[4] *= a; m[8] *= a;
+    m[1] *= a; m[5] *= a; m[9] *= a;
+    m[2] *= a; m[6] *= a; m[10] *= a;
 }
 
-PL_INLINE static void plDivisionMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    for(int i = 0; i < 16; i++) {
-        m[i] /= m2[i];
-    }
+PL_INLINE static void plDivideMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
+
 }
 
-PL_INLINE static void plDivisionMatrix4f(PLMatrix4 m, float a) {
-    for(int i = 0; i < 16; i++) {
-        m[i] /= a;
-    }
+PL_INLINE static void plDivideMatrix4f(PLMatrix4 m, float a) {
+
 }
 
 PL_INLINE static const char *plPrintMatrix4(const PLMatrix4 m) {
@@ -626,10 +631,6 @@ typedef struct PLQuaternion {
     PLQuaternion(float a, float b, float c) : x(a), y(b), z(c), w(0) {}
     PLQuaternion() : x(0), y(0), z(0), w(0) {}
 
-    PL_INLINE void operator = (PLQuaternion a) {
-        x = a.x; y = a.y; z = a.z; w = a.w;
-    }
-
     PL_INLINE void operator *= (float a) {
         x *= a; y *= a; z *= a; w *= a;
     }
@@ -646,11 +647,11 @@ typedef struct PLQuaternion {
     }
 
     PL_INLINE PLQuaternion operator * (float a) {
-        return PLQuaternion(x * a, y * a, z * a, w * a);
+        return {x * a, y * a, z * a, w * a};
     }
 
     PL_INLINE PLQuaternion operator * (PLQuaternion a) {
-        return PLQuaternion(x * a.x, y * a.y, z * a.z, w * a.w);
+        return {x * a.x, y * a.y, z * a.z, w * a.w};
     }
 
     PL_INLINE void Set(float a, float b, float c, float d) {
@@ -674,11 +675,11 @@ typedef struct PLQuaternion {
     }
 
     PL_INLINE PLQuaternion Scale(float a) {
-        return PLQuaternion(x * a, y * a, z * a, w * a);
+        return {x * a, y * a, z * a, w * a};
     }
 
     PL_INLINE PLQuaternion Inverse() {
-        return PLQuaternion(-x, -y, -z, w);
+        return {-x, -y, -z, w};
     }
 
 #if 0
@@ -762,6 +763,8 @@ PL_INLINE static void plClearBBox2D(PLBBox2D *b) {
 /////////////////////////////////////////////////////////////////////////////////////
 // Primitives
 
+// Cube
+
 // Sphere
 
 typedef struct PLSphere {
@@ -773,44 +776,36 @@ typedef struct PLSphere {
 
 // Line
 
-typedef struct PLLine {
+typedef struct PLLine3D {
     PLVector3D a, b;
     unsigned int width;
 
     PLColour a_colour, b_colour;
-} PLLine;
+} PLLine3D;
 
-PL_INLINE static PLLine plCreateLine(
-        PLVector3D a, PLVector3D b, unsigned int width, PLColour a_colour, PLColour b_colour) {
-    PLLine line = {
-            a, b, width, a_colour, b_colour
-    };
-    return line;
+PL_INLINE static void plClearLine(PLLine3D *l) {
+    memset(l, 0, sizeof(PLLine3D));
 }
 
-PL_INLINE static void plClearLine(PLLine *l) {
-    memset(l, 0, sizeof(PLLine));
-}
-
-PL_INLINE static void plSetLineColour(PLLine *line, PLColour a, PLColour b) {
+PL_INLINE static void plSetLineColour(PLLine3D *line, PLColour a, PLColour b) {
     line->a_colour = a; line->b_colour = b;
 }
 
-// Rectangle
+// Rectangle 2D
 
-typedef struct PLRectangle {
+typedef struct PLRectangle2D {
     PLVector2D xy;
     PLVector2D wh;
 
     PLColour ul, ur, ll, lr;
 } PLRectangle;
 
-PL_INLINE static PLRectangle plCreateRectangle(
+PL_INLINE static PLRectangle2D plCreateRectangle(
         PLVector2D xy, PLVector2D wh,
         PLColour ul, PLColour ur,
         PLColour ll, PLColour lr
 ) {
-    PLRectangle rect = {
+    PLRectangle2D rect = {
             xy, wh,
             ul, ur,
             ll, lr
@@ -818,11 +813,11 @@ PL_INLINE static PLRectangle plCreateRectangle(
     return rect;
 }
 
-PL_INLINE static void plClearRectangle(PLRectangle *r) {
-    memset(r, 0, sizeof(PLRectangle));
+PL_INLINE static void plClearRectangle(PLRectangle2D *r) {
+    memset(r, 0, sizeof(PLRectangle2D));
 }
 
-PL_INLINE static void plSetRectangleUniformColour(PLRectangle *r, PLColour colour) {
+PL_INLINE static void plSetRectangleUniformColour(PLRectangle2D *r, PLColour colour) {
     r->ll = r->lr = r->ul = r->ur = colour;
 }
 

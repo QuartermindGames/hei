@@ -452,7 +452,7 @@ void plDrawCube() {} // todo
 
 /*  Textured Rectangle Mesh  */
 
-void plDrawRectangle(PLRectangle rect) {
+void plDrawRectangle(PLRectangle2D rect) {
     static PLMesh *mesh = NULL;
     if(!mesh) {
         mesh = plCreateMesh(
