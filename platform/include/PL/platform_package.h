@@ -47,7 +47,7 @@ typedef struct PLPackage {
 PL_EXTERN_C
 
 PL_EXTERN PLPackage *plLoadPackage(const char *path, bool cache);
-PL_EXTERN void plDeletePackage(PLPackage *package, bool purge);
+PL_EXTERN void plDeletePackage(PLPackage *package);
 
 PL_EXTERN PLPackage *plCreatePackage(const char *dest);
 

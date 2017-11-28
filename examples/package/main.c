@@ -47,9 +47,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-
-
-    plDeletePackage(new_package, true);
+    plDeletePackage(new_package);
 
 #if 0
     plScanDirectory("./Models/", "mdl", load_mdl_temp, false);
