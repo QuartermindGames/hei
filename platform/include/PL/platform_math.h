@@ -798,7 +798,7 @@ typedef struct PLRectangle2D {
     PLVector2D wh;
 
     PLColour ul, ur, ll, lr;
-} PLRectangle;
+} PLRectangle2D;
 
 PL_INLINE static PLRectangle2D plCreateRectangle(
         PLVector2D xy, PLVector2D wh,

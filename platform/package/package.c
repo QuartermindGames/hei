@@ -86,7 +86,7 @@ PLPackage *plLoadPackage(const char *path, bool cache) {
 
 #if 1
     const char *ext = plGetFileExtension(path);
-    if(ext != '\0') {
+    if(ext[0] != '\0') {
         for(unsigned int i = 0; i < num_load_packs; ++i) {
             for (unsigned int j = 0; j < load_packs[i].num_extensions; ++j) {
                 if (strcmp(ext, load_packs[i].extensions[j]) == 0) {
