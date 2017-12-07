@@ -288,8 +288,8 @@ typedef enum PLLightType {
 } PLLightType;
 
 typedef struct PLLight {
-    PLVector3D position;
-    PLVector3D angles;
+    PLVector3 position;
+    PLVector3 angles;
 
     PLColour colour;
 
@@ -321,7 +321,7 @@ typedef struct PLCamera {
     double near, far;
     unsigned int mode;
 
-    PLVector3D angles, position;
+    PLVector3 angles, position;
     PLAABB bounds;
 
     // Viewport
@@ -336,9 +336,6 @@ PL_EXTERN void plDeleteCamera(PLCamera *camera);
 PL_EXTERN void plSetupCamera(PLCamera *camera);
 
 PL_EXTERN void plDrawPerspective(void);
-
-PL_EXTERN void plViewport(int x, int y, unsigned int width, unsigned int height);
-PL_EXTERN void plScissor(int x, int y, unsigned int width, unsigned int height);
 
 PL_EXTERN void plPerspective(double fov_y, double aspect, double near, double far);
 
@@ -371,8 +368,6 @@ typedef struct PLShader {
 PL_EXTERN_C
 
 PL_EXTERN void plSetDefaultGraphicsState(void);
-
-PL_EXTERN void plFinish(void);
 
 // Hardware Information
 PL_EXTERN const char *_plGetHWExtensions(void);

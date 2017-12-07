@@ -72,8 +72,7 @@ typedef struct PLGraphicsState {
 
     ////////////////////////////////////////
 
-    int viewport_x, viewport_y;
-    unsigned int viewport_width, viewport_height;
+    PLViewport current_viewport;
 
     bool mode_debug;
 } GfxState;

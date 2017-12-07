@@ -50,14 +50,14 @@ typedef enum PLDrawMode {
 } PLMeshDrawMode;
 
 typedef struct PLVertex {
-    PLVector3D position, normal;
-    PLVector2D st[16];
+    PLVector3 position, normal;
+    PLVector2 st[16];
 
     PLColour colour;
 } PLVertex;
 
 typedef struct PLTriangle {
-    PLVector3D normal;
+    PLVector3 normal;
 
     unsigned int indices[3];
 } PLTriangle;
@@ -86,7 +86,7 @@ typedef struct PLMesh {
     PLMeshPrimitive primitive, primitive_restore;
     PLMeshDrawMode mode;
 
-    PLVector3D position, angles;
+    PLVector3 position, angles;
 } PLMesh;
 
 PL_EXTERN_C
@@ -98,7 +98,7 @@ PL_EXTERN void plDrawRectangle(PLRectangle2D rect);
 PL_EXTERN void plDrawTriangle(int x, int y, unsigned int w, unsigned int h);
 
 PL_EXTERN void plClearMesh(PLMesh *mesh);
-PL_EXTERN void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3D vector);
+PL_EXTERN void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3 vector);
 PL_EXTERN void plSetMeshVertexPosition3f(PLMesh *mesh, unsigned int index, float x, float y, float z);
 PL_EXTERN void plSetMeshVertexPosition2f(PLMesh *mesh, unsigned int index, float x, float y);
 PL_EXTERN void plSetMeshVertexNormal3f(PLMesh *mesh, unsigned int index, float x, float y, float z);
@@ -110,7 +110,7 @@ PL_EXTERN void plDrawMesh(PLMesh *mesh);
 
 PL_EXTERN PLAABB plCalculateMeshAABB(PLMesh *mesh);
 
-PL_EXTERN PLVector3D plGenerateVertexNormal(PLVector3D a, PLVector3D b, PLVector3D c);
+PL_EXTERN PLVector3 plGenerateVertexNormal(PLVector3 a, PLVector3 b, PLVector3 c);
 
 PL_EXTERN void plGenerateMeshNormals(PLMesh *mesh);
 

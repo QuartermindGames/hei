@@ -349,7 +349,7 @@ void ShaderUniform::Set(unsigned int x) {
 #endif
 }
 
-void ShaderUniform::Set(PLVector2D x) {
+void ShaderUniform::Set(PLVector2 x) {
     if(type_ != UNIFORM_VEC2) {
         plGraphicsLog("Invalid shader uniform type! (%i)", type_);
         return;
@@ -360,7 +360,7 @@ void ShaderUniform::Set(PLVector2D x) {
 #endif
 }
 
-void ShaderUniform::Set(PLVector3D x) {
+void ShaderUniform::Set(PLVector3 x) {
     if(type_ != UNIFORM_VEC3) {
         plGraphicsLog("Invalid shader uniform type! (%i)", type_);
         return;

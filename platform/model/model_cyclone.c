@@ -115,7 +115,7 @@ typedef struct MDLFace {
 PLModel *_plLoadRequiemModel(const char *path) {
     FILE *file = fopen(path, "rb");
     if(file == NULL) {
-        _plReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
+        ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
         return NULL;
     }
 
@@ -123,7 +123,7 @@ PLModel *_plLoadRequiemModel(const char *path) {
 
     _plDebugPrint("%s\n", path);
 
-#define AbortLoad(...) _plDebugPrint(__VA_ARGS__); _plReportError(PL_RESULT_FILEREAD, __VA_ARGS__); fclose(file)
+#define AbortLoad(...) _plDebugPrint(__VA_ARGS__); ReportError(PL_RESULT_FILEREAD, __VA_ARGS__); fclose(file)
 
     // check which flags have been set for this particular mesh
     int flags = fgetc(file);
@@ -253,7 +253,7 @@ PLModel *_plLoadRequiemModel(const char *path) {
 
     PLModel *model = malloc(sizeof(PLModel));
     if(model == NULL) {
-        _plReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
+        ReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
         return NULL;
     }
 

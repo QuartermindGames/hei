@@ -70,7 +70,7 @@ PLresult _plInitGraphics(void) {
     gfx_layer.mode = PLGFX_MODE_OPENGL; // todo, temp
     switch(gfx_layer.mode) {
         default: {
-            _plReportError(PL_RESULT_GRAPHICSINIT, "Invalid graphics layer, %d, selected!\n", gfx_layer.mode);
+            ReportError(PL_RESULT_GRAPHICSINIT, "Invalid graphics layer, %d, selected!\n", gfx_layer.mode);
             _plDebugPrint("Reverting to software mode...\n");
             gfx_layer.mode = PLGFX_MODE_SOFTWARE;
             return _plInitGraphics();
@@ -143,7 +143,7 @@ bool plHWSupportsShaders(void) {
 PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h) {
     PLFrameBuffer *buffer = (PLFrameBuffer*)malloc(sizeof(PLFrameBuffer));
     if(!buffer) {
-        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes for FrameBuffer!", sizeof(PLFrameBuffer));
+        ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes for FrameBuffer!", sizeof(PLFrameBuffer));
         return NULL;
     }
 
@@ -505,37 +505,30 @@ void plSetDefaultGraphicsState(void) {
     plEnableGraphicsStates(PL_CAPABILITY_SCISSORTEST);
 }
 
-void plFinish(void) {
-    _PL_GRAPHICS_TRACK();
+/* Shared Matrix Functions */
 
-    glFinish();
+void plLoadMatrixIdentity(void) {
+
+}
+
+void plTranslateMatrix(PLVector3 translation) {
+    if(plCompareVector3(translation, PLVector3(0, 0, 0))) {
+        return;
+    }
+}
+
+void plScaleMatrix(PLVector3 scale) {
+    if(plCompareVector3(scale, PLVector3(0, 0, 0))) {
+        return;
+    }
+}
+
+void plSetMatrixMode(unsigned int mode) {
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 // VIEWPORT/CAMERA
-
-void plViewport(int x, int y, unsigned int width, unsigned int height) {
-    _PL_GRAPHICS_TRACK();
-
-    if (((x == gfx_state.viewport_x) &&
-         (y == gfx_state.viewport_y)) &&
-        ((width == gfx_state.viewport_width) &&
-         (height == gfx_state.viewport_height)))
-        return;
-
-    glViewport(x, y, width, height);
-
-    gfx_state.viewport_x        = x;
-    gfx_state.viewport_y        = y;
-    gfx_state.viewport_width    = width;
-    gfx_state.viewport_height   = height;
-}
-
-void plScissor(int x, int y, unsigned int width, unsigned int height) {
-    _PL_GRAPHICS_TRACK();
-
-    glScissor(x, y, width, height);
-}
 
 // http://nehe.gamedev.net/article/replacement_for_gluperspective/21002/
 void plPerspective(double fov_y, double aspect, double near, double far) {

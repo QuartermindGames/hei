@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
     }
     main_camera->mode = PLCAMERA_MODE_PERSPECTIVE;
     main_camera->fov = 90.f;
-    main_camera->position = plCreateVector3D(0, 12, -500);
+    main_camera->position = PLVector3(0, 12, -500);
     main_camera->viewport.w = WIDTH;
     main_camera->viewport.h = HEIGHT;
 
@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
 
     PLLight light[4];
     memset(&light, 0, sizeof(PLLight) * 4);
-    light[0].position   = plCreateVector3D(0, 12.f, -800.f);
+    light[0].position   = PLVector3(0, 12.f, -800.f);
     light[0].colour     = plCreateColour4f(1.5f, .5f, .5f, 128.f);
     light[0].type       = PLLIGHT_TYPE_OMNI;
 
@@ -222,7 +222,7 @@ int main(int argc, char **argv) {
 
         // Camera rotation
         static double oldlmpos[2] = {0, 0};
-        static PLVector3D angles = { 0, 0 };
+        static PLVector3 angles = { 0, 0 };
         if (state & SDL_BUTTON(SDL_BUTTON_LEFT)) {
             double nxpos = xpos - oldlmpos[0];
             double nypos = ypos - oldlmpos[1];

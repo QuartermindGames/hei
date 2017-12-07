@@ -37,8 +37,8 @@ typedef struct OBJFace_s {
 
 } OBJFace_t;
 
-std::vector<PLVector3D> vertices;
-std::vector<PLVector3D> normals;
+std::vector<PLVector3> vertices;
+std::vector<PLVector3> normals;
 
 std::ifstream pl_obj_data;
 
@@ -81,15 +81,15 @@ PLModel *_plLoadOBJModel(const PLchar *path) {
 
             case OBJ_SYNTAX_VERTEX: {
                 if (line[1] == OBJ_SYNTAX_VERTEX_NORMAL) {
-                    PLVector3D normal = {0, 0, 0};
+                    PLVector3 normal = {0, 0, 0};
                     std::sscanf(line.c_str() + 2, "%f %f %f", &normal.x, &normal.y, &normal.z);
-                    normals.push_back(PLVector3D(normal.x, normal.y, normal.z));
+                    normals.push_back(PLVector3(normal.x, normal.y, normal.z));
                 } else if (line[1] == OBJ_SYNTAX_VERTEX_ST) {}
                 else // Vertex coords
                 {
-                    PLVector3D position = {0, 0, 0};
+                    PLVector3 position = {0, 0, 0};
                     std::sscanf(line.c_str() + 2, "%f %f %f", &position.x, &position.y, &position.z);
-                    vertices.push_back(PLVector3D(position.x, position.y, position.z));
+                    vertices.push_back(PLVector3(position.x, position.y, position.z));
                 }
             } break;
                 
@@ -109,7 +109,7 @@ PLModel *_plLoadOBJModel(const PLchar *path) {
 
     PLModel *model = (PLModel*)malloc(sizeof(PLModel));
     if (model == NULL) {
-        _plReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
+        ReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
 
         _plUnloadOBJModel();
         return nullptr;

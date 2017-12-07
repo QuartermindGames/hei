@@ -186,7 +186,7 @@ PLTexture *plCreateTexture(void) {
         if(!(*texture)) {
             (*texture) = (PLTexture*)malloc(sizeof(PLTexture));
             if(!(*texture)) {
-                _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Texture object, %d\n", sizeof(PLTexture));
+                ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Texture object, %d\n", sizeof(PLTexture));
                 return NULL;
             }
 
@@ -206,7 +206,7 @@ PLTexture *plCreateTexture(void) {
                 (gfx_state.max_textures += 512) * sizeof(PLTexture)
         );
         if(!gfx_state.textures) {
-            _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n",
+            ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n",
                            gfx_state.max_textures * sizeof(PLTexture));
             gfx_state.textures = old_mem;
             gfx_state.max_textures -= 512;

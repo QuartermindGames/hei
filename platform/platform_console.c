@@ -54,7 +54,7 @@ void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
         PLConsoleCommand **old_mem = _pl_commands;
         _pl_commands = (PLConsoleCommand**)realloc(_pl_commands, (_pl_commands_size += 128) * sizeof(PLConsoleCommand));
         if(!_pl_commands) {
-            _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n",
+            ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n",
                            _pl_commands_size * sizeof(PLConsoleCommand));
             _pl_commands = old_mem;
             _pl_commands_size -= 128;
@@ -70,7 +70,7 @@ void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds) {
         if(_pl_num_commands < _pl_commands_size) {
             _pl_commands[_pl_num_commands] = (PLConsoleCommand*)malloc(sizeof(PLConsoleCommand));
             if(!_pl_commands[_pl_num_commands]) {
-                _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
+                ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
                                sizeof(PLConsoleCommand));
                 break;
             }
@@ -110,7 +110,7 @@ void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars)
         PLConsoleVariable **old_mem = _pl_variables;
         _pl_variables = (PLConsoleVariable**)realloc(_pl_variables, (_pl_variables_size += 128) * sizeof(PLConsoleVariable));
         if(!_pl_variables) {
-            _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n",
+            ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n",
                            _pl_variables_size * sizeof(PLConsoleVariable));
             _pl_variables = old_mem;
             _pl_variables_size -= 128;
@@ -126,7 +126,7 @@ void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars)
         if(_pl_num_variables < _pl_variables_size) {
             _pl_variables[_pl_num_variables] = (PLConsoleVariable*)malloc(sizeof(PLConsoleVariable));
             if(!_pl_variables[_pl_num_variables]) {
-                _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
+                ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
                                sizeof(PLConsoleVariable));
                 break;
             }
@@ -310,13 +310,13 @@ PLresult _plInitConsole(void) {
     }
 
     if((_pl_commands = (PLConsoleCommand**)malloc(sizeof(PLConsoleCommand*) * _pl_commands_size)) == NULL) {
-        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand array, %d!\n",
+        ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand array, %d!\n",
                        sizeof(PLConsoleCommand) * _pl_commands_size);
         return PL_RESULT_MEMORYALLOC;
     }
 
     if((_pl_variables = (PLConsoleVariable**)malloc(sizeof(PLConsoleVariable*) * _pl_variables_size)) == NULL) {
-        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleVariable array, %d!\n",
+        ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleVariable array, %d!\n",
                        sizeof(PLConsoleCommand) * _pl_commands_size);
         return PL_RESULT_MEMORYALLOC;
     }
@@ -395,13 +395,13 @@ void plParseConsoleString(const char *string) {
     static char **argv = NULL;
     if(argv == NULL) {
         if((argv = (char**)malloc(sizeof(char*) * _CONSOLE_MAX_ARGUMENTS)) == NULL) {
-            _plReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
+            ReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
             return;
         }
         for(char **arg = argv; arg < argv + _CONSOLE_MAX_ARGUMENTS; ++arg) {
             (*arg) = (char*)malloc(sizeof(char) * 1024);
             if((*arg) == NULL) {
-                _plReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
+                ReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
                 break; // continue to our doom... ?
             }
         }
@@ -450,7 +450,8 @@ void plParseConsoleString(const char *string) {
 
 // todo, correctly handle rows and columns.
 void _plResizeConsoles(void) {
-    unsigned int screen_w = gfx_state.viewport_width, screen_h = gfx_state.viewport_height;
+    unsigned int screen_w = gfx_state.current_viewport.w;
+    unsigned int screen_h = gfx_state.current_viewport.h;
     if(screen_w == 0 || screen_h == 0) {
         screen_w = 640;
         screen_h = 480;
@@ -640,12 +641,12 @@ void plDrawConsole(void) {
 
             plDrawRectangle(plCreateRectangle(
 
-                    plCreateVector2D(
+                    PLVector2(
                             _pl_console_pane[i].display.xy.x + 4,
                             _pl_console_pane[i].display.xy.y + 4
                     ),
 
-                    plCreateVector2D(
+                    PLVector2(
                             _pl_console_pane[i].display.wh.x - 8,
                             20
                     ),
@@ -661,12 +662,12 @@ void plDrawConsole(void) {
         } else {
             plDrawRectangle(plCreateRectangle(
 
-                    plCreateVector2D(
+                    PLVector2(
                             _pl_console_pane[i].display.xy.x,
                             _pl_console_pane[i].display.xy.y
                     ),
 
-                    plCreateVector2D(
+                    PLVector2(
                             _pl_console_pane[i].display.wh.x,
                             _pl_console_pane[i].display.wh.y
                     ),
@@ -702,12 +703,12 @@ void plDrawConsole(void) {
 
             plDrawRectangle(plCreateRectangle(
 
-                    plCreateVector2D(
+                    PLVector2(
                             _pl_console_pane[i].display.xy.x + 4,
                             _pl_console_pane[i].display.xy.y + 4
                     ),
 
-                    plCreateVector2D(
+                    PLVector2(
                             _pl_console_pane[i].display.wh.x - 8,
                             20
                     ),

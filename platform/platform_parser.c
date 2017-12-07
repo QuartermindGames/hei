@@ -102,7 +102,7 @@ void plSetupParser(const char *buffer, unsigned int length) {
     plAssert(length);
 
     if(!(_plparser_block.buffer = (char*)malloc(length))) {
-        _plReportError(PL_RESULT_MEMORYALLOC, "");
+        ReportError(PL_RESULT_MEMORYALLOC, "");
     }
 
     _plparser_block.buffer_size = length;

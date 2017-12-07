@@ -262,7 +262,7 @@ PL_EXTERN bool _plIsSubSystemActive(unsigned int subsystem);
 PL_EXTERN void _plSetFunctionResult(PLresult result);
 
 #define _plUpdateErrorFunction()    _plSetCurrentFunction(PL_FUNCTION)
-#define _plReportError(type, ...) \
+#define ReportError(type, ...) \
     _plUpdateErrorFunction(); \
     _plSetFunctionResult(type); \
     _plSetErrorMessage(__VA_ARGS__)

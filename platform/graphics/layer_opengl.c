@@ -26,17 +26,21 @@ For more information, please refer to <http://unlicense.org>
 */
 #include "graphics_private.h"
 
-bool pl_gl_generate_mipmap              = false;
-bool pl_gl_depth_texture                = false;
-bool pl_gl_shadow                       = false;
-bool pl_gl_vertex_buffer_object         = false;
-bool pl_gl_texture_compression          = false;
-bool pl_gl_texture_compression_s3tc     = false;
-bool pl_gl_multitexture                 = false;
-bool pl_gl_texture_env_combine          = false;
-bool pl_gl_texture_env_add              = false;
-bool gl_vertex_program                  = false;
-bool gl_fragment_program                = false;
+typedef struct GLCapabilities {
+    bool generate_mipmap;
+    bool depth_texture;
+    bool shadow;
+    bool vertex_buffer_object;
+    bool texture_compression;
+    bool texture_compression_s3tc;
+    bool multitexture;
+    bool texture_env_combine;
+    bool texture_env_add;
+    bool vertex_program;
+    bool fragment_program;
+} GLCapabilities;
+
+GLCapabilities gl_capabilities;
 
 int gl_version_major = 0;
 int gl_version_minor = 0;
@@ -48,11 +52,11 @@ int gl_num_extensions = 0;
 /////////////////////////////////////////////////////////////
 
 bool GLHWSupportsShaders(void) {
-    return (GLVersion(2, 1) || (gl_fragment_program && gl_vertex_program));
+    return (GLVersion(2, 1) || (gl_capabilities.fragment_program && gl_capabilities.vertex_program));
 }
 
 bool GLHWSupportsMultitexture(void) {
-    return pl_gl_multitexture;
+    return gl_capabilities.multitexture;
 }
 
 /////////////////////////////////////////////////////////////
@@ -147,6 +151,12 @@ void GLSetupCamera(PLCamera *camera) {
             glBindRenderbuffer(GL_RENDERBUFFER, 0);
         }
     }
+
+    glViewport(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
+    glScissor(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
+
+    // keep the gfx_state up-to-date on the situation
+    gfx_state.current_viewport = camera->viewport;
 }
 
 void GLDrawPerspectivePOST(PLCamera *camera) {
@@ -213,6 +223,8 @@ void InitOpenGL(void) {
     gfx_state.hw_renderer       = (const char *) glGetString(GL_RENDERER);
     gfx_state.hw_vendor         = (const char *) glGetString(GL_VENDOR);
     gfx_state.hw_version        = (const char *) glGetString(GL_VERSION);
+
+    memset(&gl_capabilities, 0, sizeof(GLCapabilities));
 
     glGetIntegerv(GL_NUM_EXTENSIONS, &gl_num_extensions);
 

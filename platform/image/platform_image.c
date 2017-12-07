@@ -43,8 +43,6 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
         result = _plLoadVTFImage(fin, out);
     } else if(_plDTXFormatCheck(fin)) {
         result = _plLoadDTXImage(fin, out);
-    } else if(_plTIFFFormatCheck(fin)) {
-        result = _plLoadTIFFImage(path, out);
     } else if(_plBMPFormatCheck(fin)) {
         result = _plLoadBMPImage(fin, out);
     } else {
@@ -67,13 +65,13 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
 
 bool plLoadImage(const char *path, PLImage *out) {
     if (!plIsValidString(path)) {
-        _plReportError(PL_RESULT_FILEPATH, "Invalid path, %s, passed for image!\n", path);
+        ReportError(PL_RESULT_FILEPATH, "Invalid path, %s, passed for image!\n", path);
         return false;
     }
 
     FILE *fin = fopen(path, "rb");
-    if(!fin) {
-        _plReportError(PL_RESULT_FILEREAD, "Failed to load image, %s!\n", path);
+    if(fin == NULL) {
+        ReportError(PL_RESULT_FILEREAD, "Failed to load image, %s!\n", path);
         return false;
     }
 
@@ -95,7 +93,7 @@ PLresult plWriteImage(const PLImage *image, const char *path) {
     }
 
     PLresult result = PL_RESULT_FILETYPE;
-
+#if 0
     const char *extension = plGetFileExtension(path);
     if(plIsValidString(extension)) {
         if (!strncmp(extension, PLIMAGE_EXTENSION_TIFF, 3)) {
@@ -104,6 +102,7 @@ PLresult plWriteImage(const PLImage *image, const char *path) {
             // todo, Write BMP or some other easy-to-go format.
         }
     }
+#endif
 
     return result;
 }
@@ -162,19 +161,21 @@ void _plAllocateImage(PLImage *image, PLuint size, PLuint levels) {
 void plFreeImage(PLImage *image) {
     plFunctionStart();
 
-    if (!image || !image->data) {
+    if (image == NULL || image->data == NULL) {
         return;
     }
 
     for(PLuint levels = 0; levels < image->levels; ++levels) {
-        if(!image->data[levels]) {
+        if(image->data[levels] == NULL) {
             continue;
         }
 
         free(image->data[levels]);
+        image->data[levels] = NULL;
     }
 
     free(image->data);
+    image->data = NULL;
 }
 
 bool plIsValidImageSize(PLuint width, PLuint height) {

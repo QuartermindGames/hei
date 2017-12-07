@@ -95,7 +95,6 @@ typedef struct PLImage {
 #define PLIMAGE_EXTENSION_FTX   "ftx"   // Ritual's FTX image format
 #define PLIMAGE_EXTENSION_DTX   "dtx"   // Direct Texture (LithTech)
 #define PLIMAGE_EXTENSION_PPM   "ppm"   // Portable Pixel Map
-#define PLIMAGE_EXTENSION_TIFF  "tif"
 #define PLIMAGE_EXTENSION_KTX   "ktx"
 #define PLIMAGE_EXTENSION_TGA   "tga"
 #define PLIMAGE_EXTENSION_PNG   "png"
@@ -124,7 +123,6 @@ unsigned int _plGetImageSize(PLImageFormat format, unsigned int width, unsigned 
 bool _plDDSFormatCheck(FILE *fin);
 bool _plDTXFormatCheck(FILE *fin);
 bool _plVTFFormatCheck(FILE *fin);
-bool _plTIFFFormatCheck(FILE *fin);
 bool _plTIMFormatCheck(FILE *fin);
 bool _plBMPFormatCheck(FILE *fin);
 
@@ -135,7 +133,6 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out);           // Valve's VTF imag
 PLresult _plLoadDDSImage(FILE *fin, PLImage *out);
 PLresult _plLoadTIMImage(FILE *fin, PLImage *out);
 PLresult _plLoadBMPImage(FILE *fin, PLImage *out);
-PLresult _plLoadTIFFImage(const char *path, PLImage *out);
 
 #endif
 

@@ -166,7 +166,7 @@ PLPackage *LoadMADPackage(const char *filename, bool cache) {
 bool LoadMADPackageFile(FILE *fh, PLPackageIndex *pi) {
     pi->data = malloc(pi->length);
     if(pi->data == NULL) {
-        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n", pi->length);
+        ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n", pi->length);
         return false;
     }
 

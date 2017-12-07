@@ -34,7 +34,7 @@ typedef enum PLMaterialTextureType {
 typedef struct PLMaterialTexture {
     PLTexture *texture;
 
-    PLVector2D scroll;
+    PLVector2 scroll;
     float rotate, scale;
 
     PLMaterialTextureType type;

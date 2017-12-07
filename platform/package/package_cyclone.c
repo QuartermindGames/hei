@@ -53,7 +53,7 @@ typedef struct ARTHeader {
     uint32_t unknown2;
 } ARTHeader;
 
-PLPackage *_plLoadARTPackage(const char *filename, bool precache) {
+PLPackage *LoadARTPackage(const char *filename, bool precache) {
     char art_path[PL_SYSTEM_MAX_PATH] = { '\0' };
     char dat_path[PL_SYSTEM_MAX_PATH] = { '\0' };
 

@@ -48,7 +48,7 @@ void _plShutdownCameras(void) {
 PLCamera *plCreateCamera(void) {
     PLCamera *camera = (PLCamera*)calloc(1, sizeof(PLCamera));
     if(camera == NULL) {
-        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Camera, %d!\n", sizeof(PLCamera));
+        ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Camera, %d!\n", sizeof(PLCamera));
         return NULL;
     }
 
@@ -74,9 +74,9 @@ PLCamera *plCreateCamera(void) {
         gfx_layer.CreateCamera(camera);
     }
 
-    camera->bounds.mins = PLVector3D(
+    camera->bounds.mins = PLVector3(
             -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS);
-    camera->bounds.maxs = PLVector3D(
+    camera->bounds.maxs = PLVector3(
             CAMERA_DEFAULT_BOUNDS, CAMERA_DEFAULT_BOUNDS, CAMERA_DEFAULT_BOUNDS);
 
     return camera;
@@ -105,9 +105,6 @@ void plSetupCamera(PLCamera *camera) {
     if(gfx_layer.SetupCamera) {
         gfx_layer.SetupCamera(camera);
     }
-
-    plViewport(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
-    plScissor(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
 
 #if defined(PL_MODE_OPENGL)
     // todo, modernize start

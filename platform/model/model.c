@@ -75,7 +75,7 @@ void _plGenerateAnimatedModelNormals(PLAnimatedModel *model) {
 
 PLModel *plLoadModel(const char *path) {
     if(!plFileExists(path)) {
-        _plReportError(PL_RESULT_FILEREAD, "Failed to load model, %s!", path);
+        ReportError(PL_RESULT_FILEREAD, "Failed to load model, %s!", path);
         return NULL;
     }
 

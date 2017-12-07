@@ -117,7 +117,7 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
 
     FILE *file = fopen(path, "r");
     if(file == NULL) {
-        _plReportError(PL_RESULT_FILEPATH, "Failed to open %s!\n", path);
+        ReportError(PL_RESULT_FILEPATH, "Failed to open %s!\n", path);
         return NULL;
     }
 
@@ -125,7 +125,7 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     fclose(file);
 
     if(_pl_font.length < _PLFONT_MIN_LENGTH) {
-        _plReportError(PL_RESULT_FILESIZE, "Invalid length, %d, for %s!\n", _pl_font.length, path);
+        ReportError(PL_RESULT_FILESIZE, "Invalid length, %d, for %s!\n", _pl_font.length, path);
         return NULL;
     }
 
@@ -133,18 +133,18 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     if(!strncmp(_pl_font.line_buffer, "VERSION ", 8)) {
         long version = strtol(_pl_font.line_buffer + 8, NULL, 0);
         if (version <= 0 || version > _PLFONT_FORMAT_VERSION) {
-            _plReportError(PL_RESULT_FILEVERSION, "Expected version %d, received %d, for %s!\n",
+            ReportError(PL_RESULT_FILEVERSION, "Expected version %d, received %d, for %s!\n",
                            _PLFONT_FORMAT_VERSION, version, path);
             return NULL;
         }
     } else {
-        _plReportError(PL_RESULT_FILEVERSION, "Failed to fetch version for %s!\n", path);
+        ReportError(PL_RESULT_FILEVERSION, "Failed to fetch version for %s!\n", path);
         return NULL;
     }
 
     _plParseFontLine();
     if(!plFileExists(_pl_font.line_buffer)) {
-        _plReportError(PL_RESULT_FILEPATH, "Failed to find texture at %s, for %s!\n", _pl_font.line_buffer, path);
+        ReportError(PL_RESULT_FILEPATH, "Failed to find texture at %s, for %s!\n", _pl_font.line_buffer, path);
         return NULL;
     }
 
@@ -153,7 +153,7 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
 
     PLBitmapFont *font = (PLBitmapFont*)malloc(sizeof(PLBitmapFont));
     if(font == NULL) {
-        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for BitmapFont, %d!\n", sizeof(PLBitmapFont));
+        ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for BitmapFont, %d!\n", sizeof(PLBitmapFont));
         return NULL;
     }
     memset(font, 0, sizeof(PLBitmapFont));
@@ -287,7 +287,7 @@ void plDrawCharacter(PLBitmapFont *font, int x, int y, float scale, int8_t chara
 }
 
 void plDrawString(PLBitmapFont *font, int x, int y, float scale, const char *msg) {
-    if(scale <= 0 || x < 0 || y > gfx_state.viewport_width || y < 0 || y > gfx_state.viewport_height) {
+    if(scale <= 0 || x < 0 || y > gfx_state.current_viewport.w || y < 0 || y > gfx_state.current_viewport.h) {
         return;
     }
 

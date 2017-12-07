@@ -107,8 +107,8 @@ namespace pl {
 
             void Set(unsigned int x);
 
-            void Set(PLVector2D x);
-            void Set(PLVector3D x);
+            void Set(PLVector2 x);
+            void Set(PLVector3 x);
 
             ShaderUniformType GetType() { return type_; }
 

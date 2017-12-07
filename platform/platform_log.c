@@ -52,7 +52,7 @@ void plWriteLog(const char *path, const char *msg, ...) {
         fclose(file);
     } else {
         // todo, needs to be more appropriate; return details on exact issue
-        _plReportError(PL_RESULT_FILEREAD, "Failed to open %s!", newpath);
+        ReportError(PL_RESULT_FILEREAD, "Failed to open %s!", newpath);
     }
 }
 

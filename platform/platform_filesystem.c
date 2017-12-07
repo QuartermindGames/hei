@@ -324,7 +324,7 @@ bool plPathExists(const char *path) {
 bool plCopyFile(const char *path, const char *dest) {
     FILE *fold = fopen(path, "rb");
     if(fold == NULL) {
-        _plReportError(PL_RESULT_FILEREAD, "Failed to open %s!", path);
+        ReportError(PL_RESULT_FILEREAD, "Failed to open %s!", path);
         return false;
     }
 
@@ -335,7 +335,7 @@ bool plCopyFile(const char *path, const char *dest) {
     uint8_t *data = calloc(file_size, 1);
     if(data == NULL) {
         fclose(fold);
-        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate buffer for %s, with size %d!", path, file_size);
+        ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate buffer for %s, with size %d!", path, file_size);
         return false;
     }
 
@@ -345,7 +345,7 @@ bool plCopyFile(const char *path, const char *dest) {
     FILE *out = fopen(dest, "wb");
     if(out == NULL || (fwrite(data, 1, file_size, out) != file_size)) {
         free(data);
-        _plReportError(PL_RESULT_FILEREAD, "Failed to write %s!", dest);
+        ReportError(PL_RESULT_FILEREAD, "Failed to write %s!", dest);
         return false;
     }
     fclose(out);
@@ -360,7 +360,7 @@ size_t plGetFileSize(const char *path) {
 
     struct stat buf;
     if(stat(path, &buf) != 0) {
-        _plReportError(PL_RESULT_FILEREAD, plGetSystemErrorString());
+        ReportError(PL_RESULT_FILEREAD, plGetSystemErrorString());
         return 0;
     }
 
