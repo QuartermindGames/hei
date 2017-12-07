@@ -321,7 +321,6 @@ bool plPathExists(const char *path) {
     return false;
 }
 
-// todo, return plresult instead
 bool plCopyFile(const char *path, const char *dest) {
     FILE *fold = fopen(path, "rb");
     if(fold == NULL) {

@@ -24,6 +24,34 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #include "graphics_private.h"
+
+/* SHADER PROGRAM   */
+
+PLShaderProgram *plCreateShaderProgram(void) {
+    PLShaderProgram *program = malloc(sizeof(PLShaderProgram));
+    if(program == NULL) {
+        _plReportError(PL_RESULT_MEMORYALLOC, "Failed to create shader program!\n");
+        return NULL;
+    }
+
+    memset(program, 0, sizeof(PLShaderProgram));
+    program->id = (uint32_t) -1;
+
+    if(gfx_layer.CreateShaderProgram) {
+        gfx_layer.CreateShaderProgram(program);
+    }
+
+    return program;
+}
+
+void plDeleteShaderProgram(PLShaderProgram *program) {
+    plAssert(program);
+
+    if(gfx_layer.DeleteShaderProgram) {
+        gfx_layer.DeleteShaderProgram(program);
+    }
+
+    free(program);
+}
 

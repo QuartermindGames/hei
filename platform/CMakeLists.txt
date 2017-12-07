@@ -28,8 +28,6 @@ For more information, please refer to <http://unlicense.org>
 project(platform)
 
 option(PL_USE_ZLIB "ZLIB" ON)
-option(PL_USE_PNG "Support PNG" ON)
-option(PL_USE_TIFF "Support TIFF" ON)
 
 add_definitions("-D_DEBUG")
 
@@ -59,4 +57,4 @@ else()
     target_link_libraries(platform GL GLU)
 endif()
 target_include_directories(platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(platform m dl tiff)
+target_link_libraries(platform m dl)

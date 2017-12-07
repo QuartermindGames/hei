@@ -24,8 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#include "PL/platform_image.h"
-#include "PL/platform_filesystem.h"
+#include <PL/platform_image.h>
+#include <PL/platform_filesystem.h>
 #include <PL/platform_math.h>
 
 PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
@@ -65,7 +65,7 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     return result;
 }
 
-bool plLoadImage(const PLchar *path, PLImage *out) {
+bool plLoadImage(const char *path, PLImage *out) {
     if (!plIsValidString(path)) {
         _plReportError(PL_RESULT_FILEPATH, "Invalid path, %s, passed for image!\n", path);
         return false;

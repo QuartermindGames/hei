@@ -27,7 +27,6 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics.h>
-#include <PL/platform_game.h>
 
 #if defined(PL_USE_SDL2)
 
@@ -373,8 +372,8 @@ void plProcess(double delta) {
     // todo, game logic @ locked 60fps (rendering is UNLOCKED?)
 
     while(accumulator >= delta) {
-        plProcessActors();
-        plProcessPhysics();
+        //plProcessActors();
+        //plProcessPhysics();
     }
 
     plProcessGraphics();

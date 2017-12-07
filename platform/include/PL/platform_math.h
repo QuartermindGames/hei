@@ -805,12 +805,11 @@ PL_INLINE static PLRectangle2D plCreateRectangle(
         PLColour ul, PLColour ur,
         PLColour ll, PLColour lr
 ) {
-    PLRectangle2D rect = {
+    return (PLRectangle2D){
             xy, wh,
             ul, ur,
             ll, lr
     };
-    return rect;
 }
 
 PL_INLINE static void plClearRectangle(PLRectangle2D *r) {

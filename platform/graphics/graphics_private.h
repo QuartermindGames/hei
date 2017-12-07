@@ -86,7 +86,26 @@ typedef struct GfxLayer {
 
     void(*SetBlendMode)(PLBlend a, PLBlend b);
     void(*SetCullMode)(PLCullMode mode);
+
+    // Camera
+    void(*CreateCamera)(PLCamera *camera);
+    void(*DeleteCamera)(PLCamera *camera);
+    void(*SetupCamera)(PLCamera *camera);
+    ///////////////////////////////////////////
+    void(*DrawPerspectivePOST)(PLCamera *camera);
+
+    // Shaders
+    void(*CreateShaderProgram)(PLShaderProgram *program);
+    void(*DeleteShaderProgram)(PLShaderProgram *program);
 } GfxLayer;
+
+///////////////////////////////////////////////////////
+
+#define UseBufferScaling(a) \
+    ((a)->viewport.r_width != 0 && (a)->viewport.r_height != 0) && \
+    ((a)->viewport.r_width != (a)->viewport.w && (a)->viewport.r_height != (a)->viewport.h)
+
+///////////////////////////////////////////////////////
 
 PL_EXTERN_C
 
@@ -95,9 +114,9 @@ PL_EXTERN GfxLayer gfx_layer;
 
 #if defined(PL_MODE_OPENGL)
 
-PL_EXTERN int pl_gl_version_major;
-PL_EXTERN int pl_gl_version_minor;
-#define _PLGL_VERSION(maj, min) (((maj) == pl_gl_version_major && (min) <= pl_gl_version_minor) || (maj) < pl_gl_version_major)
+PL_EXTERN int gl_version_major;
+PL_EXTERN int gl_version_minor;
+#define _PLGL_VERSION(maj, min) (((maj) == gl_version_major && (min) <= gl_version_minor) || (maj) < gl_version_major)
 
 #endif
 

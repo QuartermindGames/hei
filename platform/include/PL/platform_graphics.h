@@ -248,7 +248,7 @@ PL_EXTERN_C_END
 //-----------------
 // Meshes
 
-#include "graphics_mesh.h"
+#include "platform_mesh.h"
 
 //-----------------
 // Framebuffers
@@ -299,7 +299,43 @@ typedef struct PLLight {
 //-----------------
 // Viewport / Camera
 
+enum {
+    PLCAMERA_MODE_PERSPECTIVE,
+    PLCAMERA_MODE_ORTHOGRAPHIC,
+    PLCAMERA_MODE_ISOMETRIC
+};
+
+typedef struct PLViewport {
+    int x, y;
+    unsigned int w, h;
+
+    uint8_t *v_buffer;
+    unsigned int buffers[32];
+
+    unsigned int r_width, r_height;
+    unsigned int old_r_width, old_r_height;
+} PLViewport;
+
+typedef struct PLCamera {
+    double fov;
+    double near, far;
+    unsigned int mode;
+
+    PLVector3D angles, position;
+    PLAABB bounds;
+
+    // Viewport
+    PLViewport viewport;
+} PLCamera;
+
 PL_EXTERN_C
+
+PL_EXTERN PLCamera *plCreateCamera(void);
+PL_EXTERN void plDeleteCamera(PLCamera *camera);
+
+PL_EXTERN void plSetupCamera(PLCamera *camera);
+
+PL_EXTERN void plDrawPerspective(void);
 
 PL_EXTERN void plViewport(int x, int y, unsigned int width, unsigned int height);
 PL_EXTERN void plScissor(int x, int y, unsigned int width, unsigned int height);
@@ -323,11 +359,11 @@ enum {
 };
 
 typedef struct PLShaderProgram {
-
+    uint32_t id;
 } PLShaderProgram;
 
 typedef struct PLShader {
-    unsigned int id;
+    uint32_t id;
 } PLShader;
 
 //-----------------
@@ -360,4 +396,3 @@ PL_EXTERN void plProcessGraphics(void);
 PL_EXTERN_C_END
 
 #include "platform_graphics_shader.h"
-#include "platform_graphics_camera.h"

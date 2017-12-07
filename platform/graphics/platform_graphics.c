@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #include <PL/platform_log.h>
 #include <PL/platform_image.h>
 #include <PL/platform_console.h>
@@ -45,7 +44,7 @@ data for each of these functions
 #define    _PL_GRAPHICS_TRACK()                     \
     {                                               \
         unsigned static int _t = 0;                 \
-        if(gfx_state.mode_debug)            \
+        if(gfx_state.mode_debug)                    \
         {                                           \
             plGraphicsLog(" %s\n", PL_FUNCTION);    \
             _t++;                                   \
@@ -101,6 +100,16 @@ void _plShutdownGraphics(void) {
 
     _plShutdownCameras();
     _plShutdownTextures();
+
+    switch(gfx_layer.mode) {
+        default: break;
+
+        case PLGFX_MODE_OPENGL_CORE:
+        case PLGFX_MODE_OPENGL_ES:
+        case PLGFX_MODE_OPENGL: {
+            ShutdownOpenGL();
+        } break;
+    }
 }
 
 /*===========================
