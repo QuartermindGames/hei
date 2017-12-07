@@ -42,16 +42,12 @@ void PurgePackageData(PLPackage *package) {
     }
 }
 
-/* Unloads package from memory -
- * if purge is true then it will free up any loaded files from memory too
+/* Unloads package from memory
  */
-void plDeletePackage(PLPackage *package, bool purge) {
+void plDeletePackage(PLPackage *package) {
     plAssert(package);
 
-    if(purge) {
-        PurgePackageData(package);
-    }
-
+    PurgePackageData(package);
     free(package->table);
     free(package);
 }
@@ -84,12 +80,11 @@ PLPackage *plLoadPackage(const char *path, bool cache) {
         return NULL;
     }
 
-#if 1
     const char *ext = plGetFileExtension(path);
     if(ext[0] != '\0') {
         for(unsigned int i = 0; i < num_load_packs; ++i) {
             for (unsigned int j = 0; j < load_packs[i].num_extensions; ++j) {
-                if (strcmp(ext, load_packs[i].extensions[j]) == 0) {
+                if (pl_strcasecmp(ext, load_packs[i].extensions[j]) == 0) {
                     PLPackage *package = load_packs[i].LoadPackage(path, cache);
                     if (package != NULL) {
                         strncpy(package->path, path, sizeof(package->path));
@@ -108,24 +103,6 @@ PLPackage *plLoadPackage(const char *path, bool cache) {
             }
         }
     }
-#else
-    PLPackage *package;
-    const char *extension = plGetFileExtension(path);
-    if(extension[0] != '\0') {
-        if((!strcmp(extension, "mad") || !strcmp(extension, "mtd")) && (package = LoadMADPackage(path, cache)) != NULL) {
-            return package;
-        }
-        if(!strcmp(extension, "dat") || !strcmp(extension, "art")) {
-            if((package = LoadARTPackage(path, cache))) {
-                return package;
-            }
-        }
-    } else { // probably less safe loading solution, your funeral!
-        if((package = LoadMADPackage(path, cache)) != NULL) {
-            return package;
-        }
-    }
-#endif
 
     return NULL;
 }

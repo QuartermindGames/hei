@@ -153,7 +153,7 @@ PLPackage *LoadMADPackage(const char *filename, bool cache) {
     FAILED:
 
     if(package != NULL) {
-        plDeletePackage(package, true);
+        plDeletePackage(package);
     }
 
     if(fh != NULL) {
