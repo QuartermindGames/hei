@@ -106,6 +106,7 @@ void plSetupCamera(PLCamera *camera) {
         gfx_layer.SetupCamera(camera);
     }
 
+#if 0
 #if defined(PL_MODE_OPENGL)
     // todo, modernize start
     glMatrixMode(GL_PROJECTION);
@@ -151,6 +152,7 @@ void plSetupCamera(PLCamera *camera) {
 
         default: break;
     }
+#endif
 #endif
 }
 

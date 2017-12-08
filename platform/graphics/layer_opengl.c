@@ -84,8 +84,25 @@ bool GLHWSupportsMultitexture(void) {
 
 /////////////////////////////////////////////////////////////
 
+unsigned int TranslateBlendFunc(PLBlend blend) {
+    switch(blend) {
+        case PL_BLEND_ONE: return GL_ONE;
+        case PL_BLEND_ZERO: return GL_ZERO;
+        case VL_BLEND_SRC_COLOR: return GL_SRC_COLOR;
+        case VL_BLEND_ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
+        case VL_BLEND_SRC_ALPHA: return GL_SRC_ALPHA;
+        case VL_BLEND_ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
+        case VL_BLEND_DST_ALPHA: return GL_DST_ALPHA;
+        case VL_BLEND_ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
+        case VL_BLEND_DST_COLOR: return GL_DST_COLOR;
+        case VL_BLEND_ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
+        case VL_BLEND_SRC_ALPHA_SATURATE: return GL_SRC_ALPHA_SATURATE;
+        default:return 0;
+    }
+}
+
 void GLSetBlendMode(PLBlend a, PLBlend b) {
-    glBlendFunc(a, b);
+    glBlendFunc(TranslateBlendFunc(a), TranslateBlendFunc(b));
 }
 
 void GLSetCullMode(PLCullMode mode) {
@@ -225,7 +242,6 @@ char gl_extensions[4096][4096] = { { '\0' } };
 
 void InitOpenGL(void) {
     // setup the gfx layer
-
     gfx_layer.HWSupportsShaders         = GLHWSupportsShaders;
     gfx_layer.HWSupportsMultitexture    = GLHWSupportsMultitexture;
     gfx_layer.SetBlendMode              = GLSetBlendMode;

@@ -147,12 +147,14 @@ PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h) {
         return NULL;
     }
 
+#if 0
     glGenFramebuffers(1, &buffer->fbo);
     glGenRenderbuffers(1, &buffer->rbo);
     glBindRenderbuffer(GL_RENDERBUFFER, buffer->rbo);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, w, h);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer->fbo);
     glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->rbo);
+#endif
 
     return buffer;
 }
@@ -162,8 +164,10 @@ void plDeleteFrameBuffer(PLFrameBuffer *buffer) {
         return;
     }
 
+#if 0
     glDeleteFramebuffers(1, &buffer->fbo);
     glDeleteRenderbuffers(1, &buffer->rbo);
+#endif
 }
 
 void plBindFrameBuffer(PLFrameBuffer *buffer) {
@@ -182,12 +186,14 @@ void plSetClearColour(PLColour rgba) {
         return;
     }
 
+#if 0
     glClearColor(
             plByteToFloat(rgba.r),
             plByteToFloat(rgba.g),
             plByteToFloat(rgba.b),
             plByteToFloat(rgba.a)
     );
+#endif
 
     plCopyColour(&gfx_state.current_clearcolour, rgba);
 }
@@ -388,7 +394,7 @@ void plEnableShaderProgram(unsigned int program) {
         return;
     }
 
-    glUseProgram(program);
+   // glUseProgram(program);
 
     gfx_state.current_program = program;
 }
@@ -400,7 +406,7 @@ void plDisableShaderProgram(unsigned int program) {
         return;
     }
 
-    glUseProgram(0);
+   // glUseProgram(0);
 
     gfx_state.current_program = 0;
 }

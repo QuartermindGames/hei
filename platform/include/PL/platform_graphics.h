@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_math.h"
 #include "platform_image.h"
 
-#define PL_MODE_OPENGL
+//#define PL_MODE_OPENGL
 
 typedef enum PLGfxMode {
     PLGFX_MODE_SOFTWARE,
@@ -71,62 +71,19 @@ typedef struct PLFrameBuffer {
 } PLFrameBuffer;
 
 typedef enum PLDataFormat {
-#if defined (PL_MODE_OPENGL)
-    PL_UNSIGNED_BYTE                = GL_UNSIGNED_BYTE,
-    PL_UNSIGNED_INT_8_8_8_8_REV     = GL_UNSIGNED_INT_8_8_8_8_REV,
-#else
     PL_UNSIGNED_BYTE,
-#endif
+    PL_UNSIGNED_INT_8_8_8_8_REV,
 } PLDataFormat;
 
-typedef enum PLBufferMask {
-#if defined (PL_MODE_OPENGL)
-    VL_MASK_COLOUR      = GL_COLOR_BUFFER_BIT,
-    VL_MASK_DEPTH       = GL_DEPTH_BUFFER_BIT,
-    VL_MASK_ACCUM,
-    VL_MASK_STENCIL     = GL_STENCIL_BUFFER_BIT,
-#else
-    VL_MASK_COLOUR		= (1 << 0),
-    VL_MASK_DEPTH		= (1 << 1),
-    VL_MASK_ACCUM		= (1 << 2),
-    VL_MASK_STENCIL		= (1 << 3),
-#endif
-} PLBufferMask;
-
-typedef enum VLCullMode {   
+typedef enum PLCullMode {
     PL_CULL_POSTIVE,
     PL_CULL_NEGATIVE
 } PLCullMode;
 
 // Blending Modes
 typedef enum PLBlend {
-#if defined (PL_MODE_OPENGL)
-    PL_BLEND_ZERO                   = GL_ZERO,
-    PL_BLEND_ONE                    = GL_ONE,
-    VL_BLEND_SRC_COLOR              = GL_SRC_COLOR,
-    VL_BLEND_ONE_MINUS_SRC_COLOR    = GL_ONE_MINUS_SRC_COLOR,
-    VL_BLEND_SRC_ALPHA              = GL_SRC_ALPHA,
-    VL_BLEND_ONE_MINUS_SRC_ALPHA    = GL_ONE_MINUS_SRC_ALPHA,
-    VL_BLEND_DST_ALPHA              = GL_DST_ALPHA,
-    VL_BLEND_ONE_MINUS_DST_ALPHA    = GL_ONE_MINUS_DST_ALPHA,
-    VL_BLEND_DST_COLOR              = GL_DST_COLOR,
-    VL_BLEND_ONE_MINUS_DST_COLOR    = GL_ONE_MINUS_DST_COLOR,
-    VL_BLEND_SRC_ALPHA_SATURATE     = GL_SRC_ALPHA_SATURATE,
-#elif defined (VL_MODE_GLIDE)
-    VL_BLEND_ZERO					= GR_BLEND_ZERO,
-    VL_BLEND_ONE					= GR_BLEND_ONE,
-    VL_BLEND_SRC_COLOR				= GR_BLEND_SRC_COLOR,
-    VL_BLEND_ONE_MINUS_SRC_COLOR	= GR_BLEND_ONE_MINUS_SRC_COLOR,
-    VL_BLEND_SRC_ALPHA				= GR_BLEND_SRC_ALPHA,
-    VL_BLEND_ONE_MINUS_SRC_ALPHA	= GR_BLEND_ONE_MINUS_SRC_ALPHA,
-    VL_BLEND_DST_ALPHA				= GR_BLEND_DST_ALPHA,
-    VL_BLEND_ONE_MINUS_DST_ALPHA	= GR_BLEND_ONE_MINUS_DST_ALPHA,
-    VL_BLEND_DST_COLOR				= GR_BLEND_DST_COLOR,
-    VL_BLEND_ONE_MINUS_DST_COLOR	= GR_BLEND_ONE_MINUS_DST_COLOR,
-    VL_BLEND_SRC_ALPHA_SATURATE		= GR_BLEND_ALPHA_SATURATE,
-#else
-    VL_BLEND_ZERO,
-    VL_BLEND_ONE,
+    PL_BLEND_ZERO,
+    PL_BLEND_ONE,
     VL_BLEND_SRC_COLOR,
     VL_BLEND_ONE_MINUS_SRC_COLOR,
     VL_BLEND_SRC_ALPHA,
@@ -136,7 +93,6 @@ typedef enum PLBlend {
     VL_BLEND_DST_COLOR,
     VL_BLEND_ONE_MINUS_DST_COLOR,
     VL_BLEND_SRC_ALPHA_SATURATE,
-#endif
 } PLBlend;
 
 // Blending
@@ -192,15 +148,9 @@ PL_EXTERN_C_END
 // Framebuffers
 
 typedef enum PLFBOTarget {
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    PL_FRAMEBUFFER_DEFAULT = GL_FRAMEBUFFER,
-    PL_FRAMEBUFFER_DRAW = GL_DRAW_FRAMEBUFFER,
-    PL_FRAMEBUFFER_READ = GL_READ_FRAMEBUFFER
-#else
     PL_FRAMEBUFFER_DEFAULT,
     PL_FRAMEBUFFER_DRAW,
     PL_FRAMEBUFFER_READ
-#endif
 } PLFBOTarget;
 
 enum {

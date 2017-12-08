@@ -31,15 +31,15 @@ For more information, please refer to <http://unlicense.org>
 #   define _PLGL_USE_VERTEX_BUFFER_OBJECTS
 #endif
 
-typedef struct _PLMeshTranslatePrimitive {
+typedef struct MeshTranslatePrimitive {
     PLMeshPrimitive mode;
 
     unsigned int target;
 
     const char *name;
-} _PLMeshTranslatePrimitive;
+} MeshTranslatePrimitive;
 
-_PLMeshTranslatePrimitive _pl_primitives[] = {
+MeshTranslatePrimitive primitives[] = {
 #if defined (PL_MODE_OPENGL)
         {PLMESH_LINES, GL_LINES, "LINES"},
         {PLMESH_POINTS, GL_POINTS, "POINTS"},
@@ -76,13 +76,13 @@ unsigned int _plTranslatePrimitiveMode(PLMeshPrimitive mode) {
         return 0;
     }
 
-    for (int i = 0; i < plArrayElements(_pl_primitives); i++) {
-        if (mode == _pl_primitives[i].mode)
-            return _pl_primitives[i].target;
+    for (int i = 0; i < plArrayElements(primitives); i++) {
+        if (mode == primitives[i].mode)
+            return primitives[i].target;
     }
 
     // Hacky, but just return initial otherwise.
-    return _pl_primitives[0].target;
+    return primitives[0].target;
 }
 
 unsigned int _plTranslateDrawMode(PLMeshDrawMode mode) {

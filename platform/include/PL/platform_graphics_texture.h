@@ -40,16 +40,8 @@ typedef enum PLTextureEnvironmentMode {
 } PLTextureEnvironmentMode;
 
 typedef enum PLTextureClamp {
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    VL_TEXTURECLAMP_CLAMP = GL_CLAMP_TO_EDGE,
-    VL_TEXTURECLAMP_WRAP = GL_REPEAT,
-#elif defined (VL_MODE_GLIDE)
-    VL_TEXTURECLAMP_CLAMP	= GR_TEXTURECLAMP_CLAMP,
-    VL_TEXTURECLAMP_WRAP	= GR_TEXTURECLAMP_WRAP,
-#else
-    VL_TEXTURECLAMP_CLAMP,
-    VL_TEXTURECLAMP_WRAP,
-#endif
+    PL_TEXTURE_CLAMP_CLAMP,
+    PL_TEXTURE_CLAMP_WRAP,
 } PLTextureClamp;
 
 typedef enum PLTextureFilter {

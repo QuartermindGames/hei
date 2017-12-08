@@ -280,7 +280,7 @@ unsigned int plGetMaxTextureUnits(void) {
 #elif defined (VL_MODE_GLIDE)
     grGet(GR_NUM_TMU, sizeof(param), (FxI32*)graphics_state.hw_maxtextureunits);
 #else
-    gfx_state.hw_maxtextureunits = PLGRAPHICS_SW_MAX_TEXTUREUNITS;
+    gfx_state.hw_maxtextureunits = 0;
 #endif
 
     return gfx_state.hw_maxtextureunits;
@@ -471,7 +471,7 @@ void plSwizzleTexture(PLTexture *texture, int r, int g, int b, int a) {
     plAssert(texture);
 
     plBindTexture(texture);
-
+#if 0
     if(_PLGL_VERSION(3,3)) {
         int swizzle[] = {
                 _plTranslateColourChannel(r),
@@ -483,4 +483,5 @@ void plSwizzleTexture(PLTexture *texture, int r, int g, int b, int a) {
     } else {
         // todo, software implementation
     }
+#endif
 }
