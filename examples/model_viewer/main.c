@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
     if (main_camera == NULL) {
         PRINT_ERROR("Failed to create camera!\n");
     }
-    main_camera->mode = PLCAMERA_MODE_PERSPECTIVE;
+    main_camera->mode = PL_CAMERA_MODE_PERSPECTIVE;
     main_camera->fov = 90.f;
     main_camera->position = PLVector3(0, 12, -500);
     main_camera->viewport.w = WIDTH;
@@ -208,7 +208,7 @@ int main(int argc, char **argv) {
     memset(&light, 0, sizeof(PLLight) * 4);
     light[0].position   = PLVector3(0, 12.f, -800.f);
     light[0].colour     = plCreateColour4f(1.5f, .5f, .5f, 128.f);
-    light[0].type       = PLLIGHT_TYPE_OMNI;
+    light[0].type       = PL_LIGHT_TYPE_OMNI;
 
     glPointSize(5.f);
     glLineWidth(2.f);

@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_filesystem.h>
 
-#define _CONSOLE_MAX_ARGUMENTS 8
+#define CONSOLE_MAX_ARGUMENTS 8
 
 /* Multi Console Manager */
 // todo, should the console be case-sensitive?
@@ -199,9 +199,9 @@ void plSetConsoleVariable(PLConsoleVariable *var, const char *value) {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-#define PLCONSOLE_MAX_INSTANCES 4
+#define CONSOLE_MAX_INSTANCES 4
 
-#define PLCONSOLE_DEFAULT_COLOUR 128, 0, 0, 128
+#define CONSOLE_DEFAULT_COLOUR 128, 0, 0, 128
 
 typedef struct PLConsolePane {
     PLRectangle2D display;
@@ -211,11 +211,11 @@ typedef struct PLConsolePane {
     unsigned int buffer_pos;
 } PLConsolePane;
 
-PLConsolePane _pl_console_pane[PLCONSOLE_MAX_INSTANCES];
-unsigned int _pl_num_console_panes;
-unsigned int _pl_active_console_pane = 0;
+PLConsolePane console_panes[CONSOLE_MAX_INSTANCES];
+unsigned int num_console_panes;
+unsigned int active_console_pane = 0;
 
-bool _pl_console_visible = false;
+bool console_visible = false;
 
 /////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE
@@ -232,11 +232,11 @@ IMPLEMENT_COMMAND(echo, "Prints out string to console.") {
 }
 
 IMPLEMENT_COMMAND(clear, "Clears the console buffer.") {
-    memset(_pl_console_pane[_pl_active_console_pane].buffer, 0, 4096);
+    memset(console_panes[active_console_pane].buffer, 0, 4096);
 }
 
 IMPLEMENT_COMMAND(colour, "Changes the colour of the current console.") {
-    //_pl_console_pane[_pl_active_console_pane].
+    //console_panes[active_console_pane].
 }
 
 IMPLEMENT_COMMAND(time, "Prints out the current time.") {
@@ -287,25 +287,25 @@ IMPLEMENT_COMMAND(help, "Returns information regarding specified command or vari
 
 //////////////////////////////////////////////
 
-PLMesh *_pl_mesh_line = NULL;
-PLBitmapFont *_pl_console_font = NULL;
+PLMesh *mesh_line = NULL;
+PLBitmapFont *console_font = NULL;
 
 PLresult _plInitConsole(void) {
-    _pl_console_visible = false;
+    console_visible = false;
 
 #if 0
-    if((_pl_console_font = plCreateBitmapFont("fonts/console.font")) == NULL) {
+    if((console_font = plCreateBitmapFont("fonts/console.font")) == NULL) {
         // todo, print warning...
     }
 #endif
 
-    memset(&_pl_console_pane, 0, sizeof(PLConsolePane) * PLCONSOLE_MAX_INSTANCES);
-    _pl_active_console_pane = _pl_num_console_panes = 0;
-    for(unsigned int i = 0; i < PLCONSOLE_MAX_INSTANCES; ++i) {
-        _pl_console_pane[i].colour = plCreateColour4b(PLCONSOLE_DEFAULT_COLOUR);
+    memset(&console_panes, 0, sizeof(PLConsolePane) * CONSOLE_MAX_INSTANCES);
+    active_console_pane = num_console_panes = 0;
+    for(unsigned int i = 0; i < CONSOLE_MAX_INSTANCES; ++i) {
+        console_panes[i].colour = plCreateColour4b(CONSOLE_DEFAULT_COLOUR);
     }
 
-    if((_pl_mesh_line = plCreateMesh(PLMESH_LINES, PL_DRAW_IMMEDIATE, 0, 4)) == NULL) {
+    if((mesh_line = plCreateMesh(PLMESH_LINES, PL_DRAW_IMMEDIATE, 0, 4)) == NULL) {
         return PL_RESULT_MEMORYALLOC;
     }
 
@@ -348,12 +348,12 @@ PLresult _plInitConsole(void) {
 }
 
 void _plShutdownConsole(void) {
-    _pl_console_visible = false;
+    console_visible = false;
 
-    plDeleteBitmapFont(_pl_console_font);
+    plDeleteBitmapFont(console_font);
 
-    memset(&_pl_console_pane, 0, sizeof(PLConsolePane) * PLCONSOLE_MAX_INSTANCES);
-    _pl_active_console_pane = _pl_num_console_panes = 0;
+    memset(&console_panes, 0, sizeof(PLConsolePane) * CONSOLE_MAX_INSTANCES);
+    active_console_pane = num_console_panes = 0;
 
     if(_pl_commands) {
         for(PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd) {
@@ -394,11 +394,11 @@ void plParseConsoleString(const char *string) {
 
     static char **argv = NULL;
     if(argv == NULL) {
-        if((argv = (char**)malloc(sizeof(char*) * _CONSOLE_MAX_ARGUMENTS)) == NULL) {
+        if((argv = (char**)malloc(sizeof(char*) * CONSOLE_MAX_ARGUMENTS)) == NULL) {
             ReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
             return;
         }
-        for(char **arg = argv; arg < argv + _CONSOLE_MAX_ARGUMENTS; ++arg) {
+        for(char **arg = argv; arg < argv + CONSOLE_MAX_ARGUMENTS; ++arg) {
             (*arg) = (char*)malloc(sizeof(char) * 1024);
             if((*arg) == NULL) {
                 ReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
@@ -449,23 +449,23 @@ void plParseConsoleString(const char *string) {
 #define _MAX_COLUMNS    2
 
 // todo, correctly handle rows and columns.
-void _plResizeConsoles(void) {
+void ResizeConsoles(void) {
     unsigned int screen_w = gfx_state.current_viewport.w;
     unsigned int screen_h = gfx_state.current_viewport.h;
     if(screen_w == 0 || screen_h == 0) {
         screen_w = 640;
         screen_h = 480;
     }
-    unsigned int width = screen_w; // / _pl_num_console_panes;
-    if(_pl_num_console_panes > 1) {
+    unsigned int width = screen_w; // / num_console_panes;
+    if(num_console_panes > 1) {
         width = screen_w / 2;
     }
     unsigned int height = screen_h;
-    if(_pl_num_console_panes > 2) {
+    if(num_console_panes > 2) {
         height = screen_h / 2;
     }
     unsigned int position_x = 0, position_y = 0;
-    for(unsigned int i = 0; i < _pl_num_console_panes; i++) {
+    for(unsigned int i = 0; i < num_console_panes; i++) {
         if(i > 0) {
             position_x += width;
             if(position_x >= screen_w) {
@@ -479,23 +479,23 @@ void _plResizeConsoles(void) {
             }
         }
 
-        _pl_console_pane[i].display.wh.x = width;
-        _pl_console_pane[i].display.wh.y = height;
-        _pl_console_pane[i].display.xy.x = position_x;
-        _pl_console_pane[i].display.xy.x = position_y;
+        console_panes[i].display.wh.x = width;
+        console_panes[i].display.wh.y = height;
+        console_panes[i].display.xy.x = position_x;
+        console_panes[i].display.xy.x = position_y;
     }
 }
 
-bool _plIsConsolePaneVisible(unsigned int id) {
-    if(!_pl_console_visible) {
+bool IsConsolePaneVisible(unsigned int id) {
+    if(!console_visible) {
         return false;
     }
 
     if(
-        _pl_console_pane[id].display.ll.a == 0 &&
-        _pl_console_pane[id].display.lr.a == 0 &&
-        _pl_console_pane[id].display.ul.a == 0 &&
-        _pl_console_pane[id].display.ur.a == 0 ) {
+        console_panes[id].display.ll.a == 0 &&
+        console_panes[id].display.lr.a == 0 &&
+        console_panes[id].display.ul.a == 0 &&
+        console_panes[id].display.ur.a == 0 ) {
         return false;
     }
 
@@ -509,12 +509,12 @@ void _plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) 
         return;
     }
 
-    for(unsigned int i = 0; i < _pl_num_console_panes; i++) {
-        if(!_plIsConsolePaneVisible(i)) {
+    for(unsigned int i = 0; i < num_console_panes; i++) {
+        if(!IsConsolePaneVisible(i)) {
             continue;
         }
 
-        PLConsolePane *pane = &_pl_console_pane[i];
+        PLConsolePane *pane = &console_panes[i];
 
         int pane_min_x = (int)pane->display.xy.x;
         int pane_max_x = pane_min_x + (int)(pane->display.wh.x);
@@ -530,7 +530,7 @@ void _plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) 
 
 #if 0
         if(m_buttons & PLINPUT_MOUSE_LEFT) {
-            _pl_active_console_pane = i;
+            active_console_pane = i;
 
             pane->display.xy.x += m_x; pane->display.xy.y += m_y;
             if(pane->display.xy.x <= gfx_state.viewport_x) {
@@ -576,34 +576,34 @@ void plSetupConsole(unsigned int num_instances) {
         return;
     }
 
-    if(num_instances > PLCONSOLE_MAX_INSTANCES) {
-        num_instances = PLCONSOLE_MAX_INSTANCES;
+    if(num_instances > CONSOLE_MAX_INSTANCES) {
+        num_instances = CONSOLE_MAX_INSTANCES;
     }
 
-    memset(&_pl_console_pane, 0, sizeof(PLConsolePane) * num_instances);
+    memset(&console_panes, 0, sizeof(PLConsolePane) * num_instances);
 
     for(unsigned int i = 0; i < num_instances; i++) {
-        _pl_console_pane[i].colour = plCreateColour4b(PLCONSOLE_DEFAULT_COLOUR);
-        plSetRectangleUniformColour(&_pl_console_pane[i].display, _pl_console_pane[i].colour);
+        console_panes[i].colour = plCreateColour4b(CONSOLE_DEFAULT_COLOUR);
+        plSetRectangleUniformColour(&console_panes[i].display, console_panes[i].colour);
     }
 
-    _pl_num_console_panes = num_instances;
-    _plResizeConsoles();
+    num_console_panes = num_instances;
+    ResizeConsoles();
 }
 
 void plShowConsole(bool show) {
-    _pl_console_visible = show;
+    console_visible = show;
 }
 
 void plSetConsoleColour(unsigned int id, PLColour colour) {
-    plSetRectangleUniformColour(&_pl_console_pane[id-1].display, colour);
+    plSetRectangleUniformColour(&console_panes[id-1].display, colour);
 }
 
 // todo, hook with log output?
 // todo, multiple warning/error levels?
 // todo, correctly adjust buffer.
 void plPrintConsoleMessage(unsigned int id, const char *msg, ...) {
-    if(id > PLCONSOLE_MAX_INSTANCES) {
+    if(id > CONSOLE_MAX_INSTANCES) {
         return;
     }
 
@@ -614,7 +614,7 @@ void plPrintConsoleMessage(unsigned int id, const char *msg, ...) {
     vsprintf(buf, msg, args);
     va_end(args);
 
-    strncat(_pl_console_pane[id].buffer, buf, strlen(buf));
+    strncat(console_panes[id].buffer, buf, strlen(buf));
 }
 
 #define _COLOUR_INACTIVE_ALPHA_TOP      128
@@ -629,25 +629,24 @@ void plPrintConsoleMessage(unsigned int id, const char *msg, ...) {
 #define _COLOUR_HEADER_ACTIVE_BOTTOM    82, 0, 0, _COLOUR_ACTIVE_ALPHA_BOTTOM
 
 void plDrawConsole(void) {
-    _plResizeConsoles();
+    ResizeConsoles();
 
-    for(unsigned int i = 0; i < _pl_num_console_panes; i++) {
-        if(!_plIsConsolePaneVisible(i)) {
+    for(unsigned int i = 0; i < num_console_panes; i++) {
+        if(!IsConsolePaneVisible(i)) {
             continue;
         }
 
-        if(i == _pl_active_console_pane) {
-            plDrawRectangle(_pl_console_pane[i].display);
+        if(i == active_console_pane) {
+            plDrawRectangle(console_panes[i].display);
 
             plDrawRectangle(plCreateRectangle(
-
                     PLVector2(
-                            _pl_console_pane[i].display.xy.x + 4,
-                            _pl_console_pane[i].display.xy.y + 4
+                            console_panes[i].display.xy.x + 4,
+                            console_panes[i].display.xy.y + 4
                     ),
 
                     PLVector2(
-                            _pl_console_pane[i].display.wh.x - 8,
+                            console_panes[i].display.wh.x - 8,
                             20
                     ),
 
@@ -661,55 +660,53 @@ void plDrawConsole(void) {
             // todo, display scroll bar
         } else {
             plDrawRectangle(plCreateRectangle(
-
                     PLVector2(
-                            _pl_console_pane[i].display.xy.x,
-                            _pl_console_pane[i].display.xy.y
+                            console_panes[i].display.xy.x,
+                            console_panes[i].display.xy.y
                     ),
 
                     PLVector2(
-                            _pl_console_pane[i].display.wh.x,
-                            _pl_console_pane[i].display.wh.y
+                            console_panes[i].display.wh.x,
+                            console_panes[i].display.wh.y
                     ),
 
                     PLColour(
-                            (uint8_t) (_pl_console_pane[i].display.ul.r / 2),
-                            (uint8_t) (_pl_console_pane[i].display.ul.g / 2),
-                            (uint8_t) (_pl_console_pane[i].display.ul.b / 2),
+                            (uint8_t) (console_panes[i].display.ul.r / 2),
+                            (uint8_t) (console_panes[i].display.ul.g / 2),
+                            (uint8_t) (console_panes[i].display.ul.b / 2),
                             _COLOUR_INACTIVE_ALPHA_TOP
                     ),
 
                     PLColour(
-                            (uint8_t) (_pl_console_pane[i].display.ur.r / 2),
-                            (uint8_t) (_pl_console_pane[i].display.ur.g / 2),
-                            (uint8_t) (_pl_console_pane[i].display.ur.b / 2),
+                            (uint8_t) (console_panes[i].display.ur.r / 2),
+                            (uint8_t) (console_panes[i].display.ur.g / 2),
+                            (uint8_t) (console_panes[i].display.ur.b / 2),
                             _COLOUR_INACTIVE_ALPHA_TOP
                     ),
 
                     PLColour(
-                            (uint8_t) (_pl_console_pane[i].display.ll.r / 2),
-                            (uint8_t) (_pl_console_pane[i].display.ll.g / 2),
-                            (uint8_t) (_pl_console_pane[i].display.ll.b / 2),
+                            (uint8_t) (console_panes[i].display.ll.r / 2),
+                            (uint8_t) (console_panes[i].display.ll.g / 2),
+                            (uint8_t) (console_panes[i].display.ll.b / 2),
                             _COLOUR_INACTIVE_ALPHA_BOTTOM
                     ),
 
                     PLColour(
-                            (uint8_t) (_pl_console_pane[i].display.lr.r / 2),
-                            (uint8_t) (_pl_console_pane[i].display.lr.g / 2),
-                            (uint8_t) (_pl_console_pane[i].display.lr.b / 2),
+                            (uint8_t) (console_panes[i].display.lr.r / 2),
+                            (uint8_t) (console_panes[i].display.lr.g / 2),
+                            (uint8_t) (console_panes[i].display.lr.b / 2),
                             _COLOUR_INACTIVE_ALPHA_BOTTOM
                     )
             ));
 
             plDrawRectangle(plCreateRectangle(
-
                     PLVector2(
-                            _pl_console_pane[i].display.xy.x + 4,
-                            _pl_console_pane[i].display.xy.y + 4
+                            console_panes[i].display.xy.x + 4,
+                            console_panes[i].display.xy.y + 4
                     ),
 
                     PLVector2(
-                            _pl_console_pane[i].display.wh.x - 8,
+                            console_panes[i].display.wh.x - 8,
                             20
                     ),
 
@@ -726,20 +723,20 @@ void plDrawConsole(void) {
         // todo, display buffer text
     }
 
-    if(_pl_console_font == NULL) {
+    if(console_font == NULL) {
         return;
     }
 
 #if defined(PL_MODE_OPENGL)
     glEnable(GL_TEXTURE_RECTANGLE);
 
-    glBindTexture(GL_TEXTURE_RECTANGLE, _pl_console_font->texture->id);
+    glBindTexture(GL_TEXTURE_RECTANGLE, console_font->texture->id);
 #endif
 
-    plDrawCharacter(_pl_console_font, 20, 20, 2, 'A');
-    plDrawCharacter(_pl_console_font, 20, 30, 2, 'B');
-    plDrawCharacter(_pl_console_font, 20, 40, 2, 'C');
-    plDrawCharacter(_pl_console_font, 20, 50, 4, 'D');
+    plDrawCharacter(console_font, 20, 20, 2, 'A');
+    plDrawCharacter(console_font, 20, 30, 2, 'B');
+    plDrawCharacter(console_font, 20, 40, 2, 'C');
+    plDrawCharacter(console_font, 20, 50, 4, 'D');
 
 #if defined(PL_MODE_OPENGL)
     glDisable(GL_TEXTURE_RECTANGLE);

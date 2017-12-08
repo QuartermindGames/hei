@@ -56,7 +56,7 @@ PLCamera *plCreateCamera(void) {
     camera->fov     = CAMERA_DEFAULT_FOV;
     camera->near    = CAMERA_DEFAULT_NEAR;
     camera->far     = CAMERA_DEFAULT_FAR;
-    camera->mode    = PLCAMERA_MODE_PERSPECTIVE;
+    camera->mode    = PL_CAMERA_MODE_PERSPECTIVE;
 
     /*  XY * * * * W
      *  *
@@ -113,7 +113,7 @@ void plSetupCamera(PLCamera *camera) {
     // modernize end
 
     switch(camera->mode) {
-        case PLCAMERA_MODE_PERSPECTIVE: {
+        case PL_CAMERA_MODE_PERSPECTIVE: {
             plPerspective(camera->fov, camera->viewport.w / camera->viewport.h, 0.1, 100000);
 
             // todo, modernize start
@@ -129,12 +129,12 @@ void plSetupCamera(PLCamera *camera) {
             break;
         }
             
-        case PLCAMERA_MODE_ORTHOGRAPHIC: {
+        case PL_CAMERA_MODE_ORTHOGRAPHIC: {
             glOrtho(0, camera->viewport.w, camera->viewport.h, 0, 0, 1000);
             break;
         }
         
-        case PLCAMERA_MODE_ISOMETRIC: {
+        case PL_CAMERA_MODE_ISOMETRIC: {
             glOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
 
             // todo, modernize start

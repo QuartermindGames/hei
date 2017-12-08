@@ -38,7 +38,7 @@ PLLight *plCreateLight(void) {
 
     gfx_state.num_lights++;
     light->colour   = PLColour(255, 255, 255, 128);
-    light->type     = PLLIGHT_TYPE_OMNI;
+    light->type     = PL_LIGHT_TYPE_OMNI;
     return light;
 }
 

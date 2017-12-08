@@ -26,6 +26,29 @@ For more information, please refer to <http://unlicense.org>
 */
 #include "graphics_private.h"
 
+#ifdef __APPLE__
+#   if 0
+#       include <OpenGL/gl3.h>
+#       include <OpenGL/gl3ext.h>
+
+#   else
+#       include <OpenGL/gl.h>
+#       include <OpenGL/glext.h>
+#       include <OpenGL/glu.h>
+
+#       include <OpenGL/gl3.h>
+#       include <OpenGL/gl3ext.h>
+#   endif
+#else
+#   define GL_GLEXT_PROTOTYPES
+//#   include <GL/gl.h>
+#   include <GL/glcorearb.h>
+
+#	ifdef _WIN32
+#		include <GL/wglew.h>
+#	endif
+#endif
+
 typedef struct GLCapabilities {
     bool generate_mipmap;
     bool depth_texture;
@@ -230,6 +253,16 @@ void InitOpenGL(void) {
 
     glGetIntegerv(GL_MINOR_VERSION, &gl_version_minor);
     glGetIntegerv(GL_MAJOR_VERSION, &gl_version_major);
+    unsigned int err = glGetError();
+    if(err == GL_INVALID_ENUM) { // try again the old fashioned way...
+        if(gfx_state.hw_version[0] != '\0') {
+            gl_version_major = gfx_state.hw_version[0];
+        }
+        if(gfx_state.hw_version[2] != '\0') {
+            gl_version_minor = gfx_state.hw_version[1];
+        }
+    }
+
     plGraphicsLog(" OpenGL %d.%d\n", gl_version_major, gl_version_minor);
     plGraphicsLog("  renderer:   %s\n", gfx_state.hw_renderer);
     plGraphicsLog("  vendor:     %s\n", gfx_state.hw_vendor);

@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    camera->mode            = PLCAMERA_MODE_ORTHOGRAPHIC;
+    camera->mode            = PL_CAMERA_MODE_ORTHOGRAPHIC;
     camera->viewport.w      = window->width;
     camera->viewport.h      = window->height;
 

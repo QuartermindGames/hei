@@ -49,68 +49,6 @@ typedef enum PLGfxMode {
     PLGFX_MODE_OTHER,
 } PLGfxMode;
 
-// todo, move these into platform_graphics.cpp
-#if defined (PL_MODE_OPENGL)
-
-#   ifdef __APPLE__
-#       if 0
-#           include <OpenGL/gl3.h>
-#           include <OpenGL/gl3ext.h>
-
-#           define VL_MODE_OPENGL_CORE
-#           define PL_MODE_OPENGL_CORE
-
-#       else
-#           include <OpenGL/gl.h>
-#           include <OpenGL/glext.h>
-#           include <OpenGL/glu.h>
-
-#           include <OpenGL/gl3.h>
-#           include <OpenGL/gl3ext.h>
-#       endif
-#   else
-//#	    include <GL/glew.h>
-#       if !defined(PL_MODE_OPENGL_CORE)
-#           define GL_GLEXT_PROTOTYPES
-#           include <GL/gl.h>
-#           include <GL/glcorearb.h>
-#           include <GL/glext.h>
-#       else
-#           include <GL/glcorearb.h>
-#       endif
-#   endif
-
-#	ifdef _WIN32
-#		include <GL/wglew.h>
-#	endif
-#elif defined (VL_MODE_OPENGL_CORE)
-
-#	include <GL/glcorearb.h>
-
-#elif defined (VL_MODE_GLIDE)
-
-#	ifdef _MSC_VER
-#		define __MSC__
-#	endif
-
-#	include <glide.h>
-
-#elif defined (VL_MODE_DIRECT3D)
-
-#	include <d3d11.h>
-
-#	pragma comment (lib, "d3d11.lib")
-#	pragma comment (lib, "d3dx11.lib")
-#	pragma comment (lib, "d3dx10.lib")
-
-#elif defined (VL_MODE_VULKAN)
-
-#else
-
-#   define PLGRAPHICS_SW_MAX_TEXTUREUNITS  16
-
-#endif
-
 #if defined(PL_INTERNAL)
 #   include "platform_log.h"
 #   define PL_GRAPHICS_LOG  "pl_graphics"
@@ -283,8 +221,8 @@ PL_EXTERN_C_END
 // Lighting
 
 typedef enum PLLightType {
-    PLLIGHT_TYPE_SPOT,  // Spotlight
-    PLLIGHT_TYPE_OMNI   // Omni-directional
+    PL_LIGHT_TYPE_SPOT,  // Spotlight
+    PL_LIGHT_TYPE_OMNI   // Omni-directional
 } PLLightType;
 
 typedef struct PLLight {
@@ -300,9 +238,9 @@ typedef struct PLLight {
 // Viewport / Camera
 
 enum {
-    PLCAMERA_MODE_PERSPECTIVE,
-    PLCAMERA_MODE_ORTHOGRAPHIC,
-    PLCAMERA_MODE_ISOMETRIC
+    PL_CAMERA_MODE_PERSPECTIVE,
+    PL_CAMERA_MODE_ORTHOGRAPHIC,
+    PL_CAMERA_MODE_ISOMETRIC
 };
 
 typedef struct PLViewport {
