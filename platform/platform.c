@@ -55,8 +55,8 @@ typedef struct PLSubSystem {
 PLSubSystem pl_subsystems[]= {
         {
                 PL_SUBSYSTEM_GRAPHICS,
-                &_plInitGraphics,
-                &_plShutdownGraphics
+                &InitGraphics,
+                &ShutdownGraphics
         },
 
         {

@@ -34,7 +34,7 @@ PLConsoleVariable pl_texture_anisotropy = { "gr_texture_anisotropy", "16", pl_in
 
 #define FREE_TEXTURE    ((unsigned int)-1)
 
-void _plInitTextures(void) {
+void InitTextures(void) {
     gfx_state.tmu = (PLTextureMappingUnit*)calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));
     memset(gfx_state.tmu, 0, sizeof(PLTextureMappingUnit));
     for (unsigned int i = 0; i < plGetMaxTextureUnits(); i++) {
@@ -49,7 +49,7 @@ void _plInitTextures(void) {
     plRegisterConsoleVariables(&pl_texture_anisotropy, 1);
 }
 
-void _plShutdownTextures(void) {
+void ShutdownTextures(void) {
     if(gfx_state.tmu) {
         free(gfx_state.tmu);
     }

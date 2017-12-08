@@ -41,7 +41,7 @@ data for each of these functions
 - Do this in another thread if possible
 - Display that data as an overlay
 */
-#define    _PL_GRAPHICS_TRACK()                     \
+#define GRAPHICS_TRACK()                            \
     {                                               \
         unsigned static int _t = 0;                 \
         if(gfx_state.mode_debug)                    \
@@ -55,12 +55,12 @@ data for each of these functions
 	INITIALIZATION
 ===========================*/
 
-void _plInitTextures(void);     // platform_graphics_texture
-void _plInitCameras(void);      // platform_graphics_camera
-void _plInitMaterials(void);    // material
+void InitTextures(void);     // platform_graphics_texture
+void InitCameras(void);      // platform_graphics_camera
+void InitMaterials(void);    // material
 
-PLresult _plInitGraphics(void) {
-    _PL_GRAPHICS_TRACK();
+PLresult InitGraphics(void) {
+    GRAPHICS_TRACK();
 
     plClearLog(PL_GRAPHICS_LOG);
     plGraphicsLog("Initializing graphics abstraction layer...\n");
@@ -73,7 +73,7 @@ PLresult _plInitGraphics(void) {
             ReportError(PL_RESULT_GRAPHICSINIT, "Invalid graphics layer, %d, selected!\n", gfx_layer.mode);
             _plDebugPrint("Reverting to software mode...\n");
             gfx_layer.mode = PLGFX_MODE_SOFTWARE;
-            return _plInitGraphics();
+            return InitGraphics();
         }
 
         case PLGFX_MODE_DIRECT3D: break;
@@ -85,21 +85,21 @@ PLresult _plInitGraphics(void) {
         } break;
     }
 
-    _plInitCameras();
-    _plInitTextures();
-    _plInitMaterials();
+    InitCameras();
+    InitTextures();
+    InitMaterials();
 
     return PL_RESULT_SUCCESS;
 }
 
-void _plShutdownTextures(void); // platform_graphics_texture
-void _plShutdownCameras(void);  // platform_graphics_camera
+void ShutdownTextures(void); // platform_graphics_texture
+void ShutdownCameras(void);  // platform_graphics_camera
 
-void _plShutdownGraphics(void) {
-    _PL_GRAPHICS_TRACK();
+void ShutdownGraphics(void) {
+    GRAPHICS_TRACK();
 
-    _plShutdownCameras();
-    _plShutdownTextures();
+    ShutdownCameras();
+    ShutdownTextures();
 
     switch(gfx_layer.mode) {
         default: break;
@@ -117,7 +117,7 @@ void _plShutdownGraphics(void) {
 ===========================*/
 
 bool plHWSupportsMultitexture(void) {
-    _PL_GRAPHICS_TRACK();
+    GRAPHICS_TRACK();
 
     if(gfx_layer.HWSupportsMultitexture) {
         return gfx_layer.HWSupportsMultitexture();
@@ -127,7 +127,7 @@ bool plHWSupportsMultitexture(void) {
 }
 
 bool plHWSupportsShaders(void) {
-    _PL_GRAPHICS_TRACK();
+    GRAPHICS_TRACK();
 
     if(gfx_layer.HWSupportsShaders) {
         return gfx_layer.HWSupportsShaders();
@@ -193,7 +193,7 @@ void plSetClearColour(PLColour rgba) {
 }
 
 void plClearBuffers(unsigned int buffers) {
-    _PL_GRAPHICS_TRACK();
+    GRAPHICS_TRACK();
 
 #if defined (PL_MODE_OPENGL) || defined (PL_MODE_OPENGL_CORE)
     // Rather ugly, but translate it over to GL.
@@ -275,13 +275,13 @@ _PLGraphicsCapabilities graphics_capabilities[] =
         };
 
 bool plIsGraphicsStateEnabled(PLuint flags) {
-    _PL_GRAPHICS_TRACK();
+    GRAPHICS_TRACK();
 
     return (bool)(flags & gfx_state.current_capabilities);
 }
 
 void plEnableGraphicsStates(PLuint flags) {
-    _PL_GRAPHICS_TRACK();
+    GRAPHICS_TRACK();
 
     if (plIsGraphicsStateEnabled(flags)) {
         return;
@@ -320,7 +320,7 @@ void plEnableGraphicsStates(PLuint flags) {
 }
 
 void plDisableGraphicsStates(PLuint flags) {
-    _PL_GRAPHICS_TRACK();
+    GRAPHICS_TRACK();
 
     if (!plIsGraphicsStateEnabled(flags)) {
         return;
@@ -382,7 +382,7 @@ unsigned int plGetCurrentShaderProgram(void) {
 }
 
 void plEnableShaderProgram(unsigned int program) {
-    _PL_GRAPHICS_TRACK();
+    GRAPHICS_TRACK();
 
     if (program == gfx_state.current_program) {
         return;
@@ -394,7 +394,7 @@ void plEnableShaderProgram(unsigned int program) {
 }
 
 void plDisableShaderProgram(unsigned int program) {
-    _PL_GRAPHICS_TRACK();
+    GRAPHICS_TRACK();
 
     if(program != gfx_state.current_program) {
         return;
@@ -411,7 +411,7 @@ void plDisableShaderProgram(unsigned int program) {
 
 #if 0
 PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
-    _PL_GRAPHICS_TRACK();
+    GRAPHICS_TRACK();
 
     _plSetActiveTexture(texture);
 
@@ -532,7 +532,7 @@ void plSetMatrixMode(unsigned int mode) {
 
 // http://nehe.gamedev.net/article/replacement_for_gluperspective/21002/
 void plPerspective(double fov_y, double aspect, double near, double far) {
-    _PL_GRAPHICS_TRACK();
+    GRAPHICS_TRACK();
 
 #if defined(PL_MODE_OPENGL)
     double h = tan(fov_y / 360 * PL_PI) * near;

@@ -204,8 +204,8 @@ plSetErrorFunction(PL_FUNCTION);
 
 PL_EXTERN_C
 
-PLresult _plInitGraphics(void);
-void _plShutdownGraphics(void);
+PLresult InitGraphics(void);
+void ShutdownGraphics(void);
 
 PLresult _plInitIO(void);
 void _plShutdownIO(void);
