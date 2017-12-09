@@ -24,6 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
+#include <arpa/inet.h> /* htons() */
+
 #include <PL/platform_image.h>
 
 /*  http://rewiki.regengedanken.de/wiki/.TIM
@@ -31,29 +34,36 @@ For more information, please refer to <http://unlicense.org>
  */
 
 typedef struct TIMHeader {
-    uint32_t type;
-    uint32_t offset;
+    uint8_t flag1;
+    uint8_t flag2;
+    uint8_t flag3;
+    uint8_t flag4;
 } TIMHeader;
 
+#define TIM_FLAG1_TYPE_MASK (1 | 2)
+#define TIM_FLAG1_CLP       8
+
 typedef struct TIMPaletteInfo {
+    uint32_t palette_size;   /* Length of the palette header and pixel data, in bytes. */
     uint16_t palette_org_x;
     uint16_t palette_org_y;
-    uint16_t palette_colours;
-    uint16_t num_palettes;
+    uint16_t palette_width;  /* "width" and "height" of palette, multiply these together to get the */
+    uint16_t palette_height; /* ...length of the palette in 16-bit words. */
 } TIMPaletteInfo;
 
 typedef struct TIMImageInfo {
+    uint32_t image_size; /* Length of image header and pixel data, in bytes */
     uint16_t org_x;
     uint16_t org_y;
-    uint16_t width;
-    uint16_t height;
+    uint16_t width;      /* Length of each row, in 16-bit words */
+    uint16_t height;     /* Height of the image, in pixels */
 } TIMImageInfo;
 
 enum TIMType {
-    TIM_TYPE_4BPP   = 0x08,
-    TIM_TYPE_8BPP   = 0x09,
-    TIM_TYPE_16BPP  = 0x02,
-    TIM_TYPE_24BPP  = 0x03,
+    TIM_TYPE_4BPP   = 0,
+    TIM_TYPE_8BPP   = 1,
+    TIM_TYPE_16BPP  = 2,
+    TIM_TYPE_24BPP  = 3,
 };
 
 #define TIM_IDENT   16
@@ -78,109 +88,176 @@ PLresult WriteTIMImage(const PLImage *image, const char *path) {
 }
 
 PLresult LoadTIMImage(FILE *fin, PLImage *out) {
-    TIMHeader header;
-    if (fread(&header, sizeof(TIMHeader), 1, fin) != 1) {
-        return PL_RESULT_FILEREAD;
-    }
-
     memset(out, 0, sizeof(PLImage));
 
-    switch(header.type) {
-        case TIM_TYPE_4BPP:
-        case TIM_TYPE_8BPP: {
-            TIMPaletteInfo palette_info;
-            if(fread(&palette_info, sizeof(TIMPaletteInfo), 1, fin) != 1) {
-                return PL_RESULT_FILEREAD;
-            }
+    uint16_t *palette = NULL;
+    void *image_data  = NULL;
 
-            uint16_t palettes[palette_info.num_palettes][palette_info.palette_colours];
-            for(PLuint i = 0; i < palette_info.num_palettes; i++) {
-                if(fread(palettes[i], sizeof(uint16_t), palette_info.palette_colours, fin) != 
-                        palette_info.palette_colours) {
-                    return PL_RESULT_FILEREAD;
-                }
-            }
+    TIMHeader header;
+    if (fread(&header, sizeof(TIMHeader), 1, fin) != 1) {
+        goto UNEXPECTED_EOF;
+    }
 
-            fseek(fin, 4, SEEK_CUR);
+    uint32_t palette_size = 0; /* Number of colours in palette */
 
-            TIMImageInfo image_info;
-            if(fread(&image_info, sizeof(TIMImageInfo), 1, fin) != 1) {
-                return PL_RESULT_FILEREAD;
-            }
+    if(header.flag1 & TIM_FLAG1_CLP) {
+        /* File has a palette (CLUT), read it it in */
 
-            // The width of the image depends on its type.
-            out->width = (header.type == TIM_TYPE_4BPP ?
-                                   (unsigned int) (image_info.width * 4) :
-                                   (unsigned int) (image_info.width * 2));
-            out->height = image_info.height;
-            if(!out->width || !out->height) {
-                return PL_RESULT_IMAGERESOLUTION;
-            }
-
-            uint32_t size;
-            if(header.type == TIM_TYPE_4BPP) {
-                size = (uint32_t)(out->width * out->height / 2);
-            } else { // 8bpp
-                size = out->width * out->height;
-            }
-
-            uint8_t img[size];
-            if(fread(img, sizeof(uint8_t), size, fin) != size) {
-                return PL_RESULT_FILEREAD;
-            }
-
-            out->format = PL_IMAGEFORMAT_RGB5A1;
-            out->size = _plGetImageSize(out->format, out->width, out->height);
-            out->levels = 1;
-
-            out->data = (uint8_t**)calloc(out->levels, sizeof(uint8_t*));
-            out->data[0] = (uint8_t*)calloc(out->size, sizeof(uint8_t));
-#if 1 // copy out the palette...
-            for(unsigned int i = 0; i < palette_info.palette_colours; i++) {
-                ((uint16_t**)(out->data))[0][i] = palettes[0][i];
-            }
-#else // each 'pixel' within our image is actually an index...
-            if(header.type == TIM_TYPE_4BPP) {
-                for (unsigned int i = 0, k = 0; i < size; i++, k++) {
-                    ((uint16_t**)(out->data))[0][k] = palettes[0][(img[i] & 0x0F)]; k++; 
-                    //out->data[0][k] = (uint8_t)palettes[0][(img[i] & 0x0F)]; k++;
-                    ((uint16_t**)(out->data))[0][k] = palettes[0][(img[i] & 0xF0)];      
-                    //out->data[0][k] = (uint8_t)palettes[0][(img[i] & 0xF0) >> 4];
-                }
-            } else { // 8bpp
-
-            }
-#endif
-
-            break;
+        TIMPaletteInfo palette_info;
+        if(fread(&palette_info, sizeof(TIMPaletteInfo), 1, fin) != 1) {
+            goto UNEXPECTED_EOF;
         }
 
-        case TIM_TYPE_16BPP:
-        case TIM_TYPE_24BPP: {
-            fseek(fin, 4, SEEK_CUR);
+        palette_size = ((uint32_t)(palette_info.palette_width))
+            * ((uint32_t)(palette_info.palette_height));
 
-            TIMImageInfo image_info;
-            if(fread(&image_info, sizeof(TIMImageInfo), 1, fin) != 1) {
-                return PL_RESULT_FILEREAD;
-            }
-
-            out->levels = 1;
-
-            out->width = image_info.width;
-            out->height = image_info.height;
-            if(!out->width || !out->height) {
-                return PL_RESULT_IMAGERESOLUTION;
-            }
-
-            break;
+        /* Check the size and width/height values in the header match. */
+        if(palette_size >= palette_info.palette_size
+            || (palette_size * sizeof(uint16_t)) != (palette_info.palette_size - sizeof(palette_info)))
+        {
+            ReportError(PL_RESULT_FILETYPE, "invalid size/width/height in TIM palette header");
+            goto ERR_CLEANUP;
         }
 
-        default: {
-            return PL_RESULT_FILETYPE;
+        palette = calloc(palette_size, sizeof(uint16_t));
+        if(palette == NULL) {
+            ReportError(PL_RESULT_MEMORYALLOC, "couldn't allocate palette buffer");
+            goto ERR_CLEANUP;
+        }
+
+        if(fread(palette, sizeof(uint16_t), palette_size, fin) != palette_size) {
+            goto UNEXPECTED_EOF;
         }
     }
+
+    TIMImageInfo image_info;
+    if(fread(&image_info, sizeof(TIMImageInfo), 1, fin) != 1) {
+        goto UNEXPECTED_EOF;
+    }
+
+    /* Check the size and width/height values in the header match. */
+    {
+        uint32_t image_width_bytes = ((uint32_t)(image_info.width)) * 2;
+        if(image_width_bytes >= image_info.image_size
+            || (image_width_bytes * image_info.height) != (image_info.image_size - sizeof(image_info)))
+        {
+            ReportError(PL_RESULT_FILETYPE, "invalid size/width/height in TIM image header");
+            goto ERR_CLEANUP;
+        }
+    }
+
+    /* Read in the image data. */
+    size_t image_data_len = image_info.image_size - sizeof(image_info);
+    image_data            = malloc(image_data_len);
+    if(image_data == NULL) {
+        ReportError(PL_RESULT_MEMORYALLOC, "couldn't allocate input image buffer");
+        goto ERR_CLEANUP;
+    }
+
+    if(fread(image_data, image_data_len, 1, fin) != 1) {
+        goto UNEXPECTED_EOF;
+    }
+
+    /* Prepare the metadata and image buffer in the PLImage structure. */
+
+    uint8_t type = header.flag1 & TIM_FLAG1_TYPE_MASK;
+
+    switch(type) {
+        case TIM_TYPE_4BPP:
+            out->width  = image_info.width * 4;
+            out->height = image_info.height;
+            out->format = PL_IMAGEFORMAT_RGB5A1;
+            
+            break;
+
+        case TIM_TYPE_8BPP:
+            out->width  = image_info.width * 2;
+            out->height = image_info.height;
+            out->format = PL_IMAGEFORMAT_RGB5A1;
+            
+            break;
+
+        case TIM_TYPE_16BPP:
+            out->width  = image_info.width;
+            out->height = image_info.height;
+            out->format = PL_IMAGEFORMAT_RGB5A1;
+            
+            break;
+
+        case TIM_TYPE_24BPP:
+            out->width  = image_info.width / 1.5;
+            out->height = image_info.height;
+            out->format = PL_IMAGEFORMAT_RGB8;
+            
+            break;
+    };
+
+    out->size   = _plGetImageSize(out->format, out->width, out->height);
+    out->levels = 1;
+
+    out->data = calloc(out->levels, sizeof(uint8_t*));
+    if(out->data == NULL) {
+        ReportError(PL_RESULT_MEMORYALLOC, "couldn't allocate output image buffer");
+        goto ERR_CLEANUP;
+    }
+
+    out->data[0] = calloc(out->size, sizeof(uint8_t));
+    if(out->data[0] == NULL) {
+        ReportError(PL_RESULT_MEMORYALLOC, "couldn't allocate output image buffer");
+        goto ERR_CLEANUP;
+    }
+
+    /* Copy the image data into the PLImage buffer. */
+
+    switch(type) {
+        case TIM_TYPE_4BPP: {
+            uint8_t  *indata  = image_data;
+            uint16_t *outdata = (uint16_t*)(out->data[0]);
+
+            for(; indata < (uint8_t*)(image_data + image_data_len); ++indata) {
+                uint8_t p1 = (*indata & 0xF0) >> 4;
+                uint8_t p2 = (*indata & 0x0F);
+
+                if(p1 >= palette_size || p2 >= palette_size) {
+                    ReportError(PL_RESULT_FILETYPE, "out-of-range palette index in TIM image");
+                    goto ERR_CLEANUP;
+                }
+
+                /* Convert from the endianness monstrosity (GGGRRRRRABBBBBGG) in the TIM file
+                 * to RRRRRGGGGGBBBBBA. */
+
+                *(outdata++) = htons(palette[p1]);
+                *(outdata++) = htons(palette[p2]);
+            }
+
+            break;
+        }
+
+        case TIM_TYPE_8BPP:
+        case TIM_TYPE_16BPP:
+        case TIM_TYPE_24BPP:
+            abort();
+    };
 
     out->colour_format = PL_COLOURFORMAT_ABGR;
 
+    free(image_data);
+    free(palette);
+
     return PL_RESULT_SUCCESS;
+
+    UNEXPECTED_EOF:
+    ReportError(PL_RESULT_FILEREAD, "unexpected EOF when loading TIM file");
+
+    ERR_CLEANUP:
+
+    if(out->data != NULL) {
+        free(out->data[0]);
+        free(out->data);
+    }
+
+    free(image_data);
+    free(palette);
+
+    return plGetFunctionResult();
 }
