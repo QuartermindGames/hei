@@ -76,7 +76,7 @@ unsigned int _plTranslatePrimitiveMode(PLMeshPrimitive mode) {
         return 0;
     }
 
-    for (int i = 0; i < plArrayElements(primitives); i++) {
+    for (unsigned int i = 0; i < plArrayElements(primitives); i++) {
         if (mode == primitives[i].mode)
             return primitives[i].target;
     }

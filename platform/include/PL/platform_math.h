@@ -339,7 +339,7 @@ PL_INLINE static PLVector3 plNormalizeVector3(PLVector3 v) {
     return v;
 }
 
-PL_INLINE const static char *plPrintVector3(PLVector3 v) {
+PL_INLINE static const char *plPrintVector3(PLVector3 v) {
     static char s[32] = { 0 };
     snprintf(s, 32, "%i %i %i", (int)v.x, (int)v.y, (int)v.z);
     return s;
@@ -583,7 +583,7 @@ PL_INLINE static void plMultiplyMatrix4f(PLMatrix4 m, float a) {
     m[1] *= a; m[5] *= a; m[9] *= a;
     m[2] *= a; m[6] *= a; m[10] *= a;
 }
-
+#if 0 // todo
 PL_INLINE static void plDivideMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
 
 }
@@ -591,7 +591,7 @@ PL_INLINE static void plDivideMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
 PL_INLINE static void plDivideMatrix4f(PLMatrix4 m, float a) {
 
 }
-
+#endif
 PL_INLINE static const char *plPrintMatrix4(const PLMatrix4 m) {
     static char s[256] = { '\0' };
     snprintf(s, 256,
@@ -726,18 +726,16 @@ PL_INLINE static void plAddAABB(PLAABB *b, PLAABB b2) {
     plAddVector3(&b->maxs, b2.maxs);
     plAddVector3(&b->mins, b2.mins);
 }
-
-PL_INLINE static bool plIntersectAABB(PLAABB b, PLAABB b2) {
 #if 0 // todo
+PL_INLINE static bool plIntersectAABB(PLAABB b, PLAABB b2) {
     PLVector3 dist_a = b2.mins;
     plSubtractVector3(&dist_a, b.maxs);
     PLVector3 dist_b = b.mins;
     plSubtractVector3(&dist_b, b2.maxs);
     PLVector3 dist = plVector3Max(dist_a, dist_b);
-#endif
     return false;
 }
-
+#endif
 PL_INLINE static void plClearAABB(PLAABB *b) {
     memset(b, 0, sizeof(PLAABB));
 }

@@ -70,7 +70,7 @@ int gl_version_minor = 0;
 
 #define GLVersion(maj, min) (((maj) == gl_version_major && (min) <= gl_version_minor) || (maj) < gl_version_major)
 
-int gl_num_extensions = 0;
+unsigned int gl_num_extensions = 0;
 
 /////////////////////////////////////////////////////////////
 
@@ -229,7 +229,7 @@ void GLDrawPerspectivePOST(PLCamera *camera) {
 void GLCreateShaderProgram(PLShaderProgram *program) {}
 
 void GLDeleteShaderProgram(PLShaderProgram *program) {
-    if(program->id == -1) {
+    if(program->id == (unsigned int)(-1)) {
         return;
     }
 
@@ -265,7 +265,7 @@ void InitOpenGL(void) {
 
     memset(&gl_capabilities, 0, sizeof(GLCapabilities));
 
-    glGetIntegerv(GL_NUM_EXTENSIONS, &gl_num_extensions);
+    glGetIntegerv(GL_NUM_EXTENSIONS, (GLint*)(&gl_num_extensions));
 
     glGetIntegerv(GL_MINOR_VERSION, &gl_version_minor);
     glGetIntegerv(GL_MAJOR_VERSION, &gl_version_major);

@@ -43,11 +43,10 @@ data for each of these functions
 */
 #define GRAPHICS_TRACK()                            \
     {                                               \
-        unsigned static int _t = 0;                 \
-        if(gfx_state.mode_debug)                    \
-        {                                           \
+        static unsigned int num_calls = 0;          \
+        if(gfx_state.mode_debug) {                  \
             plGraphicsLog(" %s\n", PL_FUNCTION);    \
-            _t++;                                   \
+            num_calls++;                            \
         }                                           \
     }
 
@@ -293,8 +292,10 @@ void plEnableGraphicsStates(PLuint flags) {
         return;
     }
 
-    for (int i = 0; i < sizeof(graphics_capabilities); i++) {
-        if (graphics_capabilities[i].pl_parm == 0) break;
+    for (unsigned int i = 0; i < sizeof(graphics_capabilities); i++) {
+        if (graphics_capabilities[i].pl_parm == 0) {
+            break;
+        }
 
         if (gfx_state.mode_debug) {
             plGraphicsLog("Enabling %s\n", graphics_capabilities[i].ident);
@@ -332,7 +333,7 @@ void plDisableGraphicsStates(PLuint flags) {
         return;
     }
 
-    for (int i = 0; i < sizeof(graphics_capabilities); i++) {
+    for (unsigned int i = 0; i < sizeof(graphics_capabilities); i++) {
         if (graphics_capabilities[i].pl_parm == 0) break;
 
         if (gfx_state.mode_debug) {

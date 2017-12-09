@@ -28,6 +28,11 @@ For more information, please refer to <http://unlicense.org>
 #include "package_private.h"
 
 PLPackage *plCreatePackage(const char *dest) {
+    if(dest == NULL || dest[0] == '\0') {
+        ReportError(PL_RESULT_FILEPATH, "invalid path");
+        return NULL;
+    }
+
     return NULL;
 }
 
@@ -51,11 +56,11 @@ void plDeletePackage(PLPackage *package) {
     free(package->table);
     free(package);
 }
-
+#if 0 // todo
 void plWritePackage(PLPackage *package) {
 
 }
-
+#endif
 /////////////////////////////////////////////////////////////////
 
 typedef struct PLPackageLoader {

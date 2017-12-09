@@ -302,7 +302,7 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
         // VTF's typically include a tiny thumbnail image at the start, which we'll skip.
         fseek(fin, header.lowresimagewidth * header.lowresimageheight / 2, SEEK_CUR);
 
-        for (unsigned int mipmap = 0; mipmap < header.mipmaps; ++mipmap) {
+        for (int mipmap = 0; mipmap < header.mipmaps; ++mipmap) {
             for(unsigned int frame = 0; frame < header.frames; ++frame) {
                 for(unsigned int face = 0, mipw = 1, miph = 1; face < faces; ++face) {
                     // We'll just skip the smaller mipmaps for now, can generate these later.

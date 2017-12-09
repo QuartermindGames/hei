@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 #include <ctype.h>
 
 int pl_strisalnum(const char *s) {
-    for(int i = 0; s[i] != '\0'; ++i) {
+    for(unsigned int i = 0; s[i] != '\0'; ++i) {
         if(isalnum(s[i])) {
             return i;
         }
@@ -36,7 +36,7 @@ int pl_strisalnum(const char *s) {
 }
 
 int pl_strnisalnum(const char *s, unsigned int n) {
-    for(int i = 0; i < n; ++i) {
+    for(unsigned int i = 0; i < n; ++i) {
         if(s[i] == '\0') {
             break;
         }
