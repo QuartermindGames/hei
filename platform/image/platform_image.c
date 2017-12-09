@@ -37,8 +37,8 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     PLresult result = PL_RESULT_FILETYPE;
     if(_plDDSFormatCheck(fin)) {
         result = _plLoadDDSImage(fin, out);
-    } else if(_plTIMFormatCheck(fin)) {
-        result = _plLoadTIMImage(fin, out);
+    } else if(TIMFormatCheck(fin)) {
+        result = LoadTIMImage(fin, out);
     } else if(_plVTFFormatCheck(fin)) {
         result = _plLoadVTFImage(fin, out);
     } else if(_plDTXFormatCheck(fin)) {

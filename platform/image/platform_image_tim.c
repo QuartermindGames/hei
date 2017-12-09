@@ -24,8 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#include <PL/platform_math.h>
-#include "PL/platform_image.h"
+#include <PL/platform_image.h>
 
 /*  http://rewiki.regengedanken.de/wiki/.TIM
  *  https://mrclick.zophar.net/TilEd/download/timgfx.txt
@@ -59,7 +58,7 @@ enum TIMType {
 
 #define TIM_IDENT   16
 
-bool _plTIMFormatCheck(FILE *fin) {
+bool TIMFormatCheck(FILE *fin) {
     rewind(fin);
 
     uint32_t ident;
@@ -70,7 +69,7 @@ bool _plTIMFormatCheck(FILE *fin) {
     return (bool)(ident == TIM_IDENT);
 }
 
-PLresult plWriteTIMImage(const PLImage *image, const char *path) {
+PLresult WriteTIMImage(const PLImage *image, const char *path) {
     if(!plIsValidString(path)) {
         return PL_RESULT_FILEPATH;
     }
@@ -78,9 +77,7 @@ PLresult plWriteTIMImage(const PLImage *image, const char *path) {
     return PL_RESULT_SUCCESS;
 }
 
-PLresult _plLoadTIMImage(FILE *fin, PLImage *out) {
-    plFunctionStart();
-
+PLresult LoadTIMImage(FILE *fin, PLImage *out) {
     TIMHeader header;
     if (fread(&header, sizeof(TIMHeader), 1, fin) != 1) {
         return PL_RESULT_FILEREAD;
@@ -89,7 +86,6 @@ PLresult _plLoadTIMImage(FILE *fin, PLImage *out) {
     memset(out, 0, sizeof(PLImage));
 
     switch(header.type) {
-
         case TIM_TYPE_4BPP:
         case TIM_TYPE_8BPP: {
             TIMPaletteInfo palette_info;
@@ -99,7 +95,8 @@ PLresult _plLoadTIMImage(FILE *fin, PLImage *out) {
 
             uint16_t palettes[palette_info.num_palettes][palette_info.palette_colours];
             for(PLuint i = 0; i < palette_info.num_palettes; i++) {
-                if(fread(palettes[i], sizeof(uint16_t), palette_info.palette_colours, fin) != palette_info.palette_colours) {
+                if(fread(palettes[i], sizeof(uint16_t), palette_info.palette_colours, fin) != 
+                        palette_info.palette_colours) {
                     return PL_RESULT_FILEREAD;
                 }
             }
@@ -145,8 +142,10 @@ PLresult _plLoadTIMImage(FILE *fin, PLImage *out) {
 #else // each 'pixel' within our image is actually an index...
             if(header.type == TIM_TYPE_4BPP) {
                 for (unsigned int i = 0, k = 0; i < size; i++, k++) {
-                    ((uint16_t**)(out->data))[0][k] = palettes[0][(img[i] & 0x0F)]; k++; //out->data[0][k] = (uint8_t)palettes[0][(img[i] & 0x0F)]; k++;
-                    ((uint16_t**)(out->data))[0][k] = palettes[0][(img[i] & 0xF0)];      //out->data[0][k] = (uint8_t)palettes[0][(img[i] & 0xF0) >> 4];
+                    ((uint16_t**)(out->data))[0][k] = palettes[0][(img[i] & 0x0F)]; k++; 
+                    //out->data[0][k] = (uint8_t)palettes[0][(img[i] & 0x0F)]; k++;
+                    ((uint16_t**)(out->data))[0][k] = palettes[0][(img[i] & 0xF0)];      
+                    //out->data[0][k] = (uint8_t)palettes[0][(img[i] & 0xF0) >> 4];
                 }
             } else { // 8bpp
 

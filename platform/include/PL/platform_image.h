@@ -123,7 +123,7 @@ unsigned int _plGetImageSize(PLImageFormat format, unsigned int width, unsigned 
 bool _plDDSFormatCheck(FILE *fin);
 bool _plDTXFormatCheck(FILE *fin);
 bool _plVTFFormatCheck(FILE *fin);
-bool _plTIMFormatCheck(FILE *fin);
+bool TIMFormatCheck(FILE *fin);
 bool _plBMPFormatCheck(FILE *fin);
 
 PLresult _plLoadFTXImage(FILE *fin, PLImage *out);           // Ritual's FTX image format.
@@ -131,7 +131,7 @@ PLresult _plLoadPPMImage(FILE *fin, PLImage *out);           // Portable Pixel M
 PLresult _plLoadDTXImage(FILE *fin, PLImage *out);           // Lithtech's DTX image format.
 PLresult _plLoadVTFImage(FILE *fin, PLImage *out);           // Valve's VTF image format.
 PLresult _plLoadDDSImage(FILE *fin, PLImage *out);
-PLresult _plLoadTIMImage(FILE *fin, PLImage *out);
+PLresult LoadTIMImage(FILE *fin, PLImage *out);
 PLresult _plLoadBMPImage(FILE *fin, PLImage *out);
 
 #endif
