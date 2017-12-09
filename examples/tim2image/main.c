@@ -25,33 +25,70 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#include <arpa/inet.h>
+#include <assert.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+#include <IL/il.h>
 #include <PL/platform_log.h>
 #include <PL/platform_image.h>
 
-#define LOG "tim2tiff"
-
 int main(int argc, char **argv) {
-    plInitialize(argc, argv, PL_SUBSYSTEM_IMAGE | PL_SUBSYSTEM_LOG);
+    plInitialize(argc, argv);
 
-    PLImage image;
-#if 1
-    PLresult result = plLoadImage("./images/tim/CRATE4.TIM", &image);
-#else
-    // do by arg
-#endif
-    if(result != PL_RESULT_SUCCESS) {
-        printf("Failed to load image!\n%s", plGetResultString(result));
-        return -1;
+    if(argc != 3) {
+        fprintf(stderr, "Usage: %s <input.tim> <output.XXX>\n", argv[0]);
+        return 1;
     }
 
-#if 1
-    char opath[PL_SYSTEM_MAX_PATH] = { '\0' };
-    snprintf(opath, sizeof(opath), "./images/out/%d.tif", (int)(time(NULL) % 1000));
-    printf("Writing TIFF to %s\n", opath);
-    plWriteImage(&image, opath);
-#else
-    // do by arg
-#endif
+    /* Load the TIM into a PLImage structure. */
+
+    PLImage image;
+    PLresult result = plLoadImage(argv[1], &image);
+    if(result != PL_RESULT_SUCCESS) {
+        printf("Failed to load TIM image!\n%s", plGetError());
+        return 1;
+    }
+
+    /* Convert to a pixel format supported by DevIL (RGBA8). */
+
+    assert(image.format == PL_IMAGEFORMAT_RGB5A1);
+
+    unsigned char *data = malloc(image.width * image.height * 4);
+
+    uint16_t      *idata = (uint16_t*)(image.data[0]);
+    unsigned char *odata = data;
+
+    for(unsigned i = 0; i < (image.width * image.height); ++i)
+    {
+        uint16_t p = ntohs(*(idata++));
+
+        *(odata++) = (p & 0x001F) << 3;
+        *(odata++) = (p & 0x03E0) >> 2;
+        *(odata++) = (p & 0x7C00) >> 7;
+        *(odata++) = (p & 0x8000) ? 0x00 : 0xFF;
+    }
+
+    /* Write the output image.
+     * TODO: Error handling here.
+    */
+
+    ilInit();
+
+    ILuint ImageName;
+    ilGenImages(1, &ImageName);
+    ilBindImage(ImageName);
+
+    ilTexImage(image.width, image.height, 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, data);
+
+    ilEnable(IL_FILE_OVERWRITE);
+    ilSaveImage(argv[2]);
+
+    ilShutDown();
+    
+    free(data);
 
     plFreeImage(&image);
 
