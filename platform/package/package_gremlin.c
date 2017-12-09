@@ -103,7 +103,7 @@ PLPackage *LoadMADPackage(const char *filename, bool cache) {
         goto FAILED;
     }
 
-    memset(package, 0, sizeof(package));
+    memset(package, 0, sizeof(PLPackage));
 
 #if 0 // done after package load now
     package->path = malloc(strlen(filename) + 1);

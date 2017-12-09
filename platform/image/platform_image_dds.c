@@ -24,8 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
-#include "PL/platform_image.h"
+#include <PL/platform_image.h>
 
 struct DDSPixelFormat {
     uint32_t size;
@@ -53,7 +52,7 @@ enum DDSFlag {
     DDS_CAPS,
 };
 
-bool _plDDSFormatCheck(FILE *fin) {
+bool DDSFormatCheck(FILE *fin) {
     rewind(fin);
 
     PLchar ident[4];
@@ -62,7 +61,7 @@ bool _plDDSFormatCheck(FILE *fin) {
     return (bool)(strncmp(ident, "DDS", 3) == 0);
 }
 
-PLresult _plLoadDDSImage(FILE *fin, PLImage *out) {
+PLresult LoadDDSImage(FILE *fin, PLImage *out) {
     DDSHeader header;
     memset(&header, 0, sizeof(DDSHeader));
     if(fread(&header, sizeof(DDSHeader), 1, fin) != 1) {

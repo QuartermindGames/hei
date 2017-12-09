@@ -48,9 +48,8 @@ PL_EXTERN const char *plGetFileName(const char *path);
 
 PL_EXTERN void plScanDirectory(const char *path, const char *extension, void (*Function)(const char *), bool recursive);
 
-PL_EXTERN void plLowerCasePath(char *out);
-
 PL_EXTERN bool plCreateDirectory(const char *path);
+PL_EXTERN bool plCreatePath(const char *path);
 
 // File I/O ...
 

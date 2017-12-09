@@ -75,7 +75,7 @@ PL_INSTANCE plLoadLibrary(const PLchar *path) {
     dlopen(newpath, RTLD_NOW);
 #endif
     if (!instance) {
-        _plSetErrorMessage("Failed to load module! (%s)\n%s\n", newpath, plGetSystemError());
+        SetErrorMessage("Failed to load module! (%s)\n%s\n", newpath, plGetSystemError());
         return NULL;
     }
 
@@ -91,7 +91,7 @@ void *plLoadLibraryInterface(PL_INSTANCE instance, const PLchar *path, const PLc
 
     void *(*EntryFunction)(void *) = plFindLibraryFunction(instance, entry);
     if (!EntryFunction) {
-        _plSetErrorMessage("Failed to find entry function! (%s)\n", entry);
+        SetErrorMessage("Failed to find entry function! (%s)\n", entry);
         return NULL;
     }
 

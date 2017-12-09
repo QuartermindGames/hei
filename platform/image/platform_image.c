@@ -30,13 +30,13 @@ For more information, please refer to <http://unlicense.org>
 
 PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     if(!fin) {
-        _plSetErrorMessage("invalid file handle");
+        SetErrorMessage("invalid file handle");
         return PL_RESULT_FILEREAD;
     }
 
     PLresult result = PL_RESULT_FILETYPE;
-    if(_plDDSFormatCheck(fin)) {
-        result = _plLoadDDSImage(fin, out);
+    if(DDSFormatCheck(fin)) {
+        result = LoadDDSImage(fin, out);
     } else if(TIMFormatCheck(fin)) {
         result = LoadTIMImage(fin, out);
     } else if(_plVTFFormatCheck(fin)) {

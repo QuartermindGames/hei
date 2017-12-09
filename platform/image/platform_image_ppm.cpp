@@ -28,7 +28,7 @@ PLresult _plLoadPPMImage(FILE *fin, PLImage *out) {
 
     fgets(header, PPM_HEADER_SIZE, fin);
     if (strncmp(header, "P6", 2)) {
-        _plSetErrorMessage("Unsupported PPM type!\n");
+        SetErrorMessage("Unsupported PPM type!\n");
         return PL_RESULT_FILEVERSION;
     }
 

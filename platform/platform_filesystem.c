@@ -45,13 +45,13 @@ void _plShutdownIO(void) {
 // Checks whether a file has been modified or not.
 bool plIsFileModified(time_t oldtime, const char *path) {
     if (!oldtime) {
-        _plSetErrorMessage("Invalid time, skipping check!\n");
+        SetErrorMessage("Invalid time, skipping check!\n");
         return false;
     }
 
     struct stat attributes;
     if (stat(path, &attributes) == -1) {
-        _plSetErrorMessage("Failed to get file stats!\n");
+        SetErrorMessage("Failed to get file stats!\n");
         return false;
     }
 
@@ -65,17 +65,10 @@ bool plIsFileModified(time_t oldtime, const char *path) {
 time_t plGetFileModifiedTime(const PLchar *path) {
     struct stat attributes;
     if (stat(path, &attributes) == -1) {
-        _plSetErrorMessage("Failed to get modification time!\n");
+        SetErrorMessage("Failed to get modification time!\n");
         return 0;
     }
     return attributes.st_mtime;
-}
-
-// todo, move into platform_string and make safer
-void plLowerCasePath(char *out) {
-    for (int i = 0; out[i]; i++) {
-        out[i] = (PLchar) tolower(out[i]);
-    }
 }
 
 // Creates a folder at the given path.
@@ -90,21 +83,22 @@ bool plCreateDirectory(const char *path) {
 #else
     struct stat buffer;
     if (stat(path, &buffer) == -1) {
-        if (mkdir(path, 0777) == 0)
+        if (mkdir(path, 0777) == 0) {
             return true;
+        }
 
         switch (errno) {
             case EACCES:
-                _plSetErrorMessage("Failed to get permission! (%s)\n", path);
+                SetErrorMessage("Failed to get permission! (%s)\n", path);
                 break;
             case EROFS:
-                _plSetErrorMessage("File system is read only! (%s)\n", path);
+                SetErrorMessage("File system is read only! (%s)\n", path);
                 break;
             case ENAMETOOLONG:
-                _plSetErrorMessage("Path is too long! (%s)\n", path);
+                SetErrorMessage("Path is too long! (%s)\n", path);
                 break;
             default:
-                _plSetErrorMessage("Failed to create directory! (%s)\n", path);
+                SetErrorMessage("Failed to create directory! (%s)\n", path);
                 break;
         }
     } else { // Path already exists, so this is fine.
@@ -113,6 +107,24 @@ bool plCreateDirectory(const char *path) {
 #endif
 
     return false;
+}
+
+bool plCreatePath(const char *path) {
+    size_t length = strlen(path);
+    char dir_path[length + 1];
+    memset(dir_path, 0, sizeof(dir_path));
+    for(size_t i = 0; i < length; ++i) {
+        dir_path[i] = path[i];
+        if(i != 0 &&
+            (path[i] == '\\' || path[i] == '/') &&
+            (path[i - 1] != '\\' && path[i - 1] != '/')) {
+            if(!plCreateDirectory(dir_path)) {
+                return false;
+            }
+        }
+    }
+
+    return plCreateDirectory(dir_path);
 }
 
 // Returns the extension for the file.
@@ -233,14 +245,15 @@ void plScanDirectory(const char *path, const char *extension, void (*Function)(c
                     if(pl_strcasecmp(plGetFileExtension(entry->d_name), extension) == 0) {
                         Function(filestring);
                     }
-                }
-                else if(S_ISDIR(st.st_mode) && recursive) {
+                } else if(S_ISDIR(st.st_mode) && recursive) {
                     plScanDirectory(filestring, extension, Function, recursive);
                 }
             }
         }
 
         closedir(directory);
+    } else {
+        ReportError(PL_RESULT_FILEPATH, "opendir failed!");
     }
 #endif
 }
@@ -252,22 +265,22 @@ const char *plGetWorkingDirectory(void) {
             default: break;
 
             case EACCES:
-                _plSetErrorMessage("Permission to read or search a component of the filename was denied!\n");
+                SetErrorMessage("Permission to read or search a component of the filename was denied!\n");
                 break;
             case EFAULT:
-                _plSetErrorMessage("buf points to a bad address!\n");
+                SetErrorMessage("buf points to a bad address!\n");
                 break;
             case EINVAL:
-                _plSetErrorMessage("The size argument is zero and buf is not a null pointer!\n");
+                SetErrorMessage("The size argument is zero and buf is not a null pointer!\n");
                 break;
             case ENOMEM:
-                _plSetErrorMessage("Out of memory!\n");
+                SetErrorMessage("Out of memory!\n");
                 break;
             case ENOENT:
-                _plSetErrorMessage("The current working directory has been unlinked!\n");
+                SetErrorMessage("The current working directory has been unlinked!\n");
                 break;
             case ERANGE:
-                _plSetErrorMessage("The size argument is less than the length of the absolute pathname of the working directory, including the terminating null byte. \
+                SetErrorMessage("The size argument is less than the length of the absolute pathname of the working directory, including the terminating null byte. \
 						You need to allocate a bigger array and try again!\n");
                 break;
         }
@@ -282,22 +295,22 @@ void plSetWorkingDirectory(const char *path) {
             default: break;
 
             case EACCES:
-                _plSetErrorMessage("Search permission is denied for any component of pathname!\n");
+                SetErrorMessage("Search permission is denied for any component of pathname!\n");
                 break;
             case ELOOP:
-                _plSetErrorMessage(
+                SetErrorMessage(
                         "A loop exists in the symbolic links encountered during resolution of the path argument!\n");
                 break;
             case ENAMETOOLONG:
-                _plSetErrorMessage("The length of the path argument exceeds PATH_MAX or a pathname component is longer than \
+                SetErrorMessage("The length of the path argument exceeds PATH_MAX or a pathname component is longer than \
                 NAME_MAX!\n");
                 break;
             case ENOENT:
-                _plSetErrorMessage(
+                SetErrorMessage(
                         "A component of path does not name an existing directory or path is an empty string!\n");
                 break;
             case ENOTDIR:
-                _plSetErrorMessage("A component of the pathname is not a directory!\n");
+                SetErrorMessage("A component of the pathname is not a directory!\n");
                 break;
         }
     }

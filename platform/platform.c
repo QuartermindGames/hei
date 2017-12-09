@@ -214,7 +214,7 @@ char
         loc_error[MAX_ERROR_LENGTH]         = { '\0' },
         loc_function[MAX_FUNCTION_LENGTH]   = { '\0' };
 
-PLresult _pl_global_result = PL_RESULT_SUCCESS;
+PLresult global_result = PL_RESULT_SUCCESS;
 
 // Sets the name of the current function.
 void _plSetCurrentFunction(const char *function, ...) {
@@ -231,11 +231,11 @@ void _plSetCurrentFunction(const char *function, ...) {
 }
 
 void _plSetFunctionResult(PLresult result) {
-    _pl_global_result = result;
+    global_result = result;
 }
 
 // Sets the local error message.
-void _plSetErrorMessage(const char *msg, ...) {
+void SetErrorMessage(const char *msg, ...) {
 #ifdef _DEBUG
     char out[MAX_ERROR_LENGTH];
     va_list args;
@@ -295,7 +295,7 @@ const char *plGetSystemErrorString(void) { // todo, replace the above!!
 // PUBLIC
 
 PLresult plGetFunctionResult(void) {
-    return _pl_global_result;
+    return global_result;
 }
 
 const char *plGetResultString(PLresult result) {
@@ -327,7 +327,7 @@ const char *plGetResultString(PLresult result) {
 
 void _plResetError(void) {
     loc_function[0] = loc_error[0] = sys_error[0] = '\0';
-    _pl_global_result = PL_RESULT_SUCCESS;
+    global_result = PL_RESULT_SUCCESS;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////

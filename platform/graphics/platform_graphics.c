@@ -67,20 +67,20 @@ PLresult InitGraphics(void) {
 
     memset(&gfx_state, 0, sizeof(GfxState));
 
-    gfx_layer.mode = PLGFX_MODE_OPENGL; // todo, temp
+    gfx_layer.mode = PL_GFX_MODE_OPENGL; // todo, temp
     switch(gfx_layer.mode) {
         default: {
             ReportError(PL_RESULT_GRAPHICSINIT, "Invalid graphics layer, %d, selected!\n", gfx_layer.mode);
             _plDebugPrint("Reverting to software mode...\n");
-            gfx_layer.mode = PLGFX_MODE_SOFTWARE;
+            gfx_layer.mode = PL_GFX_MODE_SOFTWARE;
             return InitGraphics();
         }
 
-        case PLGFX_MODE_DIRECT3D: break;
+        case PL_GFX_MODE_DIRECT3D: break;
 
-        case PLGFX_MODE_OPENGL_CORE:
-        case PLGFX_MODE_OPENGL_ES:
-        case PLGFX_MODE_OPENGL: {
+        case PL_GFX_MODE_OPENGL_CORE:
+        case PL_GFX_MODE_OPENGL_ES:
+        case PL_GFX_MODE_OPENGL: {
             InitOpenGL();
         } break;
     }
@@ -104,9 +104,9 @@ void ShutdownGraphics(void) {
     switch(gfx_layer.mode) {
         default: break;
 
-        case PLGFX_MODE_OPENGL_CORE:
-        case PLGFX_MODE_OPENGL_ES:
-        case PLGFX_MODE_OPENGL: {
+        case PL_GFX_MODE_OPENGL_CORE:
+        case PL_GFX_MODE_OPENGL_ES:
+        case PL_GFX_MODE_OPENGL: {
             ShutdownOpenGL();
         } break;
     }

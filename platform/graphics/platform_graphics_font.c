@@ -158,13 +158,13 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     }
     memset(font, 0, sizeof(PLBitmapFont));
 
-    bool enable_filter = false;
+    //bool enable_filter = false;
     while(!_plFontEOF()) {
         _plParseFontLine();
 
         if(!strncmp(_pl_font.line_buffer, "FILTER ", 7)) {
             if(_pl_font.line_buffer[8] == '1') {
-                enable_filter = true;
+                //enable_filter = true;
             }
             continue;
         }

@@ -47,7 +47,7 @@ void plWriteLog(const char *path, const char *msg, ...) {
     FILE *file = fopen(newpath, "a");
     if(file != NULL) {
         if (fwrite(buffer, sizeof(char), size, file) != size) {
-            _plSetErrorMessage("Failed to write to log! (%s)", newpath);
+            SetErrorMessage("Failed to write to log! (%s)", newpath);
         }
         fclose(file);
     } else {

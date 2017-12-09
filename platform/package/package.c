@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #include "package_private.h"
 
 PLPackage *plCreatePackage(const char *dest) {
-
+    return NULL;
 }
 
 void PurgePackageData(PLPackage *package) {

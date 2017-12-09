@@ -24,22 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #pragma once
 
 #include "platform.h"
-
-enum {
-    PL_IMAGEFLAG_FULLBRIGHT     = (1 << 0),
-
-    PL_IMAGEFLAG_NEAREST    = (5 << 0),
-    PL_IMAGEFLAG_BILINEAR   = (6 << 0),
-    PL_IMAGEFLAG_TRILINEAR  = (7 << 0),
-
-    PL_IMAGEFLAG_NORMALMAP      = (10 << 0),
-    PL_IMAGEFLAG_ENVMAP         = (11 << 0),
-    PL_IMAGEFLAG_SPHEREMAP      = (12 << 0),
-} PLImageFlag;
 
 typedef enum PLImageFormat {
     PL_IMAGEFORMAT_UNKNOWN,
@@ -120,7 +107,7 @@ void plFreeImage(PLImage *image);
 
 unsigned int _plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height);
 
-bool _plDDSFormatCheck(FILE *fin);
+bool DDSFormatCheck(FILE *fin);
 bool _plDTXFormatCheck(FILE *fin);
 bool _plVTFFormatCheck(FILE *fin);
 bool TIMFormatCheck(FILE *fin);
@@ -130,7 +117,7 @@ PLresult _plLoadFTXImage(FILE *fin, PLImage *out);           // Ritual's FTX ima
 PLresult _plLoadPPMImage(FILE *fin, PLImage *out);           // Portable Pixel Map format.
 PLresult _plLoadDTXImage(FILE *fin, PLImage *out);           // Lithtech's DTX image format.
 PLresult _plLoadVTFImage(FILE *fin, PLImage *out);           // Valve's VTF image format.
-PLresult _plLoadDDSImage(FILE *fin, PLImage *out);
+PLresult LoadDDSImage(FILE *fin, PLImage *out);
 PLresult LoadTIMImage(FILE *fin, PLImage *out);
 PLresult _plLoadBMPImage(FILE *fin, PLImage *out);
 

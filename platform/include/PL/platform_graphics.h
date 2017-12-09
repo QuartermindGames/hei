@@ -34,19 +34,19 @@ For more information, please refer to <http://unlicense.org>
 //#define PL_MODE_OPENGL
 
 typedef enum PLGfxMode {
-    PLGFX_MODE_SOFTWARE,
+    PL_GFX_MODE_SOFTWARE,
 
-    PLGFX_MODE_OPENGL,
-    PLGFX_MODE_OPENGL_CORE,
-    PLGFX_MODE_OPENGL_ES,
+    PL_GFX_MODE_OPENGL,
+    PL_GFX_MODE_OPENGL_CORE,
+    PL_GFX_MODE_OPENGL_ES,
 
-    PLGFX_MODE_VULKAN,
+    PL_GFX_MODE_VULKAN,
 
-    PLGFX_MODE_GLIDE,
+    PL_GFX_MODE_GLIDE,
 
-    PLGFX_MODE_DIRECT3D,
+    PL_GFX_MODE_DIRECT3D,
 
-    PLGFX_MODE_OTHER,
+    PL_GFX_MODE_OTHER,
 } PLGfxMode;
 
 #if defined(PL_INTERNAL)
@@ -84,20 +84,20 @@ typedef enum PLCullMode {
 typedef enum PLBlend {
     PL_BLEND_ZERO,
     PL_BLEND_ONE,
-    VL_BLEND_SRC_COLOR,
-    VL_BLEND_ONE_MINUS_SRC_COLOR,
-    VL_BLEND_SRC_ALPHA,
-    VL_BLEND_ONE_MINUS_SRC_ALPHA,
-    VL_BLEND_DST_ALPHA,
-    VL_BLEND_ONE_MINUS_DST_ALPHA,
-    VL_BLEND_DST_COLOR,
-    VL_BLEND_ONE_MINUS_DST_COLOR,
-    VL_BLEND_SRC_ALPHA_SATURATE,
+    PL_BLEND_SRC_COLOR,
+    PL_BLEND_ONE_MINUS_SRC_COLOR,
+    PL_BLEND_SRC_ALPHA,
+    PL_BLEND_ONE_MINUS_SRC_ALPHA,
+    PL_BLEND_DST_ALPHA,
+    PL_BLEND_ONE_MINUS_DST_ALPHA,
+    PL_BLEND_DST_COLOR,
+    PL_BLEND_ONE_MINUS_DST_COLOR,
+    PL_BLEND_SRC_ALPHA_SATURATE,
 } PLBlend;
 
 // Blending
-#define PL_BLEND_ADDITIVE   VL_BLEND_SRC_ALPHA, VL_BLEND_ONE
-#define PL_BLEND_DEFAULT    VL_BLEND_SRC_ALPHA, VL_BLEND_ONE_MINUS_SRC_ALPHA
+#define PL_BLEND_ADDITIVE   PL_BLEND_SRC_ALPHA, PL_BLEND_ONE
+#define PL_BLEND_DEFAULT    PL_BLEND_SRC_ALPHA, PL_BLEND_ONE_MINUS_SRC_ALPHA
 
 //-----------------
 // Capabilities
@@ -258,10 +258,10 @@ PL_EXTERN_C
 PL_EXTERN void plSetDefaultGraphicsState(void);
 
 // Hardware Information
-PL_EXTERN const char *_plGetHWExtensions(void);
-PL_EXTERN const char *_plGetHWRenderer(void);
-PL_EXTERN const char *_plGetHWVendor(void);
-PL_EXTERN const char *_plGetHWVersion(void);
+PL_EXTERN const char *plGetHWExtensions(void);
+PL_EXTERN const char *plGetHWRenderer(void);
+PL_EXTERN const char *plGetHWVendor(void);
+PL_EXTERN const char *plGetHWVersion(void);
 
 PL_EXTERN bool plHWSupportsMultitexture(void);
 PL_EXTERN bool plHWSupportsShaders(void);

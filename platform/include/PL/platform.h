@@ -230,7 +230,7 @@ PL_EXTERN void plShutdown(void);
 // todo, kill start
 PL_EXTERN void _plResetError(void); // Resets the error message to "null", so you can ensure you have the correct message from the library.
 PL_EXTERN void
-_plSetErrorMessage(const char *msg, ...);   // Sets the error message, so we can grab it outside the library.
+SetErrorMessage(const char *msg, ...);   // Sets the error message, so we can grab it outside the library.
 PL_EXTERN void
 _plSetCurrentFunction(const char *function, ...);  // Sets the currently active function, for error reporting.
 // kill end
@@ -265,7 +265,7 @@ PL_EXTERN void _plSetFunctionResult(PLresult result);
 #define ReportError(type, ...) \
     _plUpdateErrorFunction(); \
     _plSetFunctionResult(type); \
-    _plSetErrorMessage(__VA_ARGS__)
+    SetErrorMessage(__VA_ARGS__)
 
 #endif
 

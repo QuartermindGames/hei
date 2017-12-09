@@ -88,15 +88,15 @@ unsigned int TranslateBlendFunc(PLBlend blend) {
     switch(blend) {
         case PL_BLEND_ONE: return GL_ONE;
         case PL_BLEND_ZERO: return GL_ZERO;
-        case VL_BLEND_SRC_COLOR: return GL_SRC_COLOR;
-        case VL_BLEND_ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
-        case VL_BLEND_SRC_ALPHA: return GL_SRC_ALPHA;
-        case VL_BLEND_ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
-        case VL_BLEND_DST_ALPHA: return GL_DST_ALPHA;
-        case VL_BLEND_ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
-        case VL_BLEND_DST_COLOR: return GL_DST_COLOR;
-        case VL_BLEND_ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
-        case VL_BLEND_SRC_ALPHA_SATURATE: return GL_SRC_ALPHA_SATURATE;
+        case PL_BLEND_SRC_COLOR: return GL_SRC_COLOR;
+        case PL_BLEND_ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
+        case PL_BLEND_SRC_ALPHA: return GL_SRC_ALPHA;
+        case PL_BLEND_ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
+        case PL_BLEND_DST_ALPHA: return GL_DST_ALPHA;
+        case PL_BLEND_ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
+        case PL_BLEND_DST_COLOR: return GL_DST_COLOR;
+        case PL_BLEND_ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
+        case PL_BLEND_SRC_ALPHA_SATURATE: return GL_SRC_ALPHA_SATURATE;
         default:return 0;
     }
 }

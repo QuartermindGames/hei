@@ -54,11 +54,15 @@ typedef struct ARTHeader {
 } ARTHeader;
 
 PLPackage *LoadARTPackage(const char *filename, bool precache) {
+#if 0
     char art_path[PL_SYSTEM_MAX_PATH] = { '\0' };
     char dat_path[PL_SYSTEM_MAX_PATH] = { '\0' };
+#endif
 
     const char *extension = plGetFileExtension(filename);
     if(!strcmp(extension, "art")) {
 
     }
+
+    return NULL;
 }
