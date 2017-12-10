@@ -45,13 +45,13 @@ void _plShutdownIO(void) {
 // Checks whether a file has been modified or not.
 bool plIsFileModified(time_t oldtime, const char *path) {
     if (!oldtime) {
-        SetErrorMessage("Invalid time, skipping check!\n");
+        ReportError(PL_RESULT_FILEERR, "invalid time, skipping check");
         return false;
     }
 
     struct stat attributes;
     if (stat(path, &attributes) == -1) {
-        SetErrorMessage("Failed to get file stats!\n");
+        ReportError(PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror(errno));
         return false;
     }
 
@@ -65,7 +65,7 @@ bool plIsFileModified(time_t oldtime, const char *path) {
 time_t plGetFileModifiedTime(const PLchar *path) {
     struct stat attributes;
     if (stat(path, &attributes) == -1) {
-        SetErrorMessage("Failed to get modification time!\n");
+        ReportError(PL_RESULT_FILEERR, "Failed to stat %s: %s", path, strerror(errno));
         return 0;
     }
     return attributes.st_mtime;
@@ -81,22 +81,7 @@ bool plCreateDirectory(const char *path) {
         return true;
     }
 
-    switch (errno) {
-        case EACCES:
-            SetErrorMessage("Failed to get permission! (%s)\n", path);
-            break;
-        case EROFS:
-            SetErrorMessage("File system is read only! (%s)\n", path);
-            break;
-        case ENAMETOOLONG:
-            SetErrorMessage("Path is too long! (%s)\n", path);
-            break;
-        default:
-            SetErrorMessage("Failed to create directory! (%s)\n", path);
-            break;
-    }
-
-    ReportError(PL_RESULT_FILEPATH, strerror(errno));
+    ReportError(PL_RESULT_FILEERR, "%s", strerror(errno));
 
     return false;
 }
@@ -253,29 +238,10 @@ void plScanDirectory(const char *path, const char *extension, void (*Function)(c
 const char *plGetWorkingDirectory(void) {
     static char out[PL_SYSTEM_MAX_PATH] = { '\0' };
     if (getcwd(out, PL_SYSTEM_MAX_PATH) == NULL) {
-        switch (errno) { // todo, fix cases for Windows
-            default: break;
-
-            case EACCES:
-                SetErrorMessage("Permission to read or search a component of the filename was denied!\n");
-                break;
-            case EFAULT:
-                SetErrorMessage("buf points to a bad address!\n");
-                break;
-            case EINVAL:
-                SetErrorMessage("The size argument is zero and buf is not a null pointer!\n");
-                break;
-            case ENOMEM:
-                SetErrorMessage("Out of memory!\n");
-                break;
-            case ENOENT:
-                SetErrorMessage("The current working directory has been unlinked!\n");
-                break;
-            case ERANGE:
-                SetErrorMessage("The size argument is less than the length of the absolute pathname of the working directory, including the terminating null byte. \
-						You need to allocate a bigger array and try again!\n");
-                break;
-        }
+        /* The MSDN documentation for getcwd() is gone, but it proooobably uses
+         * errno and friends.
+         */
+        ReportError(PL_RESULT_SYSERR, "%s", strerror(errno));
         return NULL;
     }
     return out;
@@ -283,28 +249,8 @@ const char *plGetWorkingDirectory(void) {
 
 void plSetWorkingDirectory(const char *path) {
     if(chdir(path) != 0) {
-        switch(errno) { // todo, fix cases for Windows
-            default: break;
-
-            case EACCES:
-                SetErrorMessage("Search permission is denied for any component of pathname!\n");
-                break;
-            case ELOOP:
-                SetErrorMessage(
-                        "A loop exists in the symbolic links encountered during resolution of the path argument!\n");
-                break;
-            case ENAMETOOLONG:
-                SetErrorMessage("The length of the path argument exceeds PATH_MAX or a pathname component is longer than \
-                NAME_MAX!\n");
-                break;
-            case ENOENT:
-                SetErrorMessage(
-                        "A component of path does not name an existing directory or path is an empty string!\n");
-                break;
-            case ENOTDIR:
-                SetErrorMessage("A component of the pathname is not a directory!\n");
-                break;
-        }
+        ReportError(PL_RESULT_SYSERR, "%s", strerror(errno));
+        /* TODO: Return error condition */
     }
 }
 
@@ -377,7 +323,7 @@ bool plCopyFile(const char *path, const char *dest) {
 size_t plGetFileSize(const char *path) {
     struct stat buf;
     if(stat(path, &buf) != 0) {
-        ReportError(PL_RESULT_FILEREAD, strerror(errno));
+        ReportError(PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror(errno));
         return 0;
     }
 
