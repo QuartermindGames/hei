@@ -161,17 +161,16 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
     /* Prepare the metadata and image buffer in the PLImage structure. */
 
     uint8_t type = header.flag1 & TIM_FLAG1_TYPE_MASK;
-
     switch(type) {
         case TIM_TYPE_4BPP:
-            out->width  = image_info.width * 4;
+            out->width  = (unsigned int)(image_info.width * 4);
             out->height = image_info.height;
             out->format = PL_IMAGEFORMAT_RGB5A1;
             
             break;
 
         case TIM_TYPE_8BPP:
-            out->width  = image_info.width * 2;
+            out->width  = (unsigned int)(image_info.width * 2);
             out->height = image_info.height;
             out->format = PL_IMAGEFORMAT_RGB5A1;
             
@@ -236,7 +235,8 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
         case TIM_TYPE_8BPP:
         case TIM_TYPE_16BPP:
         case TIM_TYPE_24BPP:
-            abort();
+            ReportError(PL_RESULT_IMAGEFORMAT, "unsupported tim type (%d)", type);
+            goto ERR_CLEANUP;
     };
 
     out->colour_format = PL_COLOURFORMAT_ABGR;

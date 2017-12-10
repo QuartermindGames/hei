@@ -57,6 +57,7 @@ PL_EXTERN bool plFileExists(const char *path);
 PL_EXTERN bool plPathExists(const char *path);
 
 PL_EXTERN bool plCopyFile(const char *path, const char *dest);
+PL_EXTERN bool plDeleteFile(const char *path);
 
 PL_EXTERN bool plIsFileModified(time_t oldtime, const char *path);
 

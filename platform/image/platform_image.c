@@ -113,17 +113,20 @@ unsigned int plGetSamplesPerPixel(PLColourFormat format) {
         case PL_COLOURFORMAT_ABGR:
         case PL_COLOURFORMAT_ARGB:
         case PL_COLOURFORMAT_BGRA:
-        case PL_COLOURFORMAT_RGBA:
+        case PL_COLOURFORMAT_RGBA: {
             return 4;
+        }
+
         case PL_COLOURFORMAT_BGR:
-        case PL_COLOURFORMAT_RGB:
+        case PL_COLOURFORMAT_RGB: {
             return 3;
+        }
     }
 
     return 0;
 }
 
-void plConvertImageFormat(PLImage *image, PLColourFormat dest_colour, PLImageFormat dest_pixel) {
+void plConvertPixelFormat(PLImage *image, PLColourFormat dest_colour, PLImageFormat dest_pixel) {
     switch(image->format) {
         default: {
             return;
@@ -165,7 +168,7 @@ void plFreeImage(PLImage *image) {
         return;
     }
 
-    for(PLuint levels = 0; levels < image->levels; ++levels) {
+    for(unsigned int levels = 0; levels < image->levels; ++levels) {
         if(image->data[levels] == NULL) {
             continue;
         }
@@ -178,7 +181,7 @@ void plFreeImage(PLImage *image) {
     image->data = NULL;
 }
 
-bool plIsValidImageSize(PLuint width, PLuint height) {
+bool plIsValidImageSize(unsigned int width, unsigned int height) {
     if(((width < 2) || (height < 2)) || (!plIsPowerOfTwo(width) || !plIsPowerOfTwo(height))) {
         return false;
     }

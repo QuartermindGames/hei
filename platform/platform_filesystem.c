@@ -73,38 +73,30 @@ time_t plGetFileModifiedTime(const PLchar *path) {
 
 // Creates a folder at the given path.
 bool plCreateDirectory(const char *path) {
-#ifdef _WIN32
-    if(CreateDirectory(path, NULL) || (GetLastError() == ERROR_ALREADY_EXISTS))
-        return true;
-    else if(GetLastError() == ERROR_PATH_NOT_FOUND)
-        plSetError("Failed to find an intermediate directory! (%s)\n", path);
-    else    // Assume it already exists.
-        plSetError("Unknown error! (%s)\n", path);
-#else
-    struct stat buffer;
-    if (stat(path, &buffer) == -1) {
-        if (mkdir(path, 0777) == 0) {
-            return true;
-        }
-
-        switch (errno) {
-            case EACCES:
-                SetErrorMessage("Failed to get permission! (%s)\n", path);
-                break;
-            case EROFS:
-                SetErrorMessage("File system is read only! (%s)\n", path);
-                break;
-            case ENAMETOOLONG:
-                SetErrorMessage("Path is too long! (%s)\n", path);
-                break;
-            default:
-                SetErrorMessage("Failed to create directory! (%s)\n", path);
-                break;
-        }
-    } else { // Path already exists, so this is fine.
+    if(plPathExists(path)) {
         return true;
     }
-#endif
+
+    if (mkdir(path, 0777) == 0) {
+        return true;
+    }
+
+    switch (errno) {
+        case EACCES:
+            SetErrorMessage("Failed to get permission! (%s)\n", path);
+            break;
+        case EROFS:
+            SetErrorMessage("File system is read only! (%s)\n", path);
+            break;
+        case ENAMETOOLONG:
+            SetErrorMessage("Path is too long! (%s)\n", path);
+            break;
+        default:
+            SetErrorMessage("Failed to create directory! (%s)\n", path);
+            break;
+    }
+
+    ReportError(PL_RESULT_FILEPATH, strerror(errno));
 
     return false;
 }
@@ -334,6 +326,20 @@ bool plPathExists(const char *path) {
     return false;
 }
 
+bool plDeleteFile(const char *path) {
+    if(!plFileExists(path)) {
+        return true;
+    }
+
+    int result = remove(path);
+    if(result == 0) {
+        return true;
+    }
+
+    ReportError(PL_RESULT_FILEREAD, strerror(errno));
+    return false;
+}
+
 bool plCopyFile(const char *path, const char *dest) {
     FILE *fold = fopen(path, "rb");
     if(fold == NULL) {
@@ -369,11 +375,9 @@ bool plCopyFile(const char *path, const char *dest) {
 }
 
 size_t plGetFileSize(const char *path) {
-    _plResetError();
-
     struct stat buf;
     if(stat(path, &buf) != 0) {
-        ReportError(PL_RESULT_FILEREAD, plGetSystemErrorString());
+        ReportError(PL_RESULT_FILEREAD, strerror(errno));
         return 0;
     }
 
