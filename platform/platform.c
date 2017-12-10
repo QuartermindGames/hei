@@ -210,7 +210,6 @@ void plShutdown(void) {
 #define    MAX_ERROR_LENGTH     2048
 
 char
-        sys_error[MAX_ERROR_LENGTH]         = { '\0' },
         loc_error[MAX_ERROR_LENGTH]         = { '\0' },
         loc_function[MAX_FUNCTION_LENGTH]   = { '\0' };
 
@@ -253,43 +252,34 @@ const char *plGetError(void) {
     return loc_error;
 }
 
-/*	Returns a system error message.
-*/
-const char *plGetSystemError(void) {
 #ifdef _WIN32
-    char	*buffer = NULL;
-    int		error;
+const char *GetLastError_strerror(DWORD errnum) {
+    /* TODO: Make this buffer per-thread */
+    static char buf[1024] = {'\0'};
 
-    error = GetLastError();
-    if (error == 0)
-        return "Unknown system error!";
-
-    if (!FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+    if(!FormatMessage(
+        FORMAT_MESSAGE_FROM_SYSTEM,
         NULL,
-        error,
+        errnum,
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPSTR)&buffer,
-        0, NULL))
-        return "Failed to get system error details!";
+        buf,
+        sizeof(buf),
+        NULL))
+    {
+        return "INTERNAL ERROR: Could not resolve error message";
+    }
 
-    strcpy(sys_error, _strdup(buffer));
+    /* Microsoft like to end some of their errors with newlines... */
 
-    LocalFree(buffer);
+    char *nl = strrchr(buf, '\n');
+    char *cr = strrchr(buf, '\r');
 
-    return sys_error;
-#else
-    strcpy(sys_error, dlerror());
-    return sys_error;
-#endif
+    if(nl != NULL && nl[1] == '\0') { *nl = '\0'; }
+    if(cr != NULL && cr[1] == '\0') { *cr = '\0'; }
+
+    return buf;
 }
-
-const char *plGetSystemErrorString(void) { // todo, replace the above!!
-#ifdef _WIN32 // todo
-#else
-    return strerror(errno);
 #endif
-}
 
 /////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC
@@ -308,6 +298,7 @@ const char *plGetResultString(PLresult result) {
         case PL_RESULT_FILETYPE:    return "Invalid file type!";
         case PL_RESULT_FILEVERSION: return "Unsupported file version!";
         case PL_RESULT_FILEPATH:    return "Invalid file path!";
+        case PL_RESULT_FILEERR:     return "Filesystem error";
 
         // GRAPHICS
         case PL_RESULT_GRAPHICSINIT:    return "Failed to initialize graphics!";
@@ -321,12 +312,14 @@ const char *plGetResultString(PLresult result) {
         // MEMORY
         case PL_RESULT_MEMORYALLOC: return "Failed to allocate memory!";
 
+        case PL_RESULT_SYSERR: return "System error";
+
         default:    return "An unknown error occurred!";
     }
 }
 
 void _plResetError(void) {
-    loc_function[0] = loc_error[0] = sys_error[0] = '\0';
+    loc_function[0] = loc_error[0] = '\0';
     global_result = PL_RESULT_SUCCESS;
 }
 

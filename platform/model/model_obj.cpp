@@ -58,7 +58,7 @@ PLModel *_plLoadOBJModel(const PLchar *path) {
 
     pl_obj_data.open(path, std::ifstream::binary);
     if (!pl_obj_data) {
-        SetErrorMessage("Failed to load file! (%s)\n", path);
+        ReportError(PL_RESULT_FILEERR, "Failed to load file! (%s)\n", path);
         return nullptr;
     }
 
@@ -69,7 +69,7 @@ PLModel *_plLoadOBJModel(const PLchar *path) {
     if (length <= 0) {
         _plUnloadOBJModel();
 
-        SetErrorMessage("Invalid OBJ model! (%s)\n", path);
+        ReportError(PL_RESULT_FILETYPE, "Invalid OBJ model! (%s)\n", path);
         return nullptr;
     }
 

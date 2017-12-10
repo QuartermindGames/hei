@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org>
 
 PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     if(!fin) {
-        SetErrorMessage("invalid file handle");
+        ReportError(PL_RESULT_FILEREAD, "invalid file handle");
         return PL_RESULT_FILEREAD;
     }
 

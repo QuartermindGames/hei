@@ -254,7 +254,7 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
     }
 
     if(header.lowresimageformat != VTF_FORMAT_DXT1) {
-        SetErrorMessage("Invalid texture format for lowresimage in VTF");
+        ReportError(PL_RESULT_IMAGEFORMAT, "Invalid texture format for lowresimage in VTF");
         return PL_RESULT_IMAGEFORMAT;
     }
 
