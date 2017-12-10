@@ -98,6 +98,8 @@ PL_EXTERN PLresult plWriteImage(const PLImage *image, const char *path);
 
 PL_EXTERN unsigned int plGetSamplesPerPixel(PLColourFormat format);
 
+bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format);
+
 PL_EXTERN bool plIsValidImageSize(unsigned int width, unsigned int height);
 PL_EXTERN bool plIsCompressedImageFormat(PLImageFormat format);
 
@@ -120,6 +122,8 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out);           // Valve's VTF imag
 PLresult LoadDDSImage(FILE *fin, PLImage *out);
 PLresult LoadTIMImage(FILE *fin, PLImage *out);
 PLresult _plLoadBMPImage(FILE *fin, PLImage *out);
+
+uint8_t *_plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels);
 
 #endif
 

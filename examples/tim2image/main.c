@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <arpa/inet.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -54,22 +53,7 @@ int main(int argc, char **argv) {
 
     /* Convert to a pixel format supported by DevIL (RGBA8). */
 
-    assert(image.format == PL_IMAGEFORMAT_RGB5A1);
-
-    unsigned char *data = malloc(image.width * image.height * 4);
-
-    uint16_t      *idata = (uint16_t*)(image.data[0]);
-    unsigned char *odata = data;
-
-    for(unsigned i = 0; i < (image.width * image.height); ++i)
-    {
-        uint16_t p = ntohs(*(idata++));
-
-        *(odata++) = (p & 0x001F) << 3;
-        *(odata++) = (p & 0x03E0) >> 2;
-        *(odata++) = (p & 0x7C00) >> 7;
-        *(odata++) = (p & 0x8000) ? 0x00 : 0xFF;
-    }
+    assert(plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8));
 
     /* Write the output image.
      * TODO: Error handling here.
@@ -81,15 +65,13 @@ int main(int argc, char **argv) {
     ilGenImages(1, &ImageName);
     ilBindImage(ImageName);
 
-    ilTexImage(image.width, image.height, 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, data);
+    ilTexImage(image.width, image.height, 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, image.data[0]);
 
     ilEnable(IL_FILE_OVERWRITE);
     ilSaveImage(argv[2]);
 
     ilShutDown();
     
-    free(data);
-
     plFreeImage(&image);
 
     return 0;

@@ -126,16 +126,48 @@ unsigned int plGetSamplesPerPixel(PLColourFormat format) {
     return 0;
 }
 
-void plConvertPixelFormat(PLImage *image, PLColourFormat dest_colour, PLImageFormat dest_pixel) {
-    switch(image->format) {
-        default: {
-            return;
+bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
+    /* TODO: Make this thing more extensible... */
+    if(image->format == PL_IMAGEFORMAT_RGB5A1 && new_format == PL_IMAGEFORMAT_RGBA8) {
+        uint8_t *levels[image->levels];
+        memset(levels, 0, image->levels * sizeof(uint8_t*));
+
+        /* Make a new copy of each detail level in the new format. */
+
+        unsigned int lw = image->width;
+        unsigned int lh = image->height;
+
+        for(unsigned int l = 0; l < image->levels; ++l) {
+            levels[l] = _plImageDataRGB5A1toRGBA8(image->data[l], lw * lh);
+            if(levels[l] == NULL) {
+                /* Memory allocation failed, ditch any buffers we've created so far. */
+                for(unsigned int m = 0; m < image->levels; ++m) {
+                    free(levels[m]);
+                }
+
+                ReportError(PL_RESULT_MEMORYALLOC, "Couldn't allocate memory for image data");
+                return false;
+            }
+
+            lw /= 2;
+            lh /= 2;
         }
 
-        case PL_IMAGEFORMAT_RGB5A1: {
+        /* Now that all levels have been converted, free and replace the old buffers. */
 
+        for(unsigned int l = 0; l < image->levels; ++l) {
+            free(image->data[l]);
+            image->data[l] = levels[l];
         }
+
+        image->format = new_format;
+        /* TODO: Update colour_format */
+
+        return true;
     }
+
+    ReportError(PL_RESULT_IMAGEFORMAT, "Unsupported image format conversion");
+    return false;
 }
 
 unsigned int _plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height) {
@@ -199,4 +231,33 @@ bool plIsCompressedImageFormat(PLImageFormat format) {
         case PL_IMAGEFORMAT_RGB_FXT1:
             return true;
     }
+}
+
+#define scale_5to8(i) ((((double)(i)) / 31) * 255)
+
+uint8_t *_plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels) {
+    uint8_t *dst = malloc(n_pixels * 4);
+    if(dst == NULL) {
+        return NULL;
+    }
+
+    uint8_t *dp = dst;
+
+    for(size_t i = 0; i < n_pixels; ++i) {
+        /* Red */
+        *(dp++) = scale_5to8((src[0] & 0xF8) >> 3);
+
+        /* Green */
+        *(dp++) = scale_5to8(((src[0] & 0x07) << 2) | ((src[1] & 0xC0) >> 6));
+
+        /* Blue */
+        *(dp++) = scale_5to8((src[1] & 0x3E) >> 1);
+
+        /* Alpha */
+        *(dp++) = (src[1] & 0x01) ? 255 : 0;
+
+        src += 2;
+    }
+
+    return dst;
 }
