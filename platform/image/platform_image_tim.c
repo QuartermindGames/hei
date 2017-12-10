@@ -25,8 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <arpa/inet.h> /* htons() */
-
 #include <PL/platform_image.h>
 
 /*  http://rewiki.regengedanken.de/wiki/.TIM
@@ -85,6 +83,42 @@ PLresult WriteTIMImage(const PLImage *image, const char *path) {
     }
 
     return PL_RESULT_SUCCESS;
+}
+
+/* Convert a 16-bit TIM colour value to RGB5A1. */
+static uint16_t _tim16toRGB51A(uint16_t colour_in) {
+    uint16_t colour_out = 0;
+
+    uint8_t *cin  = (uint8_t*)(&colour_in);
+    uint8_t *cout = (uint8_t*)(&colour_out);
+
+    /* Shift the colour bits around:
+     * GGGRRRRR:ABBBBBGG => RRRRRGGG:GGBBBBBA
+    */
+
+    /* Red */
+    cout[0] |= (cin[0] & 0x1F) << 3;
+
+    /* Green */
+    cout[0] |= (cin[1] & 0x03) << 1;
+    cout[0] |= (cin[0] & 0x80) >> 7;
+    cout[1] |= (cin[0] & 0x60) << 1;
+
+    /* Blue */
+    cout[1] |= (cin[1] & 0x7C) >> 1;
+
+    /* Handle the alpha channel... if the "STP" bit in the TIM data is on, the colour is
+     * transparent, unless the colour is black, in which case the bit is inverted.
+    */
+
+    bool is_black = (colour_out == 0);
+    bool stp_on   = (cin[1] & 0x80);
+
+    if((is_black && stp_on) || (!is_black && !stp_on)) {
+        cout[1] |= 0x01;
+    }
+
+    return colour_out;
 }
 
 PLresult LoadTIMImage(FILE *fin, PLImage *out) {
@@ -222,17 +256,31 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
                     goto ERR_CLEANUP;
                 }
 
-                /* Convert from the endianness monstrosity (GGGRRRRRABBBBBGG) in the TIM file
-                 * to RRRRRGGGGGBBBBBA. */
-
-                *(outdata++) = htons(palette[p1]);
-                *(outdata++) = htons(palette[p2]);
+                *(outdata++) = _tim16toRGB51A(palette[p1]);
+                *(outdata++) = _tim16toRGB51A(palette[p2]);
             }
 
             break;
         }
 
-        case TIM_TYPE_8BPP:
+        case TIM_TYPE_8BPP: {
+            uint8_t  *indata  = image_data;
+            uint16_t *outdata = (uint16_t*)(out->data[0]);
+
+            for(; indata < (uint8_t*)(image_data + image_data_len); ++indata) {
+                uint8_t p = *indata;
+
+                if(p >= palette_size) {
+                    ReportError(PL_RESULT_FILETYPE, "out-of-range palette index in TIM image");
+                    goto ERR_CLEANUP;
+                }
+
+                *(outdata++) = _tim16toRGB51A(palette[p]);
+            }
+
+            break;
+        }
+
         case TIM_TYPE_16BPP:
         case TIM_TYPE_24BPP:
             ReportError(PL_RESULT_IMAGEFORMAT, "unsupported tim type (%d)", type);
