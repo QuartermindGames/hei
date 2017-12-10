@@ -136,6 +136,7 @@ typedef enum {
     PL_RESULT_FILEVERSION,  // Unsupported version!
     PL_RESULT_FILESIZE,     // Invalid file size!
     PL_RESULT_FILEPATH,     // Invalid path!
+    PL_RESULT_FILEERR,      // Generic Filesystem error
 
     // GRAPHICS
     PL_RESULT_GRAPHICSINIT,     // Graphics failed to initialise!
@@ -150,6 +151,8 @@ typedef enum {
 
     // MEMORY
     PL_RESULT_MEMORYALLOC,    // Ran out of memory!
+
+    PL_RESULT_SYSERR,         // Generic system error
 } PLresult;
 
 //////////////////////////////////////////////////////////////////
@@ -239,10 +242,19 @@ PL_EXTERN PLresult plGetFunctionResult(void);
 PL_EXTERN const char *plGetResultString(PLresult result);
 
 // todo, kill start
-PL_EXTERN const char * plGetSystemError(void);  // Returns the error message currently given by the operating system.
-PL_EXTERN const char * plGetSystemErrorString(void); // ditto... urgh
 PL_EXTERN const char * plGetError(void);        // Returns the last recorded error.
 // kill end
+
+/* TODO: Should this be private? */
+#ifdef _WIN32
+const char *GetLastError_strerror(DWORD errnum);
+#else
+#define GetLastError() errno
+#define GetLastError_strerror(errnum) strerror(errnum)
+
+#define WSAGetLastError() errno
+#define WSAGetLastError_strerror(errnum) strerror(errnum)
+#endif
 
 // CL Arguments
 PL_EXTERN const char *plGetCommandLineArgument(const char *arg);
