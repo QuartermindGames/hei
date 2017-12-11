@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#include <PL/platform_log.h>
 #include <PL/platform_image.h>
 #include <PL/platform_console.h>
 
@@ -60,8 +59,7 @@ void InitMaterials(void);    // material
 
 PLresult InitGraphics(void) {
     GRAPHICS_TRACK();
-
-    plClearLog(PL_GRAPHICS_LOG);
+    
     plGraphicsLog("Initializing graphics abstraction layer...\n");
 
     memset(&gfx_state, 0, sizeof(GfxState));

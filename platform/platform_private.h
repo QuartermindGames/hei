@@ -24,47 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+#pragma once
 
-#include <PL/platform_log.h>
+enum {
+    LOG_LEVEL_HIGH = -1,
+    LOG_LEVEL_MEDIUM = -2,
+    LOG_LEVEL_LOW = -3,
 
-/*	Log System	*/
+    LOG_LEVEL_GRAPHICS = -4,
+    LOG_LEVEL_FILESYSTEM = -5,
 
-#define LOG_FILE_EXTENSION  ".log"
-
-void plWriteLog(const char *path, const char *msg, ...) {
-    plFunctionStart();
-
-    char newpath[PL_SYSTEM_MAX_PATH];
-    sprintf(newpath, "%s"LOG_FILE_EXTENSION, path);
-
-    static char buffer[16384] = { '\0' };
-    va_list args;
-    va_start(args, msg);
-    vsnprintf(buffer, sizeof(buffer), msg, args);
-    va_end(args);
-
-    size_t size = strlen(buffer);
-    FILE *file = fopen(newpath, "a");
-    if(file != NULL) {
-        if (fwrite(buffer, sizeof(char), size, file) != size) {
-            ReportError(PL_RESULT_FILEERR,
-                "Failed to write to log! (%s)\n%s", newpath, strerror(errno));
-        }
-        fclose(file);
-    } else {
-        // todo, needs to be more appropriate; return details on exact issue
-        ReportError(PL_RESULT_FILEREAD, "Failed to open %s!", newpath);
-    }
-}
-
-void plClearLog(const char *path) {
-    plFunctionStart();
-
-    char newpath[PL_SYSTEM_MAX_PATH];
-    sprintf(newpath, "%s"LOG_FILE_EXTENSION, path);
-    unlink(newpath);
-}
-
-void plLog(unsigned int level, const char *msg, ...) {
-
-}
+    LOG_LEVEL_END = 10
+};

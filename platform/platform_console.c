@@ -24,12 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
-#include "graphics/graphics_private.h"
-
 #include <PL/platform_console.h>
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_filesystem.h>
+
+#include "platform_private.h"
+#include "graphics/graphics_private.h"
 
 #define CONSOLE_MAX_ARGUMENTS 8
 
@@ -744,4 +744,147 @@ void plDrawConsole(void) {
     glDisable(GL_TEXTURE_RECTANGLE);
 #endif
 #endif
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+
+/*	Log System	*/
+
+#define MAX_LOG_LEVELS  128
+
+typedef struct LogLevel {
+    int id;
+    bool is_enabled;
+
+    char prefix[64];    // e.g. 'warning, 'error'
+    PLColour colour;
+} LogLevel;
+
+LogLevel levels[MAX_LOG_LEVELS];
+LogLevel *GetLogLevel(int level) {
+    static bool mem_cleared = false;
+    if(!mem_cleared) {
+        memset(levels, 0, sizeof(LogLevel) * MAX_LOG_LEVELS);
+        mem_cleared = true;
+
+        // todo, eventually some of these should be disabled by default - unless enabled via console command
+        plSetupLogLevel(LOG_LEVEL_LOW, "pl", (PLColour){255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_MEDIUM, "pl-warn", (PLColour){255, 255, 0}, true);
+        plSetupLogLevel(LOG_LEVEL_HIGH, "pl-error", (PLColour){255, 0, 0}, true);
+        plSetupLogLevel(LOG_LEVEL_GRAPHICS, "pl-gfx", (PLColour){0, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_FILESYSTEM, "pl-fs", (PLColour){0, 255, 255}, true);
+    }
+
+    // the following ensures there's no conflict
+    // between internal/external log levels
+    if(level < 0) {
+        level *= -1;
+    } else {
+        level += LOG_LEVEL_END;
+    }
+
+    if(level >= MAX_LOG_LEVELS) {
+        ReportError(PL_RESULT_MEMORY_EOA, "failed to find slot for log level %d", level);
+        return NULL;
+    }
+
+    LogLevel *l = &levels[level];
+    if(l->id == 0) {
+        // register it as a new level
+        l->id = level;
+        l->is_enabled = false;
+        l->colour = PLColour(255, 255, 255, 255);
+    }
+
+    return l;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// public
+
+char log_output_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+
+void plSetupLogOutput(const char *path) {
+    if(path == NULL || path[0] == '\0') {
+        return;
+    }
+
+    strncpy(log_output_path, path, sizeof(log_output_path));
+    if(plFileExists(log_output_path)) {
+        unlink(log_output_path);
+    }
+}
+
+void plSetupLogLevel(int level, const char *prefix, PLColour colour, bool status) {
+    LogLevel *l = GetLogLevel(level);
+    if(l == NULL) {
+        return;
+    }
+
+    if(prefix != NULL && prefix[0] != '\0') {
+        snprintf(l->prefix, sizeof(l->prefix), "%s", prefix);
+    }
+
+    l->colour = colour;
+    l->is_enabled = status;
+}
+
+void plSetLogLevelStatus(int level, bool status) {
+    LogLevel *l = GetLogLevel(level);
+    if(l == NULL) {
+        return;
+    }
+
+    l->is_enabled = status;
+}
+
+void plLogMessage(int level, const char *msg, ...) {
+    LogLevel *l = GetLogLevel(level);
+    if(l == NULL) {
+        return;
+    }
+
+    if(!l->is_enabled) {
+        return;
+    }
+
+    char buf[4096] = {'\0'};
+
+    // add the prefix to the start
+    int c = 0;
+    if(l->prefix[0] != '\0') {
+        c = snprintf(buf, sizeof(buf), "[%s] %s: ", plGetFormattedTime(), l->prefix);
+    } else {
+        c = snprintf(buf, sizeof(buf), "[%s]: ", plGetFormattedTime());
+    }
+
+    va_list args;
+    va_start(args, msg);
+    vsnprintf(buf + c, sizeof(buf) - c, msg, args);
+    va_end(args);
+
+    printf("%s", buf);
+
+    // todo, decide how we're going to pass it to the console/log
+
+    static bool avoid_recursion = false;
+    if(!avoid_recursion) {
+        if (log_output_path[0] != '\0') {
+            size_t size = strlen(buf);
+            FILE *file = fopen(log_output_path, "a");
+            if (file != NULL) {
+                if (fwrite(buf, sizeof(char), size, file) != size) {
+                    avoid_recursion = true;
+                    ReportError(PL_RESULT_FILEERR, "failed to write to log, %s\n%s", log_output_path, strerror(errno));
+                }
+                fclose(file);
+                return;
+            }
+
+            // todo, needs to be more appropriate; return details on exact issue
+            avoid_recursion = true;
+            ReportError(PL_RESULT_FILEREAD, "failed to open %s", log_output_path);
+        }
+    }
 }

@@ -24,6 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+#include <PL/platform_console.h>
+
 #include "graphics_private.h"
 
 #ifdef __APPLE__

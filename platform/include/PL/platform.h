@@ -150,7 +150,8 @@ typedef enum {
     PL_RESULT_IMAGEFORMAT,      // Unsupported image format!
 
     // MEMORY
-    PL_RESULT_MEMORYALLOC,    // Ran out of memory!
+    PL_RESULT_MEMORYALLOC,      // Ran out of memory!
+    PL_RESULT_MEMORY_EOA,       // End of array
 
     PL_RESULT_SYSERR,         // Generic system error
 } PLresult;

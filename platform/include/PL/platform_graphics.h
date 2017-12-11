@@ -31,8 +31,6 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_math.h"
 #include "platform_image.h"
 
-//#define PL_MODE_OPENGL
-
 typedef enum PLGfxMode {
     PL_GFX_MODE_SOFTWARE,
 
@@ -48,16 +46,6 @@ typedef enum PLGfxMode {
 
     PL_GFX_MODE_OTHER,
 } PLGfxMode;
-
-#if defined(PL_INTERNAL)
-#   include "platform_log.h"
-#   define PL_GRAPHICS_LOG  "pl_graphics"
-#   ifdef _DEBUG
-#	    define plGraphicsLog(...) plWriteLog(PL_GRAPHICS_LOG, __VA_ARGS__)
-#   else
-#	    define plGraphicsLog(...)
-#   endif
-#endif
 
 typedef unsigned int PLVertexArray;
 typedef unsigned int PLRenderBuffer;

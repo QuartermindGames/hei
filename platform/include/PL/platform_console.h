@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #pragma once
 
 #include <PL/platform.h>
@@ -108,5 +107,14 @@ PL_EXTERN void plParseConsoleString(const char *string);
 
 PL_EXTERN void plShowConsole(bool show);
 PL_EXTERN void plDrawConsole(void);
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+PL_EXTERN void plSetupLogOutput(const char *path);
+
+PL_EXTERN void plSetupLogLevel(int level, const char *prefix, PLColour colour, bool status);
+PL_EXTERN void plSetLogLevelStatus(int level, bool status);
+
+PL_EXTERN void plLogMessage(int level, const char *msg, ...);
 
 PL_EXTERN_C_END

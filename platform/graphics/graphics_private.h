@@ -24,8 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #include <PL/platform_graphics.h>
+
+#include "platform_private.h"
+
+#ifdef _DEBUG
+#   define plGraphicsLog(...) plLogMessage(LOG_LEVEL_GRAPHICS, __VA_ARGS__)
+#else
+#   define plGraphicsLog(...)
+#endif
 
 typedef struct PLGraphicsState {
     PLCullMode current_cullmode;

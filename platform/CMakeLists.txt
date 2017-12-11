@@ -33,7 +33,7 @@ add_definitions("-D_DEBUG")
 
 file(
         GLOB PLATFORM_SOURCE_FILES
-        *.cpp *.c
+        *.cpp *.c *.h
 
         graphics/*.*
         image/*.*
