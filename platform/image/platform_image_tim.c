@@ -248,8 +248,8 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
             uint16_t *outdata = (uint16_t*)(out->data[0]);
 
             for(; indata < (uint8_t*)(image_data + image_data_len); ++indata) {
-                uint8_t p1 = (*indata & 0xF0) >> 4;
-                uint8_t p2 = (*indata & 0x0F);
+                uint8_t p1 = (*indata & 0x0F);
+                uint8_t p2 = (*indata & 0xF0) >> 4;
 
                 if(p1 >= palette_size || p2 >= palette_size) {
                     ReportError(PL_RESULT_FILETYPE, "out-of-range palette index in TIM image");
