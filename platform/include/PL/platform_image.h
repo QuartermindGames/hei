@@ -103,11 +103,14 @@ bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format);
 PL_EXTERN bool plIsValidImageSize(unsigned int width, unsigned int height);
 PL_EXTERN bool plIsCompressedImageFormat(PLImageFormat format);
 
+bool plFlipImageVertical(PLImage *image);
+
 #if defined(PL_INTERNAL)
 
 void plFreeImage(PLImage *image);
 
 unsigned int _plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height);
+unsigned int _plImageBytesPerPixel(PLImageFormat format);
 
 bool DDSFormatCheck(FILE *fin);
 bool _plDTXFormatCheck(FILE *fin);

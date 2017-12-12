@@ -289,6 +289,11 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
 
     out->colour_format = PL_COLOURFORMAT_ABGR;
 
+    /* Flip the image, because TIM images are stored upside-down for some reason. */
+    if(!plFlipImageVertical(out)) {
+        goto ERR_CLEANUP;
+    }
+
     free(image_data);
     free(palette);
 

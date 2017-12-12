@@ -189,6 +189,27 @@ unsigned int _plGetImageSize(PLImageFormat format, unsigned int width, unsigned 
     }
 }
 
+/* Returns the number of BYTES per pixel for the given PLImageFormat.
+ *
+ * If the format doesn't have a predictable size or the size isn't a multiple
+ * of one byte, returns ZERO.
+*/
+unsigned int _plImageBytesPerPixel(PLImageFormat format) {
+    switch(format) {
+        case PL_IMAGEFORMAT_RGBA4:   return 2;
+        case PL_IMAGEFORMAT_RGB5A1:  return 2;
+        case PL_IMAGEFORMAT_RGB565:  return 2;
+        case PL_IMAGEFORMAT_RGB8:    return 3;
+        case PL_IMAGEFORMAT_RGBA8:   return 4;
+        case PL_IMAGEFORMAT_RGBA12:  return 6;
+        case PL_IMAGEFORMAT_RGBA16:  return 8;
+        case PL_IMAGEFORMAT_RGBA16F: return 8;
+
+        default:
+            return 0;
+    }
+}
+
 void _plAllocateImage(PLImage *image, PLuint size, PLuint levels) {
     image->data = (uint8_t**)calloc(levels, sizeof(uint8_t));
 }
@@ -260,4 +281,41 @@ uint8_t *_plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels) {
     }
 
     return dst;
+}
+
+bool plFlipImageVertical(PLImage *image) {
+	unsigned int width  = image->width;
+	unsigned int height = image->height;
+	
+	unsigned int bytes_per_pixel = _plImageBytesPerPixel(image->format);
+	if(bytes_per_pixel == 0) {
+		ReportError(PL_RESULT_IMAGEFORMAT, "Cannot flip images in this format");
+		return false;
+	}
+	
+	unsigned int bytes_per_row = width * bytes_per_pixel;
+	
+	unsigned char *swap = malloc(bytes_per_row);
+	if(swap == NULL) {
+		ReportError(PL_RESULT_MEMORYALLOC, "Cannot allocate memory");
+		return false;
+	}
+	
+	for(unsigned int l = 0; l < image->levels; ++l) {
+		for(unsigned int r = 0; r < height / 2; ++r) {
+			unsigned char *tr = image->data[l] + (r * bytes_per_row);
+			unsigned char *br = image->data[l] + (((height - 1) - r) * bytes_per_row);
+			
+			memcpy(swap, tr, bytes_per_row);
+			memcpy(tr, br,   bytes_per_row);
+			memcpy(br, swap, bytes_per_row);
+		}
+		
+		bytes_per_row /= 2;
+		height        /= 2;
+	}
+	
+	free(swap);
+	
+	return true;
 }
