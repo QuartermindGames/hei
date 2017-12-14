@@ -132,6 +132,7 @@ typedef enum {
 
     // FILE I/O
     PL_RESULT_FILEREAD,     // Failed to read file!
+    PL_RESULT_FILEWRITE,    // Failed to write file!
     PL_RESULT_FILETYPE,     // Unexpected file type!
     PL_RESULT_FILEVERSION,  // Unsupported version!
     PL_RESULT_FILESIZE,     // Invalid file size!

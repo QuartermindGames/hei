@@ -287,37 +287,59 @@ bool plDeleteFile(const char *path) {
 }
 
 bool plCopyFile(const char *path, const char *dest) {
-    FILE *fold = fopen(path, "rb");
-    if(fold == NULL) {
-        ReportError(PL_RESULT_FILEREAD, "Failed to open %s!", path);
+    size_t file_size = plGetFileSize(path);
+    if(file_size == 0) {
         return false;
     }
 
-    fseek(fold, 0, SEEK_END);
-    size_t file_size = (size_t)ftell(fold);
-    fseek(fold, 0, SEEK_SET);
-
     uint8_t *data = calloc(file_size, 1);
     if(data == NULL) {
-        fclose(fold);
         ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate buffer for %s, with size %d!", path, file_size);
         return false;
     }
 
-    fread(data, 1, file_size, fold);
-    fclose(fold);
+    FILE *original = NULL;
+    FILE *copy = NULL;
 
-    FILE *out = fopen(dest, "wb");
-    if(out == NULL || (fwrite(data, 1, file_size, out) != file_size)) {
-        free(data);
-        ReportError(PL_RESULT_FILEREAD, "Failed to write %s!", dest);
-        return false;
+    // read in the original
+    if((original = fopen(path, "rb")) == NULL) {
+        ReportError(PL_RESULT_FILEREAD, "Failed to open %s!", path);
+        goto BAIL;
     }
-    fclose(out);
+    if(fread(data, 1, file_size, original) != file_size) {
+        ReportError(PL_RESULT_FILEREAD, "failed to read in %d bytes for %s", file_size, path);
+        goto BAIL;
+    }
+    fclose(original); original = NULL;
 
-    free(data);
+    // write out the copy
+    if((copy = fopen(dest, "wb")) == NULL) {
+        ReportError(PL_RESULT_FILEWRITE, "failed to open %s for write", path);
+        goto BAIL;
+    }
+    if(fwrite(data, 1, file_size, copy) != file_size) {
+        ReportError(PL_RESULT_FILEWRITE, "failed to write out %d bytes for %s", file_size, path);
+        goto BAIL;
+    }
+    fclose(copy);
 
     return true;
+
+    BAIL:
+
+    if(data != NULL) {
+        free(data);
+    }
+
+    if(original != NULL) {
+        fclose(original);
+    }
+
+    if(copy != NULL) {
+        fclose(copy);
+    }
+
+    return false;
 }
 
 size_t plGetFileSize(const char *path) {
