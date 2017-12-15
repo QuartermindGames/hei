@@ -285,7 +285,7 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
         case TIM_TYPE_24BPP:
             ReportError(PL_RESULT_IMAGEFORMAT, "unsupported tim type (%d)", type);
             goto ERR_CLEANUP;
-    };
+    }
 
     out->colour_format = PL_COLOURFORMAT_ABGR;
 

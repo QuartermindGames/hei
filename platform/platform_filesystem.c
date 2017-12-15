@@ -314,7 +314,7 @@ bool plCopyFile(const char *path, const char *dest) {
 
     // write out the copy
     if((copy = fopen(dest, "wb")) == NULL) {
-        ReportError(PL_RESULT_FILEWRITE, "failed to open %s for write", path);
+        ReportError(PL_RESULT_FILEWRITE, "failed to open %s for write", dest);
         goto BAIL;
     }
     if(fwrite(data, 1, file_size, copy) != file_size) {

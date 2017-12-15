@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_math.h>
 
 PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
-    if(!fin) {
+    if(fin == NULL) {
         ReportError(PL_RESULT_FILEREAD, "invalid file handle");
         return PL_RESULT_FILEREAD;
     }
