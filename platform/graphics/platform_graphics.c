@@ -183,49 +183,17 @@ void plSetClearColour(PLColour rgba) {
         return;
     }
 
-#if 0
-    glClearColor(
-            plByteToFloat(rgba.r),
-            plByteToFloat(rgba.g),
-            plByteToFloat(rgba.b),
-            plByteToFloat(rgba.a)
-    );
-#endif
+    if(gfx_layer.SetClearColour) {
+        gfx_layer.SetClearColour(rgba);
+    }
 
     plCopyColour(&gfx_state.current_clearcolour, rgba);
 }
 
 void plClearBuffers(unsigned int buffers) {
-    GRAPHICS_TRACK();
-
-#if defined (PL_MODE_OPENGL) || defined (PL_MODE_OPENGL_CORE)
-    // Rather ugly, but translate it over to GL.
-    unsigned int glclear = 0;
-    if(buffers & PL_BUFFER_COLOUR)  glclear |= GL_COLOR_BUFFER_BIT;
-    if(buffers & PL_BUFFER_DEPTH)   glclear |= GL_DEPTH_BUFFER_BIT;
-    if(buffers & PL_BUFFER_STENCIL) glclear |= GL_STENCIL_BUFFER_BIT;
-    glClear(glclear);
-#elif defined (PL_MODE_GLIDE)
-    // Glide only supports clearing a single buffer.
-    grBufferClear(
-        // Convert buffer_clearcolour to something that works with Glide.
-        _plConvertColour4fv(PL_COLOURFORMAT_RGBA, graphics_state.buffer_clearcolour),
-        1, 1);
-#elif defined (PL_MODE_DIRECT3D)
-    pl_d3d_context->lpVtbl->ClearRenderTargetView(pl_d3d_context,
-        pl_d3d_backbuffer,
-        graphics_state.current_clearcolour
-    );
-#elif defined (PL_MODE_SOFTWARE)
-    if(buffers & PL_BUFFER_COLOUR) {
-        for (unsigned int i = 0; i < pl_sw_backbuffer_size; i += 4) {
-            pl_sw_backbuffer[i] = gfx_state.current_clearcolour.r;
-            pl_sw_backbuffer[i + 1] = gfx_state.current_clearcolour.g;
-            pl_sw_backbuffer[i + 2] = gfx_state.current_clearcolour.b;
-            pl_sw_backbuffer[i + 3] = gfx_state.current_clearcolour.a;
-        }
+    if(gfx_layer.ClearBuffers) {
+        gfx_layer.ClearBuffers(buffers);
     }
-#endif
 }
 
 /*===========================

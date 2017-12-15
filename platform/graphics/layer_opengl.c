@@ -86,6 +86,26 @@ bool GLHWSupportsMultitexture(void) {
 
 /////////////////////////////////////////////////////////////
 
+void GLSetClearColour(PLColour rgba) {
+    glClearColor(
+            plByteToFloat(rgba.r),
+            plByteToFloat(rgba.g),
+            plByteToFloat(rgba.b),
+            plByteToFloat(rgba.a)
+    );
+}
+
+void GLClearBuffers(unsigned int buffers) {
+    // Rather ugly, but translate it over to GL.
+    unsigned int glclear = 0;
+    if(buffers & PL_BUFFER_COLOUR)  glclear |= GL_COLOR_BUFFER_BIT;
+    if(buffers & PL_BUFFER_DEPTH)   glclear |= GL_DEPTH_BUFFER_BIT;
+    if(buffers & PL_BUFFER_STENCIL) glclear |= GL_STENCIL_BUFFER_BIT;
+    glClear(glclear);
+}
+
+/////////////////////////////////////////////////////////////
+
 unsigned int TranslateBlendFunc(PLBlend blend) {
     switch(blend) {
         case PL_BLEND_ONE: return GL_ONE;
@@ -249,6 +269,9 @@ void InitOpenGL(void) {
     gfx_layer.SetBlendMode              = GLSetBlendMode;
     gfx_layer.SetCullMode               = GLSetCullMode;
 
+    gfx_layer.SetClearColour            = GLSetClearColour;
+    gfx_layer.ClearBuffers              = GLClearBuffers;
+
     gfx_layer.CreateCamera              = GLCreateCamera;
     gfx_layer.DeleteCamera              = GLDeleteCamera;
     gfx_layer.SetupCamera               = GLSetupCamera;
@@ -272,7 +295,7 @@ void InitOpenGL(void) {
     glGetIntegerv(GL_MINOR_VERSION, &gl_version_minor);
     glGetIntegerv(GL_MAJOR_VERSION, &gl_version_major);
     unsigned int err = glGetError();
-    if(err == GL_INVALID_ENUM) { // try again the old fashioned way...
+    if(err == GL_INVALID_ENUM) { // todo, totally untested
         if(gfx_state.hw_version[0] != '\0') {
             gl_version_major = gfx_state.hw_version[0];
         }

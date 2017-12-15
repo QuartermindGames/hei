@@ -93,6 +93,9 @@ typedef struct GfxLayer {
     void(*SetBlendMode)(PLBlend a, PLBlend b);
     void(*SetCullMode)(PLCullMode mode);
 
+    void(*SetClearColour)(PLColour rgba);
+    void(*ClearBuffers)(unsigned int buffers);
+
     // Camera
     void(*CreateCamera)(PLCamera *camera);
     void(*DeleteCamera)(PLCamera *camera);
