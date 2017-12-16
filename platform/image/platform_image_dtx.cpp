@@ -95,7 +95,7 @@ uint8_t _plGetDTXFormat(DTXHeader *dtx) {
     return dtx->extra[2];
 }
 
-bool _plDTXFormatCheck(FILE *fin) {
+bool DTXFormatCheck(FILE *fin) {
     rewind(fin);
 
     // Try reading in the type first, as Lithtech has "resource types" rather than idents.

@@ -225,7 +225,7 @@ void _plConvertVTFFormat(PLImage *image, unsigned int in) {
     }
 }
 
-bool _plVTFFormatCheck(FILE *fin) {
+bool VTFFormatCheck(FILE *fin) {
     rewind(fin);
 
     char ident[4];
@@ -308,7 +308,7 @@ PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
                     // We'll just skip the smaller mipmaps for now, can generate these later.
                     mipw *= (unsigned int)pow(2, mipmap); //(out->width * (mipmap + 1)) / header.mipmaps;
                     miph *= (unsigned int)pow(2, mipmap); //(out->height * (mipmap + 1)) / header.mipmaps;
-                    PLuint mipsize = _plGetImageSize(out->format, mipw, miph);
+                    PLuint mipsize = plGetImageSize(out->format, mipw, miph);
                     if(mipmap == (header.mipmaps - 1)) {
                         out->data[0] = (uint8_t*)calloc(mipsize, sizeof(uint8_t));
                         if (fread(out->data[0], sizeof(uint8_t), mipsize, fin) != mipsize) {

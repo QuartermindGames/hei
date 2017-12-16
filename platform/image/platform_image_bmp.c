@@ -53,7 +53,7 @@ typedef struct __attribute((packed)) BMPInfoHeader {
     uint32_t palette_important;
 } BMPInfoHeader;
 
-bool _plBMPFormatCheck(FILE *fin) {
+bool BMPFormatCheck(FILE *fin) {
     rewind(fin);
 
     uint8_t ident[2];
@@ -75,8 +75,6 @@ PLresult _plLoadBMPImage(FILE *fin, PLImage *out) {
     }
 
     memset(out, 0, sizeof(PLImage));
-
-
 
     return PL_RESULT_SUCCESS;
 }

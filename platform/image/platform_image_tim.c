@@ -225,7 +225,7 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
             break;
     };
 
-    out->size   = _plGetImageSize(out->format, out->width, out->height);
+    out->size   = plGetImageSize(out->format, out->width, out->height);
     out->levels = 1;
 
     out->data = calloc(out->levels, sizeof(uint8_t*));
@@ -288,11 +288,6 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
     }
 
     out->colour_format = PL_COLOURFORMAT_ABGR;
-
-    /* Flip the image, because TIM images are stored upside-down for some reason. */
-    if(!plFlipImageVertical(out)) {
-        goto ERR_CLEANUP;
-    }
 
     free(image_data);
     free(palette);

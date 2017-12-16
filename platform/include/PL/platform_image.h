@@ -109,14 +109,14 @@ bool plFlipImageVertical(PLImage *image);
 
 void plFreeImage(PLImage *image);
 
-unsigned int _plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height);
+unsigned int plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height);
 unsigned int _plImageBytesPerPixel(PLImageFormat format);
 
 bool DDSFormatCheck(FILE *fin);
-bool _plDTXFormatCheck(FILE *fin);
-bool _plVTFFormatCheck(FILE *fin);
+bool DTXFormatCheck(FILE *fin);
+bool VTFFormatCheck(FILE *fin);
 bool TIMFormatCheck(FILE *fin);
-bool _plBMPFormatCheck(FILE *fin);
+bool BMPFormatCheck(FILE *fin);
 
 PLresult _plLoadFTXImage(FILE *fin, PLImage *out);           // Ritual's FTX image format.
 PLresult _plLoadPPMImage(FILE *fin, PLImage *out);           // Portable Pixel Map format.

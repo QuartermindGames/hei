@@ -28,6 +28,44 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_filesystem.h>
 #include <PL/platform_math.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#if defined(STB_IMAGE_IMPLEMENTATION)
+#include "stb_image.h"
+
+PLresult LoadSTBImage(FILE *fin, PLImage *out) {
+    rewind(fin);
+
+    int x, y, component;
+    unsigned char *data = stbi_load_from_file(fin, &x, &y, &component, 4);
+    if(data == NULL) {
+        ReportError(PL_RESULT_FILEREAD, "failed to read in image, %s", stbi_failure_reason());
+        return PL_RESULT_FILEREAD;
+    }
+
+    memset(out, 0, sizeof(PLImage));
+    out->colour_format  = PL_COLOURFORMAT_RGBA;
+    out->format         = PL_IMAGEFORMAT_RGBA8;
+    out->width          = (unsigned int)x;
+    out->height         = (unsigned int)y;
+    out->size           = plGetImageSize(out->format, out->width, out->height);
+    out->levels         = 1;
+
+    out->data = calloc(out->levels, sizeof(uint8_t*));
+    if(out->data != NULL) {
+        out->data[0] = calloc(out->size, sizeof(uint8_t));
+        if(out->data[0] != NULL) {
+            out->data[0] = data;
+            return PL_RESULT_SUCCESS;
+        }
+        free(out->data);
+    }
+    free(data);
+
+    ReportError(PL_RESULT_MEMORYALLOC, "failed to allocate memory for image buffer");
+    return plGetFunctionResult();
+}
+#endif
+
 PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     if(fin == NULL) {
         ReportError(PL_RESULT_FILEREAD, "invalid file handle");
@@ -39,15 +77,19 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
         result = LoadDDSImage(fin, out);
     } else if(TIMFormatCheck(fin)) {
         result = LoadTIMImage(fin, out);
-    } else if(_plVTFFormatCheck(fin)) {
+    } else if(VTFFormatCheck(fin)) {
         result = _plLoadVTFImage(fin, out);
-    } else if(_plDTXFormatCheck(fin)) {
+    } else if(DTXFormatCheck(fin)) {
         result = _plLoadDTXImage(fin, out);
-    } else if(_plBMPFormatCheck(fin)) {
+    }
+#if 0
+    else if(BMPFormatCheck(fin)) {
         result = _plLoadBMPImage(fin, out);
-    } else {
+    }
+#endif
+    else {
         const char *extension = plGetFileExtension(path);
-        if(plIsValidString(extension)) {
+        if(extension && extension[0] != '\0') {
             if (!strncmp(extension, PLIMAGE_EXTENSION_FTX, 3)) {
                 result = _plLoadFTXImage(fin, out);
             } else if (!strncmp(extension, PLIMAGE_EXTENSION_PPM, 3)) {
@@ -55,6 +97,12 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
             }
         }
     }
+
+#if defined(STB_IMAGE_IMPLEMENTATION)
+    if(result != PL_RESULT_SUCCESS) {
+        result = LoadSTBImage(fin, out);
+    }
+#endif
 
     if(result == PL_RESULT_SUCCESS) {
         strncpy(out->path, path, sizeof(out->path));
@@ -170,7 +218,7 @@ bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
     return false;
 }
 
-unsigned int _plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height) {
+unsigned int plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height) {
     switch(format) {
         case PL_IMAGEFORMAT_RGB_DXT1:   return (width * height) >> 1;
         case PL_IMAGEFORMAT_RGBA_DXT1:  return width * height * 4;
