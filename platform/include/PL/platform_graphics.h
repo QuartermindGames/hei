@@ -44,7 +44,7 @@ typedef enum PLGfxMode {
 
     PL_GFX_MODE_DIRECT3D,
 
-    PL_GFX_MODE_OTHER,
+    PL_GFX_MODE_CUSTOM,
 } PLGfxMode;
 
 typedef unsigned int PLVertexArray;
@@ -263,6 +263,8 @@ PL_EXTERN void plSetCullMode(PLCullMode mode);
 PL_EXTERN void plSetBlendMode(PLBlend a, PLBlend b);
 
 PL_EXTERN void plProcessGraphics(void);
+
+PL_EXTERN void plSetGraphicsMode(PLGfxMode mode);
 
 PL_EXTERN_C_END
 

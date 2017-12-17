@@ -418,6 +418,10 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     texture->height     = upload->height;
     texture->format     = upload->format;
     texture->size       = upload->size;
+    unsigned int levels = upload->levels;
+    if(!levels) {
+        levels = 1;
+    }
 
 #if defined(PL_MODE_OPENGL)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);

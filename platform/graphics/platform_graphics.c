@@ -64,24 +64,6 @@ PLresult InitGraphics(void) {
 
     memset(&gfx_state, 0, sizeof(GfxState));
 
-    gfx_layer.mode = PL_GFX_MODE_OPENGL; // todo, temp
-    switch(gfx_layer.mode) {
-        default: {
-            ReportError(PL_RESULT_GRAPHICSINIT, "Invalid graphics layer, %d, selected!\n", gfx_layer.mode);
-            _plDebugPrint("Reverting to software mode...\n");
-            gfx_layer.mode = PL_GFX_MODE_SOFTWARE;
-            return InitGraphics();
-        }
-
-        case PL_GFX_MODE_DIRECT3D: break;
-
-        case PL_GFX_MODE_OPENGL_CORE:
-        case PL_GFX_MODE_OPENGL_ES:
-        case PL_GFX_MODE_OPENGL: {
-            InitOpenGL();
-        } break;
-    }
-
     InitCameras();
     InitTextures();
     InitMaterials();
@@ -520,6 +502,27 @@ void plDrawPixel(int x, int y, PLColour colour) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
+
+void plSetGraphicsMode(PLGfxMode mode) {
+    gfx_layer.mode = mode;
+    switch(gfx_layer.mode) {
+        default: {
+            ReportError(PL_RESULT_GRAPHICSINIT, "invalid graphics layer, %d, selected", gfx_layer.mode);
+            _plDebugPrint("Reverting to software mode...\n");
+            gfx_layer.mode = PL_GFX_MODE_SOFTWARE;
+            InitGraphics();
+        } break;
+
+        case PL_GFX_MODE_DIRECT3D: break;
+        case PL_GFX_MODE_CUSTOM: break;
+
+        case PL_GFX_MODE_OPENGL_CORE:
+        case PL_GFX_MODE_OPENGL_ES:
+        case PL_GFX_MODE_OPENGL: {
+            InitOpenGL();
+        } break;
+    }
+}
 
 void plProcessGraphics(void) {
     plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
