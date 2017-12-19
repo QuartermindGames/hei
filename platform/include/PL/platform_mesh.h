@@ -62,20 +62,7 @@ typedef struct PLTriangle {
     unsigned int indices[3];
 } PLTriangle;
 
-#if defined(PL_MODE_OPENGL)
-enum {
-    _PLGL_BUFFER_VERTICES,
-    _PLGL_BUFFER_TEXCOORDS,
-
-    _PLGL_BUFFERS
-};
-#endif
-
 typedef struct PLMesh {
-#if defined(PL_MODE_OPENGL)
-    unsigned int _buffers[_PLGL_BUFFERS];
-#endif
-
     PLVertex *vertices;
     PLTriangle *triangles;
     uint8_t *indices;
@@ -87,6 +74,10 @@ typedef struct PLMesh {
     PLMeshDrawMode mode;
 
     PLVector3 position, angles;
+
+    // internal use ................
+
+    unsigned int _buffers[32];
 } PLMesh;
 
 PL_EXTERN_C

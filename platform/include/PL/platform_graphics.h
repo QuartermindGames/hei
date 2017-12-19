@@ -32,19 +32,21 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_image.h"
 
 typedef enum PLGfxMode {
+    PL_GFX_MODE_NONE,
+
     PL_GFX_MODE_SOFTWARE,
 
+#if defined(PL_USE_GL)
     PL_GFX_MODE_OPENGL,
     PL_GFX_MODE_OPENGL_CORE,
     PL_GFX_MODE_OPENGL_ES,
+#endif
 
     PL_GFX_MODE_VULKAN,
 
     PL_GFX_MODE_GLIDE,
 
     PL_GFX_MODE_DIRECT3D,
-
-    PL_GFX_MODE_CUSTOM,
 } PLGfxMode;
 
 typedef unsigned int PLVertexArray;

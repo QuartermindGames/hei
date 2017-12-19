@@ -102,11 +102,6 @@ void plDeleteCamera(PLCamera *camera) {
 void plSetupCamera(PLCamera *camera) {
     plAssert(camera);
 
-    if(gfx_layer.SetupCamera) {
-        gfx_layer.SetupCamera(camera);
-    }
-
-#if 0
 #if defined(PL_MODE_OPENGL)
     // todo, modernize start
     glMatrixMode(GL_PROJECTION);
@@ -153,7 +148,10 @@ void plSetupCamera(PLCamera *camera) {
         default: break;
     }
 #endif
-#endif
+
+    if(gfx_layer.SetupCamera) {
+        gfx_layer.SetupCamera(camera);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////

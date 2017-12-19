@@ -90,7 +90,7 @@ unsigned int plGetMaxTextureSize(void) {
 unsigned int _plTranslateTextureUnit(unsigned int target) {
     unsigned int out = GL_TEXTURE0 + target;
     if (out > (GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS - 1)) {
-        plGraphicsLog("Attempted to select an invalid texture image unit! (%i)\n", target);
+        GfxLog("Attempted to select an invalid texture image unit! (%i)\n", target);
     }
     return out;
 }
@@ -295,7 +295,7 @@ void plSetTextureUnit(unsigned int target) {
         return;
 
     if (target > plGetMaxTextureUnits()) {
-        plGraphicsLog("Attempted to select a texture image unit beyond what's supported by your hardware! (%i)\n",
+        GfxLog("Attempted to select a texture image unit beyond what's supported by your hardware! (%i)\n",
                       target);
         return;
     }

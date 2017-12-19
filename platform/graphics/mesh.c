@@ -31,73 +31,6 @@ For more information, please refer to <http://unlicense.org>
 #   define _PLGL_USE_VERTEX_BUFFER_OBJECTS
 #endif
 
-typedef struct MeshTranslatePrimitive {
-    PLMeshPrimitive mode;
-
-    unsigned int target;
-
-    const char *name;
-} MeshTranslatePrimitive;
-
-MeshTranslatePrimitive primitives[] = {
-#if defined (PL_MODE_OPENGL)
-        {PLMESH_LINES, GL_LINES, "LINES"},
-        {PLMESH_POINTS, GL_POINTS, "POINTS"},
-        {PLMESH_TRIANGLES, GL_TRIANGLES, "TRIANGLES"},
-        {PLMESH_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN"},
-        {PLMESH_TRIANGLE_FAN_LINE, GL_LINES, "TRIANGLE_FAN_LINE"},
-        {PLMESH_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"},
-        {PLMESH_QUADS, GL_QUADS, "QUADS"}
-#elif defined (VL_MODE_GLIDE)
-{ PL_PRIMITIVE_LINES,					GR_LINES,			"LINES" },
-    { PL_PRIMITIVE_LINE_STRIP,				GR_LINE_STRIP,		"LINE_STRIP" },
-    { PL_PRIMITIVE_POINTS,					GR_POINTS,			"POINTS" },
-    { PL_PRIMITIVE_TRIANGLES,				GR_TRIANGLES,		"TRIANGLES" },
-    { PL_PRIMITIVE_TRIANGLE_FAN,			GR_TRIANGLE_FAN,	"TRIANGLE_FAN" },
-    { PL_PRIMITIVE_TRIANGLE_FAN_LINE,		GR_LINES,			"TRIANGLE_FAN_LINE" },
-    { PL_PRIMITIVE_TRIANGLE_STRIP,			GR_TRIANGLE_STRIP,	"TRIANGLE_STRIP" },
-    { PL_PRIMITIVE_QUADS,					0,					"QUADS" }
-#elif defined (VL_MODE_DIRECT3D)
-#elif defined (VL_MODE_VULKAN)
-    { PL_PRIMITIVE_LINES,					VK_PRIMITIVE_TOPOLOGY_LINE_LIST,		"LINES" },
-    { PL_PRIMITIVE_POINTS,					VK_PRIMITIVE_TOPOLOGY_POINT_LIST,		"POINTS" },
-    { PL_PRIMITIVE_TRIANGLES,				VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,	"TRIANGLES" },
-    { PL_PRIMITIVE_TRIANGLE_FAN,			VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN,		"TRIANGLE_FAN" },
-    { PL_PRIMITIVE_TRIANGLE_FAN_LINE,		VK_PRIMITIVE_TOPOLOGY_LINE_LIST,		"TRIANGLE_FAN_LINE" },
-    { PL_PRIMITIVE_TRIANGLE_STRIP,			VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,	"TRIANGLE_STRIP" },
-    { PL_PRIMITIVE_QUADS,					0,										"QUADS" }
-#else
-    { 0 }
-#endif
-};
-
-unsigned int _plTranslatePrimitiveMode(PLMeshPrimitive mode) {
-    if(mode == PL_PRIMITIVE_IGNORE) {
-        return 0;
-    }
-
-    for (unsigned int i = 0; i < plArrayElements(primitives); i++) {
-        if (mode == primitives[i].mode)
-            return primitives[i].target;
-    }
-
-    // Hacky, but just return initial otherwise.
-    return primitives[0].target;
-}
-
-unsigned int _plTranslateDrawMode(PLMeshDrawMode mode) {
-#if defined(PL_MODE_OPENGL)
-    switch(mode) {
-        case PL_DRAW_DYNAMIC:   return GL_DYNAMIC_DRAW;
-        case PL_DRAW_STATIC:    return GL_STATIC_DRAW;
-
-        default: return 0;
-    }
-#else
-    return mode;
-#endif
-}
-
 void plGenerateMeshNormals(PLMesh *mesh) {
     plAssert(mesh);
 
@@ -202,22 +135,16 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
         return NULL;
     }
 
-    PLuint umode = _plTranslateDrawMode(mode);
-    if(!umode && (mode != PL_DRAW_IMMEDIATE)) {
-        ReportError(PL_RESULT_DRAW_MODE, "Invalid mesh draw mode, %d!\n", mode);
-        return NULL;
-    }
-
     PLMesh *mesh = (PLMesh*)calloc(1, sizeof(PLMesh));
     if(mesh == NULL) {
         ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Mesh, %d!\n", sizeof(PLMesh));
         return NULL;
     }
 
-    mesh->primitive = mesh->primitive_restore = primitive;
+    mesh->primitive     = mesh->primitive_restore = primitive;
     mesh->num_triangles = num_tris;
-    mesh->num_verts = num_verts;
-    mesh->mode = mode;
+    mesh->num_verts     = num_verts;
+    mesh->mode          = mode;
 
     if(num_tris > 0) {
         mesh->triangles = (PLTriangle*)calloc(num_tris, sizeof(PLTriangle));
@@ -238,25 +165,27 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
         return NULL;
     }
 
-#if defined(PL_MODE_OPENGL) && defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
-    if(mode != PL_DRAW_IMMEDIATE) {
-        glGenBuffers(_PLGL_BUFFERS, mesh->_buffers);
+    if(gfx_layer.CreateMeshPOST) {
+        gfx_layer.CreateMeshPOST(mesh);
     }
-#endif
 
     return mesh;
 }
 
 void plDeleteMesh(PLMesh *mesh) {
-    if(!mesh) {
+    if(mesh == NULL) {
         return;
     }
 
-    if(mesh->vertices) {
+    if(gfx_layer.DeleteMesh) {
+        gfx_layer.DeleteMesh(mesh);
+    }
+
+    if(mesh->vertices != NULL) {
         free(mesh->vertices);
     }
 
-    if(mesh->triangles) {
+    if(mesh->triangles != NULL) {
         free(mesh->triangles);
     }
 
@@ -321,94 +250,17 @@ void plSetMeshVertexColour(PLMesh *mesh, unsigned int index, PLColour colour) {
 }
 
 void plUploadMesh(PLMesh *mesh) {
-#if defined(PL_MODE_OPENGL) && defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
-    if((mesh->mode == PL_DRAW_IMMEDIATE) || (mesh->primitive == PLMESH_QUADS)) {
-        // todo, eventually just convert quad primitives to triangles
-        return;
+    if(gfx_layer.UploadMesh) {
+        gfx_layer.UploadMesh(mesh);
     }
-
-    // Fill our buffer with data.
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->_buffers[_PLGL_BUFFER_VERTICES]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(PLVertex), &mesh->vertices[0].position.x, _plTranslateDrawMode(mesh->mode));
-#endif
 }
 
 void plDrawMesh(PLMesh *mesh) {
     plAssert(mesh->num_verts);
 
-#if defined(PL_MODE_OPENGL)
-#if !defined(PL_MODE_OPENGL_CORE) //&& !defined(_PLGL_USE_VERTEX_BUFFER_OBJECTS)
-    if(mesh->mode == PL_DRAW_IMMEDIATE) {
-#if 1
-        glBegin(_plTranslatePrimitiveMode(mesh->primitive));
-        for(unsigned int i = 0; i < mesh->num_verts; i++) {
-            glVertex3f(mesh->vertices[i].position.x, mesh->vertices[i].position.y, mesh->vertices[i].position.z);
-            glTexCoord2f(mesh->vertices[i].st[0].x, mesh->vertices[i].st[0].y);
-            glColor3ub(mesh->vertices[i].colour.r, mesh->vertices[i].colour.g, mesh->vertices[i].colour.b);
-            glNormal3f(mesh->vertices[i].normal.x, mesh->vertices[i].normal.y, mesh->vertices[i].normal.z);
-        }
-        glEnd();
-#else
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_COLOR_ARRAY);
-        glEnableClientState(GL_NORMAL_ARRAY);
-
-        PLVertex *vert = &mesh->vertices[0];
-        glVertexPointer(3, GL_FLOAT, 0, &vert->position);
-        glColorPointer(4, GL_FLOAT, 0, &vert->colour);
-        glNormalPointer(GL_FLOAT, 0, &vert->normal);
-        for(int i = 0; i < plGetMaxTextureUnits(); i++) {
-            if (gfx_state.tmu[i].active) {
-                glClientActiveTexture((GLenum) GL_TEXTURE0 + i);
-                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-                glTexCoordPointer(2, GL_FLOAT, 0, vert->st);
-            }
-        }
-
-        if(mesh->primitive == PL_PRIMITIVE_TRIANGLES) {
-            _plDrawElements
-                    (
-                            mesh->primitive,
-                            mesh->numtriangles * 3,
-                            GL_UNSIGNED_BYTE,
-                            mesh->indices
-                    );
-        } else {
-            _plDrawArrays(mesh->primitive, 0, mesh->numverts);
-        }
-
-        glDisableClientState(GL_COLOR_ARRAY);
-        glDisableClientState(GL_VERTEX_ARRAY);
-        glDisableClientState(GL_NORMAL_ARRAY);
-        for(int i = 0; i < plGetMaxTextureUnits(); i++) {
-            if(gfx_state.tmu[i].active) {
-                glClientActiveTexture((GLenum)GL_TEXTURE0 + i);
-                glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-            }
-        }
-#endif
-    } else if(mesh->primitive != PLMESH_QUADS) {
-#else
-    {
-#endif
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, mesh->_buffers[_PLGL_BUFFER_VERTICES]);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-        if (mesh->primitive == PLMESH_TRIANGLES) {
-            _plDrawElements(
-                    mesh->primitive,
-                    mesh->num_triangles * 3,
-                    GL_UNSIGNED_BYTE,
-                    mesh->indices
-            );
-        } else {
-            _plDrawArrays(mesh->primitive, 0, mesh->num_verts);
-        }
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    if(gfx_layer.DrawMesh) {
+        gfx_layer.DrawMesh(mesh);
     }
-#endif
 }
 
 // Utility Functions
@@ -488,10 +340,10 @@ void plDrawRectangle(PLRectangle2D rect) {
 
 void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
     static PLMesh *mesh = NULL;
-    if (!mesh) {
+    if (mesh == NULL) {
         mesh = plCreateMesh(
                 PLMESH_TRIANGLE_FAN,
-                PL_DRAW_IMMEDIATE, // todo, update to dynamic
+                PL_DRAW_DYNAMIC, // todo, update to dynamic
                 1, 3
         );
     }

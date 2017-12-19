@@ -44,7 +44,7 @@ data for each of these functions
     {                                               \
         static unsigned int num_calls = 0;          \
         if(gfx_state.mode_debug) {                  \
-            plGraphicsLog(" %s\n", PL_FUNCTION);    \
+            GfxLog(" %s\n", PL_FUNCTION);    \
             num_calls++;                            \
         }                                           \
     }
@@ -58,11 +58,10 @@ void InitCameras(void);      // platform_graphics_camera
 void InitMaterials(void);    // material
 
 PLresult InitGraphics(void) {
-    GRAPHICS_TRACK();
-    
-    plGraphicsLog("Initializing graphics abstraction layer...\n");
-
     memset(&gfx_state, 0, sizeof(GfxState));
+    memset(&gfx_layer, 0, sizeof(GfxLayer));
+
+    gfx_layer.mode = PL_GFX_MODE_NONE;
 
     InitCameras();
     InitTextures();
@@ -83,11 +82,13 @@ void ShutdownGraphics(void) {
     switch(gfx_layer.mode) {
         default: break;
 
+#if defined(PL_USE_GL)
         case PL_GFX_MODE_OPENGL_CORE:
         case PL_GFX_MODE_OPENGL_ES:
         case PL_GFX_MODE_OPENGL: {
             ShutdownOpenGL();
         } break;
+#endif
     }
 }
 
@@ -246,7 +247,7 @@ void plEnableGraphicsStates(PLuint flags) {
         }
 
         if (gfx_state.mode_debug) {
-            plGraphicsLog("Enabling %s\n", graphics_capabilities[i].ident);
+            GfxLog("Enabling %s\n", graphics_capabilities[i].ident);
         }
 
         if (flags & PL_CAPABILITY_TEXTURE_2D) {
@@ -285,7 +286,7 @@ void plDisableGraphicsStates(PLuint flags) {
         if (graphics_capabilities[i].pl_parm == 0) break;
 
         if (gfx_state.mode_debug) {
-            plGraphicsLog("Disabling %s\n", graphics_capabilities[i].ident);
+            GfxLog("Disabling %s\n", graphics_capabilities[i].ident);
         }
 
         if (flags & PL_CAPABILITY_TEXTURE_2D) {
@@ -504,22 +505,25 @@ void plDrawPixel(int x, int y, PLColour colour) {
 /////////////////////////////////////////////////////////////////////////////////////
 
 void plSetGraphicsMode(PLGfxMode mode) {
+    GfxLog("Initializing graphics abstraction layer...\n");
+
     gfx_layer.mode = mode;
     switch(gfx_layer.mode) {
-        default: {
-            ReportError(PL_RESULT_GRAPHICSINIT, "invalid graphics layer, %d, selected", gfx_layer.mode);
-            _plDebugPrint("Reverting to software mode...\n");
-            gfx_layer.mode = PL_GFX_MODE_SOFTWARE;
-            InitGraphics();
-        } break;
-
+        case PL_GFX_MODE_NONE: break;
         case PL_GFX_MODE_DIRECT3D: break;
-        case PL_GFX_MODE_CUSTOM: break;
 
+#if defined(PL_USE_GL)
         case PL_GFX_MODE_OPENGL_CORE:
         case PL_GFX_MODE_OPENGL_ES:
         case PL_GFX_MODE_OPENGL: {
             InitOpenGL();
+        } break;
+#endif
+
+        default: {
+            ReportError(PL_RESULT_GRAPHICSINIT, "invalid graphics layer, %d, selected", gfx_layer.mode);
+            _plDebugPrint("Reverting to software mode...\n");
+            plSetGraphicsMode(PL_GFX_MODE_SOFTWARE);
         } break;
     }
 }

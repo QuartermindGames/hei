@@ -24,32 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+#if defined(PL_USE_GL)
 #include <PL/platform_console.h>
 
 #include "graphics_private.h"
 
-#ifdef __APPLE__
-#   if 0
-#       include <OpenGL/gl3.h>
-#       include <OpenGL/gl3ext.h>
-
-#   else
-#       include <OpenGL/gl.h>
-#       include <OpenGL/glext.h>
-#       include <OpenGL/glu.h>
-
-#       include <OpenGL/gl3.h>
-#       include <OpenGL/gl3ext.h>
-#   endif
-#else
-#   define GL_GLEXT_PROTOTYPES
-//#   include <GL/gl.h>
-#   include <GL/glcorearb.h>
-
-#	ifdef _WIN32
-#		include <GL/wglew.h>
-#	endif
-#endif
+#include <GL/glew.h>
 
 typedef struct GLCapabilities {
     bool generate_mipmap;
@@ -147,6 +127,102 @@ void GLSetCullMode(PLCullMode mode) {
 }
 
 /////////////////////////////////////////////////////////////
+// Mesh
+
+typedef struct MeshTranslatePrimitive {
+    PLMeshPrimitive mode;
+    unsigned int target;
+    const char *name;
+} MeshTranslatePrimitive;
+
+MeshTranslatePrimitive primitives[] = {
+    {PLMESH_LINES, GL_LINES, "LINES"},
+    {PLMESH_POINTS, GL_POINTS, "POINTS"},
+    {PLMESH_TRIANGLES, GL_TRIANGLES, "TRIANGLES"},
+    {PLMESH_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN"},
+    {PLMESH_TRIANGLE_FAN_LINE, GL_LINES, "TRIANGLE_FAN_LINE"},
+    {PLMESH_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"},
+    {PLMESH_QUADS, GL_TRIANGLES, "QUADS"}   // todo, translate
+};
+
+unsigned int TranslatePrimitiveMode(PLMeshPrimitive mode) {
+    if(mode == PL_PRIMITIVE_IGNORE) {
+        return 0;
+    }
+
+    for (unsigned int i = 0; i < plArrayElements(primitives); i++) {
+        if (mode == primitives[i].mode)
+            return primitives[i].target;
+    }
+
+    // Hacky, but just return initial otherwise.
+    return primitives[0].target;
+}
+
+unsigned int TranslateDrawMode(PLMeshDrawMode mode) {
+    switch(mode) {
+        case PL_DRAW_DYNAMIC:   return GL_DYNAMIC_DRAW;
+        case PL_DRAW_STATIC:    return GL_STATIC_DRAW;
+        default:                return 0;
+    }
+}
+
+enum {
+    MESH_VBO
+};
+
+void GLCreateMeshPOST(PLMesh *mesh) {
+    glGenBuffers(1, &mesh->_buffers[MESH_VBO]);
+}
+
+void GLUploadMesh(PLMesh *mesh) {
+    if(mesh->mode == PL_DRAW_IMMEDIATE) {
+        return;
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->_buffers[MESH_VBO]);
+    //glBufferSubData(GL_ARRAY_BUFFER, )
+}
+
+void GLDeleteMesh(PLMesh *mesh) {
+    glDeleteBuffers(1, &mesh->_buffers[MESH_VBO]);
+}
+
+void GLDrawMesh(PLMesh *mesh) {
+    if(mesh->mode == PL_DRAW_IMMEDIATE) {
+        glBegin(TranslatePrimitiveMode(mesh->primitive));
+        for(unsigned int i = 0; i < mesh->num_verts; ++i) {
+            glVertex3f(mesh->vertices[i].position.x, mesh->vertices[i].position.y, mesh->vertices[i].position.z);
+            glTexCoord2f(mesh->vertices[i].st[0].x, mesh->vertices[i].st[0].y);
+            glColor3ub(mesh->vertices[i].colour.r, mesh->vertices[i].colour.g, mesh->vertices[i].colour.b);
+            glNormal3f(mesh->vertices[i].normal.x, mesh->vertices[i].normal.y, mesh->vertices[i].normal.z);
+        }
+        glEnd();
+        return;
+    }
+
+    if(mesh->mode == PL_DRAW_STATIC) {
+
+    } else {
+
+    }
+
+    GLuint mode = TranslatePrimitiveMode(mesh->primitive);
+    if(mode == GL_TRIANGLES) {
+        glDrawElements(
+                mode,
+                mesh->num_triangles * 3,
+                GL_UNSIGNED_BYTE,
+                mesh->indices
+        );
+    } else {
+        glDrawArrays(mode, 0, mesh->num_verts);
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+/////////////////////////////////////////////////////////////
 // Camera
 
 #define VIEWPORT_FRAMEBUFFER            0
@@ -207,7 +283,7 @@ void GLSetupCamera(PLCamera *camera) {
                                       camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
 
             if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-                plGraphicsLog("Invalid framebuffer status on frame!\n");
+                GfxLog("Invalid framebuffer status on frame!\n");
             }
 
             glBindRenderbuffer(GL_RENDERBUFFER, 0);
@@ -263,6 +339,12 @@ void GLDeleteShaderProgram(PLShaderProgram *program) {
 char gl_extensions[4096][4096] = { { '\0' } };
 
 void InitOpenGL(void) {
+    GLenum err = glewInit();
+    if(err != GLEW_OK) {
+        ReportError(PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", glewGetErrorString(err));
+        return;
+    }
+
     // setup the gfx layer
     gfx_layer.HWSupportsShaders         = GLHWSupportsShaders;
     gfx_layer.HWSupportsMultitexture    = GLHWSupportsMultitexture;
@@ -271,6 +353,11 @@ void InitOpenGL(void) {
 
     gfx_layer.SetClearColour            = GLSetClearColour;
     gfx_layer.ClearBuffers              = GLClearBuffers;
+
+    gfx_layer.CreateMeshPOST            = GLCreateMeshPOST;
+    gfx_layer.DeleteMesh                = GLDeleteMesh;
+    gfx_layer.DrawMesh                  = GLDrawMesh;
+    gfx_layer.UploadMesh                = GLUploadMesh;
 
     gfx_layer.CreateCamera              = GLCreateCamera;
     gfx_layer.DeleteCamera              = GLDeleteCamera;
@@ -294,28 +381,21 @@ void InitOpenGL(void) {
 
     glGetIntegerv(GL_MINOR_VERSION, &gl_version_minor);
     glGetIntegerv(GL_MAJOR_VERSION, &gl_version_major);
-    unsigned int err = glGetError();
-    if(err == GL_INVALID_ENUM) { // todo, totally untested
-        if(gfx_state.hw_version[0] != '\0') {
-            gl_version_major = gfx_state.hw_version[0];
-        }
-        if(gfx_state.hw_version[2] != '\0') {
-            gl_version_minor = gfx_state.hw_version[1];
-        }
-    }
 
-    plGraphicsLog(" OpenGL %d.%d\n", gl_version_major, gl_version_minor);
-    plGraphicsLog("  renderer:   %s\n", gfx_state.hw_renderer);
-    plGraphicsLog("  vendor:     %s\n", gfx_state.hw_vendor);
-    plGraphicsLog("  version:    %s\n", gfx_state.hw_version);
-    plGraphicsLog("  extensions:\n");
+    GfxLog(" OpenGL %d.%d\n", gl_version_major, gl_version_minor);
+    GfxLog("  renderer:   %s\n", gfx_state.hw_renderer);
+    GfxLog("  vendor:     %s\n", gfx_state.hw_vendor);
+    GfxLog("  version:    %s\n", gfx_state.hw_version);
+    GfxLog("  extensions:\n");
     for(unsigned int i = 0; i < gl_num_extensions; ++i) {
         const uint8_t *extension = glGetStringi(GL_EXTENSIONS, i);
         sprintf(gl_extensions[i], "%s", extension);
-        plGraphicsLog("    %s\n", extension);
+        GfxLog("    %s\n", extension);
     }
 }
 
 void ShutdownOpenGL() {
 
 }
+
+#endif

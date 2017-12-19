@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org>
 PLLight *plCreateLight(void) {
     PLLight *light = (PLLight*)malloc(sizeof(PLLight));
     if(!light) {
-        plGraphicsLog("Failed to create light!\n");
+        GfxLog("Failed to create light!\n");
         return NULL;
     }
 

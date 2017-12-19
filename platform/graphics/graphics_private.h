@@ -29,9 +29,9 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_private.h"
 
 #ifdef _DEBUG
-#   define plGraphicsLog(...) plLogMessage(LOG_LEVEL_GRAPHICS, __VA_ARGS__)
+#   define GfxLog(...) plLogMessage(LOG_LEVEL_GRAPHICS, __VA_ARGS__)
 #else
-#   define plGraphicsLog(...)
+#   define GfxLog(...)
 #endif
 
 typedef struct PLGraphicsState {
@@ -96,6 +96,12 @@ typedef struct GfxLayer {
     void(*SetClearColour)(PLColour rgba);
     void(*ClearBuffers)(unsigned int buffers);
 
+    // Mesh
+    void(*CreateMeshPOST)(PLMesh *mesh);
+    void(*UploadMesh)(PLMesh *mesh);
+    void(*DrawMesh)(PLMesh *mesh);
+    void(*DeleteMesh)(PLMesh *mesh);
+
     // Camera
     void(*CreateCamera)(PLCamera *camera);
     void(*DeleteCamera)(PLCamera *camera);
@@ -121,20 +127,9 @@ PL_EXTERN_C
 PL_EXTERN GfxState gfx_state;
 PL_EXTERN GfxLayer gfx_layer;
 
-#if defined(PL_MODE_OPENGL)
-
-PL_EXTERN int gl_version_major;
-PL_EXTERN int gl_version_minor;
-#define _PLGL_VERSION(maj, min) (((maj) == gl_version_major && (min) <= gl_version_minor) || (maj) < gl_version_major)
-
-#endif
-
+#if defined(PL_USE_GL)
 void InitOpenGL(void);
 void ShutdownOpenGL(void);
-
-//////////////////////////////////////////////////////////////
-
-unsigned int _plTranslateColourFormat(PLColourFormat format);
-unsigned int _plTranslateTextureFormat(PLImageFormat format);
+#endif
 
 PL_EXTERN_C_END
