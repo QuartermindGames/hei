@@ -75,9 +75,11 @@ typedef struct PLMesh {
 
     PLVector3 position, angles;
 
-    // internal use ................
+    PLTexture *texture;
 
-    unsigned int _buffers[32];
+    struct {
+        unsigned int buffers[32];
+    } internal;
 } PLMesh;
 
 PL_EXTERN_C

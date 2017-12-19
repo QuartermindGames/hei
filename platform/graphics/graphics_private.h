@@ -102,6 +102,11 @@ typedef struct GfxLayer {
     void(*DrawMesh)(PLMesh *mesh);
     void(*DeleteMesh)(PLMesh *mesh);
 
+    // Texture
+    void(*DeleteTexture)(PLTexture *texture);
+    void(*BindTexture)(const PLTexture *texture);
+    void(*UploadTexture)(PLTexture *texture, const PLImage *upload);
+
     // Camera
     void(*CreateCamera)(PLCamera *camera);
     void(*DeleteCamera)(PLCamera *camera);
@@ -113,6 +118,13 @@ typedef struct GfxLayer {
     void(*CreateShaderProgram)(PLShaderProgram *program);
     void(*DeleteShaderProgram)(PLShaderProgram *program);
 } GfxLayer;
+
+#define CallGfxFunction(FUNCTION, ...) \
+    if(gfx_layer.FUNCTION != NULL) { \
+        gfx_layer.FUNCTION(__VA_ARGS__); \
+    } else { \
+        GfxLog("unbound layer function %s was called", #FUNCTION); \
+    }
 
 ///////////////////////////////////////////////////////
 
@@ -126,6 +138,8 @@ PL_EXTERN_C
 
 PL_EXTERN GfxState gfx_state;
 PL_EXTERN GfxLayer gfx_layer;
+
+void BindTexture(const PLTexture *texture);
 
 #if defined(PL_USE_GL)
 void InitOpenGL(void);

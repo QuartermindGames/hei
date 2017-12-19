@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
+#include <PL/platform_console.h>
 #include "graphics_private.h"
 
 #if defined(PL_MODE_OPENGL)
@@ -110,22 +110,6 @@ void plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3 position) {
 #endif
 }
 
-void _plDrawArrays(PLMeshPrimitive mode, unsigned int first, unsigned int count) {
-    plAssert(count); plAssert(first > count);
-
-#if defined(PL_MODE_OPENGL)
-    glDrawArrays(_plTranslatePrimitiveMode(mode), first, count);
-#endif
-}
-
-void _plDrawElements(PLMeshPrimitive mode, unsigned int count, unsigned int type, const void *indices) {
-    plAssert(count); plAssert(indices);
-
-#if defined(PL_MODE_OPENGL)
-    glDrawElements(_plTranslatePrimitiveMode(mode), count, type, indices);
-#endif
-}
-
 PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts) {
     plAssert(num_verts);
 
@@ -177,9 +161,7 @@ void plDeleteMesh(PLMesh *mesh) {
         return;
     }
 
-    if(gfx_layer.DeleteMesh) {
-        gfx_layer.DeleteMesh(mesh);
-    }
+    CallGfxFunction(DeleteMesh, mesh);
 
     if(mesh->vertices != NULL) {
         free(mesh->vertices);
@@ -193,8 +175,6 @@ void plDeleteMesh(PLMesh *mesh) {
 }
 
 void plClearMesh(PLMesh *mesh) {
-    plAssert(mesh);
-
     // Reset the data contained by the mesh, if we're going to begin a new draw.
     memset(mesh->vertices, 0, sizeof(PLVertex) * mesh->num_verts);
     memset(mesh->triangles, 0, sizeof(PLTriangle) * mesh->num_triangles);
@@ -250,9 +230,7 @@ void plSetMeshVertexColour(PLMesh *mesh, unsigned int index, PLColour colour) {
 }
 
 void plUploadMesh(PLMesh *mesh) {
-    if(gfx_layer.UploadMesh) {
-        gfx_layer.UploadMesh(mesh);
-    }
+    CallGfxFunction(UploadMesh, mesh);
 
 #if 0
 
@@ -267,21 +245,14 @@ void plUploadMesh(PLMesh *mesh) {
 }
 
 void plDrawMesh(PLMesh *mesh) {
-    plAssert(mesh->num_verts);
-
-    if(gfx_layer.DrawMesh) {
-        gfx_layer.DrawMesh(mesh);
-    }
+    CallGfxFunction(DrawMesh, mesh);
 }
 
 // Utility Functions
 
 PLAABB plCalculateMeshAABB(PLMesh *mesh) {
-    plAssert(mesh);
-
     static PLAABB bounds;
     memset(&bounds, 0, sizeof(PLAABB));
-
     for(unsigned int i = 0; i < mesh->num_verts; ++i) {
         if(bounds.maxs.x < mesh->vertices[i].position.x) {
             bounds.maxs.x = mesh->vertices[i].position.x;
@@ -311,7 +282,9 @@ PLAABB plCalculateMeshAABB(PLMesh *mesh) {
     return bounds;
 }
 
-void plDrawCube() {} // todo
+void plDrawCube() {}    // todo
+
+void plDrawSphere() {}  // todo
 
 /*  Textured Rectangle Mesh  */
 

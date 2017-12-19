@@ -62,7 +62,8 @@ typedef enum PLTextureTarget {
 } PLTextureTarget;
 
 enum PLTextureFlag {
-    PL_TEXTUREFLAG_PRESERVE = (1 << 0)
+    PL_TEXTURE_FLAG_PRESERVE    = (1 << 1),
+    PL_TEXTURE_FLAG_NOMIPS      = (1 << 2),
 };
 
 typedef struct PLTextureMappingUnit {
@@ -75,11 +76,9 @@ typedef struct PLTextureMappingUnit {
 } PLTextureMappingUnit;
 
 typedef struct PLTexture {
-    unsigned int id;
-
-#if defined(PL_MODE_OPENGL)
-    unsigned int gl_id;
-#endif
+    struct {
+        unsigned int id;
+    } internal;
 
     unsigned int flags;
 
@@ -92,6 +91,8 @@ typedef struct PLTexture {
 
     const char *path;
 
+    PLTextureFilter filter;
+
     PLImageFormat format;
     PLDataFormat storage;
     PLColourFormat pixel;
@@ -102,21 +103,19 @@ PL_EXTERN_C
 PL_EXTERN PLTexture *plCreateTexture(void);
 PL_EXTERN void plDeleteTexture(PLTexture *texture, bool force);
 
-PL_EXTERN void plBindTexture(PLTexture *texture);
-
 //PL_EXTERN PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload);
 PL_EXTERN bool plUploadTextureImage(PLTexture *texture, const PLImage *upload);
 
-PL_EXTERN PLuint plGetMaxTextureSize(void);
-PL_EXTERN PLuint plGetMaxTextureUnits(void);
-PL_EXTERN PLuint plGetMaxTextureAnistropy(void);
+PL_EXTERN unsigned int plGetMaxTextureSize(void);
+PL_EXTERN unsigned int plGetMaxTextureUnits(void);
+PL_EXTERN unsigned int plGetMaxTextureAnistropy(void);
 
-PL_EXTERN void plSetTextureFilter(PLTexture *texture, PLTextureFilter filter);
 PL_EXTERN void plSetTextureAnisotropy(PLTexture *texture, unsigned int amount);
 
 PL_EXTERN void plSetTextureUnit(unsigned int target);
 PL_EXTERN void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode);
+PL_EXTERN void plSetTextureFlags(PLTexture *texture, unsigned int flags);
 
-PL_EXTERN const PLchar *plPrintTextureMemoryUsage(void);
+PL_EXTERN const char *plPrintTextureMemoryUsage(void);
 
 PL_EXTERN_C_END

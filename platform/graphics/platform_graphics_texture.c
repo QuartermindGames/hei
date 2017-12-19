@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_image.h>
 #include <PL/platform_console.h>
+#include <PL/platform_graphics_texture.h>
 
 PLConsoleVariable pl_texture_anisotropy = { "gr_texture_anisotropy", "16", pl_int_var, NULL };
 
@@ -194,7 +195,7 @@ PLTexture *plCreateTexture(void) {
             break;
         }
 
-        if((*texture)->id == FREE_TEXTURE) {
+        if((*texture)->internal.id == FREE_TEXTURE) {
             break;
         }
     }
@@ -215,10 +216,10 @@ PLTexture *plCreateTexture(void) {
         return plCreateTexture();
     }
 
-    (*texture)->id         = slot;
-    (*texture)->format     = PL_IMAGEFORMAT_RGBA8;
-    (*texture)->width      = 8;
-    (*texture)->height     = 8;
+    (*texture)->internal.id = slot;
+    (*texture)->format      = PL_IMAGEFORMAT_RGBA8;
+    (*texture)->width       = 8;
+    (*texture)->height      = 8;
 
 #if defined(PL_MODE_OPENGL)
     glGenTextures(1, &(*texture)->gl_id);
@@ -230,32 +231,16 @@ PLTexture *plCreateTexture(void) {
 void plDeleteTexture(PLTexture *texture, bool force) {
     plAssert(texture);
 
-#if defined(PL_MODE_OPENGL)
-    glDeleteTextures(1, &texture->id);
-#endif
+    CallGfxFunction(DeleteTexture, texture);
 
     if(!force) {
         memset(texture, 0, sizeof(PLTexture));
-        texture->id = FREE_TEXTURE;
+        texture->internal.id = FREE_TEXTURE;
         return;
     }
 
-    gfx_state.textures[texture->id] = NULL;
+    gfx_state.textures[texture->internal.id] = NULL;
     free(texture);
-
-#if 0 // our original c++ implementation
-    auto tex = _pl_graphics_textures.begin();
-    while(tex != _pl_graphics_textures.end()) {
-        if(tex->second == texture) {
-            glDeleteTextures(1, &texture->id);
-
-            delete tex->second;
-            _pl_graphics_textures.erase(tex);
-            return;
-        }
-        ++tex;
-    }
-#endif
 }
 
 /////////////////////////////////////////////////////
@@ -263,7 +248,7 @@ void plDeleteTexture(PLTexture *texture, bool force) {
 PLTexture *plGetCurrentTexture(unsigned int tmu) {
     for(PLTexture **texture = gfx_state.textures;
         texture < gfx_state.textures + gfx_state.num_textures; ++texture) {
-        if(gfx_state.tmu[tmu].current_texture == (*texture)->id) {
+        if(gfx_state.tmu[tmu].current_texture == (*texture)->internal.id) {
             return (*texture);
         }
     }
@@ -332,61 +317,26 @@ void plSetTextureAnisotropy(PLTexture *texture, unsigned int amount) {
 #   pragma GCC diagnostic pop
 #endif
 
-void plBindTexture(PLTexture *texture) {
-    plAssert(texture);
+void BindTexture(const PLTexture *texture) {
+    // allow us to pass null texture instances
+    // as it will give us an opportunity to unbind
+    // them on the GPU upon request
+    unsigned int id = 0;
+    if(texture != NULL) {
+        id = texture->internal.id;
+    }
 
-    if (texture->id == gfx_state.tmu[plGetCurrentTextureUnit()].current_texture) {
+    if (id == gfx_state.tmu[plGetCurrentTextureUnit()].current_texture) {
         return;
     }
 
-#if defined (PL_MODE_OPENGL)
-    glBindTexture(GL_TEXTURE_2D, texture->id);
-#endif
+    CallGfxFunction(BindTexture, texture);
 
-    gfx_state.tmu[plGetCurrentTextureUnit()].current_texture = texture->id;
+    gfx_state.tmu[plGetCurrentTextureUnit()].current_texture = id;
 }
 
-void plSetTextureFilter(PLTexture *texture, PLTextureFilter filter) {
-    plAssert(texture);
-
-    plBindTexture(texture);
-
-#ifdef PL_MODE_OPENGL
-    unsigned int filtermin, filtermax;
-    switch (filter) {
-        default:
-        case PL_TEXTUREFILTER_NEAREST:
-            filtermax = GL_NEAREST;
-            filtermin = GL_NEAREST;
-            break;
-        case PL_TEXTUREFILTER_LINEAR:
-            filtermax = GL_LINEAR;
-            filtermin = GL_LINEAR;
-            break;
-        case PL_TEXTUREFILTER_MIPMAP_LINEAR:
-            filtermax = GL_LINEAR;
-            filtermin = GL_LINEAR_MIPMAP_LINEAR;
-            break;
-        case PL_TEXTUREFILTER_MIPMAP_NEAREST:
-            filtermax = GL_NEAREST;
-            filtermin = GL_NEAREST_MIPMAP_NEAREST;
-            break;
-        case PL_TEXTUREFILTER_MIPMAP_LINEAR_NEAREST:
-            filtermax = GL_LINEAR;
-            filtermin = GL_LINEAR_MIPMAP_NEAREST;
-            break;
-        case PL_TEXTUREFILTER_MIPMAP_NEAREST_LINEAR:
-            filtermax = GL_NEAREST;
-            filtermin = GL_NEAREST_MIPMAP_LINEAR;
-    }
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtermin);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtermax);
-#elif defined(VL_MODE_GLIDE)
-    // NEAREST > GR_TEXTUREFILTER_POINT_SAMPLED
-    // LINEAR > GR_TEXTUREFILTER_BILINEAR
-    // todo, glide implementation
-#endif
+void plSetTextureFlags(PLTexture *texture, unsigned int flags) {
+    texture->flags = flags;
 }
 
 void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
@@ -412,27 +362,20 @@ void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
 bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     plAssert(texture);
 
-    plBindTexture(texture);
+    BindTexture(texture);
 
     texture->width      = upload->width;
     texture->height     = upload->height;
     texture->format     = upload->format;
     texture->size       = upload->size;
     unsigned int levels = upload->levels;
-    if(!levels) {
+    if(levels == 0) {
         levels = 1;
     }
 
-#if defined(PL_MODE_OPENGL)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    CallGfxFunction(UploadTexture, texture, upload);
 
-    unsigned int levels = upload->levels;
-    if(!levels) {
-        levels = 1;
-    }
+#if defined(PL_USE_GL)
 
     unsigned int format = _plTranslateTextureFormat(upload->format);
     for(unsigned int i = 0; i < levels; i++) {
@@ -462,10 +405,6 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
                     );
         }
     }
-
-    if(plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP) && (levels > 1)) {
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
 #endif
 
     return true;
@@ -474,7 +413,7 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
 void plSwizzleTexture(PLTexture *texture, int r, int g, int b, int a) {
     plAssert(texture);
 
-    plBindTexture(texture);
+    BindTexture(texture);
 #if 0
     if(_PLGL_VERSION(3,3)) {
         int swizzle[] = {

@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org>
 #include "graphics_private.h"
 
 #include <GL/glew.h>
+#include <PL/platform_mesh.h>
 
 struct {
     bool generate_mipmap;
@@ -138,6 +139,102 @@ void GLSetCullMode(PLCullMode mode) {
 }
 
 /////////////////////////////////////////////////////////////
+// Texture
+
+unsigned int TranslateImageFormat(PLImageFormat format) {
+    switch(format) {
+        case PL_IMAGEFORMAT_RGBA8:      return GL_RGBA8;
+        case PL_IMAGEFORMAT_RGB4:       return GL_RGB4;
+        case PL_IMAGEFORMAT_RGBA4:      return GL_RGBA4;
+        case PL_IMAGEFORMAT_RGB5:       return GL_RGB5;
+        case PL_IMAGEFORMAT_RGB5A1:     return GL_RGB5_A1;
+
+        case PL_IMAGEFORMAT_RGB_DXT1:   return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+        case PL_IMAGEFORMAT_RGBA_DXT1:  return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        case PL_IMAGEFORMAT_RGB_FXT1:   return GL_COMPRESSED_RGB_FXT1_3DFX;
+
+        default: return 0;
+    }
+}
+
+unsigned int TranslateImageColourFormat(PLColourFormat format) {
+    switch(format) {
+        default:
+        case PL_COLOURFORMAT_RGBA:  return GL_RGBA;
+        case PL_COLOURFORMAT_RGB:   return GL_RGB;
+    }
+}
+
+void GLBindTexture(const PLTexture *texture) {
+    unsigned int id = 0;
+    if(texture != NULL) {
+        id = texture->internal.id;
+    }
+    glBindTexture(GL_TEXTURE_2D, id);
+}
+
+void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
+    BindTexture(texture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+    unsigned int min, max;
+    switch(texture->filter) {
+        case PL_TEXTUREFILTER_LINEAR: {
+            min = max = GL_LINEAR;
+        } break;
+
+        default:
+        case PL_TEXTUREFILTER_NEAREST: {
+            min = max = GL_NEAREST;
+        } break;
+
+        case PL_TEXTUREFILTER_MIPMAP_LINEAR: {
+            min = GL_LINEAR_MIPMAP_LINEAR;
+            max = GL_LINEAR;
+        } break;
+
+        case PL_TEXTUREFILTER_MIPMAP_NEAREST: {
+            min = GL_NEAREST_MIPMAP_NEAREST;
+            max = GL_NEAREST;
+        } break;
+    }
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, max);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
+
+    unsigned int levels = upload->levels;
+    if(levels == 0) {
+        levels = 1;
+    }
+
+    for(unsigned int i = 0; i < levels; ++i) {
+        if(plIsCompressedImageFormat(upload->format)) {
+
+        } else {
+            glTexImage2D(
+                    GL_TEXTURE_2D,
+                    i,
+                    TranslateImageFormat(upload->format),
+                    texture->width / (unsigned int)pow(2, i),
+                    texture->height / (unsigned int)pow(2, i),
+                    0,
+                    TranslateImageColourFormat(upload->colour_format),
+                    GL_UNSIGNED_BYTE,
+                    upload->data[0]
+            );
+        }
+    }
+
+    if(levels == 1 && !(texture->flags & PL_TEXTURE_FLAG_NOMIPS)) {
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
+    BindTexture(NULL);
+}
+
+/////////////////////////////////////////////////////////////
 // Mesh
 
 typedef struct MeshTranslatePrimitive {
@@ -183,7 +280,11 @@ enum {
 };
 
 void GLCreateMeshPOST(PLMesh *mesh) {
-    glGenBuffers(1, &mesh->_buffers[MESH_VBO]);
+    if(mesh->mode == PL_DRAW_IMMEDIATE) {
+        return;
+    }
+
+    glGenBuffers(1, &mesh->internal.buffers[MESH_VBO]);
 }
 
 void GLUploadMesh(PLMesh *mesh) {
@@ -191,32 +292,58 @@ void GLUploadMesh(PLMesh *mesh) {
         return;
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->_buffers[MESH_VBO]);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[MESH_VBO]);
     //glBufferSubData(GL_ARRAY_BUFFER, )
 }
 
 void GLDeleteMesh(PLMesh *mesh) {
-    glDeleteBuffers(1, &mesh->_buffers[MESH_VBO]);
+    if(mesh->mode == PL_DRAW_IMMEDIATE) {
+        return;
+    }
+
+    glDeleteBuffers(1, &mesh->internal.buffers[MESH_VBO]);
 }
 
 void GLDrawMesh(PLMesh *mesh) {
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
         glBegin(TranslatePrimitiveMode(mesh->primitive));
         for(unsigned int i = 0; i < mesh->num_verts; ++i) {
-            glVertex3f(mesh->vertices[i].position.x, mesh->vertices[i].position.y, mesh->vertices[i].position.z);
-            glTexCoord2f(mesh->vertices[i].st[0].x, mesh->vertices[i].st[0].y);
-            glColor3ub(mesh->vertices[i].colour.r, mesh->vertices[i].colour.g, mesh->vertices[i].colour.b);
-            glNormal3f(mesh->vertices[i].normal.x, mesh->vertices[i].normal.y, mesh->vertices[i].normal.z);
+            glVertex3f(
+                    mesh->vertices[i].position.x,
+                    mesh->vertices[i].position.y,
+                    mesh->vertices[i].position.z
+            );
+
+            glTexCoord2f(
+                    mesh->vertices[i].st[0].x,
+                    mesh->vertices[i].st[0].y
+            );
+
+            glColor4ub(
+                    mesh->vertices[i].colour.r,
+                    mesh->vertices[i].colour.g,
+                    mesh->vertices[i].colour.b,
+                    mesh->vertices[i].colour.a
+            );
+
+            glNormal3f(
+                    mesh->vertices[i].normal.x,
+                    mesh->vertices[i].normal.y,
+                    mesh->vertices[i].normal.z
+            );
         }
         glEnd();
         return;
     }
 
-    if(mesh->mode == PL_DRAW_STATIC) {
-
-    } else {
-
+    if(mesh->internal.buffers[MESH_VBO] == 0) {
+        GfxLog("invalid buffer provided, skipping draw!\n");
+        return;
     }
+
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[MESH_VBO]);
+
+    BindTexture(mesh->texture);
 
     GLuint mode = TranslatePrimitiveMode(mesh->primitive);
     if(mode == GL_TRIANGLES) {
@@ -364,6 +491,9 @@ void InitOpenGL(void) {
 
     gfx_layer.SetClearColour            = GLSetClearColour;
     gfx_layer.ClearBuffers              = GLClearBuffers;
+
+    gfx_layer.BindTexture               = GLBindTexture;
+    gfx_layer.UploadTexture             = GLUploadTexture;
 
     gfx_layer.CreateMeshPOST            = GLCreateMeshPOST;
     gfx_layer.DeleteMesh                = GLDeleteMesh;
