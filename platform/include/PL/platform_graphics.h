@@ -36,11 +36,9 @@ typedef enum PLGfxMode {
 
     PL_GFX_MODE_SOFTWARE,
 
-#if defined(PL_USE_GL)
     PL_GFX_MODE_OPENGL,
     PL_GFX_MODE_OPENGL_CORE,
     PL_GFX_MODE_OPENGL_ES,
-#endif
 
     PL_GFX_MODE_VULKAN,
 

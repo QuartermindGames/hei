@@ -253,6 +253,17 @@ void plUploadMesh(PLMesh *mesh) {
     if(gfx_layer.UploadMesh) {
         gfx_layer.UploadMesh(mesh);
     }
+
+#if 0
+
+    inline static void DrawMesh(const Mesh *mesh) {
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo_vertex_array);
+    glVertexPointer(3, GL_FLOAT, sizeof(Vertex), (const void *)offsetof(Vertex, position));
+    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (const void *)offsetof(Vertex, colour));
+    glNormalPointer(GL_FLOAT, sizeof(Vertex), (const void *)offsetof(Vertex, normal));
+}
+
+#endif
 }
 
 void plDrawMesh(PLMesh *mesh) {

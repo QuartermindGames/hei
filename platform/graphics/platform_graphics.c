@@ -82,13 +82,13 @@ void ShutdownGraphics(void) {
     switch(gfx_layer.mode) {
         default: break;
 
-#if defined(PL_USE_GL)
         case PL_GFX_MODE_OPENGL_CORE:
         case PL_GFX_MODE_OPENGL_ES:
         case PL_GFX_MODE_OPENGL: {
+#if defined(PL_USE_GL)
             ShutdownOpenGL();
-        } break;
 #endif
+        } break;
     }
 }
 

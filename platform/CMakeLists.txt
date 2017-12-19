@@ -30,6 +30,10 @@ project(platform)
 option(PL_USE_ZLIB "ZLIB" ON) # todo
 option(PL_USE_GL "OpenGL" ON) # todo
 
+if(PL_USE_GL)
+    add_definitions("-DPL_USE_GL")
+endif()
+
 add_definitions("-D_DEBUG")
 
 file(

@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <GL/glew.h>
 
-typedef struct GLCapabilities {
+struct {
     bool generate_mipmap;
     bool depth_texture;
     bool shadow;
@@ -43,9 +43,7 @@ typedef struct GLCapabilities {
     bool texture_env_add;
     bool vertex_program;
     bool fragment_program;
-} GLCapabilities;
-
-GLCapabilities gl_capabilities;
+} gl_capabilities;
 
 int gl_version_major = 0;
 int gl_version_minor = 0;
@@ -53,6 +51,19 @@ int gl_version_minor = 0;
 #define GLVersion(maj, min) (((maj) == gl_version_major && (min) <= gl_version_minor) || (maj) < gl_version_major)
 
 unsigned int gl_num_extensions = 0;
+
+void GLClearBoundTextures(void) {
+    for(unsigned int i = 0; i < gfx_state.hw_maxtextureunits; ++i) {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+    glActiveTexture(GL_TEXTURE0);
+}
+
+void GLClearBoundFramebuffers(void) {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_RENDERBUFFER, 0);
+}
 
 /////////////////////////////////////////////////////////////
 
@@ -375,7 +386,7 @@ void InitOpenGL(void) {
     gfx_state.hw_vendor         = (const char *) glGetString(GL_VENDOR);
     gfx_state.hw_version        = (const char *) glGetString(GL_VERSION);
 
-    memset(&gl_capabilities, 0, sizeof(GLCapabilities));
+    memset(&gl_capabilities, 0, sizeof(gl_capabilities));
 
     glGetIntegerv(GL_NUM_EXTENSIONS, (GLint*)(&gl_num_extensions));
 
