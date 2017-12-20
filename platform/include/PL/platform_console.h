@@ -67,11 +67,8 @@ void plGetConsoleVariables(PLConsoleVariable ***vars, size_t *num_vars);
 PLConsoleVariable *plGetConsoleVariable(const char *name);
 void plSetConsoleVariable(PLConsoleVariable *var, const char *value);
 
-void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars);
-
-#define plAddConsoleVariable(NAME, ...) \
-    PLConsoleVariable NAME = { #NAME, __VA_ARGS__ }; \
-    plRegisterConsoleVariables(&NAME, 1);
+PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, PLVariableType type,
+                                             void(*CallbackFunction)(void), const char *desc);
 
 PL_EXTERN_C_END
 

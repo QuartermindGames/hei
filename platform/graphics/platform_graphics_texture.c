@@ -47,7 +47,7 @@ void InitTextures(void) {
     memset(gfx_state.textures, 0, sizeof(PLTexture*) * gfx_state.max_textures);
     gfx_state.num_textures  = 0;
 
-    plRegisterConsoleVariables(&pl_texture_anisotropy, 1);
+    plRegisterConsoleVariable(NULL, NULL, pl_float_var, 0, NULL);
 }
 
 void ShutdownTextures(void) {
@@ -368,44 +368,9 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     texture->height     = upload->height;
     texture->format     = upload->format;
     texture->size       = upload->size;
-    unsigned int levels = upload->levels;
-    if(levels == 0) {
-        levels = 1;
-    }
+    texture->levels     = upload->levels;
 
     CallGfxFunction(UploadTexture, texture, upload);
-
-#if defined(PL_USE_GL)
-
-    unsigned int format = _plTranslateTextureFormat(upload->format);
-    for(unsigned int i = 0; i < levels; i++) {
-        if (plIsCompressedImageFormat(upload->format)) {
-            glCompressedTexSubImage2D
-                    (
-                            GL_TEXTURE_2D,
-                            i,
-                            upload->x, upload->y,
-                            upload->width / (unsigned int)pow(2, i),
-                            upload->height / (unsigned int)pow(2, i),
-                            format,
-                            upload->size,
-                            upload->data[i]
-                    );
-        } else {
-            glTexImage2D
-                    (
-                            GL_TEXTURE_2D,
-                            i,
-                            upload->x, upload->y,
-                            upload->width / (PLuint)pow(2, i),
-                            upload->height / (PLuint)pow(2, i),
-                            _plTranslateColourFormat(upload->colour_format),
-                            GL_UNSIGNED_BYTE,
-                            upload->data[i]
-                    );
-        }
-    }
-#endif
 
     return true;
 }

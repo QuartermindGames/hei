@@ -24,45 +24,44 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #include "model_private.h"
 
 #include <PL/platform_filesystem.h>
 
 /*	PLATFORM MODEL LOADER	*/
 
-typedef struct PLModelInterface {
-    const char *extension;
+typedef struct ModelInterface {
+    const char *ext;
+    PLModel*(*LoadFunction)(const char *path);
+} ModelInterface;
 
-    PLModel*(*Load)(const char *path);
-} PLModelInterface;
-
-PLModelInterface model_interfaces[]= {
-        { "mdl", _plLoadRequiemModel },
+ModelInterface model_interfaces[512]= {
+        { "mdl", LoadRequiemModel },
         //{ "vtx", _plLoadStaticHOWModel },
         //{ "mdl", _plLoadStaticSourceModel },
         //{ "mdl", _plLoadStaticGoldSrcModel },
         //{ "smd", _plLoadStaticSMDModel },
         //{ "obj", _plLoadOBJModel },
 };
+unsigned int num_model_interfaces = 1;
 
 ///////////////////////////////////////
 
-void _plGenerateModelNormals(PLModel *model) {
+void plGenerateModelNormals(PLModel *model) {
     plAssert(model);
     for(unsigned int i = 0; i < model->num_meshes; ++i) {
         plGenerateMeshNormals(model->meshes[i]);
     }
 }
 
-void _plGenerateModelAABB(PLModel *model) {
+void plGenerateModelAABB(PLModel *model) {
     plAssert(model);
     for(unsigned int i = 0; i < model->num_meshes; ++i) {
         plAddAABB(&model->bounds, plCalculateMeshAABB(model->meshes[i]));
     }
 }
 
-void _plGenerateAnimatedModelNormals(PLAnimatedModel *model) {
+void plGenerateAnimatedModelNormals(PLAnimatedModel *model) {
     plAssert(model);
     for (PLModelFrame *frame = &model->frames[0]; frame; ++frame) {
         for(unsigned int i = 0; i < frame->num_meshes; ++i) {
@@ -73,6 +72,12 @@ void _plGenerateAnimatedModelNormals(PLAnimatedModel *model) {
 
 ///////////////////////////////////////
 
+void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path)) {
+    model_interfaces[num_model_interfaces].ext = ext;
+    model_interfaces[num_model_interfaces].LoadFunction = LoadFunction;
+    num_model_interfaces++;
+}
+
 PLModel *plLoadModel(const char *path) {
     if(!plFileExists(path)) {
         ReportError(PL_RESULT_FILEREAD, "Failed to load model, %s!", path);
@@ -80,14 +85,14 @@ PLModel *plLoadModel(const char *path) {
     }
 
     const char *extension = plGetFileExtension(path);
-    for(unsigned int i = 0; i < plArrayElements(model_interfaces); ++i) {
-        if(model_interfaces[i].Load == NULL) {
+    for(unsigned int i = 0; i < num_model_interfaces; ++i) {
+        if(model_interfaces[i].LoadFunction == NULL) {
             continue;
         }
 
-        if(model_interfaces[i].extension[0] != '\0') {
-            if (!strcmp(extension, model_interfaces[i].extension)) {
-                PLModel *model = model_interfaces[i].Load(path);
+        if(model_interfaces[i].ext[0] != '\0') {
+            if (!strcmp(extension, model_interfaces[i].ext)) {
+                PLModel *model = model_interfaces[i].LoadFunction(path);
                 if(model != NULL) {
                     return model;
                 }

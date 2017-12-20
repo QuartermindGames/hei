@@ -112,7 +112,7 @@ typedef struct MDLFace {
 
 /////////////////////////////////////////////////////////////////
 
-PLModel *_plLoadRequiemModel(const char *path) {
+PLModel *LoadRequiemModel(const char *path) {
     FILE *file = fopen(path, "rb");
     if(file == NULL) {
         ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
@@ -263,8 +263,8 @@ PLModel *_plLoadRequiemModel(const char *path) {
     model->num_triangles    = num_triangles;
     model->meshes[0]        = mesh;
 
-    _plGenerateModelNormals(model);
-    _plGenerateModelAABB(model);
+    plGenerateModelNormals(model);
+    plGenerateModelAABB(model);
 
     return model;
 }

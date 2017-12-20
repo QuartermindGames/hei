@@ -102,39 +102,50 @@ PLConsoleVariable **_pl_variables = NULL;
 size_t _pl_num_variables = 0;
 size_t _pl_variables_size = 512;
 
-void plRegisterConsoleVariables(PLConsoleVariable vars[], unsigned int num_vars) {
+PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, PLVariableType type,
+                                             void(*CallbackFunction)(void), const char *desc) {
     plAssert(_pl_variables);
 
+    if(name == NULL || name[0] == '\0') {
+        return NULL;
+    }
+
     // Deal with resizing the array dynamically...
-    if((num_vars + _pl_num_variables) > _pl_variables_size) {
+    if((1 + _pl_num_variables) > _pl_variables_size) {
         PLConsoleVariable **old_mem = _pl_variables;
         _pl_variables = (PLConsoleVariable**)realloc(_pl_variables, (_pl_variables_size += 128) * sizeof(PLConsoleVariable));
-        if(!_pl_variables) {
+        if(_pl_variables == NULL) {
             ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate %d bytes!\n",
                            _pl_variables_size * sizeof(PLConsoleVariable));
             _pl_variables = old_mem;
             _pl_variables_size -= 128;
-            return;
+            return NULL;
         }
     }
 
-    for(unsigned int i = 0; i < num_vars; i++) {
-        if(vars[i].var[0] == '\0') {
-            continue;
+    PLConsoleVariable *out = NULL;
+    if(_pl_num_variables < _pl_variables_size) {
+        _pl_variables[_pl_num_variables] = (PLConsoleVariable*)malloc(sizeof(PLConsoleVariable));
+        if(_pl_variables[_pl_num_variables] == NULL) {
+            ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
+                        sizeof(PLConsoleVariable));
+            return NULL;
         }
 
-        if(_pl_num_variables < _pl_variables_size) {
-            _pl_variables[_pl_num_variables] = (PLConsoleVariable*)malloc(sizeof(PLConsoleVariable));
-            if(!_pl_variables[_pl_num_variables]) {
-                ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for ConsoleCommand, %d!\n",
-                               sizeof(PLConsoleVariable));
-                break;
-            }
-            memcpy(_pl_variables[_pl_num_variables], &vars[i], sizeof(PLConsoleVariable));
-            plSetConsoleVariable(_pl_variables[_pl_num_variables], _pl_variables[_pl_num_variables]->default_value);
-            _pl_num_variables++;
+        out = _pl_variables[_pl_num_variables];
+        out->var = name;
+        out->description = desc;
+        out->default_value = def;
+        out->type = type;
+        if(CallbackFunction != NULL) {
+            out->Callback = CallbackFunction;
         }
+        plSetConsoleVariable(out, out->default_value);
+
+        _pl_num_variables++;
     }
+
+    return out;
 }
 
 void plGetConsoleVariables(PLConsoleVariable *** const vars, size_t * const num_vars) {
@@ -332,10 +343,6 @@ PLresult _plInitConsole(void) {
             pwd_var,
     };
     plRegisterConsoleCommands(base_commands, plArrayElements(base_commands));
-
-    plAddConsoleVariable(MyVar, "true", pl_bool_var, NULL, "Example console variable, that does nothing!");
-    plAddConsoleVariable(YourVar, "false", pl_bool_var, NULL, "Example console variable, that does nothing!");
-    plAddConsoleVariable(HisVar, "apple", pl_string_var, NULL, "Example console variable, that does nothing!");
 
     // todo, temporary
     //cmds_func(0, NULL);

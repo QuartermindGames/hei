@@ -179,29 +179,34 @@ void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
-    unsigned int min, max;
+    unsigned int min, mag;
     switch(texture->filter) {
-        case PL_TEXTUREFILTER_LINEAR: {
-            min = max = GL_LINEAR;
+        case PL_TEXTURE_FILTER_LINEAR: {    // linear
+            min = mag = GL_LINEAR;
         } break;
 
         default:
-        case PL_TEXTUREFILTER_NEAREST: {
-            min = max = GL_NEAREST;
+        case PL_TEXTURE_FILTER_NEAREST: {   // nearest
+            min = mag = GL_NEAREST;
         } break;
 
-        case PL_TEXTUREFILTER_MIPMAP_LINEAR: {
+        case PL_TEXTURE_FILTER_MIPMAP_LINEAR: {
             min = GL_LINEAR_MIPMAP_LINEAR;
-            max = GL_LINEAR;
+            mag = GL_LINEAR;
         } break;
 
-        case PL_TEXTUREFILTER_MIPMAP_NEAREST: {
+        case PL_TEXTURE_FILTER_MIPMAP_LINEAR_NEAREST: {
+            min = GL_LINEAR_MIPMAP_NEAREST;
+            mag = GL_NEAREST;
+        } break;
+
+        case PL_TEXTURE_FILTER_MIPMAP_NEAREST: {
             min = GL_NEAREST_MIPMAP_NEAREST;
-            max = GL_NEAREST;
+            mag = GL_NEAREST;
         } break;
     }
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, max);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
 
     unsigned int levels = upload->levels;
@@ -211,7 +216,16 @@ void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
 
     for(unsigned int i = 0; i < levels; ++i) {
         if(plIsCompressedImageFormat(upload->format)) {
-
+            glCompressedTexImage2D(
+                    GL_TEXTURE_2D,
+                    i,
+                    TranslateImageFormat(upload->format),
+                    texture->width / (unsigned int)pow(2, i),
+                    texture->height / (unsigned int)pow(2, i),
+                    0,
+                    upload->size,
+                    upload->data[0]
+            );
         } else {
             glTexImage2D(
                     GL_TEXTURE_2D,

@@ -72,4 +72,10 @@ PLModel *plLoadModel(const char *path);
 void plDeleteModel(PLModel *model);
 void plDrawModel(PLModel *model);
 
+PL_EXTERN void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path));
+
+PL_EXTERN void plGenerateModelNormals(PLModel *model);
+PL_EXTERN void plGenerateModelAABB(PLModel *model);
+PL_EXTERN void plGenerateAnimatedModelNormals(PLAnimatedModel *model);
+
 PL_EXTERN_C_END

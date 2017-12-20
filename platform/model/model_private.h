@@ -33,13 +33,9 @@ PL_EXTERN_C
 
 // Static
 PLModel *_plLoadOBJModel(const char *path);
-PLModel *_plLoadRequiemModel(const char *path);
+PLModel *LoadRequiemModel(const char *path);
 
 // Animated
 PLAnimatedModel *_plLoadU3DModel(const char *path);
-
-void _plGenerateModelNormals(PLModel *model);
-void _plGenerateModelAABB(PLModel *model);
-void _plGenerateAnimatedModelNormals(PLAnimatedModel *model);
 
 PL_EXTERN_C_END
