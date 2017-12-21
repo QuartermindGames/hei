@@ -103,7 +103,8 @@ size_t _pl_num_variables = 0;
 size_t _pl_variables_size = 512;
 
 PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, PLVariableType type,
-                                             void(*CallbackFunction)(void), const char *desc) {
+                                             void(*CallbackFunction)(const PLConsoleVariable *variable),
+                                             const char *desc) {
     plAssert(_pl_variables);
 
     if(name == NULL || name[0] == '\0') {
@@ -138,7 +139,7 @@ PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, 
         out->default_value = def;
         out->type = type;
         if(CallbackFunction != NULL) {
-            out->Callback = CallbackFunction;
+            out->CallbackFunction = CallbackFunction;
         }
         plSetConsoleVariable(out, out->default_value);
 
@@ -202,9 +203,8 @@ void plSetConsoleVariable(PLConsoleVariable *var, const char *value) {
     }
 
     strncpy(var->value, value, sizeof(var->value));
-
-    if(var->Callback != NULL) {
-        var->Callback();
+    if(var->CallbackFunction != NULL) {
+        var->CallbackFunction(var);
     }
 }
 
@@ -301,7 +301,7 @@ IMPLEMENT_COMMAND(help, "Returns information regarding specified command or vari
 PLMesh *mesh_line = NULL;
 PLBitmapFont *console_font = NULL;
 
-PLresult _plInitConsole(void) {
+PLresult InitConsole(void) {
     console_visible = false;
 
 #if 0
@@ -354,7 +354,7 @@ PLresult _plInitConsole(void) {
     return PL_RESULT_SUCCESS;
 }
 
-void _plShutdownConsole(void) {
+void ShutdownConsole(void) {
     console_visible = false;
 
     plDeleteBitmapFont(console_font);
@@ -511,7 +511,7 @@ bool IsConsolePaneVisible(unsigned int id) {
 
 // INPUT
 
-void _plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) {
+void plConsoleInput(int m_x, int m_y, unsigned int m_buttons, bool is_pressed) {
     if(!is_pressed) {
         return;
     }

@@ -41,7 +41,7 @@ typedef struct PLConsoleVariable {
 
     PLVariableType type;
 
-    void(*Callback)(void);
+    void(*CallbackFunction)(const struct PLConsoleVariable *variable);
 
     const char *description;
 
@@ -68,7 +68,8 @@ PLConsoleVariable *plGetConsoleVariable(const char *name);
 void plSetConsoleVariable(PLConsoleVariable *var, const char *value);
 
 PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, PLVariableType type,
-                                             void(*CallbackFunction)(void), const char *desc);
+                                             void(*CallbackFunction)(const PLConsoleVariable *variable),
+                                             const char *desc);
 
 PL_EXTERN_C_END
 

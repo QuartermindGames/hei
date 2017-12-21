@@ -102,53 +102,6 @@ void plDeleteCamera(PLCamera *camera) {
 void plSetupCamera(PLCamera *camera) {
     plAssert(camera);
 
-#if defined(PL_MODE_OPENGL)
-    // todo, modernize start
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    // modernize end
-
-    switch(camera->mode) {
-        case PL_CAMERA_MODE_PERSPECTIVE: {
-            plPerspective(camera->fov, camera->viewport.w / camera->viewport.h, 0.1, 100000);
-
-            // todo, modernize start
-            glRotatef(camera->angles.y, 1, 0, 0);
-            glRotatef(camera->angles.x, 0, 1, 0);
-            glRotatef(camera->angles.z, 0, 0, 1);
-            glTranslatef(camera->position.x, camera->position.y, camera->position.z);
-
-            glMatrixMode(GL_MODELVIEW);
-            glLoadIdentity();
-            // modernize end
-
-            break;
-        }
-            
-        case PL_CAMERA_MODE_ORTHOGRAPHIC: {
-            glOrtho(0, camera->viewport.w, camera->viewport.h, 0, 0, 1000);
-            break;
-        }
-        
-        case PL_CAMERA_MODE_ISOMETRIC: {
-            glOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
-
-            // todo, modernize start
-            glMatrixMode(GL_MODELVIEW);
-            glLoadIdentity();
-
-            glRotatef(35.264f, 1, 0, 0);
-            glRotatef(camera->angles.x, 0, 1, 0);
-
-            glTranslatef(camera->position.x, camera->position.y, camera->position.z);
-            // modernize end
-            break;
-        }
-
-        default: break;
-    }
-#endif
-
     if(gfx_layer.SetupCamera) {
         gfx_layer.SetupCamera(camera);
     }

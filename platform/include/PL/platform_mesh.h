@@ -33,7 +33,7 @@ typedef enum PLPrimitive {
     PL_PRIMITIVE_LINE_STRIP,
     PLMESH_POINTS,
     PLMESH_TRIANGLES,
-    PLMESH_TRIANGLE_STRIP,
+    PL_TRIANGLE_STRIP,
     PLMESH_TRIANGLE_FAN,
     PLMESH_TRIANGLE_FAN_LINE,
     PLMESH_QUADS,
@@ -97,6 +97,7 @@ PL_EXTERN void plSetMeshVertexPosition2f(PLMesh *mesh, unsigned int index, float
 PL_EXTERN void plSetMeshVertexNormal3f(PLMesh *mesh, unsigned int index, float x, float y, float z);
 PL_EXTERN void plSetMeshVertexST(PLMesh *mesh, unsigned int index, float s, float t);
 PL_EXTERN void plSetMeshVertexColour(PLMesh *mesh, unsigned int index, PLColour colour);
+PL_EXTERN void plSetMeshUniformColour(PLMesh *mesh, PLColour colour);
 PL_EXTERN void plUploadMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawMesh(PLMesh *mesh);

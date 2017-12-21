@@ -109,7 +109,7 @@ PLArguments pl_arguments;
 PLresult plInitialize(int argc, char **argv) {
     static bool is_initialized = false;
     if(!is_initialized) {
-        _plInitConsole();
+        InitConsole();
 
 #if defined(PL_USE_SDL2)
         SDL_Init(SDL_INIT_EVERYTHING);
@@ -201,7 +201,7 @@ void plShutdown(void) {
         pl_subsystems[i].active = false;
     }
 
-    _plShutdownConsole();
+    ShutdownConsole();
 }
 
 /*	ERROR HANDLING	*/

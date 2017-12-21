@@ -212,7 +212,7 @@ void plSetMeshVertexNormal3f(PLMesh *mesh, unsigned int index, float x, float y,
 void plSetMeshVertexST(PLMesh *mesh, unsigned int index, float s, float t) {
     mesh->vertices[index].st[0] = PLVector2(s, t);
 }
-
+#if 0
 void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st) {
     size += index;
     if(size > mesh->num_verts) {
@@ -224,9 +224,15 @@ void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index, unsigned
         mesh->vertices[i].st[unit].y = st[1];
     }
 }
-
+#endif
 void plSetMeshVertexColour(PLMesh *mesh, unsigned int index, PLColour colour) {
     mesh->vertices[index].colour = colour;
+}
+
+void plSetMeshUniformColour(PLMesh *mesh, PLColour colour) {
+    for(unsigned int i = 0; i < mesh->num_verts; ++i) {
+        mesh->vertices[i].colour = colour;
+    }
 }
 
 void plUploadMesh(PLMesh *mesh) {
@@ -234,12 +240,10 @@ void plUploadMesh(PLMesh *mesh) {
 
 #if 0
 
-    inline static void DrawMesh(const Mesh *mesh) {
     glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo_vertex_array);
     glVertexPointer(3, GL_FLOAT, sizeof(Vertex), (const void *)offsetof(Vertex, position));
     glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (const void *)offsetof(Vertex, colour));
     glNormalPointer(GL_FLOAT, sizeof(Vertex), (const void *)offsetof(Vertex, normal));
-}
 
 #endif
 }
@@ -292,7 +296,7 @@ void plDrawRectangle(PLRectangle2D rect) {
     static PLMesh *mesh = NULL;
     if(!mesh) {
         mesh = plCreateMesh(
-                PLMESH_TRIANGLE_STRIP,
+                PL_TRIANGLE_STRIP,
                 PL_DRAW_IMMEDIATE, // todo, update to dynamic
                 2, 4
         );
@@ -327,7 +331,7 @@ void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
     if (mesh == NULL) {
         mesh = plCreateMesh(
                 PLMESH_TRIANGLE_FAN,
-                PL_DRAW_DYNAMIC, // todo, update to dynamic
+                PL_DRAW_IMMEDIATE, // todo, update to dynamic
                 1, 3
         );
     }
@@ -341,6 +345,8 @@ void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
     plSetMeshVertexColour(mesh, 0, PLColour(255, 0, 0, 255));
     plSetMeshVertexColour(mesh, 1, PLColour(0, 255, 0, 255));
     plSetMeshVertexColour(mesh, 2, PLColour(0, 0, 255, 255));
+
+    //plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
 
     plUploadMesh(mesh);
 

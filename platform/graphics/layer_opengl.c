@@ -116,6 +116,15 @@ unsigned int TranslateBlendFunc(PLBlend blend) {
 }
 
 void GLSetBlendMode(PLBlend a, PLBlend b) {
+    static bool is_blending = false;
+    if(a == PL_BLEND_NONE && b == PL_BLEND_NONE && is_blending) {
+        glDisable(GL_BLEND);
+        is_blending = false;
+    } else if(!is_blending) {
+        glEnable(GL_BLEND);
+        is_blending = true;
+    }
+
     glBlendFunc(TranslateBlendFunc(a), TranslateBlendFunc(b));
 }
 
@@ -169,7 +178,11 @@ void GLBindTexture(const PLTexture *texture) {
     unsigned int id = 0;
     if(texture != NULL) {
         id = texture->internal.id;
+        glEnable(GL_TEXTURE_2D);
+    } else {
+        glDisable(GL_TEXTURE_2D);
     }
+
     glBindTexture(GL_TEXTURE_2D, id);
 }
 
@@ -263,7 +276,7 @@ MeshTranslatePrimitive primitives[] = {
     {PLMESH_TRIANGLES, GL_TRIANGLES, "TRIANGLES"},
     {PLMESH_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN"},
     {PLMESH_TRIANGLE_FAN_LINE, GL_LINES, "TRIANGLE_FAN_LINE"},
-    {PLMESH_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"},
+    {PL_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"},
     {PLMESH_QUADS, GL_TRIANGLES, "QUADS"}   // todo, translate
 };
 
@@ -319,15 +332,11 @@ void GLDeleteMesh(PLMesh *mesh) {
 }
 
 void GLDrawMesh(PLMesh *mesh) {
+    GLBindTexture(mesh->texture);
+
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
         glBegin(TranslatePrimitiveMode(mesh->primitive));
         for(unsigned int i = 0; i < mesh->num_verts; ++i) {
-            glVertex3f(
-                    mesh->vertices[i].position.x,
-                    mesh->vertices[i].position.y,
-                    mesh->vertices[i].position.z
-            );
-
             glTexCoord2f(
                     mesh->vertices[i].st[0].x,
                     mesh->vertices[i].st[0].y
@@ -344,6 +353,12 @@ void GLDrawMesh(PLMesh *mesh) {
                     mesh->vertices[i].normal.x,
                     mesh->vertices[i].normal.y,
                     mesh->vertices[i].normal.z
+            );
+
+            glVertex3f(
+                    mesh->vertices[i].position.x,
+                    mesh->vertices[i].position.y,
+                    mesh->vertices[i].position.z
             );
         }
         glEnd();
@@ -444,6 +459,51 @@ void GLSetupCamera(PLCamera *camera) {
 
     glViewport(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
     glScissor(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
+
+#if 1 // todo, modernize start
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    switch(camera->mode) {
+        case PL_CAMERA_MODE_PERSPECTIVE: {
+            plPerspective(camera->fov, camera->viewport.w / camera->viewport.h, 0.1, 100000);
+
+            // todo, modernize start
+            glRotatef(camera->angles.y, 1, 0, 0);
+            glRotatef(camera->angles.x, 0, 1, 0);
+            glRotatef(camera->angles.z, 0, 0, 1);
+            glTranslatef(camera->position.x, camera->position.y, camera->position.z);
+
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
+            // modernize end
+
+            break;
+        }
+
+        case PL_CAMERA_MODE_ORTHOGRAPHIC: {
+            glOrtho(0, camera->viewport.w, camera->viewport.h, 0, 0, 1000);
+            break;
+        }
+
+        case PL_CAMERA_MODE_ISOMETRIC: {
+            glOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
+
+            // todo, modernize start
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
+
+            glRotatef(35.264f, 1, 0, 0);
+            glRotatef(camera->angles.x, 0, 1, 0);
+
+            glTranslatef(camera->position.x, camera->position.y, camera->position.z);
+            // modernize end
+            break;
+        }
+
+        default: break;
+    }
+#endif // modernize end
 
     // keep the gfx_state up-to-date on the situation
     gfx_state.current_viewport = camera->viewport;

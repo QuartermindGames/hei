@@ -70,6 +70,8 @@ typedef enum PLCullMode {
 
 // Blending Modes
 typedef enum PLBlend {
+    PL_BLEND_NONE,  // disables blending
+
     PL_BLEND_ZERO,
     PL_BLEND_ONE,
     PL_BLEND_SRC_COLOR,
@@ -84,6 +86,7 @@ typedef enum PLBlend {
 } PLBlend;
 
 // Blending
+#define PL_BLEND_DISABLE    PL_BLEND_NONE, PL_BLEND_NONE
 #define PL_BLEND_ADDITIVE   PL_BLEND_SRC_ALPHA, PL_BLEND_ONE
 #define PL_BLEND_DEFAULT    PL_BLEND_SRC_ALPHA, PL_BLEND_ONE_MINUS_SRC_ALPHA
 
