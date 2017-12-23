@@ -32,6 +32,8 @@ For more information, please refer to <http://unlicense.org>
 #include <GL/glew.h>
 #include <PL/platform_mesh.h>
 
+#define DEBUG_GL
+
 struct {
     bool generate_mipmap;
     bool depth_texture;
@@ -558,6 +560,67 @@ void GLDeleteShaderProgram(PLShaderProgram *program) {
 
 char gl_extensions[4096][4096] = { { '\0' } };
 
+#if defined(DEBUG_GL)
+void MessageCallback(
+        GLenum source,
+        GLenum type,
+        GLuint id,
+        GLenum severity,
+        GLsizei length,
+        const GLchar *message,
+        void *param) {
+    const char *s_severity;
+    switch(severity) {
+        case GL_DEBUG_SEVERITY_HIGH: {
+            s_severity = "HIGH";
+        } break;
+
+        case GL_DEBUG_SEVERITY_MEDIUM: {
+            s_severity = "MEDIUM";
+        } break;
+
+        case GL_DEBUG_SEVERITY_LOW: {
+            s_severity = "LOW";
+        } break;
+
+        default: {
+            s_severity = "NOTIFICATION";
+        } break;
+    }
+
+    const char *s_type;
+    switch(type) {
+        case GL_DEBUG_TYPE_ERROR: {
+            s_type = "ERROR";
+        } break;
+
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: {
+            s_type = "DEPRECATED";
+        } break;
+
+        case GL_DEBUG_TYPE_MARKER: {
+            s_type = "MARKER";
+        } break;
+
+        case GL_DEBUG_TYPE_PERFORMANCE: {
+            s_type = "PERFORMANCE";
+        } break;
+
+        case GL_DEBUG_TYPE_PORTABILITY: {
+            s_type = "PORTABILITY";
+        } break;
+
+        default: {
+            s_type = "OTHER";
+        } break;
+    }
+
+    if(message != NULL && message[0] != '\0') {
+        GfxLog("(%s) %s - %s\n", s_type, s_severity, message);
+    }
+}
+#endif
+
 void InitOpenGL(void) {
     GLenum err = glewInit();
     if(err != GLEW_OK) {
@@ -615,6 +678,14 @@ void InitOpenGL(void) {
         sprintf(gl_extensions[i], "%s", extension);
         GfxLog("    %s\n", extension);
     }
+
+#if defined(DEBUG_GL)
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+    glDebugMessageCallback(MessageCallback, NULL);
+#endif
 }
 
 void ShutdownOpenGL() {
