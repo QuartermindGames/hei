@@ -129,8 +129,8 @@ typedef struct GfxLayer {
 ///////////////////////////////////////////////////////
 
 #define UseBufferScaling(a) \
-    ((a)->viewport.r_width != 0 && (a)->viewport.r_height != 0) && \
-    ((a)->viewport.r_width != (a)->viewport.w && (a)->viewport.r_height != (a)->viewport.h)
+    ((a)->viewport.r_w != 0 && (a)->viewport.r_h != 0) && \
+    ((a)->viewport.r_w != (a)->viewport.w && (a)->viewport.r_h != (a)->viewport.h)
 
 ///////////////////////////////////////////////////////
 

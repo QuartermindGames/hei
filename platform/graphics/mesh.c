@@ -121,7 +121,7 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
 
     PLMesh *mesh = (PLMesh*)calloc(1, sizeof(PLMesh));
     if(mesh == NULL) {
-        ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Mesh, %d!\n", sizeof(PLMesh));
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for Mesh, %d!\n", sizeof(PLMesh));
         return NULL;
     }
 
@@ -133,7 +133,7 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
     if(num_tris > 0) {
         mesh->triangles = (PLTriangle*)calloc(num_tris, sizeof(PLTriangle));
         if(!mesh->triangles) {
-            ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Triangle, %d!\n",
+            ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for Triangle, %d!\n",
                            sizeof(PLTriangle) * num_tris);
 
             plDeleteMesh(mesh);
@@ -142,7 +142,7 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
     }
     mesh->vertices = (PLVertex*)calloc(num_verts, sizeof(PLVertex));
     if(mesh->vertices == NULL) {
-        ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Vertex, %d!\n",
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for Vertex, %d!\n",
             sizeof(PLVertex) * num_verts);
 
         plDeleteMesh(mesh);

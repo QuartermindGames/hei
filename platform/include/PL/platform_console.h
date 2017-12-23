@@ -87,7 +87,8 @@ PL_EXTERN_C
 
 void plGetConsoleCommands(PLConsoleCommand ***cmds, size_t *num_cmds);
 
-void plRegisterConsoleCommands(PLConsoleCommand cmds[], unsigned int num_cmds);
+void plRegisterConsoleCommand(const char *name, void(*CallbackFunction)(unsigned int argc, char *argv[]),
+                              const char *description);
 
 PLConsoleCommand *plGetConsoleCommand(const char *name);
 

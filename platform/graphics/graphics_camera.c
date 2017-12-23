@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+#include <PL/platform_console.h>
 #include "graphics_private.h"
 
 #define CAMERA_DEFAULT_WIDTH      640
@@ -48,7 +49,7 @@ void ShutdownCameras(void) {
 PLCamera *plCreateCamera(void) {
     PLCamera *camera = (PLCamera*)calloc(1, sizeof(PLCamera));
     if(camera == NULL) {
-        ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for Camera, %d!\n", sizeof(PLCamera));
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for Camera, %d!\n", sizeof(PLCamera));
         return NULL;
     }
 
@@ -67,12 +68,10 @@ PLCamera *plCreateCamera(void) {
      */
     camera->viewport.w          = CAMERA_DEFAULT_WIDTH;
     camera->viewport.h          = CAMERA_DEFAULT_HEIGHT;
-    camera->viewport.r_width    = 0;
-    camera->viewport.r_height   = 0;
+    camera->viewport.r_w    = 0;
+    camera->viewport.r_h   = 0;
 
-    if(gfx_layer.CreateCamera) {
-        gfx_layer.CreateCamera(camera);
-    }
+    CallGfxFunction(CreateCamera, camera);
 
     camera->bounds.mins = PLVector3(
             -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS);
@@ -87,9 +86,7 @@ void plDeleteCamera(PLCamera *camera) {
         return;
     }
 
-    if(gfx_layer.DeleteCamera) {
-        gfx_layer.DeleteCamera(camera);
-    }
+    CallGfxFunction(DeleteCamera, camera);
 
     if(camera->viewport.v_buffer != NULL) {
         free(camera->viewport.v_buffer);
@@ -102,9 +99,11 @@ void plDeleteCamera(PLCamera *camera) {
 void plSetupCamera(PLCamera *camera) {
     plAssert(camera);
 
-    if(gfx_layer.SetupCamera) {
-        gfx_layer.SetupCamera(camera);
-    }
+    CallGfxFunction(SetupCamera, camera);
+}
+
+void plDrawPerspectivePOST(PLCamera *camera) {
+    CallGfxFunction(DrawPerspectivePOST, camera);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -118,8 +117,6 @@ void plDrawPerspective(void) {
 
         // todo, draw stuff...
 
-        if(gfx_layer.DrawPerspectivePOST) {
-            gfx_layer.DrawPerspectivePOST((*camera));
-        }
+        CallGfxFunction(DrawPerspectivePOST, (*camera));
     }
 }

@@ -61,7 +61,7 @@ PLresult LoadSTBImage(FILE *fin, PLImage *out) {
     }
     free(data);
 
-    ReportError(PL_RESULT_MEMORYALLOC, "failed to allocate memory for image buffer");
+    ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for image buffer");
     return plGetFunctionResult();
 }
 #endif
@@ -193,7 +193,7 @@ bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
                     free(levels[m]);
                 }
 
-                ReportError(PL_RESULT_MEMORYALLOC, "Couldn't allocate memory for image data");
+                ReportError(PL_RESULT_MEMORY_ALLOCATION, "Couldn't allocate memory for image data");
                 return false;
             }
 
@@ -345,7 +345,7 @@ bool plFlipImageVertical(PLImage *image) {
 	
 	unsigned char *swap = malloc(bytes_per_row);
 	if(swap == NULL) {
-		ReportError(PL_RESULT_MEMORYALLOC, "Cannot allocate memory");
+		ReportError(PL_RESULT_MEMORY_ALLOCATION, "Cannot allocate memory");
 		return false;
 	}
 	

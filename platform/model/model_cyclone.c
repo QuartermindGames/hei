@@ -253,7 +253,7 @@ PLModel *LoadRequiemModel(const char *path) {
 
     PLModel *model = malloc(sizeof(PLModel));
     if(model == NULL) {
-        ReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
         return NULL;
     }
 

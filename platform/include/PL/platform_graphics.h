@@ -191,8 +191,8 @@ typedef struct PLViewport {
     uint8_t *v_buffer;
     unsigned int buffers[32];
 
-    unsigned int r_width, r_height;
-    unsigned int old_r_width, old_r_height;
+    unsigned int r_w, r_h;
+    unsigned int old_r_w, old_r_h;
 } PLViewport;
 
 typedef struct PLCamera {
@@ -215,6 +215,7 @@ PL_EXTERN void plDeleteCamera(PLCamera *camera);
 PL_EXTERN void plSetupCamera(PLCamera *camera);
 
 PL_EXTERN void plDrawPerspective(void);
+PL_EXTERN void plDrawPerspectivePOST(PLCamera *camera);
 
 PL_EXTERN void plPerspective(double fov_y, double aspect, double near, double far);
 

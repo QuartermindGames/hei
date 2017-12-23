@@ -310,7 +310,7 @@ const char *plGetResultString(PLresult result) {
         case PL_RESULT_IMAGEFORMAT:     return "Unsupported image format!";
 
         // MEMORY
-        case PL_RESULT_MEMORYALLOC: return "Failed to allocate memory!";
+        case PL_RESULT_MEMORY_ALLOCATION: return "Failed to allocate memory!";
 
         case PL_RESULT_SYSERR: return "System error";
 

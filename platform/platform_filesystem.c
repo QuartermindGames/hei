@@ -294,7 +294,7 @@ bool plCopyFile(const char *path, const char *dest) {
 
     uint8_t *data = calloc(file_size, 1);
     if(data == NULL) {
-        ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate buffer for %s, with size %d!", path, file_size);
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate buffer for %s, with size %d!", path, file_size);
         return false;
     }
 

@@ -109,7 +109,7 @@ PLModel *_plLoadOBJModel(const PLchar *path) {
 
     PLModel *model = (PLModel*)malloc(sizeof(PLModel));
     if (model == NULL) {
-        ReportError(PL_RESULT_MEMORYALLOC, plGetResultString(PL_RESULT_MEMORYALLOC));
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
 
         _plUnloadOBJModel();
         return nullptr;

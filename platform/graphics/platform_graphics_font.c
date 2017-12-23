@@ -153,7 +153,7 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
 
     PLBitmapFont *font = (PLBitmapFont*)malloc(sizeof(PLBitmapFont));
     if(font == NULL) {
-        ReportError(PL_RESULT_MEMORYALLOC, "Failed to allocate memory for BitmapFont, %d!\n", sizeof(PLBitmapFont));
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for BitmapFont, %d!\n", sizeof(PLBitmapFont));
         return NULL;
     }
     memset(font, 0, sizeof(PLBitmapFont));

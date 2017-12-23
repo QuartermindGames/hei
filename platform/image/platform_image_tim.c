@@ -155,7 +155,7 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
 
         palette = calloc(palette_size, sizeof(uint16_t));
         if(palette == NULL) {
-            ReportError(PL_RESULT_MEMORYALLOC, "couldn't allocate palette buffer");
+            ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate palette buffer");
             goto ERR_CLEANUP;
         }
 
@@ -184,7 +184,7 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
     size_t image_data_len = image_info.image_size - sizeof(image_info);
     image_data            = malloc(image_data_len);
     if(image_data == NULL) {
-        ReportError(PL_RESULT_MEMORYALLOC, "couldn't allocate input image buffer");
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate input image buffer");
         goto ERR_CLEANUP;
     }
 
@@ -230,13 +230,13 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
 
     out->data = calloc(out->levels, sizeof(uint8_t*));
     if(out->data == NULL) {
-        ReportError(PL_RESULT_MEMORYALLOC, "couldn't allocate output image buffer");
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
         goto ERR_CLEANUP;
     }
 
     out->data[0] = calloc(out->size, sizeof(uint8_t));
     if(out->data[0] == NULL) {
-        ReportError(PL_RESULT_MEMORYALLOC, "couldn't allocate output image buffer");
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
         goto ERR_CLEANUP;
     }
 

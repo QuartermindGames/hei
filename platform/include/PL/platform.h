@@ -139,6 +139,10 @@ typedef enum {
     PL_RESULT_FILEPATH,     // Invalid path!
     PL_RESULT_FILEERR,      // Generic Filesystem error
 
+    // CONSOLE
+    PL_RESULT_COMMAND_NAME,     // Invalid name provided for command!
+    PL_RESULT_COMMAND_FUNCTION, // Invalid callback provided for command!
+
     // GRAPHICS
     PL_RESULT_GRAPHICSINIT,     // Graphics failed to initialise!
     PL_RESULT_SHADERTYPE,       // Unsupported shader type!
@@ -151,7 +155,7 @@ typedef enum {
     PL_RESULT_IMAGEFORMAT,      // Unsupported image format!
 
     // MEMORY
-    PL_RESULT_MEMORYALLOC,      // Ran out of memory!
+    PL_RESULT_MEMORY_ALLOCATION,      // Ran out of memory!
     PL_RESULT_MEMORY_EOA,       // End of array
 
     PL_RESULT_SYSERR,         // Generic system error
