@@ -146,6 +146,7 @@ PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, 
         }
 
         out = _pl_variables[_pl_num_variables];
+        memset(out, 0, sizeof(PLConsoleVariable));
         out->var = name;
         out->description = desc;
         out->default_value = def;
