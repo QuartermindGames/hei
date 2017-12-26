@@ -468,9 +468,10 @@ void GLSetupCamera(PLCamera *camera) {
 
     switch(camera->mode) {
         case PL_CAMERA_MODE_PERSPECTIVE: {
-            plPerspective(camera->fov, camera->viewport.w / camera->viewport.h, 0.1, 100000);
+            double h = tan(camera->fov / 360 * PL_PI) * 0.1;
+            double w = h * camera->viewport.w / camera->viewport.h;
+            glFrustum(-w, w, -h, h, 0.1, 100000);
 
-            // todo, modernize start
             glRotatef(camera->angles.y, 1, 0, 0);
             glRotatef(camera->angles.x, 0, 1, 0);
             glRotatef(camera->angles.z, 0, 0, 1);
@@ -478,8 +479,6 @@ void GLSetupCamera(PLCamera *camera) {
 
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
-            // modernize end
-
             break;
         }
 
@@ -491,7 +490,6 @@ void GLSetupCamera(PLCamera *camera) {
         case PL_CAMERA_MODE_ISOMETRIC: {
             glOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
 
-            // todo, modernize start
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
@@ -499,7 +497,6 @@ void GLSetupCamera(PLCamera *camera) {
             glRotatef(camera->angles.x, 0, 1, 0);
 
             glTranslatef(camera->position.x, camera->position.y, camera->position.z);
-            // modernize end
             break;
         }
 
@@ -684,8 +681,11 @@ void InitOpenGL(void) {
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
-    glDebugMessageCallback(MessageCallback, NULL);
+    glDebugMessageCallback((GLDEBUGPROC) MessageCallback, NULL);
 #endif
+
+    glPointSize(5.f);
+    glLineWidth(2.f);
 }
 
 void ShutdownOpenGL() {

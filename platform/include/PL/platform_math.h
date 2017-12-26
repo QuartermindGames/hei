@@ -548,63 +548,33 @@ PL_INLINE static const char *plPrintColour(PLColour c) {
 // Matrices
 // todo, none of this is correct yet
 
-typedef float PLMatrix4[16];
+typedef struct PLMatrix {
+    float m[16];
+} PLMatrix;
 
-PL_INLINE static void plClearMatrix4(PLMatrix4 m) {
-    memset(m, 0, sizeof(PLMatrix4));
+PL_INLINE static void plClearMatrix(PLMatrix *m) {
+    memset(m, 0, sizeof(PLMatrix));
 }
 
-PL_INLINE static void plMatrix4Identity(PLMatrix4 m) {
-    plClearMatrix4(m);
-
-    m[0] = 1; m[5] = 1; m[10] = 1; m[15] = 1;
+PL_INLINE static void plIdentityMatrix(PLMatrix *m) {
+    *m = (PLMatrix){{
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    }};
 }
 
-PL_INLINE static void plAddMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    m[0] += m2[0]; m[4] += m2[4]; m[8] += m2[8];
-    m[1] += m2[1]; m[5] += m2[5]; m[9] += m2[9];
-    m[2] += m2[2]; m[6] += m2[6]; m[10] += m2[10];
-}
-
-PL_INLINE static void plMultiplyMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
-    m[0] *= m2[0]; m[4] *= m2[4]; m[8] *= m2[8];
-    m[1] *= m2[1]; m[5] *= m2[5]; m[9] *= m2[9];
-    m[2] *= m2[2]; m[6] *= m2[6]; m[10] *= m2[10];
-}
-
-PL_INLINE static void plMultiplyMatrix4v(PLMatrix4 m, PLVector3 v) {
-    m[0] *= v.x; m[4] *= v.y; m[8] *= v.z;
-    m[1] *= v.x; m[5] *= v.y; m[9] *= v.z;
-    m[2] *= v.x; m[6] *= v.y; m[10] *= v.z;
-}
-
-PL_INLINE static void plMultiplyMatrix4f(PLMatrix4 m, float a) {
-    m[0] *= a; m[4] *= a; m[8] *= a;
-    m[1] *= a; m[5] *= a; m[9] *= a;
-    m[2] *= a; m[6] *= a; m[10] *= a;
-}
-#if 0 // todo
-PL_INLINE static void plDivideMatrix4(PLMatrix4 m, const PLMatrix4 m2) {
+PL_INLINE static void plAddMatrix(PLMatrix m, const PLMatrix m2) {
 
 }
 
-PL_INLINE static void plDivideMatrix4f(PLMatrix4 m, float a) {
+PL_INLINE static void plScaleMatrix(PLMatrix *m, PLVector3 scale) {
 
 }
-#endif
-PL_INLINE static const char *plPrintMatrix4(const PLMatrix4 m) {
-    static char s[256] = { '\0' };
-    snprintf(s, 256,
-            "%i %i %i %i\n"
-            "%i %i %i %i\n"
-            "%i %i %i %i\n"
-            "%i %i %i %i",
-            (int)m[0], (int)m[4], (int)m[8], (int)m[12],
-            (int)m[1], (int)m[5], (int)m[9], (int)m[13],
-            (int)m[2], (int)m[6], (int)m[10], (int)m[14],
-            (int)m[3], (int)m[7], (int)m[11], (int)m[15]
-            );
-    return s;
+
+PL_INLINE static void plRotateMatrix(PLMatrix *m, float angle, PLVector3 axis) {
+
 }
 
 // Quaternion

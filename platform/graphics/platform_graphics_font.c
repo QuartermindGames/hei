@@ -287,7 +287,7 @@ void plDrawCharacter(PLBitmapFont *font, int x, int y, float scale, int8_t chara
 }
 
 void plDrawString(PLBitmapFont *font, int x, int y, float scale, const char *msg) {
-    if(scale <= 0 || x < 0 || y > gfx_state.current_viewport.w || y < 0 || y > gfx_state.current_viewport.h) {
+    if(scale <= 0 || x < 0 || y > (int)gfx_state.current_viewport.w || y < 0 || y > (int)gfx_state.current_viewport.h) {
         return;
     }
 

@@ -463,39 +463,7 @@ void plSetDefaultGraphicsState(void) {
 
 /* Shared Matrix Functions */
 
-void plLoadMatrixIdentity(void) {
-
-}
-
-void plTranslateMatrix(PLVector3 translation) {
-    if(plCompareVector3(translation, PLVector3(0, 0, 0))) {
-        return;
-    }
-}
-
-void plScaleMatrix(PLVector3 scale) {
-    if(plCompareVector3(scale, PLVector3(0, 0, 0))) {
-        return;
-    }
-}
-
-void plSetMatrixMode(unsigned int mode) {
-
-}
-
-/////////////////////////////////////////////////////////////////////////////////////
-// VIEWPORT/CAMERA
-
-// http://nehe.gamedev.net/article/replacement_for_gluperspective/21002/
-void plPerspective(double fov_y, double aspect, double near, double far) {
-    GRAPHICS_TRACK();
-
-#if defined(PL_MODE_OPENGL)
-    double h = tan(fov_y / 360 * PL_PI) * near;
-    double w = h * aspect;
-    glFrustum(-w, w, -h, h, near, far);
-#endif
-}
+// todo
 
 /* DRAWING  */
 
