@@ -27,17 +27,6 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics.h>
 
-#if defined(PL_USE_SDL2)
-
-#   include <SDL2/SDL.h>
-
-#else
-
-#   include <bits/time.h>
-#   include <Xos.h>
-
-#endif
-
 #include <sys/time.h>
 
 /*	Generic functions for platform, such as	error handling.	*/
@@ -160,12 +149,12 @@ const char *plGetExecutableName(void) {
 // Returns result for a single command line argument.
 const char *plGetCommandLineArgument(const char *arg) {
     if(pl_arguments.num_arguments < 2) {
-        return '\0';
+        return NULL;
     }
 
     if(!plIsValidString(arg)) {
         // todo, get current log output and print warning there?
-        return '\0';
+        return NULL;
     }
 
     for(unsigned int i = 0; i < pl_arguments.num_arguments; i++) {
@@ -174,7 +163,7 @@ const char *plGetCommandLineArgument(const char *arg) {
         }
     }
 
-    return '\0';
+    return NULL;
 }
 
 bool _plIsSubSystemActive(unsigned int subsystem) {

@@ -313,10 +313,6 @@ void plSetTextureAnisotropy(PLTexture *texture, unsigned int amount) {
 #endif
 }
 
-#if defined(__GNUC__) || defined(__GNUG__)
-#   pragma GCC diagnostic pop
-#endif
-
 void BindTexture(const PLTexture *texture) {
     // allow us to pass null texture instances
     // as it will give us an opportunity to unbind

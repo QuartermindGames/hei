@@ -54,8 +54,10 @@ typedef struct __attribute__((packed)) MADIndex {
 PLPackage *LoadMADPackage(const char *filename, bool cache) {
     FILE *fh = fopen(filename, "rb");
     if(fh == NULL) {
-        goto FAILED;
+        return NULL;
     }
+
+    PLPackage *package = NULL;
 
     size_t file_size = plGetFileSize(filename);
     if(plGetFunctionResult() != PL_RESULT_SUCCESS) {
@@ -98,7 +100,7 @@ PLPackage *LoadMADPackage(const char *filename, bool cache) {
 
     /* Allocate the basic package structure now we know how many files are in the archive. */
 
-    PLPackage *package = malloc(sizeof(PLPackage));
+    package = malloc(sizeof(PLPackage));
     if(package == NULL) {
         goto FAILED;
     }
