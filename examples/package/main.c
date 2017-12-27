@@ -32,49 +32,28 @@ For more information, please refer to <http://unlicense.org>
 #define TITLE "Package Example"
 
 int main(int argc, char **argv) {
-    PRINT("\n " TITLE " (" __DATE__ ")\n"                                                   );
-    PRINT(" Developed by...\n"                                                              );
-    PRINT("   Mark \"hogsy\" Sowden (http://talonbrave.info/)\n"                            );
-    PRINT("\n"                                                                              );
-    PRINT("\n-------------------------------------------------------------------------\n\n" );
-
     plInitialize(argc, argv);
 
     PLPackage *new_package = plCreatePackage("./packages/models.package");
     if(new_package == NULL) {
         PRINT_ERROR("Failed to create new package!\n");
-        return EXIT_FAILURE;
     }
-
-    plDeletePackage(new_package);
-
-#if 0
-    plScanDirectory("./Models/", "mdl", load_mdl_temp, false);
-
-    return EXIT_SUCCESS;
-#else
-
-    /* debris3
-     * debris2
-     * armor1
-     * shellcasing2sm
-     * medkit
-     * lamp7
-     * lamp
-     * medlab
-     * lion
-     * ctable
-     * throne
-     * lamp4
-     */
 
     PLModel *model = plLoadModel("./Models/throne.mdl");
     if(model == NULL) {
         PRINT_ERROR("Failed to load model!\n");
     }
 
+    uint8_t *data = plSerializeModel(model, PL_SERIALIZE_MODEL_BASE);
+    plAddPackageBlob(new_package, PL_PACKAGE_MODEL, data);
+
+    plDeleteModel(model);
+
+    plWritePackage(new_package);
+
+    plDeletePackage(new_package);
+
     plShutdown();
 
     return 0;
-#endif
 }

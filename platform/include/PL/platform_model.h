@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org>
 #include "platform.h"
 #include "platform_math.h"
 #include "platform_graphics.h"
+#include "platform_physics.h"
 
 #define PLMODEL_MAX_MESHES  32
 #define PLMODEL_MAX_FRAMES  512
@@ -69,13 +70,24 @@ PL_EXTERN_C
 
 PLModel *plLoadModel(const char *path);
 
+enum {
+    PL_SERIALIZE_MODEL_BASE,
+    PL_SERIALIZE_MODEL_VERTICES,
+
+    PL_SERIALIZE_MODEL_COMPLETE,
+
+    PL_SERIALIZE_MODEL_END
+};
+
+uint8_t *plSerializeModel(PLModel *model, unsigned int type);
+
 void plDeleteModel(PLModel *model);
 void plDrawModel(PLModel *model);
 
-PL_EXTERN void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path));
+void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path));
 
-PL_EXTERN void plGenerateModelNormals(PLModel *model);
-PL_EXTERN void plGenerateModelAABB(PLModel *model);
-PL_EXTERN void plGenerateAnimatedModelNormals(PLAnimatedModel *model);
+void plGenerateModelNormals(PLModel *model);
+void plGenerateModelAABB(PLModel *model);
+void plGenerateAnimatedModelNormals(PLAnimatedModel *model);
 
 PL_EXTERN_C_END

@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_filesystem.h>
 
-/*	PLATFORM MODEL LOADER	*/
+/* PLATFORM MODEL LOADER */
 
 typedef struct ModelInterface {
     const char *ext;
@@ -71,6 +71,35 @@ void plGenerateAnimatedModelNormals(PLAnimatedModel *model) {
 }
 
 ///////////////////////////////////////
+
+uint8_t *plSerializeModel(PLModel *model, unsigned int type) {
+    if(type >= PL_SERIALIZE_MODEL_END) {
+        // todo, report error
+        return NULL;
+    }
+
+    switch(type) {
+        case PL_SERIALIZE_MODEL_COMPLETE: {
+
+        } break;
+
+        case PL_SERIALIZE_MODEL_BASE: {
+
+        } break;
+
+        case PL_SERIALIZE_MODEL_VERTICES: {
+
+        } break;
+
+        default: {
+            // report error
+            return NULL;
+        }
+    }
+
+    // todo, stub
+    return NULL;
+}
 
 void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path)) {
     model_interfaces[num_model_interfaces].ext = ext;
