@@ -41,7 +41,7 @@ PLPackage *plCreatePackage(const char *dest) {
 
     memset(package, 0, sizeof(PLPackage));
 
-    strncpy(package->path, sizeof(package->path), dest);
+    strncpy(package->path, dest, sizeof(package->path));
 
     return NULL;
 }

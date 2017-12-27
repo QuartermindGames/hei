@@ -176,50 +176,6 @@ typedef struct PLLight {
 } PLLight;
 
 //-----------------
-// Viewport / Camera
-
-enum {
-    PL_CAMERA_MODE_PERSPECTIVE,
-    PL_CAMERA_MODE_ORTHOGRAPHIC,
-    PL_CAMERA_MODE_ISOMETRIC
-};
-
-typedef struct PLViewport {
-    int x, y;
-    unsigned int w, h;
-
-    uint8_t *v_buffer;
-    unsigned int buffers[32];
-
-    unsigned int r_w, r_h;
-    unsigned int old_r_w, old_r_h;
-} PLViewport;
-
-typedef struct PLCamera {
-    double fov;
-    double near, far;
-    unsigned int mode;
-
-    PLVector3 angles, position;
-    PLAABB bounds;
-
-    // Viewport
-    PLViewport viewport;
-} PLCamera;
-
-PL_EXTERN_C
-
-PL_EXTERN PLCamera *plCreateCamera(void);
-PL_EXTERN void plDeleteCamera(PLCamera *camera);
-
-PL_EXTERN void plSetupCamera(PLCamera *camera);
-
-PL_EXTERN void plDrawPerspective(void);
-PL_EXTERN void plDrawPerspectivePOST(PLCamera *camera);
-
-PL_EXTERN_C_END
-
-//-----------------
 // Shaders
 
 typedef int PLSampler1D, PLSampler2D, PLSampler3D;
