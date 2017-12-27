@@ -328,7 +328,7 @@ PL_INLINE static float plVector3DotProduct(PLVector3 v, PLVector3 v2) {
 }
 
 PL_INLINE static float plVector3Length(PLVector3 v) {
-    return sqrtf(v.x * v.x + v.y * v.y);
+    return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
 PL_INLINE static PLVector3 plNormalizeVector3(PLVector3 v) {
@@ -684,38 +684,6 @@ PL_INLINE static const char *plPrintQuaternion(PLQuaternion q) {
     static char s[32] = { '\0' };
     snprintf(s, 32, "%i %i %i %i", (int)q.x, (int)q.y, (int)q.z, (int)q.w);
     return s;
-}
-
-// Bounding Boxes
-
-typedef struct PLAABB {
-    PLVector3 mins, maxs;
-} PLAABB;
-
-PL_INLINE static void plAddAABB(PLAABB *b, PLAABB b2) {
-    plAddVector3(&b->maxs, b2.maxs);
-    plAddVector3(&b->mins, b2.mins);
-}
-#if 0 // todo
-PL_INLINE static bool plIntersectAABB(PLAABB b, PLAABB b2) {
-    PLVector3 dist_a = b2.mins;
-    plSubtractVector3(&dist_a, b.maxs);
-    PLVector3 dist_b = b.mins;
-    plSubtractVector3(&dist_b, b2.maxs);
-    PLVector3 dist = plVector3Max(dist_a, dist_b);
-    return false;
-}
-#endif
-PL_INLINE static void plClearAABB(PLAABB *b) {
-    memset(b, 0, sizeof(PLAABB));
-}
-
-typedef struct PLBBox2D {
-    PLVector2 mins, maxs;
-} PLBBox2D;
-
-PL_INLINE static void plClearBBox2D(PLBBox2D *b) {
-    memset(b, 0, sizeof(PLBBox2D));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
