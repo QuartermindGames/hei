@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
         return EXIT_SUCCESS;
     }
 
-    const char *model_path = argv[2];
+    const char *model_path = argv[1];
     if(model_path == NULL || model_path[0] == '\0') {
         PRINT("Invalid path provided, aborting!\n");
         return EXIT_FAILURE;
@@ -222,9 +222,9 @@ int main(int argc, char **argv) {
      * lamp4
      */
 
-    PLModel *model = plLoadModel("./Models/throne.mdl");
+    PLModel *model = plLoadModel(model_path);
     if(model == NULL) {
-        PRINT_ERROR("Failed to load model!\n");
+        PRINT_ERROR("Failed to load model \"%s\"!\n", model_path);
     }
 
     //glEnable(GL_CULL_FACE);
@@ -295,7 +295,7 @@ int main(int argc, char **argv) {
         glPushMatrix();
         glRotatef(angles.y, 1, 0, 0);
         glRotatef(angles.x, 0, 1, 0);
-        glRotatef(angles.z + 180.f, 0, 0, 1);
+        glRotatef(angles.z, 0, 0, 1);
 
         switch (view_mode) {
             default: {

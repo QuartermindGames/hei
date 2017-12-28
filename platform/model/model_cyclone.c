@@ -247,9 +247,9 @@ PLModel *LoadRequiemModel(const char *path) {
                                   (vertices[i].z_ + vertices[i].z) / 10);
 #else
         plSetMeshVertexPosition3f(mesh, i,
-                                  vertices[i].x / 100,
-                                  vertices[i].y / 100,
-                                  vertices[i].z / 100);
+                                  vertices[i].x * 100,
+                                  vertices[i].y * 100,
+                                  vertices[i].z * 100);
 #endif
         plSetMeshVertexColour(mesh, i, PLColour(
                 (uint8_t) (rand() % 255), (uint8_t) (rand() % 255), (uint8_t) (rand() % 255), 255)
