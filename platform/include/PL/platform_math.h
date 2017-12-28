@@ -668,7 +668,7 @@ typedef struct PLQuaternion {
 #if 0
     PL_INLINE PLQuaternion Normalize() {
         float l = Length();
-        if (l) {
+        if (l > 0) {
             float i = 1 / l;
             return Scale(i);
         }
@@ -682,27 +682,50 @@ PL_INLINE static void plClearQuaternion(PLQuaternion *q) {
 }
 
 PL_INLINE static void plMultiplyQuaternion(PLQuaternion *q, PLQuaternion q2) {
-    q->x *= q2.x; q->y *= q2.y; q->z *= q2.z; q->w *= q2.w;
+    q->x *= q2.x;
+    q->y *= q2.y;
+    q->z *= q2.z;
+    q->w *= q2.w;
 }
 
-PL_INLINE static void plMultiplyQuaternionf(PLQuaternion *q, float a) {
-    q->x *= a; q->y *= a; q->z *= a; q->w *= a;
+PL_INLINE static void plScaleQuaternion(PLQuaternion *q, float a) {
+    q->x *= a;
+    q->y *= a;
+    q->z *= a;
+    q->w *= a;
 }
 
 PL_INLINE static void plAddQuaternion(PLQuaternion *q, PLQuaternion q2) {
-    q->x += q2.x; q->y += q2.y; q->z += q2.z; q->w += q2.w;
+    q->x += q2.x;
+    q->y += q2.y;
+    q->z += q2.z;
+    q->w += q2.w;
 }
 
 PL_INLINE static void plAddQuaternionf(PLQuaternion *q, float a) {
-    q->x += a; q->y += a; q->z += a; q->w += a;
+    q->x += a;
+    q->y += a;
+    q->z += a;
+    q->w += a;
 }
 
 PL_INLINE static void plInverseQuaternion(PLQuaternion *q) {
-    q->x = -q->x; q->y = -q->y; q->z = -q->z; q->w = -q->w;
+    q->x = -q->x;
+    q->y = -q->y;
+    q->z = -q->z;
+    q->w = -q->w;
 }
 
-PL_INLINE static float plQuaternionLength(PLQuaternion q) {
-    return sqrtf(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
+PL_INLINE static float plQuaternionLength(const PLQuaternion *q) {
+    return sqrtf(q->x * q->x + q->y * q->y + q->z * q->z + q->w * q->w);
+}
+
+PL_INLINE static void plNormalizeQuaternion(PLQuaternion *q) {
+    float l = plQuaternionLength(q);
+    if(l > 0) {
+        float i = 1 / l;
+        plScaleQuaternion(q, i);
+    }
 }
 
 PL_INLINE static const char *plPrintQuaternion(PLQuaternion q) {
