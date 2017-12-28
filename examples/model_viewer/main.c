@@ -28,13 +28,14 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_math.h>
 #include <PL/platform_console.h>
 #include <PL/platform_graphics.h>
+#include <PL/platform_graphics_font.h>
+#include <PL/platform_graphics_camera.h>
 #include <PL/platform_model.h>
-#include <PL/platform_filesystem.h>
 
 #include <SDL2/SDL.h>
 
 #include <GL/glew.h>
-#include <PL/platform_graphics_font.h>
+#include <PL/platform_filesystem.h>
 
 #include "../shared.h"
 
@@ -148,6 +149,22 @@ int main(int argc, char **argv) {
     plInitialize(argc, argv);
 
     create_window();
+
+    if(argc < 2) {
+        PRINT(" model_viewer <model path>\n");
+        return EXIT_SUCCESS;
+    }
+
+    const char *model_path = argv[2];
+    if(model_path == NULL || model_path[0] == '\0') {
+        PRINT("Invalid path provided, aborting!\n");
+        return EXIT_FAILURE;
+    }
+
+    if(!plFileExists(model_path)) {
+        PRINT("No model found at path, \"%s\", aborting!\n", model_path);
+        return EXIT_FAILURE;
+    }
 
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
     plSetGraphicsMode(PL_GFX_MODE_OPENGL);
