@@ -106,6 +106,7 @@ typedef struct GfxLayer {
     void(*DeleteMesh)(PLMesh *mesh);
 
     // Texture
+    void(*CreateTexture)(PLTexture *texture);
     void(*DeleteTexture)(PLTexture *texture);
     void(*BindTexture)(const PLTexture *texture);
     void(*UploadTexture)(PLTexture *texture, const PLImage *upload);
@@ -126,7 +127,7 @@ typedef struct GfxLayer {
     if(gfx_layer.FUNCTION != NULL) { \
         gfx_layer.FUNCTION(__VA_ARGS__); \
     } else { \
-        GfxLog("unbound layer function %s was called", #FUNCTION); \
+        GfxLog("unbound layer function %s was called\n", #FUNCTION); \
     }
 
 ///////////////////////////////////////////////////////

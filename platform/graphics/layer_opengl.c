@@ -176,6 +176,10 @@ unsigned int TranslateImageColourFormat(PLColourFormat format) {
     }
 }
 
+void GLCreateTexture(PLTexture *texture) {
+    glGenTextures(1, &texture->internal.id);
+}
+
 void GLBindTexture(const PLTexture *texture) {
     unsigned int id = 0;
     if(texture != NULL) {
@@ -235,8 +239,8 @@ void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
                     GL_TEXTURE_2D,
                     i,
                     TranslateImageFormat(upload->format),
-                    texture->width / (unsigned int)pow(2, i),
-                    texture->height / (unsigned int)pow(2, i),
+                    texture->w / (unsigned int)pow(2, i),
+                    texture->h / (unsigned int)pow(2, i),
                     0,
                     upload->size,
                     upload->data[0]
@@ -246,8 +250,8 @@ void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
                     GL_TEXTURE_2D,
                     i,
                     TranslateImageFormat(upload->format),
-                    texture->width / (unsigned int)pow(2, i),
-                    texture->height / (unsigned int)pow(2, i),
+                    texture->w / (unsigned int)pow(2, i),
+                    texture->h / (unsigned int)pow(2, i),
                     0,
                     TranslateImageColourFormat(upload->colour_format),
                     GL_UNSIGNED_BYTE,
@@ -634,6 +638,7 @@ void InitOpenGL(void) {
     gfx_layer.SetClearColour            = GLSetClearColour;
     gfx_layer.ClearBuffers              = GLClearBuffers;
 
+    gfx_layer.CreateTexture             = GLCreateTexture;
     gfx_layer.BindTexture               = GLBindTexture;
     gfx_layer.UploadTexture             = GLUploadTexture;
 

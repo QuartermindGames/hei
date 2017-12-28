@@ -33,77 +33,77 @@ For more information, please refer to <http://unlicense.org>
 /////////////////////////////////////////////////////////////////////////////////////
 // FONT PARSER
 
-#define _PLFONT_MAX_LENGTH  2048
-#define _PLFONT_MIN_LENGTH  10
+#define SCRIPT_MAX_LENGTH  2048
+#define SCRIPT_MIN_LENGTH  10
 
-#define _PLFONT_MAX_LINE    256
+#define SCRIPT_MAX_LINE    256
 
 struct {
-    char buffer[_PLFONT_MAX_LENGTH];
-    char line_buffer[_PLFONT_MAX_LINE];
+    char buffer[SCRIPT_MAX_LENGTH];
+    char line_buffer[SCRIPT_MAX_LINE];
 
     unsigned int position;
     unsigned int line, line_position;
     unsigned int length;
-} _pl_font;
+} font_script;
 
-void _plResetFontParser(void) {
-    memset(&_pl_font, 0, sizeof(_pl_font));
+void ResetParser(void) {
+    memset(&font_script, 0, sizeof(font_script));
 }
 
-void _plNextFontLine(void) {
-    _pl_font.line++;
-    _pl_font.line_position = 0;
+void NextLine(void) {
+    font_script.line++;
+    font_script.line_position = 0;
 }
 
-bool _plFontEOF(void) {
-    if(_pl_font.position >= _pl_font.length) {
+bool IsEOF(void) {
+    if(font_script.position >= font_script.length) {
         return true;
     }
 
     return false;
 }
 
-void _plSkipFontComment(void) {
-    while(!_plFontEOF() && (_pl_font.buffer[_pl_font.position] != '\n')) {
-        _pl_font.position++;
+void SkipComment(void) {
+    while(!IsEOF() && (font_script.buffer[font_script.position] != '\n')) {
+        font_script.position++;
     }
 
-    _pl_font.position++;
-    _plNextFontLine();
+    font_script.position++;
+    NextLine();
 }
 
-void _plParseFontLine(void) {
-    if(_pl_font.position >= _pl_font.length) {
+void ParseLine(void) {
+    if(font_script.position >= font_script.length) {
         return;
     }
 
-    while(!_plFontEOF()) {
-        if((_pl_font.buffer[_pl_font.position] == '-') && ((_pl_font.buffer[_pl_font.position + 1] == '-'))) {
-            _plSkipFontComment();
+    while(!IsEOF()) {
+        if((font_script.buffer[font_script.position] == '-') && ((font_script.buffer[font_script.position + 1] == '-'))) {
+            SkipComment();
             continue;
         }
 
-        if((_pl_font.line_position == 0) && (_pl_font.buffer[_pl_font.position] == '\n')) {
-            _pl_font.position++;
+        if((font_script.line_position == 0) && (font_script.buffer[font_script.position] == '\n')) {
+            font_script.position++;
             continue;
         }
 
-        if(_pl_font.buffer[_pl_font.position] == '\t') {
-            _pl_font.position++;
+        if(font_script.buffer[font_script.position] == '\t') {
+            font_script.position++;
             continue;
         }
 
-        if(_pl_font.buffer[_pl_font.position] == '\n') {
-            _pl_font.line_buffer[_pl_font.line_position + 1] = '\0';
+        if(font_script.buffer[font_script.position] == '\n') {
+            font_script.line_buffer[font_script.line_position + 1] = '\0';
 
-            _plNextFontLine();
-            _pl_font.position++;
+            NextLine();
+            font_script.position++;
             break;
         }
 
-        _pl_font.line_buffer[_pl_font.line_position] = _pl_font.buffer[_pl_font.position];
-        _pl_font.position++; _pl_font.line_position++;
+        font_script.line_buffer[font_script.line_position] = font_script.buffer[font_script.position];
+        font_script.position++; font_script.line_position++;
     }
 }
 
@@ -113,7 +113,7 @@ void _plParseFontLine(void) {
 #define _PLFONT_FORMAT_VERSION  1
 
 PLBitmapFont *plCreateBitmapFont(const char *path) {
-    _plResetFontParser();
+    ResetParser();
 
     FILE *file = fopen(path, "r");
     if(file == NULL) {
@@ -121,17 +121,17 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
         return NULL;
     }
 
-    _pl_font.length = (unsigned int)fread(_pl_font.buffer, 1, _PLFONT_MAX_LENGTH, file);
+    font_script.length = (unsigned int)fread(font_script.buffer, 1, SCRIPT_MAX_LENGTH, file);
     fclose(file);
 
-    if(_pl_font.length < _PLFONT_MIN_LENGTH) {
-        ReportError(PL_RESULT_FILESIZE, "Invalid length, %d, for %s!\n", _pl_font.length, path);
+    if(font_script.length < SCRIPT_MIN_LENGTH) {
+        ReportError(PL_RESULT_FILESIZE, "Invalid length, %d, for %s!\n", font_script.length, path);
         return NULL;
     }
 
-    _plParseFontLine();
-    if(!strncmp(_pl_font.line_buffer, "VERSION ", 8)) {
-        long version = strtol(_pl_font.line_buffer + 8, NULL, 0);
+    ParseLine();
+    if(!strncmp(font_script.line_buffer, "VERSION ", 8)) {
+        long version = strtol(font_script.line_buffer + 8, NULL, 0);
         if (version <= 0 || version > _PLFONT_FORMAT_VERSION) {
             ReportError(PL_RESULT_FILEVERSION, "Expected version %d, received %d, for %s!\n",
                            _PLFONT_FORMAT_VERSION, version, path);
@@ -142,14 +142,14 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
         return NULL;
     }
 
-    _plParseFontLine();
-    if(!plFileExists(_pl_font.line_buffer)) {
-        ReportError(PL_RESULT_FILEPATH, "Failed to find texture at %s, for %s!\n", _pl_font.line_buffer, path);
+    ParseLine();
+    if(!plFileExists(font_script.line_buffer)) {
+        ReportError(PL_RESULT_FILEPATH, "Failed to find texture at %s, for %s!\n", font_script.line_buffer, path);
         return NULL;
     }
 
     char image_path[PL_SYSTEM_MAX_PATH] = { 0 };
-    strncpy(image_path, _pl_font.line_buffer, sizeof(image_path));
+    strncpy(image_path, font_script.line_buffer, sizeof(image_path));
 
     PLBitmapFont *font = (PLBitmapFont*)malloc(sizeof(PLBitmapFont));
     if(font == NULL) {
@@ -159,23 +159,23 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     memset(font, 0, sizeof(PLBitmapFont));
 
     //bool enable_filter = false;
-    while(!_plFontEOF()) {
-        _plParseFontLine();
+    while(!IsEOF()) {
+        ParseLine();
 
-        if(!strncmp(_pl_font.line_buffer, "FILTER ", 7)) {
-            if(_pl_font.line_buffer[8] == '1') {
+        if(!strncmp(font_script.line_buffer, "FILTER ", 7)) {
+            if(font_script.line_buffer[8] == '1') {
                 //enable_filter = true;
             }
             continue;
         }
 
-        int8_t character = _pl_font.line_buffer[0];
+        int8_t character = font_script.line_buffer[0];
         if(character == ' ') {
             continue;
         }
 
         char *pos;
-        font->chars[character].x = (int)strtol(_pl_font.line_buffer + 2, &pos, 10);
+        font->chars[character].x = (int)strtol(font_script.line_buffer + 2, &pos, 10);
         font->chars[character].y = (int)strtol(pos, &pos, 10);
         font->chars[character].w = (int)strtoul(pos, &pos, 10);
         font->chars[character].h = (int)strtoul(pos, &pos, 10);
@@ -192,71 +192,53 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     }
 
     PLImage image;
-    if(plLoadImage(_pl_font.line_buffer, &image) != PL_RESULT_SUCCESS) {
+    if(plLoadImage(image_path, &image) != PL_RESULT_SUCCESS) {
         plDeleteBitmapFont(font);
         return NULL;
     }
 
-    if(!(font->texture = plCreateTexture())) {
+    if((font->texture = plCreateTexture()) == NULL) {
         plDeleteBitmapFont(font);
         plFreeImage(&image);
         return NULL;
     }
 
-#if defined(PL_MODE_OPENGL)
-    glBindTexture(GL_TEXTURE_RECTANGLE, font->texture->id);
+    plSetTextureFlags(font->texture, PL_TEXTURE_FLAG_NOMIPS | PL_TEXTURE_FLAG_PRESERVE);
+    plUploadTextureImage(font->texture, &image);
 
-    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    if(enable_filter) {
-        glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    } else {
-        glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    }
-
-    glTexImage2D(
-            GL_TEXTURE_RECTANGLE,
-            0,
-            _plTranslateColourFormat(image.colour_format),
-            image.width,
-            image.height,
-            0,
-            _plTranslateTextureFormat(image.format),
-            GL_UNSIGNED_BYTE,
-            image.data[0]
-    );
-#endif
-
-//    plFreeImage(&image);
+    plFreeImage(&image);
 
     return font;
 }
 
 void plDeleteBitmapFont(PLBitmapFont *font) {
-    if(!font) {
+    if(font == NULL) {
         return;
     }
 
-    plDeleteTexture(font->texture, false);
+    if(font->texture != NULL) {
+        plDeleteTexture(font->texture, false);
+    }
 
     free(font);
 }
 
-void plDrawCharacter(PLBitmapFont *font, int x, int y, float scale, int8_t character) {
-    if((character == ' ') || (character == '\n') || (character == '\t') ||
-            !font->chars[character].w || !font->chars[character].h) {
+void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColour colour, int8_t character) {
+    if(font->chars[character].w == 0 || font->chars[character].h == 0) {
+        return;
+    }
+
+    if(!isalnum(character) || isspace(character)) {
         return;
     }
 
     static PLMesh *mesh = NULL;
-    if(!mesh) {
-        if(!(mesh = plCreateMesh(
-                PLMESH_TRIANGLES,
+    if(mesh == NULL) {
+        if((mesh = plCreateMesh(
+                PL_TRIANGLE_STRIP,
                 PL_DRAW_IMMEDIATE,
-                2, 6
-        ))) {
+                2, 4
+        )) == NULL) {
             return;
         }
     }
@@ -266,27 +248,32 @@ void plDrawCharacter(PLBitmapFont *font, int x, int y, float scale, int8_t chara
 
     plClearMesh(mesh);
 
-    plSetMeshVertexPosition2f(mesh, 0, x, y + h);
-    plSetMeshVertexPosition2f(mesh, 1, x, y);
+    plSetMeshUniformColour(mesh, colour);
+
+    plSetMeshVertexPosition2f(mesh, 0, x, y);
+    plSetMeshVertexPosition2f(mesh, 1, x, y + h);
     plSetMeshVertexPosition2f(mesh, 2, x + w, y);
+    plSetMeshVertexPosition2f(mesh, 3, x + w, y + h);
 
-    plSetMeshVertexPosition2f(mesh, 3, x, y + h);
-    plSetMeshVertexPosition2f(mesh, 4, x + w, y);
-    plSetMeshVertexPosition2f(mesh, 5, x + w, y + h);
+    float tw = font->chars[character].w / font->texture->w;
+    float th = font->chars[character].h / font->texture->h;
+    float tx = font->chars[character].x / font->texture->w;
+    float ty = font->chars[character].y / font->texture->h;
 
-    plSetMeshVertexST(mesh, 0, 0, 0);
-    plSetMeshVertexST(mesh, 1, 0, 1);
-    plSetMeshVertexST(mesh, 2, 1, 1);
-
-    plSetMeshVertexST(mesh, 3, 0, 0);
-    plSetMeshVertexST(mesh, 4, 1, 1);
-    plSetMeshVertexST(mesh, 5, 1, 0);
+    plSetMeshVertexST(mesh, 0, tx, ty);
+    plSetMeshVertexST(mesh, 1, tx, ty + th);
+    plSetMeshVertexST(mesh, 2, tx + tw, ty);
+    plSetMeshVertexST(mesh, 3, tx + tw, ty + th);
 
     plUploadMesh(mesh);
     plDrawMesh(mesh);
 }
 
-void plDrawString(PLBitmapFont *font, int x, int y, float scale, const char *msg) {
+void plDrawBitmapString(PLBitmapFont *font, int x, int y, float scale, PLColour colour, const char *msg) {
+    if(colour.a == 0) {
+        return;
+    }
+
     if(scale <= 0 || x < 0 || y > (int)gfx_state.current_viewport.w || y < 0 || y > (int)gfx_state.current_viewport.h) {
         return;
     }
@@ -296,7 +283,15 @@ void plDrawString(PLBitmapFont *font, int x, int y, float scale, const char *msg
         return;
     }
 
+    int n_x = x;
+    int n_y = y;
     for(unsigned int i = 0; i < length; i++) {
-
+        plDrawBitmapCharacter(font, n_x, n_y, scale, colour, msg[i]);
+        if(msg[i] == '\n') {
+            n_y += font->chars[msg[i]].h;
+            n_x = x;
+        } else {
+            n_x += font->chars[msg[i]].w;
+        }
     }
 }

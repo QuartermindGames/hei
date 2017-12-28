@@ -757,10 +757,6 @@ void plDrawConsole(void) {
 #endif
 #endif
 
-    plDrawCharacter(console_font, 20, 20, 2, 'A');
-    plDrawCharacter(console_font, 20, 30, 2, 'B');
-    plDrawCharacter(console_font, 20, 40, 2, 'C');
-    plDrawCharacter(console_font, 20, 50, 4, 'D');
 #if 0
 #if defined(PL_MODE_OPENGL)
     glDisable(GL_TEXTURE_RECTANGLE);

@@ -81,7 +81,7 @@ typedef struct PLTexture {
     unsigned int flags;
 
     unsigned int x, y;
-    unsigned int width, height;
+    unsigned int w, h;
 
     unsigned int size;
     unsigned int levels;

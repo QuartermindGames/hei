@@ -32,18 +32,12 @@ For more information, please refer to <http://unlicense.org>
 typedef struct PLBitmapFontChar {
     int x, y;
     unsigned int w, h;
-
-    //char character;
-
-    float s, t;
 } PLBitmapFontChar;
 
-#define PLFONT_MAX_CHARS    256
-
 typedef struct PLBitmapFont {
-    PLTexture *texture;
+    PLBitmapFontChar chars[256];
 
-    PLBitmapFontChar chars[PLFONT_MAX_CHARS];
+    PLTexture *texture;
 } PLBitmapFont;
 
 PL_EXTERN_C
@@ -51,6 +45,7 @@ PL_EXTERN_C
 PL_EXTERN PLBitmapFont *plCreateBitmapFont(const char *path);
 PL_EXTERN void plDeleteBitmapFont(PLBitmapFont *font);
 
-PL_EXTERN void plDrawCharacter(PLBitmapFont *font, int x, int y, float scale, int8_t character);
+PL_EXTERN void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColour colour, int8_t character);
+PL_EXTERN void plDrawBitmapString(PLBitmapFont *font, int x, int y, float scale, PLColour colour, const char *msg);
 
 PL_EXTERN_C_END

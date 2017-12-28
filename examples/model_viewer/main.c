@@ -33,6 +33,9 @@ For more information, please refer to <http://unlicense.org>
 
 #include <SDL2/SDL.h>
 
+#include <GL/glew.h>
+#include <PL/platform_graphics_font.h>
+
 #include "../shared.h"
 
 #define TITLE "Model Viewer"
@@ -147,11 +150,7 @@ int main(int argc, char **argv) {
     create_window();
 
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
-
-#if 0 // quick little vector test thingy!
-    PLVector3D testy = PLVector3D(0, 10, 20);
-    printf("%s\n", plPrintVector3D(PLVector3D(100, 200, 300)));
-#endif
+    plSetGraphicsMode(PL_GFX_MODE_OPENGL);
 
     plSetDefaultGraphicsState();
     plSetClearColour(PLColour(0, 0, 128, 255));
@@ -172,6 +171,19 @@ int main(int argc, char **argv) {
     main_camera->position = PLVector3(0, 12, -500);
     main_camera->viewport.w = WIDTH;
     main_camera->viewport.h = HEIGHT;
+
+    PLCamera *ui_camera = plCreateCamera();
+    if(ui_camera == NULL) {
+        PRINT_ERROR("failed to create ui camera!\n");
+    }
+    ui_camera->mode = PL_CAMERA_MODE_ORTHOGRAPHIC;
+    ui_camera->viewport.w = WIDTH;
+    ui_camera->viewport.h = HEIGHT;
+
+    PLBitmapFont *font = plCreateBitmapFont("./fonts/console.font");
+    if(font == NULL) {
+        PRINT_ERROR(plGetError());
+    }
 
 #if 0
     plScanDirectory("./Models/", "mdl", load_mdl_temp, false);
@@ -297,6 +309,10 @@ int main(int argc, char **argv) {
         }
 
         glPopMatrix();
+
+        plSetupCamera(ui_camera);
+
+        plDrawBitmapString(font, 10, 10, 1.f, PLColour(255, 0, 0, 255), "Hello World!\n");
 
         //plDrawConsole();
 

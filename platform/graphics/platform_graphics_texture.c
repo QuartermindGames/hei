@@ -218,12 +218,14 @@ PLTexture *plCreateTexture(void) {
 
     (*texture)->internal.id = slot;
     (*texture)->format      = PL_IMAGEFORMAT_RGBA8;
-    (*texture)->width       = 8;
-    (*texture)->height      = 8;
+    (*texture)->w           = 8;
+    (*texture)->h           = 8;
 
 #if defined(PL_MODE_OPENGL)
     glGenTextures(1, &(*texture)->gl_id);
 #endif
+
+    CallGfxFunction(CreateTexture, (*texture));
 
     return (*texture);
 }
@@ -360,8 +362,8 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
 
     BindTexture(texture);
 
-    texture->width      = upload->width;
-    texture->height     = upload->height;
+    texture->w          = upload->width;
+    texture->h          = upload->height;
     texture->format     = upload->format;
     texture->size       = upload->size;
     texture->levels     = upload->levels;
