@@ -36,30 +36,30 @@ struct {
     unsigned int line, line_position;
 
     unsigned int length;
-} _plparser_block;
+} parser_block;
 
-#define PARSE_EOF() (_plparser_block.position >= _plparser_block.length)
+#define PARSE_EOF() (parser_block.position >= parser_block.length)
 
 void plResetParser(void) {
-    if(_plparser_block.buffer) {
-        free(_plparser_block.buffer);
+    if(parser_block.buffer) {
+        free(parser_block.buffer);
     }
-    if(_plparser_block.line_buffer) {
-        free(_plparser_block.line_buffer);
+    if(parser_block.line_buffer) {
+        free(parser_block.line_buffer);
     }
-    memset(&_plparser_block, 0, sizeof(_plparser_block));
+    memset(&parser_block, 0, sizeof(parser_block));
 }
 
 void plParseNextLine(void) {
-    _plparser_block.line++;
-    _plparser_block.line_position = 0;
+    parser_block.line++;
+    parser_block.line_position = 0;
 }
 
 void plSkipComment(void) {
-    while(!PARSE_EOF() && (_plparser_block.buffer[_plparser_block.position] != '\n')) {
-        _plparser_block.position++;
+    while(!PARSE_EOF() && (parser_block.buffer[parser_block.position] != '\n')) {
+        parser_block.position++;
     }
-    _plparser_block.position++;
+    parser_block.position++;
     plParseNextLine();
 }
 
@@ -69,42 +69,42 @@ void plParseLine(void) {
     }
 
     while(!PARSE_EOF()) {
-        if((_plparser_block.buffer[_plparser_block.position] == '-') ||
-                (_plparser_block.buffer[_plparser_block.position + 1] == '-')) {
+        if((parser_block.buffer[parser_block.position] == '-') ||
+                (parser_block.buffer[parser_block.position + 1] == '-')) {
             plSkipComment();
             continue;
         }
 
-        if((_plparser_block.line_position == 0) && (_plparser_block.buffer[_plparser_block.position] == '\n')) {
-            _plparser_block.position++;
+        if((parser_block.line_position == 0) && (parser_block.buffer[parser_block.position] == '\n')) {
+            parser_block.position++;
             continue;
         }
 
-        if(_plparser_block.buffer[_plparser_block.position] == '\t') {
-            _plparser_block.position++;
+        if(parser_block.buffer[parser_block.position] == '\t') {
+            parser_block.position++;
             continue;
         }
 
-        if(_plparser_block.buffer[_plparser_block.position] == '\n') {
-            _plparser_block.line_buffer[_plparser_block.position + 1] = '\0';
+        if(parser_block.buffer[parser_block.position] == '\n') {
+            parser_block.line_buffer[parser_block.position + 1] = '\0';
             plParseNextLine();
-            _plparser_block.position++;
+            parser_block.position++;
             break;
         }
 
-        _plparser_block.line_buffer[_plparser_block.line_position] = _plparser_block.buffer[_plparser_block.position];
-        _plparser_block.position++; _plparser_block.line_position++;
+        parser_block.line_buffer[parser_block.line_position] = parser_block.buffer[parser_block.position];
+        parser_block.position++; parser_block.line_position++;
     }
 }
 
 void plSetupParser(const char *buffer, unsigned int length) {
     plAssert(length);
 
-    if(!(_plparser_block.buffer = (char*)malloc(length))) {
+    if(!(parser_block.buffer = (char*)malloc(length))) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "");
     }
 
-    _plparser_block.buffer_size = length;
+    parser_block.buffer_size = length;
 }
 
 

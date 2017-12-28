@@ -82,6 +82,8 @@ typedef struct PLMesh {
     } internal;
 } PLMesh;
 
+typedef struct PLAABB PLAABB;
+
 PL_EXTERN_C
 
 PL_EXTERN PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, PLuint num_tris, PLuint num_verts);

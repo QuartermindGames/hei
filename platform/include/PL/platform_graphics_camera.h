@@ -24,36 +24,47 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#include <PL/platform_package.h>
-#include <PL/platform_model.h>
+#pragma once
 
-#include "../shared.h"
+#include "platform_physics.h"
 
-#define TITLE "Package Example"
+enum {
+    PL_CAMERA_MODE_PERSPECTIVE,
+    PL_CAMERA_MODE_ORTHOGRAPHIC,
+    PL_CAMERA_MODE_ISOMETRIC
+};
 
-int main(int argc, char **argv) {
-    plInitialize(argc, argv);
+typedef struct PLViewport {
+    int x, y;
+    unsigned int w, h;
 
-    PLPackage *new_package = plCreatePackage("./packages/models.package");
-    if(new_package == NULL) {
-        PRINT_ERROR("Failed to create new package!\n");
-    }
+    uint8_t *v_buffer;
+    unsigned int buffers[32];
 
-    PLModel *model = plLoadModel("./Models/throne.mdl");
-    if(model == NULL) {
-        PRINT_ERROR("Failed to load model!\n");
-    }
+    unsigned int r_w, r_h;
+    unsigned int old_r_w, old_r_h;
+} PLViewport;
 
-    uint8_t *data = plSerializeModel(model, PL_SERIALIZE_MODEL_BASE);
-    plAddPackageBlob(new_package, PL_PACKAGE_MODEL, data);
+typedef struct PLCamera {
+    double fov;
+    double near, far;
+    unsigned int mode;
 
-    plDeleteModel(model);
+    PLVector3 angles, position;
+    PLAABB bounds;
 
-    plWritePackage(new_package);
+    // Viewport
+    PLViewport viewport;
+} PLCamera;
 
-    plDeletePackage(new_package);
+PL_EXTERN_C
 
-    plShutdown();
+PL_EXTERN PLCamera *plCreateCamera(void);
+PL_EXTERN void plDeleteCamera(PLCamera *camera);
 
-    return 0;
-}
+PL_EXTERN void plSetupCamera(PLCamera *camera);
+
+PL_EXTERN void plDrawPerspective(void);
+PL_EXTERN void plDrawPerspectivePOST(PLCamera *camera);
+
+PL_EXTERN_C_END

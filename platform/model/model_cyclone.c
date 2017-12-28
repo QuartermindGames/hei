@@ -72,12 +72,18 @@ enum {
  */
 
 typedef struct __attribute__((packed)) MDLVertex {
+#if 0
     uint8_t unknown0[2];
     int16_t x;
     uint8_t unknown1[2];
     int16_t y;
     uint8_t unknown2[2];
     int16_t z;
+#else
+    float x;
+    float y;
+    float z;
+#endif
 } MDLVertex;
 
 // 04:00:00:00:B4:BC:79:00:00:00:00:00:00:00:00:00:

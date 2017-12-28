@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_console.h>
 #include <PL/platform_graphics.h>
 #include <PL/platform_filesystem.h>
-#include <PL/platform_display.h>
 
 /* Example of console API, minus error handling :) */
 

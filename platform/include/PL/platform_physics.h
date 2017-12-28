@@ -24,8 +24,34 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #pragma once
 
 #include <PL/platform.h>
 #include <PL/platform_math.h>
+
+typedef struct PLAABB {
+    PLVector3 mins, maxs;
+} PLAABB;
+
+PL_INLINE static void plAddAABB(PLAABB *b, PLAABB b2) {
+    plAddVector3(&b->maxs, b2.maxs);
+    plAddVector3(&b->mins, b2.mins);
+}
+#if 0 // todo
+PL_INLINE static bool plIntersectAABB(PLAABB b, PLAABB b2) {
+    PLVector3 dist_a = b2.mins;
+    plSubtractVector3(&dist_a, b.maxs);
+    PLVector3 dist_b = b.mins;
+    plSubtractVector3(&dist_b, b2.maxs);
+    PLVector3 dist = plVector3Max(dist_a, dist_b);
+    return false;
+}
+#endif
+
+PL_INLINE static bool plIsSphereIntersecting(PLVector3 position, float radius, PLVector3 position_b, float radius_b) {
+    PLVector3 difference = position;
+    plSubtractVector3(&difference, position_b);
+    float distance = plVector3Length(difference);
+    float sum_radius = radius + radius_b;
+    return distance < sum_radius;
+}
