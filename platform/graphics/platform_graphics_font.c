@@ -259,7 +259,6 @@ void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColo
     float th = font->chars[character].h / font->texture->h;
     float tx = font->chars[character].x / font->texture->w;
     float ty = font->chars[character].y / font->texture->h;
-
     plSetMeshVertexST(mesh, 0, tx, ty);
     plSetMeshVertexST(mesh, 1, tx, ty + th);
     plSetMeshVertexST(mesh, 2, tx + tw, ty);
@@ -286,12 +285,18 @@ void plDrawBitmapString(PLBitmapFont *font, int x, int y, float scale, PLColour 
     int n_x = x;
     int n_y = y;
     for(unsigned int i = 0; i < length; i++) {
-        plDrawBitmapCharacter(font, n_x, n_y, scale, colour, msg[i]);
-        if(msg[i] == '\n') {
-            n_y += font->chars[msg[i]].h;
+        if(msg[i] < 0 || msg[i] > 255) {
+            // out of range
+            continue;
+        }
+
+        unsigned char ch = (unsigned char)msg[i];
+        plDrawBitmapCharacter(font, n_x, n_y, scale, colour, ch);
+        if(ch == '\n') {
+            n_y += font->chars[ch].h;
             n_x = x;
         } else {
-            n_x += font->chars[msg[i]].w;
+            n_x += font->chars[ch].w;
         }
     }
 }

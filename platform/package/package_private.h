@@ -94,11 +94,11 @@ PL_INLINE static void WritePackageIndexHeader(FILE *handle, uint16_t type, uint3
 
 /////////////////////////////////////////////////////////////////
 
-PLPackage *LoadMADPackage(const char *filename, bool cache);
+PLPackage *LoadMADPackage(const char *path, bool cache);
 bool LoadMADPackageFile(FILE *fh, PLPackageIndex *pi);
 
-PLPackage *LoadARTPackage(const char *filename, bool precache);
-bool LoadARTPackageFile(FILE *fh, PLPackageIndex *pi);
+PLPackage *LoadCycloneTexturePackage(const char *path, bool precache);
+bool LoadCycloneTexturePackageFile(FILE *fh, PLPackageIndex *pi);
 
 PL_EXTERN_C_END
 

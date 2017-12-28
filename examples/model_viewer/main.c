@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
 
     PLBitmapFont *font = plCreateBitmapFont("./fonts/console.font");
     if(font == NULL) {
-        PRINT_ERROR(plGetError());
+        PRINT_ERROR("%s", plGetError());
     }
 
 #if 0

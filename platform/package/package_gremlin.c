@@ -51,15 +51,15 @@ typedef struct __attribute__((packed)) MADIndex {
     uint32_t length;
 } MADIndex;
 
-PLPackage *LoadMADPackage(const char *filename, bool cache) {
-    FILE *fh = fopen(filename, "rb");
+PLPackage *LoadMADPackage(const char *path, bool cache) {
+    FILE *fh = fopen(path, "rb");
     if(fh == NULL) {
         return NULL;
     }
 
     PLPackage *package = NULL;
 
-    size_t file_size = plGetFileSize(filename);
+    size_t file_size = plGetFileSize(path);
     if(plGetFunctionResult() != PL_RESULT_SUCCESS) {
         goto FAILED;
     }

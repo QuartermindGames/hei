@@ -35,7 +35,7 @@ typedef struct PLBitmapFontChar {
 typedef struct PLBitmapFont {
     PLBitmapFontChar chars[256];
 
-    PLTexture *texture;
+    struct PLTexture *texture;
 } PLBitmapFont;
 
 PL_EXTERN_C

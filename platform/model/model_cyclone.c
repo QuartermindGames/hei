@@ -224,7 +224,7 @@ PLModel *LoadRequiemModel(const char *path) {
     _plDebugPrint("    texture_name:        %s\n", texture_name);
     _plDebugPrint("    num_vertices:        %d\n", num_vertices);
     for(unsigned int i = 0; i < num_vertices; ++i) {
-        _plDebugPrint("      vertex(%d) x(%d) y(%d) z(%d)\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
+        _plDebugPrint("      vertex(%u) x(%f) y(%f) z(%f)\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
     }
     _plDebugPrint("    num_faces:           %d\n", num_faces);
     for(unsigned int i = 0; i < num_faces; ++i) {

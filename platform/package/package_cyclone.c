@@ -53,15 +53,29 @@ typedef struct ARTHeader {
     uint32_t unknown2;
 } ARTHeader;
 
-PLPackage *LoadARTPackage(const char *filename, bool precache) {
-#if 0
-    char art_path[PL_SYSTEM_MAX_PATH] = { '\0' };
-    char dat_path[PL_SYSTEM_MAX_PATH] = { '\0' };
-#endif
-
-    const char *extension = plGetFileExtension(filename);
-    if(!strcmp(extension, "art")) {
-
+PLPackage *LoadCycloneTexturePackage(const char *path, bool precache) {
+    char dat_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+    char art_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+    const char *extension = plGetFileExtension(path);
+    if(pl_strcasecmp(extension, "art") == 0) {
+        strncpy(art_path, path, sizeof(art_path));
+        strncpy(dat_path, art_path, sizeof(dat_path) - 3);
+        strcat(dat_path, "dat");
+        if(!plFileExists(dat_path)) {
+            ReportError(PL_RESULT_FILEPATH, "failed to find DAT package at \"%s\"", dat_path);
+            return NULL;
+        }
+    } else if(pl_strcasecmp(extension, "dat") == 0) {
+        strncpy(dat_path, path, sizeof(dat_path));
+        strncpy(art_path, dat_path, sizeof(art_path) - 3);
+        strcat(art_path, "art");
+        if(!plFileExists(art_path)) {
+            ReportError(PL_RESULT_FILEREAD, "failed to find ART package at \"%s\"", art_path);
+            return NULL;
+        }
+    } else {
+        ReportError(PL_RESULT_FILETYPE, "invalid extension for ART package, \"%s\"");
+        return NULL;
     }
 
     return NULL;

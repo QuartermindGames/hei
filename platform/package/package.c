@@ -85,7 +85,7 @@ PLPackageLoader load_packs[]= {
 
         // Third-party package formats
         { { "mad", "mtd" }, 2, LoadMADPackage },
-        { { "dat", "art" }, 2, LoadARTPackage },
+        { { "dat", "art" }, 2, LoadCycloneTexturePackage },
 };
 unsigned int num_load_packs = plArrayElements(load_packs);
 
