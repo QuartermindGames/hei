@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 #include <PL/platform_model.h>
+#include <PL/platform_console.h>
 
 #include "platform_private.h"
 #include "model_private.h"
@@ -37,8 +38,10 @@ enum {
 #define MAX_MODEL_NAME      128
 #define MAX_TEXTURE_NAME    64
 
-#define MAX_INDICES_PER_FACE    6
+#define MAX_INDICES_PER_FACE    8
 #define MIN_INDICES_PER_FACE    3
+
+#define MAX_UV_COORDS_PER_FACE  16
 
 /* There seem to be two seperate model formats
  * used within the game, those that are static
@@ -102,8 +105,10 @@ typedef struct __attribute__((packed)) MDLVertex {
 // Triangles are 50 bytes long
 
 typedef struct MDLFace {
+    uint16_t indices[MAX_INDICES_PER_FACE];
     uint8_t num_indices;
-    uint16_t indices[5];
+
+    int16_t uv[MAX_UV_COORDS_PER_FACE];
 } MDLFace;
 
 #if 0
@@ -130,9 +135,9 @@ PLModel *LoadRequiemModel(const char *path) {
 
     // attempt to figure out if it's valid or not... ho boy...
 
-    DebugPrint("%s\n", path);
+    ModelLog("%s\n", path);
 
-#define AbortLoad(...) DebugPrint(__VA_ARGS__); ReportError(PL_RESULT_FILEREAD, __VA_ARGS__); fclose(file)
+#define AbortLoad(...) ModelLog(__VA_ARGS__); ReportError(PL_RESULT_FILEREAD, __VA_ARGS__); fclose(file)
 
     // check which flags have been set for this particular mesh
     int flags = fgetc(file);
@@ -183,10 +188,31 @@ PLModel *LoadRequiemModel(const char *path) {
         return NULL;
     }
 
+#if 1 // Requiem's models seem to be pretty small...
+    for(unsigned int i = 0; i < num_vertices; ++i) {
+        vertices[i].x *= 100.f;
+        vertices[i].y *= 100.f;
+        vertices[i].z *= 100.f;
+    }
+#endif
+
     unsigned int num_triangles = 0;
     MDLFace faces[num_faces];
     memset(faces, 0, sizeof(MDLFace) * num_faces);
     for(unsigned int i = 0; i < num_faces; ++i) {
+        /* 0000:00D0 |                           04 00 00 00  F4 9C 79 00 |         ....ô.y.
+         * 0000:00E0 | 00 00 00 00  00 00 00 00  FC 9C 79 00  01 00 03 00 | ........ü.y.....
+         * 0000:00F0 | 0B 00 09 00  93 65 72 00  00 80 00 00  00 80 7F 00 | .....er.........
+         * 0000:0100 | 66 C0 0A 00  00 80 00 00  66 C0 0A 00  6C 9A 0D 00 | fÀ......fÀ..l...
+         * 0000:0110 | 00 80 00 00                                        | ....
+         *
+         * Number of indices per face
+         * 04 00 00 00
+         *
+         * Unsure...
+         * F4 9C 79 00
+         */
+
         long pos = ftell(file);
         if(fread(&faces[i].num_indices, sizeof(uint32_t), 1, file) != 1) {
             AbortLoad("Invalid file length, failed to load number of indices! (offset: %ld)\n", ftell(file));
@@ -203,45 +229,57 @@ PLModel *LoadRequiemModel(const char *path) {
 
         fseek(file, 16, SEEK_CUR); // todo, figure these out
         if(fread(faces[i].indices, sizeof(uint16_t), faces[i].num_indices, file) != faces[i].num_indices) {
-            AbortLoad("Invalid file length, failed to load indices!\n");
+            AbortLoad("invalid file length, failed to load indices\n");
             return NULL;
         }
 
-        if(faces[i].num_indices == 6) {
-            fseek(file, 54, SEEK_CUR); // skip over unknown bytes for now
-        } else if(faces[i].num_indices == 5) {
-            fseek(file, 42, SEEK_CUR); // skip over unknown bytes for now
-        } else if(faces[i].num_indices == 4) {
-            fseek(file, 32, SEEK_CUR); // skip over unknown bytes for now
-        } else if(faces[i].num_indices == 3) {
-            fseek(file, 24, SEEK_CUR); // skip over unknown bytes for now
+        unsigned int num_uv_coords = faces[i].num_indices * 4;
+        ModelLog(" num bytes for UV coords is %lu\n", num_uv_coords * sizeof(int16_t));
+        if(fread(faces[i].uv, sizeof(int16_t), num_uv_coords, file) != num_uv_coords) {
+            AbortLoad("invalid file length, failed to load UV coords\n");
+            return NULL;
         }
 
         long npos = ftell(file);
-        DebugPrint(" Read %ld bytes for face %d (indices %d)\n", npos - pos, i, faces[i].num_indices);
+        ModelLog(" Read %ld bytes for face %d (indices %d)\n", npos - pos, i, faces[i].num_indices);
     }
 
     fclose(file);
 
-    DebugPrint("    texture_name_length: %d\n", texture_name_length);
-    DebugPrint("    texture_name:        %s\n", texture_name);
-    DebugPrint("    num_vertices:        %d\n", num_vertices);
+    ModelLog("    texture_name_length: %d\n", texture_name_length);
+    ModelLog("    texture_name:        %s\n", texture_name);
+    ModelLog("    num_vertices:        %d\n", num_vertices);
     for(unsigned int i = 0; i < num_vertices; ++i) {
-        DebugPrint("      vertex(%u) x(%f) y(%f) z(%f)\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
+        ModelLog("      vertex(%u) x(%f) y(%f) z(%f)\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
     }
-    DebugPrint("    num_faces:           %d\n", num_faces);
+    ModelLog("    num_faces:           %d\n", num_faces);
     for(unsigned int i = 0; i < num_faces; ++i) {
-        DebugPrint("      face(%d) num_indices(%d)\n", i, faces[i].num_indices);
+        ModelLog("      face(%d) num_indices(%d)\n", i, faces[i].num_indices);
     }
-    DebugPrint("    num_triangles:       %d\n", num_triangles);
+    ModelLog("    num_triangles:       %d\n", num_triangles);
 
-#if 1
-    PLMesh *mesh = plCreateMesh(PLMESH_POINTS, PL_DRAW_IMMEDIATE, num_triangles, num_vertices);
+    PLMesh *mesh = plCreateMesh(PL_MESH_POINTS, PL_DRAW_IMMEDIATE, num_triangles, num_vertices);
     if(mesh == NULL) {
         return NULL;
     }
 
     srand(num_vertices);
+#if 1
+    for(unsigned int i = 0; i < num_faces; ++i) {
+        for(unsigned int j = 0; j < faces[i].num_indices; ++j) {
+            plSetMeshVertexPosition3f(mesh, i,
+                                      vertices[faces[i].indices[j]].x,
+                                      vertices[faces[i].indices[j]].y,
+                                      vertices[faces[i].indices[j]].z);
+
+            plSetMeshVertexColour(mesh, i, PLColour(
+                    (uint8_t) (rand() % 255),
+                    (uint8_t) (rand() % 255),
+                    (uint8_t) (rand() % 255),
+                    255));
+        }
+    }
+#else
     for(unsigned int i = 0; i < num_vertices; ++i) {
         plSetMeshVertexPosition3f(mesh, i, vertices[i].x * 100, vertices[i].y * 100, vertices[i].z * 100);
         plSetMeshVertexColour(mesh, i, PLColour(
@@ -261,6 +299,13 @@ PLModel *LoadRequiemModel(const char *path) {
     memset(model, 0, sizeof(PLModel));
     model->num_lods = 1;
     model->lods[0].meshes = calloc(1, sizeof(PLMesh));
+    if(model->lods[0].meshes == NULL) {
+        plDeleteModel(model);
+
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
+        return NULL;
+    }
+
     model->lods[0].num_meshes = 1;
     model->lods[0].meshes[0] = *mesh;
 

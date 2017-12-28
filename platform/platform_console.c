@@ -792,6 +792,7 @@ LogLevel *GetLogLevel(int level) {
         plSetupLogLevel(LOG_LEVEL_HIGH, "pl-error", (PLColour){255, 0, 0}, true);
         plSetupLogLevel(LOG_LEVEL_GRAPHICS, "pl-gfx", (PLColour){0, 255, 255}, true);
         plSetupLogLevel(LOG_LEVEL_FILESYSTEM, "pl-fs", (PLColour){0, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_MODEL, "pl-model", (PLColour){0, 255, 255}, true);
     }
 
     // the following ensures there's no conflict

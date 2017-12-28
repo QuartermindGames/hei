@@ -147,6 +147,7 @@ int main(int argc, char **argv) {
     PRINT("\n-------------------------------------------------------------------------\n\n" );
 
     plInitialize(argc, argv);
+    plSetupLogOutput("./viewer.log");
 
     create_window();
 
@@ -159,6 +160,12 @@ int main(int argc, char **argv) {
     if(model_path == NULL || model_path[0] == '\0') {
         PRINT("Invalid path provided, aborting!\n");
         return EXIT_FAILURE;
+    }
+
+    const char *ext_path = argv[2];
+    if(ext_path != NULL && ext_path[0] != '\0') {
+        plScanDirectory(model_path, ext_path, load_mdl_temp, false);
+        return EXIT_SUCCESS;
     }
 
     if(!plFileExists(model_path)) {
@@ -201,12 +208,6 @@ int main(int argc, char **argv) {
     if(font == NULL) {
         PRINT_ERROR("%s", plGetError());
     }
-
-#if 0
-    plScanDirectory("./Models/", "mdl", load_mdl_temp, false);
-
-    return EXIT_SUCCESS;
-#else
 
     /* debris3
      * debris2
@@ -329,7 +330,9 @@ int main(int argc, char **argv) {
 
         plSetupCamera(ui_camera);
 
-        plDrawBitmapString(font, 10, 10, 1.f, PLColour(255, 0, 0, 255), "Hello World!\n");
+        plSetBlendMode(PL_BLEND_ADDITIVE);
+        plDrawBitmapString(font, 10, 10, 4.f, PLColour(255, 0, 0, 255), "Hello World!\n");
+        plSetBlendMode(PL_BLEND_DISABLE);
 
         //plDrawConsole();
 
@@ -344,5 +347,4 @@ int main(int argc, char **argv) {
     plShutdown();
 
     return 0;
-#endif
 }

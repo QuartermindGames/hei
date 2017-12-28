@@ -28,6 +28,8 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_model.h>
 
+#define ModelLog(...) plLogMessage(LOG_LEVEL_MODEL, __VA_ARGS__)
+
 PL_EXTERN_C
 
 PLModel *LoadOBJModel(const char *path);

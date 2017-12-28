@@ -114,7 +114,7 @@ PLModel *LoadOBJModel(const PLchar *path) {
 
     model->num_triangles = 0;
     model->num_vertices = (unsigned int) vertices.size();
-    //model->primitive = PLMESH_POINTS; // todo, set this within the mesh instead!
+    //model->primitive = PL_MESH_POINTS; // todo, set this within the mesh instead!
 #if 0
     // Allocate vertex/triangle arrays.
     model->frame.vertices = new PLVertex[model->num_vertices];
