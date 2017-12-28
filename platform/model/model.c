@@ -27,7 +27,6 @@ For more information, please refer to <http://unlicense.org>
 #include "model_private.h"
 
 #include <PL/platform_filesystem.h>
-#include <PL/platform_model.h>
 
 /* PLATFORM MODEL LOADER */
 
@@ -38,11 +37,10 @@ typedef struct ModelInterface {
 
 ModelInterface model_interfaces[512]= {
         { "mdl", LoadRequiemModel },
-        //{ "vtx", _plLoadStaticHOWModel },
-        //{ "mdl", _plLoadStaticSourceModel },
-        //{ "mdl", _plLoadStaticGoldSrcModel },
-        //{ "smd", _plLoadStaticSMDModel },
-        //{ "obj", _plLoadOBJModel },
+        //{ "mdl", _plLoadSourceModel },
+        //{ "mdl", _plLoadGoldSrcModel },
+        //{ "smd", _plLoadSMDModel },
+        //{ "obj", LoadOBJModel },
 };
 unsigned int num_model_interfaces = 1;
 
@@ -50,28 +48,25 @@ unsigned int num_model_interfaces = 1;
 
 void plGenerateModelNormals(PLModel *model) {
     plAssert(model);
-    for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        plGenerateMeshNormals(model->meshes[i]);
+
+    for(unsigned int i = 0; i < model->num_lods; ++i) {
+        for(unsigned int j = 0; j < model->lods[i].num_meshes; ++j) {
+            plGenerateMeshNormals(&model->lods[i].meshes[j]);
+        }
     }
 }
 
 void plGenerateModelAABB(PLModel *model) {
     plAssert(model);
-    for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        plAddAABB(&model->bounds, plCalculateMeshAABB(model->meshes[i]));
-    }
-}
 
-void plGenerateAnimatedModelNormals(PLAnimatedModel *model) {
-    plAssert(model);
-    for (PLModelFrame *frame = &model->frames[0]; frame; ++frame) {
-        for(unsigned int i = 0; i < frame->num_meshes; ++i) {
-            plGenerateMeshNormals(frame->meshes[i]);
+    for(unsigned int i = 0; i < model->num_lods; ++i) {
+        for(unsigned int j = 0; j < model->lods[i].num_meshes; ++j) {
+            plAddAABB(&model->bounds, plCalculateMeshAABB(&model->lods[i].meshes[j]));
         }
     }
 }
 
-///////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 uint8_t *plSerializeModel(PLModel *model, unsigned int type) {
     if(type >= PL_SERIALIZE_MODEL_END) {
@@ -101,6 +96,8 @@ uint8_t *plSerializeModel(PLModel *model, unsigned int type) {
     // todo, stub
     return NULL;
 }
+
+//////////////////////////////////////////////////////////////////////////////
 
 void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path)) {
     model_interfaces[num_model_interfaces].ext = ext;

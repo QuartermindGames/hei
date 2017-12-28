@@ -37,13 +37,32 @@ For more information, please refer to <http://unlicense.org>
 #define PL_MAX_MODEL_FRAMES     512
 #define PL_MAX_MODEL_LODS       10
 
+typedef struct PLAnimationFrame {
+    PLVector3 transform;
+} PLAnimationFrame;
+
 typedef struct PLAnimation {
     char name[64];
 
+    PLAnimationFrame *frames;
     unsigned int num_frames;
 
     float framerate;
-};
+} PLAnimation;
+
+////////////////////////////////////////////////////////////////////////////
+
+typedef struct PLModelBone {
+    char name[64];
+    unsigned int parent;
+    PLVector3 position;
+} PLModelBone;
+
+typedef struct PLModelSkeleton {
+    PLModelBone *bones;
+    unsigned int num_bones;
+    unsigned int root_index;
+} PLModelSkeleton;
 
 typedef struct PLModelBoneWeight {
     unsigned int bone_index;
@@ -54,7 +73,16 @@ typedef struct PLModelBoneWeight {
     PLVector3 direction;
 } PLModelBoneWeight;
 
-// Standard mesh
+typedef struct PLModelLOD {
+    PLMesh *meshes;
+    unsigned int num_meshes;
+
+    PLModelBoneWeight *bone_weights;
+    unsigned int num_bone_weights;
+
+    float distance;
+} PLModelLOD;
+
 typedef struct PLModel {
     char name[64];
 
@@ -62,15 +90,7 @@ typedef struct PLModel {
 
     unsigned int num_animations;
 
-    struct {
-        PLMesh *meshes;
-        unsigned int num_meshes;
-
-        PLModelBoneWeight *bone_weights;
-        unsigned int num_bone_weights;
-
-        float distance;
-    } lods[PL_MAX_MODEL_LODS];
+    PLModelLOD lods[PL_MAX_MODEL_LODS];
     unsigned int num_lods;
 
     PLVector3 origin;
@@ -80,27 +100,10 @@ typedef struct PLModel {
 
     struct {
         unsigned int current_lod;
+        unsigned int current_animation;
+        unsigned int current_frame;
     } internal;
 } PLModel;
-
-// Per-vertex animated mesh.
-typedef struct PLModelFrame {
-    unsigned int num_meshes;
-
-    PLMesh *meshes[PL_MAX_MODEL_MESHES];
-
-    PLAABB bounds;
-} PLModelFrame;
-
-typedef struct PLAnimatedModel {
-    unsigned int num_triangles;
-    unsigned int num_vertices;
-    unsigned int num_frames;
-
-    PLMeshPrimitive primitive;
-
-    PLModelFrame frames[PL_MAX_MODEL_FRAMES];
-} PLAnimatedModel;
 
 PL_EXTERN_C
 
@@ -126,6 +129,5 @@ void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *
 
 void plGenerateModelNormals(PLModel *model);
 void plGenerateModelAABB(PLModel *model);
-void plGenerateAnimatedModelNormals(PLAnimatedModel *model);
 
 PL_EXTERN_C_END

@@ -36,3 +36,12 @@ enum {
 
     LOG_LEVEL_END = 10
 };
+
+// these exist so that internal logging crap can be wedged in... until
+// we have a better system in place
+#define Print(...) printf(__VA_ARGS__)
+#ifdef _DEBUG
+#   define DebugPrint(...)      Print(__VA_ARGS__)
+#else
+#   define DebugPrint(...)      (__VA_ARGS__)
+#endif

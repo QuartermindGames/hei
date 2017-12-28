@@ -490,7 +490,7 @@ void plSetGraphicsMode(PLGfxMode mode) {
 
         default: {
             ReportError(PL_RESULT_GRAPHICSINIT, "invalid graphics layer, %d, selected", gfx_layer.mode);
-            _plDebugPrint("Reverting to software mode...\n");
+            DebugPrint("Reverting to software mode...\n");
             plSetGraphicsMode(PL_GFX_MODE_SOFTWARE);
         } break;
     }

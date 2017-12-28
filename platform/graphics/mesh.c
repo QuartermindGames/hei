@@ -125,7 +125,7 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
         return NULL;
     }
 
-    mesh->primitive     = mesh->primitive_restore = primitive;
+    mesh->primitive     = primitive;
     mesh->num_triangles = num_tris;
     mesh->num_verts     = num_verts;
     mesh->mode          = mode;

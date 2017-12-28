@@ -24,18 +24,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #pragma once
 
 #include <PL/platform_model.h>
 
 PL_EXTERN_C
 
-// Static
-PLModel *_plLoadOBJModel(const char *path);
+PLModel *LoadOBJModel(const char *path);
 PLModel *LoadRequiemModel(const char *path);
-
-// Animated
-PLAnimatedModel *_plLoadU3DModel(const char *path);
 
 PL_EXTERN_C_END

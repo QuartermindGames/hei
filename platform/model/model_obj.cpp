@@ -33,16 +33,12 @@ enum {
     OBJ_SYNTAX_FACE = 'f',
 };
 
-typedef struct OBJFace_s {
-
-} OBJFace_t;
-
 std::vector<PLVector3> vertices;
 std::vector<PLVector3> normals;
 
 std::ifstream pl_obj_data;
 
-void _plUnloadOBJModel() {
+void UnloadOBJModel() {
     if (pl_obj_data.is_open())
         pl_obj_data.close();
 
@@ -53,7 +49,8 @@ void _plUnloadOBJModel() {
     normals.shrink_to_fit();
 }
 
-PLModel *_plLoadOBJModel(const PLchar *path) {
+PLModel *LoadOBJModel(const PLchar *path) {
+#if 0 // todo
     _plSetCurrentFunction("plLoadOBJModel");
 
     pl_obj_data.open(path, std::ifstream::binary);
@@ -67,7 +64,7 @@ PLModel *_plLoadOBJModel(const PLchar *path) {
     std::streamoff length = pl_obj_data.tellg();
     pl_obj_data.seekg(0, pl_obj_data.beg);
     if (length <= 0) {
-        _plUnloadOBJModel();
+        UnloadOBJModel();
 
         ReportError(PL_RESULT_FILETYPE, "Invalid OBJ model! (%s)\n", path);
         return nullptr;
@@ -111,7 +108,7 @@ PLModel *_plLoadOBJModel(const PLchar *path) {
     if (model == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
 
-        _plUnloadOBJModel();
+        UnloadOBJModel();
         return nullptr;
     }
 
@@ -126,7 +123,10 @@ PLModel *_plLoadOBJModel(const PLchar *path) {
         //vertex->position = vertices[i];
     }
 #endif
-    _plUnloadOBJModel();
+    UnloadOBJModel();
 
     return model;
+#else
+    return NULL;
+#endif
 }

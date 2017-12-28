@@ -25,6 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 #include <PL/platform_model.h>
+
+#include "platform_private.h"
 #include "model_private.h"
 
 enum {
@@ -128,9 +130,9 @@ PLModel *LoadRequiemModel(const char *path) {
 
     // attempt to figure out if it's valid or not... ho boy...
 
-    _plDebugPrint("%s\n", path);
+    DebugPrint("%s\n", path);
 
-#define AbortLoad(...) _plDebugPrint(__VA_ARGS__); ReportError(PL_RESULT_FILEREAD, __VA_ARGS__); fclose(file)
+#define AbortLoad(...) DebugPrint(__VA_ARGS__); ReportError(PL_RESULT_FILEREAD, __VA_ARGS__); fclose(file)
 
     // check which flags have been set for this particular mesh
     int flags = fgetc(file);
@@ -216,22 +218,22 @@ PLModel *LoadRequiemModel(const char *path) {
         }
 
         long npos = ftell(file);
-        _plDebugPrint(" Read %ld bytes for face %d (indices %d)\n", npos - pos, i, faces[i].num_indices);
+        DebugPrint(" Read %ld bytes for face %d (indices %d)\n", npos - pos, i, faces[i].num_indices);
     }
 
     fclose(file);
 
-    _plDebugPrint("    texture_name_length: %d\n", texture_name_length);
-    _plDebugPrint("    texture_name:        %s\n", texture_name);
-    _plDebugPrint("    num_vertices:        %d\n", num_vertices);
+    DebugPrint("    texture_name_length: %d\n", texture_name_length);
+    DebugPrint("    texture_name:        %s\n", texture_name);
+    DebugPrint("    num_vertices:        %d\n", num_vertices);
     for(unsigned int i = 0; i < num_vertices; ++i) {
-        _plDebugPrint("      vertex(%u) x(%f) y(%f) z(%f)\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
+        DebugPrint("      vertex(%u) x(%f) y(%f) z(%f)\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
     }
-    _plDebugPrint("    num_faces:           %d\n", num_faces);
+    DebugPrint("    num_faces:           %d\n", num_faces);
     for(unsigned int i = 0; i < num_faces; ++i) {
-        _plDebugPrint("      face(%d) num_indices(%d)\n", i, faces[i].num_indices);
+        DebugPrint("      face(%d) num_indices(%d)\n", i, faces[i].num_indices);
     }
-    _plDebugPrint("    num_triangles:       %d\n", num_triangles);
+    DebugPrint("    num_triangles:       %d\n", num_triangles);
 
 #if 1
     PLMesh *mesh = plCreateMesh(PLMESH_POINTS, PL_DRAW_IMMEDIATE, num_triangles, num_vertices);

@@ -181,12 +181,12 @@ void plSetConsoleVariable(PLConsoleVariable *var, const char *value) {
     plAssert(var);
     switch(var->type) {
         default: {
-            _plPrint("Unknown variable type %d, failed to set!\n", var->type);
+            Print("Unknown variable type %d, failed to set!\n", var->type);
         } return;
 
         case pl_int_var: {
             if(pl_strisdigit(value) == -1) {
-                _plPrint("Unknown argument type %s, failed to set!\n", value);
+                Print("Unknown argument type %s, failed to set!\n", value);
                 return;
             }
 
@@ -203,7 +203,7 @@ void plSetConsoleVariable(PLConsoleVariable *var, const char *value) {
 
         case pl_bool_var: {
             if(pl_strisalnum(value) == -1) {
-                _plPrint("Unknown argument type %s, failed to set!\n", value);
+                Print("Unknown argument type %s, failed to set!\n", value);
                 return;
             }
 
@@ -245,14 +245,14 @@ bool console_visible = false;
 // PRIVATE
 
 IMPLEMENT_COMMAND(pwd, "Print current working directory.") {
-    _plPrint("%s\n", plGetWorkingDirectory());
+    Print("%s\n", plGetWorkingDirectory());
 }
 
 IMPLEMENT_COMMAND(echo, "Prints out string to console.") {
     for(unsigned int i = 0; i < (argc - 1); ++i) {
-        _plPrint("%s ", argv[i]);
+        Print("%s ", argv[i]);
     }
-    _plPrint("\n");
+    Print("\n");
 }
 
 IMPLEMENT_COMMAND(clear, "Clears the console buffer.") {
@@ -264,7 +264,7 @@ IMPLEMENT_COMMAND(colour, "Changes the colour of the current console.") {
 }
 
 IMPLEMENT_COMMAND(time, "Prints out the current time.") {
-    _plPrint("%s\n", plGetFormattedTime());
+    Print("%s\n", plGetFormattedTime());
 }
 
 IMPLEMENT_COMMAND(mem, "Prints out current memory usage.") {
@@ -273,40 +273,40 @@ IMPLEMENT_COMMAND(mem, "Prints out current memory usage.") {
 
 IMPLEMENT_COMMAND(cmds, "Produces list of existing commands.") {
     for(PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd) {
-        _plPrint(" %-20s : %-20s\n", (*cmd)->cmd, (*cmd)->description);
+        Print(" %-20s : %-20s\n", (*cmd)->cmd, (*cmd)->description);
     }
-    _plPrint("%zu commands in total\n", _pl_num_commands);
+    Print("%zu commands in total\n", _pl_num_commands);
 }
 
 IMPLEMENT_COMMAND(vars, "Produces list of existing variables.") {
     for(PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var) {
-        _plPrint(" %-20s : %-5s / %-15s : %-20s\n",
+        Print(" %-20s : %-5s / %-15s : %-20s\n",
                (*var)->var, (*var)->value, (*var)->default_value, (*var)->description);
     }
-    _plPrint("%zu variables in total\n", _pl_num_variables);
+    Print("%zu variables in total\n", _pl_num_variables);
 }
 
 IMPLEMENT_COMMAND(help, "Returns information regarding specified command or variable.\nUsage: help <cmd/cvar>") {
     if(argc < 1) {
         // provide help on help, gross...
-        _plPrint("%s\n", help_var.description);
+        Print("%s\n", help_var.description);
         return;
     }
 
     PLConsoleVariable *var = plGetConsoleVariable(argv[2]);
     if(var != NULL) {
-        _plPrint(" %-20s : %-5s / %-15s : %-20s\n",
+        Print(" %-20s : %-5s / %-15s : %-20s\n",
                  var->var, var->value, var->default_value, var->description);
         return;
     }
 
     PLConsoleCommand *cmd = plGetConsoleCommand(argv[2]);
     if(cmd != NULL) {
-        _plPrint(" %-20s : %-20s\n", cmd->cmd, cmd->description);
+        Print(" %-20s : %-20s\n", cmd->cmd, cmd->description);
         return;
     }
 
-    _plPrint("Unknown variable/command, %s!\n", argv[2]);
+    Print("Unknown variable/command, %s!\n", argv[2]);
 }
 
 //////////////////////////////////////////////
@@ -410,7 +410,7 @@ void plSetConsoleOutCallback(void(Callback)(unsigned int )) {
 
 void plParseConsoleString(const char *string) {
     if(string == NULL || string[0] == '\0') {
-        _plDebugPrint("Invalid string passed to ParseConsoleString!\n");
+        DebugPrint("Invalid string passed to ParseConsoleString!\n");
         return;
     }
 
@@ -450,20 +450,20 @@ void plParseConsoleString(const char *string) {
         if(argc > 1) {
             plSetConsoleVariable(var, argv[1]);
         } else {
-            _plPrint("    %s\n", var->var);
-            _plPrint("    %s\n", var->description);
-            _plPrint("    %-10s : %s\n", var->value, var->default_value);
+            Print("    %s\n", var->var);
+            Print("    %s\n", var->description);
+            Print("    %-10s : %s\n", var->value, var->default_value);
         }
     } else if((cmd = plGetConsoleCommand(argv[0])) != NULL) {
         if(cmd->Callback != NULL) {
             cmd->Callback(argc, argv);
         } else {
-            _plPrint("    Invalid command, no callback provided!\n");
-            _plPrint("    %s\n", cmd->cmd);
-            _plPrint("    %s\n", cmd->description);
+            Print("    Invalid command, no callback provided!\n");
+            Print("    %s\n", cmd->cmd);
+            Print("    %s\n", cmd->description);
         }
     } else {
-        _plPrint("Unknown variable/command, %s!\n", argv[0]);
+        Print("Unknown variable/command, %s!\n", argv[0]);
     }
 }
 

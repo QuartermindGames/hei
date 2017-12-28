@@ -37,6 +37,7 @@ PL_INLINE static void plAddAABB(PLAABB *b, PLAABB b2) {
     plAddVector3(&b->maxs, b2.maxs);
     plAddVector3(&b->mins, b2.mins);
 }
+
 #if 0 // todo
 PL_INLINE static bool plIntersectAABB(PLAABB b, PLAABB b2) {
     PLVector3 dist_a = b2.mins;

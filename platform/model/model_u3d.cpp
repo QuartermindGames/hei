@@ -38,14 +38,14 @@ using namespace pl::graphics;
 	http://paulbourke.net/dataformats/unreal/
 */
 
-#define    U3D_FILE_EXTENSION "3d"
+#define U3D_FILE_EXTENSION "3d"
 
-typedef struct U3DAnimationHeader_s {
+typedef struct U3DAnimationHeader {
     uint16_t frames;    // Number of frames.
     uint16_t size;    // Size of each frame.
 } U3DAnimationHeader;
 
-typedef struct U3DDataHeader_s {
+typedef struct U3DDataHeader {
     uint16_t numpolys;    // Number of polygons.
     uint16_t numverts;    // Number of vertices.
     uint16_t rotation;    // Mesh rotation?
@@ -73,14 +73,14 @@ enum U3DType {
     U3D_TYPE_ATTACHMENT
 };
 
-typedef struct U3DVertex_s {
+typedef struct U3DVertex {
     // This is a bit funky...
     int32_t x : 11;
     int32_t y : 11;
     int32_t z : 10;
 } U3DVertex;
 
-typedef struct U3DTriangle_s {
+typedef struct U3DTriangle {
     uint16_t vertex[3]; // Vertex indices
 
     uint8_t type;       // Triangle type
@@ -93,7 +93,7 @@ typedef struct U3DTriangle_s {
 FILE *pl_u3d_dataf = nullptr;
 FILE *pl_u3d_animf = nullptr;
 
-void _plUnloadU3DModel() {
+void UnloadU3DModel() {
     if (pl_u3d_animf) {
         fclose(pl_u3d_animf);
     }
@@ -102,7 +102,7 @@ void _plUnloadU3DModel() {
     }
 }
 
-PLAnimatedModel *_plLoadU3DModel(const PLchar *path) {
+PLModel *LoadU3DModel(const PLchar *path) {
 #if 0
     _plSetCurrentFunction("plLoadU3DModel");
 
