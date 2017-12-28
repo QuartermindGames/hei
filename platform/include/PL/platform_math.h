@@ -345,6 +345,12 @@ PL_INLINE static const char *plPrintVector3(PLVector3 v) {
     return s;
 }
 
+// 4D
+
+typedef struct PLVector4 {
+    float x, y, z, w;
+} PLVector4;
+
 #ifndef __cplusplus
 
 #   define PLVector3(x, y, z)   (PLVector3){x, y, z}
@@ -548,16 +554,37 @@ PL_INLINE static const char *plPrintColour(PLColour c) {
 // Matrices
 // todo, none of this is correct yet
 
-typedef struct PLMatrix {
-    float m[16];
-} PLMatrix;
+typedef struct PLMatrix3x3 {
+    float m[9];
+    /* 0 0 0
+     * 0 0 0
+     * 0 0 0
+     */
+} PLMatrix3x3;
 
-PL_INLINE static void plClearMatrix(PLMatrix *m) {
-    memset(m, 0, sizeof(PLMatrix));
+typedef struct PLMatrix3x4 {
+    float m[12];
+    /* 0 0 0 0
+     * 0 0 0 0
+     * 0 0 0 0
+     */
+} PLMatrix3x4;
+
+typedef struct PLMatrix4x4 {
+    float m[16];
+    /* 0 0 0 0
+     * 0 0 0 0
+     * 0 0 0 0
+     * 0 0 0 0
+     */
+} PLMatrix4x4;
+
+PL_INLINE static void plClearMatrix(PLMatrix4x4 *m) {
+    memset(m, 0, sizeof(PLMatrix4x4));
 }
 
-PL_INLINE static void plIdentityMatrix(PLMatrix *m) {
-    *m = (PLMatrix){{
+PL_INLINE static void plIdentityMatrix(PLMatrix4x4 *m) {
+    *m = (PLMatrix4x4){{
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
@@ -565,15 +592,15 @@ PL_INLINE static void plIdentityMatrix(PLMatrix *m) {
     }};
 }
 
-PL_INLINE static void plAddMatrix(PLMatrix m, const PLMatrix m2) {
+PL_INLINE static void plAddMatrix(PLMatrix4x4 m, const PLMatrix4x4 m2) {
 
 }
 
-PL_INLINE static void plScaleMatrix(PLMatrix *m, PLVector3 scale) {
+PL_INLINE static void plScaleMatrix(PLMatrix4x4 *m, PLVector3 scale) {
 
 }
 
-PL_INLINE static void plRotateMatrix(PLMatrix *m, float angle, PLVector3 axis) {
+PL_INLINE static void plRotateMatrix(PLMatrix4x4 *m, float angle, PLVector3 axis) {
 
 }
 
@@ -583,7 +610,6 @@ typedef struct PLQuaternion {
     float x, y, z, w;
 
 #ifdef __cplusplus
-
     PLQuaternion(float a, float b, float c, float d) : x(a), y(b), z(c), w(d) {}
     PLQuaternion(float a, float b, float c) : x(a), y(b), z(c), w(0) {}
     PLQuaternion() : x(0), y(0), z(0), w(0) {}
@@ -648,7 +674,6 @@ typedef struct PLQuaternion {
         }
     }
 #endif
-
 #endif
 } PLQuaternion;
 

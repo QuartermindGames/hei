@@ -78,8 +78,8 @@ typedef struct PLGraphicsState {
     unsigned int num_cameras;
     unsigned int max_cameras;
 
-    PLMatrix projection_matrix;
-    PLMatrix model_matrix;
+    PLMatrix4x4 projection_matrix;
+    PLMatrix4x4 model_matrix;
 
     ////////////////////////////////////////
 

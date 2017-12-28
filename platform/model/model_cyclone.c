@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+#include <PL/platform_model.h>
 #include "model_private.h"
 
 enum {
@@ -240,20 +241,12 @@ PLModel *LoadRequiemModel(const char *path) {
 
     srand(num_vertices);
     for(unsigned int i = 0; i < num_vertices; ++i) {
-#if 0
-        plSetMeshVertexPosition3f(out, i,
-                                  (vertices[i].x_ + vertices[i].x) / 10,
-                                  (vertices[i].y_ + vertices[i].y) / 10,
-                                  (vertices[i].z_ + vertices[i].z) / 10);
-#else
-        plSetMeshVertexPosition3f(mesh, i,
-                                  vertices[i].x * 100,
-                                  vertices[i].y * 100,
-                                  vertices[i].z * 100);
-#endif
+        plSetMeshVertexPosition3f(mesh, i, vertices[i].x * 100, vertices[i].y * 100, vertices[i].z * 100);
         plSetMeshVertexColour(mesh, i, PLColour(
-                (uint8_t) (rand() % 255), (uint8_t) (rand() % 255), (uint8_t) (rand() % 255), 255)
-        );
+                (uint8_t) (rand() % 255),
+                (uint8_t) (rand() % 255),
+                (uint8_t) (rand() % 255),
+                255));
     }
 #endif
 
@@ -264,10 +257,10 @@ PLModel *LoadRequiemModel(const char *path) {
     }
 
     memset(model, 0, sizeof(PLModel));
-    model->num_meshes       = 1;
-    model->num_vertices     = num_vertices;
-    model->num_triangles    = num_triangles;
-    model->meshes[0]        = mesh;
+    model->num_lods = 1;
+    model->lods[0].meshes = calloc(1, sizeof(PLMesh));
+    model->lods[0].num_meshes = 1;
+    model->lods[0].meshes[0] = *mesh;
 
     plGenerateModelNormals(model);
     plGenerateModelAABB(model);

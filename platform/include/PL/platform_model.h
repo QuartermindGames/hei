@@ -32,26 +32,62 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_graphics.h"
 #include "platform_physics.h"
 
-#define PLMODEL_MAX_MESHES  32
-#define PLMODEL_MAX_FRAMES  512
+#define PL_MAX_MODEL_BONES      1024
+#define PL_MAX_MODEL_MESHES     32
+#define PL_MAX_MODEL_FRAMES     512
+#define PL_MAX_MODEL_LODS       10
+
+typedef struct PLAnimation {
+    char name[64];
+
+    unsigned int num_frames;
+
+    float framerate;
+};
+
+typedef struct PLModelBoneWeight {
+    unsigned int bone_index;
+    float bone_weight;
+
+    unsigned int vertex_index;
+
+    PLVector3 direction;
+} PLModelBoneWeight;
 
 // Standard mesh
 typedef struct PLModel {
-    unsigned int num_triangles;
-    unsigned int num_vertices;
-    unsigned int num_meshes;
+    char name[64];
+
+    unsigned int flags;
+
     unsigned int num_animations;
 
-    PLMesh *meshes[PLMODEL_MAX_MESHES];
+    struct {
+        PLMesh *meshes;
+        unsigned int num_meshes;
 
+        PLModelBoneWeight *bone_weights;
+        unsigned int num_bone_weights;
+
+        float distance;
+    } lods[PL_MAX_MODEL_LODS];
+    unsigned int num_lods;
+
+    PLVector3 origin;
+
+    float radius;
     PLAABB bounds;
+
+    struct {
+        unsigned int current_lod;
+    } internal;
 } PLModel;
 
 // Per-vertex animated mesh.
 typedef struct PLModelFrame {
     unsigned int num_meshes;
 
-    PLMesh *meshes[PLMODEL_MAX_MESHES];
+    PLMesh *meshes[PL_MAX_MODEL_MESHES];
 
     PLAABB bounds;
 } PLModelFrame;
@@ -63,7 +99,7 @@ typedef struct PLAnimatedModel {
 
     PLMeshPrimitive primitive;
 
-    PLModelFrame frames[PLMODEL_MAX_FRAMES];
+    PLModelFrame frames[PL_MAX_MODEL_FRAMES];
 } PLAnimatedModel;
 
 PL_EXTERN_C
@@ -80,6 +116,8 @@ enum {
 };
 
 uint8_t *plSerializeModel(PLModel *model, unsigned int type);
+
+///////////////////////////////////////////////////////////////////
 
 void plDeleteModel(PLModel *model);
 void plDrawModel(PLModel *model);

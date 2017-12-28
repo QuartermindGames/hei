@@ -70,7 +70,7 @@ typedef struct PLMesh {
     unsigned int num_verts;
     unsigned int num_triangles;
 
-    PLMeshPrimitive primitive, primitive_restore;
+    PLMeshPrimitive primitive;
     PLMeshDrawMode mode;
 
     PLVector3 position, angles;

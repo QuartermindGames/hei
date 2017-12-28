@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org>
 #include "model_private.h"
 
 #include <PL/platform_filesystem.h>
+#include <PL/platform_model.h>
 
 /* PLATFORM MODEL LOADER */
 
@@ -134,12 +135,15 @@ PLModel *plLoadModel(const char *path) {
 
 void plDeleteModel(PLModel *model) {
     plAssert(model);
-    for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        if(model->meshes[i] == NULL) {
-            continue;
-        }
 
-        plDeleteMesh(model->meshes[i]);
+    for(unsigned int i = 0; i < model->num_lods; ++i) {
+        for(unsigned int j = 0; j < model->lods[j].num_meshes; ++j) {
+            if(&model->lods[i].meshes[j] == NULL) {
+                continue;
+            }
+
+            plDeleteMesh(&model->lods[i].meshes[j]);
+        }
     }
 
     free(model);
@@ -147,7 +151,8 @@ void plDeleteModel(PLModel *model) {
 
 void plDrawModel(PLModel *model) {
     plAssert(model);
-    for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        plDrawMesh(model->meshes[i]);
+
+    for(unsigned int i = 0; i < model->lods[model->internal.current_lod].num_meshes; ++i) {
+        plDrawMesh(&model->lods[model->internal.current_lod].meshes[i]);
     }
 }
