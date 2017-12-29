@@ -135,8 +135,6 @@ PLModel *LoadRequiemModel(const char *path) {
 
     // attempt to figure out if it's valid or not... ho boy...
 
-    ModelLog("%s\n", path);
-
 #define AbortLoad(...) ModelLog(__VA_ARGS__); ReportError(PL_RESULT_FILEREAD, __VA_ARGS__); fclose(file)
 
     // check which flags have been set for this particular mesh
@@ -234,14 +232,14 @@ PLModel *LoadRequiemModel(const char *path) {
         }
 
         unsigned int num_uv_coords = faces[i].num_indices * 4;
-        ModelLog(" num bytes for UV coords is %lu\n", num_uv_coords * sizeof(int16_t));
+        //ModelLog(" num bytes for UV coords is %lu\n", num_uv_coords * sizeof(int16_t));
         if(fread(faces[i].uv, sizeof(int16_t), num_uv_coords, file) != num_uv_coords) {
             AbortLoad("invalid file length, failed to load UV coords\n");
             return NULL;
         }
 
         long npos = ftell(file);
-        ModelLog(" Read %ld bytes for face %d (indices %d)\n", npos - pos, i, faces[i].num_indices);
+        //ModelLog(" Read %ld bytes for face %d (indices %d)\n", npos - pos, i, faces[i].num_indices);
     }
 
     fclose(file);
@@ -258,37 +256,87 @@ PLModel *LoadRequiemModel(const char *path) {
     }
     ModelLog("    num_triangles:       %d\n", num_triangles);
 
-    PLMesh *mesh = plCreateMesh(PL_MESH_POINTS, PL_DRAW_IMMEDIATE, num_triangles, num_vertices);
+    num_vertices = num_triangles * 3;
+    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_IMMEDIATE, num_triangles, num_vertices);
     if(mesh == NULL) {
         return NULL;
     }
 
-    srand(num_vertices);
-#if 1
-    for(unsigned int i = 0; i < num_faces; ++i) {
-        for(unsigned int j = 0; j < faces[i].num_indices; ++j) {
-            plSetMeshVertexPosition3f(mesh, i,
-                                      vertices[faces[i].indices[j]].x,
-                                      vertices[faces[i].indices[j]].y,
-                                      vertices[faces[i].indices[j]].z);
+    // todo, create a new mesh for faces greater than 4 verts?
 
-            plSetMeshVertexColour(mesh, i, PLColour(
-                    (uint8_t) (rand() % 255),
-                    (uint8_t) (rand() % 255),
-                    (uint8_t) (rand() % 255),
-                    255));
+    srand(num_faces);
+    unsigned int cur_vertex = 0;
+    for(unsigned int i = 0; i < num_faces; ++i) {
+#if 1
+        uint8_t r = (uint8_t)(rand() % 255);
+        uint8_t g = (uint8_t)(rand() % 255);
+        uint8_t b = (uint8_t)(rand() % 255);
+#endif
+
+        if(faces[i].num_indices == 3) { // triangle
+            plSetMeshVertexPosition3f(mesh, cur_vertex,
+                                      vertices[faces[i].indices[0]].x,
+                                      vertices[faces[i].indices[0]].y,
+                                      vertices[faces[i].indices[0]].z);
+            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
+            cur_vertex++;
+            plSetMeshVertexPosition3f(mesh, cur_vertex,
+                                      vertices[faces[i].indices[1]].x,
+                                      vertices[faces[i].indices[1]].y,
+                                      vertices[faces[i].indices[1]].z);
+            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
+            cur_vertex++;
+            plSetMeshVertexPosition3f(mesh, cur_vertex,
+                                      vertices[faces[i].indices[2]].x,
+                                      vertices[faces[i].indices[2]].y,
+                                      vertices[faces[i].indices[2]].z);
+            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
+            cur_vertex++;
+        } else if(faces[i].num_indices == 4) { // quad
+
+            // first triangle
+
+            plSetMeshVertexPosition3f(mesh, cur_vertex,
+                                            vertices[faces[i].indices[0]].x,
+                                            vertices[faces[i].indices[0]].y,
+                                            vertices[faces[i].indices[0]].z);
+            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
+            cur_vertex++;
+            plSetMeshVertexPosition3f(mesh, cur_vertex,
+                                      vertices[faces[i].indices[1]].x,
+                                      vertices[faces[i].indices[1]].y,
+                                      vertices[faces[i].indices[1]].z);
+            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
+            cur_vertex++;
+            plSetMeshVertexPosition3f(mesh, cur_vertex,
+                                      vertices[faces[i].indices[2]].x,
+                                      vertices[faces[i].indices[2]].y,
+                                      vertices[faces[i].indices[2]].z);
+            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
+            cur_vertex++;
+
+            // second triangle
+
+            plSetMeshVertexPosition3f(mesh, cur_vertex,
+                                      vertices[faces[i].indices[3]].x,
+                                      vertices[faces[i].indices[3]].y,
+                                      vertices[faces[i].indices[3]].z);
+            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
+            cur_vertex++;
+            plSetMeshVertexPosition3f(mesh, cur_vertex,
+                                      vertices[faces[i].indices[0]].x,
+                                      vertices[faces[i].indices[0]].y,
+                                      vertices[faces[i].indices[0]].z);
+            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
+            cur_vertex++;
+            plSetMeshVertexPosition3f(mesh, cur_vertex,
+                                      vertices[faces[i].indices[2]].x,
+                                      vertices[faces[i].indices[2]].y,
+                                      vertices[faces[i].indices[2]].z);
+            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
+            cur_vertex++;
         }
     }
-#else
-    for(unsigned int i = 0; i < num_vertices; ++i) {
-        plSetMeshVertexPosition3f(mesh, i, vertices[i].x * 100, vertices[i].y * 100, vertices[i].z * 100);
-        plSetMeshVertexColour(mesh, i, PLColour(
-                (uint8_t) (rand() % 255),
-                (uint8_t) (rand() % 255),
-                (uint8_t) (rand() % 255),
-                255));
-    }
-#endif
 
     PLModel *model = malloc(sizeof(PLModel));
     if(model == NULL) {

@@ -204,10 +204,12 @@ int main(int argc, char **argv) {
     ui_camera->viewport.w = WIDTH;
     ui_camera->viewport.h = HEIGHT;
 
+#if 0
     PLBitmapFont *font = plCreateBitmapFont("./fonts/console.font");
     if(font == NULL) {
         PRINT_ERROR("%s", plGetError());
     }
+#endif
 
     /* debris3
      * debris2
@@ -330,9 +332,9 @@ int main(int argc, char **argv) {
 
         plSetupCamera(ui_camera);
 
-        plSetBlendMode(PL_BLEND_ADDITIVE);
-        plDrawBitmapString(font, 10, 10, 4.f, PLColour(255, 0, 0, 255), "Hello World!\n");
-        plSetBlendMode(PL_BLEND_DISABLE);
+        //plSetBlendMode(PL_BLEND_ADDITIVE);
+        //plDrawBitmapString(font, 10, 10, 4.f, PLColour(255, 0, 0, 255), "Hello World!\n");
+        //plSetBlendMode(PL_BLEND_DISABLE);
 
         //plDrawConsole();
 

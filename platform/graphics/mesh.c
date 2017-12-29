@@ -185,13 +185,16 @@ void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3 vector)
 }
 
 void plSetMeshVertexPosition3f(PLMesh *mesh, unsigned int index, float x, float y, float z) {
+    plAssert(index < mesh->num_verts);
     mesh->vertices[index].position = PLVector3(x, y, z);
 }
 
 void plSetMeshVertexPosition2f(PLMesh *mesh, unsigned int index, float x, float y) {
+    plAssert(index < mesh->num_verts);
     mesh->vertices[index].position = PLVector3(x, y, 0);
 }
 
+#if 0
 void plSetMeshVertexPosition3fv(PLMesh *mesh, unsigned int index, unsigned int size, const float *v) {
     size += index;
     if(size > mesh->num_verts) {
@@ -204,6 +207,7 @@ void plSetMeshVertexPosition3fv(PLMesh *mesh, unsigned int index, unsigned int s
         mesh->vertices[i].position.z = v[2];
     }
 }
+#endif
 
 void plSetMeshVertexNormal3f(PLMesh *mesh, unsigned int index, float x, float y, float z) {
     mesh->vertices[index].normal = PLVector3(x, y, z);
@@ -212,6 +216,7 @@ void plSetMeshVertexNormal3f(PLMesh *mesh, unsigned int index, float x, float y,
 void plSetMeshVertexST(PLMesh *mesh, unsigned int index, float s, float t) {
     mesh->vertices[index].st[0] = PLVector2(s, t);
 }
+
 #if 0
 void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st) {
     size += index;
@@ -225,6 +230,7 @@ void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index, unsigned
     }
 }
 #endif
+
 void plSetMeshVertexColour(PLMesh *mesh, unsigned int index, PLColour colour) {
     mesh->vertices[index].colour = colour;
 }
