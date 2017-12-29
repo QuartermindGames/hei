@@ -38,7 +38,7 @@ enum {
 #define MAX_MODEL_NAME      128
 #define MAX_TEXTURE_NAME    64
 
-#define MAX_INDICES_PER_FACE    8
+#define MAX_INDICES_PER_FACE    9
 #define MIN_INDICES_PER_FACE    3
 
 #define MAX_UV_COORDS_PER_FACE  16
@@ -195,6 +195,7 @@ PLModel *LoadRequiemModel(const char *path) {
 #endif
 
     unsigned int num_triangles = 0;
+    unsigned int num_indices = 0;
     MDLFace faces[num_faces];
     memset(faces, 0, sizeof(MDLFace) * num_faces);
     for(unsigned int i = 0; i < num_faces; ++i) {
@@ -225,13 +226,20 @@ PLModel *LoadRequiemModel(const char *path) {
 
         num_triangles += faces[i].num_indices - 2;
 
+        if(faces[i].num_indices == 4) {
+            // conversion of quad to triangles
+            num_indices += 6;
+        } else {
+            num_indices += faces[i].num_indices;
+        }
+
         fseek(file, 16, SEEK_CUR); // todo, figure these out
         if(fread(faces[i].indices, sizeof(uint16_t), faces[i].num_indices, file) != faces[i].num_indices) {
             AbortLoad("invalid file length, failed to load indices\n");
             return NULL;
         }
 
-        unsigned int num_uv_coords = faces[i].num_indices * 4;
+        unsigned int num_uv_coords = (unsigned int) (faces[i].num_indices * 4);
         //ModelLog(" num bytes for UV coords is %lu\n", num_uv_coords * sizeof(int16_t));
         if(fread(faces[i].uv, sizeof(int16_t), num_uv_coords, file) != num_uv_coords) {
             AbortLoad("invalid file length, failed to load UV coords\n");
@@ -239,7 +247,7 @@ PLModel *LoadRequiemModel(const char *path) {
         }
 
         long npos = ftell(file);
-        //ModelLog(" Read %ld bytes for face %d (indices %d)\n", npos - pos, i, faces[i].num_indices);
+        ModelLog(" Read %ld bytes for face %d (indices %d)\n", npos - pos, i, faces[i].num_indices);
     }
 
     fclose(file);
@@ -255,86 +263,50 @@ PLModel *LoadRequiemModel(const char *path) {
         ModelLog("      face(%d) num_indices(%d)\n", i, faces[i].num_indices);
     }
     ModelLog("    num_triangles:       %d\n", num_triangles);
+    ModelLog("    num_indices:         %d\n", num_indices);
 
-    num_vertices = num_triangles * 3;
+    num_vertices = (uint16_t) (num_triangles * 3);
     PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_IMMEDIATE, num_triangles, num_vertices);
     if(mesh == NULL) {
         return NULL;
     }
 
+    mesh->num_indices = num_indices;
+    mesh->indices = calloc(mesh->num_indices, sizeof(uint16_t));
+    if(mesh->indices == NULL) {
+        plDeleteMesh(mesh);
+        return NULL;
+    }
+
     // todo, create a new mesh for faces greater than 4 verts?
 
-    srand(num_faces);
-    unsigned int cur_vertex = 0;
-    for(unsigned int i = 0; i < num_faces; ++i) {
-#if 1
+    srand(num_vertices);
+    for(unsigned int i = 0; i < num_vertices; ++i) {
         uint8_t r = (uint8_t)(rand() % 255);
         uint8_t g = (uint8_t)(rand() % 255);
         uint8_t b = (uint8_t)(rand() % 255);
-#endif
 
-        if(faces[i].num_indices == 3) { // triangle
-            plSetMeshVertexPosition3f(mesh, cur_vertex,
-                                      vertices[faces[i].indices[0]].x,
-                                      vertices[faces[i].indices[0]].y,
-                                      vertices[faces[i].indices[0]].z);
-            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
-            cur_vertex++;
-            plSetMeshVertexPosition3f(mesh, cur_vertex,
-                                      vertices[faces[i].indices[1]].x,
-                                      vertices[faces[i].indices[1]].y,
-                                      vertices[faces[i].indices[1]].z);
-            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
-            cur_vertex++;
-            plSetMeshVertexPosition3f(mesh, cur_vertex,
-                                      vertices[faces[i].indices[2]].x,
-                                      vertices[faces[i].indices[2]].y,
-                                      vertices[faces[i].indices[2]].z);
-            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
-            cur_vertex++;
-        } else if(faces[i].num_indices == 4) { // quad
+        plSetMeshVertexPosition(mesh, i, PLVector3(vertices[i].x, vertices[i].y, vertices[i].z));
+        plSetMeshVertexColour(mesh, i, PLColour(r, g, b, 255));
+    }
 
+    unsigned int cur_index = 0;
+    for(unsigned int i = 0; i < num_faces; ++i) {
+        if(faces[i].num_indices == 4) { // quad
+            assert((cur_index + 6) < mesh->num_indices);
             // first triangle
-
-            plSetMeshVertexPosition3f(mesh, cur_vertex,
-                                            vertices[faces[i].indices[0]].x,
-                                            vertices[faces[i].indices[0]].y,
-                                            vertices[faces[i].indices[0]].z);
-            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
-            cur_vertex++;
-            plSetMeshVertexPosition3f(mesh, cur_vertex,
-                                      vertices[faces[i].indices[1]].x,
-                                      vertices[faces[i].indices[1]].y,
-                                      vertices[faces[i].indices[1]].z);
-            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
-            cur_vertex++;
-            plSetMeshVertexPosition3f(mesh, cur_vertex,
-                                      vertices[faces[i].indices[2]].x,
-                                      vertices[faces[i].indices[2]].y,
-                                      vertices[faces[i].indices[2]].z);
-            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
-            cur_vertex++;
-
+            mesh->indices[cur_index++] = faces[i].indices[0];
+            mesh->indices[cur_index++] = faces[i].indices[1];
+            mesh->indices[cur_index++] = faces[i].indices[2];
             // second triangle
-
-            plSetMeshVertexPosition3f(mesh, cur_vertex,
-                                      vertices[faces[i].indices[3]].x,
-                                      vertices[faces[i].indices[3]].y,
-                                      vertices[faces[i].indices[3]].z);
-            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
-            cur_vertex++;
-            plSetMeshVertexPosition3f(mesh, cur_vertex,
-                                      vertices[faces[i].indices[0]].x,
-                                      vertices[faces[i].indices[0]].y,
-                                      vertices[faces[i].indices[0]].z);
-            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
-            cur_vertex++;
-            plSetMeshVertexPosition3f(mesh, cur_vertex,
-                                      vertices[faces[i].indices[2]].x,
-                                      vertices[faces[i].indices[2]].y,
-                                      vertices[faces[i].indices[2]].z);
-            plSetMeshVertexColour(mesh, cur_vertex, PLColour(r, g, b, 255));
-            cur_vertex++;
+            mesh->indices[cur_index++] = faces[i].indices[3];
+            mesh->indices[cur_index++] = faces[i].indices[0];
+            mesh->indices[cur_index++] = faces[i].indices[2];
+        } else if(faces[i].num_indices == 3) { // triangle
+            assert((cur_index + 3) < mesh->num_indices);
+            mesh->indices[cur_index++] = faces[i].indices[0];
+            mesh->indices[cur_index++] = faces[i].indices[1];
+            mesh->indices[cur_index++] = faces[i].indices[2];
         }
     }
 
@@ -348,6 +320,7 @@ PLModel *LoadRequiemModel(const char *path) {
     model->num_lods = 1;
     model->lods[0].meshes = calloc(1, sizeof(PLMesh));
     if(model->lods[0].meshes == NULL) {
+        plDeleteMesh(mesh);
         plDeleteModel(model);
 
         ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));

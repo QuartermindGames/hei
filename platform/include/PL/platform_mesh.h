@@ -65,7 +65,9 @@ typedef struct PLTriangle {
 typedef struct PLMesh {
     PLVertex *vertices;
     PLTriangle *triangles;
-    uint8_t *indices;
+
+    uint16_t *indices;
+    unsigned int num_indices;
 
     unsigned int num_verts;
     unsigned int num_triangles;

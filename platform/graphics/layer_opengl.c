@@ -341,6 +341,7 @@ void GLDrawMesh(PLMesh *mesh) {
     GLBindTexture(mesh->texture);
 
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
+#if 0
         glBegin(TranslatePrimitiveMode(mesh->primitive));
         for(unsigned int i = 0; i < mesh->num_verts; ++i) {
             glTexCoord2f(
@@ -368,6 +369,23 @@ void GLDrawMesh(PLMesh *mesh) {
             );
         }
         glEnd();
+#else
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glEnableClientState(GL_COLOR_ARRAY);
+
+        glVertexPointer(3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0]);
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(PLVertex), &mesh->vertices[0].colour);
+
+        GLuint mode = TranslatePrimitiveMode(mesh->primitive);
+        if(mode == GL_TRIANGLES) {
+            glDrawElements(mode, mesh->num_indices, GL_UNSIGNED_SHORT, mesh->indices);
+        } else {
+            glDrawArrays(mode, 0, mesh->num_verts);
+        }
+
+        glDisableClientState(GL_VERTEX_ARRAY);
+        glDisableClientState(GL_COLOR_ARRAY);
+#endif
         return;
     }
 
