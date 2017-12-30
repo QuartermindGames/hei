@@ -372,8 +372,10 @@ void GLDrawMesh(PLMesh *mesh) {
 #else
         glEnableClientState(GL_VERTEX_ARRAY);
         glEnableClientState(GL_COLOR_ARRAY);
+        glEnableClientState(GL_NORMAL_ARRAY);
 
-        glVertexPointer(3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0]);
+        glVertexPointer(3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].position);
+        glNormalPointer(GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].normal);
         glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(PLVertex), &mesh->vertices[0].colour);
 
         GLuint mode = TranslatePrimitiveMode(mesh->primitive);

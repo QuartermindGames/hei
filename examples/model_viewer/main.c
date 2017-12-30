@@ -238,7 +238,7 @@ int main(int argc, char **argv) {
 
     PLLight light[4];
     memset(&light, 0, sizeof(PLLight) * 4);
-    light[0].position   = PLVector3(0, 12.f, -800.f);
+    light[0].position   = PLVector3(0, 0, 0);
     light[0].colour     = plCreateColour4f(1.5f, .5f, .5f, 128.f);
     light[0].type       = PL_LIGHT_TYPE_OMNI;
 
@@ -299,6 +299,12 @@ int main(int argc, char **argv) {
         glRotatef(angles.y, 1, 0, 0);
         glRotatef(angles.x, 0, 1, 0);
         glRotatef(angles.z, 0, 0, 1);
+
+        //light[0].position = PLVector3(0, 10.f, 0);
+        //plApplyModelLighting(model, &light[0], PLVector3(20.f, 50.f, 80.f));
+        //plApplyModelLighting(model, &light[1], PLVector3(0, 0, 0));
+        //plApplyModelLighting(model, &light[2], PLVector3(0, 0, 0));
+        //plApplyModelLighting(model, &light[3], PLVector3(0, 0, 0));
 
         switch (view_mode) {
             default: {

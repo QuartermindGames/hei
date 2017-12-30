@@ -70,11 +70,10 @@ PLVector3 plGenerateVertexNormal(PLVector3 a, PLVector3 b, PLVector3 c) {
 #endif
 }
 
-void plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3 position) {
+void plApplyMeshLighting(PLMesh *mesh, const PLLight *light, PLVector3 position) {
     PLVector3 distvec = position;
     plSubtractVector3(&distvec, light->position);
     float distance = (light->colour.a - plVector3Length(distvec)) / 100.f;
-
     for(unsigned int i = 0; i < mesh->num_verts; i++) {
         PLVector3 normal = mesh->vertices[i].normal;
         float angle = (distance * ((normal.x * distvec.x) + (normal.y * distvec.y) + (normal.z * distvec.z)));
@@ -85,6 +84,7 @@ void plApplyMeshLighting(PLMesh *mesh, PLLight *light, PLVector3 position) {
             mesh->vertices[i].colour.g = light->colour.g * plFloatToByte(angle);
             mesh->vertices[i].colour.b = light->colour.b * plFloatToByte(angle);
         }
+        //GfxLog("light angle is %f\n", angle);
     }
 
 #if 0

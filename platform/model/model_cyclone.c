@@ -38,8 +38,8 @@ enum {
 #define MAX_MODEL_NAME      128
 #define MAX_TEXTURE_NAME    64
 
-#define MAX_INDICES_PER_FACE    9
-#define MIN_INDICES_PER_FACE    3
+#define MAX_INDICES_PER_POLYGON    9
+#define MIN_INDICES_PER_POLYGON    3
 
 #define MAX_UV_COORDS_PER_FACE  16
 
@@ -78,18 +78,9 @@ enum {
  */
 
 typedef struct __attribute__((packed)) MDLVertex {
-#if 0
-    uint8_t unknown0[2];
-    int16_t x;
-    uint8_t unknown1[2];
-    int16_t y;
-    uint8_t unknown2[2];
-    int16_t z;
-#else
     float x;
     float y;
     float z;
-#endif
 } MDLVertex;
 
 // 04:00:00:00:B4:BC:79:00:00:00:00:00:00:00:00:00:
@@ -104,25 +95,11 @@ typedef struct __attribute__((packed)) MDLVertex {
 // 09:00
 // Triangles are 50 bytes long
 
-typedef struct MDLFace {
-    uint16_t indices[MAX_INDICES_PER_FACE];
+typedef struct MDLPolygon {
+    uint16_t indices[MAX_INDICES_PER_POLYGON];
     uint8_t num_indices;
-
     int16_t uv[MAX_UV_COORDS_PER_FACE];
-} MDLFace;
-
-#if 0
-    uint8_t unknown0;  // typically seeing this as 4?
-    // could be number of verts per face?
-    uint8_t unknown000;
-    uint16_t unknown00;
-
-    uint8_t unknown1[16]; // completely no clue for now!
-
-    uint16_t indices[4];
-
-    uint8_t unknown2[32]; // no clue either!
-#endif
+} MDLPolygon;
 
 /////////////////////////////////////////////////////////////////
 
@@ -160,23 +137,20 @@ PLModel *LoadRequiemModel(const char *path) {
         return NULL;
     }
 
-    uint16_t num_vertices;
-    if(fread(&num_vertices, sizeof(uint16_t), 1, file) != 1) {
+    uint32_t num_vertices;
+    if(fread(&num_vertices, sizeof(uint32_t), 1, file) != 1) {
         AbortLoad("Invalid file length, failed to get number of vertices!\n");
         return NULL;
     }
 
-    // todo, figure out these two unknown bytes, quads? iirc (we did discuss this)
-    fseek(file, 2, SEEK_CUR);
-
-    uint32_t num_faces;
-    if(fread(&num_faces, sizeof(uint32_t), 1, file) != 1) {
-        AbortLoad("Invalid file length, failed to get number of faces!\n");
+    uint32_t num_polygons;
+    if(fread(&num_polygons, sizeof(uint32_t), 1, file) != 1) {
+        AbortLoad("Invalid file length, failed to get number of polygons!\n");
         return NULL;
     }
 
-    if(num_faces == 0) {
-        AbortLoad("Invalid number of faces, %d!\n", num_faces);
+    if(num_polygons == 0) {
+        AbortLoad("Invalid number of faces, %d!\n", num_polygons);
         return NULL;
     }
 
@@ -196,9 +170,9 @@ PLModel *LoadRequiemModel(const char *path) {
 
     unsigned int num_triangles = 0;
     unsigned int num_indices = 0;
-    MDLFace faces[num_faces];
-    memset(faces, 0, sizeof(MDLFace) * num_faces);
-    for(unsigned int i = 0; i < num_faces; ++i) {
+    MDLPolygon polygons[num_polygons];
+    memset(polygons, 0, sizeof(MDLPolygon) * num_polygons);
+    for(unsigned int i = 0; i < num_polygons; ++i) {
         /* 0000:00D0 |                           04 00 00 00  F4 9C 79 00 |         ....ô.y.
          * 0000:00E0 | 00 00 00 00  00 00 00 00  FC 9C 79 00  01 00 03 00 | ........ü.y.....
          * 0000:00F0 | 0B 00 09 00  93 65 72 00  00 80 00 00  00 80 7F 00 | .....er.........
@@ -213,44 +187,51 @@ PLModel *LoadRequiemModel(const char *path) {
          */
 
         long pos = ftell(file);
-        if(fread(&faces[i].num_indices, sizeof(uint32_t), 1, file) != 1) {
+        if(fread(&polygons[i].num_indices, sizeof(uint32_t), 1, file) != 1) {
             AbortLoad("Invalid file length, failed to load number of indices! (offset: %ld)\n", ftell(file));
             return NULL;
         }
 
-        if(faces[i].num_indices < MIN_INDICES_PER_FACE || faces[i].num_indices > MAX_INDICES_PER_FACE) {
-            AbortLoad("Invalid number of indices, %d, required for face %d! (offset: %ld)\n",
-                      faces[i].num_indices, i, ftell(file));
+        if(polygons[i].num_indices < MIN_INDICES_PER_POLYGON || polygons[i].num_indices > MAX_INDICES_PER_POLYGON) {
+            AbortLoad("Invalid number of indices, %d, required for polygon %d! (offset: %ld)\n",
+                      polygons[i].num_indices, i, ftell(file));
             return NULL;
         }
 
-        num_triangles += faces[i].num_indices - 2;
-
-        if(faces[i].num_indices == 4) {
+        num_triangles += polygons[i].num_indices - 2;
+        if(polygons[i].num_indices == 4) {
             // conversion of quad to triangles
             num_indices += 6;
         } else {
-            num_indices += faces[i].num_indices;
+            num_indices += polygons[i].num_indices * 100;
         }
 
         fseek(file, 16, SEEK_CUR); // todo, figure these out
-        if(fread(faces[i].indices, sizeof(uint16_t), faces[i].num_indices, file) != faces[i].num_indices) {
+        if(fread(polygons[i].indices, sizeof(uint16_t), polygons[i].num_indices, file) != polygons[i].num_indices) {
             AbortLoad("invalid file length, failed to load indices\n");
             return NULL;
         }
 
-        unsigned int num_uv_coords = (unsigned int) (faces[i].num_indices * 4);
+        unsigned int num_uv_coords = (unsigned int) (polygons[i].num_indices * 4);
         //ModelLog(" num bytes for UV coords is %lu\n", num_uv_coords * sizeof(int16_t));
-        if(fread(faces[i].uv, sizeof(int16_t), num_uv_coords, file) != num_uv_coords) {
+        if(fread(polygons[i].uv, sizeof(int16_t), num_uv_coords, file) != num_uv_coords) {
             AbortLoad("invalid file length, failed to load UV coords\n");
             return NULL;
         }
 
         long npos = ftell(file);
-        ModelLog(" Read %ld bytes for face %d (indices %d)\n", npos - pos, i, faces[i].num_indices);
+        ModelLog(" Read %ld bytes for polygon %d (indices %d)\n", npos - pos, i, polygons[i].num_indices);
     }
 
     fclose(file);
+
+#if 0 // check the indices are in range
+    for(unsigned int i = 0; i < num_polygons; ++i) {
+        for(unsigned int j = 0; j < polygons[i].num_indices; ++j) {
+            assert(polygons[i].indices[j] < num_vertices);
+        }
+    }
+#endif
 
     ModelLog("    texture_name_length: %d\n", texture_name_length);
     ModelLog("    texture_name:        %s\n", texture_name);
@@ -258,14 +239,13 @@ PLModel *LoadRequiemModel(const char *path) {
     for(unsigned int i = 0; i < num_vertices; ++i) {
         ModelLog("      vertex(%u) x(%f) y(%f) z(%f)\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
     }
-    ModelLog("    num_faces:           %d\n", num_faces);
-    for(unsigned int i = 0; i < num_faces; ++i) {
-        ModelLog("      face(%d) num_indices(%d)\n", i, faces[i].num_indices);
+    ModelLog("    num_polygons:        %d\n", num_polygons);
+    for(unsigned int i = 0; i < num_polygons; ++i) {
+        ModelLog("      face(%d) num_indices(%d)\n", i, polygons[i].num_indices);
     }
     ModelLog("    num_triangles:       %d\n", num_triangles);
     ModelLog("    num_indices:         %d\n", num_indices);
 
-    num_vertices = (uint16_t) (num_triangles * 3);
     PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_IMMEDIATE, num_triangles, num_vertices);
     if(mesh == NULL) {
         return NULL;
@@ -278,8 +258,6 @@ PLModel *LoadRequiemModel(const char *path) {
         return NULL;
     }
 
-    // todo, create a new mesh for faces greater than 4 verts?
-
     srand(num_vertices);
     for(unsigned int i = 0; i < num_vertices; ++i) {
         uint8_t r = (uint8_t)(rand() % 255);
@@ -291,22 +269,37 @@ PLModel *LoadRequiemModel(const char *path) {
     }
 
     unsigned int cur_index = 0;
-    for(unsigned int i = 0; i < num_faces; ++i) {
-        if(faces[i].num_indices == 4) { // quad
-            assert((cur_index + 6) < mesh->num_indices);
+    for(unsigned int i = 0; i < num_polygons; ++i) {
+        if(polygons[i].num_indices == 4) { // quad
+            assert((cur_index + 6) <= mesh->num_indices);
             // first triangle
-            mesh->indices[cur_index++] = faces[i].indices[0];
-            mesh->indices[cur_index++] = faces[i].indices[1];
-            mesh->indices[cur_index++] = faces[i].indices[2];
+            mesh->indices[cur_index++] = polygons[i].indices[0];
+            mesh->indices[cur_index++] = polygons[i].indices[1];
+            mesh->indices[cur_index++] = polygons[i].indices[2];
             // second triangle
-            mesh->indices[cur_index++] = faces[i].indices[3];
-            mesh->indices[cur_index++] = faces[i].indices[0];
-            mesh->indices[cur_index++] = faces[i].indices[2];
-        } else if(faces[i].num_indices == 3) { // triangle
-            assert((cur_index + 3) < mesh->num_indices);
-            mesh->indices[cur_index++] = faces[i].indices[0];
-            mesh->indices[cur_index++] = faces[i].indices[1];
-            mesh->indices[cur_index++] = faces[i].indices[2];
+            mesh->indices[cur_index++] = polygons[i].indices[3];
+            mesh->indices[cur_index++] = polygons[i].indices[0];
+            mesh->indices[cur_index++] = polygons[i].indices[2];
+        } else if((polygons[i].num_indices % 3) == 0) { // triangle
+            assert((cur_index + polygons[i].num_indices) <= mesh->num_indices);
+            for(unsigned int j = 0; j < polygons[i].num_indices; ++j) {
+                mesh->indices[cur_index++] = polygons[i].indices[j];
+            }
+        } else { // triangle strip, converted into triangles
+#if 0
+            for(unsigned int j = 0; j + 2 < polygons[i].num_indices; ++j) {
+                mesh->indices[cur_index++] = polygons[i].indices[j];
+                mesh->indices[cur_index++] = polygons[i].indices[j + 1];
+                mesh->indices[cur_index++] = polygons[i].indices[j + 2];
+            }
+#else
+            /* Triangle fan */
+            for(unsigned int j = 1; j + 1 < polygons[i].num_indices; ++j) {
+                mesh->indices[cur_index++] = polygons[i].indices[0];
+                mesh->indices[cur_index++] = polygons[i].indices[j];
+                mesh->indices[cur_index++] = polygons[i].indices[j + 1];
+            }
+#endif
         }
     }
 

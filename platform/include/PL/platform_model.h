@@ -125,6 +125,8 @@ uint8_t *plSerializeModel(PLModel *model, unsigned int type);
 void plDeleteModel(PLModel *model);
 void plDrawModel(PLModel *model);
 
+void plApplyModelLighting(PLModel *model, PLLight *light, PLVector3 position);
+
 void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path));
 
 void plGenerateModelNormals(PLModel *model);

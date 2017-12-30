@@ -130,6 +130,13 @@ PLModel *plLoadModel(const char *path) {
     return NULL;
 }
 
+void plApplyMeshLighting(PLMesh *mesh, const PLLight *light, PLVector3 position);
+void plApplyModelLighting(PLModel *model, PLLight *light, PLVector3 position) {
+    for(unsigned int i = 0; i < model->lods[model->internal.current_lod].num_meshes; ++i) {
+        plApplyMeshLighting(&model->lods[model->internal.current_lod].meshes[i], light, position);
+    }
+}
+
 void plDeleteModel(PLModel *model) {
     plAssert(model);
 
