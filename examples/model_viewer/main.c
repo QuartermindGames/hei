@@ -229,8 +229,6 @@ int main(int argc, char **argv) {
     plInitialize(argc, argv);
     plSetupLogOutput("./viewer.log");
 
-    create_window();
-
     if(argc < 2) {
         PRINT(" model_viewer -<optional mode> <model path>\n");
         PRINT("  -smd    : write model out to an SMD\n");
@@ -300,6 +298,8 @@ int main(int argc, char **argv) {
         write_smd(model);
         return EXIT_SUCCESS;
     }
+
+    create_window();
 
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
     plSetGraphicsMode(PL_GFX_MODE_OPENGL);
