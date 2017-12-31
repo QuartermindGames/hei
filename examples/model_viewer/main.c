@@ -94,6 +94,11 @@ void message_box(const char *title, const char *msg, ...) {
 
 //////////////////////////////////////////
 
+/* writes given model out to Valve's SMD model format */
+void write_smd(PLModel *model) {
+    //FILE *fout = fopen("./")
+}
+
 // loads a model in and then frees it
 void load_mdl_temp(const char *path) {
     PLModel *model = plLoadModel(path);
@@ -152,25 +157,73 @@ int main(int argc, char **argv) {
     create_window();
 
     if(argc < 2) {
-        PRINT(" model_viewer <model path>\n");
+        PRINT(" model_viewer -<optional mode> <model path>\n");
+        PRINT("  -smd    : write model out to an SMD\n");
+        PRINT("  -scan   : scans through a directory, must provide extension as follow-up argument to model path\n");
         return EXIT_SUCCESS;
     }
 
-    const char *model_path = argv[1];
-    if(model_path == NULL || model_path[0] == '\0') {
-        PRINT("Invalid path provided, aborting!\n");
+    char model_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+    char model_extension[12] = {'\0'};
+
+    bool extract_model = false;
+    bool scan_directory = false;
+
+    for(int i = 1; i < argc; ++i) {
+        if(argv[i] == NULL || argv[i][0] == '\0') {
+            continue;
+        }
+
+        if(pl_strcasecmp("-smd", argv[i]) == 0) {
+            extract_model = true;
+        } else if(pl_strcasecmp("-scan", argv[i]) == 0) {
+            scan_directory = true;
+        } else if(argv[i][0] != '-') { // probably model path, probably
+            if(model_path[0] == '\0') {
+                strncpy(model_path, argv[i], sizeof(model_path));
+            } else { // probably extension, probably
+                strncpy(model_extension, argv[i], sizeof(model_extension));
+            }
+        }
+    }
+
+    if(model_path[0] == '\0') {
+        printf("invalid path for model, aborting!\n");
         return EXIT_FAILURE;
     }
 
-    const char *ext_path = argv[2];
-    if(ext_path != NULL && ext_path[0] != '\0') {
-        plScanDirectory(model_path, ext_path, load_mdl_temp, false);
+    if(scan_directory) {
+        if(model_extension[0] == '\0') {
+            printf("invalid extension for scan, aborting!\n");
+            return EXIT_FAILURE;
+        }
+
+        plScanDirectory(model_path, model_extension, load_mdl_temp, false);
         return EXIT_SUCCESS;
     }
 
-    if(!plFileExists(model_path)) {
-        PRINT("No model found at path, \"%s\", aborting!\n", model_path);
-        return EXIT_FAILURE;
+    /* debris3
+     * debris2
+     * armor1
+     * shellcasing2sm
+     * medkit
+     * lamp7
+     * lamp
+     * medlab
+     * lion
+     * ctable
+     * throne
+     * lamp4
+     */
+
+    PLModel *model = plLoadModel(model_path);
+    if(model == NULL) {
+        PRINT_ERROR("Failed to load model \"%s\"!\n", model_path);
+    }
+
+    if(extract_model) {
+        write_smd(model);
+        return EXIT_SUCCESS;
     }
 
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
@@ -210,25 +263,6 @@ int main(int argc, char **argv) {
         PRINT_ERROR("%s", plGetError());
     }
 #endif
-
-    /* debris3
-     * debris2
-     * armor1
-     * shellcasing2sm
-     * medkit
-     * lamp7
-     * lamp
-     * medlab
-     * lion
-     * ctable
-     * throne
-     * lamp4
-     */
-
-    PLModel *model = plLoadModel(model_path);
-    if(model == NULL) {
-        PRINT_ERROR("Failed to load model \"%s\"!\n", model_path);
-    }
 
     //glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
