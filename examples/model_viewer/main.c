@@ -315,7 +315,7 @@ int main(int argc, char **argv) {
     }
     main_camera->mode = PL_CAMERA_MODE_PERSPECTIVE;
     main_camera->fov = 90.f;
-    main_camera->position = PLVector3(0, 12, -500);
+    main_camera->position = PLVector3(0, 2, -50);
     main_camera->viewport.w = WIDTH;
     main_camera->viewport.h = HEIGHT;
 
@@ -362,8 +362,8 @@ int main(int argc, char **argv) {
         if (state & SDL_BUTTON(SDL_BUTTON_LEFT)) {
             double nxpos = xpos - oldlmpos[0];
             double nypos = ypos - oldlmpos[1];
-            angles.x += (nxpos / 100.f);
-            angles.y += (nypos / 100.f);
+            angles.x += (nxpos / 50.f);
+            angles.y += (nypos / 50.f);
         } else {
             oldlmpos[0] = xpos;
             oldlmpos[1] = ypos;
@@ -373,7 +373,7 @@ int main(int argc, char **argv) {
         static double oldrmpos[2] = {0, 0};
         if (state & SDL_BUTTON(SDL_BUTTON_RIGHT)) {
             double nypos = ypos - oldrmpos[1];
-            main_camera->position.z += (nypos / 10.f);
+            main_camera->position.z += (nypos / 100.f);
         } else {
             oldrmpos[0] = xpos;
             oldrmpos[1] = ypos;
@@ -384,8 +384,8 @@ int main(int argc, char **argv) {
         if(state & SDL_BUTTON(SDL_BUTTON_MIDDLE)) {
             double nxpos = xpos - oldmmpos[0];
             double nypos = ypos - oldmmpos[1];
-            main_camera->position.y += (nypos / 5.f);
-            main_camera->position.x -= (nxpos / 5.f);
+            main_camera->position.y += (nypos / 50.f);
+            main_camera->position.x -= (nxpos / 50.f);
         } else {
             oldmmpos[0] = xpos;
             oldmmpos[1] = ypos;
