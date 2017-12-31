@@ -149,8 +149,12 @@ void write_smd(PLModel *model) {
     /* triangles block */
     fprintf(fout, "triangles\n");
     for(unsigned int i = 0; i < model->lods[0].num_meshes; ++i) {
-        fprintf(fout, "%s\n", model->lods[0].meshes[i].texture->name);
         PLMesh *cur_mesh = &model->lods[0].meshes[i];
+        if(cur_mesh->texture == NULL) {
+            fprintf(fout, "null\n");
+        } else {
+            fprintf(fout, "%s\n", cur_mesh->texture->name);
+        }
         if(cur_mesh->primitive == PL_MESH_TRIANGLES) {
             for(unsigned int j = 0; j < cur_mesh->num_indices; j++) {
                 write_smd_vertex(fout, &cur_mesh->vertices[cur_mesh->indices[j]]);
@@ -166,6 +170,8 @@ void write_smd(PLModel *model) {
 
     /* and leave a blank line at the end, to keep studiomdl happy */
     fprintf(fout, "\n");
+
+    fclose(fout);
 }
 
 // loads a model in and then frees it
