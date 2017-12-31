@@ -91,8 +91,6 @@ typedef struct PLModel {
     PLModelBone bones[PL_MAX_MODEL_BONES];
     unsigned int num_bones;
 
-    unsigned int num_animations;
-
     PLModelLOD lods[PL_MAX_MODEL_LODS];
     unsigned int num_lods;
 
