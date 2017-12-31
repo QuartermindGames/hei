@@ -29,14 +29,14 @@ For more information, please refer to <http://unlicense.org>
 typedef enum PLPrimitive {
     PL_PRIMITIVE_IGNORE,
 
-    PLMESH_LINES,
+    PL_MESH_LINES,
     PL_PRIMITIVE_LINE_STRIP,
     PL_MESH_POINTS,
     PL_MESH_TRIANGLES,
-    PL_TRIANGLE_STRIP,
-    PLMESH_TRIANGLE_FAN,
-    PLMESH_TRIANGLE_FAN_LINE,
-    PLMESH_QUADS,
+    PL_MESH_TRIANGLE_STRIP,
+    PL_MESH_TRIANGLE_FAN,
+    PL_MESH_TRIANGLE_FAN_LINE,
+    PL_MESH_QUADS,
 
     PL_NUM_PRIMITIVES
 } PLMeshPrimitive;

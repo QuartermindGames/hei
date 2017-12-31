@@ -193,8 +193,6 @@ void GLBindTexture(const PLTexture *texture) {
 }
 
 void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
-    BindTexture(texture);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
@@ -263,8 +261,6 @@ void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
     if(levels == 1 && !(texture->flags & PL_TEXTURE_FLAG_NOMIPS)) {
         glGenerateMipmap(GL_TEXTURE_2D);
     }
-
-    BindTexture(NULL);
 }
 
 /////////////////////////////////////////////////////////////
@@ -277,13 +273,13 @@ typedef struct MeshTranslatePrimitive {
 } MeshTranslatePrimitive;
 
 MeshTranslatePrimitive primitives[] = {
-    {PLMESH_LINES, GL_LINES, "LINES"},
+    {PL_MESH_LINES, GL_LINES, "LINES"},
     {PL_MESH_POINTS, GL_POINTS, "POINTS"},
     {PL_MESH_TRIANGLES, GL_TRIANGLES, "TRIANGLES"},
-    {PLMESH_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN"},
-    {PLMESH_TRIANGLE_FAN_LINE, GL_LINES, "TRIANGLE_FAN_LINE"},
-    {PL_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"},
-    {PLMESH_QUADS, GL_TRIANGLES, "QUADS"}   // todo, translate
+    {PL_MESH_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN"},
+    {PL_MESH_TRIANGLE_FAN_LINE, GL_LINES, "TRIANGLE_FAN_LINE"},
+    {PL_MESH_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"},
+    {PL_MESH_QUADS, GL_TRIANGLES, "QUADS"}   // todo, translate
 };
 
 unsigned int TranslatePrimitiveMode(PLMeshPrimitive mode) {
@@ -327,6 +323,12 @@ void GLUploadMesh(PLMesh *mesh) {
 
     glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[MESH_VBO]);
     //glBufferSubData(GL_ARRAY_BUFFER, )
+
+#if 0
+    glVertexPointer(3, GL_FLOAT, sizeof(Vertex), (const void *)offsetof(Vertex, position));
+    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (const void *)offsetof(Vertex, colour));
+    glNormalPointer(GL_FLOAT, sizeof(Vertex), (const void *)offsetof(Vertex, normal));
+#endif
 }
 
 void GLDeleteMesh(PLMesh *mesh) {
@@ -338,7 +340,7 @@ void GLDeleteMesh(PLMesh *mesh) {
 }
 
 void GLDrawMesh(PLMesh *mesh) {
-    GLBindTexture(mesh->texture);
+    BindTexture(mesh->texture);
 
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
 #if 0
@@ -397,8 +399,6 @@ void GLDrawMesh(PLMesh *mesh) {
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[MESH_VBO]);
-
-    BindTexture(mesh->texture);
 
     GLuint mode = TranslatePrimitiveMode(mesh->primitive);
     if(mode == GL_TRIANGLES) {

@@ -329,7 +329,7 @@ PLresult InitConsole(void) {
         console_panes[i].colour = plCreateColour4b(CONSOLE_DEFAULT_COLOUR);
     }
 
-    if((mesh_line = plCreateMesh(PLMESH_LINES, PL_DRAW_IMMEDIATE, 0, 4)) == NULL) {
+    if((mesh_line = plCreateMesh(PL_MESH_LINES, PL_DRAW_IMMEDIATE, 0, 4)) == NULL) {
         return PL_RESULT_MEMORY_ALLOCATION;
     }
 

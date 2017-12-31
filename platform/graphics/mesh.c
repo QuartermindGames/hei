@@ -149,9 +149,7 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
         return NULL;
     }
 
-    if(gfx_layer.CreateMeshPOST) {
-        gfx_layer.CreateMeshPOST(mesh);
-    }
+    CallGfxFunction(CreateMeshPOST, mesh);
 
     return mesh;
 }
@@ -243,15 +241,6 @@ void plSetMeshUniformColour(PLMesh *mesh, PLColour colour) {
 
 void plUploadMesh(PLMesh *mesh) {
     CallGfxFunction(UploadMesh, mesh);
-
-#if 0
-
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo_vertex_array);
-    glVertexPointer(3, GL_FLOAT, sizeof(Vertex), (const void *)offsetof(Vertex, position));
-    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (const void *)offsetof(Vertex, colour));
-    glNormalPointer(GL_FLOAT, sizeof(Vertex), (const void *)offsetof(Vertex, normal));
-
-#endif
 }
 
 void plDrawMesh(PLMesh *mesh) {
@@ -302,7 +291,7 @@ void plDrawRectangle(PLRectangle2D rect) {
     static PLMesh *mesh = NULL;
     if(!mesh) {
         mesh = plCreateMesh(
-                PL_TRIANGLE_STRIP,
+                PL_MESH_TRIANGLE_STRIP,
                 PL_DRAW_IMMEDIATE, // todo, update to dynamic
                 2, 4
         );
@@ -336,7 +325,7 @@ void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
     static PLMesh *mesh = NULL;
     if (mesh == NULL) {
         mesh = plCreateMesh(
-                PLMESH_TRIANGLE_FAN,
+                PL_MESH_TRIANGLE_FAN,
                 PL_DRAW_IMMEDIATE, // todo, update to dynamic
                 1, 3
         );

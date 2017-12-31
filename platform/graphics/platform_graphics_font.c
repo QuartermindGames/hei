@@ -235,7 +235,7 @@ void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColo
     static PLMesh *mesh = NULL;
     if(mesh == NULL) {
         if((mesh = plCreateMesh(
-                PL_TRIANGLE_STRIP,
+                PL_MESH_TRIANGLE_STRIP,
                 PL_DRAW_IMMEDIATE,
                 2, 4
         )) == NULL) {

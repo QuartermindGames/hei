@@ -370,6 +370,8 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
 
     CallGfxFunction(UploadTexture, texture, upload);
 
+    BindTexture(NULL);
+
     return true;
 }
 
