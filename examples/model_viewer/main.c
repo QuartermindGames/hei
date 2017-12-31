@@ -31,11 +31,11 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_graphics_camera.h>
 #include <PL/platform_model.h>
+#include <PL/platform_filesystem.h>
 
 #include <SDL2/SDL.h>
 
 #include <GL/glew.h>
-#include <PL/platform_filesystem.h>
 
 #include "../shared.h"
 
@@ -94,10 +94,78 @@ void message_box(const char *title, const char *msg, ...) {
 
 //////////////////////////////////////////
 
+void write_smd_vertex(FILE *file, const PLVertex *vertex) {
+    /*             P X  Y  Z  NX NY NZ U  V */
+    fprintf(file, "0 %f %f %f %f %f %f %f %f\n",
+
+            vertex->position.x,
+            vertex->position.y,
+            vertex->position.z,
+
+            vertex->normal.x,
+            vertex->normal.y,
+            vertex->normal.z,
+
+            vertex->st[0].x,
+            vertex->st[0].y);
+}
+
 /* writes given model out to Valve's SMD model format */
 void write_smd(PLModel *model) {
-    //FILE *fout = fopen("./")
-    //
+    char body_path[PL_SYSTEM_MAX_PATH];
+    snprintf(body_path, sizeof(body_path), "./%s_body.smd", model->name);
+    FILE *fout = fopen(body_path, "w");
+    if(fout == NULL) {
+        printf(plGetError());
+        exit(EXIT_FAILURE);
+    }
+
+    /* header */
+    fprintf(fout, "version 1\n\n");
+
+    /* write out the nodes block */
+    fprintf(fout, "nodes\n");
+    if(model->num_bones == 0) {
+        /* write out a dummy bone! */
+        fprintf(fout, "0 \"root\" -1\n");
+    } else {
+        /* todo, revisit this so we're correctly connecting child/parent */
+        for (unsigned int i = 0; i < model->num_bones; ++i) {
+            fprintf(fout, "%u %s %d\n", i, model->bones[i].name, (int) i - 1);
+        }
+    }
+    fprintf(fout, "end\n\n");
+
+    /* skeleton block */
+    fprintf(fout, "skeleton\ntime 0\n");
+    if(model->num_bones == 0) {
+        /* write out dummy bone coords! */
+        fprintf(fout, "0 0 0 0 0 0 0\n");
+    } else {
+        /* todo, print out default coords for each bone */
+    }
+    fprintf(fout, "end\n\n");
+
+    /* triangles block */
+    fprintf(fout, "triangles\n");
+    for(unsigned int i = 0; i < model->lods[0].num_meshes; ++i) {
+        fprintf(fout, "%s\n", model->lods[0].meshes[i].texture->name);
+        PLMesh *cur_mesh = &model->lods[0].meshes[i];
+        if(cur_mesh->primitive == PL_MESH_TRIANGLES) {
+            for(unsigned int j = 0; j < cur_mesh->num_indices; j++) {
+                write_smd_vertex(fout, &cur_mesh->vertices[cur_mesh->indices[j]]);
+            }
+        } else {
+            /* todo, some sort of conversion is needed here... hrm */
+            for (unsigned int j = 0; j < cur_mesh->num_verts; j++) {
+                write_smd_vertex(fout, &cur_mesh->vertices[j]);
+            }
+        }
+    }
+    fprintf(fout, "end\n\n");
+
+    /* and leave a blank line at the end, to keep studiomdl happy */
+    fprintf(fout, "\n");
 }
 
 // loads a model in and then frees it

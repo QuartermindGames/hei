@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_image.h>
 #include <PL/platform_console.h>
 #include <PL/platform_graphics_texture.h>
+#include <PL/platform_filesystem.h>
 
 PLConsoleVariable pl_texture_anisotropy = { "gr_texture_anisotropy", "16", pl_int_var, NULL };
 
@@ -367,6 +368,13 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     texture->format     = upload->format;
     texture->size       = upload->size;
     texture->levels     = upload->levels;
+
+    const char *file_name = plGetFileName(upload->path);
+    if(file_name == NULL || file_name[0] == '\0') {
+        strcpy(texture->name, "null");
+    } else {
+        strncpy(texture->name, file_name, sizeof(texture->name));
+    }
 
     CallGfxFunction(UploadTexture, texture, upload);
 

@@ -87,7 +87,7 @@ typedef struct PLTexture {
     unsigned int levels;
     unsigned int crc;
 
-    const char *path;
+    char name[64];
 
     PLTextureFilter filter;
 
