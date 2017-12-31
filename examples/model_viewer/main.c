@@ -97,6 +97,7 @@ void message_box(const char *title, const char *msg, ...) {
 /* writes given model out to Valve's SMD model format */
 void write_smd(PLModel *model) {
     //FILE *fout = fopen("./")
+    //
 }
 
 // loads a model in and then frees it
