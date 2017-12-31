@@ -150,20 +150,15 @@ void write_smd(PLModel *model) {
     fprintf(fout, "triangles\n");
     for(unsigned int i = 0; i < model->lods[0].num_meshes; ++i) {
         PLMesh *cur_mesh = &model->lods[0].meshes[i];
-        if(cur_mesh->texture == NULL) {
-            fprintf(fout, "null\n");
-        } else {
-            fprintf(fout, "%s\n", cur_mesh->texture->name);
-        }
-        if(cur_mesh->primitive == PL_MESH_TRIANGLES) {
-            for(unsigned int j = 0; j < cur_mesh->num_indices; j++) {
-                write_smd_vertex(fout, &cur_mesh->vertices[cur_mesh->indices[j]]);
+        for(unsigned int j = 0; j < cur_mesh->num_indices; ) {
+            if(cur_mesh->texture == NULL) {
+                fprintf(fout, "null\n");
+            } else {
+                fprintf(fout, "%s\n", cur_mesh->texture->name);
             }
-        } else {
-            /* todo, some sort of conversion is needed here... hrm */
-            for (unsigned int j = 0; j < cur_mesh->num_verts; j++) {
-                write_smd_vertex(fout, &cur_mesh->vertices[j]);
-            }
+            write_smd_vertex(fout, &cur_mesh->vertices[cur_mesh->indices[j++]]);
+            write_smd_vertex(fout, &cur_mesh->vertices[cur_mesh->indices[j++]]);
+            write_smd_vertex(fout, &cur_mesh->vertices[cur_mesh->indices[j++]]);
         }
     }
     fprintf(fout, "end\n\n");

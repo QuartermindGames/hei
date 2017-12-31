@@ -160,7 +160,7 @@ PLModel *LoadRequiemModel(const char *path) {
         return NULL;
     }
 
-#if 1 // Requiem's models seem to be pretty small...
+#if 0 // Requiem's models seem to be pretty small...
     for(unsigned int i = 0; i < num_vertices; ++i) {
         vertices[i].x *= 100.f;
         vertices[i].y *= 100.f;
