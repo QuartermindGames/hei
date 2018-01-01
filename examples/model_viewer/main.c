@@ -338,6 +338,8 @@ int main(int argc, char **argv) {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
+    //plSetCullMode(PL_CULL_NEGATIVE);
+
     glEnable(GL_LINE_SMOOTH);
 
     PLLight light[4];

@@ -103,6 +103,28 @@ typedef struct MDLPolygon {
 
 /////////////////////////////////////////////////////////////////
 
+/* rough notes for skeletal models in Requiem, which we don't yet support
+ * but should do!
+ *
+ * Aaron.mdl
+ * 44 bytes for header
+ * this is then followed by the texture name, supposedly unused
+ * texture name appears to be typically 11 bytes? followed by null terminator
+ * this is then followed by a 16bit int and then another 16bit int?
+ * 28 bytes of nothing ... ?
+ *
+ * fish.mdl
+ * 44 bytes for header, again
+ * followed by texture name
+ * texture name _is_ 11 bytes
+ * followed by 16bit integer
+ * and another 16bit integer
+ * 28 bytes of nothing ... ?
+ *
+ * 56 bytes for each block following header
+ * perhaps these are descriptors for the skeleton?
+ */
+
 PLModel *LoadRequiemModel(const char *path) {
     FILE *file = fopen(path, "rb");
     if(file == NULL) {
