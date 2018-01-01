@@ -304,20 +304,19 @@ PLModel *LoadRequiemModel(const char *path) {
             mesh->indices[cur_index++] = polygons[i].indices[3];
             mesh->indices[cur_index++] = polygons[i].indices[0];
             mesh->indices[cur_index++] = polygons[i].indices[2];
-        } else if((polygons[i].num_indices % 3) == 0) { // triangle
+        } else if(polygons[i].num_indices == 3) { // triangle
             assert((cur_index + polygons[i].num_indices) <= mesh->num_indices);
             for(unsigned int j = 0; j < polygons[i].num_indices; ++j) {
                 mesh->indices[cur_index++] = polygons[i].indices[j];
             }
-        } else { // triangle strip, converted into triangles
-#if 0
+        } else {
+#if 0 /* converts triangle strip into triangles */
             for(unsigned int j = 0; j + 2 < polygons[i].num_indices; ++j) {
                 mesh->indices[cur_index++] = polygons[i].indices[j];
                 mesh->indices[cur_index++] = polygons[i].indices[j + 1];
                 mesh->indices[cur_index++] = polygons[i].indices[j + 2];
             }
-#else
-            /* Triangle fan */
+#else /* converts triangle fan into triangles */
             for(unsigned int j = 1; j + 1 < polygons[i].num_indices; ++j) {
                 mesh->indices[cur_index++] = polygons[i].indices[0];
                 mesh->indices[cur_index++] = polygons[i].indices[j];
