@@ -343,35 +343,6 @@ void GLDrawMesh(PLMesh *mesh) {
     BindTexture(mesh->texture);
 
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
-#if 0
-        glBegin(TranslatePrimitiveMode(mesh->primitive));
-        for(unsigned int i = 0; i < mesh->num_verts; ++i) {
-            glTexCoord2f(
-                    mesh->vertices[i].st[0].x,
-                    mesh->vertices[i].st[0].y
-            );
-
-            glColor4ub(
-                    mesh->vertices[i].colour.r,
-                    mesh->vertices[i].colour.g,
-                    mesh->vertices[i].colour.b,
-                    mesh->vertices[i].colour.a
-            );
-
-            glNormal3f(
-                    mesh->vertices[i].normal.x,
-                    mesh->vertices[i].normal.y,
-                    mesh->vertices[i].normal.z
-            );
-
-            glVertex3f(
-                    mesh->vertices[i].position.x,
-                    mesh->vertices[i].position.y,
-                    mesh->vertices[i].position.z
-            );
-        }
-        glEnd();
-#else
         glEnableClientState(GL_VERTEX_ARRAY);
         glEnableClientState(GL_COLOR_ARRAY);
         glEnableClientState(GL_NORMAL_ARRAY);
@@ -389,7 +360,7 @@ void GLDrawMesh(PLMesh *mesh) {
 
         glDisableClientState(GL_VERTEX_ARRAY);
         glDisableClientState(GL_COLOR_ARRAY);
-#endif
+        glDisableClientState(GL_NORMAL_ARRAY);
         return;
     }
 

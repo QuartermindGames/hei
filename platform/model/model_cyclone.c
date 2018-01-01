@@ -41,7 +41,7 @@ enum {
 #define MAX_INDICES_PER_POLYGON    9
 #define MIN_INDICES_PER_POLYGON    3
 
-#define MAX_UV_COORDS_PER_FACE  16
+#define MAX_UV_COORDS_PER_FACE  36
 
 /* There seem to be two seperate model formats
  * used within the game, those that are static
@@ -97,7 +97,7 @@ typedef struct __attribute__((packed)) MDLVertex {
 
 typedef struct MDLPolygon {
     uint16_t indices[MAX_INDICES_PER_POLYGON];
-    uint8_t num_indices;
+    uint32_t num_indices;
     int16_t uv[MAX_UV_COORDS_PER_FACE];
 } MDLPolygon;
 
@@ -143,6 +143,11 @@ PLModel *LoadRequiemModel(const char *path) {
         return NULL;
     }
 
+    if(num_vertices == 0) {
+        AbortLoad("invalid number of vertices, %d", num_vertices);
+        return NULL;
+    }
+
     uint32_t num_polygons;
     if(fread(&num_polygons, sizeof(uint32_t), 1, file) != 1) {
         AbortLoad("Invalid file length, failed to get number of polygons!\n");
@@ -158,6 +163,10 @@ PLModel *LoadRequiemModel(const char *path) {
     if(fread(vertices, sizeof(MDLVertex), num_vertices, file) != num_vertices) {
         AbortLoad("Invalid file length, failed to load vertices!\n");
         return NULL;
+    }
+
+    for(unsigned int i = 0; i < num_vertices; ++i) {
+        ModelLog("v %u %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
     }
 
     unsigned int num_triangles = 0;
@@ -212,7 +221,7 @@ PLModel *LoadRequiemModel(const char *path) {
         }
 
         long npos = ftell(file);
-        ModelLog(" Read %ld bytes for polygon %d (indices %d)\n", npos - pos, i, polygons[i].num_indices);
+        //ModelLog(" Read %ld bytes for polygon %d (indices %d)\n", npos - pos, i, polygons[i].num_indices);
     }
 
     fclose(file);
@@ -225,18 +234,21 @@ PLModel *LoadRequiemModel(const char *path) {
     }
 #endif
 
-    ModelLog("    texture_name_length: %d\n", texture_name_length);
-    ModelLog("    texture_name:        %s\n", texture_name);
-    ModelLog("    num_vertices:        %d\n", num_vertices);
+    ModelLog("texture_name_length: %d\n", texture_name_length);
+    ModelLog("texture_name:        %s\n", texture_name);
+    ModelLog("num_vertices:        %d\n", num_vertices);
     for(unsigned int i = 0; i < num_vertices; ++i) {
-        ModelLog("      vertex(%u) x(%f) y(%f) z(%f)\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
+        ModelLog("  vertex(%u) x(%f) y(%f) z(%f)\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
     }
-    ModelLog("    num_polygons:        %d\n", num_polygons);
+    ModelLog("num_polygons:        %d\n", num_polygons);
     for(unsigned int i = 0; i < num_polygons; ++i) {
-        ModelLog("      face(%d) num_indices(%d)\n", i, polygons[i].num_indices);
+        ModelLog("  face(%d) num_indices(%d)\n", i, polygons[i].num_indices);
+        for(unsigned int j = 0; j < polygons[i].num_indices; ++j) {
+            ModelLog("   index %d\n", polygons[i].indices[j]);
+        }
     }
-    ModelLog("    num_triangles:       %d\n", num_triangles);
-    ModelLog("    num_indices:         %d\n", num_indices);
+    ModelLog("num_triangles:       %d\n", num_triangles);
+    ModelLog("num_indices:         %d\n", num_indices);
 
     PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_IMMEDIATE, num_triangles, num_vertices);
     if(mesh == NULL) {
