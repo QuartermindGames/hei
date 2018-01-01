@@ -165,10 +165,6 @@ PLModel *LoadRequiemModel(const char *path) {
         return NULL;
     }
 
-    for(unsigned int i = 0; i < num_vertices; ++i) {
-        ModelLog("v %u %f %f %f\n", i, vertices[i].x, vertices[i].y, vertices[i].z);
-    }
-
     unsigned int num_triangles = 0;
     unsigned int num_indices = 0;
     MDLPolygon polygons[num_polygons];
@@ -234,6 +230,7 @@ PLModel *LoadRequiemModel(const char *path) {
     }
 #endif
 
+#if 0 // debug info
     ModelLog("texture_name_length: %d\n", texture_name_length);
     ModelLog("texture_name:        %s\n", texture_name);
     ModelLog("num_vertices:        %d\n", num_vertices);
@@ -249,6 +246,7 @@ PLModel *LoadRequiemModel(const char *path) {
     }
     ModelLog("num_triangles:       %d\n", num_triangles);
     ModelLog("num_indices:         %d\n", num_indices);
+#endif
 
     PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_IMMEDIATE, num_triangles, num_vertices);
     if(mesh == NULL) {
