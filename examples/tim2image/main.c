@@ -31,7 +31,6 @@ For more information, please refer to <http://unlicense.org>
 #include <stdlib.h>
 
 #include <IL/il.h>
-#include <PL/platform_log.h>
 #include <PL/platform_image.h>
 
 int main(int argc, char **argv) {
@@ -45,7 +44,7 @@ int main(int argc, char **argv) {
     /* Load the TIM into a PLImage structure. */
 
     PLImage image;
-    PLresult result = plLoadImage(argv[1], &image);
+    bool result = plLoadImage(argv[1], &image);
     if(result != PL_RESULT_SUCCESS) {
         printf("Failed to load TIM image!\n%s", plGetError());
         return 1;
