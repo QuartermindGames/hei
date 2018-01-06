@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
+#include <errno.h>
 
 #include <PL/platform_filesystem.h>
 

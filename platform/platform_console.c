@@ -28,6 +28,8 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_filesystem.h>
 
+#include <errno.h>
+
 #include "platform_private.h"
 #include "graphics/graphics_private.h"
 

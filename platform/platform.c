@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_graphics.h>
 
 #include <sys/time.h>
+#include <errno.h>
 
 /*	Generic functions for platform, such as	error handling.	*/
 
