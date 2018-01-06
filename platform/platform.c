@@ -192,7 +192,50 @@ void plShutdown(void) {
     ShutdownConsole();
 }
 
-/*	ERROR HANDLING	*/
+/*-------------------------------------------------------------------
+ * ERROR HANDLING
+ *-----------------------------------------------------------------*/
+
+#ifdef _WIN32
+
+const char *GetLastError_strerror(DWORD errnum) {
+    /* TODO: Make this buffer per-thread */
+    static char buf[1024] = {'\0'};
+
+    if(!FormatMessage(
+        FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL,
+        errnum,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        buf,
+        sizeof(buf),
+        NULL))
+    {
+        return "INTERNAL ERROR: Could not resolve error message";
+    }
+
+    /* Microsoft like to end some of their errors with newlines... */
+
+    char *nl = strrchr(buf, '\n');
+    char *cr = strrchr(buf, '\r');
+
+    if(nl != NULL && nl[1] == '\0') { *nl = '\0'; }
+    if(cr != NULL && cr[1] == '\0') { *cr = '\0'; }
+
+    return buf;
+}
+
+#else
+
+int GetLastError(void) {
+    return errno;
+}
+
+const char *GetLastError_strerror(int errnum) {
+    return strerror(errnum);
+}
+
+#endif
 
 #define    MAX_FUNCTION_LENGTH  64
 #define    MAX_ERROR_LENGTH     2048
@@ -239,35 +282,6 @@ void SetErrorMessage(const char *msg, ...) {
 const char *plGetError(void) {
     return loc_error;
 }
-
-#ifdef _WIN32
-const char *GetLastError_strerror(DWORD errnum) {
-    /* TODO: Make this buffer per-thread */
-    static char buf[1024] = {'\0'};
-
-    if(!FormatMessage(
-        FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL,
-        errnum,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        buf,
-        sizeof(buf),
-        NULL))
-    {
-        return "INTERNAL ERROR: Could not resolve error message";
-    }
-
-    /* Microsoft like to end some of their errors with newlines... */
-
-    char *nl = strrchr(buf, '\n');
-    char *cr = strrchr(buf, '\r');
-
-    if(nl != NULL && nl[1] == '\0') { *nl = '\0'; }
-    if(cr != NULL && cr[1] == '\0') { *cr = '\0'; }
-
-    return buf;
-}
-#endif
 
 /////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC

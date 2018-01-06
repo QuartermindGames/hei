@@ -74,7 +74,6 @@ support.
 #	include <ctype.h>
 #	include <math.h>
 #	include <setjmp.h>
-#	include <errno.h>
 #	include <time.h>
 
 #	include <sys/stat.h>
@@ -92,10 +91,13 @@ support.
 #			include <map>
 #			include <unordered_map>
 #			include <algorithm>
+#	        include <cerrno>
 
 // istream
 #			include <fstream>
 #			include <iostream>
+#       else
+#	        include <errno.h>
 #		endif
 #	endif
 #endif
@@ -253,13 +255,9 @@ PL_EXTERN const char * plGetError(void);        // Returns the last recorded err
 
 /* TODO: Should this be private? */
 #ifdef _WIN32
-const char *GetLastError_strerror(DWORD errnum);
-#else
-#define GetLastError() errno
-#define GetLastError_strerror(errnum) strerror(errnum)
 
-#define WSAGetLastError() errno
-#define WSAGetLastError_strerror(errnum) strerror(errnum)
+#else
+
 #endif
 
 // CL Arguments

@@ -46,3 +46,14 @@ enum {
 #else
 #   define DebugPrint(...)      Print(__VA_ARGS__)
 #endif
+
+#ifdef _WIN32
+
+const char *GetLastError_strerror(DWORD errnum);
+
+#else
+
+#define WSAGetLastError() GetLastError()
+#define WSAGetLastError_strerror(errnum) GetLastError_strerror(errnum)
+
+#endif
