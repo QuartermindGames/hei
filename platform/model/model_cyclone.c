@@ -205,7 +205,7 @@ PLModel *LoadRequiemModel(const char *path) {
          * F4 9C 79 00
          */
 
-        long pos = ftell(file);
+        //long pos = ftell(file);
         if(fread(&polygons[i].num_indices, sizeof(uint32_t), 1, file) != 1) {
             AbortLoad("Invalid file length, failed to load number of indices! (offset: %ld)\n", ftell(file));
             return NULL;
@@ -238,7 +238,7 @@ PLModel *LoadRequiemModel(const char *path) {
             return NULL;
         }
 
-        long npos = ftell(file);
+        //long npos = ftell(file);
         //ModelLog(" Read %ld bytes for polygon %d (indices %d)\n", npos - pos, i, polygons[i].num_indices);
     }
 
