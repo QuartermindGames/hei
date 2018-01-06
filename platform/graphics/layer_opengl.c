@@ -346,10 +346,12 @@ void GLDrawMesh(PLMesh *mesh) {
         glEnableClientState(GL_VERTEX_ARRAY);
         glEnableClientState(GL_COLOR_ARRAY);
         glEnableClientState(GL_NORMAL_ARRAY);
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
         glVertexPointer(3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].position);
         glNormalPointer(GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].normal);
         glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(PLVertex), &mesh->vertices[0].colour);
+        glTexCoordPointer(2, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].st[0]);
 
         GLuint mode = TranslatePrimitiveMode(mesh->primitive);
         if(mode == GL_TRIANGLES) {
@@ -361,6 +363,7 @@ void GLDrawMesh(PLMesh *mesh) {
         glDisableClientState(GL_VERTEX_ARRAY);
         glDisableClientState(GL_COLOR_ARRAY);
         glDisableClientState(GL_NORMAL_ARRAY);
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         return;
     }
 
