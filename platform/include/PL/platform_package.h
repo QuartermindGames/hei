@@ -41,6 +41,10 @@ typedef struct PLPackage {
 
     unsigned int table_size;
     PLPackageIndex *table;
+
+    struct {
+        bool(*LoadFile)(FILE *fh, PLPackageIndex *pi);
+    } internal;
 } PLPackage;
 
 PL_EXTERN_C

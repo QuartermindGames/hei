@@ -25,6 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#include <PL/platform_package.h>
+
 #include "package_private.h"
 
 /*  MAD/MTD Format Specification    */
@@ -115,9 +117,9 @@ PLPackage *LoadMADPackage(const char *path, bool cache) {
 
     strcpy(package->path, filename);
 #endif
-
-    package->table_size = num_indices;
-    package->table      = calloc(num_indices, sizeof(struct PLPackageIndex));
+    package->internal.LoadFile  = LoadMADPackageFile;
+    package->table_size         = num_indices;
+    package->table              = calloc(num_indices, sizeof(struct PLPackageIndex));
     if(package->table == NULL) {
         goto FAILED;
     }

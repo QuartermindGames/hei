@@ -25,6 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#include <PL/platform_package.h>
+
 #include "package_private.h"
 
 PLPackage *plCreatePackage(const char *dest) {
@@ -103,7 +105,6 @@ PLPackage *plLoadPackage(const char *path, bool cache) {
                 if (pl_strcasecmp(ext, load_packs[i].extensions[j]) == 0) {
                     PLPackage *package = load_packs[i].LoadPackage(path, cache);
                     if (package != NULL) {
-                        strncpy(package->path, path, sizeof(package->path));
                         return package;
                     }
                     break;
@@ -114,7 +115,6 @@ PLPackage *plLoadPackage(const char *path, bool cache) {
         for(unsigned int i = 0; i < num_load_packs; ++i) {
             PLPackage *package = load_packs[i].LoadPackage(path, cache);
             if(package != NULL) {
-                strncpy(package->path, path, sizeof(package->path));
                 return package;
             }
         }
@@ -124,6 +124,11 @@ PLPackage *plLoadPackage(const char *path, bool cache) {
 }
 
 bool plLoadPackageFile(PLPackage *package, const char *file, const uint8_t **data, size_t *size) {
+    if(package->internal.LoadFile == NULL) {
+        ReportError(PL_RESULT_FILEREAD, "package has not been initialized, no LoadFile function assigned, aborting");
+        return false;
+    }
+
     for(unsigned int i = 0; i < package->table_size; ++i) {
         if(strcmp(file, package->table[i].name) == 0) {
             if(package->table[i].data == NULL) {
@@ -132,7 +137,7 @@ bool plLoadPackageFile(PLPackage *package, const char *file, const uint8_t **dat
                     return false;
                 }
 
-                if (!LoadMADPackageFile(fh, &(package->table[i]))) {
+                if (!package->internal.LoadFile(fh, &(package->table[i]))) {
                     fclose(fh);
                     return false;
                 }
