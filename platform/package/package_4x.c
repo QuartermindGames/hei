@@ -77,12 +77,6 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
         goto ABORT;
     }
 
-    struct {
-        char name[64];
-        uint32_t data_offset;
-        uint32_t data_length;
-    } index;
-
     /* sanity checking */
     uint32_t num_indices;
     if(fread(&num_indices, sizeof(unsigned int), 1, fh) != 1) {
@@ -112,6 +106,12 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
     }
 
     strncpy(package->path, ibf_path, sizeof(package->path));
+
+    struct {
+        char name[64];
+        uint32_t data_offset;
+        uint32_t data_length;
+    } index;
 
     for(unsigned int i = 0; i < num_indices; ++i) {
         if(feof(fh) != 0) {
