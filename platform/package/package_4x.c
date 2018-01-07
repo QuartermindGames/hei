@@ -77,16 +77,6 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
         goto ABORT;
     }
 
-    /* not sure... not really needed either?
-     * appears to skip over some of the initial
-     * header information in the data file for
-     * the first block, though could be by chance -
-     * doesn't seem necessary in our case because
-     * we have a separate position given to us
-     * specifically with the data offset
-     */
-    fseek(fh, 4, SEEK_CUR);
-
     struct {
         char name[64];
         uint32_t data_offset;
@@ -94,11 +84,18 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
     } index;
 
     /* sanity checking */
-    unsigned int num_indices = (unsigned int)((plGetFileSize(path) - 8) / sizeof(index));
+    uint32_t num_indices;
+    if(fread(&num_indices, sizeof(unsigned int), 1, fh) != 1) {
+        ReportError(PL_RESULT_FILEREAD, "failed to read in indices count from lst, aborting");
+        goto ABORT;
+    }
+
     if(num_indices > 4096) {
         ReportError(PL_RESULT_FILESIZE, "larger than expected package, aborting");
         goto ABORT;
     }
+
+    DebugPrint("LST INDICES %u\n", num_indices);
 
     package = malloc(sizeof(PLPackage));
     if(package == NULL) {
