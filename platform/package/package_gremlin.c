@@ -53,6 +53,23 @@ typedef struct __attribute__((packed)) MADIndex {
     uint32_t length;
 } MADIndex;
 
+bool LoadMADPackageFile(FILE *fh, PLPackageIndex *pi) {
+    pi->data = malloc(pi->length);
+    if(pi->data == NULL) {
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n", pi->length);
+        return false;
+    }
+
+    if(fseek(fh, pi->offset, SEEK_SET) != 0 || fread(pi->data, pi->length, 1, fh) != 1) {
+        free(pi->data);
+        pi->data = NULL;
+
+        return false;
+    }
+
+    return true;
+}
+
 PLPackage *LoadMADPackage(const char *path, bool cache) {
     FILE *fh = fopen(path, "rb");
     if(fh == NULL) {
@@ -165,21 +182,4 @@ PLPackage *LoadMADPackage(const char *path, bool cache) {
     }
 
     return NULL;
-}
-
-bool LoadMADPackageFile(FILE *fh, PLPackageIndex *pi) {
-    pi->data = malloc(pi->length);
-    if(pi->data == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n", pi->length);
-        return false;
-    }
-
-    if(fseek(fh, pi->offset, SEEK_SET) != 0 || fread(pi->data, pi->length, 1, fh) != 1) {
-        free(pi->data);
-        pi->data = NULL;
-
-        return false;
-    }
-
-    return true;
 }

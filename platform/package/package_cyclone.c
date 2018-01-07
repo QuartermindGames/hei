@@ -34,10 +34,6 @@ For more information, please refer to <http://unlicense.org>
  * an ART package and DAT package? One assumes
  * that ART contains the actual texture data and
  * the other, DAT, contains indexes?
- *
- * The textures in the game are referred to by name
- * which means there's potentially some compression
- * going on here :(
  */
 
 typedef struct DATIndex {
@@ -53,7 +49,7 @@ typedef struct ARTHeader {
     uint32_t unknown2;
 } ARTHeader;
 
-PLPackage *LoadCycloneTexturePackage(const char *path, bool cache) {
+PLPackage *LoadARTPackage(const char *path, bool cache) {
     char dat_path[PL_SYSTEM_MAX_PATH] = {'\0'};
     char art_path[PL_SYSTEM_MAX_PATH] = {'\0'};
     const char *extension = plGetFileExtension(path);

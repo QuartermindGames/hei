@@ -38,6 +38,23 @@ For more information, please refer to <http://unlicense.org>
  * compression used on these packages.
  */
 
+bool LoadLSTPackageFile(FILE *fh, PLPackageIndex *pi) {
+    pi->data = malloc(pi->length);
+    if(pi->data == NULL) {
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n", pi->length);
+        return false;
+    }
+
+    if(fseek(fh, pi->offset, SEEK_SET) != 0 || fread(pi->data, pi->length, 1, fh) != 1) {
+        free(pi->data);
+        pi->data = NULL;
+
+        return false;
+    }
+
+    return true;
+}
+
 PLPackage *LoadLSTPackage(const char *path, bool cache) {
     FILE *fh = fopen(path, "rb");
     if(fh == NULL) {
@@ -55,8 +72,8 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
         goto ABORT;
     }
 
-    DebugPrint("LST %s\n", path);
-    DebugPrint("IBF %s\n", ibf_path);
+    //DebugPrint("LST %s\n", path);
+    //DebugPrint("IBF %s\n", ibf_path);
 
     /* grab the IBF size so we can do some sanity checking later */
     size_t ibf_size = plGetFileSize(ibf_path);
@@ -89,7 +106,7 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
         goto ABORT;
     }
 
-    DebugPrint("LST INDICES %u\n", num_indices);
+    //DebugPrint("LST INDICES %u\n", num_indices);
 
     package = malloc(sizeof(PLPackage));
     if(package == NULL) {
@@ -124,7 +141,7 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
             goto ABORT;
         }
 
-        DebugPrint("LST INDEX %s\n", index.name);
+        //DebugPrint("LST INDEX %s\n", index.name);
 
         if(index.data_offset >= ibf_size || (uint64_t)(index.data_offset) + (uint64_t)(index.data_length) > ibf_size) {
             ReportError(PL_RESULT_FILESIZE, "offset/length falls beyond IBF size, aborting");
@@ -163,21 +180,4 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
     fclose(fh);
 
     return NULL;
-}
-
-bool LoadLSTPackageFile(FILE *fh, PLPackageIndex *pi) {
-    pi->data = malloc(pi->length);
-    if(pi->data == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n", pi->length);
-        return false;
-    }
-
-    if(fseek(fh, pi->offset, SEEK_SET) != 0 || fread(pi->data, pi->length, 1, fh) != 1) {
-        free(pi->data);
-        pi->data = NULL;
-
-        return false;
-    }
-
-    return true;
 }
