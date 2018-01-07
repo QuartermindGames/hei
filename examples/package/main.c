@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org>
 */
 #include <PL/platform_package.h>
 #include <PL/platform_model.h>
+#include <PL/platform_filesystem.h>
 
 #include "../shared.h"
 
@@ -34,6 +35,7 @@ For more information, please refer to <http://unlicense.org>
 int main(int argc, char **argv) {
     plInitialize(argc, argv);
 
+#if 0
     PLPackage *new_package = plCreatePackage("./packages/models.package");
     if(new_package == NULL) {
         PRINT_ERROR("Failed to create new package!\n");
@@ -52,6 +54,29 @@ int main(int argc, char **argv) {
     plWritePackage(new_package);
 
     plDeletePackage(new_package);
+#endif
+
+    PLPackage *pack = plLoadPackage("./packs/Others.lst", true);
+    if(pack == NULL) {
+        printf("%s\n", plGetError());
+        return EXIT_FAILURE;
+    }
+
+    plCreateDirectory("./packs/extracted/");
+    for(unsigned int i = 0; i < pack->table_size; ++i) {
+        char out_path[PL_SYSTEM_MAX_PATH];
+        snprintf(out_path, sizeof(out_path), "./packs/extracted/%s", pack->table[i].name);
+        FILE *fout = fopen(out_path, "wb");
+        if(fout == NULL) {
+            printf("failed to open %s for writing\n", out_path);
+            continue;
+        }
+
+        fwrite(pack->table[i].data, pack->table[i].length, 1, fout);
+        fclose(fout);
+    }
+
+    plDeletePackage(pack);
 
     plShutdown();
 

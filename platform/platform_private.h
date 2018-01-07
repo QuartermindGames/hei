@@ -31,18 +31,19 @@ enum {
     LOG_LEVEL_MEDIUM = -2,
     LOG_LEVEL_LOW = -3,
 
-    LOG_LEVEL_GRAPHICS = -4,
-    LOG_LEVEL_FILESYSTEM = -5,
-    LOG_LEVEL_MODEL = -6,
+    LOG_LEVEL_DEBUG = -4,
+
+    LOG_LEVEL_GRAPHICS = -5,
+    LOG_LEVEL_FILESYSTEM = -6,
+    LOG_LEVEL_MODEL = -7,
 
     LOG_LEVEL_END = 10
 };
 
-// these exist so that internal logging crap can be wedged in... until
-// we have a better system in place
-#define Print(...) plLogMessage(LOG_LEVEL_LOW, __VA_ARGS__)
+#define Print(...)          plLogMessage(LOG_LEVEL_LOW, __VA_ARGS__)
+#define PrintWarning(...)   plLogMessage(LOG_LEVEL_MEDIUM, __VA_ARGS__)
 #ifdef _DEBUG
-#   define DebugPrint(...)      plLogMessage(LOG_LEVEL_HIGH, __VA_ARGS__)
+#   define DebugPrint(...)      plLogMessage(LOG_LEVEL_DEBUG, __VA_ARGS__)
 #else
 #   define DebugPrint(...)      Print(__VA_ARGS__)
 #endif

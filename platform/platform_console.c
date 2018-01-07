@@ -787,12 +787,13 @@ LogLevel *GetLogLevel(int level) {
         mem_cleared = true;
 
         // todo, eventually some of these should be disabled by default - unless enabled via console command
-        plSetupLogLevel(LOG_LEVEL_LOW, "pl", (PLColour){255, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_MEDIUM, "pl-warn", (PLColour){255, 255, 0}, true);
-        plSetupLogLevel(LOG_LEVEL_HIGH, "pl-error", (PLColour){255, 0, 0}, true);
-        plSetupLogLevel(LOG_LEVEL_GRAPHICS, "pl-gfx", (PLColour){0, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_FILESYSTEM, "pl-fs", (PLColour){0, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_MODEL, "pl-model", (PLColour){0, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_LOW, "pl", (PLColour){255, 255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_MEDIUM, "pl-warn", (PLColour){255, 255, 0, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_HIGH, "pl-error", (PLColour){255, 0, 0, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_DEBUG, "pl-debug", (PLColour){255, 255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_GRAPHICS, "pl-gfx", (PLColour){0, 255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_FILESYSTEM, "pl-fs", (PLColour){0, 255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_MODEL, "pl-model", (PLColour){0, 255, 255, 255}, true);
     }
 
     // the following ensures there's no conflict

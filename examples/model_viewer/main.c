@@ -92,7 +92,7 @@ void message_box(const char *title, const char *msg, ...) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, buf, NULL);
 }
 
-//////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
 
 void write_smd_vertex(FILE *file, const PLVertex *vertex) {
     /*             P X  Y  Z  NX NY NZ U  V */
@@ -168,6 +168,8 @@ void write_smd(PLModel *model) {
 
     fclose(fout);
 }
+
+////////////////////////////////////////////////////////////////////////////////////
 
 // loads a model in and then frees it
 void load_mdl_temp(const char *path) {
@@ -327,7 +329,7 @@ int main(int argc, char **argv) {
     ui_camera->viewport.w = WIDTH;
     ui_camera->viewport.h = HEIGHT;
 
-#if 0
+#if 1
     PLBitmapFont *font = plCreateBitmapFont("./fonts/console.font");
     if(font == NULL) {
         PRINT_ERROR("%s", plGetError());
@@ -444,9 +446,9 @@ int main(int argc, char **argv) {
 
         plSetupCamera(ui_camera);
 
-        //plSetBlendMode(PL_BLEND_ADDITIVE);
-        //plDrawBitmapString(font, 10, 10, 4.f, PLColour(255, 0, 0, 255), "Hello World!\n");
-        //plSetBlendMode(PL_BLEND_DISABLE);
+        plSetBlendMode(PL_BLEND_ADDITIVE);
+        plDrawBitmapString(font, 10, 10, 4.f, PLColour(255, 0, 0, 255), "Hello World!\n");
+        plSetBlendMode(PL_BLEND_DISABLE);
 
         //plDrawConsole();
 

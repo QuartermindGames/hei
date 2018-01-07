@@ -53,7 +53,7 @@ typedef struct ARTHeader {
     uint32_t unknown2;
 } ARTHeader;
 
-PLPackage *LoadCycloneTexturePackage(const char *path, bool precache) {
+PLPackage *LoadCycloneTexturePackage(const char *path, bool cache) {
     char dat_path[PL_SYSTEM_MAX_PATH] = {'\0'};
     char art_path[PL_SYSTEM_MAX_PATH] = {'\0'};
     const char *extension = plGetFileExtension(path);
