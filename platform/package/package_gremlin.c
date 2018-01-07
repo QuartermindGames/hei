@@ -134,7 +134,7 @@ PLPackage *LoadMADPackage(const char *path, bool cache) {
         }
 
         strncpy(package->table[i].name, index.file, sizeof(index.file));
-        package->table[i].name[sizeof(index.file)] = '\0';
+        package->table[i].name[sizeof(index.file) - 1] = '\0';
 
         package->table[i].length = index.length;
         package->table[i].offset = index.offset;

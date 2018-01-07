@@ -72,6 +72,11 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
         goto ABORT;
     }
 
+    if(strncmp(ident, "_TSL1.0V", 8) != 0) {
+        ReportError(PL_RESULT_FILETYPE, "invalid file ident, \"%s\", aborting", ident);
+        goto ABORT;
+    }
+
     /* not sure... not really needed either?
      * appears to skip over some of the initial
      * header information in the data file for
@@ -130,7 +135,7 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
         }
 
         strncpy(package->table[i].name, index.name, sizeof(index.name));
-        package->table[i].name[sizeof(index.name)] = '\0';
+        package->table[i].name[sizeof(index.name) - 1] = '\0';
         package->table[i].length = index.data_length;
         package->table[i].offset = index.data_offset;
     }
