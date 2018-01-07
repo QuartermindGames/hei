@@ -91,13 +91,10 @@ support.
 #			include <map>
 #			include <unordered_map>
 #			include <algorithm>
-#	        include <cerrno>
 
 // istream
 #			include <fstream>
 #			include <iostream>
-#       else
-#	        include <errno.h>
 #		endif
 #	endif
 #endif

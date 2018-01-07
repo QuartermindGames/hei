@@ -28,6 +28,8 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_filesystem.h>
 
+#include <errno.h>
+
 #include "platform_private.h"
 #include "graphics/graphics_private.h"
 
@@ -314,6 +316,8 @@ IMPLEMENT_COMMAND(help, "Returns information regarding specified command or vari
 PLMesh *mesh_line = NULL;
 PLBitmapFont *console_font = NULL;
 
+void (*ConsoleOutputCallback)(int level, const char *msg);
+
 PLresult InitConsole(void) {
     console_visible = false;
 
@@ -322,6 +326,8 @@ PLresult InitConsole(void) {
         // todo, print warning...
     }
 #endif
+
+    ConsoleOutputCallback = NULL;
 
     memset(&console_panes, 0, sizeof(PLConsolePane) * CONSOLE_MAX_INSTANCES);
     active_console_pane = num_console_panes = 0;
@@ -400,10 +406,12 @@ void ShutdownConsole(void) {
         }
         free(_pl_variables);
     }
+
+    ConsoleOutputCallback = NULL;
 }
 
-void plSetConsoleOutCallback(void(Callback)(unsigned int )) {
-
+void plSetConsoleOutputCallback(void(*Callback)(int level, const char *msg)) {
+    ConsoleOutputCallback = Callback;
 }
 
 /////////////////////////////////////////////////////
@@ -413,6 +421,8 @@ void plParseConsoleString(const char *string) {
         DebugPrint("Invalid string passed to ParseConsoleString!\n");
         return;
     }
+
+    plLogMessage(LOG_LEVEL_LOW, string);
 
     static char **argv = NULL;
     if(argv == NULL) {
@@ -619,24 +629,6 @@ void plShowConsole(bool show) {
 
 void plSetConsoleColour(unsigned int id, PLColour colour) {
     plSetRectangleUniformColour(&console_panes[id-1].display, colour);
-}
-
-// todo, hook with log output?
-// todo, multiple warning/error levels?
-// todo, correctly adjust buffer.
-void plPrintConsoleMessage(unsigned int id, const char *msg, ...) {
-    if(id > CONSOLE_MAX_INSTANCES) {
-        return;
-    }
-
-    char buf[2048] = { 0 };
-
-    va_list args;
-    va_start(args, msg);
-    vsprintf(buf, msg, args);
-    va_end(args);
-
-    strncat(console_panes[id].buffer, buf, strlen(buf));
 }
 
 #define _COLOUR_INACTIVE_ALPHA_TOP      128
@@ -881,12 +873,20 @@ void plLogMessage(int level, const char *msg, ...) {
 
     va_list args;
     va_start(args, msg);
-    vsnprintf(buf + c, sizeof(buf) - c, msg, args);
+    c += vsnprintf(buf + c, sizeof(buf) - c, msg, args);
     va_end(args);
+
+    if(buf[c - 1] != '\n') {
+        strncat(buf, "\n", sizeof(buf));
+    }
 
     printf("%s", buf);
 
     // todo, decide how we're going to pass it to the console/log
+
+    if(ConsoleOutputCallback != NULL) {
+        ConsoleOutputCallback(level, buf);
+    }
 
     static bool avoid_recursion = false;
     if(!avoid_recursion) {

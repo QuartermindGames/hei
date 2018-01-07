@@ -54,6 +54,9 @@ const char *GetLastError_strerror(DWORD errnum);
 
 #else
 
+int GetLastError(void);
+const char *GetLastError_strerror(int errnum);
+
 #define WSAGetLastError() GetLastError()
 #define WSAGetLastError_strerror(errnum) GetLastError_strerror(errnum)
 

@@ -101,6 +101,7 @@ PL_EXTERN_C
 PL_EXTERN void plSetupConsole(unsigned int num_instances);
 
 PL_EXTERN void plSetConsoleColour(unsigned int id, PLColour colour);
+PL_EXTERN void plSetConsoleOutputCallback(void(*Callback)(int level, const char *msg));
 
 PL_EXTERN void plParseConsoleString(const char *string);
 
