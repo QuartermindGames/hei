@@ -160,3 +160,13 @@ void plDrawModel(PLModel *model) {
         plDrawMesh(&model->lods[model->internal.current_lod].meshes[i]);
     }
 }
+
+void plDrawModelSkeleton(PLModel *model) {
+    plAssert(model);
+
+    if(model->num_bones == 0) {
+        return;
+    }
+
+    // todo
+}
