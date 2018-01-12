@@ -1,4 +1,4 @@
-#[[
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,43 +23,19 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-]]
+*/
+#pragma once
 
-project(platform)
+bool DDSFormatCheck(FILE *fin);
+bool DTXFormatCheck(FILE *fin);
+bool VTFFormatCheck(FILE *fin);
+bool TIMFormatCheck(FILE *fin);
+bool BMPFormatCheck(FILE *fin);
 
-option(PL_USE_ZLIB "ZLIB" ON) # todo
-option(PL_USE_GL "OpenGL" ON) # todo
-
-if(PL_USE_GL)
-    add_definitions("-DPL_USE_GL")
-endif()
-
-add_definitions("-D_DEBUG")
-
-file(
-        GLOB PLATFORM_SOURCE_FILES
-        *.cpp *.c *.h
-
-        graphics/*.*
-        image/*.*
-        model/*.*
-        string/*.*
-        package/*.*
-        memory/*.*
-
-        include/*.h
-        include/PL/*.h
-        )
-
-add_library(platform SHARED ${PLATFORM_SOURCE_FILES} image/image_private.h)
-
-set_target_properties(platform PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
-
-target_compile_options(platform PUBLIC -fPIC -DPL_INTERNAL)
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_link_libraries(platform "-framework OpenGL" -L/usr/X11/lib -L/usr/X11R6/lib)
-else()
-    target_link_libraries(platform GL GLU)
-endif()
-target_include_directories(platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(platform m dl GLEW)
+PLresult LoadFTXImage(FILE *fin, PLImage *out);           // Ritual's FTX image format.
+PLresult LoadPPMImage(FILE *fin, PLImage *out);           // Portable Pixel Map format.
+PLresult LoadDTXImage(FILE *fin, PLImage *out);           // Lithtech's DTX image format.
+PLresult LoadVTFImage(FILE *fin, PLImage *out);           // Valve's VTF image format.
+PLresult LoadDDSImage(FILE *fin, PLImage *out);
+PLresult LoadTIMImage(FILE *fin, PLImage *out);
+PLresult LoadBMPImage(FILE *fin, PLImage *out);

@@ -28,6 +28,8 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_filesystem.h>
 #include <PL/platform_math.h>
 
+#include "image_private.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #if defined(STB_IMAGE_IMPLEMENTATION)
 #include "stb_image.h"
@@ -78,9 +80,9 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     } else if(TIMFormatCheck(fin)) {
         result = LoadTIMImage(fin, out);
     } else if(VTFFormatCheck(fin)) {
-        result = _plLoadVTFImage(fin, out);
+        result = LoadVTFImage(fin, out);
     } else if(DTXFormatCheck(fin)) {
-        result = _plLoadDTXImage(fin, out);
+        result = LoadDTXImage(fin, out);
     }
 #if 0
     else if(BMPFormatCheck(fin)) {
@@ -91,9 +93,9 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
         const char *extension = plGetFileExtension(path);
         if(extension && extension[0] != '\0') {
             if (!strncmp(extension, PLIMAGE_EXTENSION_FTX, 3)) {
-                result = _plLoadFTXImage(fin, out);
+                result = LoadFTXImage(fin, out);
             } else if (!strncmp(extension, PLIMAGE_EXTENSION_PPM, 3)) {
-                result = _plLoadPPMImage(fin, out);
+                result = LoadPPMImage(fin, out);
             }
         }
     }

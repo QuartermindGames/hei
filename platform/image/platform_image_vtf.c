@@ -234,7 +234,7 @@ bool VTFFormatCheck(FILE *fin) {
     return (bool)(strncmp(ident, "VTF", 3) == 0);
 }
 
-PLresult _plLoadVTFImage(FILE *fin, PLImage *out) {
+PLresult LoadVTFImage(FILE *fin, PLImage *out) {
     plFunctionStart();
 
     VTFHeader header;

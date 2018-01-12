@@ -283,6 +283,7 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
 
         case TIM_TYPE_16BPP:
         case TIM_TYPE_24BPP:
+        default:
             ReportError(PL_RESULT_IMAGEFORMAT, "unsupported tim type (%d)", type);
             goto ERR_CLEANUP;
     }

@@ -24,12 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #include "PL/platform.h"
-
 #include "PL/platform_model.h"
-
-using namespace pl::graphics;
 
 /*
 	UNREAL 3D Animated Model Format
@@ -90,13 +86,14 @@ typedef struct U3DTriangle {
     uint8_t flags;      // Triangle flags
 } U3DTriangle;
 
-FILE *pl_u3d_dataf = nullptr;
-FILE *pl_u3d_animf = nullptr;
+FILE *pl_u3d_dataf = NULL;
+FILE *pl_u3d_animf = NULL;
 
 void UnloadU3DModel() {
     if (pl_u3d_animf) {
         fclose(pl_u3d_animf);
     }
+
     if (pl_u3d_dataf) {
         fclose(pl_u3d_dataf);
     }
@@ -229,6 +226,6 @@ PLModel *LoadU3DModel(const PLchar *path) {
 
     return model;
 #else
-    return nullptr;
+    return NULL;
 #endif
 }

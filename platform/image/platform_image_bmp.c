@@ -64,7 +64,7 @@ bool BMPFormatCheck(FILE *fin) {
     return (bool)(strncmp((const char*)ident, "BM", 2) == 0);
 }
 
-PLresult _plLoadBMPImage(FILE *fin, PLImage *out) {
+PLresult LoadBMPImage(FILE *fin, PLImage *out) {
     BMPHeader header;
     if (fread(&header, sizeof(BMPHeader), 1, fin) != 1) {
         return PL_RESULT_FILEREAD;
