@@ -30,6 +30,12 @@ For more information, please refer to <http://unlicense.org>
 #include <sys/time.h>
 #include <errno.h>
 
+#ifdef _WIN32
+
+#include <afxres.h>
+
+#endif
+
 /*	Generic functions for platform, such as	error handling.	*/
 
 typedef struct PLSubSystem {
@@ -199,7 +205,7 @@ void plShutdown(void) {
 
 #ifdef _WIN32
 
-const char *GetLastError_strerror(DWORD errnum) {
+const char *GetLastError_strerror(uint32_t errnum) {
     /* TODO: Make this buffer per-thread */
     static char buf[1024] = {'\0'};
 

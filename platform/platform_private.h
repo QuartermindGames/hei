@@ -50,7 +50,7 @@ enum {
 
 #ifdef _WIN32
 
-const char *GetLastError_strerror(DWORD errnum);
+const char *GetLastError_strerror(uint32_t errnum);
 
 #else
 

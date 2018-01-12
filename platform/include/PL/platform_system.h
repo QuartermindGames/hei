@@ -35,29 +35,11 @@ For more information, please refer to <http://unlicense.org>
 
 #if defined(_WIN32)
 
-#	ifndef PL_IGNORE_PLATFORM_HEADERS
-#		include <Windows.h>
-#		include <WindowsX.h>
-#		include <CommCtrl.h>
-#		include <direct.h>
-#		include <lmcons.h>
-
-#		ifdef PlaySound
-#			undef PlaySound
-#		endif
-#		ifdef LoadImage
-#			undef LoadImage
-#		endif
-
-#		undef min
-#		undef max
-#	endif
-
 #   define PL_SYSTEM_NAME               "WINDOWS"
 #   define PL_SYSTEM_LIBRARY_EXTENSION  ".dll"
 
-#   define PL_SYSTEM_MAX_PATH           (MAX_PATH - 1)
-#   define PL_SYSTEM_MAX_USERNAME       UNLEN
+#   define PL_SYSTEM_MAX_PATH           (260 - 1)
+#   define PL_SYSTEM_MAX_USERNAME       128
 
 #	ifdef _MSC_VER
 #		pragma warning(disable : 4152)

@@ -24,14 +24,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#ifndef _WIN32
-#   include <sys/stat.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#endif
 #include <errno.h>
+#include <dirent.h>
 
 #include <PL/platform_filesystem.h>
+
+#ifdef _WIN32
+
+#include <afxres.h>
+#include <secext.h>
+
+#endif
 
 /*	File System	*/
 
@@ -78,7 +84,11 @@ bool plCreateDirectory(const char *path) {
         return true;
     }
 
-    if (mkdir(path, 0777) == 0) {
+#ifdef _WIN32
+    if(_mkdir(path) == 0) {
+#else
+    if(mkdir(path, 0777) == 0) {
+#endif
         return true;
     }
 
@@ -143,20 +153,23 @@ const char *plGetFileName(const char *path) {
 // Returns the name of the systems current user.
 void plGetUserName(char *out) {
 #ifdef _WIN32
-    PLchar userstring[PL_MAX_USERNAME];
 
-    // Set these AFTER we update active function.
-    DWORD name = sizeof(userstring);
-    if (GetUserName(userstring, &name) == 0)
-        // If it fails, just set it to user.
-        sprintf(userstring, "user");
+    char userstring[PL_SYSTEM_MAX_USERNAME];
+    ULONG size = PL_SYSTEM_MAX_USERNAME;
+    if (GetUserNameEx(NameDisplay, userstring, &size) == 0) {
+        snprintf(userstring, sizeof(userstring), "user");
+    }
+
 #else   // Linux
+
     char *userstring = getenv("LOGNAME");
     if (userstring == NULL) {
         // If it fails, just set it to user.
         userstring = "user";
     }
+
 #endif
+
     int i = 0, userlength = (int) strlen(userstring);
     while (i < userlength) {
         if (userstring[i] == ' ') {
@@ -165,48 +178,12 @@ void plGetUserName(char *out) {
             out[i] = (char) tolower(userstring[i]);
         } i++;
     }
-
-    //strncpy(out, cUser, sizeof(out));
 }
 
 /*	Scans the given directory.
 	On each found file it calls the given function to handle the file.
 */
 void plScanDirectory(const char *path, const char *extension, void (*Function)(const char *), bool recursive) {
-    char filestring[PL_SYSTEM_MAX_PATH + 1];
-#ifdef _WIN32
-        WIN32_FIND_DATA	finddata;
-        HANDLE			find;
-
-        snprintf(filestring, sizeof(filestring), "%s/*", path);
-
-        find = FindFirstFile(filestring, &finddata);
-        if (find == INVALID_HANDLE_VALUE) {
-            plSetError("Failed to find an initial file!\n");
-            return;
-        }
-
-        do {
-            if(strcmp(finddata.cFileName, ".") == 0 || strcmp(finddata.cFileName, "..") == 0) {
-                continue;
-            }
-
-            snprintf(filestring, sizeof(filestring), "%s/%s", path, finddata.cFileName);
-
-            if(finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                if(recursive) {
-                    plScanDirectory(filestring, extension, Function, recursive);
-                }
-            }
-            else{
-                if(pl_strcasecmp(plGetFileExtension(finddata.cFileName), extension) == 0) {
-                    Function(filestring);
-                }
-            }
-        } while(FindNextFile(find, &finddata));
-
-        FindClose(find);
-#else
     DIR *directory = opendir(path);
     if (directory) {
         struct dirent *entry;
@@ -215,6 +192,7 @@ void plScanDirectory(const char *path, const char *extension, void (*Function)(c
                 continue;
             }
 
+            char filestring[PL_SYSTEM_MAX_PATH + 1];
             snprintf(filestring, sizeof(filestring), "%s/%s", path, entry->d_name);
 
             struct stat st;
@@ -233,7 +211,6 @@ void plScanDirectory(const char *path, const char *extension, void (*Function)(c
     } else {
         ReportError(PL_RESULT_FILEPATH, "opendir failed!");
     }
-#endif
 }
 
 const char *plGetWorkingDirectory(void) {
@@ -328,9 +305,7 @@ bool plCopyFile(const char *path, const char *dest) {
 
     BAIL:
 
-    if(data != NULL) {
-        free(data);
-    }
+    free(data);
 
     if(original != NULL) {
         fclose(original);
