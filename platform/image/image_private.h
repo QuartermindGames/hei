@@ -26,38 +26,16 @@ For more information, please refer to <http://unlicense.org>
 */
 #pragma once
 
-enum {
-    LOG_LEVEL_HIGH = -1,
-    LOG_LEVEL_MEDIUM = -2,
-    LOG_LEVEL_LOW = -3,
+bool DDSFormatCheck(FILE *fin);
+bool DTXFormatCheck(FILE *fin);
+bool VTFFormatCheck(FILE *fin);
+bool TIMFormatCheck(FILE *fin);
+bool BMPFormatCheck(FILE *fin);
 
-    LOG_LEVEL_DEBUG = -4,
-
-    LOG_LEVEL_GRAPHICS = -5,
-    LOG_LEVEL_FILESYSTEM = -6,
-    LOG_LEVEL_MODEL = -7,
-
-    LOG_LEVEL_END = 10
-};
-
-#define Print(...)          plLogMessage(LOG_LEVEL_LOW, __VA_ARGS__)
-#define PrintWarning(...)   plLogMessage(LOG_LEVEL_MEDIUM, __VA_ARGS__)
-#ifdef _DEBUG
-#   define DebugPrint(...)      plLogMessage(LOG_LEVEL_DEBUG, __VA_ARGS__)
-#else
-#   define DebugPrint(...)      Print(__VA_ARGS__)
-#endif
-
-#ifdef _WIN32
-
-const char *GetLastError_strerror(uint32_t errnum);
-
-#else
-
-int GetLastError(void);
-const char *GetLastError_strerror(int errnum);
-
-#define WSAGetLastError() GetLastError()
-#define WSAGetLastError_strerror(errnum) GetLastError_strerror(errnum)
-
-#endif
+PLresult LoadFTXImage(FILE *fin, PLImage *out);           // Ritual's FTX image format.
+PLresult LoadPPMImage(FILE *fin, PLImage *out);           // Portable Pixel Map format.
+PLresult LoadDTXImage(FILE *fin, PLImage *out);           // Lithtech's DTX image format.
+PLresult LoadVTFImage(FILE *fin, PLImage *out);           // Valve's VTF image format.
+PLresult LoadDDSImage(FILE *fin, PLImage *out);
+PLresult LoadTIMImage(FILE *fin, PLImage *out);
+PLresult LoadBMPImage(FILE *fin, PLImage *out);

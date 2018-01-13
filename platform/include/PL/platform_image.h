@@ -112,20 +112,6 @@ void plFreeImage(PLImage *image);
 unsigned int plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height);
 unsigned int _plImageBytesPerPixel(PLImageFormat format);
 
-bool DDSFormatCheck(FILE *fin);
-bool DTXFormatCheck(FILE *fin);
-bool VTFFormatCheck(FILE *fin);
-bool TIMFormatCheck(FILE *fin);
-bool BMPFormatCheck(FILE *fin);
-
-PLresult _plLoadFTXImage(FILE *fin, PLImage *out);           // Ritual's FTX image format.
-PLresult _plLoadPPMImage(FILE *fin, PLImage *out);           // Portable Pixel Map format.
-PLresult _plLoadDTXImage(FILE *fin, PLImage *out);           // Lithtech's DTX image format.
-PLresult _plLoadVTFImage(FILE *fin, PLImage *out);           // Valve's VTF image format.
-PLresult LoadDDSImage(FILE *fin, PLImage *out);
-PLresult LoadTIMImage(FILE *fin, PLImage *out);
-PLresult _plLoadBMPImage(FILE *fin, PLImage *out);
-
 uint8_t *_plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels);
 
 #endif

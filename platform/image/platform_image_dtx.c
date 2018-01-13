@@ -82,15 +82,16 @@ enum DTXFormat {
     DTX_FORMAT_S3TC_DXT5,
 } DTXFormat;
 
-uint8_t _plGetDTXFormat(DTXHeader *dtx) {
+uint8_t GetDTXFormat(DTXHeader *dtx) {
     // This is a little hacky, DTX version 2 images don't seem to use
     // the extra[2] slot the same way as later versions. So we need to
     // basically switch it to 0 since 99.9% of textures from that period
     // use a pallette anyway.
     //
     // tl;dr this is a hack because I'm lazy!
-    if (dtx->version >= DTX_VERSION_2)
+    if (dtx->version >= DTX_VERSION_2) {
         return DTX_FORMAT_8PALLETTE;
+    }
 
     return dtx->extra[2];
 }
@@ -107,7 +108,7 @@ bool DTXFormatCheck(FILE *fin) {
     return (type == 0);
 }
 
-PLresult _plLoadDTXImage(FILE *fin, PLImage *out) {
+PLresult LoadDTXImage(FILE *fin, PLImage *out) {
     _plSetCurrentFunction("_plLoadDTXImage");
 
     DTXHeader header;
@@ -124,7 +125,7 @@ PLresult _plLoadDTXImage(FILE *fin, PLImage *out) {
     out->width = header.width;
     out->height = header.height;
 
-    switch (_plGetDTXFormat(&header)) {
+    switch (GetDTXFormat(&header)) {
         case DTX_FORMAT_8PALLETTE:
             out->size = header.width * header.height;
             out->format = PL_IMAGEFORMAT_RGB8;
@@ -167,8 +168,19 @@ PLresult _plLoadDTXImage(FILE *fin, PLImage *out) {
     for (int i = 0; i < header.mipmaps; i++) {
     }
 
-    out->data = new uint8_t*[header.mipmaps];
-    out->data[0] = new uint8_t[out->size];
+    out->data = calloc(out->levels, sizeof(uint8_t*));
+    if(out->data == NULL) {
+        plFreeImage(out);
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
+        return PL_RESULT_MEMORY_ALLOCATION;
+    }
+
+    out->data[0] = calloc(out->size, sizeof(uint8_t));
+    if(out->data[0] == NULL) {
+        plFreeImage(out);
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
+        return PL_RESULT_MEMORY_ALLOCATION;
+    }
 
     fread(out->data[0], sizeof(uint8_t), out->size, fin);
 

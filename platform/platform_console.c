@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_filesystem.h>
 
 #include <errno.h>
+#include <io.h>
 
 #include "platform_private.h"
 #include "graphics/graphics_private.h"

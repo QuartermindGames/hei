@@ -24,39 +24,27 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+#include "PL/platform.h"
 
-#include "PL/platform_image.h"
-#include "PL/platform_filesystem.h"
+#include "PL/platform_model.h"
 
-/*	Ritual's FTX Format	*/
+/* OBJ Static Model Format */
 
-typedef struct FTXHeader {
-    uint32_t width;
-    uint32_t height;
-    uint32_t alpha;
-} FTXHeader;
+enum {
+    OBJ_SYNTAX_COMMENT = '#',
+    OBJ_SYNTAX_OBJECT = 'o',
+    OBJ_SYNTAX_GROUP = 'g',
+    OBJ_SYNTAX_SMOOTH = 's',
+    OBJ_SYNTAX_VERTEX = 'v',
+    OBJ_SYNTAX_VERTEX_ST = 't',         // vt
+    OBJ_SYNTAX_VERTEX_NORMAL = 'n',     // vn
+    OBJ_SYNTAX_FACE = 'f',
+};
 
-PLresult _plLoadFTXImage(FILE *fin, PLImage *out) {
-    plFunctionStart();
+void UnloadOBJModel() {
 
-    FTXHeader header;
-    memset(&header, 0, sizeof(FTXHeader));
-    header.width = (unsigned int)plGetLittleLong(fin);
-    header.height = (unsigned int)plGetLittleLong(fin);
-    header.alpha = (unsigned int)plGetLittleLong(fin);
+}
 
-    memset(out, 0, sizeof(PLImage));
-    out->size = (unsigned int)(header.width * header.height * 4);
-    out->data = new uint8_t*[1];
-    out->data[0] = new uint8_t[out->size];
-
-    if (fread(out->data[0], sizeof(uint8_t), out->size, fin) != out->size) {
-        return PL_RESULT_FILEREAD;
-    }
-
-    out->format = PL_IMAGEFORMAT_RGBA8;
-    out->colour_format = PL_COLOURFORMAT_RGBA;
-    out->width = (PLuint)header.width;
-    out->height = (PLuint)header.height;
-    return PL_RESULT_SUCCESS;
+PLModel *LoadOBJModel(const char *path) {
+    return NULL;
 }

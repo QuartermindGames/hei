@@ -18,16 +18,16 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
 /*	PPM Format	*/
 
-#define    PPM_HEADER_SIZE    70
+#define PPM_HEADER_SIZE 70
 
-PLresult _plLoadPPMImage(FILE *fin, PLImage *out) {
+PLresult LoadPPMImage(FILE *fin, PLImage *out) {
     _plSetCurrentFunction("_plLoadPPMImage");
 
     char header[PPM_HEADER_SIZE];
     memset(&header, 0, sizeof(header));
 
     fgets(header, PPM_HEADER_SIZE, fin);
-    if (strncmp(header, "P6", 2)) {
+    if (strncmp(header, "P6", 2) != 0) {
         ReportError(PL_RESULT_FILEVERSION, "Unsupported PPM type!\n");
         return PL_RESULT_FILEVERSION;
     }
@@ -39,19 +39,32 @@ PLresult _plLoadPPMImage(FILE *fin, PLImage *out) {
         if (header[0] == '#')
             continue;
 
-        if (i == 0)
+        if (i == 0) {
             i += sscanf(header, "%d %d %d", &w, &h, &d);
-        else if (i == 1)
+        } else if (i == 1) {
             i += sscanf(header, "%d %d", &h, &d);
-        else if (i == 2)
+        } else if (i == 2) {
             i += sscanf(header, "%d", &d);
+        }
     }
 
     memset(out, 0, sizeof(PLImage));
 
+    out->levels = 1;
     out->size = w * h * 3;
-    out->data = new uint8_t*[1];
-    out->data[0] = new uint8_t[out->size];
+    out->data = calloc(out->levels, sizeof(uint8_t*));
+    if(out->data == NULL) {
+        plFreeImage(out);
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
+        return PL_RESULT_MEMORY_ALLOCATION;
+    }
+
+    out->data[0] = calloc(out->size, sizeof(uint8_t));
+    if(out->data[0] == NULL) {
+        plFreeImage(out);
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
+        return PL_RESULT_MEMORY_ALLOCATION;
+    }
 
     fread(out->data[0], sizeof(uint8_t), out->size, fin);
 

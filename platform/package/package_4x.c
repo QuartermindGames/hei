@@ -24,10 +24,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+#include <PL/platform_console.h>
+
 #include "platform_private.h"
 #include "package_private.h"
-
-#include <PL/platform_console.h>
 
 /* 4X Technologies Package Format
  * These come in both an IBF and LST format;
