@@ -161,14 +161,8 @@ void plDeleteMesh(PLMesh *mesh) {
 
     CallGfxFunction(DeleteMesh, mesh);
 
-    if(mesh->vertices != NULL) {
-        free(mesh->vertices);
-    }
-
-    if(mesh->triangles != NULL) {
-        free(mesh->triangles);
-    }
-
+    free(mesh->vertices);
+    free(mesh->triangles);
     free(mesh);
 }
 
@@ -179,6 +173,7 @@ void plClearMesh(PLMesh *mesh) {
 }
 
 void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3 vector) {
+    plAssert(index < mesh->num_verts);
     mesh->vertices[index].position = vector;
 }
 
@@ -285,16 +280,53 @@ void plDrawCube() {}    // todo
 
 void plDrawSphere() {}  // todo
 
+void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, PLColour colour) {
+    static unsigned int last_num_segments = 0;
+    static PLMesh *mesh = NULL;
+
+    if(last_num_segments != segments) {
+        plDeleteMesh(mesh);
+        mesh = NULL;
+    }
+
+    if(mesh == NULL) {
+        if((mesh = plCreateMesh(
+                PL_MESH_TRIANGLE_FAN,
+                PL_DRAW_IMMEDIATE, // todo, update to dynamic
+                0, segments
+        )) == NULL) {
+            return;
+        }
+    }
+
+    plSetMeshUniformColour(mesh, colour);
+    for(unsigned int i = 0, pos = 0; i < 360; i += (360 / segments)) {
+        if(pos >= segments) {
+            break;
+        }
+
+        plSetMeshVertexPosition(mesh, pos++, PLVector3(
+                (position.x + w) + cosf(plDegreesToRadians(i)) * w,
+                (position.y + h) + sinf(plDegreesToRadians(i)) * h, 0));
+    }
+
+    plUploadMesh(mesh);
+
+    plDrawMesh(mesh);
+}
+
 /*  Textured Rectangle Mesh  */
 
 void plDrawRectangle(PLRectangle2D rect) {
     static PLMesh *mesh = NULL;
-    if(!mesh) {
-        mesh = plCreateMesh(
+    if(mesh == NULL) {
+        if((mesh = plCreateMesh(
                 PL_MESH_TRIANGLE_STRIP,
                 PL_DRAW_IMMEDIATE, // todo, update to dynamic
                 2, 4
-        );
+        )) == NULL) {
+            return;
+        }
     }
 
     plClearMesh(mesh);
@@ -324,11 +356,13 @@ void plDrawRectangle(PLRectangle2D rect) {
 void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
     static PLMesh *mesh = NULL;
     if (mesh == NULL) {
-        mesh = plCreateMesh(
+        if((mesh = plCreateMesh(
                 PL_MESH_TRIANGLE_FAN,
                 PL_DRAW_IMMEDIATE, // todo, update to dynamic
                 1, 3
-        );
+        )) == NULL) {
+            return;
+        }
     }
 
     plClearMesh(mesh);

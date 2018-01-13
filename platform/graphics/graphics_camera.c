@@ -44,6 +44,36 @@ void ShutdownCameras(void) {
 
 }
 
+PLMatrix4x4 LookAt(PLVector3 eye, PLVector3 center, PLVector3 up) {
+    PLVector3 z = eye;
+    plSubtractVector3(&z, center);
+    float mag = plVector3Length(z);
+    if(mag > 0) {
+        plDivideVector3f(&z, mag);
+    }
+
+    PLVector3 y = up;
+    PLVector3 x = plVector3CrossProduct(y, z);
+    y = plVector3CrossProduct(z, x);
+
+    mag = plVector3Length(x);
+    if(mag > 0) {
+        plDivideVector3f(&x, mag);
+    }
+
+    mag = plVector3Length(y);
+    if(mag > 0) {
+        plDivideVector3f(&y, mag);
+    }
+
+    return (PLMatrix4x4){{
+            x.x, y.x, z.x, 0,
+            x.y, y.y, z.y, 0,
+            x.z, y.z, z.z, 0,
+            0  , 0  , 0  , 1
+    }};
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 PLCamera *plCreateCamera(void) {
