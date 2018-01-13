@@ -50,6 +50,14 @@ PL_INLINE static bool plIsPowerOfTwo(unsigned int num) {
     return (bool)((num != 0) && ((num & (~num + 1)) == num));
 }
 
+PL_INLINE static float plDegreesToRadians(float degrees) {
+    return degrees * (PL_PI / 180);
+}
+
+PL_INLINE static float plRadiansToDegrees(float radians) {
+    return radians * (180 / PL_PI);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Vectors
 
@@ -277,6 +285,12 @@ PL_INLINE static void plScaleVector3f(PLVector3 *v, float f) {
 
 PL_INLINE static void plDivideVector3(PLVector3 *v, PLVector3 v2) {
     v->x /= v2.x; v->y /= v2.y; v->z /= v2.z;
+}
+
+PL_INLINE static void plDivideVector3f(PLVector3 *v, float v2) {
+    v->x /= v2;
+    v->y /= v2;
+    v->z /= v2;
 }
 
 PL_INLINE static void plInverseVector3(PLVector3 *v) {
@@ -570,6 +584,8 @@ typedef struct PLMatrix4x4 {
      * 0 0 0 0
      */
 } PLMatrix4x4;
+
+#define plSetMatrix4x4(mat, col, row, val) (mat).m[(col) * 4 + (row)] = (val)
 
 PL_INLINE static void plClearMatrix(PLMatrix4x4 *m) {
     memset(m, 0, sizeof(PLMatrix4x4));
