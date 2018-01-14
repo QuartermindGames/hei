@@ -169,4 +169,9 @@ void plDrawModelSkeleton(PLModel *model) {
     }
 
     // todo
+
+    static PLMesh *mesh = NULL;
+    if(mesh == NULL) {
+
+    }
 }

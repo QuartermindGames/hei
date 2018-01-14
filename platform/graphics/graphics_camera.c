@@ -118,11 +118,7 @@ void plDeleteCamera(PLCamera *camera) {
 
     CallGfxFunction(DeleteCamera, camera);
 
-    if(camera->viewport.v_buffer != NULL) {
-        free(camera->viewport.v_buffer);
-        camera->viewport.v_buffer = NULL;
-    }
-
+    free(camera->viewport.v_buffer);
     free(camera);
 }
 

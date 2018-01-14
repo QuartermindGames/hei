@@ -417,10 +417,7 @@ void GLSetupCamera(PLCamera *camera) {
                 glDeleteRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
                 glDeleteRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
 
-                if (camera->viewport.v_buffer) {
-                    free(camera->viewport.v_buffer);
-                }
-
+                free(camera->viewport.v_buffer);
                 camera->viewport.v_buffer = (uint8_t *) malloc(camera->viewport.r_w * camera->viewport.r_h * 4);
                 if(camera->viewport.v_buffer == NULL) {
                     ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
