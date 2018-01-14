@@ -131,18 +131,3 @@ void plSetupCamera(PLCamera *camera) {
 void plDrawPerspectivePOST(PLCamera *camera) {
     CallGfxFunction(DrawPerspectivePOST, camera);
 }
-
-/////////////////////////////////////////////////////////////////////////////////////
-
-void plDrawPerspective(void) {
-    for(PLCamera **camera = gfx_state.cameras;
-        camera < gfx_state.cameras + gfx_state.num_cameras; ++camera) {
-        plAssert(camera);
-
-        plSetupCamera((*camera));
-
-        // todo, draw stuff...
-
-        CallGfxFunction(DrawPerspectivePOST, (*camera));
-    }
-}

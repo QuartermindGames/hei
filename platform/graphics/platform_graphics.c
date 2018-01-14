@@ -500,5 +500,5 @@ void plProcessGraphics(void) {
     plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
 
     plDrawConsole();
-    plDrawPerspective();
+    //plDrawPerspective();
 }

@@ -64,7 +64,6 @@ PL_EXTERN void plDeleteCamera(PLCamera *camera);
 
 PL_EXTERN void plSetupCamera(PLCamera *camera);
 
-PL_EXTERN void plDrawPerspective(void);
 PL_EXTERN void plDrawPerspectivePOST(PLCamera *camera);
 
 PL_EXTERN_C_END
