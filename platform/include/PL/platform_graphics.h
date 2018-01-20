@@ -187,7 +187,7 @@ typedef enum PLShaderType {
     PL_SHADER_TYPE_FRAGMENT,
     PL_SHADER_TYPE_GEOMETRY,
     PL_SHADER_TYPE_COMPUTE,
-} PLShaderType;
+} PLShaderStageType;
 
 typedef enum PLShaderUniformType {
     PL_UNIFORM_FLOAT,
@@ -234,9 +234,9 @@ typedef struct PLShaderProgram {
 } PLShaderProgram;
 
 typedef struct PLShaderStage {
-    PLShaderType type;
+    PLShaderStageType type;
 
-    void(*SWFallback)(PLShaderProgram *program, PLShaderType type);
+    void(*SWFallback)(PLShaderProgram *program, PLShaderStageType type);
 
     struct {
         unsigned int id;

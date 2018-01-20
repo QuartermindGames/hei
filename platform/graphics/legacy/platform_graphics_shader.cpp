@@ -28,35 +28,6 @@ For more information, please refer to <http://unlicense.org>
 #include "PL/platform_graphics.h"
 #include "PL/platform_filesystem.h"
 
-using namespace pl::graphics;
-
-#if defined(PL_MODE_OPENGL)
-ShaderUniformType _plTranslateGLUniformType(unsigned int type) {
-    switch(type) {
-        case GL_DOUBLE:         return UNIFORM_DOUBLE;
-        case GL_BOOL:           return UNIFORM_BOOL;
-        case GL_FLOAT:          return UNIFORM_FLOAT;
-        case GL_INT:            return UNIFORM_INT;
-        case GL_UNSIGNED_INT:   return UNIFORM_UINT;
-
-        case GL_SAMPLER_1D:         return UNIFORM_SAMPLER1D;
-        case GL_SAMPLER_1D_SHADOW:  return UNIFORM_SAMPLER1DSHADOW;
-        case GL_SAMPLER_2D:         return UNIFORM_SAMPLER2D;
-        case GL_SAMPLER_2D_SHADOW:  return UNIFORM_SAMPLER2DSHADOW;
-        case GL_SAMPLER_3D:         return UNIFORM_SAMPLER3D;
-        case GL_SAMPLER_CUBE:       return UNIFORM_SAMPLERCUBE;
-
-        case GL_FLOAT_VEC2: return UNIFORM_VEC2;
-        case GL_FLOAT_VEC3: return UNIFORM_VEC3;
-        case GL_FLOAT_VEC4: return UNIFORM_VEC4;
-
-        case GL_FLOAT_MAT3: return UNIFORM_MAT3;
-
-        default: return UNIFORM_END;
-    }
-}
-#endif
-
 /*===========================
 	SHADER
 ===========================*/

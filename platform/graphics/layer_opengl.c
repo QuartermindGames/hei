@@ -545,7 +545,7 @@ void GLDrawPerspectivePOST(PLCamera *camera) {
 
 #define SHADER_INVALID_TYPE ((uint32_t)0 - 1)
 
-unsigned int TranslateShaderType(PLShaderType type) {
+GLenum TranslateShaderStageType(PLShaderStageType type) {
     switch(type) {
         case PL_SHADER_TYPE_VERTEX:     return GL_VERTEX_SHADER;
         case PL_SHADER_TYPE_COMPUTE:    return GL_COMPUTE_SHADER;
@@ -555,7 +555,17 @@ unsigned int TranslateShaderType(PLShaderType type) {
     }
 }
 
-unsigned int TranslateShaderUniformType(PLShaderUniformType type) {
+const char *GetGLShaderStageDescriptor(GLenum type) {
+    switch(type) {
+        case GL_VERTEX_SHADER:      return "GL_VERTEX_SHADER";
+        case GL_COMPUTE_SHADER:     return "GL_COMPUTE_SHADER";
+        case GL_FRAGMENT_SHADER:    return "GL_FRAGMENT_SHADER";
+        case GL_GEOMETRY_SHADER:    return "GL_GEOMETRY_SHADER";
+        default:                    return "unknown";
+    }
+}
+
+GLenum TranslateShaderUniformType(PLShaderUniformType type) {
     switch(type) {
         case PL_UNIFORM_BOOL:   return GL_BOOL;
         case PL_UNIFORM_DOUBLE: return GL_DOUBLE;
@@ -576,7 +586,7 @@ unsigned int TranslateShaderUniformType(PLShaderUniformType type) {
 
         case PL_UNIFORM_MAT3:   return GL_FLOAT_MAT3;
 
-        default:                return SHADER_INVALID_TYPE;
+        default:    return SHADER_INVALID_TYPE;
     }
 }
 
@@ -601,11 +611,13 @@ unsigned int TranslateGLShaderUniformType(GLenum type) {
 
         case GL_FLOAT_MAT3:   return PL_UNIFORM_MAT3;
 
-        default:                return SHADER_INVALID_TYPE;
+        default:    return SHADER_INVALID_TYPE;
     }
 }
 
-void GLCreateShaderProgram(PLShaderProgram *program) {}
+void GLCreateShaderProgram(PLShaderProgram *program) {
+
+}
 
 void GLDeleteShaderProgram(PLShaderProgram *program) {
     if(program->internal.id == (unsigned int)(-1)) {
@@ -613,6 +625,35 @@ void GLDeleteShaderProgram(PLShaderProgram *program) {
     }
 
     glDeleteProgram(program->internal.id);
+}
+
+void GLCreateShaderStage(PLShaderStage *stage) {
+    if(!GLVersion(2,0)) {
+        GfxLog("HW shaders unsupported on platform, relying on SW fallback\n");
+        return;
+    }
+
+    GLenum type = TranslateShaderStageType(stage->type);
+    if(type == SHADER_INVALID_TYPE) {
+        ReportError(PL_RESULT_INVALID_SHADER_TYPE, "%ul", type);
+        return;
+    }
+
+    if(type == GL_GEOMETRY_SHADER && !GLVersion(3,0)) {
+        ReportError(PL_RESULT_UNSUPPORTED_SHADER_TYPE, "%s", GetGLShaderStageDescriptor(type));
+        return;
+    }
+
+    if(type == GL_COMPUTE_SHADER && !GLVersion(4,3)) {
+        ReportError(PL_RESULT_UNSUPPORTED_SHADER_TYPE, "%s", GetGLShaderStageDescriptor(type));
+        return;
+    }
+
+    stage->internal.id = glCreateShader(type);
+    if(stage->internal.id == 0) {
+        ReportError(PL_RESULT_INVALID_SHADER_TYPE, "%ul", type);
+        return;
+    }
 }
 
 /////////////////////////////////////////////////////////////

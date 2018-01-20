@@ -311,7 +311,7 @@ const char *plGetResultString(PLresult result) {
 
         // GRAPHICS
         case PL_RESULT_GRAPHICSINIT:    return "Failed to initialize graphics!";
-        case PL_RESULT_SHADERTYPE:      return "Unsupported shader type!";
+        case PL_RESULT_INVALID_SHADER_TYPE:      return "Unsupported shader type!";
         case PL_RESULT_SHADERCOMPILE:   return "Failed to compile shader!";
 
         // IMAGE
