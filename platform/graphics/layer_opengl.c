@@ -335,6 +335,8 @@ void GLUploadMesh(PLMesh *mesh) {
     glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (const void *)offsetof(Vertex, colour));
     glNormalPointer(GL_FLOAT, sizeof(Vertex), (const void *)offsetof(Vertex, normal));
 #endif
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void GLDeleteMesh(PLMesh *mesh) {
