@@ -144,7 +144,7 @@ typedef enum {
 
     // GRAPHICS
     PL_RESULT_GRAPHICSINIT,             // Graphics failed to initialise!
-    PL_RESULT_INVALID_SHADER_TYPE,      // Invalid shader type!
+    PL_RESULT_INVALID_SHADER_TYPE,      /* shader type passed is not a valid type */
     PL_RESULT_UNSUPPORTED_SHADER_TYPE,  /* shader type not supported by hardware */
     PL_RESULT_SHADERCOMPILE,    // Failed to compile shader!
     PL_RESULT_DRAW_MODE,        // Invalid mesh draw mode!

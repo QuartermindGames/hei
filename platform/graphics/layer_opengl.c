@@ -284,10 +284,6 @@ MeshTranslatePrimitive primitives[] = {
 };
 
 unsigned int TranslatePrimitiveMode(PLMeshPrimitive mode) {
-    if(mode == PL_PRIMITIVE_IGNORE) {
-        return 0;
-    }
-
     for (unsigned int i = 0; i < plArrayElements(primitives); i++) {
         if (mode == primitives[i].mode)
             return primitives[i].target;

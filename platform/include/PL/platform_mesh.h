@@ -26,13 +26,11 @@ For more information, please refer to <http://unlicense.org>
 */
 #pragma once
 
-typedef enum PLPrimitive {
-    PL_PRIMITIVE_IGNORE,
-
+typedef enum PLMeshPrimitive {
     PL_MESH_LINES,
     PL_MESH_LINE_STIPPLE,
     PL_MESH_LINE_LOOP,
-    PL_PRIMITIVE_LINE_STRIP,
+    PL_MESH_LINE_STRIP,
     PL_MESH_POINTS,
     PL_MESH_TRIANGLES,
     PL_MESH_TRIANGLE_STRIP,
@@ -44,7 +42,7 @@ typedef enum PLPrimitive {
     PL_NUM_PRIMITIVES
 } PLMeshPrimitive;
 
-typedef enum PLDrawMode {
+typedef enum PLMeshDrawMode {
     PL_DRAW_DYNAMIC,
     PL_DRAW_STATIC,
     PL_DRAW_IMMEDIATE,  // Not necessarily supported in all cases, will just revert to dynamic otherwise!
