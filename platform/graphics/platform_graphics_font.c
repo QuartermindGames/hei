@@ -180,7 +180,7 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
         font->chars[character].w = (int)strtoul(pos, &pos, 10);
         font->chars[character].h = (int)strtoul(pos, &pos, 10);
 
-#if 1
+#if 0
         printf("CHAR(%c) X(%d) Y(%d) W(%d) H(%d)\n",
                character,
                font->chars[character].x,

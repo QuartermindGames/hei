@@ -117,8 +117,8 @@ support.
 #   define plAssert(a) (a)
 #endif
 
-typedef unsigned int            PLuint;
-typedef char                    PLchar;
+typedef unsigned int    PLuint;
+typedef char            PLchar;
 
 #define plArrayElements(a)  (sizeof(a) / sizeof(*(a)))          // Returns the number of elements within an array.
 #define plIsValidString(a)  (((a)[0] != '\0') && ((a)[0] != ' '))

@@ -305,7 +305,8 @@ unsigned int TranslateDrawMode(PLMeshDrawMode mode) {
 }
 
 enum {
-    MESH_VBO
+    MESH_VERTEX,
+    MESH_TRIANGLE,
 };
 
 void GLCreateMeshPOST(PLMesh *mesh) {
@@ -313,7 +314,7 @@ void GLCreateMeshPOST(PLMesh *mesh) {
         return;
     }
 
-    glGenBuffers(1, &mesh->internal.buffers[MESH_VBO]);
+    glGenBuffers(1, &mesh->internal.buffers[MESH_VERTEX]);
 }
 
 void GLUploadMesh(PLMesh *mesh) {
@@ -321,8 +322,16 @@ void GLUploadMesh(PLMesh *mesh) {
         return;
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[MESH_VBO]);
-    //glBufferSubData(GL_ARRAY_BUFFER, )
+    unsigned int mode = TranslateDrawMode(mesh->mode);
+
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[MESH_VERTEX]);
+    GLsizeiptr size = sizeof(PLVertex) * mesh->num_verts;
+    glBufferData(GL_ARRAY_BUFFER, size, mesh->vertices, mode);
+
+    glVertexPointer(3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].position);
+    glNormalPointer(GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].normal);
+    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(PLVertex), &mesh->vertices[0].colour);
+    glTexCoordPointer(2, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].st[0]);
 
 #if 0
     glVertexPointer(3, GL_FLOAT, sizeof(Vertex), (const void *)offsetof(Vertex, position));
@@ -336,7 +345,7 @@ void GLDeleteMesh(PLMesh *mesh) {
         return;
     }
 
-    glDeleteBuffers(1, &mesh->internal.buffers[MESH_VBO]);
+    glDeleteBuffers(1, &mesh->internal.buffers[MESH_VERTEX]);
 }
 
 void GLDrawMesh(PLMesh *mesh) {
@@ -352,41 +361,36 @@ void GLDrawMesh(PLMesh *mesh) {
         glNormalPointer(GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].normal);
         glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(PLVertex), &mesh->vertices[0].colour);
         glTexCoordPointer(2, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].st[0]);
-
-        GLuint mode = TranslatePrimitiveMode(mesh->primitive);
-        if(mode == GL_TRIANGLES) {
-            glDrawElements(mode, mesh->num_indices, GL_UNSIGNED_SHORT, mesh->indices);
-        } else {
-            glDrawArrays(mode, 0, mesh->num_verts);
+    } else {
+        if(mesh->internal.buffers[MESH_VERTEX] == 0) {
+            GfxLog("invalid buffer provided, skipping draw!\n");
+            return;
         }
 
-        glDisableClientState(GL_VERTEX_ARRAY);
-        glDisableClientState(GL_COLOR_ARRAY);
-        glDisableClientState(GL_NORMAL_ARRAY);
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-        return;
-    }
+        glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[MESH_VERTEX]);
 
-    if(mesh->internal.buffers[MESH_VBO] == 0) {
-        GfxLog("invalid buffer provided, skipping draw!\n");
-        return;
+        
+        glVertexAttribLPointer(0, 3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].position);
+        glVertexAttribLPointer(0, 3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].normal);
+        glVertexAttribLPointer(0, 4, GL_UNSIGNED_BYTE, sizeof(PLVertex), &mesh->vertices[0].colour);
+        glVertexAttribLPointer(0, 2, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].st[0]);
     }
-
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[MESH_VBO]);
 
     GLuint mode = TranslatePrimitiveMode(mesh->primitive);
     if(mode == GL_TRIANGLES) {
-        glDrawElements(
-                mode,
-                mesh->num_triangles * 3,
-                GL_UNSIGNED_BYTE,
-                mesh->indices
-        );
+        glDrawElements(mode, mesh->num_indices, GL_UNSIGNED_SHORT, mesh->indices);
     } else {
         glDrawArrays(mode, 0, mesh->num_verts);
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    if(mesh->mode == PL_DRAW_IMMEDIATE) {
+        glDisableClientState(GL_VERTEX_ARRAY);
+        glDisableClientState(GL_COLOR_ARRAY);
+        glDisableClientState(GL_NORMAL_ARRAY);
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    } else {
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 }
 
 /////////////////////////////////////////////////////////////
@@ -537,6 +541,8 @@ void GLDrawPerspectivePOST(PLCamera *camera) {
 
 /////////////////////////////////////////////////////////////
 // Shader
+
+unsigned int TranslateShaderType(PLShaderType )
 
 void GLCreateShaderProgram(PLShaderProgram *program) {}
 

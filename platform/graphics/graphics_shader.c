@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org>
 */
 #include "graphics_private.h"
 
-/* SHADER PROGRAM   */
+/* shader implementation */
 
 PLShaderProgram *plCreateShaderProgram(void) {
     PLShaderProgram *program = malloc(sizeof(PLShaderProgram));
