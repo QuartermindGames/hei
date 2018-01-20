@@ -30,55 +30,6 @@ For more information, please refer to <http://unlicense.org>
 
 using namespace pl::graphics;
 
-#define SHADER_INVALID_TYPE ((PLuint)0 - 1)
-
-unsigned int _plTranslateShaderType(ShaderType type) {
-#if defined(PL_MODE_OPENGL)
-    switch(type) {
-        case SHADER_VERTEX:      return GL_VERTEX_SHADER;
-        case SHADER_FRAGMENT:    return GL_FRAGMENT_SHADER;
-#if defined(PL_MODE_OPENGL_CORE)
-        case SHADER_GEOMETRY:    return GL_GEOMETRY_SHADER;
-#endif
-#ifndef __APPLE__
-        case SHADER_COMPUTE:     return GL_COMPUTE_SHADER;
-#endif
-        default: return SHADER_INVALID_TYPE;
-    }
-#else
-    return type;
-#endif
-}
-
-unsigned int _plTranslateUniformType(ShaderUniformType type) {
-#if defined(PL_MODE_OPENGL)
-    switch(type) {
-        case UNIFORM_DOUBLE:    return GL_DOUBLE;
-        case UNIFORM_BOOL:      return GL_BOOL;
-        case UNIFORM_FLOAT:     return GL_FLOAT;
-        case UNIFORM_INT:       return GL_INT;
-        case UNIFORM_UINT:      return GL_UNSIGNED_INT;
-
-        case UNIFORM_SAMPLER1D:         return GL_SAMPLER_1D;
-        case UNIFORM_SAMPLER1DSHADOW:   return GL_SAMPLER_1D_SHADOW;
-        case UNIFORM_SAMPLER2D:         return GL_SAMPLER_2D;
-        case UNIFORM_SAMPLER2DSHADOW:   return GL_SAMPLER_2D_SHADOW;
-        case UNIFORM_SAMPLER3D:         return GL_SAMPLER_3D;
-        case UNIFORM_SAMPLERCUBE:       return GL_SAMPLER_CUBE;
-
-        case UNIFORM_VEC2:  return GL_FLOAT_VEC2;
-        case UNIFORM_VEC3:  return GL_FLOAT_VEC3;
-        case UNIFORM_VEC4:  return GL_FLOAT_VEC4;
-
-        case UNIFORM_MAT3:  return GL_FLOAT_MAT3;
-
-        default:    return GL_ZERO;
-    }
-#else
-    return type;
-#endif
-}
-
 #if defined(PL_MODE_OPENGL)
 ShaderUniformType _plTranslateGLUniformType(unsigned int type) {
     switch(type) {

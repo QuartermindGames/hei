@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <GL/glew.h>
 #include <PL/platform_mesh.h>
+#include <PL/platform_graphics.h>
 
 #define DEBUG_GL
 
@@ -542,16 +543,76 @@ void GLDrawPerspectivePOST(PLCamera *camera) {
 /////////////////////////////////////////////////////////////
 // Shader
 
-unsigned int TranslateShaderType(PLShaderType )
+#define SHADER_INVALID_TYPE ((uint32_t)0 - 1)
+
+unsigned int TranslateShaderType(PLShaderType type) {
+    switch(type) {
+        case PL_SHADER_TYPE_VERTEX:     return GL_VERTEX_SHADER;
+        case PL_SHADER_TYPE_COMPUTE:    return GL_COMPUTE_SHADER;
+        case PL_SHADER_TYPE_FRAGMENT:   return GL_FRAGMENT_SHADER;
+        case PL_SHADER_TYPE_GEOMETRY:   return GL_GEOMETRY_SHADER;
+        default:                        return SHADER_INVALID_TYPE;
+    }
+}
+
+unsigned int TranslateShaderUniformType(PLShaderUniformType type) {
+    switch(type) {
+        case PL_UNIFORM_BOOL:   return GL_BOOL;
+        case PL_UNIFORM_DOUBLE: return GL_DOUBLE;
+        case PL_UNIFORM_FLOAT:  return GL_FLOAT;
+        case PL_UNIFORM_INT:    return GL_INT;
+        case PL_UNIFORM_UINT:   return GL_UNSIGNED_INT;
+
+        case PL_UNIFORM_SAMPLER1D:          return GL_SAMPLER_1D;
+        case PL_UNIFORM_SAMPLER1DSHADOW:    return GL_SAMPLER_1D_SHADOW;
+        case PL_UNIFORM_SAMPLER2D:          return GL_SAMPLER_2D;
+        case PL_UNIFORM_SAMPLER2DSHADOW:    return GL_SAMPLER_2D_SHADOW;
+        case PL_UNIFORM_SAMPLER3D:          return GL_SAMPLER_3D;
+        case PL_UNIFORM_SAMPLERCUBE:        return GL_SAMPLER_CUBE;
+
+        case PL_UNIFORM_VEC2:   return GL_FLOAT_VEC2;
+        case PL_UNIFORM_VEC3:   return GL_FLOAT_VEC3;
+        case PL_UNIFORM_VEC4:   return GL_FLOAT_VEC4;
+
+        case PL_UNIFORM_MAT3:   return GL_FLOAT_MAT3;
+
+        default:                return SHADER_INVALID_TYPE;
+    }
+}
+
+unsigned int TranslateGLShaderUniformType(GLenum type) {
+    switch(type) {
+        case GL_BOOL:           return PL_UNIFORM_BOOL;
+        case GL_DOUBLE:         return PL_UNIFORM_DOUBLE;
+        case GL_FLOAT:          return PL_UNIFORM_FLOAT;
+        case GL_INT:            return PL_UNIFORM_INT;
+        case GL_UNSIGNED_INT:   return PL_UNIFORM_UINT;
+
+        case GL_SAMPLER_1D:         return PL_UNIFORM_SAMPLER1D;
+        case GL_SAMPLER_1D_SHADOW:  return PL_UNIFORM_SAMPLER1DSHADOW;
+        case GL_SAMPLER_2D:         return PL_UNIFORM_SAMPLER2D;
+        case GL_SAMPLER_2D_SHADOW:  return PL_UNIFORM_SAMPLER2DSHADOW;
+        case GL_SAMPLER_3D:         return PL_UNIFORM_SAMPLER3D;
+        case GL_SAMPLER_CUBE:       return PL_UNIFORM_SAMPLERCUBE;
+
+        case GL_FLOAT_VEC2:   return PL_UNIFORM_VEC2;
+        case GL_FLOAT_VEC3:   return PL_UNIFORM_VEC3;
+        case GL_FLOAT_VEC4:   return PL_UNIFORM_VEC4;
+
+        case GL_FLOAT_MAT3:   return PL_UNIFORM_MAT3;
+
+        default:                return SHADER_INVALID_TYPE;
+    }
+}
 
 void GLCreateShaderProgram(PLShaderProgram *program) {}
 
 void GLDeleteShaderProgram(PLShaderProgram *program) {
-    if(program->id == (unsigned int)(-1)) {
+    if(program->internal.id == (unsigned int)(-1)) {
         return;
     }
 
-    glDeleteProgram(program->id);
+    glDeleteProgram(program->internal.id);
 }
 
 /////////////////////////////////////////////////////////////
