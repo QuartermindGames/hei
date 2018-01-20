@@ -36,7 +36,5 @@ bool plButton(PLWidgetID id, const char *label, int x, int y, unsigned int w, un
         return false;
     }
 
-
-
     return false;
 }

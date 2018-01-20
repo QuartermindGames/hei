@@ -236,8 +236,6 @@ void plDrawMesh(PLMesh *mesh) {
     CallGfxFunction(DrawMesh, mesh);
 }
 
-// Utility Functions
-
 PLAABB plCalculateMeshAABB(PLMesh *mesh) {
     static PLAABB bounds;
     memset(&bounds, 0, sizeof(PLAABB));
@@ -270,6 +268,77 @@ PLAABB plCalculateMeshAABB(PLMesh *mesh) {
     return bounds;
 }
 
+/* primitive types */
+
+void plDrawRaisedBox(int x, int y, unsigned int w, unsigned int h) {
+
+}
+
+void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h) {
+    static PLMesh *mesh = NULL;
+    if(mesh == NULL) {
+        if((mesh = plCreateMesh(
+                PL_MESH_LINES,
+                PL_DRAW_IMMEDIATE, // todo, update to dynamic
+                0, 16
+        )) == NULL) {
+            return;
+        }
+    }
+
+    plClearMesh(mesh);
+
+    plSetMeshVertexPosition2f(mesh, 0, x, y);
+    plSetMeshVertexPosition2f(mesh, 1, x + w, y);
+    plSetMeshVertexPosition2f(mesh, 2, x, y);
+    plSetMeshVertexPosition2f(mesh, 3, x, y + h);
+
+    plSetMeshVertexColour(mesh, 0, PLColourRGB(127, 127, 127));
+    plSetMeshVertexColour(mesh, 1, PLColourRGB(127, 127, 127));
+    plSetMeshVertexColour(mesh, 2, PLColourRGB(127, 127, 127));
+    plSetMeshVertexColour(mesh, 3, PLColourRGB(127, 127, 127));
+
+    /************************/
+
+    plSetMeshVertexPosition2f(mesh, 4, x, y + h);
+    plSetMeshVertexPosition2f(mesh, 5, x + w, y + h);
+    plSetMeshVertexPosition2f(mesh, 6, x + w, y + h);
+    plSetMeshVertexPosition2f(mesh, 7, x + w, y);
+
+    plSetMeshVertexColour(mesh, 4, PLColourRGB(255, 255, 255));
+    plSetMeshVertexColour(mesh, 5, PLColourRGB(255, 255, 255));
+    plSetMeshVertexColour(mesh, 6, PLColourRGB(255, 255, 255));
+    plSetMeshVertexColour(mesh, 7, PLColourRGB(255, 255, 255));
+
+    /************************/
+
+    plSetMeshVertexPosition2f(mesh, 8, x + 1, y + 1);
+    plSetMeshVertexPosition2f(mesh, 9, x + w - 1, y + 1);
+    plSetMeshVertexPosition2f(mesh, 10, x + 1, y + 1);
+    plSetMeshVertexPosition2f(mesh, 11, x + 1, y + h - 1);
+
+    plSetMeshVertexColour(mesh, 8, PLColourRGB(63, 63, 63));
+    plSetMeshVertexColour(mesh, 9, PLColourRGB(63, 63, 63));
+    plSetMeshVertexColour(mesh, 10, PLColourRGB(63, 63, 63));
+    plSetMeshVertexColour(mesh, 11, PLColourRGB(63, 63, 63));
+
+    /************************/
+
+    plSetMeshVertexPosition2f(mesh, 12, x + 1, y + h - 1);
+    plSetMeshVertexPosition2f(mesh, 13, x + w - 1, y + h - 1);
+    plSetMeshVertexPosition2f(mesh, 14, x + w - 1, y + h - 1);
+    plSetMeshVertexPosition2f(mesh, 15, x + w - 1, y + 1);
+
+    plSetMeshVertexColour(mesh, 12, PLColourRGB(63, 63, 63));
+    plSetMeshVertexColour(mesh, 13, PLColourRGB(63, 63, 63));
+    plSetMeshVertexColour(mesh, 14, PLColourRGB(63, 63, 63));
+    plSetMeshVertexColour(mesh, 15, PLColourRGB(63, 63, 63));
+
+    plUploadMesh(mesh);
+
+    plDrawMesh(mesh);
+}
+
 void plDrawCube() {}    // todo
 
 void plDrawSphere() {}  // todo
@@ -277,7 +346,6 @@ void plDrawSphere() {}  // todo
 void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, PLColour colour) {
     static unsigned int last_num_segments = 0;
     static PLMesh *mesh = NULL;
-
     if(last_num_segments != segments) {
         plDeleteMesh(mesh);
         mesh = NULL;
@@ -308,8 +376,6 @@ void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, 
 
     plDrawMesh(mesh);
 }
-
-/*  Textured Rectangle Mesh  */
 
 void plDrawRectangle(PLRectangle2D rect) {
     static PLMesh *mesh = NULL;
@@ -344,8 +410,6 @@ void plDrawRectangle(PLRectangle2D rect) {
 
     plDrawMesh(mesh);
 }
-
-/*  Triangle Mesh   */
 
 void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
     static PLMesh *mesh = NULL;
