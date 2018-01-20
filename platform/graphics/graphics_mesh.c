@@ -113,12 +113,6 @@ void plApplyMeshLighting(PLMesh *mesh, const PLLight *light, PLVector3 position)
 PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts) {
     plAssert(num_verts);
 
-    if((primitive == PL_PRIMITIVE_IGNORE) || (primitive < PL_PRIMITIVE_IGNORE) ||
-            (primitive > PL_NUM_PRIMITIVES)) {
-        ReportError(PL_RESULT_DRAW_PRIMITIVE, "Invalid mesh primitive, %d!\n", primitive);
-        return NULL;
-    }
-
     PLMesh *mesh = (PLMesh*)calloc(1, sizeof(PLMesh));
     if(mesh == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for Mesh, %d!\n", sizeof(PLMesh));

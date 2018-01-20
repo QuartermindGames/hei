@@ -96,10 +96,10 @@ PLCamera *plCreateCamera(void) {
      *  *
      *  H
      */
-    camera->viewport.w          = CAMERA_DEFAULT_WIDTH;
-    camera->viewport.h          = CAMERA_DEFAULT_HEIGHT;
+    camera->viewport.w      = CAMERA_DEFAULT_WIDTH;
+    camera->viewport.h      = CAMERA_DEFAULT_HEIGHT;
     camera->viewport.r_w    = 0;
-    camera->viewport.r_h   = 0;
+    camera->viewport.r_h    = 0;
 
     CallGfxFunction(CreateCamera, camera);
 

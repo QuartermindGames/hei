@@ -54,7 +54,7 @@ typedef struct PLGraphicsState {
 
     // Shader states
 
-    unsigned int current_program;
+    PLShaderProgram* current_program;
 
     // Hardware / Driver information
 

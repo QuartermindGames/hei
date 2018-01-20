@@ -259,6 +259,8 @@ PL_EXTERN void plSetShaderUniformUInt(PLShaderProgram *program, unsigned int slo
 PL_EXTERN void plSetShaderUniformVector3(PLShaderProgram *program, unsigned int slot, PLVector3 value);
 PL_EXTERN void plSetShaderUniformVector2(PLShaderProgram *program, unsigned int slot, PLVector2 value);
 
+PL_EXTERN PLShaderProgram *plGetCurrentShaderProgram(void);
+
 PL_EXTERN bool plRegisterShaderProgramUniforms(void);
 PL_EXTERN bool plRegisterShaderProgramUniform(const char *name, PLShaderUniformType type);
 
@@ -284,11 +286,6 @@ PL_EXTERN const char *plGetHWVersion(void);
 
 PL_EXTERN bool plHWSupportsMultitexture(void);
 PL_EXTERN bool plHWSupportsShaders(void);
-
-PL_EXTERN unsigned int plGetCurrentShaderProgram(void);
-
-PL_EXTERN void plEnableShaderProgram(unsigned int program);
-PL_EXTERN void plDisableShaderProgram(unsigned int program);
 
 PL_EXTERN void plSetCullMode(PLCullMode mode);
 PL_EXTERN void plSetBlendMode(PLBlend a, PLBlend b);

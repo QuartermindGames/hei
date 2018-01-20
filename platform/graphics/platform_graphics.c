@@ -330,38 +330,6 @@ void plSetCullMode(PLCullMode mode) {
 }
 
 /*===========================
-	SHADERS
-===========================*/
-
-unsigned int plGetCurrentShaderProgram(void) {
-    return gfx_state.current_program;
-}
-
-void plEnableShaderProgram(unsigned int program) {
-    GRAPHICS_TRACK();
-
-    if (program == gfx_state.current_program) {
-        return;
-    }
-
-   // glUseProgram(program);
-
-    gfx_state.current_program = program;
-}
-
-void plDisableShaderProgram(unsigned int program) {
-    GRAPHICS_TRACK();
-
-    if(program != gfx_state.current_program) {
-        return;
-    }
-
-   // glUseProgram(0);
-
-    gfx_state.current_program = 0;
-}
-
-/*===========================
 	TEXTURES
 ===========================*/
 

@@ -366,7 +366,6 @@ void GLDrawMesh(PLMesh *mesh) {
 
         glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[MESH_VERTEX]);
 
-        
         glVertexAttribLPointer(0, 3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].position);
         glVertexAttribLPointer(0, 3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].normal);
         glVertexAttribLPointer(0, 4, GL_UNSIGNED_BYTE, sizeof(PLVertex), &mesh->vertices[0].colour);

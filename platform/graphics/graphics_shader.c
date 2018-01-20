@@ -24,6 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+#include <PL/platform_console.h>
+
 #include "graphics_private.h"
 
 /* shader implementation */
@@ -36,11 +38,8 @@ PLShaderProgram *plCreateShaderProgram(void) {
     }
 
     memset(program, 0, sizeof(PLShaderProgram));
-    program->id = (uint32_t) -1;
 
-    if(gfx_layer.CreateShaderProgram) {
-        gfx_layer.CreateShaderProgram(program);
-    }
+    CallGfxFunction(CreateShaderProgram, program);
 
     return program;
 }
@@ -53,5 +52,37 @@ void plDeleteShaderProgram(PLShaderProgram *program) {
     }
 
     free(program);
+}
+
+PLShaderProgram *plGetCurrentShaderProgram(void) {
+    return gfx_state.current_program;
+}
+
+bool plIsShaderProgramEnabled(PLShaderProgram *program) {
+    if(gfx_state.current_program == program) {
+        return true;
+    }
+
+    return false;
+}
+
+void plEnableShaderProgram(PLShaderProgram *program) {
+    if (program == gfx_state.current_program) {
+        return;
+    }
+
+    // glUseProgram(program);
+
+    gfx_state.current_program = program;
+}
+
+void plDisableShaderProgram(PLShaderProgram *program) {
+    if(program != gfx_state.current_program) {
+        return;
+    }
+
+    // glUseProgram(0);
+
+    gfx_state.current_program = 0;
 }
 
