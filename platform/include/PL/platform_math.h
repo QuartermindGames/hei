@@ -30,9 +30,10 @@ For more information, please refer to <http://unlicense.org>
 
 // Base Defines
 
-#define PL_PI   3.14159265358979323846264338327950288f
-#define PL_TAU  6.28318530717958647692528676655900576f
+#define PL_PI           3.14159265358979323846264338327950288f
+#define PL_PI_DIV_180   PL_PI / 180.f
 
+#define PL_TAU      6.28318530717958647692528676655900576f
 #define PL_EPSILON  1.19209290e-7f
 
 enum {
