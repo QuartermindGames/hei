@@ -38,19 +38,49 @@ PL_INLINE static void plAddAABB(PLAABB *b, PLAABB b2) {
     plAddVector3(&b->mins, b2.mins);
 }
 
-#if 0 // todo
 PL_INLINE static bool plIntersectAABB(PLAABB b, PLAABB b2) {
+#if 0 /* what the fuck is this crap? */
     PLVector3 dist_a = b2.mins;
     plSubtractVector3(&dist_a, b.maxs);
     PLVector3 dist_b = b.mins;
     plSubtractVector3(&dist_b, b2.maxs);
     PLVector3 dist = plVector3Max(dist_a, dist_b);
-    return false;
-}
+#else
+    if(
+            b.maxs.x < b2.mins.x ||
+            b.maxs.y < b2.mins.y ||
+            b.maxs.z < b2.mins.z ||
+
+            b.mins.x > b2.maxs.x ||
+            b.mins.y > b2.maxs.y ||
+            b.mins.z > b2.maxs.z
+            ) {
+        return false;
+    }
 #endif
 
-PL_INLINE static bool plIsSphereIntersecting(PLVector3 position, float radius, PLVector3 position_b, float radius_b) {
-    PLVector3 difference = position;
+    return true;
+}
+
+PL_INLINE static bool plIntersectPoint(PLAABB b, PLVector3 point) {
+    if(
+            point.x > b.maxs.x ||
+            point.x < b.mins.x ||
+
+            point.y > b.maxs.y ||
+            point.y < b.mins.y ||
+
+            point.z > b.maxs.z ||
+            point.z < b.mins.z
+            ) {
+        return false;
+    }
+
+    return true;
+}
+
+PL_INLINE static bool plIsSphereIntersecting(PLVector3 origin, float radius, PLVector3 position_b, float radius_b) {
+    PLVector3 difference = origin;
     plSubtractVector3(&difference, position_b);
     float distance = plVector3Length(difference);
     float sum_radius = radius + radius_b;
