@@ -64,6 +64,7 @@ typedef enum PLDataFormat {
 } PLDataFormat;
 
 typedef enum PLCullMode {
+    PL_CULL_NONE,       /* disables backface culling */
     PL_CULL_POSTIVE,
     PL_CULL_NEGATIVE
 } PLCullMode;

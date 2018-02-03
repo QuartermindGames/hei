@@ -44,7 +44,7 @@ enum {
     PL_ALPHA
 };
 
-#define plFloatToByte(a)    (uint8_t)round((a) * 255)
+#define plFloatToByte(a)    (uint8_t)(roundf((a) * 255.f))
 #define plByteToFloat(a)    ((a) / (float)255)
 
 PL_INLINE static bool plIsPowerOfTwo(unsigned int num) {

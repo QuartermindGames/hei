@@ -25,11 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 #include <PL/platform_console.h>
-#include "graphics_private.h"
 
-#if defined(PL_MODE_OPENGL)
-#   define _PLGL_USE_VERTEX_BUFFER_OBJECTS
-#endif
+#include "graphics_private.h"
 
 void plGenerateMeshNormals(PLMesh *mesh) {
     plAssert(mesh);
@@ -171,16 +168,6 @@ void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3 vector)
     mesh->vertices[index].position = vector;
 }
 
-void plSetMeshVertexPosition3f(PLMesh *mesh, unsigned int index, float x, float y, float z) {
-    plAssert(index < mesh->num_verts);
-    mesh->vertices[index].position = PLVector3(x, y, z);
-}
-
-void plSetMeshVertexPosition2f(PLMesh *mesh, unsigned int index, float x, float y) {
-    plAssert(index < mesh->num_verts);
-    mesh->vertices[index].position = PLVector3(x, y, 0);
-}
-
 #if 0
 void plSetMeshVertexPosition3fv(PLMesh *mesh, unsigned int index, unsigned int size, const float *v) {
     size += index;
@@ -196,11 +183,13 @@ void plSetMeshVertexPosition3fv(PLMesh *mesh, unsigned int index, unsigned int s
 }
 #endif
 
-void plSetMeshVertexNormal3f(PLMesh *mesh, unsigned int index, float x, float y, float z) {
-    mesh->vertices[index].normal = PLVector3(x, y, z);
+void plSetMeshVertexNormal(PLMesh *mesh, unsigned int index, PLVector3 vector) {
+    plAssert(index < mesh->num_verts);
+    mesh->vertices[index].normal = vector;
 }
 
 void plSetMeshVertexST(PLMesh *mesh, unsigned int index, float s, float t) {
+    plAssert(index < mesh->num_verts);
     mesh->vertices[index].st[0] = PLVector2(s, t);
 }
 
@@ -219,6 +208,7 @@ void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index, unsigned
 #endif
 
 void plSetMeshVertexColour(PLMesh *mesh, unsigned int index, PLColour colour) {
+    plAssert(index < mesh->num_verts);
     mesh->vertices[index].colour = colour;
 }
 
@@ -271,7 +261,16 @@ PLAABB plCalculateMeshAABB(PLMesh *mesh) {
 /* primitive types */
 
 void plDrawRaisedBox(int x, int y, unsigned int w, unsigned int h) {
-
+    static PLMesh *mesh = NULL;
+    if(mesh == NULL) {
+        if((mesh = plCreateMesh(
+                PL_MESH_LINES,
+                PL_DRAW_IMMEDIATE, // todo, update to dynamic
+                0, 4
+        )) == NULL) {
+            return;
+        }
+    }
 }
 
 void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h) {
@@ -288,10 +287,10 @@ void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h) {
 
     plClearMesh(mesh);
 
-    plSetMeshVertexPosition2f(mesh, 0, x, y);
-    plSetMeshVertexPosition2f(mesh, 1, x + w, y);
-    plSetMeshVertexPosition2f(mesh, 2, x, y);
-    plSetMeshVertexPosition2f(mesh, 3, x, y + h);
+    plSetMeshVertexPosition(mesh, 0, PLVector3(x, y, 0));
+    plSetMeshVertexPosition(mesh, 1, PLVector3(x + w, y, 0));
+    plSetMeshVertexPosition(mesh, 2, PLVector3(x, y, 0));
+    plSetMeshVertexPosition(mesh, 3, PLVector3(x, y + h, 0));
 
     plSetMeshVertexColour(mesh, 0, PLColourRGB(127, 127, 127));
     plSetMeshVertexColour(mesh, 1, PLColourRGB(127, 127, 127));
@@ -300,10 +299,10 @@ void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h) {
 
     /************************/
 
-    plSetMeshVertexPosition2f(mesh, 4, x, y + h);
-    plSetMeshVertexPosition2f(mesh, 5, x + w, y + h);
-    plSetMeshVertexPosition2f(mesh, 6, x + w, y + h);
-    plSetMeshVertexPosition2f(mesh, 7, x + w, y);
+    plSetMeshVertexPosition(mesh, 4, PLVector3(x, y + h, 0));
+    plSetMeshVertexPosition(mesh, 5, PLVector3(x + w, y + h, 0));
+    plSetMeshVertexPosition(mesh, 6, PLVector3(x + w, y + h, 0));
+    plSetMeshVertexPosition(mesh, 7, PLVector3(x + w, y, 0));
 
     plSetMeshVertexColour(mesh, 4, PLColourRGB(255, 255, 255));
     plSetMeshVertexColour(mesh, 5, PLColourRGB(255, 255, 255));
@@ -312,10 +311,10 @@ void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h) {
 
     /************************/
 
-    plSetMeshVertexPosition2f(mesh, 8, x + 1, y + 1);
-    plSetMeshVertexPosition2f(mesh, 9, x + w - 1, y + 1);
-    plSetMeshVertexPosition2f(mesh, 10, x + 1, y + 1);
-    plSetMeshVertexPosition2f(mesh, 11, x + 1, y + h - 1);
+    plSetMeshVertexPosition(mesh, 8, PLVector3(x + 1, y + 1, 0));
+    plSetMeshVertexPosition(mesh, 9, PLVector3(x + w - 1, y + 1, 0));
+    plSetMeshVertexPosition(mesh, 10, PLVector3(x + 1, y + 1, 0));
+    plSetMeshVertexPosition(mesh, 11, PLVector3(x + 1, y + h - 1, 0));
 
     plSetMeshVertexColour(mesh, 8, PLColourRGB(63, 63, 63));
     plSetMeshVertexColour(mesh, 9, PLColourRGB(63, 63, 63));
@@ -324,10 +323,10 @@ void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h) {
 
     /************************/
 
-    plSetMeshVertexPosition2f(mesh, 12, x + 1, y + h - 1);
-    plSetMeshVertexPosition2f(mesh, 13, x + w - 1, y + h - 1);
-    plSetMeshVertexPosition2f(mesh, 14, x + w - 1, y + h - 1);
-    plSetMeshVertexPosition2f(mesh, 15, x + w - 1, y + 1);
+    plSetMeshVertexPosition(mesh, 12, PLVector3(x + 1, y + h - 1, 0));
+    plSetMeshVertexPosition(mesh, 13, PLVector3(x + w - 1, y + h - 1, 0));
+    plSetMeshVertexPosition(mesh, 14, PLVector3(x + w - 1, y + h - 1, 0));
+    plSetMeshVertexPosition(mesh, 15, PLVector3(x + w - 1, y + 1, 0));
 
     plSetMeshVertexColour(mesh, 12, PLColourRGB(63, 63, 63));
     plSetMeshVertexColour(mesh, 13, PLColourRGB(63, 63, 63));
@@ -391,10 +390,10 @@ void plDrawRectangle(PLRectangle2D rect) {
 
     plClearMesh(mesh);
 
-    plSetMeshVertexPosition2f(mesh, 0, rect.xy.x, rect.xy.y + rect.wh.y);
-    plSetMeshVertexPosition2f(mesh, 1, rect.xy.x, rect.xy.y);
-    plSetMeshVertexPosition2f(mesh, 2, rect.xy.x + rect.wh.x, rect.xy.y + rect.wh.y);
-    plSetMeshVertexPosition2f(mesh, 3, rect.xy.x + rect.wh.x, rect.xy.y);
+    plSetMeshVertexPosition(mesh, 0, PLVector3(rect.xy.x, rect.xy.y + rect.wh.y, 0));
+    plSetMeshVertexPosition(mesh, 1, PLVector3(rect.xy.x, rect.xy.y, 0));
+    plSetMeshVertexPosition(mesh, 2, PLVector3(rect.xy.x + rect.wh.x, rect.xy.y + rect.wh.y, 0));
+    plSetMeshVertexPosition(mesh, 3, PLVector3(rect.xy.x + rect.wh.x, rect.xy.y, 0));
 
     plSetMeshVertexColour(mesh, 0, rect.ll);
     plSetMeshVertexColour(mesh, 1, rect.ul);
@@ -425,9 +424,9 @@ void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
 
     plClearMesh(mesh);
 
-    plSetMeshVertexPosition2f(mesh, 0, x, y + h);
-    plSetMeshVertexPosition2f(mesh, 1, x + w / 2, x);
-    plSetMeshVertexPosition2f(mesh, 2, x + w, y + h);
+    plSetMeshVertexPosition(mesh, 0, PLVector3(x, y + h, 0));
+    plSetMeshVertexPosition(mesh, 1, PLVector3(x + w / 2, x, 0));
+    plSetMeshVertexPosition(mesh, 2, PLVector3(x + w, y + h, 0));
 
     plSetMeshVertexColour(mesh, 0, PLColour(255, 0, 0, 255));
     plSetMeshVertexColour(mesh, 1, PLColour(0, 255, 0, 255));

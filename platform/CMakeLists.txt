@@ -27,12 +27,19 @@ For more information, please refer to <http://unlicense.org>
 
 project(platform)
 
-option(PL_USE_ZLIB "ZLIB" ON) # todo
-option(PL_USE_GL "OpenGL" ON) # todo
+############################################################
 
-if(PL_USE_GL)
-    add_definitions("-DPL_USE_GL")
-endif()
+option(PL_USE_GRAPHICS "Graphics" ON)
+
+option(PL_SUPPORT_DIRECT3D "Graphics Direct3D API support" OFF)
+option(PL_SUPPORT_GLIDE "Graphics 3dfx Glide API support" OFF)
+option(PL_SUPPORT_OPENGL "Graphics OpenGL API support" ON)
+
+############################################################
+
+option(PL_USE_MODEL "Model" ON)
+
+############################################################
 
 add_definitions("-D_DEBUG")
 
@@ -40,26 +47,53 @@ file(
         GLOB PLATFORM_SOURCE_FILES
         *.cpp *.c *.h
 
-        graphics/*.*
-        image/*.*
-        model/*.*
         string/*.*
-        package/*.*
         memory/*.*
 
         include/*.h
         include/PL/*.h
         )
 
-add_library(platform SHARED ${PLATFORM_SOURCE_FILES})
+file(GLOB PLATFORM_PACKAGE_FILES package/*.*)
+if(PL_USE_MODEL)
+    file(GLOB PLATFORM_MODEL_FILES model/*.*)
+endif()
+file(GLOB PLATFORM_IMAGE_FILES image/*.*)
+if(PL_USE_GRAPHICS)
+    file(GLOB PLATFORM_GRAPHICS_FILES graphics/*.*)
+endif()
+
+add_library(platform SHARED
+        ${PLATFORM_SOURCE_FILES}
+        ${PLATFORM_GRAPHICS_FILES}
+        ${PLATFORM_IMAGE_FILES}
+        ${PLATFORM_MODEL_FILES}
+        ${PLATFORM_PACKAGE_FILES})
 
 set_target_properties(platform PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/)
 
 target_compile_options(platform PUBLIC -fPIC -DPL_INTERNAL)
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    target_link_libraries(platform "-framework OpenGL" -L/usr/X11/lib -L/usr/X11R6/lib)
-else()
-    target_link_libraries(platform GL GLU)
+
+if(PL_USE_GRAPHICS)
+    add_definitions("-DPL_USE_GRAPHICS")
+
+    if(PL_SUPPORT_OPENGL)
+        add_definitions("-DPL_SUPPORT_OPENGL")
+        if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+            target_link_libraries(platform "-framework OpenGL")
+        else()
+            target_link_libraries(platform GL GLU GLEW)
+        endif()
+    endif()
+
+    if(PL_SUPPORT_GLIDE)
+        add_definitions("-DPL_SUPPORT_GLIDE")
+    endif()
+
+    if(PL_SUPPORT_DIRECT3D)
+        add_definitions("-DPL_SUPPORT_DIRECT3D")
+    endif()
 endif()
+
 target_include_directories(platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(platform m dl GLEW)
+target_link_libraries(platform m dl)

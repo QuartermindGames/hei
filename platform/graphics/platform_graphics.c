@@ -85,7 +85,7 @@ void ShutdownGraphics(void) {
         case PL_GFX_MODE_OPENGL_CORE:
         case PL_GFX_MODE_OPENGL_ES:
         case PL_GFX_MODE_OPENGL: {
-#if defined(PL_USE_GL)
+#if defined(PL_SUPPORT_OPENGL)
             ShutdownOpenGL();
 #endif
         } break;
@@ -446,9 +446,16 @@ void plSetGraphicsMode(PLGfxMode mode) {
     gfx_layer.mode = mode;
     switch(gfx_layer.mode) {
         case PL_GFX_MODE_NONE: break;
-        case PL_GFX_MODE_DIRECT3D: break;
 
-#if defined(PL_USE_GL)
+#if defined(PL_SUPPORT_DIRECT3D)
+        case PL_GFX_MODE_DIRECT3D: break;
+#endif
+
+        case PL_GFX_MODE_SOFTWARE: {
+            InitSoftware();
+        } break;
+
+#if defined(PL_SUPPORT_OPENGL)
         case PL_GFX_MODE_OPENGL_CORE:
         case PL_GFX_MODE_OPENGL_ES:
         case PL_GFX_MODE_OPENGL: {

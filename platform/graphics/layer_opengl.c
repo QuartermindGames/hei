@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#if defined(PL_USE_GL)
+#if defined(PL_SUPPORT_OPENGL)
 #include <PL/platform_console.h>
 
 #include "graphics_private.h"
@@ -140,17 +140,23 @@ void GLSetCullMode(PLCullMode mode) {
         return;
     }
 
-    glCullFace(GL_BACK);
-    switch(mode) {
-        default:
-        case PL_CULL_NEGATIVE: {
-            glFrontFace(GL_CW);
-        } break;
+    if(mode == PL_CULL_NONE) {
+        glDisable(GL_CULL_FACE);
+    } else {
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        switch (mode) {
+            default:
+            case PL_CULL_NEGATIVE: {
+                glFrontFace(GL_CW);
+            } break;
 
-        case PL_CULL_POSTIVE: {
-            glFrontFace(GL_CCW);
-        } break;
+            case PL_CULL_POSTIVE: {
+                glFrontFace(GL_CCW);
+            } break;
+        }
     }
+
     gfx_state.current_cullmode = mode;
 }
 
@@ -379,7 +385,7 @@ void GLDrawMesh(PLMesh *mesh) {
     }
 
     GLuint mode = TranslatePrimitiveMode(mesh->primitive);
-    if(mode == GL_TRIANGLES) {
+    if(mesh->num_indices > 0) {
         glDrawElements(mode, mesh->num_indices, GL_UNSIGNED_SHORT, mesh->indices);
     } else {
         glDrawArrays(mode, 0, mesh->num_verts);
@@ -636,7 +642,7 @@ void GLCreateShaderStage(PLShaderStage *stage) {
 
     GLenum type = TranslateShaderStageType(stage->type);
     if(type == SHADER_INVALID_TYPE) {
-        ReportError(PL_RESULT_INVALID_SHADER_TYPE, "%ul", type);
+        ReportError(PL_RESULT_INVALID_SHADER_TYPE, "%u", type);
         return;
     }
 
@@ -652,7 +658,7 @@ void GLCreateShaderStage(PLShaderStage *stage) {
 
     stage->internal.id = glCreateShader(type);
     if(stage->internal.id == 0) {
-        ReportError(PL_RESULT_INVALID_SHADER_TYPE, "%ul", type);
+        ReportError(PL_RESULT_INVALID_SHADER_TYPE, "%u", type);
         return;
     }
 }
@@ -795,7 +801,7 @@ void InitOpenGL(void) {
     glLineWidth(2.f);
 }
 
-void ShutdownOpenGL() {
+void ShutdownOpenGL(void) {
 
 }
 

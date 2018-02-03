@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #include "graphics_private.h"
 
 #include <PL/platform_graphics_font.h>
@@ -250,10 +249,10 @@ void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColo
 
     plSetMeshUniformColour(mesh, colour);
 
-    plSetMeshVertexPosition2f(mesh, 0, x, y);
-    plSetMeshVertexPosition2f(mesh, 1, x, y + h);
-    plSetMeshVertexPosition2f(mesh, 2, x + w, y);
-    plSetMeshVertexPosition2f(mesh, 3, x + w, y + h);
+    plSetMeshVertexPosition(mesh, 0, PLVector3(x, y, 0));
+    plSetMeshVertexPosition(mesh, 1, PLVector3(x, y + h, 0));
+    plSetMeshVertexPosition(mesh, 2, PLVector3(x + w, y, 0));
+    plSetMeshVertexPosition(mesh, 3, PLVector3(x + w, y + h, 0));
 
     float tw = font->chars[character].w / font->texture->w;
     float th = font->chars[character].h / font->texture->h;
