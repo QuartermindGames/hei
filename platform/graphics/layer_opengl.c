@@ -79,6 +79,10 @@ bool GLHWSupportsMultitexture(void) {
     return gl_capabilities.multitexture;
 }
 
+void GLGetMaxTextureUnits(unsigned int *num_units) {
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint *) num_units);
+}
+
 /////////////////////////////////////////////////////////////
 
 void GLSetClearColour(PLColour rgba) {
@@ -728,6 +732,8 @@ void InitOpenGL(void) {
     // setup the gfx layer
     gfx_layer.HWSupportsShaders         = GLHWSupportsShaders;
     gfx_layer.HWSupportsMultitexture    = GLHWSupportsMultitexture;
+    gfx_layer.GetMaxTextureUnits        = GLGetMaxTextureUnits;
+
     gfx_layer.SetBlendMode              = GLSetBlendMode;
     gfx_layer.SetCullMode               = GLSetCullMode;
 

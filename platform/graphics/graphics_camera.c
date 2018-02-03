@@ -74,6 +74,23 @@ PLMatrix4x4 LookAt(PLVector3 eye, PLVector3 center, PLVector3 up) {
     }};
 }
 
+PLVector3 GetCameraViewDirection(PLCamera *camera) {
+    PLVector3 y_axis = PLVector3(
+            cosf((camera->angles.y + 90) * PL_PI_DIV_180),
+            0,
+            -sinf((camera->angles.y + 90) * PL_PI_DIV_180)
+    );
+
+    float cos_x = cosf(camera->angles.x * PL_PI_DIV_180);
+    PLVector3 x_axis = PLVector3(
+            y_axis.x * cos_x,
+            sinf(camera->angles.x * PL_PI_DIV_180),
+            y_axis.z * cos_x
+    );
+
+    return x_axis;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 PLCamera *plCreateCamera(void) {

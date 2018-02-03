@@ -91,8 +91,14 @@ typedef struct PLGraphicsState {
 typedef struct GfxLayer {
     PLGfxMode mode;    // Current gfx interface
 
+    /* hw information */
+
     bool(*HWSupportsMultitexture)(void);
     bool(*HWSupportsShaders)(void);
+
+    void(*GetMaxTextureUnits)(unsigned int *num_units);
+
+    /******************************************/
 
     void(*SetBlendMode)(PLBlend a, PLBlend b);
     void(*SetCullMode)(PLCullMode mode);

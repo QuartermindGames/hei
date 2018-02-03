@@ -264,13 +264,11 @@ unsigned int plGetMaxTextureUnits(void) {
     }
 
 #ifdef PL_MODE_OPENGL
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint*)&gfx_state.hw_maxtextureunits);
 #elif defined (VL_MODE_GLIDE)
     grGet(GR_NUM_TMU, sizeof(param), (FxI32*)graphics_state.hw_maxtextureunits);
-#else
-    gfx_state.hw_maxtextureunits = 0;
 #endif
 
+    CallGfxFunction(GetMaxTextureUnits, &gfx_state.hw_maxtextureunits);
     return gfx_state.hw_maxtextureunits;
 }
 
