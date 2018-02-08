@@ -24,20 +24,24 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#if 0
+#include "graphics_private.h"
 
-// clear buffer
-if(buffers & PL_BUFFER_COLOUR) {
-        for (unsigned int i = 0; i < pl_sw_backbuffer_size; i += 4) {
-            pl_sw_backbuffer[i] = gfx_state.current_clearcolour.r;
-            pl_sw_backbuffer[i + 1] = gfx_state.current_clearcolour.g;
-            pl_sw_backbuffer[i + 2] = gfx_state.current_clearcolour.b;
-            pl_sw_backbuffer[i + 3] = gfx_state.current_clearcolour.a;
+#define DEFAULT_WIDTH   320
+#define DEFAULT_HEIGHT  240
+
+uint8_t *sw_backbuffer;
+unsigned int sw_backbuffer_size = DEFAULT_WIDTH * DEFAULT_HEIGHT;
+
+void SWClearBuffers(unsigned int buffers) {
+    if(buffers & PL_BUFFER_COLOUR) {
+        for(unsigned int i = 0; i < sw_backbuffer_size; i += 4) {
+            sw_backbuffer[i]        = gfx_state.current_clearcolour.r;
+            sw_backbuffer[i + 1]    = gfx_state.current_clearcolour.g;
+            sw_backbuffer[i + 2]    = gfx_state.current_clearcolour.b;
+            sw_backbuffer[i + 3]    = gfx_state.current_clearcolour.a;
         }
     }
-
-#endif
-
+}
 
 /***********************************************/
 
