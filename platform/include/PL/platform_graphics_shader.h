@@ -26,6 +26,8 @@ For more information, please refer to <http://unlicense.org>
 */
 #pragma once
 
+#if 0
+
 #ifdef __cplusplus
 
 namespace pl {
@@ -196,5 +198,7 @@ namespace pl {
 
     }
 }
+
+#endif
 
 #endif

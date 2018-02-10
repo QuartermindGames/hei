@@ -376,6 +376,39 @@ void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, 
     plDrawMesh(mesh);
 }
 
+void plDrawTexturedRectangle(int x, int y, unsigned int w, unsigned int h, PLTexture *texture) {
+    static PLMesh *mesh = NULL;
+    if(mesh == NULL) {
+        if((mesh = plCreateMesh(
+                PL_MESH_TRIANGLE_STRIP,
+                PL_DRAW_IMMEDIATE, // todo, update to dynamic
+                2, 4
+        )) == NULL) {
+            return;
+        }
+    }
+
+    plClearMesh(mesh);
+
+    plSetMeshVertexPosition(mesh, 0, PLVector3(x, y + h, 0));
+    plSetMeshVertexPosition(mesh, 1, PLVector3(x, y, 0));
+    plSetMeshVertexPosition(mesh, 2, PLVector3(x + w, y + h, 0));
+    plSetMeshVertexPosition(mesh, 3, PLVector3(x + w, y, 0));
+
+    plSetMeshUniformColour(mesh, PLColourRGB(255, 255, 255));
+
+    plSetMeshVertexST(mesh, 0, 0, 0);
+    plSetMeshVertexST(mesh, 1, 0, 1);
+    plSetMeshVertexST(mesh, 2, 1, 1);
+    plSetMeshVertexST(mesh, 3, 1, 0);
+
+    mesh->texture = texture;
+
+    plUploadMesh(mesh);
+
+    plDrawMesh(mesh);
+}
+
 void plDrawRectangle(PLRectangle2D rect) {
     static PLMesh *mesh = NULL;
     if(mesh == NULL) {
@@ -399,11 +432,6 @@ void plDrawRectangle(PLRectangle2D rect) {
     plSetMeshVertexColour(mesh, 1, rect.ul);
     plSetMeshVertexColour(mesh, 2, rect.lr);
     plSetMeshVertexColour(mesh, 3, rect.ur);
-
-    plSetMeshVertexST(mesh, 0, 0, 0);
-    plSetMeshVertexST(mesh, 1, 0, 1);
-    plSetMeshVertexST(mesh, 2, 1, 1);
-    plSetMeshVertexST(mesh, 3, 1, 0);
 
     plUploadMesh(mesh);
 

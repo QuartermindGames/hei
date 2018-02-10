@@ -246,6 +246,28 @@ void plDeleteTexture(PLTexture *texture, bool force) {
     free(texture);
 }
 
+/* automatically loads in an image and uploads it as a texture */
+PLTexture *plLoadTextureImage(const char *path, PLTextureFilter filter_mode) {
+    if(path[0] == ' ' || path[0] == '\0') {
+        return NULL;
+    }
+
+    PLImage image;
+    if(!plLoadImage(path, &image)) {
+        return NULL;
+    }
+
+    PLTexture *texture = plCreateTexture();
+    if(texture != NULL) {
+        texture->filter = filter_mode;
+        plUploadTextureImage(texture, &image);
+    }
+
+    plFreeImage(&image);
+
+    return texture;
+}
+
 /////////////////////////////////////////////////////
 
 PLTexture *plGetCurrentTexture(unsigned int tmu) {
