@@ -25,11 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-project(tim2image)
+project(image_export)
 
-file(GLOB TIM2TIFF_SOURCE_FILES *.c *.h)
+file(GLOB IMAGE_EXPORT_SOURCE_FILES *.c *.h)
 
-add_executable(tim2image ${TIM2TIFF_SOURCE_FILES})
+add_executable(image_export ${IMAGE_EXPORT_SOURCE_FILES})
 
-target_include_directories(tim2image PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(tim2image platform)
+target_include_directories(image_export PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(image_export platform)

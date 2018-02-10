@@ -47,7 +47,7 @@ if(PL_BUILD_EXAMPLES)
     add_subdirectory(examples/console)
     add_subdirectory(examples/model_viewer)
     add_subdirectory(examples/package)
-    add_subdirectory(examples/tim2image)
+    add_subdirectory(examples/image_export)
 endif(PL_BUILD_EXAMPLES)
 
 if(PL_BUILD_UTILITIES)

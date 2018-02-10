@@ -30,16 +30,14 @@ For more information, please refer to <http://unlicense.org>
 
 #include "image_private.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#if defined(STB_IMAGE_IMPLEMENTATION)
-#   include "stb_image.h"
-#endif
-
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #if defined(STB_IMAGE_WRITE_IMPLEMENTATION)
 #   include "stb_image_write.h"
 #endif
 
+#define STB_IMAGE_IMPLEMENTATION
+#if defined(STB_IMAGE_IMPLEMENTATION)
+#   include "stb_image.h"
 PLresult LoadSTBImage(FILE *fin, PLImage *out) {
     rewind(fin);
 
@@ -89,13 +87,7 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
         result = LoadVTFImage(fin, out);
     } else if(DTXFormatCheck(fin)) {
         result = LoadDTXImage(fin, out);
-    }
-#if 0
-    else if(BMPFormatCheck(fin)) {
-        result = _plLoadBMPImage(fin, out);
-    }
-#endif
-    else {
+    } else {
         const char *extension = plGetFileExtension(path);
         if(extension && extension[0] != '\0') {
             if (!strncmp(extension, PL_EXTENSION_FTX, 3)) {
