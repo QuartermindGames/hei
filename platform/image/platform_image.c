@@ -32,7 +32,13 @@ For more information, please refer to <http://unlicense.org>
 
 #define STB_IMAGE_IMPLEMENTATION
 #if defined(STB_IMAGE_IMPLEMENTATION)
-#include "stb_image.h"
+#   include "stb_image.h"
+#endif
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#if defined(STB_IMAGE_WRITE_IMPLEMENTATION)
+#   include "stb_image_write.h"
+#endif
 
 PLresult LoadSTBImage(FILE *fin, PLImage *out) {
     rewind(fin);
@@ -92,9 +98,9 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     else {
         const char *extension = plGetFileExtension(path);
         if(extension && extension[0] != '\0') {
-            if (!strncmp(extension, PLIMAGE_EXTENSION_FTX, 3)) {
+            if (!strncmp(extension, PL_EXTENSION_FTX, 3)) {
                 result = LoadFTXImage(fin, out);
-            } else if (!strncmp(extension, PLIMAGE_EXTENSION_PPM, 3)) {
+            } else if (!strncmp(extension, PL_EXTENSION_PPM, 3)) {
                 result = LoadPPMImage(fin, out);
             }
         }
@@ -114,7 +120,7 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
 }
 
 bool plLoadImage(const char *path, PLImage *out) {
-    if (!plIsValidString(path)) {
+    if (plIsEmptyString(path)) {
         ReportError(PL_RESULT_FILEPATH, "Invalid path, %s, passed for image!\n", path);
         return false;
     }
@@ -137,24 +143,41 @@ bool plLoadImage(const char *path, PLImage *out) {
     return result;
 }
 
-PLresult plWriteImage(const PLImage *image, const char *path) {
-    if (!plIsValidString(path)) {
-        return PL_RESULT_FILEPATH;
+bool plWriteImage(const PLImage *image, const char *path) {
+    if (plIsEmptyString(path)) {
+        ReportError(PL_RESULT_FILEPATH, plGetResultString(PL_RESULT_FILEPATH));
+        return false;
     }
 
-    PLresult result = PL_RESULT_FILETYPE;
-#if 0
+    unsigned int comp = plGetSamplesPerPixel(image->colour_format);
+    if(comp == 0) {
+        ReportError(PL_RESULT_IMAGEFORMAT, "invalid colour format");
+        return false;
+    }
+
     const char *extension = plGetFileExtension(path);
-    if(plIsValidString(extension)) {
-        if (!strncmp(extension, PLIMAGE_EXTENSION_TIFF, 3)) {
-            result = plWriteTIFFImage(image, path);
-        } else {
-            // todo, Write BMP or some other easy-to-go format.
+    if(!plIsEmptyString(extension)) {
+        if (!strncmp(extension, PL_EXTENSION_BMP, 3)) {
+            if(stbi_write_bmp(path, image->width, image->height, comp, image->data) == 1) {
+                return true;
+            }
+        } else if(!strncmp(extension, PL_EXTENSION_PNG, 3)) {
+            if(stbi_write_png(path, image->width, image->height, comp, image->data, 0) == 1) {
+                return true;
+            }
+        } else if(!strncmp(extension, PL_EXTENSION_TGA, 3)) {
+            if(stbi_write_tga(path, image->width, image->height, comp, image->data) == 1) {
+                return true;
+            }
+        } else if(!strncmp(extension, PL_EXTENSION_JPG, 3)) {
+            if(stbi_write_jpg(path, image->width, image->height, comp, image->data, 90) == 1) {
+                return true;
+            }
         }
     }
-#endif
 
-    return result;
+    ReportError(PL_RESULT_FILETYPE, plGetResultString(PL_RESULT_FILETYPE));
+    return false;
 }
 
 // Returns the number of samples per-pixel depending on the colour format.

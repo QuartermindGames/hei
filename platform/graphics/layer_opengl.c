@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org>
 #include "graphics_private.h"
 
 #include <GL/glew.h>
+
 #include <PL/platform_mesh.h>
 #include <PL/platform_graphics.h>
 

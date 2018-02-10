@@ -113,13 +113,13 @@ PLresult plInitialize(int argc, char **argv) {
 
     memset(&pl_arguments, 0, sizeof(PLArguments));
     pl_arguments.num_arguments = (unsigned int)argc;
-    if(plIsValidString(argv[0])) {
+    if(!plIsEmptyString(argv[0])) {
         pl_arguments.exe_name = plGetFileName(argv[0]);
     }
 
     //pl_arguments.arguments = (const char**)calloc(pl_arguments.num_arguments, sizeof(char*));
     for(unsigned int i = 0; i < pl_arguments.num_arguments; i++) {
-        if(!plIsValidString(argv[i])) {
+        if(plIsEmptyString(argv[i])) {
             continue;
         }
 
@@ -159,7 +159,7 @@ const char *plGetCommandLineArgument(const char *arg) {
         return NULL;
     }
 
-    if(!plIsValidString(arg)) {
+    if(plIsEmptyString(arg)) {
         // todo, get current log output and print warning there?
         return NULL;
     }

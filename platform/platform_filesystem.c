@@ -117,7 +117,7 @@ bool plCreatePath(const char *path) {
 
 // Returns the extension for the file.
 const char *plGetFileExtension(const char *in) {
-    if (!plIsValidString(in)) {
+    if (plIsEmptyString(in)) {
         return "";
     }
 
@@ -131,7 +131,7 @@ const char *plGetFileExtension(const char *in) {
 
 // Strips the extension from the filename.
 void plStripExtension(char *dest, const char *in) {
-    if (!plIsValidString(in)) {
+    if (plIsEmptyString(in)) {
         *dest = 0;
         return;
     }

@@ -24,54 +24,37 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #include <assert.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 
-#include <IL/il.h>
 #include <PL/platform_image.h>
 
 int main(int argc, char **argv) {
     plInitialize(argc, argv);
 
     if(argc != 3) {
-        fprintf(stderr, "Usage: %s <input.tim> <output.XXX>\n", argv[0]);
-        return 1;
+        fprintf(stderr, "Usage: %s <input.ext> <output.ext>\n", argv[0]);
+        return EXIT_FAILURE;
     }
 
-    /* Load the TIM into a PLImage structure. */
+    /* Load the image into a PLImage structure. */
 
     PLImage image;
     bool result = plLoadImage(argv[1], &image);
     if(result != PL_RESULT_SUCCESS) {
-        printf("Failed to load TIM image!\n%s", plGetError());
-        return 1;
+        printf("Failed to load image!\n%s", plGetError());
+        return EXIT_FAILURE;
     }
 
-    /* Convert to a pixel format supported by DevIL (RGBA8). */
+    /* Convert to a pixel format best appropriate for export (RGBA8). */
 
     assert(plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8));
-
-    /* Write the output image.
-     * TODO: Error handling here.
-    */
-
-    ilInit();
-
-    ILuint ImageName;
-    ilGenImages(1, &ImageName);
-    ilBindImage(ImageName);
-
-    ilTexImage(image.width, image.height, 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, image.data[0]);
-
-    ilEnable(IL_FILE_OVERWRITE);
-    ilSaveImage(argv[2]);
-
-    ilShutDown();
+    if(!plWriteImage(&image, argv[2])) {
+        printf("failed to write TIM: %s\n", plGetError());
+    }
     
     plFreeImage(&image);
 
-    return 0;
+    return EXIT_SUCCESS;
 }

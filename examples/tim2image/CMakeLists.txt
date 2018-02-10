@@ -32,4 +32,4 @@ file(GLOB TIM2TIFF_SOURCE_FILES *.c *.h)
 add_executable(tim2image ${TIM2TIFF_SOURCE_FILES})
 
 target_include_directories(tim2image PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_link_libraries(tim2image platform IL)
+target_link_libraries(tim2image platform)

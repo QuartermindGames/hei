@@ -79,14 +79,16 @@ typedef struct PLImage {
     unsigned int flags;
 } PLImage;
 
-#define PLIMAGE_EXTENSION_FTX   "ftx"   // Ritual's FTX image format
-#define PLIMAGE_EXTENSION_DTX   "dtx"   // Direct Texture (LithTech)
-#define PLIMAGE_EXTENSION_PPM   "ppm"   // Portable Pixel Map
-#define PLIMAGE_EXTENSION_KTX   "ktx"
-#define PLIMAGE_EXTENSION_TGA   "tga"
-#define PLIMAGE_EXTENSION_PNG   "png"
-#define PLIMAGE_EXTENSION_DDS   "dds"
-#define PLIMAGE_EXTENSION_VTF   "vtf"   // Valve Texture Format (Source Engine)
+#define PL_EXTENSION_FTX    "ftx"   // Ritual's FTX image format
+#define PL_EXTENSION_DTX    "dtx"   // Direct Texture (LithTech)
+#define PL_EXTENSION_PPM    "ppm"   // Portable Pixel Map
+#define PL_EXTENSION_KTX    "ktx"
+#define PL_EXTENSION_TGA    "tga"
+#define PL_EXTENSION_JPG    "jpg"
+#define PL_EXTENSION_PNG    "png"
+#define PL_EXTENSION_DDS    "dds"
+#define PL_EXTENSION_VTF    "vtf"   // Valve Texture Format (Source Engine)
+#define PL_EXTENSION_BMP    "bmp"
 
 PL_EXTERN_C
 
@@ -94,7 +96,7 @@ PL_EXTERN_C
 
 PL_EXTERN bool plLoadImage(const char *path, PLImage *out);
 PL_EXTERN PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out);
-PL_EXTERN PLresult plWriteImage(const PLImage *image, const char *path);
+PL_EXTERN bool plWriteImage(const PLImage *image, const char *path);
 
 PL_EXTERN unsigned int plGetSamplesPerPixel(PLColourFormat format);
 

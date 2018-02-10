@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #include <PL/platform_image.h>
 
 /*  http://rewiki.regengedanken.de/wiki/.TIM
@@ -78,7 +77,7 @@ bool TIMFormatCheck(FILE *fin) {
 }
 
 PLresult WriteTIMImage(const PLImage *image, const char *path) {
-    if(!plIsValidString(path)) {
+    if(plIsEmptyString(path)) {
         return PL_RESULT_FILEPATH;
     }
 
@@ -194,36 +193,37 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
 
     /* Prepare the metadata and image buffer in the PLImage structure. */
 
-    uint8_t type = header.flag1 & TIM_FLAG1_TYPE_MASK;
+    uint8_t type = (uint8_t) (header.flag1 & TIM_FLAG1_TYPE_MASK);
     switch(type) {
-        case TIM_TYPE_4BPP:
-            out->width  = (unsigned int)(image_info.width * 4);
+        case TIM_TYPE_4BPP: {
+            out->width = (unsigned int) (image_info.width * 4);
             out->height = image_info.height;
             out->format = PL_IMAGEFORMAT_RGB5A1;
-            
-            break;
+        } break;
 
-        case TIM_TYPE_8BPP:
-            out->width  = (unsigned int)(image_info.width * 2);
+        case TIM_TYPE_8BPP: {
+            out->width = (unsigned int) (image_info.width * 2);
             out->height = image_info.height;
             out->format = PL_IMAGEFORMAT_RGB5A1;
-            
-            break;
+        } break;
 
-        case TIM_TYPE_16BPP:
-            out->width  = image_info.width;
+        case TIM_TYPE_16BPP: {
+            out->width = image_info.width;
             out->height = image_info.height;
             out->format = PL_IMAGEFORMAT_RGB5A1;
-            
-            break;
+        } break;
 
-        case TIM_TYPE_24BPP:
-            out->width  = image_info.width / 1.5;
+        case TIM_TYPE_24BPP: {
+            out->width = image_info.width / 1.5;
             out->height = image_info.height;
             out->format = PL_IMAGEFORMAT_RGB8;
-            
-            break;
-    };
+        } break;
+
+        default: {
+            ReportError(PL_RESULT_IMAGEFORMAT, "invalid image format");
+            goto ERR_CLEANUP;
+        }
+    }
 
     out->size   = plGetImageSize(out->format, out->width, out->height);
     out->levels = 1;

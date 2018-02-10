@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_console.h>
 #include <PL/platform_graphics.h>
-#include <PL/platform_filesystem.h>
+#include <PL/platform_graphics_camera.h>
 
 /* Example of console API, minus error handling :) */
 
@@ -82,11 +82,7 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 int main(int argc, char **argv) {
     plInitialize(argc, argv);
 
-    PLWindow *window = plCreateWindow(TITLE, 0, 0, WIDTH, HEIGHT);
-    if(!window) {
-        printf("%s\n", plGetError());
-        return -1;
-    }
+
 
     plSetupConsole(1);
     plShowConsole(true);
@@ -105,8 +101,8 @@ int main(int argc, char **argv) {
     }
 
     camera->mode            = PL_CAMERA_MODE_ORTHOGRAPHIC;
-    camera->viewport.w      = window->width;
-    camera->viewport.h      = window->height;
+    camera->viewport.w      = WIDTH;
+    camera->viewport.h      = HEIGHT;
 
 #if 1
     while(plIsRunning()) {
@@ -118,7 +114,7 @@ int main(int argc, char **argv) {
 
         plDrawConsole();
 
-        plSwapBuffers(window);
+        //plSwapBuffers(window);
     }
 
     Shutdown();
