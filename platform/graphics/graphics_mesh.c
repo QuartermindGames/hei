@@ -54,7 +54,7 @@ PLVector3 plGenerateVertexNormal(PLVector3 a, PLVector3 b, PLVector3 c) {
     PLVector3D y = a - b;
     return x.CrossProduct(y).Normalize();
 #else
-    return plNormalizeVector3(
+    return plVector3Normalize(
             plVector3CrossProduct(
                     PLVector3(
                             c.x - b.x, c.y - b.y, c.z - b.z

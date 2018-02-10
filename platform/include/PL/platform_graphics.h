@@ -267,8 +267,7 @@ PL_EXTERN bool plRegisterShaderProgramUniform(const char *name, PLShaderUniformT
 
 PL_EXTERN bool plRegisterShaderProgramAttribute(const char *name); /* todo */
 
-PL_EXTERN void plEnableShaderProgram(PLShaderProgram *program);
-PL_EXTERN void plDisableShaderProgram(PLShaderProgram *program);
+PL_EXTERN void plSetShaderProgram(PLShaderProgram *program);
 PL_EXTERN bool plIsShaderProgramEnabled(PLShaderProgram *program);
 
 PL_EXTERN_C_END

@@ -66,23 +66,12 @@ bool plIsShaderProgramEnabled(PLShaderProgram *program) {
     return false;
 }
 
-void plEnableShaderProgram(PLShaderProgram *program) {
+void plSetShaderProgram(PLShaderProgram *program) {
     if (program == gfx_state.current_program) {
         return;
     }
 
-    // glUseProgram(program);
+    CallGfxFunction(SetShaderProgram, program);
 
     gfx_state.current_program = program;
 }
-
-void plDisableShaderProgram(PLShaderProgram *program) {
-    if(program != gfx_state.current_program) {
-        return;
-    }
-
-    // glUseProgram(0);
-
-    gfx_state.current_program = 0;
-}
-

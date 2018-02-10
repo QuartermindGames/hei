@@ -39,13 +39,6 @@ PL_INLINE static void plAddAABB(PLAABB *b, PLAABB b2) {
 }
 
 PL_INLINE static bool plIntersectAABB(PLAABB b, PLAABB b2) {
-#if 0 /* what the fuck is this crap? */
-    PLVector3 dist_a = b2.mins;
-    plSubtractVector3(&dist_a, b.maxs);
-    PLVector3 dist_b = b.mins;
-    plSubtractVector3(&dist_b, b2.maxs);
-    PLVector3 dist = plVector3Max(dist_a, dist_b);
-#else
     if(
             b.maxs.x < b2.mins.x ||
             b.maxs.y < b2.mins.y ||
@@ -57,7 +50,6 @@ PL_INLINE static bool plIntersectAABB(PLAABB b, PLAABB b2) {
             ) {
         return false;
     }
-#endif
 
     return true;
 }

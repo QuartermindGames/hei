@@ -57,7 +57,7 @@ int gl_version_minor = 0;
 
 unsigned int gl_num_extensions = 0;
 
-void GLClearBoundTextures(void) {
+void ClearBoundTextures(void) {
     for(unsigned int i = 0; i < gfx_state.hw_maxtextureunits; ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -65,7 +65,7 @@ void GLClearBoundTextures(void) {
     glActiveTexture(GL_TEXTURE0);
 }
 
-void ClearBoundFramebuffers(void) {
+void ClearBoundBuffers(void) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_RENDERBUFFER, 0);
 }
@@ -313,8 +313,8 @@ unsigned int TranslateDrawMode(PLMeshDrawMode mode) {
 }
 
 enum {
-    MESH_VERTEX,
-    MESH_TRIANGLE,
+    BUFFER_VERTEX_DATA,
+    BUFFER_TRIANGLE_DATA,
 };
 
 void GLCreateMeshPOST(PLMesh *mesh) {
@@ -322,7 +322,7 @@ void GLCreateMeshPOST(PLMesh *mesh) {
         return;
     }
 
-    glGenBuffers(1, &mesh->internal.buffers[MESH_VERTEX]);
+    glGenBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA]);
 }
 
 void GLUploadMesh(PLMesh *mesh) {
@@ -332,7 +332,7 @@ void GLUploadMesh(PLMesh *mesh) {
 
     unsigned int mode = TranslateDrawMode(mesh->mode);
 
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[MESH_VERTEX]);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
     GLsizeiptr size = sizeof(PLVertex) * mesh->num_verts;
     glBufferData(GL_ARRAY_BUFFER, size, mesh->vertices, mode);
 
@@ -340,12 +340,6 @@ void GLUploadMesh(PLMesh *mesh) {
     glNormalPointer(GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].normal);
     glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(PLVertex), &mesh->vertices[0].colour);
     glTexCoordPointer(2, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].st[0]);
-
-#if 0
-    glVertexPointer(3, GL_FLOAT, sizeof(Vertex), (const void *)offsetof(Vertex, position));
-    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (const void *)offsetof(Vertex, colour));
-    glNormalPointer(GL_FLOAT, sizeof(Vertex), (const void *)offsetof(Vertex, normal));
-#endif
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -355,7 +349,7 @@ void GLDeleteMesh(PLMesh *mesh) {
         return;
     }
 
-    glDeleteBuffers(1, &mesh->internal.buffers[MESH_VERTEX]);
+    glDeleteBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA]);
 }
 
 void GLDrawMesh(PLMesh *mesh) {
@@ -372,12 +366,12 @@ void GLDrawMesh(PLMesh *mesh) {
         glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(PLVertex), &mesh->vertices[0].colour);
         glTexCoordPointer(2, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].st[0]);
     } else {
-        if(mesh->internal.buffers[MESH_VERTEX] == 0) {
+        if(mesh->internal.buffers[BUFFER_VERTEX_DATA] == 0) {
             GfxLog("invalid buffer provided, skipping draw!\n");
             return;
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[MESH_VERTEX]);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
 
         glVertexAttribLPointer(0, 3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].position);
         glVertexAttribLPointer(0, 3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].normal);
@@ -457,7 +451,7 @@ void GLSetupCamera(PLCamera *camera) {
                     GfxLog("invalid framebuffer status on frame!\n");
                 }
 
-                ClearBoundFramebuffers();
+                ClearBoundBuffers();
 
                 camera->viewport.old_r_w = camera->viewport.r_w;
                 camera->viewport.old_r_h = camera->viewport.r_h;
@@ -543,7 +537,7 @@ void GLDrawPerspectivePOST(PLCamera *camera) {
                     GL_COLOR_BUFFER_BIT, GL_NEAREST
             );
 
-            ClearBoundFramebuffers();
+            ClearBoundBuffers();
         }
     }
 }
@@ -664,6 +658,15 @@ void GLCreateShaderStage(PLShaderStage *stage) {
     }
 }
 
+void GLSetShaderProgram(PLShaderProgram *program) {
+    unsigned int id = 0;
+    if(program != NULL) {
+        id = program->internal.id;
+    }
+
+    glUseProgram(id);
+}
+
 /////////////////////////////////////////////////////////////
 
 char gl_extensions[4096][4096] = { { '\0' } };
@@ -677,6 +680,8 @@ void MessageCallback(
         GLsizei length,
         const GLchar *message,
         void *param) {
+    UNUSED_ARGS(source, id, length, param)
+
     const char *s_severity;
     switch(severity) {
         case GL_DEBUG_SEVERITY_HIGH: {
@@ -763,6 +768,7 @@ void InitOpenGL(void) {
 
     gfx_layer.CreateShaderProgram       = GLCreateShaderProgram;
     gfx_layer.DeleteShaderProgram       = GLDeleteShaderProgram;
+    gfx_layer.SetShaderProgram          = GLSetShaderProgram;
 
     /////////////////////////////////////////////////////////////
 
@@ -803,7 +809,10 @@ void InitOpenGL(void) {
 }
 
 void ShutdownOpenGL(void) {
-
+#if defined(DEBUG_GL)
+    glDisable(GL_DEBUG_OUTPUT);
+    glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+#endif
 }
 
 #endif

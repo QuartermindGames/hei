@@ -44,6 +44,36 @@ void ShutdownCameras(void) {
 
 }
 
+/* http://www.songho.ca/opengl/gl_anglestoaxes.html */
+void AnglesAxes(PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *forward) {
+    /* pitch */
+    float theta = angles.x * PL_PI_DIV_180;
+    float sx = sinf(theta);
+    float cx = cosf(theta);
+
+    /* yaw */
+    theta = angles.y * PL_PI_DIV_180;
+    float sy = sinf(theta);
+    float cy = cosf(theta);
+
+    /* roll */
+    theta = angles.z * PL_PI_DIV_180;
+    float sz = sinf(theta);
+    float cz = cosf(theta);
+
+    left->x = cy * cz;
+    left->y = sx * sy * cz + cx * sz;
+    left->z = -cx * sy * cz + sx * sz;
+
+    up->x = -cy * sz;
+    up->y = -sx * sy * sz + cx * cz;
+    up->z = cx * sy * sz + sx * cz;
+
+    forward->x = sy;
+    forward->y = -sx * cy;
+    forward->z = cx * cy;
+}
+
 PLMatrix4x4 LookAt(PLVector3 eye, PLVector3 center, PLVector3 up) {
     PLVector3 z = eye;
     plSubtractVector3(&z, center);
@@ -74,21 +104,8 @@ PLMatrix4x4 LookAt(PLVector3 eye, PLVector3 center, PLVector3 up) {
     }};
 }
 
-PLVector3 GetCameraViewDirection(PLCamera *camera) {
-    PLVector3 y_axis = PLVector3(
-            cosf((camera->angles.y + 90) * PL_PI_DIV_180),
-            0,
-            -sinf((camera->angles.y + 90) * PL_PI_DIV_180)
-    );
-
-    float cos_x = cosf(camera->angles.x * PL_PI_DIV_180);
-    PLVector3 x_axis = PLVector3(
-            y_axis.x * cos_x,
-            sinf(camera->angles.x * PL_PI_DIV_180),
-            y_axis.z * cos_x
-    );
-
-    return x_axis;
+PLMatrix4x4 LookAtTargetVector(PLVector3 eye, PLVector3 target) {
+    return LookAt(eye, target, PLVector3(0, 1, 0));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
