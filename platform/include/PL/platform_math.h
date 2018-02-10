@@ -373,7 +373,9 @@ PL_INLINE static float plVector3Length(PLVector3 v) {
 PL_INLINE static PLVector3 plVector3Normalize(PLVector3 v) {
     float length = plVector3Length(v);
     if(length != 0) {
-        v.x /= length; v.y /= length; v.z /= length;
+        v.x /= length;
+        v.y /= length;
+        v.z /= length;
     }
     return v;
 }
