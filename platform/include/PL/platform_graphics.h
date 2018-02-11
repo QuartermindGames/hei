@@ -276,8 +276,6 @@ PL_EXTERN_C_END
 
 PL_EXTERN_C
 
-PL_EXTERN void plSetDefaultGraphicsState(void);
-
 // Hardware Information
 PL_EXTERN const char *plGetHWExtensions(void);
 PL_EXTERN const char *plGetHWRenderer(void);

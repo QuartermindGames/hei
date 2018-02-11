@@ -318,15 +318,11 @@ void plDisableGraphicsStates(PLuint flags) {
 ===========================*/
 
 void plSetBlendMode(PLBlend a, PLBlend b) {
-    if(gfx_layer.SetBlendMode) {
-        gfx_layer.SetBlendMode(a, b);
-    }
+    CallGfxFunction(SetBlendMode, a, b);
 }
 
 void plSetCullMode(PLCullMode mode) {
-    if(gfx_layer.SetCullMode) {
-        gfx_layer.SetCullMode(mode);
-    }
+    CallGfxFunction(SetCullMode, mode);
 }
 
 /*===========================
@@ -410,24 +406,6 @@ void plScreenshot(PLViewport *viewport, const PLchar *path) {
     free(buffer);
 }
 #endif
-
-void plSetDefaultGraphicsState(void) {
-    plSetClearColour(PL_COLOUR_BLACK);
-    plSetCullMode(PL_CULL_NEGATIVE);
-    plSetTextureUnit(0);
-
-#if defined(PL_MODE_OPENGL)
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-#if !defined(GL_VERSION_3_0)
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-#endif
-
-    glDepthRange(0, 1);
-    glDepthFunc(GL_LEQUAL);
-#endif
-
-    plEnableGraphicsStates(PL_CAPABILITY_SCISSORTEST);
-}
 
 /* Shared Matrix Functions */
 

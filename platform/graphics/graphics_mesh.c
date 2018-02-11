@@ -390,17 +390,17 @@ void plDrawTexturedRectangle(int x, int y, unsigned int w, unsigned int h, PLTex
 
     plClearMesh(mesh);
 
-    plSetMeshVertexPosition(mesh, 0, PLVector3(x, y + h, 0));
-    plSetMeshVertexPosition(mesh, 1, PLVector3(x, y, 0));
-    plSetMeshVertexPosition(mesh, 2, PLVector3(x + w, y + h, 0));
-    plSetMeshVertexPosition(mesh, 3, PLVector3(x + w, y, 0));
+    plSetMeshVertexPosition(mesh, 0, PLVector3(x, y, 0));
+    plSetMeshVertexPosition(mesh, 1, PLVector3(x, y + h, 0));
+    plSetMeshVertexPosition(mesh, 2, PLVector3(x + w, y, 0));
+    plSetMeshVertexPosition(mesh, 3, PLVector3(x + w, y + h, 0));
 
     plSetMeshUniformColour(mesh, PLColourRGB(255, 255, 255));
 
     plSetMeshVertexST(mesh, 0, 0, 0);
     plSetMeshVertexST(mesh, 1, 0, 1);
-    plSetMeshVertexST(mesh, 2, 1, 1);
-    plSetMeshVertexST(mesh, 3, 1, 0);
+    plSetMeshVertexST(mesh, 2, 1, 0);
+    plSetMeshVertexST(mesh, 3, 1, 1);
 
     mesh->texture = texture;
 
