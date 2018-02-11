@@ -28,6 +28,8 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_filesystem.h>
 #include <PL/platform_math.h>
 
+#include <errno.h>
+
 #include "image_private.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -113,13 +115,13 @@ PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
 
 bool plLoadImage(const char *path, PLImage *out) {
     if (plIsEmptyString(path)) {
-        ReportError(PL_RESULT_FILEPATH, "Invalid path, %s, passed for image!\n", path);
+        ReportError(PL_RESULT_FILEPATH, "invalid path (%s) passed for image", path);
         return false;
     }
 
     FILE *fin = fopen(path, "rb");
     if(fin == NULL) {
-        ReportError(PL_RESULT_FILEREAD, "Failed to load image, %s!\n", path);
+        ReportError(PL_RESULT_FILEREAD, "failed to load image (%s) (%s)", path, strerror(errno));
         return false;
     }
 

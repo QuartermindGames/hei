@@ -29,8 +29,8 @@ For more information, please refer to <http://unlicense.org>
 #define DEFAULT_WIDTH   320
 #define DEFAULT_HEIGHT  240
 
-uint8_t *sw_backbuffer;
-unsigned int sw_backbuffer_size = DEFAULT_WIDTH * DEFAULT_HEIGHT;
+uint8_t *sw_backbuffer = NULL;
+unsigned int sw_backbuffer_size = 0;
 
 void SWClearBuffers(unsigned int buffers) {
     if(buffers & PL_BUFFER_COLOUR) {
@@ -50,5 +50,6 @@ void InitSoftware(void) {
 }
 
 void ShutdownSoftware(void) {
-
+    free(sw_backbuffer);
+    sw_backbuffer_size = 0;
 }

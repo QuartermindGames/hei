@@ -680,8 +680,6 @@ void MessageCallback(
         GLsizei length,
         const GLchar *message,
         void *param) {
-    UNUSED_ARGS(source, id, length, param)
-
     const char *s_severity;
     switch(severity) {
         case GL_DEBUG_SEVERITY_HIGH: {

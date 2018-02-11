@@ -253,7 +253,7 @@ PLTexture *plLoadTextureImage(const char *path, PLTextureFilter filter_mode) {
     }
 
     PLImage image;
-    if(!plLoadImage(path, &image)) {
+    if(plLoadImage(path, &image) != PL_RESULT_SUCCESS) {
         return NULL;
     }
 

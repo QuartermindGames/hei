@@ -40,12 +40,6 @@ enum {
     LOG_LEVEL_END = 10
 };
 
-#if 1
-#   define UNUSED_ARGS(...) if(__VA_ARGS__){}
-#else
-#   define UNUSED_ARGS(...) (__VA_ARGS__)
-#endif
-
 #define Print(...)          plLogMessage(LOG_LEVEL_LOW, __VA_ARGS__)
 #define PrintWarning(...)   plLogMessage(LOG_LEVEL_MEDIUM, __VA_ARGS__)
 #ifdef _DEBUG

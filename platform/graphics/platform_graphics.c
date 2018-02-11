@@ -412,7 +412,7 @@ void plScreenshot(PLViewport *viewport, const PLchar *path) {
 #endif
 
 void plSetDefaultGraphicsState(void) {
-    plSetClearColour(plCreateColour4b(PL_COLOUR_BLACK));
+    plSetClearColour(PL_COLOUR_BLACK);
     plSetCullMode(PL_CULL_NEGATIVE);
     plSetTextureUnit(0);
 
