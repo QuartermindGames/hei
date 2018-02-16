@@ -152,19 +152,19 @@ bool plWriteImage(const PLImage *image, const char *path) {
     const char *extension = plGetFileExtension(path);
     if(!plIsEmptyString(extension)) {
         if (!strncmp(extension, PL_EXTENSION_BMP, 3)) {
-            if(stbi_write_bmp(path, image->width, image->height, comp, image->data) == 1) {
+            if(stbi_write_bmp(path, image->width, image->height, comp, image->data[0]) == 1) {
                 return true;
             }
         } else if(!strncmp(extension, PL_EXTENSION_PNG, 3)) {
-            if(stbi_write_png(path, image->width, image->height, comp, image->data, 0) == 1) {
+            if(stbi_write_png(path, image->width, image->height, comp, image->data[0], 0) == 1) {
                 return true;
             }
         } else if(!strncmp(extension, PL_EXTENSION_TGA, 3)) {
-            if(stbi_write_tga(path, image->width, image->height, comp, image->data) == 1) {
+            if(stbi_write_tga(path, image->width, image->height, comp, image->data[0]) == 1) {
                 return true;
             }
         } else if(!strncmp(extension, PL_EXTENSION_JPG, 3)) {
-            if(stbi_write_jpg(path, image->width, image->height, comp, image->data, 90) == 1) {
+            if(stbi_write_jpg(path, image->width, image->height, comp, image->data[0], 90) == 1) {
                 return true;
             }
         }
@@ -274,6 +274,36 @@ unsigned int _plImageBytesPerPixel(PLImageFormat format) {
 
         default:
             return 0;
+    }
+}
+
+void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest) {
+    unsigned int num_colours = plGetSamplesPerPixel(image->colour_format);
+    switch(image->format) {
+        case PL_IMAGEFORMAT_RGB8:
+        case PL_IMAGEFORMAT_RGBA8: {
+            for(unsigned int i = 0; i < image->size; i += num_colours) {
+                uint8_t *pixel = &image->data[0][i];
+                if(num_colours == 4) {
+                    if(plCompareColour(PLColour(pixel[0], pixel[1], pixel[2], pixel[3]), target)) {
+                        pixel[0] = dest.r;
+                        pixel[1] = dest.g;
+                        pixel[2] = dest.b;
+                        pixel[3] = dest.a;
+                    }
+                } else {
+                    if(plCompareColour(PLColourRGB(pixel[0], pixel[1], pixel[2]), target)) {
+                        pixel[0] = dest.r;
+                        pixel[1] = dest.g;
+                        pixel[2] = dest.b;
+                    }
+                }
+            }
+        } break;
+
+        default: {
+            /* todo, log warning message */
+        } break;
     }
 }
 

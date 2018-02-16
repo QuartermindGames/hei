@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org>
 #pragma once
 
 #include "platform.h"
+#include <PL/platform_math.h>
 
 typedef enum PLImageFormat {
     PL_IMAGEFORMAT_UNKNOWN,
@@ -92,8 +93,6 @@ typedef struct PLImage {
 
 PL_EXTERN_C
 
-
-
 PL_EXTERN bool plLoadImage(const char *path, PLImage *out);
 PL_EXTERN PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out);
 PL_EXTERN bool plWriteImage(const PLImage *image, const char *path);
@@ -101,6 +100,7 @@ PL_EXTERN bool plWriteImage(const PLImage *image, const char *path);
 PL_EXTERN unsigned int plGetSamplesPerPixel(PLColourFormat format);
 
 bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format);
+void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest);
 
 PL_EXTERN bool plIsValidImageSize(unsigned int width, unsigned int height);
 PL_EXTERN bool plIsCompressedImageFormat(PLImageFormat format);
