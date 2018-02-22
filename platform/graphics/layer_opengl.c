@@ -192,6 +192,10 @@ void GLCreateTexture(PLTexture *texture) {
     glGenTextures(1, &texture->internal.id);
 }
 
+void GLDeleteTexture(PLTexture *texture) {
+    glDeleteTextures(1, &texture->internal.id);
+}
+
 void GLBindTexture(const PLTexture *texture) {
     unsigned int id = 0;
     if(texture != NULL) {
@@ -751,6 +755,7 @@ void InitOpenGL(void) {
     gfx_layer.ClearBuffers              = GLClearBuffers;
 
     gfx_layer.CreateTexture             = GLCreateTexture;
+    gfx_layer.DeleteTexture             = GLDeleteTexture;
     gfx_layer.BindTexture               = GLBindTexture;
     gfx_layer.UploadTexture             = GLUploadTexture;
 

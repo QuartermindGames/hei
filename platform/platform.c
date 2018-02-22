@@ -30,6 +30,8 @@ For more information, please refer to <http://unlicense.org>
 #include <sys/time.h>
 #include <errno.h>
 
+#include "platform_private.h"
+
 #ifdef _WIN32
 
 #include <afxres.h>

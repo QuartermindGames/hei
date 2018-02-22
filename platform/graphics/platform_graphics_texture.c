@@ -183,6 +183,7 @@ int _plTranslateColourChannel(int channel) {
 /////////////////////////////////////////////////////
 
 PLTexture *plCreateTexture(void) {
+#if 0
     PLTexture **texture = gfx_state.textures; unsigned int slot;
     for(slot = 0; texture < gfx_state.textures + gfx_state.max_textures; ++texture, ++slot) {
         if(!(*texture)) {
@@ -222,13 +223,23 @@ PLTexture *plCreateTexture(void) {
     (*texture)->w           = 8;
     (*texture)->h           = 8;
 
-#if defined(PL_MODE_OPENGL)
-    glGenTextures(1, &(*texture)->gl_id);
-#endif
-
     CallGfxFunction(CreateTexture, (*texture));
 
     return (*texture);
+#else
+    PLTexture *texture = malloc(sizeof(PLTexture));
+    if(texture == NULL) {
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n", sizeof(PLTexture));
+        return NULL;
+    }
+
+    texture->format = PL_IMAGEFORMAT_RGBA8;
+    texture->w = 8;
+    texture->h = 8;
+
+    CallGfxFunction(CreateTexture, texture);
+    return texture;
+#endif
 }
 
 void plDeleteTexture(PLTexture *texture, bool force) {
@@ -236,13 +247,15 @@ void plDeleteTexture(PLTexture *texture, bool force) {
 
     CallGfxFunction(DeleteTexture, texture);
 
+#if 0
     if(!force) {
         memset(texture, 0, sizeof(PLTexture));
-        texture->internal.id = FREE_TEXTURE;
         return;
     }
 
     gfx_state.textures[texture->internal.id] = NULL;
+#endif
+
     free(texture);
 }
 

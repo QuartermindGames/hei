@@ -35,8 +35,7 @@ For more information, please refer to <http://unlicense.org>
  * of the IBF.
  *
  * There doesn't appear to be any form of
- * compression used on these packages.
- */
+ * compression used on these packages. */
 
 bool LoadLSTPackageFile(FILE *fh, PLPackageIndex *pi) {
     pi->data = malloc(pi->length);

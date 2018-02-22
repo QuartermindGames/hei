@@ -55,7 +55,7 @@ typedef struct PLAnimation {
 typedef struct PLModelBone {
     char name[64];
     unsigned int parent;
-    PLVector3 position;
+    PLVector3 coords;
 } PLModelBone;
 
 typedef struct PLModelSkeleton {
@@ -63,6 +63,8 @@ typedef struct PLModelSkeleton {
     unsigned int num_bones;
     unsigned int root_index;
 } PLModelSkeleton;
+
+/* * * * * * * * * * * * * * * * * */
 
 typedef struct PLModelBoneWeight {
     unsigned int bone_index;

@@ -48,6 +48,20 @@ enum {
 #   define DebugPrint(...)      Print(__VA_ARGS__)
 #endif
 
+/* * * * * * * * * * * * * * * * * * * */
+/* Sub Systems                         */
+
+PLresult InitGraphics(void);
+void ShutdownGraphics(void);
+
+PLresult _plInitIO(void);
+void _plShutdownIO(void);
+
+PLresult InitConsole(void);
+void ShutdownConsole(void);
+
+/* * * * * * * * * * * * * * * * * * * */
+
 #ifdef _WIN32
 
 const char *GetLastError_strerror(uint32_t errnum);

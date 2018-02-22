@@ -211,19 +211,6 @@ plSetErrorFunction(PL_FUNCTION);
 
 #endif
 
-PL_EXTERN_C
-
-PLresult InitGraphics(void);
-void ShutdownGraphics(void);
-
-PLresult _plInitIO(void);
-void _plShutdownIO(void);
-
-PLresult InitConsole(void);
-void ShutdownConsole(void);
-
-PL_EXTERN_C_END
-
 #else
 
 #define PL_DLL  PL_IMPORT
