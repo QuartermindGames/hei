@@ -394,8 +394,6 @@ void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
 bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     plAssert(texture);
 
-    BindTexture(texture);
-
     texture->w          = upload->width;
     texture->h          = upload->height;
     texture->format     = upload->format;
@@ -409,8 +407,8 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
         strncpy(texture->name, file_name, sizeof(texture->name));
     }
 
+    BindTexture(texture);
     CallGfxFunction(UploadTexture, texture, upload);
-
     BindTexture(NULL);
 
     return true;

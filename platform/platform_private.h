@@ -57,8 +57,8 @@ void ShutdownGraphics(void);
 PLresult _plInitIO(void);
 void _plShutdownIO(void);
 
-PLresult InitConsole(void);
-void ShutdownConsole(void);
+PLresult _plInitConsole(void);
+void _plShutdownConsole(void);
 
 /* * * * * * * * * * * * * * * * * * * */
 

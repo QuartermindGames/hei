@@ -324,7 +324,7 @@ PLBitmapFont *console_font = NULL;
 
 void (*ConsoleOutputCallback)(int level, const char *msg);
 
-PLresult InitConsole(void) {
+PLresult _plInitConsole(void) {
     console_visible = false;
 
 #if 0
@@ -382,7 +382,7 @@ PLresult InitConsole(void) {
     return PL_RESULT_SUCCESS;
 }
 
-void ShutdownConsole(void) {
+void _plShutdownConsole(void) {
     console_visible = false;
 
     plDeleteBitmapFont(console_font);
