@@ -295,26 +295,26 @@ IMPLEMENT_COMMAND(vars, "Produces list of existing variables.") {
 }
 
 IMPLEMENT_COMMAND(help, "Returns information regarding specified command or variable.\nUsage: help <cmd/cvar>") {
-    if(argc < 1) {
+    if(argc == 1) {
         // provide help on help, gross...
         Print("%s\n", help_var.description);
         return;
     }
 
-    PLConsoleVariable *var = plGetConsoleVariable(argv[2]);
+    PLConsoleVariable *var = plGetConsoleVariable(argv[1]);
     if(var != NULL) {
         Print(" %-20s : %-5s / %-15s : %-20s\n",
                  var->var, var->value, var->default_value, var->description);
         return;
     }
 
-    PLConsoleCommand *cmd = plGetConsoleCommand(argv[2]);
+    PLConsoleCommand *cmd = plGetConsoleCommand(argv[1]);
     if(cmd != NULL) {
         Print(" %-20s : %-20s\n", cmd->cmd, cmd->description);
         return;
     }
 
-    Print("Unknown variable/command, %s!\n", argv[2]);
+    Print("Unknown variable/command, %s!\n", argv[1]);
 }
 
 //////////////////////////////////////////////

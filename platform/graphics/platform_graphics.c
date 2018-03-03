@@ -63,10 +63,6 @@ PLresult InitGraphics(void) {
 
     gfx_layer.mode = PL_GFX_MODE_NONE;
 
-    InitCameras();
-    InitTextures();
-    InitMaterials();
-
     return PL_RESULT_SUCCESS;
 }
 
@@ -447,6 +443,10 @@ void plSetGraphicsMode(PLGfxMode mode) {
             plSetGraphicsMode(PL_GFX_MODE_SOFTWARE);
         } break;
     }
+
+    InitCameras();
+    InitTextures();
+    InitMaterials();
 }
 
 void plProcessGraphics(void) {

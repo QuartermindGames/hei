@@ -38,7 +38,6 @@ PLConsoleVariable pl_texture_anisotropy = { "gr_texture_anisotropy", "16", pl_in
 
 void InitTextures(void) {
     gfx_state.tmu = (PLTextureMappingUnit*)calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));
-    memset(gfx_state.tmu, 0, sizeof(PLTextureMappingUnit));
     for (unsigned int i = 0; i < plGetMaxTextureUnits(); i++) {
         gfx_state.tmu[i].current_envmode = PL_TEXTUREMODE_REPLACE;
     }

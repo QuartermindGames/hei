@@ -26,6 +26,8 @@ For more information, please refer to <http://unlicense.org>
 */
 #pragma once
 
+#include <PL/platform_math.h>
+
 typedef enum PLMeshPrimitive {
     PL_MESH_LINES,
     PL_MESH_LINE_STIPPLE,
@@ -78,7 +80,7 @@ typedef struct PLMesh {
 
     PLVector3 position, angles;
 
-    PLTexture *texture;
+    struct PLTexture *texture;
 
     struct {
         unsigned int buffers[32];
@@ -94,7 +96,7 @@ PL_EXTERN void plDeleteMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h);
 PL_EXTERN void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, PLColour colour);
-PL_EXTERN void plDrawTexturedRectangle(int x, int y, unsigned int w, unsigned int h, PLTexture *texture);
+PL_EXTERN void plDrawTexturedRectangle(int x, int y, unsigned int w, unsigned int h, struct PLTexture *texture);
 PL_EXTERN void plDrawRectangle(PLRectangle2D rect);
 PL_EXTERN void plDrawTriangle(int x, int y, unsigned int w, unsigned int h);
 
