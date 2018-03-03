@@ -191,7 +191,7 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     }
 
     PLImage image;
-    if(plLoadImage(image_path, &image) != PL_RESULT_SUCCESS) {
+    if(!plLoadImage(image_path, &image)) {
         plDeleteBitmapFont(font);
         return NULL;
     }

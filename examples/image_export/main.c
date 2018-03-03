@@ -41,8 +41,7 @@ int main(int argc, char **argv) {
     /* Load the image into a PLImage structure. */
 
     PLImage image;
-    bool result = plLoadImage(argv[1], &image);
-    if(result != PL_RESULT_SUCCESS) {
+    if(!plLoadImage(argv[1], &image)) {
         printf("Failed to load image!\n%s", plGetError());
         return EXIT_FAILURE;
     }

@@ -32,10 +32,10 @@ bool VTFFormatCheck(FILE *fin);
 bool TIMFormatCheck(FILE *fin);
 bool BMPFormatCheck(FILE *fin);
 
-PLresult LoadFTXImage(FILE *fin, PLImage *out);           // Ritual's FTX image format.
-PLresult LoadPPMImage(FILE *fin, PLImage *out);           // Portable Pixel Map format.
-PLresult LoadDTXImage(FILE *fin, PLImage *out);           // Lithtech's DTX image format.
-PLresult LoadVTFImage(FILE *fin, PLImage *out);           // Valve's VTF image format.
-PLresult LoadDDSImage(FILE *fin, PLImage *out);
-PLresult LoadTIMImage(FILE *fin, PLImage *out);
-PLresult LoadBMPImage(FILE *fin, PLImage *out);
+bool LoadFTXImage(FILE *fin, PLImage *out);           // Ritual's FTX image format.
+bool LoadPPMImage(FILE *fin, PLImage *out);           // Portable Pixel Map format.
+bool LoadDTXImage(FILE *fin, PLImage *out);           // Lithtech's DTX image format.
+bool LoadVTFImage(FILE *fin, PLImage *out);           // Valve's VTF image format.
+bool LoadDDSImage(FILE *fin, PLImage *out);
+bool LoadTIMImage(FILE *fin, PLImage *out);
+bool LoadBMPImage(FILE *fin, PLImage *out);

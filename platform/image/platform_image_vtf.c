@@ -234,33 +234,35 @@ bool VTFFormatCheck(FILE *fin) {
     return (bool)(strncmp(ident, "VTF", 3) == 0);
 }
 
-PLresult LoadVTFImage(FILE *fin, PLImage *out) {
-    plFunctionStart();
-
+bool LoadVTFImage(FILE *fin, PLImage *out) {
     VTFHeader header;
     memset(&header, 0, sizeof(VTFHeader));
 #define VTF_VERSION(maj, min)   ((((maj)) == header.version[1] && (min) <= header.version[0]) || (maj) < header.version[0])
 
     if (fread(&header, sizeof(VTFHeader), 1, fin) != 1) {
-        return PL_RESULT_FILEREAD;
+        ReportError(PL_RESULT_FILEREAD, "failed to read header");
+        return false;
     }
 
     if (VTF_VERSION(7, 5)) {
-        return PL_RESULT_FILEVERSION;
+        ReportError(PL_RESULT_FILEVERSION, "invalid version: %d.%d", header.version[1], header.version[0]);
+        return false;
     }
 
     if (!plIsValidImageSize(header.width, header.height)) {
-        return PL_RESULT_IMAGERESOLUTION;
+        ReportError(PL_RESULT_IMAGERESOLUTION, "invalid resolution: %dx%d", header.width, header.height);
+        return false;
     }
 
     if(header.lowresimageformat != VTF_FORMAT_DXT1) {
-        ReportError(PL_RESULT_IMAGEFORMAT, "Invalid texture format for lowresimage in VTF");
-        return PL_RESULT_IMAGEFORMAT;
+        ReportError(PL_RESULT_IMAGEFORMAT, "invalid texture format for lowresimage in VTF");
+        return false;
     }
 
     if ((header.lowresimagewidth > 16) || (header.lowresimageheight > 16) ||
         (header.lowresimagewidth > header.width) || (header.lowresimageheight > header.height)) {
-        return PL_RESULT_IMAGERESOLUTION;
+        ReportError(PL_RESULT_IMAGERESOLUTION, "invalid resolution: %dx%d", header.width, header.height);
+        return false;
     }
 
     // todo, use the headersize flag so we can load this more intelligently!
@@ -268,14 +270,18 @@ PLresult LoadVTFImage(FILE *fin, PLImage *out) {
     VTFHeader72 header2;
     if (header.version[1] >= 2) {
         memset(&header2, 0, sizeof(VTFHeader72));
-        if (fread(&header2, sizeof(VTFHeader72), 1, fin) != 1)
-            return PL_RESULT_FILEREAD;
+        if (fread(&header2, sizeof(VTFHeader72), 1, fin) != 1) {
+            ReportError(PL_RESULT_FILEREAD, "failed to read header");
+            return false;
+        }
     }
     VTFHeader73 header3;
     if (header.version[1] >= 3) {
         memset(&header3, 0, sizeof(VTFHeader73));
-        if (fread(&header3, sizeof(VTFHeader73), 1, fin) != 1)
-            return PL_RESULT_FILEREAD;
+        if (fread(&header3, sizeof(VTFHeader73), 1, fin) != 1) {
+            ReportError(PL_RESULT_FILEREAD, "failed to read header");
+            return false;
+        }
     }
 
     memset(out, 0, sizeof(PLImage));
@@ -313,7 +319,8 @@ PLresult LoadVTFImage(FILE *fin, PLImage *out) {
                         out->data[0] = (uint8_t*)calloc(mipsize, sizeof(uint8_t));
                         if (fread(out->data[0], sizeof(uint8_t), mipsize, fin) != mipsize) {
                             plFreeImage(out);
-                            return PL_RESULT_FILEREAD;
+                            ReportError(PL_RESULT_FILEREAD, "failed to head header");
+                            return false;
                         }
                     } else {
                         fseek(fin, mipsize, SEEK_CUR);
@@ -328,5 +335,5 @@ PLresult LoadVTFImage(FILE *fin, PLImage *out) {
         }
     }
 
-    return PL_RESULT_SUCCESS;
+    return true;
 }

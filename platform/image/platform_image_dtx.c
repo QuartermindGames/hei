@@ -108,17 +108,19 @@ bool DTXFormatCheck(FILE *fin) {
     return (type == 0);
 }
 
-PLresult LoadDTXImage(FILE *fin, PLImage *out) {
-    _plSetCurrentFunction("_plLoadDTXImage");
-
+bool LoadDTXImage(FILE *fin, PLImage *out) {
     DTXHeader header;
     memset(&header, 0, sizeof(header));
-    if (fread(&header, sizeof(DTXHeader), 1, fin) != 1)
-        return PL_RESULT_FILEREAD;
-    else if ((header.version < DTX_VERSION_MAX) || (header.version > DTX_VERSION_MIN))
-        return PL_RESULT_FILEVERSION;
-    else if ((header.width < 8) || (header.height < 8))
-        return PL_RESULT_IMAGERESOLUTION;
+    if (fread(&header, sizeof(DTXHeader), 1, fin) != 1) {
+        ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
+        return false;
+    } else if ((header.version < DTX_VERSION_MAX) || (header.version > DTX_VERSION_MIN)) {
+        ReportError(PL_RESULT_FILEVERSION, "invalid version: %d", header.version);
+        return false;
+    } else if ((header.width < 8) || (header.height < 8)) {
+        ReportError(PL_RESULT_IMAGERESOLUTION, "invalid resolution: w(%d) h(%d)", header.width, header.height);
+        return false;
+    }
 
     memset(out, 0, sizeof(PLImage));
 
@@ -162,24 +164,28 @@ PLresult LoadDTXImage(FILE *fin, PLImage *out) {
             break;
     }
 
-    if (!out->size)
-        return PL_RESULT_FILESIZE;
+    if (!out->size) {
+        ReportError(PL_RESULT_FILESIZE, "invalid image size");
+        return false;
+    }
 
+#if 0
     for (int i = 0; i < header.mipmaps; i++) {
     }
+#endif
 
     out->data = calloc(out->levels, sizeof(uint8_t*));
     if(out->data == NULL) {
         plFreeImage(out);
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
-        return PL_RESULT_MEMORY_ALLOCATION;
+        return false;
     }
 
     out->data[0] = calloc(out->size, sizeof(uint8_t));
     if(out->data[0] == NULL) {
         plFreeImage(out);
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
-        return PL_RESULT_MEMORY_ALLOCATION;
+        return false;
     }
 
     fread(out->data[0], sizeof(uint8_t), out->size, fin);
@@ -191,5 +197,5 @@ PLresult LoadDTXImage(FILE *fin, PLImage *out) {
     image[i + 0] ^= image[i + 2];
     }*/
 
-    return PL_RESULT_SUCCESS;
+    return true;
 }

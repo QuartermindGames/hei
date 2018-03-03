@@ -61,11 +61,11 @@ bool DDSFormatCheck(FILE *fin) {
     return (bool)(strncmp(ident, "DDS", 3) == 0);
 }
 
-PLresult LoadDDSImage(FILE *fin, PLImage *out) {
+bool LoadDDSImage(FILE *fin, PLImage *out) {
     DDSHeader header;
     memset(&header, 0, sizeof(DDSHeader));
     if(fread(&header, sizeof(DDSHeader), 1, fin) != 1) {
-        return PL_RESULT_FILEREAD;
+        return false;
     }
 
     memset(out, 0, sizeof(PLImage));
@@ -73,5 +73,5 @@ PLresult LoadDDSImage(FILE *fin, PLImage *out) {
     out->width = header.width;
     out->height = header.height;
 
-    return PL_RESULT_SUCCESS;
+    return true;
 }

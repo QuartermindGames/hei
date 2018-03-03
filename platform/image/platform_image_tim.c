@@ -120,7 +120,7 @@ static uint16_t _tim16toRGB51A(uint16_t colour_in) {
     return colour_out;
 }
 
-PLresult LoadTIMImage(FILE *fin, PLImage *out) {
+bool LoadTIMImage(FILE *fin, PLImage *out) {
     memset(out, 0, sizeof(PLImage));
 
     uint16_t *palette = NULL;
@@ -293,7 +293,7 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
     free(image_data);
     free(palette);
 
-    return PL_RESULT_SUCCESS;
+    return true;
 
     UNEXPECTED_EOF:
     ReportError(PL_RESULT_FILEREAD, "unexpected EOF when loading TIM file");
@@ -308,5 +308,5 @@ PLresult LoadTIMImage(FILE *fin, PLImage *out) {
     free(image_data);
     free(palette);
 
-    return plGetFunctionResult();
+    return false;
 }

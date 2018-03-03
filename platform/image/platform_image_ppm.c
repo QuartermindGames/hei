@@ -20,16 +20,13 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
 #define PPM_HEADER_SIZE 70
 
-PLresult LoadPPMImage(FILE *fin, PLImage *out) {
-    _plSetCurrentFunction("_plLoadPPMImage");
-
+bool LoadPPMImage(FILE *fin, PLImage *out) {
     char header[PPM_HEADER_SIZE];
     memset(&header, 0, sizeof(header));
-
     fgets(header, PPM_HEADER_SIZE, fin);
     if (strncmp(header, "P6", 2) != 0) {
         ReportError(PL_RESULT_FILEVERSION, "Unsupported PPM type!\n");
-        return PL_RESULT_FILEVERSION;
+        return false;
     }
 
     int i = 0, d;
@@ -56,14 +53,14 @@ PLresult LoadPPMImage(FILE *fin, PLImage *out) {
     if(out->data == NULL) {
         plFreeImage(out);
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
-        return PL_RESULT_MEMORY_ALLOCATION;
+        return false;
     }
 
     out->data[0] = calloc(out->size, sizeof(uint8_t));
     if(out->data[0] == NULL) {
         plFreeImage(out);
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
-        return PL_RESULT_MEMORY_ALLOCATION;
+        return false;
     }
 
     fread(out->data[0], sizeof(uint8_t), out->size, fin);
@@ -72,5 +69,5 @@ PLresult LoadPPMImage(FILE *fin, PLImage *out) {
     out->height = h;
     out->format = PL_IMAGEFORMAT_RGB8;
 
-    return PL_RESULT_SUCCESS;
+    return true;
 }

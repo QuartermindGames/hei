@@ -40,14 +40,14 @@ For more information, please refer to <http://unlicense.org>
 #define STB_IMAGE_IMPLEMENTATION
 #if defined(STB_IMAGE_IMPLEMENTATION)
 #   include "stb_image.h"
-PLresult LoadSTBImage(FILE *fin, PLImage *out) {
+bool LoadSTBImage(FILE *fin, PLImage *out) {
     rewind(fin);
 
     int x, y, component;
     unsigned char *data = stbi_load_from_file(fin, &x, &y, &component, 4);
     if(data == NULL) {
         ReportError(PL_RESULT_FILEREAD, "failed to read in image, %s", stbi_failure_reason());
-        return PL_RESULT_FILEREAD;
+        return false;
     }
 
     memset(out, 0, sizeof(PLImage));
@@ -63,54 +63,52 @@ PLresult LoadSTBImage(FILE *fin, PLImage *out) {
         out->data[0] = calloc(out->size, sizeof(uint8_t));
         if(out->data[0] != NULL) {
             out->data[0] = data;
-            return PL_RESULT_SUCCESS;
+            return true;
         }
         free(out->data);
     }
     free(data);
 
     ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for image buffer");
-    return plGetFunctionResult();
+    return false;
 }
 #endif
 
-PLresult plLoadImagef(FILE *fin, const char *path, PLImage *out) {
+bool plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     if(fin == NULL) {
         ReportError(PL_RESULT_FILEREAD, "invalid file handle");
-        return PL_RESULT_FILEREAD;
+        return false;
     }
 
-    PLresult result = PL_RESULT_FILETYPE;
-    if(DDSFormatCheck(fin)) {
-        result = LoadDDSImage(fin, out);
-    } else if(TIMFormatCheck(fin)) {
-        result = LoadTIMImage(fin, out);
-    } else if(VTFFormatCheck(fin)) {
-        result = LoadVTFImage(fin, out);
-    } else if(DTXFormatCheck(fin)) {
-        result = LoadDTXImage(fin, out);
+    strncpy(out->path, path, sizeof(out->path));
+
+    if(DDSFormatCheck(fin) && LoadDDSImage(fin, out)) {
+        return true;
+    } else if(TIMFormatCheck(fin) && LoadTIMImage(fin, out)) {
+        return true;
+    } else if(VTFFormatCheck(fin) && LoadVTFImage(fin, out)) {
+        return true;
+    } else if(DTXFormatCheck(fin) && LoadDTXImage(fin, out)) {
+        return true;
     } else {
         const char *extension = plGetFileExtension(path);
         if(extension && extension[0] != '\0') {
-            if (!strncmp(extension, PL_EXTENSION_FTX, 3)) {
-                result = LoadFTXImage(fin, out);
-            } else if (!strncmp(extension, PL_EXTENSION_PPM, 3)) {
-                result = LoadPPMImage(fin, out);
+            if (!strncmp(extension, PL_EXTENSION_FTX, 3) && LoadFTXImage(fin, out)) {
+                return true;
+            } else if (!strncmp(extension, PL_EXTENSION_PPM, 3) && LoadPPMImage(fin, out)) {
+                return true;
             }
         }
     }
 
 #if defined(STB_IMAGE_IMPLEMENTATION)
-    if(result != PL_RESULT_SUCCESS) {
-        result = LoadSTBImage(fin, out);
+    if(LoadSTBImage(fin, out)) {
+        return true;
     }
 #endif
 
-    if(result == PL_RESULT_SUCCESS) {
-        strncpy(out->path, path, sizeof(out->path));
-    }
-
-    return result;
+    ReportError(PL_RESULT_FILETYPE, "unrecognised image type");
+    return false;
 }
 
 bool plLoadImage(const char *path, PLImage *out) {
@@ -130,7 +128,7 @@ bool plLoadImage(const char *path, PLImage *out) {
         // example/package.wad:myimage
     }
 
-    PLresult result = plLoadImagef(fin, path, out);
+    bool result = plLoadImagef(fin, path, out);
 
     fclose(fin);
 

@@ -35,9 +35,7 @@ typedef struct FTXHeader {
     uint32_t alpha;
 } FTXHeader;
 
-PLresult LoadFTXImage(FILE *fin, PLImage *out) {
-    plFunctionStart();
-
+bool LoadFTXImage(FILE *fin, PLImage *out) {
     FTXHeader header;
     memset(&header, 0, sizeof(FTXHeader));
     header.width = (unsigned int)plGetLittleLong(fin);
@@ -52,23 +50,24 @@ PLresult LoadFTXImage(FILE *fin, PLImage *out) {
     if(out->data == NULL) {
         plFreeImage(out);
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
-        return PL_RESULT_MEMORY_ALLOCATION;
+        return false;
     }
 
     out->data[0] = calloc(out->size, sizeof(uint8_t));
     if(out->data[0] == NULL) {
         plFreeImage(out);
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
-        return PL_RESULT_MEMORY_ALLOCATION;
+        return false;
     }
 
     if (fread(out->data[0], sizeof(uint8_t), out->size, fin) != out->size) {
-        return PL_RESULT_FILEREAD;
+        ReportError(PL_RESULT_FILEREAD, "failed to read image data");
+        return false;
     }
 
     out->format = PL_IMAGEFORMAT_RGBA8;
     out->colour_format = PL_COLOURFORMAT_RGBA;
     out->width = (unsigned int)header.width;
     out->height = (unsigned int)header.height;
-    return PL_RESULT_SUCCESS;
+    return true;
 }
