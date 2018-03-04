@@ -90,8 +90,7 @@ typedef struct PLModel {
 
     unsigned int flags;
 
-    PLModelBone bones[PL_MAX_MODEL_BONES];
-    unsigned int num_bones;
+    PLModelSkeleton skeleton;
 
     PLModelLOD lods[PL_MAX_MODEL_LODS];
     unsigned int num_lods;

@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #pragma once
 
 #include "platform.h"
@@ -33,6 +32,14 @@ typedef struct PLBuffer {
     size_t size;
     uint8_t data[0];
 } PLBuffer;
+
+#define plBytesToKilobytes(a)   ((double)((a)) / 1000)
+#define plBytesToMegabytes(a)   (plBytesToKilobytes(a) / 1000)
+#define plBytesToGigabytes(a)   (plBytesToMegabytes(a) / 1000)
+
+#define plBytesToKibibytes(a)   ((double)((a)) / 1024)
+#define plBytesToMebibytes(a)   (plBytesToKibibytes(a) / 1024)
+#define plBytesToGibibytes(a)   (plBytesToMebibytes(a) / 1024)
 
 PL_EXTERN_C
 

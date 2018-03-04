@@ -413,10 +413,11 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     return true;
 }
 
-void plSwizzleTexture(PLTexture *texture, int r, int g, int b, int a) {
+void plSwizzleTexture(PLTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     plAssert(texture);
 
     BindTexture(texture);
+
 #if 0
     if(_PLGL_VERSION(3,3)) {
         int swizzle[] = {
@@ -430,4 +431,6 @@ void plSwizzleTexture(PLTexture *texture, int r, int g, int b, int a) {
         // todo, software implementation
     }
 #endif
+
+    CallGfxFunction(SwizzleTexture, texture, r, g, b, a);
 }

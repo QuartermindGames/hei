@@ -117,6 +117,7 @@ typedef struct GfxLayer {
     void(*DeleteTexture)(PLTexture *texture);
     void(*BindTexture)(const PLTexture *texture);
     void(*UploadTexture)(PLTexture *texture, const PLImage *upload);
+    void(*SwizzleTexture)(PLTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
     // Camera
     void(*CreateCamera)(PLCamera *camera);
