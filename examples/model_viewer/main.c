@@ -125,20 +125,20 @@ void write_smd(PLModel *model) {
 
     /* write out the nodes block */
     fprintf(fout, "nodes\n");
-    if(model->num_bones == 0) {
+    if(model->skeleton.num_bones == 0) {
         /* write out a dummy bone! */
         fprintf(fout, "0 \"root\" -1\n");
     } else {
         /* todo, revisit this so we're correctly connecting child/parent */
-        for (unsigned int i = 0; i < model->num_bones; ++i) {
-            fprintf(fout, "%u %s %d\n", i, model->bones[i].name, (int) i - 1);
+        for (unsigned int i = 0; i < model->skeleton.num_bones; ++i) {
+            fprintf(fout, "%u %s %d\n", i, model->skeleton.bones[i].name, (int) i - 1);
         }
     }
     fprintf(fout, "end\n\n");
 
     /* skeleton block */
     fprintf(fout, "skeleton\ntime 0\n");
-    if(model->num_bones == 0) {
+    if(model->skeleton.num_bones == 0) {
         /* write out dummy bone coords! */
         fprintf(fout, "0 0 0 0 0 0 0\n");
     } else {
@@ -301,7 +301,6 @@ int main(int argc, char **argv) {
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
     plSetGraphicsMode(PL_GFX_MODE_OPENGL);
 
-    plSetDefaultGraphicsState();
     plSetClearColour(PLColour(0, 0, 128, 255));
 
     plSetupConsole(1);
