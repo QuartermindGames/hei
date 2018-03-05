@@ -658,9 +658,9 @@ void plDrawConsole(void) {
         }
 
         if(i == active_console_pane) {
-            plDrawRectangle(console_panes[i].display);
+            plDrawFilledRectangle(console_panes[i].display);
 
-            plDrawRectangle(plCreateRectangle(
+            plDrawFilledRectangle(plCreateRectangle(
                     PLVector2(
                             console_panes[i].display.xy.x + 4,
                             console_panes[i].display.xy.y + 4
@@ -680,7 +680,7 @@ void plDrawConsole(void) {
             // todo, console title
             // todo, display scroll bar
         } else {
-            plDrawRectangle(plCreateRectangle(
+            plDrawFilledRectangle(plCreateRectangle(
                     PLVector2(
                             console_panes[i].display.xy.x,
                             console_panes[i].display.xy.y
@@ -720,7 +720,7 @@ void plDrawConsole(void) {
                     )
             ));
 
-            plDrawRectangle(plCreateRectangle(
+            plDrawFilledRectangle(plCreateRectangle(
                     PLVector2(
                             console_panes[i].display.xy.x + 4,
                             console_panes[i].display.xy.y + 4

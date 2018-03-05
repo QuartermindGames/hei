@@ -409,7 +409,32 @@ void plDrawTexturedRectangle(int x, int y, unsigned int w, unsigned int h, PLTex
     plDrawMesh(mesh);
 }
 
-void plDrawRectangle(PLRectangle2D rect) {
+void plDrawRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colour) {
+    static PLMesh *mesh = NULL;
+    if(mesh == NULL) {
+        if((mesh = plCreateMesh(
+                PL_MESH_LINE_LOOP,
+                PL_DRAW_IMMEDIATE, // todo, update to dynamic
+                0, 4
+        )) == NULL) {
+            return;
+        }
+    }
+
+    plClearMesh(mesh);
+
+    plSetMeshVertexPosition(mesh, 0, PLVector3(x, y, 0));
+    plSetMeshVertexPosition(mesh, 1, PLVector3(x + w, y, 0));
+    plSetMeshVertexPosition(mesh, 2, PLVector3(x + w, y + h, 0));
+    plSetMeshVertexPosition(mesh, 3, PLVector3(x, y + h, 0));
+
+    plSetMeshUniformColour(mesh, colour);
+
+    plUploadMesh(mesh);
+    plDrawMesh(mesh);
+}
+
+void plDrawFilledRectangle(PLRectangle2D rect) {
     static PLMesh *mesh = NULL;
     if(mesh == NULL) {
         if((mesh = plCreateMesh(

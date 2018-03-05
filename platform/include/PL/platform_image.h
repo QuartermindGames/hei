@@ -69,7 +69,7 @@ typedef struct PLImage {
 
     unsigned int x, y;
     unsigned int width, height;
-    unsigned int size;
+    size_t size;
     unsigned int levels;
 
     char path[PL_SYSTEM_MAX_PATH];
@@ -100,6 +100,8 @@ PL_EXTERN bool plWriteImage(const PLImage *image, const char *path);
 PL_EXTERN unsigned int plGetSamplesPerPixel(PLColourFormat format);
 
 bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format);
+
+void plInvertImageColour(PLImage *image);
 void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest);
 
 PL_EXTERN bool plIsValidImageSize(unsigned int width, unsigned int height);

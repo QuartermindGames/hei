@@ -290,6 +290,7 @@ typedef struct MeshTranslatePrimitive {
 
 MeshTranslatePrimitive primitives[] = {
     {PL_MESH_LINES, GL_LINES, "LINES"},
+    {PL_MESH_LINE_LOOP, GL_LINE_LOOP, "LINE_LOOP"},
     {PL_MESH_POINTS, GL_POINTS, "POINTS"},
     {PL_MESH_TRIANGLES, GL_TRIANGLES, "TRIANGLES"},
     {PL_MESH_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN"},
@@ -807,8 +808,8 @@ void InitOpenGL(void) {
     glDebugMessageCallback((GLDEBUGPROC) MessageCallback, NULL);
 #endif
 
-    glPointSize(5.f);
-    glLineWidth(2.f);
+    //glPointSize(5.f);
+    //glLineWidth(2.f);
 }
 
 void ShutdownOpenGL(void) {

@@ -192,6 +192,10 @@ unsigned int plGetSamplesPerPixel(PLColourFormat format) {
 }
 
 bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
+    if(image->format == new_format) {
+        return true;
+    }
+
     /* TODO: Make this thing more extensible... */
     if(image->format == PL_IMAGEFORMAT_RGB5A1 && new_format == PL_IMAGEFORMAT_RGBA8) {
         uint8_t *levels[image->levels];
@@ -272,6 +276,25 @@ unsigned int _plImageBytesPerPixel(PLImageFormat format) {
 
         default:
             return 0;
+    }
+}
+
+void plInvertImageColour(PLImage *image) {
+    unsigned int num_colours = plGetSamplesPerPixel(image->colour_format);
+    switch(image->format) {
+        case PL_IMAGEFORMAT_RGB8:
+        case PL_IMAGEFORMAT_RGBA8: {
+            for(unsigned int i = 0; i < image->size; i += num_colours) {
+                uint8_t *pixel = &image->data[0][i];
+                pixel[0] = ~pixel[0];
+                pixel[1] = ~pixel[1];
+                pixel[2] = ~pixel[2];
+            }
+        } break;
+
+        default: {
+            /* todo, log warning message */
+        } break;
     }
 }
 

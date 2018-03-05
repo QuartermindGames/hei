@@ -32,9 +32,6 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_graphics.h"
 #include "platform_physics.h"
 
-#define PL_MAX_MODEL_BONES      1024
-#define PL_MAX_MODEL_MESHES     32
-#define PL_MAX_MODEL_FRAMES     512
 #define PL_MAX_MODEL_LODS       10
 
 typedef struct PLAnimationFrame {

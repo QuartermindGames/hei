@@ -59,6 +59,11 @@ PL_INLINE static float plRadiansToDegrees(float radians) {
     return radians * (180 / PL_PI);
 }
 
+/* https://stackoverflow.com/a/9194117 */
+PL_INLINE static int plRoundUp(int num, int multiple) {
+    return (num + multiple - 1) & -multiple;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Vectors
 
