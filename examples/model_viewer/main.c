@@ -116,7 +116,7 @@ void write_smd(PLModel *model) {
     snprintf(body_path, sizeof(body_path), "./%s_body.smd", model->name);
     FILE *fout = fopen(body_path, "w");
     if(fout == NULL) {
-        printf(plGetError());
+        printf("%s\n", plGetError());
         exit(EXIT_FAILURE);
     }
 
@@ -171,6 +171,8 @@ void write_smd(PLModel *model) {
 
 ////////////////////////////////////////////////////////////////////////////////////
 
+PLCamera *main_camera;
+
 // loads a model in and then frees it
 void load_mdl_temp(const char *path) {
     PLModel *model = plLoadModel(path);
@@ -205,6 +207,18 @@ void process_keyboard(void) {
         view_mode = VIEW_MODE_WEIGHTS;
     } else if(state[SDL_SCANCODE_5]) {
         view_mode = VIEW_MODE_SKELETON;
+    }
+
+    if(state[SDL_SCANCODE_A] || state[SDL_SCANCODE_LEFT]) {
+        main_camera->angles.x -= 4.f;
+    } else if(state[SDL_SCANCODE_D] || state[SDL_SCANCODE_RIGHT]) {
+        main_camera->angles.x += 4.f;
+    }
+
+    if(state[SDL_SCANCODE_W] || state[SDL_SCANCODE_UP]) {
+
+    } else if(state[SDL_SCANCODE_D] || state[SDL_SCANCODE_DOWN]) {
+
     }
 
     if(state[SDL_SCANCODE_ESCAPE]) {
@@ -288,7 +302,7 @@ int main(int argc, char **argv) {
 
     PLModel *model = plLoadModel(model_path);
     if(model == NULL) {
-        PRINT_ERROR("Failed to load model \"%s\"!\n", model_path);
+        PRINT_ERROR("Failed to load model \"%s\"!\n%s", model_path, plGetError());
     }
 
     if(extract_model) {
@@ -310,7 +324,7 @@ int main(int argc, char **argv) {
     plParseConsoleString("cmds");
     plParseConsoleString("vars");
 
-    PLCamera *main_camera = plCreateCamera();
+    main_camera = plCreateCamera();
     if (main_camera == NULL) {
         PRINT_ERROR("Failed to create camera!\n");
     }
@@ -397,7 +411,7 @@ int main(int argc, char **argv) {
 
         process_keyboard();
 
-        plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
+        plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
 
         plSetupCamera(main_camera);
 
@@ -434,10 +448,7 @@ int main(int argc, char **argv) {
             } break;
 
             case VIEW_MODE_SKELETON: {
-               // plDrawMesh(cur_model);
-               // glDisable(GL_DEPTH_TEST);
-               // plDrawMesh(model.skeleton_mesh);
-               // glEnable(GL_DEPTH_TEST);
+                plDrawModelSkeleton(model);
             } break;
         }
 

@@ -46,20 +46,27 @@ typedef struct PLViewport {
 } PLViewport;
 
 typedef struct PLCamera {
-    double fov;
-    double near, far;
+    float fov;
+    float near, far;
     unsigned int mode;
 
     PLVector3 angles, position;
+    PLVector3 forward, up;
+
     PLAABB bounds;
 
     // Viewport
     PLViewport viewport;
 
-    PLMatrix4x4 model_view;
+    PLMatrix4x4 perspective;
 } PLCamera;
 
 PL_EXTERN_C
+
+PLMatrix4x4 plTranslate(PLVector3 vec);
+PLMatrix4x4 plOrtho(float left, float right, float bottom, float top, float near, float far);
+PLMatrix4x4 plFrustum(float left, float right, float bottom, float top, float near, float far);
+PLMatrix4x4 plPerspective(float fov, float aspect, float near, float far);
 
 PL_EXTERN PLCamera *plCreateCamera(void);
 PL_EXTERN void plDeleteCamera(PLCamera *camera);

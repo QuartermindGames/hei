@@ -475,9 +475,12 @@ void GLSetupCamera(PLCamera *camera) {
 
     switch(camera->mode) {
         case PL_CAMERA_MODE_PERSPECTIVE: {
-            double h = tan(camera->fov / 360 * PL_PI) * 0.1;
-            double w = h * camera->viewport.w / camera->viewport.h;
-            glFrustum(-w, w, -h, h, 0.1, 100000);
+#if 0
+            float h = tanf(camera->fov / 360 * PL_PI) * 0.1f;
+            float w = h * camera->viewport.w / camera->viewport.h;
+#endif
+            camera->perspective = plPerspective(camera->fov, camera->viewport.w / camera->viewport.h, 0.1, 100000);
+            glLoadMatrixf(camera->perspective.m);
 
             glRotatef(camera->angles.y, 1, 0, 0);
             glRotatef(camera->angles.x, 0, 1, 0);
@@ -490,12 +493,16 @@ void GLSetupCamera(PLCamera *camera) {
         }
 
         case PL_CAMERA_MODE_ORTHOGRAPHIC: {
-            glOrtho(0, camera->viewport.w, camera->viewport.h, 0, 0, 1000);
+            //glOrtho(0, camera->viewport.w, camera->viewport.h, 0, 0, 1000);
+            PLMatrix4x4 mat = plOrtho(0, camera->viewport.w, camera->viewport.h, 0, 0, 1000);
+            glLoadMatrixf(mat.m);
             break;
         }
 
         case PL_CAMERA_MODE_ISOMETRIC: {
-            glOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
+            //glOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
+            PLMatrix4x4 mat = plOrtho(0, camera->viewport.w, camera->viewport.h, 0, 0, 1000);
+            glLoadMatrixf(mat.m);
 
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();

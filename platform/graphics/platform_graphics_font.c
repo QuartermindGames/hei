@@ -157,13 +157,13 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     }
     memset(font, 0, sizeof(PLBitmapFont));
 
-    //bool enable_filter = false;
+    bool enable_filter = false;
     while(!IsEOF()) {
         ParseLine();
 
         if(!strncmp(font_script.line_buffer, "FILTER ", 7)) {
             if(font_script.line_buffer[8] == '1') {
-                //enable_filter = true;
+                enable_filter = true;
             }
             continue;
         }
@@ -200,6 +200,12 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
         plDeleteBitmapFont(font);
         plFreeImage(&image);
         return NULL;
+    }
+
+    if(enable_filter) {
+        font->texture->filter = PL_TEXTURE_FILTER_LINEAR;
+    } else {
+        font->texture->filter = PL_TEXTURE_FILTER_NEAREST;
     }
 
     plSetTextureFlags(font->texture, PL_TEXTURE_FLAG_NOMIPS | PL_TEXTURE_FLAG_PRESERVE);
@@ -242,10 +248,12 @@ void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColo
         }
     }
 
-    float w = font->chars[character].w * scale;
-    float h = font->chars[character].h * scale;
+    float w = font->chars[character].w;/* * scale; */
+    float h = font->chars[character].h;/* * scale; */
 
     plClearMesh(mesh);
+
+    mesh->texture = font->texture;
 
     plSetMeshUniformColour(mesh, colour);
 
@@ -289,13 +297,12 @@ void plDrawBitmapString(PLBitmapFont *font, int x, int y, float scale, PLColour 
             continue;
         }
 
-        unsigned char ch = (unsigned char)msg[i];
-        plDrawBitmapCharacter(font, n_x, n_y, scale, colour, ch);
-        if(ch == '\n') {
-            n_y += font->chars[ch].h;
+        plDrawBitmapCharacter(font, n_x, n_y, scale, colour, msg[i]);
+        if(msg[i] == '\n') {
+            n_y += font->chars[msg[i]].h;
             n_x = x;
         } else {
-            n_x += font->chars[ch].w;
+            n_x += font->chars[msg[i]].w;
         }
     }
 }

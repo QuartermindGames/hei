@@ -34,16 +34,6 @@ For more information, please refer to <http://unlicense.org>
 #define CAMERA_DEFAULT_NEAR       0.1
 #define CAMERA_DEFAULT_FAR        100000
 
-void InitCameras(void) {
-    gfx_state.max_cameras   = 1024;
-    gfx_state.cameras       = (PLCamera**)malloc(sizeof(PLCamera) * gfx_state.max_cameras);
-    gfx_state.num_cameras   = 0;
-}
-
-void ShutdownCameras(void) {
-
-}
-
 /* http://www.songho.ca/opengl/gl_anglestoaxes.html */
 void AnglesAxes(PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *forward) {
     /* pitch */
@@ -74,7 +64,44 @@ void AnglesAxes(PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *for
     forward->z = cx * cy;
 }
 
-PLMatrix4x4 LookAt(PLVector3 eye, PLVector3 center, PLVector3 up) {
+PLMatrix4x4 plTranslate(PLVector3 vec) {
+    return (PLMatrix4x4) {{
+            1, 0, 0, vec.x,
+            0 ,1, 0, vec.y,
+            0, 0, 1, vec.z,
+            0, 0, 0, 1
+    }};
+}
+
+PLMatrix4x4 plOrtho(float left, float right, float bottom, float top, float near, float far) {
+    return (PLMatrix4x4) {{
+            2 / (right - left), 0, 0, -(right + left) / (right - left),
+            0, 2 / (top - bottom), 0, -(top + bottom) / (top - bottom),
+            0, 0, 2 / (far - near), -(far + near) / (far - near),
+            0, 0, 0, 1
+    }};
+}
+
+PLMatrix4x4 plFrustum(float left, float right, float bottom, float top, float near, float far) {
+    float m0 = 2.f * near;
+    float m1 = right - left;
+    float m2 = top - bottom;
+    float m3 = far - near;
+    return (PLMatrix4x4){{
+            m0 / m1, 0, 0, 0,
+            0, m0 / m2, 0, 0,
+            (right + left) / m1, (top + bottom) / m2, (-far - near) / m3, -1.f,
+            0, 0, 0, 1
+    }};
+}
+
+PLMatrix4x4 plPerspective(float fov, float aspect, float near, float far) {
+    float y_max = near * tanf(fov * PL_PI / 360);
+    float x_max = y_max * aspect;
+    return plFrustum(-x_max, x_max, -y_max, y_max, near, far);
+}
+
+PLMatrix4x4 plLookAt(PLVector3 eye, PLVector3 center, PLVector3 up) {
     PLVector3 z = eye;
     plSubtractVector3(&z, center);
     float mag = plVector3Length(z);
@@ -104,8 +131,8 @@ PLMatrix4x4 LookAt(PLVector3 eye, PLVector3 center, PLVector3 up) {
     }};
 }
 
-PLMatrix4x4 LookAtTargetVector(PLVector3 eye, PLVector3 target) {
-    return LookAt(eye, target, PLVector3(0, 1, 0));
+PLMatrix4x4 plLookAtTargetVector(PLVector3 eye, PLVector3 target) {
+    return plLookAt(eye, target, PLVector3(0, 1, 0));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -117,7 +144,6 @@ PLCamera *plCreateCamera(void) {
         return NULL;
     }
 
-    memset(camera, 0, sizeof(PLCamera));
     camera->fov     = CAMERA_DEFAULT_FOV;
     camera->near    = CAMERA_DEFAULT_NEAR;
     camera->far     = CAMERA_DEFAULT_FAR;
@@ -134,6 +160,9 @@ PLCamera *plCreateCamera(void) {
     camera->viewport.h      = CAMERA_DEFAULT_HEIGHT;
     camera->viewport.r_w    = 0;
     camera->viewport.r_h    = 0;
+
+    camera->forward = PLVector3(0, 0, 1);
+    camera->up = PLVector3(0, 1, 0);
 
     CallGfxFunction(CreateCamera, camera);
 
@@ -154,6 +183,14 @@ void plDeleteCamera(PLCamera *camera) {
 
     free(camera->viewport.v_buffer);
     free(camera);
+}
+
+PLMatrix4x4 plGetCameraViewProjection(PLCamera *camera) {
+    PLMatrix4x4 mat = plLookAt(
+            camera->position,
+            plVector3Add(camera->position, camera->forward),
+            camera->up
+    );
 }
 
 void plSetupCamera(PLCamera *camera) {

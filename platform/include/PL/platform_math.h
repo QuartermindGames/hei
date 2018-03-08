@@ -788,6 +788,10 @@ PL_INLINE static void plAddMatrix(PLMatrix4x4 m, const PLMatrix4x4 m2) {
 
 }
 
+PL_INLINE static void plMultiplyMatrix(PLMatrix4x4 *m, const PLMatrix4x4 m2) {
+
+}
+
 PL_INLINE static void plScaleMatrix(PLMatrix4x4 *m, PLVector3 scale) {
 
 }

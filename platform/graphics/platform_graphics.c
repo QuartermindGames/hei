@@ -54,7 +54,6 @@ data for each of these functions
 ===========================*/
 
 void InitTextures(void);     // platform_graphics_texture
-void InitCameras(void);      // platform_graphics_camera
 void InitMaterials(void);    // material
 
 PLresult InitGraphics(void) {
@@ -67,12 +66,10 @@ PLresult InitGraphics(void) {
 }
 
 void ShutdownTextures(void); // platform_graphics_texture
-void ShutdownCameras(void);  // platform_graphics_camera
 
 void ShutdownGraphics(void) {
     GRAPHICS_TRACK();
 
-    ShutdownCameras();
     ShutdownTextures();
 
     switch(gfx_layer.mode) {
@@ -444,7 +441,6 @@ void plSetGraphicsMode(PLGfxMode mode) {
         } break;
     }
 
-    InitCameras();
     InitTextures();
     InitMaterials();
 }

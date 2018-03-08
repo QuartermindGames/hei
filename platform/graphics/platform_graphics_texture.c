@@ -399,6 +399,12 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     texture->size       = upload->size;
     texture->levels     = upload->levels;
 
+    if(texture->flags & PL_TEXTURE_FLAG_NOMIPS &&
+            (texture->filter != PL_TEXTURE_FILTER_LINEAR && texture->filter != PL_TEXTURE_FILTER_NEAREST)) {
+        GfxLog("invalid filter mode for texture - if specifying nomips, use either linear or nearest!");
+        texture->filter = PL_TEXTURE_FILTER_NEAREST;
+    }
+
     const char *file_name = plGetFileName(upload->path);
     if(file_name == NULL || file_name[0] == '\0') {
         strcpy(texture->name, "null");
