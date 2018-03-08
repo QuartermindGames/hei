@@ -494,8 +494,8 @@ void GLSetupCamera(PLCamera *camera) {
 
         case PL_CAMERA_MODE_ORTHOGRAPHIC: {
             //glOrtho(0, camera->viewport.w, camera->viewport.h, 0, 0, 1000);
-            PLMatrix4x4 mat = plOrtho(0, camera->viewport.w, camera->viewport.h, 0, 0, 1000);
-            glLoadMatrixf(mat.m);
+            camera->perspective = plOrtho(0, camera->viewport.w, camera->viewport.h, 0, 0, 1000);
+            glLoadMatrixf(camera->perspective.m);
             break;
         }
 

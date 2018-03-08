@@ -74,11 +74,14 @@ PLMatrix4x4 plTranslate(PLVector3 vec) {
 }
 
 PLMatrix4x4 plOrtho(float left, float right, float bottom, float top, float near, float far) {
+    float tx = - (right + left) / (right - left);
+    float ty = - (top + bottom) / (top - bottom);
+    float tz = - (far + near) / (far - near);
     return (PLMatrix4x4) {{
-            2 / (right - left), 0, 0, -(right + left) / (right - left),
-            0, 2 / (top - bottom), 0, -(top + bottom) / (top - bottom),
-            0, 0, 2 / (far - near), -(far + near) / (far - near),
-            0, 0, 0, 1
+            2 / (right - left), 0, 0, 0,
+            0, 2 / (top - bottom), 0, 0,
+            0, 0, -2 / (far - near), 0,
+            tx, ty, tz, 1
     }};
 }
 
