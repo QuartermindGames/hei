@@ -67,7 +67,7 @@ void ClearBoundTextures(void) {
 
 void ClearBoundBuffers(void) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glBindFramebuffer(GL_RENDERBUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
 /////////////////////////////////////////////////////////////
@@ -256,7 +256,7 @@ void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
                     texture->w / (unsigned int)pow(2, i),
                     texture->h / (unsigned int)pow(2, i),
                     0,
-                    upload->size,
+                    (GLsizei) upload->size,
                     upload->data[0]
             );
         } else {
@@ -439,14 +439,14 @@ void GLSetupCamera(PLCamera *camera) {
                 glGenRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
                 glGenRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
 
-                // Colour
+                /* colour */
                 glBindRenderbuffer(GL_RENDERBUFFER, camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
                 glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB4, camera->viewport.r_w, camera->viewport.r_h);
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
                 glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
                                           camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
 
-                // Depth
+                /* depth */
                 glBindRenderbuffer(GL_RENDERBUFFER, camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
                 glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, camera->viewport.r_w, camera->viewport.r_h);
                 glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
@@ -524,9 +524,9 @@ void GLSetupCamera(PLCamera *camera) {
 
 void GLDrawPerspectivePOST(PLCamera *camera) {
     plAssert(camera);
-
     if(GLVersion(3, 0)) {
         if (UseBufferScaling(camera)) {
+            glBindFramebuffer(GL_FRAMEBUFFER, camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
             glReadBuffer(GL_COLOR_ATTACHMENT0);
             glReadPixels(
                     0, 0,
@@ -534,7 +534,7 @@ void GLDrawPerspectivePOST(PLCamera *camera) {
                     camera->viewport.r_h,
                     GL_BGRA,
                     GL_UNSIGNED_BYTE,
-                    &camera->viewport.v_buffer[0]
+                    camera->viewport.v_buffer
             );
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
@@ -546,7 +546,7 @@ void GLDrawPerspectivePOST(PLCamera *camera) {
                     camera->viewport.r_w, camera->viewport.r_h,
                     0, 0,
                     camera->viewport.w, camera->viewport.h,
-                    GL_COLOR_BUFFER_BIT, GL_NEAREST
+                    GL_COLOR_BUFFER_BIT, GL_LINEAR
             );
 
             ClearBoundBuffers();

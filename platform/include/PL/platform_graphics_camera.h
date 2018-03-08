@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org>
 #pragma once
 
 #include "platform_physics.h"
+#include "platform_image.h"
 
 enum {
     PL_CAMERA_MODE_PERSPECTIVE,
@@ -40,6 +41,8 @@ typedef struct PLViewport {
 
     uint8_t *v_buffer;
     unsigned int buffers[32];
+
+    PLImageFormat format;
 
     unsigned int r_w, r_h;
     unsigned int old_r_w, old_r_h;
