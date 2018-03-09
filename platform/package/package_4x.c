@@ -38,16 +38,15 @@ For more information, please refer to <http://unlicense.org>
  * compression used on these packages. */
 
 bool LoadLSTPackageFile(FILE *fh, PLPackageIndex *pi) {
-    pi->data = malloc(pi->length);
-    if(pi->data == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n", pi->length);
+    pi->file.data = malloc(pi->file.size);
+    if(pi->file.data == NULL) {
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n", pi->file.size);
         return false;
     }
 
-    if(fseek(fh, pi->offset, SEEK_SET) != 0 || fread(pi->data, pi->length, 1, fh) != 1) {
-        free(pi->data);
-        pi->data = NULL;
-
+    if(fseek(fh, pi->offset, SEEK_SET) != 0 || fread(pi->file.data, pi->file.size, 1, fh) != 1) {
+        free(pi->file.data);
+        pi->file.data = NULL;
         return false;
     }
 
@@ -147,9 +146,9 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
             goto ABORT;
         }
 
-        strncpy(package->table[i].name, index.name, sizeof(index.name));
-        package->table[i].name[sizeof(index.name) - 1] = '\0';
-        package->table[i].length = index.data_length;
+        strncpy(package->table[i].file.name, index.name, sizeof(index.name));
+        package->table[i].file.name[sizeof(index.name) - 1] = '\0';
+        package->table[i].file.size = index.data_length;
         package->table[i].offset = index.data_offset;
     }
 

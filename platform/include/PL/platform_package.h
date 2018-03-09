@@ -27,13 +27,11 @@ For more information, please refer to <http://unlicense.org>
 #pragma once
 
 #include <PL/platform.h>
+#include <PL/platform_filesystem.h>
 
 typedef struct PLPackageIndex {
-    char name[256];
-    size_t length;
     size_t offset;
-
-    uint8_t *data;
+    PLIOBuffer file;
 } PLPackageIndex;
 
 typedef struct PLPackage {

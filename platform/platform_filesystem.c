@@ -30,7 +30,10 @@ For more information, please refer to <http://unlicense.org>
 #include <errno.h>
 #include <dirent.h>
 
-#include <PL/platform_filesystem.h>
+#include <PL/platform_console.h>
+
+#include "filesystem_private.h"
+#include "platform_private.h"
 
 #ifdef _WIN32
 
@@ -234,6 +237,36 @@ void plSetWorkingDirectory(const char *path) {
 
 /////////////////////////////////////////////////////////////////////////////////////
 // FILE I/O
+
+/* loads an entire file into the PLIOBuffer struct */
+void plLoadFile(const char *path, PLIOBuffer *buffer) {
+    if(plIsEmptyString(path)) {
+        ReportError(PL_RESULT_FILEPATH, "invalid path");
+        return;
+    }
+
+    memset(buffer, 0, sizeof(PLIOBuffer));
+
+    FILE *fp = fopen(path, "rb");
+    if(fp == NULL) {
+        ReportError(PL_RESULT_FILEREAD, strerror(errno));
+        return;
+    }
+
+    strncpy(buffer->name, path, sizeof(buffer->name));
+
+    buffer->size = plGetFileSize(path);
+    buffer->data = calloc(buffer->size, sizeof(uint8_t));
+    if(buffer->data != NULL) {
+        if(fread(buffer->data, sizeof(uint8_t), buffer->size, fp) != buffer->size) {
+            FSLog("failed to read complete file (%s)\n", path);
+        }
+    } else {
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes", buffer->size);
+    }
+
+    fclose(fp);
+}
 
 // Checks if a file exists or not.
 bool plFileExists(const char *path) {

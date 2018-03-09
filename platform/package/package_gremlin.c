@@ -54,15 +54,15 @@ typedef struct __attribute__((packed)) MADIndex {
 } MADIndex;
 
 bool LoadMADPackageFile(FILE *fh, PLPackageIndex *pi) {
-    pi->data = malloc(pi->length);
-    if(pi->data == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n", pi->length);
+    pi->file.data = malloc(pi->file.size);
+    if(pi->file.data == NULL) {
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n", pi->file.size);
         return false;
     }
 
-    if(fseek(fh, pi->offset, SEEK_SET) != 0 || fread(pi->data, pi->length, 1, fh) != 1) {
-        free(pi->data);
-        pi->data = NULL;
+    if(fseek(fh, pi->offset, SEEK_SET) != 0 || fread(pi->file.data, pi->file.size, 1, fh) != 1) {
+        free(pi->file.data);
+        pi->file.data = NULL;
 
         return false;
     }
@@ -152,10 +152,10 @@ PLPackage *LoadMADPackage(const char *path, bool cache) {
             goto FAILED;
         }
 
-        strncpy(package->table[i].name, index.file, sizeof(index.file));
-        package->table[i].name[sizeof(index.file) - 1] = '\0';
+        strncpy(package->table[i].file.name, index.file, sizeof(index.file));
+        package->table[i].file.name[sizeof(index.file) - 1] = '\0';
+        package->table[i].file.size = index.length;
 
-        package->table[i].length = index.length;
         package->table[i].offset = index.offset;
     }
 

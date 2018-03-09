@@ -252,7 +252,7 @@ PLModel *LoadRequiemModel(const char *path) {
     }
 #endif
 
-#if 0 // debug info
+#if 0 // debug file
     ModelLog("texture_name_length: %d\n", texture_name_length);
     ModelLog("texture_name:        %s\n", texture_name);
     ModelLog("num_vertices:        %d\n", num_vertices);

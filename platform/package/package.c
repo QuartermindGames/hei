@@ -52,9 +52,9 @@ void PurgePackageData(PLPackage *package) {
     plAssert(package);
 
     for(unsigned int i = 0; i < package->table_size; ++i) {
-        if(package->table[i].data != NULL) {
-            free(package->table[i].data);
-            package->table[i].data = NULL;
+        if(package->table[i].file.data != NULL) {
+            free(package->table[i].file.data);
+            package->table[i].file.data = NULL;
         }
     }
 }
@@ -130,8 +130,8 @@ bool plLoadPackageFile(PLPackage *package, const char *file, const uint8_t **dat
     }
 
     for(unsigned int i = 0; i < package->table_size; ++i) {
-        if(strcmp(file, package->table[i].name) == 0) {
-            if(package->table[i].data == NULL) {
+        if(strcmp(file, package->table[i].file.name) == 0) {
+            if(package->table[i].file.data == NULL) {
                 FILE *fh = fopen(package->path, "rb");
                 if (fh == NULL) {
                     return false;
@@ -143,8 +143,8 @@ bool plLoadPackageFile(PLPackage *package, const char *file, const uint8_t **dat
                 }
             }
 
-            *data = package->table[i].data;
-            *size = package->table[i].length;
+            *data = package->table[i].file.data;
+            *size = package->table[i].file.size;
             return true;
         }
     }

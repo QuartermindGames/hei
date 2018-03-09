@@ -28,10 +28,11 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform.h"
 
-typedef struct PLBuffer {
+typedef struct PLIOBuffer {
+    char name[PL_SYSTEM_MAX_PATH];
     size_t size;
-    uint8_t data[0];
-} PLBuffer;
+    uint8_t *data;
+} PLIOBuffer;
 
 #define plBytesToKilobytes(a)   ((double)((a)) / 1000)
 #define plBytesToMegabytes(a)   (plBytesToKilobytes(a) / 1000)

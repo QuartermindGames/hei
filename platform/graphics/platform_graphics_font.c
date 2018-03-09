@@ -297,12 +297,13 @@ void plDrawBitmapString(PLBitmapFont *font, int x, int y, float scale, PLColour 
             continue;
         }
 
+        uint8_t c = (uint8_t) msg[i];
         plDrawBitmapCharacter(font, n_x, n_y, scale, colour, msg[i]);
         if(msg[i] == '\n') {
-            n_y += font->chars[msg[i]].h;
+            n_y += font->chars[c].h;
             n_x = x;
         } else {
-            n_x += font->chars[msg[i]].w;
+            n_x += font->chars[c].w;
         }
     }
 }
