@@ -108,6 +108,7 @@ void GLClearBuffers(unsigned int buffers) {
 
 unsigned int TranslateBlendFunc(PLBlend blend) {
     switch(blend) {
+        default:
         case PL_BLEND_ONE: return GL_ONE;
         case PL_BLEND_ZERO: return GL_ZERO;
         case PL_BLEND_SRC_COLOR: return GL_SRC_COLOR;
@@ -119,18 +120,14 @@ unsigned int TranslateBlendFunc(PLBlend blend) {
         case PL_BLEND_DST_COLOR: return GL_DST_COLOR;
         case PL_BLEND_ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
         case PL_BLEND_SRC_ALPHA_SATURATE: return GL_SRC_ALPHA_SATURATE;
-        default:return 0;
     }
 }
 
 void GLSetBlendMode(PLBlend a, PLBlend b) {
-    static bool is_blending = false;
-    if(a == PL_BLEND_NONE && b == PL_BLEND_NONE && is_blending) {
+    if(a == PL_BLEND_NONE && b == PL_BLEND_NONE) {
         glDisable(GL_BLEND);
-        is_blending = false;
-    } else if(!is_blending) {
+    } else {
         glEnable(GL_BLEND);
-        is_blending = true;
     }
 
     glBlendFunc(TranslateBlendFunc(a), TranslateBlendFunc(b));
