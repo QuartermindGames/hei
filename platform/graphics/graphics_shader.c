@@ -31,13 +31,11 @@ For more information, please refer to <http://unlicense.org>
 /* shader implementation */
 
 PLShaderProgram *plCreateShaderProgram(void) {
-    PLShaderProgram *program = malloc(sizeof(PLShaderProgram));
+    PLShaderProgram *program = calloc(1, sizeof(PLShaderProgram));
     if(program == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to create shader program!\n");
         return NULL;
     }
-
-    memset(program, 0, sizeof(PLShaderProgram));
 
     CallGfxFunction(CreateShaderProgram, program);
 
@@ -45,13 +43,17 @@ PLShaderProgram *plCreateShaderProgram(void) {
 }
 
 void plDeleteShaderProgram(PLShaderProgram *program) {
-    plAssert(program);
-
-    if(gfx_layer.DeleteShaderProgram) {
-        gfx_layer.DeleteShaderProgram(program);
+    if(program == NULL) {
+        return;
     }
 
+    CallGfxFunction(DeleteShaderProgram, program);
+
     free(program);
+}
+
+bool plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {
+    return false;
 }
 
 PLShaderProgram *plGetCurrentShaderProgram(void) {

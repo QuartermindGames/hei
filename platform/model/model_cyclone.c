@@ -275,12 +275,14 @@ PLModel *LoadRequiemModel(const char *path) {
         return NULL;
     }
 
+#if 0
     mesh->num_indices = num_indices;
     mesh->indices = calloc(mesh->num_indices, sizeof(uint16_t));
     if(mesh->indices == NULL) {
         plDeleteMesh(mesh);
         return NULL;
     }
+#endif
 
     srand(num_vertices);
     for(unsigned int i = 0; i < num_vertices; ++i) {
@@ -326,13 +328,12 @@ PLModel *LoadRequiemModel(const char *path) {
         }
     }
 
-    PLModel *model = malloc(sizeof(PLModel));
+    PLModel *model = calloc(1, sizeof(PLModel));
     if(model == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
         return NULL;
     }
 
-    memset(model, 0, sizeof(PLModel));
     model->num_lods = 1;
     model->lods[0].meshes = calloc(1, sizeof(PLMesh));
     if(model->lods[0].meshes == NULL) {

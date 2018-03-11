@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 #include <PL/platform_console.h>
+#include <PL/platform_mesh.h>
 
 #include "graphics_private.h"
 
@@ -67,6 +68,7 @@ PLVector3 plGenerateVertexNormal(PLVector3 a, PLVector3 b, PLVector3 c) {
 #endif
 }
 
+/* software implementation of gouraud shading */
 void plApplyMeshLighting(PLMesh *mesh, const PLLight *light, PLVector3 position) {
     PLVector3 distvec = position;
     plSubtractVector3(&distvec, light->position);
@@ -121,6 +123,8 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
     mesh->num_verts     = num_verts;
     mesh->mode          = mode;
 
+    mesh->internal.old_primitive = mesh->primitive;
+
     if(num_tris > 0) {
         mesh->triangles = (PLTriangle*)calloc(num_tris, sizeof(PLTriangle));
         if(!mesh->triangles) {
@@ -130,7 +134,18 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
             plDeleteMesh(mesh);
             return NULL;
         }
+
+        if(mesh->primitive == PL_MESH_TRIANGLES) {
+            mesh->num_indices = num_tris * 3;
+            if((mesh->indices = calloc(mesh->num_indices, sizeof(uint16_t))) == NULL) {
+                ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for indices, %d!\n",
+                            sizeof(uint16_t) * mesh->num_indices);
+                plDeleteMesh(mesh);
+                return NULL;
+            }
+        }
     }
+
     mesh->vertices = (PLVertex*)calloc(num_verts, sizeof(PLVertex));
     if(mesh->vertices == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for Vertex, %d!\n",
@@ -154,6 +169,7 @@ void plDeleteMesh(PLMesh *mesh) {
 
     free(mesh->vertices);
     free(mesh->triangles);
+    free(mesh->indices);
     free(mesh);
 }
 
@@ -161,6 +177,13 @@ void plClearMesh(PLMesh *mesh) {
     // Reset the data contained by the mesh, if we're going to begin a new draw.
     memset(mesh->vertices, 0, sizeof(PLVertex) * mesh->num_verts);
     memset(mesh->triangles, 0, sizeof(PLTriangle) * mesh->num_triangles);
+}
+
+void plSetMeshTrianglePosition(PLMesh *mesh, unsigned int *index, uint16_t x, uint16_t y, uint16_t z) {
+    plAssert(*index < mesh->num_indices);
+    mesh->indices[(*index)++] = x;
+    mesh->indices[(*index)++] = y;
+    mesh->indices[(*index)++] = z;
 }
 
 void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3 vector) {
@@ -338,7 +361,9 @@ void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h) {
     plDrawMesh(mesh);
 }
 
-void plDrawCube() {}    // todo
+void plDrawCube(PLVector3 position, float size) {
+    /* todo */
+}
 
 void plDrawSphere() {}  // todo
 

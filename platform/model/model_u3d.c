@@ -24,8 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#include "PL/platform.h"
-#include "PL/platform_model.h"
+#include <PL/platform_filesystem.h>
+#include <PL/platform_model.h>
 
 /*
 	UNREAL 3D Animated Model Format
@@ -33,8 +33,6 @@ For more information, please refer to <http://unlicense.org>
 	The following is based on information from the following page...
 	http://paulbourke.net/dataformats/unreal/
 */
-
-#define U3D_FILE_EXTENSION "3d"
 
 typedef struct U3DAnimationHeader {
     uint16_t frames;    // Number of frames.
@@ -86,20 +84,46 @@ typedef struct U3DTriangle {
     uint8_t flags;      // Triangle flags
 } U3DTriangle;
 
-FILE *pl_u3d_dataf = NULL;
-FILE *pl_u3d_animf = NULL;
-
-void UnloadU3DModel() {
-    if (pl_u3d_animf) {
-        fclose(pl_u3d_animf);
+PLModel *LoadU3DModel(const char *path) {
+    char anim_path[PL_SYSTEM_MAX_PATH];
+    strncpy(anim_path, path, sizeof(anim_path));
+    char *p_ext = strstr(anim_path, "DATA");
+    if(p_ext != NULL) {
+        strcpy(p_ext, "ANIM");
+    } else {
+        p_ext = strstr(anim_path, "D.");
+        if(p_ext == NULL) {
+            ReportError(PL_RESULT_FILEPATH, "invalid file name for U3D model, \"%s\", expected \"DATA\" / \"D.\"",
+                        path);
+            return NULL;
+        }
+        strcpy(p_ext, "A");
     }
 
-    if (pl_u3d_dataf) {
-        fclose(pl_u3d_dataf);
+    if(!plFileExists(anim_path)) {
+        ReportError(PL_RESULT_FILEPATH, "failed to find anim companion for \"%s\" at \"%s\"", path, anim_path);
+        return NULL;
     }
-}
 
-PLModel *LoadU3DModel(const PLchar *path) {
+    FILE *data_file = fopen(path, "rb");
+    if(data_file == NULL) {
+        ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
+        return NULL;
+    }
+
+    FILE *anim_file = fopen(anim_path, "rb");
+    if(anim_file == NULL) {
+        ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
+        return NULL;
+    }
+
+    fclose(anim_file);
+    fclose(data_file);
+
+    PLModel *model = malloc(sizeof(PLModel));
+
+    return model;
+
 #if 0
     _plSetCurrentFunction("plLoadU3DModel");
 

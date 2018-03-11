@@ -214,6 +214,17 @@ typedef enum PLShaderUniformType {
     PL_UNIFORM_MAT3,
 } PLShaderUniformType;
 
+typedef struct PLShaderStage {
+    PLShaderStageType type;
+
+    /* software implementation of the shader stage */
+    void(*SWFallback)(struct PLShaderProgram *program, PLShaderStageType type);
+
+    struct {
+        unsigned int id;
+    } internal;
+} PLShaderStage;
+
 typedef struct PLShaderProgram {
     struct {
         char name[32];
@@ -222,48 +233,46 @@ typedef struct PLShaderProgram {
 
         PLShaderUniformType type;
     } *uniforms;
+    unsigned int num_uniforms;
 
     struct {
         char name[32];
 
         unsigned int slot;
     } *attributes;
+    unsigned int num_attributes;
+
+    PLShaderStage *stages;
+    unsigned int num_stages;
 
     struct {
         unsigned int id;
     } internal;
 } PLShaderProgram;
 
-typedef struct PLShaderStage {
-    PLShaderStageType type;
-
-    void(*SWFallback)(PLShaderProgram *program, PLShaderStageType type);
-
-    struct {
-        unsigned int id;
-    } internal;
-} PLShaderStage;
-
 PL_EXTERN_C
 
-PL_EXTERN PLShaderStage *plLoadShaderStage(const char *path);
-PL_EXTERN void plParseShaderStage(PLShaderStage *shader, char *buf, unsigned int length);
+PL_EXTERN PLShaderStage *plLoadShaderStage(const char *path); /* todo */
+PL_EXTERN void plParseShaderStage(PLShaderStage *shader, char *buf, unsigned int length); /* todo */
 
 PL_EXTERN bool plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage);
-PL_EXTERN bool plLinkShaderProgram(PLShaderProgram *program);
+PL_EXTERN bool plLinkShaderProgram(PLShaderProgram *program); /* todo */
 
-PL_EXTERN void plSetShaderUniformFloat(PLShaderProgram *program, unsigned int slot, float value);
-PL_EXTERN void plSetShaderUniformDouble(PLShaderProgram *program, unsigned int slot, double value);
-PL_EXTERN void plSetShaderUniformBool(PLShaderProgram *program, unsigned int slot, bool value);
-PL_EXTERN void plSetShaderUniformInt(PLShaderProgram *program, unsigned int slot, int value);
-PL_EXTERN void plSetShaderUniformUInt(PLShaderProgram *program, unsigned int slot, unsigned int value);
-PL_EXTERN void plSetShaderUniformVector3(PLShaderProgram *program, unsigned int slot, PLVector3 value);
-PL_EXTERN void plSetShaderUniformVector2(PLShaderProgram *program, unsigned int slot, PLVector2 value);
+PL_EXTERN void plSetShaderUniformFloat(PLShaderProgram *program, unsigned int slot, float value); /* todo */
+PL_EXTERN void plSetShaderUniformDouble(PLShaderProgram *program, unsigned int slot, double value); /* todo */
+PL_EXTERN void plSetShaderUniformBool(PLShaderProgram *program, unsigned int slot, bool value); /* todo */
+PL_EXTERN void plSetShaderUniformInt(PLShaderProgram *program, unsigned int slot, int value); /* todo */
+PL_EXTERN void plSetShaderUniformUInt(PLShaderProgram *program, unsigned int slot, unsigned int value); /* todo */
+PL_EXTERN void plSetShaderUniformVector3(PLShaderProgram *program, unsigned int slot, PLVector3 value); /* todo */
+PL_EXTERN void plSetShaderUniformVector2(PLShaderProgram *program, unsigned int slot, PLVector2 value); /* todo */
+
+PL_EXTERN PLShaderProgram *plCreateShaderProgram(void);;
+PL_EXTERN void plDeleteShaderProgram(PLShaderProgram *program);
 
 PL_EXTERN PLShaderProgram *plGetCurrentShaderProgram(void);
 
-PL_EXTERN bool plRegisterShaderProgramUniforms(void);
-PL_EXTERN bool plRegisterShaderProgramUniform(const char *name, PLShaderUniformType type);
+PL_EXTERN bool plRegisterShaderProgramUniforms(void); /* todo */
+PL_EXTERN bool plRegisterShaderProgramUniform(const char *name, PLShaderUniformType type); /* todo */
 
 PL_EXTERN bool plRegisterShaderProgramAttribute(const char *name); /* todo */
 
@@ -293,5 +302,3 @@ PL_EXTERN void plProcessGraphics(void);
 PL_EXTERN void plSetGraphicsMode(PLGfxMode mode);
 
 PL_EXTERN_C_END
-
-#include "platform_graphics_shader.h"

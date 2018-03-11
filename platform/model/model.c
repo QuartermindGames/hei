@@ -36,13 +36,15 @@ typedef struct ModelInterface {
 } ModelInterface;
 
 ModelInterface model_interfaces[512]= {
+        { "hdv", LoadHDVModel },
         { "mdl", LoadRequiemModel },
-        //{ "mdl", _plLoadSourceModel },
-        //{ "mdl", _plLoadGoldSrcModel },
-        //{ "smd", _plLoadSMDModel },
+        //{ "mdl", LoadSourceModel },
+        //{ "mdl", LoadGoldSrcModel },
+        //{ "3d", LoadU3DModel },
+        //{ "smd", LoadSMDModel },
         //{ "obj", LoadOBJModel },
 };
-unsigned int num_model_interfaces = 1;
+unsigned int num_model_interfaces = plArrayElements(model_interfaces);
 
 ///////////////////////////////////////
 
@@ -117,8 +119,8 @@ PLModel *plLoadModel(const char *path) {
             continue;
         }
 
-        if(model_interfaces[i].ext[0] != '\0') {
-            if (!strcmp(extension, model_interfaces[i].ext)) {
+        if(!plIsEmptyString(model_interfaces[i].ext)) {
+            if (pl_strncasecmp(extension, model_interfaces[i].ext, sizeof(model_interfaces[i].ext)) == 0) {
                 PLModel *model = model_interfaces[i].LoadFunction(path);
                 if(model != NULL) {
                     return model;
@@ -163,6 +165,11 @@ void plDrawModel(PLModel *model) {
     for(unsigned int i = 0; i < model->lods[model->internal.current_lod].num_meshes; ++i) {
         plDrawMesh(&model->lods[model->internal.current_lod].meshes[i]);
     }
+}
+
+void plDrawModelBounds(PLModel *model) {
+    plAssert(model);
+    ///plDrawCube(model->bounds)
 }
 
 void plDrawModelSkeleton(PLModel *model) {

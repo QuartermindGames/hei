@@ -469,17 +469,18 @@ void GLSetupCamera(PLCamera *camera) {
     glViewport(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
     glScissor(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
 
-#if 1 // todo, modernize start
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+
 
     switch(camera->mode) {
         case PL_CAMERA_MODE_PERSPECTIVE: {
-#if 0
-            float h = tanf(camera->fov / 360 * PL_PI) * 0.1f;
-            float w = h * camera->viewport.w / camera->viewport.h;
-#endif
-            camera->perspective = plPerspective(camera->fov, camera->viewport.w / camera->viewport.h, 0.1, 100000);
+            camera->perspective = plPerspective(
+                    camera->fov,
+                    (float)camera->viewport.w / (float)camera->viewport.h,
+                    camera->near,
+                    camera->far);
+
+#if 1 // todo, modernize start
+            glMatrixMode(GL_PROJECTION);
             glLoadMatrixf(camera->perspective.m);
 
             glRotatef(camera->angles.y, 1, 0, 0);
@@ -489,20 +490,27 @@ void GLSetupCamera(PLCamera *camera) {
 
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
+#endif
             break;
         }
 
         case PL_CAMERA_MODE_ORTHOGRAPHIC: {
-            //glOrtho(0, camera->viewport.w, camera->viewport.h, 0, 0, 1000);
-            camera->perspective = plOrtho(0, camera->viewport.w, camera->viewport.h, 0, 0, 1000);
+            camera->perspective = plOrtho(0, camera->viewport.w, camera->viewport.h, 0, camera->near, camera->far);
+
+#if 1 // todo, modernize start
+            glMatrixMode(GL_PROJECTION);
             glLoadMatrixf(camera->perspective.m);
+#endif
             break;
         }
 
         case PL_CAMERA_MODE_ISOMETRIC: {
-            //glOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
-            PLMatrix4x4 mat = plOrtho(0, camera->viewport.w, camera->viewport.h, 0, 0, 1000);
-            glLoadMatrixf(mat.m);
+            camera->perspective = plOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
+
+#if 1 // todo, modernize start
+            glMatrixMode(GL_PROJECTION);
+            glLoadMatrixf(camera->perspective.m);
+#endif
 
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
@@ -516,7 +524,6 @@ void GLSetupCamera(PLCamera *camera) {
 
         default: break;
     }
-#endif // modernize end
 
     // keep the gfx_state up-to-date on the situation
     gfx_state.current_viewport = camera->viewport;
@@ -814,6 +821,13 @@ void InitOpenGL(void) {
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
     glDebugMessageCallback((GLDEBUGPROC) MessageCallback, NULL);
 #endif
+
+    PLShaderProgram *shader_fallback = plCreateShaderProgram();
+    if(shader_fallback == NULL) {
+        GfxLog("failed to create fallback shader - will resort to immediate mode if necessary!\n");
+    } else {
+        plSetShaderProgram(shader_fallback);
+    }
 
     //glPointSize(5.f);
     //glLineWidth(2.f);

@@ -84,6 +84,8 @@ typedef struct PLMesh {
 
     struct {
         unsigned int buffers[32];
+
+        PLMeshPrimitive old_primitive;  /* provided for switching between different primitive modes */
     } internal;
 } PLMesh;
 
@@ -102,6 +104,7 @@ PL_EXTERN void plDrawFilledRectangle(PLRectangle2D rect);
 PL_EXTERN void plDrawTriangle(int x, int y, unsigned int w, unsigned int h);
 
 PL_EXTERN void plClearMesh(PLMesh *mesh);
+PL_EXTERN void plSetMeshTrianglePosition(PLMesh *mesh, unsigned int *index, uint16_t x, uint16_t y, uint16_t z);
 PL_EXTERN void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3 vector);
 PL_EXTERN void plSetMeshVertexNormal(PLMesh *mesh, unsigned int index, PLVector3 vector);
 PL_EXTERN void plSetMeshVertexST(PLMesh *mesh, unsigned int index, float s, float t);

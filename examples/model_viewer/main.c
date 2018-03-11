@@ -42,7 +42,7 @@ For more information, please refer to <http://unlicense.org>
 #define TITLE "Model Viewer"
 
 #define VERSION_MAJOR   0
-#define VERSION_MINOR   2
+#define VERSION_MINOR   3
 
 #define WIDTH   800
 #define HEIGHT  600
@@ -232,9 +232,10 @@ int main(int argc, char **argv) {
     PRINT("   Mark \"hogsy\" Sowden (http://talonbrave.info/)\n"                            );
     PRINT("\n"                                                                              );
     PRINT(" Usage:\n"                                                                       );
-    PRINT("  Left   - orbit camera\n"                                                       );
-    PRINT("  Right  - move camera backward / forward\n"                                     );
-    PRINT("  Middle - move camera up, down, left and right\n\n"                             );
+    PRINT("  Left   - rotate model\n"                                                       );
+    PRINT("  Right  - move model backward / forward\n"                                      );
+    PRINT("  Middle - move model up, down, left and right\n\n"                              );
+    PRINT("  WASD   - move camera\n"                                                        );
     PRINT("\n-------------------------------------------------------------------------\n\n" );
 
     plInitialize(argc, argv);
@@ -312,6 +313,11 @@ int main(int argc, char **argv) {
 
     create_window();
 
+    PLTexture *base_texture = plLoadTextureImage("./textures/base_uv.png", PL_TEXTURE_FILTER_NEAREST);
+    if(base_texture == NULL) {
+        PRINT("failed to load base texture\n");
+    }
+
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
     plSetGraphicsMode(PL_GFX_MODE_OPENGL);
 
@@ -321,18 +327,17 @@ int main(int argc, char **argv) {
     plShowConsole(true);
     plSetConsoleColour(1, PLColour(128, 0, 0, 128));
 
-    plParseConsoleString("cmds");
-    plParseConsoleString("vars");
-
     main_camera = plCreateCamera();
     if (main_camera == NULL) {
         PRINT_ERROR("Failed to create camera!\n");
     }
     main_camera->mode = PL_CAMERA_MODE_PERSPECTIVE;
-    main_camera->fov = 90.f;
+    main_camera->fov = 75.f;
     main_camera->position = PLVector3(0, 2, -50);
     main_camera->viewport.w = WIDTH;
     main_camera->viewport.h = HEIGHT;
+    //main_camera->viewport.r_w = 320;
+    //main_camera->viewport.r_h = 240;
 
     PLCamera *ui_camera = plCreateCamera();
     if(ui_camera == NULL) {
@@ -363,8 +368,8 @@ int main(int argc, char **argv) {
     light[0].colour     = plCreateColour4f(1.5f, .5f, .5f, 128.f);
     light[0].type       = PL_LIGHT_TYPE_OMNI;
 
-    glPointSize(5.f);
-    glLineWidth(2.f);
+    //glPointSize(5.f);
+    //glLineWidth(2.f);
 
     while (plIsRunning()) {
         SDL_PumpEvents();
@@ -453,6 +458,8 @@ int main(int argc, char **argv) {
         }
 
         glPopMatrix();
+
+        //plDrawPerspectivePOST(main_camera);
 
         plSetupCamera(ui_camera);
 

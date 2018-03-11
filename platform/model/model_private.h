@@ -32,7 +32,8 @@ For more information, please refer to <http://unlicense.org>
 
 PL_EXTERN_C
 
-PLModel *LoadOBJModel(const char *path);
+PLModel *LoadU3DModel(const char *path);
+PLModel *LoadHDVModel(const char *path);
 PLModel *LoadRequiemModel(const char *path);
 
 PL_EXTERN_C_END
