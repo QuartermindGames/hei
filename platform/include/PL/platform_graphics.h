@@ -214,11 +214,13 @@ typedef enum PLShaderUniformType {
     PL_UNIFORM_MAT3,
 } PLShaderUniformType;
 
+typedef struct PLShaderProgram PLShaderProgram;
+
 typedef struct PLShaderStage {
     PLShaderStageType type;
 
     /* software implementation of the shader stage */
-    void(*SWFallback)(struct PLShaderProgram *program, PLShaderStageType type);
+    void(*SWFallback)(PLShaderProgram *program, PLShaderStageType type);
 
     struct {
         unsigned int id;

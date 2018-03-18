@@ -88,7 +88,7 @@ PL_INSTANCE plLoadLibrary(const PLchar *path) {
         const char *err = dlerror();
         #endif
 
-        ReportError(PL_RESULT_SYSERR, "Failed to load module! (%s)\n%s\n", newpath, err);
+        ReportError(PL_RESULT_SYSERR, "failed to load module, %s\n%s", newpath, err);
         return NULL;
     }
 
@@ -104,7 +104,7 @@ void *plLoadLibraryInterface(PL_INSTANCE instance, const PLchar *path, const PLc
 
     void *(*EntryFunction)(void *) = plFindLibraryFunction(instance, entry);
     if (!EntryFunction) {
-        ReportError(PL_RESULT_SYSERR, "Failed to find entry function! (%s)\n", entry);
+        ReportError(PL_RESULT_SYSERR, "failed to find entry function, %s", entry);
         return NULL;
     }
 

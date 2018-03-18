@@ -163,6 +163,7 @@ void GLSetCullMode(PLCullMode mode) {
 
 unsigned int TranslateImageFormat(PLImageFormat format) {
     switch(format) {
+        case PL_IMAGEFORMAT_RGB8:       return GL_RGB8;
         case PL_IMAGEFORMAT_RGBA8:      return GL_RGBA8;
         case PL_IMAGEFORMAT_RGB4:       return GL_RGB4;
         case PL_IMAGEFORMAT_RGBA4:      return GL_RGBA4;
@@ -428,45 +429,45 @@ void GLSetupCamera(PLCamera *camera) {
 
                 free(camera->viewport.v_buffer);
                 camera->viewport.v_buffer = (uint8_t *) malloc(camera->viewport.r_w * camera->viewport.r_h * 4);
-                if(camera->viewport.v_buffer == NULL) {
+                if(camera->viewport.v_buffer != NULL) {
+                    glGenFramebuffers(1, &camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
+                    glGenRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
+                    glGenRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
+
+                    /* colour */
+                    glBindRenderbuffer(GL_RENDERBUFFER, camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
+                    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB4, camera->viewport.r_w, camera->viewport.r_h);
+                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
+                    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+                                              camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
+
+                    /* depth */
+                    glBindRenderbuffer(GL_RENDERBUFFER, camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
+                    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, camera->viewport.r_w, camera->viewport.r_h);
+                    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+                                              camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
+
+                    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+                        GfxLog("invalid framebuffer status on frame!\n");
+                    }
+
+                    ClearBoundBuffers();
+                } else {
                     ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
                 }
-
-                glGenFramebuffers(1, &camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
-                glGenRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
-                glGenRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
-
-                /* colour */
-                glBindRenderbuffer(GL_RENDERBUFFER, camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB4, camera->viewport.r_w, camera->viewport.r_h);
-                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
-                glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
-                                          camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
-
-                /* depth */
-                glBindRenderbuffer(GL_RENDERBUFFER, camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, camera->viewport.r_w, camera->viewport.r_h);
-                glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
-                                          camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
-
-                if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-                    GfxLog("invalid framebuffer status on frame!\n");
-                }
-
-                ClearBoundBuffers();
 
                 camera->viewport.old_r_w = camera->viewport.r_w;
                 camera->viewport.old_r_h = camera->viewport.r_h;
             }
 
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
+            if(camera->viewport.v_buffer != NULL) {
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
+            }
         }
     }
 
     glViewport(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
     glScissor(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
-
-
 
     switch(camera->mode) {
         case PL_CAMERA_MODE_PERSPECTIVE: {
@@ -529,7 +530,7 @@ void GLSetupCamera(PLCamera *camera) {
 void GLDrawPerspectivePOST(PLCamera *camera) {
     plAssert(camera);
     if(GLVersion(3, 0)) {
-        if (UseBufferScaling(camera)) {
+        if (UseBufferScaling(camera) && (camera->viewport.v_buffer != NULL)) {
             glBindFramebuffer(GL_FRAMEBUFFER, camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
             glReadBuffer(GL_COLOR_ATTACHMENT0);
             glReadPixels(
@@ -542,7 +543,7 @@ void GLDrawPerspectivePOST(PLCamera *camera) {
             );
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-            glScissor(0, 0, camera->viewport.w, camera->viewport.h);
+            //glScissor(0, 0, camera->viewport.w, camera->viewport.h);
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
             glBlitFramebuffer(

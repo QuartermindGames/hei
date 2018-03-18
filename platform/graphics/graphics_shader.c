@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org>
 PLShaderProgram *plCreateShaderProgram(void) {
     PLShaderProgram *program = calloc(1, sizeof(PLShaderProgram));
     if(program == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to create shader program!\n");
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to create shader program");
         return NULL;
     }
 

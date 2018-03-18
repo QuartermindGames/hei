@@ -50,7 +50,10 @@ For more information, please refer to <http://unlicense.org>
 //////////////////////////////////////////
 
 SDL_Window *window = NULL;
-void create_window(void) {
+void CreateWindow(void) {
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+
     window = SDL_CreateWindow(
             TITLE,
             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -74,7 +77,7 @@ void create_window(void) {
     SDL_DisableScreenSaver();
 }
 
-void destroy_window(void) {
+void DestroyWindow(void) {
     if(window == NULL) {
         return;
     }
@@ -83,7 +86,7 @@ void destroy_window(void) {
 }
 
 /* Displays a simple dialogue window. */
-void message_box(const char *title, const char *msg, ...) {
+void MessageBox(const char *title, const char *msg, ...) {
     char buf[4096];
     va_list args;
     va_start(args, msg);
@@ -94,7 +97,7 @@ void message_box(const char *title, const char *msg, ...) {
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void write_smd_vertex(FILE *file, const PLVertex *vertex) {
+void WriteSMDVertex(FILE *file, const PLVertex *vertex) {
     /*             P X  Y  Z  NX NY NZ U  V */
     fprintf(file, "0 %f %f %f %f %f %f %f %f\n",
 
@@ -111,7 +114,7 @@ void write_smd_vertex(FILE *file, const PLVertex *vertex) {
 }
 
 /* writes given model out to Valve's SMD model format */
-void write_smd(PLModel *model) {
+void WriteSMD(PLModel *model) {
     char body_path[PL_SYSTEM_MAX_PATH];
     snprintf(body_path, sizeof(body_path), "./%s_body.smd", model->name);
     FILE *fout = fopen(body_path, "w");
@@ -156,9 +159,9 @@ void write_smd(PLModel *model) {
             } else {
                 fprintf(fout, "%s\n", cur_mesh->texture->name);
             }
-            write_smd_vertex(fout, &cur_mesh->vertices[cur_mesh->indices[j++]]);
-            write_smd_vertex(fout, &cur_mesh->vertices[cur_mesh->indices[j++]]);
-            write_smd_vertex(fout, &cur_mesh->vertices[cur_mesh->indices[j++]]);
+            WriteSMDVertex(fout, &cur_mesh->vertices[cur_mesh->indices[j++]]);
+            WriteSMDVertex(fout, &cur_mesh->vertices[cur_mesh->indices[j++]]);
+            WriteSMDVertex(fout, &cur_mesh->vertices[cur_mesh->indices[j++]]);
         }
     }
     fprintf(fout, "end\n\n");
@@ -174,7 +177,7 @@ void write_smd(PLModel *model) {
 PLCamera *main_camera;
 
 // loads a model in and then frees it
-void load_mdl_temp(const char *path) {
+void TempModelLoad(const char *path) {
     PLModel *model = plLoadModel(path);
     if(model != NULL) {
         plDeleteModel(model);
@@ -189,7 +192,7 @@ enum {
     VIEW_MODE_SKELETON
 };
 int view_mode = VIEW_MODE_WIREFRAME;
-void process_keyboard(void) {
+void ProcessKeyboard(void) {
     const uint8_t *state = SDL_GetKeyboardState(NULL);
     if(state[SDL_SCANCODE_1]) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -219,6 +222,15 @@ void process_keyboard(void) {
 
     } else if(state[SDL_SCANCODE_D] || state[SDL_SCANCODE_DOWN]) {
 
+    }
+
+    if(state[SDL_SCANCODE_C]) {
+        static bool cull = false;
+        if(cull) {
+            plSetCullMode(PL_CULL_NONE);
+        } else {
+            plSetCullMode(PL_CULL_NEGATIVE);
+        }
     }
 
     if(state[SDL_SCANCODE_ESCAPE]) {
@@ -283,7 +295,7 @@ int main(int argc, char **argv) {
             return EXIT_FAILURE;
         }
 
-        plScanDirectory(model_path, model_extension, load_mdl_temp, false);
+        plScanDirectory(model_path, model_extension, TempModelLoad, false);
         return EXIT_SUCCESS;
     }
 
@@ -307,16 +319,11 @@ int main(int argc, char **argv) {
     }
 
     if(extract_model) {
-        write_smd(model);
+        WriteSMD(model);
         return EXIT_SUCCESS;
     }
 
-    create_window();
-
-    PLTexture *base_texture = plLoadTextureImage("./textures/base_uv.png", PL_TEXTURE_FILTER_NEAREST);
-    if(base_texture == NULL) {
-        PRINT("failed to load base texture\n");
-    }
+    CreateWindow();
 
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
     plSetGraphicsMode(PL_GFX_MODE_OPENGL);
@@ -337,28 +344,27 @@ int main(int argc, char **argv) {
     main_camera->viewport.w = WIDTH;
     main_camera->viewport.h = HEIGHT;
     //main_camera->viewport.r_w = 320;
-    //main_camera->viewport.r_h = 240;
+    //main_camera->viewport.r_h = 224;
 
     PLCamera *ui_camera = plCreateCamera();
     if(ui_camera == NULL) {
         PRINT_ERROR("failed to create ui camera!\n");
     }
-    ui_camera->mode = PL_CAMERA_MODE_ORTHOGRAPHIC;
-    ui_camera->viewport.w = WIDTH;
-    ui_camera->viewport.h = HEIGHT;
+    ui_camera->mode         = PL_CAMERA_MODE_ORTHOGRAPHIC;
+    ui_camera->viewport.w   = WIDTH;
+    ui_camera->viewport.h   = HEIGHT;
+    ui_camera->near         = 0;
+    ui_camera->far          = 1000;
 
-#if 1
-    PLBitmapFont *font = plCreateBitmapFont("./fonts/console.font");
+    PLBitmapFont *font = plCreateDefaultBitmapFont();
     if(font == NULL) {
         PRINT_ERROR("%s", plGetError());
     }
-#endif
 
-    //glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    //plSetCullMode(PL_CULL_NEGATIVE);
+    plSetCullMode(PL_CULL_NONE);
 
     glEnable(GL_LINE_SMOOTH);
 
@@ -368,8 +374,14 @@ int main(int argc, char **argv) {
     light[0].colour     = plCreateColour4f(1.5f, .5f, .5f, 128.f);
     light[0].type       = PL_LIGHT_TYPE_OMNI;
 
-    //glPointSize(5.f);
-    //glLineWidth(2.f);
+#if 0
+    PLTexture *base_texture = plLoadTextureImage("./textures/base_uv.png", PL_TEXTURE_FILTER_NEAREST);
+    if(base_texture == NULL) {
+        PRINT("failed to load base texture\n");
+    }
+
+    plSetModelTexture(model, 0, base_texture);
+#endif
 
     while (plIsRunning()) {
         SDL_PumpEvents();
@@ -414,11 +426,11 @@ int main(int argc, char **argv) {
         }
         // input handlers end...
 
-        process_keyboard();
-
-        plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
+        ProcessKeyboard();
 
         plSetupCamera(main_camera);
+
+        plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH);
 
         glLoadIdentity();
         glPushMatrix();
@@ -459,13 +471,11 @@ int main(int argc, char **argv) {
 
         glPopMatrix();
 
-        //plDrawPerspectivePOST(main_camera);
+        plDrawPerspectivePOST(main_camera);
 
         plSetupCamera(ui_camera);
 
-        plSetBlendMode(PL_BLEND_ADDITIVE);
         plDrawBitmapString(font, 10, 10, 4.f, PLColour(255, 0, 0, 255), "Hello World!\n");
-        plSetBlendMode(PL_BLEND_DISABLE);
 
         //plDrawConsole();
 
@@ -475,9 +485,9 @@ int main(int argc, char **argv) {
     plDeleteModel(model);
     plDeleteCamera(main_camera);
 
-    destroy_window();
+    DestroyWindow();
 
     plShutdown();
 
-    return 0;
+    return EXIT_SUCCESS;
 }

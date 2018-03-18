@@ -141,6 +141,7 @@ void plApplyModelLighting(PLModel *model, PLLight *light, PLVector3 position) {
 
 void plSetModelTexture(PLModel *model, unsigned int mesh_id, PLTexture *texture) {
     plAssert(model && mesh_id < model->lods[0].num_meshes);
+    model->lods[0].meshes[mesh_id].texture = texture;
 }
 
 void plDeleteModel(PLModel *model) {

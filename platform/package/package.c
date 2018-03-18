@@ -94,7 +94,7 @@ unsigned int num_load_packs = plArrayElements(load_packs);
 
 PLPackage *plLoadPackage(const char *path, bool cache) {
     if(!plFileExists(path)) {
-        ReportError(PL_RESULT_FILEREAD, "Failed to load package, %s!", path);
+        ReportError(PL_RESULT_FILEREAD, "failed to load package, %s", path);
         return NULL;
     }
 

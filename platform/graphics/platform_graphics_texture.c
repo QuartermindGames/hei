@@ -228,7 +228,7 @@ PLTexture *plCreateTexture(void) {
 #else
     PLTexture *texture = malloc(sizeof(PLTexture));
     if(texture == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n", sizeof(PLTexture));
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes", sizeof(PLTexture));
         return NULL;
     }
 

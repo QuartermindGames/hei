@@ -72,7 +72,7 @@ void plRegisterConsoleCommand(const char *name, void(*CallbackFunction)(unsigned
         PLConsoleCommand **old_mem = _pl_commands;
         _pl_commands = (PLConsoleCommand**)realloc(_pl_commands, (_pl_commands_size += 128) * sizeof(PLConsoleCommand));
         if(!_pl_commands) {
-            ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n",
+            ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes",
                            _pl_commands_size * sizeof(PLConsoleCommand));
             _pl_commands = old_mem;
             _pl_commands_size -= 128;
@@ -83,7 +83,7 @@ void plRegisterConsoleCommand(const char *name, void(*CallbackFunction)(unsigned
     if(_pl_num_commands < _pl_commands_size) {
         _pl_commands[_pl_num_commands] = (PLConsoleCommand*)malloc(sizeof(PLConsoleCommand));
         if(!_pl_commands[_pl_num_commands]) {
-            ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for ConsoleCommand, %d!\n",
+            ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for ConsoleCommand, %d",
                         sizeof(PLConsoleCommand));
             return;
         }
@@ -136,7 +136,7 @@ PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, 
         PLConsoleVariable **old_mem = _pl_variables;
         _pl_variables = (PLConsoleVariable**)realloc(_pl_variables, (_pl_variables_size += 128) * sizeof(PLConsoleVariable));
         if(_pl_variables == NULL) {
-            ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n",
+            ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes",
                            _pl_variables_size * sizeof(PLConsoleVariable));
             _pl_variables = old_mem;
             _pl_variables_size -= 128;
@@ -148,7 +148,7 @@ PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, 
     if(_pl_num_variables < _pl_variables_size) {
         _pl_variables[_pl_num_variables] = (PLConsoleVariable*)malloc(sizeof(PLConsoleVariable));
         if(_pl_variables[_pl_num_variables] == NULL) {
-            ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for ConsoleCommand, %d!\n",
+            ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for ConsoleCommand, %d",
                         sizeof(PLConsoleVariable));
             return NULL;
         }
@@ -347,13 +347,13 @@ PLresult _plInitConsole(void) {
     }
 
     if((_pl_commands = (PLConsoleCommand**)malloc(sizeof(PLConsoleCommand*) * _pl_commands_size)) == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for ConsoleCommand array, %d!\n",
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for ConsoleCommand array, %d",
                        sizeof(PLConsoleCommand) * _pl_commands_size);
         return PL_RESULT_MEMORY_ALLOCATION;
     }
 
     if((_pl_variables = (PLConsoleVariable**)malloc(sizeof(PLConsoleVariable*) * _pl_variables_size)) == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for ConsoleVariable array, %d!\n",
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for ConsoleVariable array, %d",
                        sizeof(PLConsoleCommand) * _pl_commands_size);
         return PL_RESULT_MEMORY_ALLOCATION;
     }

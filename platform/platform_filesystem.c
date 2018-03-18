@@ -75,7 +75,7 @@ bool plIsFileModified(time_t oldtime, const char *path) {
 time_t plGetFileModifiedTime(const PLchar *path) {
     struct stat attributes;
     if (stat(path, &attributes) == -1) {
-        ReportError(PL_RESULT_FILEERR, "Failed to stat %s: %s", path, strerror(errno));
+        ReportError(PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror(errno));
         return 0;
     }
     return attributes.st_mtime;
@@ -305,7 +305,7 @@ bool plCopyFile(const char *path, const char *dest) {
 
     uint8_t *data = calloc(file_size, 1);
     if(data == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate buffer for %s, with size %d!", path, file_size);
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate buffer for %s, with size %d", path, file_size);
         return false;
     }
 
@@ -314,7 +314,7 @@ bool plCopyFile(const char *path, const char *dest) {
 
     // read in the original
     if((original = fopen(path, "rb")) == NULL) {
-        ReportError(PL_RESULT_FILEREAD, "Failed to open %s!", path);
+        ReportError(PL_RESULT_FILEREAD, "failed to open %s", path);
         goto BAIL;
     }
     if(fread(data, 1, file_size, original) != file_size) {

@@ -28,6 +28,10 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_filesystem.h>
+#include <PL/platform_console.h>
+
+/* ZX Font */
+#include "graphics_font_default.h"
 
 /////////////////////////////////////////////////////////////////////////////////////
 // FONT PARSER
@@ -43,10 +47,10 @@ struct {
 
     unsigned int position;
     unsigned int line, line_position;
-    unsigned int length;
+    size_t length;
 } font_script;
 
-void ResetParser(void) {
+void _plResetParser(void) {
     memset(&font_script, 0, sizeof(font_script));
 }
 
@@ -111,20 +115,13 @@ void ParseLine(void) {
 
 #define _PLFONT_FORMAT_VERSION  1
 
-PLBitmapFont *plCreateBitmapFont(const char *path) {
-    ResetParser();
+PLBitmapFont *plParseBitmapFont(const char *name, char *buf, size_t length) {
+    _plResetParser();
 
-    FILE *file = fopen(path, "r");
-    if(file == NULL) {
-        ReportError(PL_RESULT_FILEPATH, "Failed to open %s!\n", path);
-        return NULL;
-    }
-
-    font_script.length = (unsigned int)fread(font_script.buffer, 1, SCRIPT_MAX_LENGTH, file);
-    fclose(file);
-
+    font_script.length = length;
+    memcpy(font_script.buffer, buf, font_script.length);
     if(font_script.length < SCRIPT_MIN_LENGTH) {
-        ReportError(PL_RESULT_FILESIZE, "Invalid length, %d, for %s!\n", font_script.length, path);
+        ReportError(PL_RESULT_FILESIZE, "invalid length, %d, for %s", font_script.length, name);
         return NULL;
     }
 
@@ -132,36 +129,34 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     if(!strncmp(font_script.line_buffer, "VERSION ", 8)) {
         long version = strtol(font_script.line_buffer + 8, NULL, 0);
         if (version <= 0 || version > _PLFONT_FORMAT_VERSION) {
-            ReportError(PL_RESULT_FILEVERSION, "Expected version %d, received %d, for %s!\n",
-                           _PLFONT_FORMAT_VERSION, version, path);
+            ReportError(PL_RESULT_FILEVERSION, "expected version %d, received %d, for %s!",
+                        _PLFONT_FORMAT_VERSION, version, name);
             return NULL;
         }
     } else {
-        ReportError(PL_RESULT_FILEVERSION, "Failed to fetch version for %s!\n", path);
+        ReportError(PL_RESULT_FILEVERSION, "failed to fetch version for %s", name);
         return NULL;
     }
 
     ParseLine();
-    if(!plFileExists(font_script.line_buffer)) {
-        ReportError(PL_RESULT_FILEPATH, "Failed to find texture at %s, for %s!\n", font_script.line_buffer, path);
+    char texture_path[PL_SYSTEM_MAX_PATH];
+    strncpy(texture_path, font_script.line_buffer, sizeof(texture_path));
+    if(plIsEmptyString(texture_path)) {
+        ReportError(PL_RESULT_FILEPATH, "invalid texture path in font, %s", name);
         return NULL;
     }
 
-    char image_path[PL_SYSTEM_MAX_PATH] = { 0 };
-    strncpy(image_path, font_script.line_buffer, sizeof(image_path));
-
-    PLBitmapFont *font = (PLBitmapFont*)malloc(sizeof(PLBitmapFont));
+    PLBitmapFont *font = (PLBitmapFont*)calloc(1, sizeof(PLBitmapFont));
     if(font == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for BitmapFont, %d!\n", sizeof(PLBitmapFont));
         return NULL;
     }
-    memset(font, 0, sizeof(PLBitmapFont));
 
     bool enable_filter = false;
     while(!IsEOF()) {
         ParseLine();
 
-        if(!strncmp(font_script.line_buffer, "FILTER ", 7)) {
+        if(strncmp(font_script.line_buffer, "FILTER ", 7) == 0) {
             if(font_script.line_buffer[8] == '1') {
                 enable_filter = true;
             }
@@ -191,15 +186,38 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     }
 
     PLImage image;
-    if(!plLoadImage(image_path, &image)) {
-        plDeleteBitmapFont(font);
-        return NULL;
+    if(pl_strncasecmp("$zx", texture_path, 3) == 0) {
+        memset(&image, 0, sizeof(PLImage));
+        image.width         = 128;
+        image.height        = 56;
+        image.colour_format = PL_COLOURFORMAT_RGB;
+        image.format        = PL_IMAGEFORMAT_RGB8;
+        image.size          = plGetImageSize(image.format, image.width, image.height);
+        image.levels        = 1;
+
+        if((image.data = calloc(image.levels, sizeof(uint8_t*))) == NULL ||
+                (image.data[0] = calloc(image.size, sizeof(uint8_t))) == NULL) {
+            plDeleteBitmapFont(font);
+
+            ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for texture data");
+            return NULL;
+        }
+        memcpy(image.data[0], f_zx_image, sizeof(f_zx_image));
+
+        plReplaceImageColour(&image, PL_COLOUR_BLACK, PLColour(0, 0, 0, 0));
+    } else {
+        if(!plLoadImage(texture_path, &image)) {
+            plDeleteBitmapFont(font);
+
+            ReportError(PL_RESULT_FILEPATH, "failed to find texture at %s, for %s", texture_path, name);
+            return NULL;
+        }
     }
 
     if((font->texture = plCreateTexture()) == NULL) {
-        plDeleteBitmapFont(font);
         plFreeImage(&image);
-        return NULL;
+        plDeleteBitmapFont(font);
+        return false;
     }
 
     if(enable_filter) {
@@ -209,9 +227,50 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     }
 
     plSetTextureFlags(font->texture, PL_TEXTURE_FLAG_NOMIPS | PL_TEXTURE_FLAG_PRESERVE);
-    plUploadTextureImage(font->texture, &image);
 
+    plUploadTextureImage(font->texture, &image);
     plFreeImage(&image);
+
+    return font;
+}
+
+PLBitmapFont *plCreateDefaultBitmapFont(void) {
+    _plResetError();
+
+    static PLBitmapFont *font = NULL;
+    if(font == NULL) {
+        size_t length = sizeof(f_zx_script);
+        char buf[length];
+        memcpy(buf, f_zx_script, length);
+        if((font = plParseBitmapFont("default", buf, length)) == NULL) {
+            /* ParseBitmapFont takes care of error reporting */
+            return NULL;
+        }
+    }
+    return font;
+}
+
+PLBitmapFont *plCreateBitmapFont(const char *path) {
+    if(plIsEmptyString(path)) {
+        ReportError(PL_RESULT_FILEPATH, "invalid path for bitmap font");
+        return NULL;
+    }
+
+    FILE *file = fopen(path, "r");
+    if (file == NULL) {
+        ReportError(PL_RESULT_FILEPATH, "failed to open %s", path);
+        return NULL;
+    }
+
+    char buf[SCRIPT_MAX_LENGTH];
+    size_t length = fread(buf, 1, SCRIPT_MAX_LENGTH, file);
+    fclose(file);
+
+    PLBitmapFont *font = plParseBitmapFont(path, buf, length);
+    if(font == NULL) {
+        /* ParseBitmapFont takes care of error reporting */
+        return NULL;
+    }
 
     return font;
 }
@@ -276,6 +335,8 @@ void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColo
 }
 
 void plDrawBitmapString(PLBitmapFont *font, int x, int y, float scale, PLColour colour, const char *msg) {
+    plDrawTexturedRectangle(0, 0, font->texture->w, font->texture->h, font->texture);
+
     if(colour.a == 0) {
         return;
     }
