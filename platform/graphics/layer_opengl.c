@@ -469,6 +469,8 @@ void GLSetupCamera(PLCamera *camera) {
     glViewport(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
     glScissor(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
 
+    glMatrixMode(GL_PROJECTION);
+
     switch(camera->mode) {
         case PL_CAMERA_MODE_PERSPECTIVE: {
             camera->perspective = plPerspective(
@@ -478,7 +480,6 @@ void GLSetupCamera(PLCamera *camera) {
                     camera->far);
 
 #if 1 // todo, modernize start
-            glMatrixMode(GL_PROJECTION);
             glLoadMatrixf(camera->perspective.m);
 
             glRotatef(camera->angles.y, 1, 0, 0);
@@ -496,8 +497,10 @@ void GLSetupCamera(PLCamera *camera) {
             camera->perspective = plOrtho(0, camera->viewport.w, camera->viewport.h, 0, camera->near, camera->far);
 
 #if 1 // todo, modernize start
-            glMatrixMode(GL_PROJECTION);
             glLoadMatrixf(camera->perspective.m);
+
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
 #endif
             break;
         }

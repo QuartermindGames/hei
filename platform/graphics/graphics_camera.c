@@ -148,7 +148,7 @@ PLCamera *plCreateCamera(void) {
     }
 
     camera->fov     = 75.f;
-    camera->near    = 0.01f;
+    camera->near    = 0.1f;
     camera->far     = 1000.f;
     camera->mode    = PL_CAMERA_MODE_PERSPECTIVE;
 
