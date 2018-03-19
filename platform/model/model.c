@@ -123,6 +123,14 @@ PLModel *plLoadModel(const char *path) {
             if (pl_strncasecmp(extension, model_interfaces[i].ext, sizeof(model_interfaces[i].ext)) == 0) {
                 PLModel *model = model_interfaces[i].LoadFunction(path);
                 if(model != NULL) {
+                    const char *name = plGetFileName(path);
+                    if(!plIsEmptyString(name)) {
+                        size_t nme_len = strlen(name);
+                        size_t ext_len = strlen(extension);
+                        strncpy(model->name, name, nme_len - (ext_len + 1));
+                    } else {
+                        snprintf(model->name, sizeof(model->name), "null");
+                    }
                     return model;
                 }
             }
