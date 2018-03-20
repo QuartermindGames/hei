@@ -143,7 +143,9 @@ PLModel *LoadHDVModel(const char *path) {
 #endif
 
     unsigned int cur_index = 0;
-    for(unsigned int i = 0; i < header.num_faces - 2; ++i) {
+    for(unsigned int i = 0; i < (unsigned int)(header.num_faces - 2); ++i) {
+        /* cast above to shut the compiler up, very odd... */
+
         //ModelLog(" num_verts %u\n", faces[i].u0[0]);
 
         // first triangle
