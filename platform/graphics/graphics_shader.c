@@ -26,9 +26,71 @@ For more information, please refer to <http://unlicense.org>
 */
 #include <PL/platform_console.h>
 
+#include "filesystem_private.h"
 #include "graphics_private.h"
 
 /* shader implementation */
+
+/**********************************************************/
+/** shader stages **/
+
+PLShaderStage *plCreateShaderStage(PLShaderStageType type) {
+    PLShaderStage *stage = calloc(1, sizeof(PLShaderStage));
+    if(stage == NULL) {
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate shader stage");
+        return NULL;
+    }
+
+    CallGfxFunction(CreateShaderStage, stage);
+
+    return stage;
+}
+
+void plDeleteShaderStage(PLShaderStage *stage) {
+    if(stage == NULL) {
+        return;
+    }
+
+    CallGfxFunction(DeleteShaderStage, stage);
+}
+
+void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) {
+    _plResetError();
+    CallGfxFunction(CompileShaderStage, stage, buf, length);
+}
+
+/* does everything above all at once */
+PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
+    FILE *fp = fopen(path, "r");
+    if(fp == NULL) {
+        ReportError(PL_RESULT_FILEREAD, "failed to open %s", path);
+        return NULL;
+    }
+
+    size_t length = plGetFileSize(path);
+    char buf[length];
+    if(fread(buf, sizeof(char), length, fp) != length) {
+        GfxLog("failed to read in entirety of %s, continuing anyway but expect issues");
+    }
+
+    fclose(fp);
+
+    PLShaderStage *stage = plCreateShaderStage(type);
+    if(stage == NULL) {
+        return NULL;
+    }
+
+    plCompileShaderStage(stage, buf, length);
+    if(plGetFunctionResult() == PL_RESULT_SHADER_COMPILE) {
+        plDeleteShaderStage(stage);
+        return NULL;
+    }
+
+    return stage;
+}
+
+/**********************************************************/
+/** shader program **/
 
 PLShaderProgram *plCreateShaderProgram(void) {
     PLShaderProgram *program = calloc(1, sizeof(PLShaderProgram));
@@ -39,12 +101,24 @@ PLShaderProgram *plCreateShaderProgram(void) {
 
     CallGfxFunction(CreateShaderProgram, program);
 
+    program->max_stages = 2;
+    program->stages = calloc(program->max_stages, sizeof(PLShaderStage));
+
     return program;
 }
 
-void plDeleteShaderProgram(PLShaderProgram *program) {
+void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages) {
     if(program == NULL) {
         return;
+    }
+
+    for(unsigned int i = 0; i < PL_NUM_SHADER_TYPES; ++i) {
+        if(program->stages[i] != NULL) {
+            CallGfxFunction(DetachShaderStage, program, program->stages[i]);
+            if(free_stages) {
+                free(program->stages[i]);
+            }
+        }
     }
 
     CallGfxFunction(DeleteShaderProgram, program);
@@ -53,6 +127,12 @@ void plDeleteShaderProgram(PLShaderProgram *program) {
 }
 
 bool plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {
+    program->num_stages++;
+
+
+    for(unsigned int i = 0; i < program->num_stages; i++) {
+
+    }
     return false;
 }
 

@@ -36,6 +36,8 @@ For more information, please refer to <http://unlicense.org>
 #define PL_TAU      6.28318530717958647692528676655900576f
 #define PL_EPSILON  1.19209290e-7f
 
+#define PL_MAX_UINT    (unsigned int)(-1)
+
 enum {
     // Colours
     PL_RED = 0,
@@ -390,8 +392,6 @@ PL_INLINE static const char *plPrintVector3(PLVector3 v) {
     snprintf(s, 32, "%i %i %i", (int)v.x, (int)v.y, (int)v.z);
     return s;
 }
-
-// 4D
 
 typedef struct PLVector4 {
     float x, y, z, w;
@@ -776,19 +776,18 @@ PL_INLINE static void plClearMatrix(PLMatrix4x4 *m) {
 }
 
 PL_INLINE static void plIdentityMatrix(PLMatrix4x4 *m) {
-    *m = (PLMatrix4x4){{
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-    }};
+    memcpy(m, &(PLMatrix4x4){{      1, 0, 0, 0,
+                                    0, 1, 0, 0,
+                                    0, 0, 1, 0,
+                                    0, 0, 0, 1
+                            }}, sizeof(PLMatrix4x4));
 }
 
-PL_INLINE static void plAddMatrix(PLMatrix4x4 m, const PLMatrix4x4 m2) {
+PL_INLINE static void plAddMatrix(PLMatrix4x4 m, PLMatrix4x4 m2) {
 
 }
 
-PL_INLINE static void plMultiplyMatrix(PLMatrix4x4 *m, const PLMatrix4x4 m2) {
+PL_INLINE static void plMultiplyMatrix(PLMatrix4x4 *m, PLMatrix4x4 m2) {
 
 }
 
@@ -798,6 +797,15 @@ PL_INLINE static void plScaleMatrix(PLMatrix4x4 *m, PLVector3 scale) {
 
 PL_INLINE static void plRotateMatrix(PLMatrix4x4 *m, float angle, PLVector3 axis) {
 
+}
+
+PL_INLINE static PLMatrix4x4 plTranslateMatrix(PLVector3 vec) {
+    return (PLMatrix4x4) {{
+                                  1, 0, 0, vec.x,
+                                  0 ,1, 0, vec.y,
+                                  0, 0, 1, vec.z,
+                                  0, 0, 0, 1
+                          }};
 }
 
 // Quaternion
@@ -947,23 +955,6 @@ typedef struct PLSphere {
 
     PLColour colour;
 } PLSphere;
-
-// Line
-
-typedef struct PLLine3D {
-    PLVector3 a, b;
-    unsigned int width;
-
-    PLColour a_colour, b_colour;
-} PLLine3D;
-
-PL_INLINE static void plClearLine(PLLine3D *l) {
-    memset(l, 0, sizeof(PLLine3D));
-}
-
-PL_INLINE static void plSetLineColour(PLLine3D *line, PLColour a, PLColour b) {
-    line->a_colour = a; line->b_colour = b;
-}
 
 // Rectangle 2D
 

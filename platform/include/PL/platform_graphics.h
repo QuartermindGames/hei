@@ -188,6 +188,8 @@ typedef enum PLShaderType {
     PL_SHADER_TYPE_FRAGMENT,
     PL_SHADER_TYPE_GEOMETRY,
     PL_SHADER_TYPE_COMPUTE,
+
+    PL_NUM_SHADER_TYPES
 } PLShaderStageType;
 
 typedef enum PLShaderUniformType {
@@ -222,6 +224,8 @@ typedef struct PLShaderStage {
     /* software implementation of the shader stage */
     void(*SWFallback)(PLShaderProgram *program, PLShaderStageType type);
 
+    PLShaderProgram *program;
+
     struct {
         unsigned int id;
     } internal;
@@ -244,7 +248,7 @@ typedef struct PLShaderProgram {
     } *attributes;
     unsigned int num_attributes;
 
-    PLShaderStage *stages;
+    PLShaderStage *stages[PL_NUM_SHADER_TYPES];
     unsigned int num_stages;
 
     struct {
@@ -254,8 +258,8 @@ typedef struct PLShaderProgram {
 
 PL_EXTERN_C
 
-PL_EXTERN PLShaderStage *plLoadShaderStage(const char *path); /* todo */
-PL_EXTERN void plParseShaderStage(PLShaderStage *shader, char *buf, unsigned int length); /* todo */
+PL_EXTERN PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type);
+PL_EXTERN void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length);
 
 PL_EXTERN bool plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage);
 PL_EXTERN bool plLinkShaderProgram(PLShaderProgram *program); /* todo */
@@ -268,8 +272,8 @@ PL_EXTERN void plSetShaderUniformUInt(PLShaderProgram *program, unsigned int slo
 PL_EXTERN void plSetShaderUniformVector3(PLShaderProgram *program, unsigned int slot, PLVector3 value); /* todo */
 PL_EXTERN void plSetShaderUniformVector2(PLShaderProgram *program, unsigned int slot, PLVector2 value); /* todo */
 
-PL_EXTERN PLShaderProgram *plCreateShaderProgram(void);;
-PL_EXTERN void plDeleteShaderProgram(PLShaderProgram *program);
+PL_EXTERN PLShaderProgram *plCreateShaderProgram(void);
+PL_EXTERN void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages);
 
 PL_EXTERN PLShaderProgram *plGetCurrentShaderProgram(void);
 

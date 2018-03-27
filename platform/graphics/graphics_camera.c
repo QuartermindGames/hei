@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 #include <PL/platform_console.h>
+
 #include "graphics_private.h"
 
 #define CAMERA_DEFAULT_WIDTH      640
@@ -62,15 +63,6 @@ void AnglesAxes(PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *for
     forward->x = sy;
     forward->y = -sx * cy;
     forward->z = cx * cy;
-}
-
-PLMatrix4x4 plTranslate(PLVector3 vec) {
-    return (PLMatrix4x4) {{
-            1, 0, 0, vec.x,
-            0 ,1, 0, vec.y,
-            0, 0, 1, vec.z,
-            0, 0, 0, 1
-    }};
 }
 
 PLMatrix4x4 plOrtho(float left, float right, float bottom, float top, float near, float far) {

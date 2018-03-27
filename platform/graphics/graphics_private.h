@@ -129,7 +129,13 @@ typedef struct GfxLayer {
     // Shaders
     void(*CreateShaderProgram)(PLShaderProgram *program);
     void(*DeleteShaderProgram)(PLShaderProgram *program);
+    void(*AttachShaderStage)(PLShaderProgram *program, PLShaderStage *stage);
+    void(*DetachShaderStage)(PLShaderProgram *program, PLShaderStage *stage);
+    void(*LinkShaderProgram)(PLShaderProgram *program);
     void(*SetShaderProgram)(PLShaderProgram *program);
+    void(*CreateShaderStage)(PLShaderStage *stage);
+    void(*DeleteShaderStage)(PLShaderStage *stage);
+    void(*CompileShaderStage)(PLShaderStage *stage, const char *buf, size_t length);
 } GfxLayer;
 
 #define CallGfxFunction(FUNCTION, ...) \

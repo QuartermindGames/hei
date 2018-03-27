@@ -376,10 +376,10 @@ void GLDrawMesh(PLMesh *mesh) {
 
         glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
 
-        glVertexAttribLPointer(0, 3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].position);
-        glVertexAttribLPointer(0, 3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].normal);
-        glVertexAttribLPointer(0, 4, GL_UNSIGNED_BYTE, sizeof(PLVertex), &mesh->vertices[0].colour);
-        glVertexAttribLPointer(0, 2, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].st[0]);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex), &mesh->vertices[0].position);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex), &mesh->vertices[0].normal);
+        glVertexAttribPointer(0, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(PLVertex), &mesh->vertices[0].colour);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(PLVertex), &mesh->vertices[0].st[0]);
     }
 
     GLuint mode = TranslatePrimitiveMode(mesh->primitive);
@@ -565,6 +565,18 @@ void GLDrawPerspectivePOST(PLCamera *camera) {
 /////////////////////////////////////////////////////////////
 // Shader
 
+const char *default_vertex_shader = {
+"#version 330\n"
+"layout (location = 0) in vec3 inPosition;\n"
+"layout (location = 1) in vec3 inColour;\n"
+"smooth out vec3 "
+};
+
+const char *default_fragment_shader = {
+"#version 330\n"
+
+};
+
 #define SHADER_INVALID_TYPE ((uint32_t)0 - 1)
 
 GLenum TranslateShaderStageType(PLShaderStageType type) {
@@ -638,15 +650,28 @@ unsigned int TranslateGLShaderUniformType(GLenum type) {
 }
 
 void GLCreateShaderProgram(PLShaderProgram *program) {
-
-}
-
-void GLDeleteShaderProgram(PLShaderProgram *program) {
-    if(program->internal.id == (unsigned int)(-1)) {
+    if(!GLVersion(2,0)) {
+        GfxLog("HW shaders unsupported on platform, relying on SW fallback\n");
         return;
     }
 
-    glDeleteProgram(program->internal.id);
+    program->internal.id = glCreateProgram();
+    if(program->internal.id == 0) {
+        GfxLog("Failed to generate shader program!\n");
+        return;
+    }
+}
+
+void GLDeleteShaderProgram(PLShaderProgram *program) {
+    if(program->internal.id == 0) {
+        return;
+    }
+
+    if(GLVersion(2,0)) {
+        glDeleteProgram(program->internal.id);
+    }
+
+    program->internal.id = 0;
 }
 
 void GLCreateShaderStage(PLShaderStage *stage) {
@@ -678,7 +703,52 @@ void GLCreateShaderStage(PLShaderStage *stage) {
     }
 }
 
+void GLDeleteShaderStage(PLShaderStage *stage) {
+    if(!GLVersion(2,0)) {
+        return;
+    }
+
+    if(stage->program != NULL) {
+        glDetachShader(stage->program->internal.id, stage->internal.id);
+        stage->program = NULL;
+    }
+    glDeleteShader(stage->internal.id);
+    stage->internal.id = 0;
+}
+
+void GLCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) {
+    if(!GLVersion(2,0)) {
+        return;
+    }
+
+    glShaderSource(stage->internal.id, 1, &buf, NULL);
+
+    GfxLog("COMPILING SHADER STAGE...\n");
+    glCompileShader(stage->internal.id);
+
+    int status;
+    glGetShaderiv(stage->internal.id, GL_COMPILE_STATUS, &status);
+    if(status == 0) {
+        int s_length;
+        glGetShaderiv(stage->internal.id, GL_INFO_LOG_LENGTH, &s_length);
+        if(s_length > 1) {
+            char *log = calloc((size_t) s_length, sizeof(char));
+            glGetShaderInfoLog(stage->internal.id, s_length, NULL, log);
+            GfxLog("COMPILE ERROR:\n%s\n",log);
+            free(log);
+
+            ReportError(PL_RESULT_SHADER_COMPILE, "%s", log);
+        }
+    } else {
+        GfxLog(" COMPLETED SUCCESSFULLY!\n");
+    }
+}
+
 void GLSetShaderProgram(PLShaderProgram *program) {
+    if(!GLVersion(2,0)) {
+        return;
+    }
+
     unsigned int id = 0;
     if(program != NULL) {
         id = program->internal.id;
@@ -788,6 +858,9 @@ void InitOpenGL(void) {
     gfx_layer.CreateShaderProgram       = GLCreateShaderProgram;
     gfx_layer.DeleteShaderProgram       = GLDeleteShaderProgram;
     gfx_layer.SetShaderProgram          = GLSetShaderProgram;
+    gfx_layer.CreateShaderStage         = GLCreateShaderStage;
+    gfx_layer.DeleteShaderStage         = GLDeleteShaderStage;
+    gfx_layer.CompileShaderStage        = GLCompileShaderStage;
 
     /////////////////////////////////////////////////////////////
 
