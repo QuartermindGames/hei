@@ -258,6 +258,7 @@ typedef struct PLShaderProgram {
 
 PL_EXTERN_C
 
+PL_EXTERN PLShaderStage *plCreateShaderStage(PLShaderStageType type);
 PL_EXTERN PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type);
 PL_EXTERN void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length);
 

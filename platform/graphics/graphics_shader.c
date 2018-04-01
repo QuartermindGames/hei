@@ -34,6 +34,13 @@ For more information, please refer to <http://unlicense.org>
 /**********************************************************/
 /** shader stages **/
 
+/**
+ * create the shader stage and generate it on the GPU,
+ * if applicable.
+ *
+ * @param type the type of shader stage.
+ * @return the new shader stage.
+ */
 PLShaderStage *plCreateShaderStage(PLShaderStageType type) {
     PLShaderStage *stage = calloc(1, sizeof(PLShaderStage));
     if(stage == NULL) {
@@ -46,6 +53,12 @@ PLShaderStage *plCreateShaderStage(PLShaderStageType type) {
     return stage;
 }
 
+/**
+ * delete the given shader stage and wipe it off the
+ * GPU, if applicable.
+ *
+ * @param stage stage we're deleting.
+ */
 void plDeleteShaderStage(PLShaderStage *stage) {
     if(stage == NULL) {
         return;
@@ -54,12 +67,36 @@ void plDeleteShaderStage(PLShaderStage *stage) {
     CallGfxFunction(DeleteShaderStage, stage);
 }
 
+/**
+ * compiles the given shader stage on the GPU, otherwise it
+ * will be ignored when performing software-rendering or if
+ * your GPU doesn't support the shader compilation.
+ *
+ * if the compilation fails an error will be reported and this will
+ * automatically fallback when rendering anything if it's active.
+ *
+ * @param stage the stage we're going to be compiling.
+ * @param buf pointer to buffer containing the shader we're compiling.
+ * @param length the length of the buffer.
+ */
 void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) {
     _plResetError();
     CallGfxFunction(CompileShaderStage, stage, buf, length);
 }
 
-/* does everything above all at once */
+/**
+ * shortcut function that can be used to quickly produce a new
+ * shader stage. this will automatically handle loading the given
+ * shader into memory, compiling it and then returning the new
+ * shader stage object.
+ *
+ * if the compilation fails an error will be reported and the
+ * function will return a null pointer.
+ *
+ * @param path path to the shader stage document.
+ * @param type the type of shader stage.
+ * @return the new shader stage.
+ */
 PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
     FILE *fp = fopen(path, "r");
     if(fp == NULL) {
@@ -92,6 +129,12 @@ PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
 /**********************************************************/
 /** shader program **/
 
+/**
+ * allocates a new shader program in memory and generates it
+ * on the GPU, if applicable.
+ *
+ * @return the new shader program.
+ */
 PLShaderProgram *plCreateShaderProgram(void) {
     PLShaderProgram *program = calloc(1, sizeof(PLShaderProgram));
     if(program == NULL) {
@@ -101,12 +144,16 @@ PLShaderProgram *plCreateShaderProgram(void) {
 
     CallGfxFunction(CreateShaderProgram, program);
 
-    program->max_stages = 2;
-    program->stages = calloc(program->max_stages, sizeof(PLShaderStage));
-
     return program;
 }
 
+/**
+ * deletes the given shader program and also clears it on the GPU,
+ * if applicable.
+ *
+ * @param program the program being deleted.
+ * @param free_stages if true, automatically frees any linked shader stages.
+ */
 void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages) {
     if(program == NULL) {
         return;
@@ -136,10 +183,23 @@ bool plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {
     return false;
 }
 
+/**
+ * returns the currently active shader program.
+ *
+ * @return pointer to the currently active shader program.
+ */
 PLShaderProgram *plGetCurrentShaderProgram(void) {
     return gfx_state.current_program;
 }
 
+/**
+ * checks whether the given shader program is currently
+ * enabled - meaning it will be used in any subsequent draw
+ * calls.
+ *
+ * @param program
+ * @return true if the program is equal to that currently enabled.
+ */
 bool plIsShaderProgramEnabled(PLShaderProgram *program) {
     if(gfx_state.current_program == program) {
         return true;
@@ -148,6 +208,12 @@ bool plIsShaderProgramEnabled(PLShaderProgram *program) {
     return false;
 }
 
+/**
+ * sets the currently active shader program. means that any
+ * subsequent draw calls will use this shader program.
+ *
+ * @param program
+ */
 void plSetShaderProgram(PLShaderProgram *program) {
     if (program == gfx_state.current_program) {
         return;

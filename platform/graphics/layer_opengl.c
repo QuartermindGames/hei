@@ -822,7 +822,7 @@ void MessageCallback(
 }
 #endif
 
-void InitOpenGL(void) {
+void _InitOpenGL(void) {
     GLenum err = glewInit();
     if(err != GLEW_OK) {
         ReportError(PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", glewGetErrorString(err));
@@ -900,6 +900,8 @@ void InitOpenGL(void) {
     if(shader_fallback == NULL) {
         GfxLog("failed to create fallback shader - will resort to immediate mode if necessary!\n");
     } else {
+        PLShaderStage *vertex_stage = plCreateShaderStage();
+
         plSetShaderProgram(shader_fallback);
     }
 

@@ -53,8 +53,8 @@ data for each of these functions
 	INITIALIZATION
 ===========================*/
 
-void InitTextures(void);     // platform_graphics_texture
-void InitMaterials(void);    // material
+void _InitTextures(void);     // platform_graphics_texture
+void _InitMaterials(void);    // material
 
 PLresult InitGraphics(void) {
     memset(&gfx_state, 0, sizeof(GfxState));
@@ -144,7 +144,7 @@ void plDeleteFrameBuffer(PLFrameBuffer *buffer) {
 }
 
 void plBindFrameBuffer(PLFrameBuffer *buffer) {
-    if(!buffer) {
+    if(buffer == NULL) {
         // todo, warning regarding invalid buffer blah blah
         return;
     }
@@ -159,9 +159,7 @@ void plSetClearColour(PLColour rgba) {
         return;
     }
 
-    if(gfx_layer.SetClearColour) {
-        gfx_layer.SetClearColour(rgba);
-    }
+    CallGfxFunction(SetClearColour, rgba);
 
     plCopyColour(&gfx_state.current_clearcolour, rgba);
 }
@@ -400,10 +398,6 @@ void plScreenshot(PLViewport *viewport, const PLchar *path) {
 }
 #endif
 
-/* Shared Matrix Functions */
-
-// todo
-
 /* DRAWING  */
 
 void plDrawPixel(int x, int y, PLColour colour) {
@@ -423,14 +417,14 @@ void plSetGraphicsMode(PLGfxMode mode) {
 #endif
 
         case PL_GFX_MODE_SOFTWARE: {
-            InitSoftware();
+            _InitSoftware();
         } break;
 
 #if defined(PL_SUPPORT_OPENGL)
         case PL_GFX_MODE_OPENGL_CORE:
         case PL_GFX_MODE_OPENGL_ES:
         case PL_GFX_MODE_OPENGL: {
-            InitOpenGL();
+            _InitOpenGL();
         } break;
 #endif
 
@@ -441,8 +435,8 @@ void plSetGraphicsMode(PLGfxMode mode) {
         } break;
     }
 
-    InitTextures();
-    InitMaterials();
+    _InitTextures();
+    _InitMaterials();
 }
 
 void plProcessGraphics(void) {

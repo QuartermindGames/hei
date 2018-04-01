@@ -45,7 +45,7 @@ void SWClearBuffers(unsigned int buffers) {
 
 /***********************************************/
 
-void InitSoftware(void) {
+void _InitSoftware(void) {
 
 }
 
