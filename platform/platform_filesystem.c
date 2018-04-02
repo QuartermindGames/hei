@@ -44,11 +44,11 @@ For more information, please refer to <http://unlicense.org>
 
 /*	File System	*/
 
-PLresult _plInitIO(void) {
+PLresult _InitIO(void) {
     return PL_RESULT_SUCCESS;
 }
 
-void _plShutdownIO(void) {
+void _ShutdownIO(void) {
 
 }
 
@@ -72,7 +72,13 @@ bool plIsFileModified(time_t oldtime, const char *path) {
     return false;
 }
 
-time_t plGetFileModifiedTime(const PLchar *path) {
+/**
+ * returns the modified time of the given file.
+ *
+ * @param path
+ * @return modification time in seconds. returns 0 upon fail.
+ */
+time_t plGetFileModifiedTime(const char *path) {
     struct stat attributes;
     if (stat(path, &attributes) == -1) {
         ReportError(PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror(errno));
@@ -144,7 +150,12 @@ void plStripExtension(char *dest, const char *in) {
     *dest = 0;
 }
 
-// Returns a pointer to the last component in the given filename. 
+/**
+ * returns pointer to the last component in the given filename.
+ *
+ * @param path
+ * @return
+ */
 const char *plGetFileName(const char *path) {
     const char *lslash = strrchr(path, '/');
     if (lslash != NULL) {
@@ -153,7 +164,11 @@ const char *plGetFileName(const char *path) {
     return path;
 }
 
-// Returns the name of the systems current user.
+/**
+ * returns the name of the systems current user.
+ *
+ * @param out
+ */
 void plGetUserName(char *out) {
 #ifdef _WIN32
 
@@ -183,9 +198,15 @@ void plGetUserName(char *out) {
     }
 }
 
-/*	Scans the given directory.
-	On each found file it calls the given function to handle the file.
-*/
+/**
+ * scans the given directory.
+ * on each file that's found, it calls the given function to handle the file.
+ *
+ * @param path path to directory.
+ * @param extension the extension to scan for (exclude '.').
+ * @param Function callback function to deal with the file.
+ * @param recursive if true, also scans the contents of each sub-directory.
+ */
 void plScanDirectory(const char *path, const char *extension, void (*Function)(const char *), bool recursive) {
     DIR *directory = opendir(path);
     if (directory) {
@@ -268,7 +289,13 @@ void plLoadFile(const char *path, PLIOBuffer *buffer) {
     fclose(fp);
 }
 
-// Checks if a file exists or not.
+/**
+ * checks whether or not the given file is accessible
+ * or exists.
+ *
+ * @param path
+ * @return false if the file wasn't accessible.
+ */
 bool plFileExists(const char *path) {
     struct stat buffer;
     return (bool) (stat(path, &buffer) == 0);
@@ -362,6 +389,9 @@ size_t plGetFileSize(const char *path) {
 }
 
 ///////////////////////////////////////////
+
+void plFileIOPush(PLIOBuffer *file) {}
+void plFileIOPop(void) {}
 
 int16_t plGetLittleShort(FILE *fin) {
     int b1 = fgetc(fin);

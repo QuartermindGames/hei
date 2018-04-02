@@ -54,8 +54,8 @@ enum {
 PLresult InitGraphics(void);
 void ShutdownGraphics(void);
 
-PLresult _plInitIO(void);
-void _plShutdownIO(void);
+PLresult _InitIO(void);
+void _ShutdownIO(void);
 
 PLresult _plInitConsole(void);
 void _plShutdownConsole(void);

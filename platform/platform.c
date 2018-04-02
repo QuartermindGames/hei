@@ -58,8 +58,8 @@ PLSubSystem pl_subsystems[]= {
 
         {
                 PL_SUBSYSTEM_IO,
-                &_plInitIO,
-                &_plShutdownIO
+                &_InitIO,
+                &_ShutdownIO
         },
 
         {

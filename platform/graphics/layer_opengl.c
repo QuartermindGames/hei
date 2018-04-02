@@ -784,9 +784,7 @@ void MessageCallback(
             s_severity = "LOW";
         } break;
 
-        default: {
-            s_severity = "NOTIFICATION";
-        } break;
+        default:return;
     }
 
     const char *s_type;
@@ -895,15 +893,6 @@ void _InitOpenGL(void) {
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
     glDebugMessageCallback((GLDEBUGPROC) MessageCallback, NULL);
 #endif
-
-    PLShaderProgram *shader_fallback = plCreateShaderProgram();
-    if(shader_fallback == NULL) {
-        GfxLog("failed to create fallback shader - will resort to immediate mode if necessary!\n");
-    } else {
-        PLShaderStage *vertex_stage = plCreateShaderStage();
-
-        plSetShaderProgram(shader_fallback);
-    }
 
     //glPointSize(5.f);
     //glLineWidth(2.f);
