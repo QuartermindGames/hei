@@ -776,11 +776,15 @@ PL_INLINE static void plClearMatrix(PLMatrix4x4 *m) {
 }
 
 PL_INLINE static void plIdentityMatrix(PLMatrix4x4 *m) {
-    memcpy(m, &(PLMatrix4x4){{      1, 0, 0, 0,
-                                    0, 1, 0, 0,
-                                    0, 0, 1, 0,
-                                    0, 0, 0, 1
-                            }}, sizeof(PLMatrix4x4));
+    static const PLMatrix4x4 ident = {
+            {
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            }
+    };
+    memcpy(m, &ident, sizeof(PLMatrix4x4));
 }
 
 PL_INLINE static void plAddMatrix(PLMatrix4x4 m, PLMatrix4x4 m2) {
