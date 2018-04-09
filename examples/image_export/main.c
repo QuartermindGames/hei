@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 
     /* Convert to a pixel format best appropriate for export (RGBA8). */
 
-    assert(plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8));
+    plAssert(plConvertPixelFormat(&image, PL_IMAGEFORMAT_RGBA8));
     if(!plWriteImage(&image, argv[2])) {
         printf("failed to write TIM: %s\n", plGetError());
     }

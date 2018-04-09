@@ -716,6 +716,14 @@ void GLDeleteShaderStage(PLShaderStage *stage) {
     stage->internal.id = 0;
 }
 
+void GLAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {
+    if(!GLVersion(2,0)) {
+        return;
+    }
+
+    glAttachShader(program->internal.id, stage->internal.id);
+}
+
 void GLCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) {
     if(!GLVersion(2,0)) {
         return;
@@ -734,13 +742,39 @@ void GLCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) 
         if(s_length > 1) {
             char *log = calloc((size_t) s_length, sizeof(char));
             glGetShaderInfoLog(stage->internal.id, s_length, NULL, log);
-            GfxLog("COMPILE ERROR:\n%s\n",log);
+            GfxLog(" COMPILE ERROR:\n%s\n",log);
             free(log);
 
             ReportError(PL_RESULT_SHADER_COMPILE, "%s", log);
         }
     } else {
         GfxLog(" COMPLETED SUCCESSFULLY!\n");
+    }
+}
+
+void GLLinkShaderProgram(PLShaderProgram *program) {
+    if(!GLVersion(2,0)) {
+        return;
+    }
+
+    glLinkProgram(program->internal.id);
+
+    int status;
+    glGetProgramiv(program->internal.id, GL_LINK_STATUS, &status);
+    if(status == 0) {
+        int s_length;
+        glGetProgramiv(program->internal.id, GL_INFO_LOG_LENGTH, &s_length);
+        if(s_length > 1) {
+            char *log = calloc((size_t)s_length, sizeof(char));
+            glGetProgramInfoLog(program->internal.id, s_length, NULL, log);
+            GfxLog(" LINK ERROR:\n%s\n", log);
+            free(log);
+
+            ReportError(PL_RESULT_SHADER_COMPILE, "%s", log);
+        }
+    } else {
+        GfxLog(" LINKED SUCCESSFULLY!\n");
+        program->is_linked = true;
     }
 }
 
@@ -856,8 +890,10 @@ void _InitOpenGL(void) {
     gfx_layer.CreateShaderProgram       = GLCreateShaderProgram;
     gfx_layer.DeleteShaderProgram       = GLDeleteShaderProgram;
     gfx_layer.SetShaderProgram          = GLSetShaderProgram;
+    gfx_layer.LinkShaderProgram         = GLLinkShaderProgram;
     gfx_layer.CreateShaderStage         = GLCreateShaderStage;
     gfx_layer.DeleteShaderStage         = GLDeleteShaderStage;
+    gfx_layer.AttachShaderStage         = GLAttachShaderStage;
     gfx_layer.CompileShaderStage        = GLCompileShaderStage;
 
     /////////////////////////////////////////////////////////////
@@ -887,11 +923,13 @@ void _InitOpenGL(void) {
     }
 
 #if defined(DEBUG_GL)
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    if(GLVersion(4,3)) {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
-    glDebugMessageCallback((GLDEBUGPROC) MessageCallback, NULL);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+        glDebugMessageCallback((GLDEBUGPROC) MessageCallback, NULL);
+    }
 #endif
 
     //glPointSize(5.f);

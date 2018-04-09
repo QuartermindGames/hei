@@ -31,9 +31,9 @@ For more information, please refer to <http://unlicense.org>
 #define CAMERA_DEFAULT_WIDTH      640
 #define CAMERA_DEFAULT_HEIGHT     480
 #define CAMERA_DEFAULT_BOUNDS     5
-//#define CAMERA_DEFAULT_FOV        75
-//#define CAMERA_DEFAULT_NEAR       0.1
-//#define CAMERA_DEFAULT_FAR        1000
+#define CAMERA_DEFAULT_FOV        75.f
+#define CAMERA_DEFAULT_NEAR       0.1f
+#define CAMERA_DEFAULT_FAR        1000.f
 
 /* http://www.songho.ca/opengl/gl_anglestoaxes.html */
 void AnglesAxes(PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *forward) {
@@ -139,9 +139,9 @@ PLCamera *plCreateCamera(void) {
         return NULL;
     }
 
-    camera->fov     = 75.f;
-    camera->near    = 0.1f;
-    camera->far     = 1000.f;
+    camera->fov     = CAMERA_DEFAULT_FOV;
+    camera->near    = CAMERA_DEFAULT_NEAR;
+    camera->far     = CAMERA_DEFAULT_FAR;
     camera->mode    = PL_CAMERA_MODE_PERSPECTIVE;
 
     /*  XY * * * * W

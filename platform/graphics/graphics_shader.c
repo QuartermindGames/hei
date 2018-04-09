@@ -173,13 +173,22 @@ void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages) {
     free(program);
 }
 
-bool plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {
-    program->num_stages++;
-
-
-    for(unsigned int i = 0; i < program->num_stages; i++) {
-
+bool plRegisterShaderStage(PLShaderProgram *program, const char *path, PLShaderStageType type) {
+    if((program->num_stages + 1) > 4) {
+        ReportError(PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
+                    program->num_stages);
+        return false;
     }
+
+    PLShaderStage *stage = plLoadShaderStage(path, type);
+    if(stage == NULL) {
+        return false;
+    }
+
+    program->stages[program->num_stages++] = stage;
+
+    CallGfxFunction(AttachShaderStage, program, stage);
+
     return false;
 }
 
@@ -208,6 +217,12 @@ bool plIsShaderProgramEnabled(PLShaderProgram *program) {
     return false;
 }
 
+bool plLinkShaderProgram(PLShaderProgram *program) {
+    _plResetError();
+    CallGfxFunction(LinkShaderProgram, program);
+    return program->is_linked;
+}
+
 /**
  * sets the currently active shader program. means that any
  * subsequent draw calls will use this shader program.
@@ -223,3 +238,6 @@ void plSetShaderProgram(PLShaderProgram *program) {
 
     gfx_state.current_program = program;
 }
+
+#define IMPLEMENT_UNIFORM_FUNCTION()    bool
+#define IMPLEMENT_ATTRIBUTE_FUNCTION()  bool

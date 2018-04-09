@@ -146,17 +146,18 @@ typedef enum {
     PL_RESULT_GRAPHICSINIT,             // Graphics failed to initialise!
     PL_RESULT_INVALID_SHADER_TYPE,      /* shader type passed is not a valid type */
     PL_RESULT_UNSUPPORTED_SHADER_TYPE,  /* shader type not supported by hardware */
-    PL_RESULT_SHADER_COMPILE,    // Failed to compile shader!
-    PL_RESULT_DRAW_MODE,        // Invalid mesh draw mode!
-    PL_RESULT_DRAW_PRIMITIVE,   // Invalid mesh primitive!
+    PL_RESULT_SHADER_COMPILE,           // Failed to compile shader!
+    PL_RESULT_SHADER_LINK,              /* shader program failed link */
+    PL_RESULT_DRAW_MODE,                // Invalid mesh draw mode!
+    PL_RESULT_DRAW_PRIMITIVE,           // Invalid mesh primitive!
 
     // IMAGE
     PL_RESULT_IMAGERESOLUTION,  // Invalid image resolution!
     PL_RESULT_IMAGEFORMAT,      // Unsupported image format!
 
     // MEMORY
-    PL_RESULT_MEMORY_ALLOCATION,      // Ran out of memory!
-    PL_RESULT_MEMORY_EOA,       // End of array
+    PL_RESULT_MEMORY_ALLOCATION,    // Ran out of memory!
+    PL_RESULT_MEMORY_EOA,           // End of array
 
     PL_RESULT_SYSERR,         // Generic system error
 } PLresult;

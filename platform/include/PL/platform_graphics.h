@@ -251,6 +251,8 @@ typedef struct PLShaderProgram {
     PLShaderStage *stages[PL_NUM_SHADER_TYPES];
     unsigned int num_stages;
 
+    bool is_linked;
+
     struct {
         unsigned int id;
     } internal;
@@ -262,7 +264,7 @@ PL_EXTERN PLShaderStage *plCreateShaderStage(PLShaderStageType type);
 PL_EXTERN PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type);
 PL_EXTERN void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length);
 
-PL_EXTERN bool plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage);
+PL_EXTERN bool plRegisterShaderStage(PLShaderProgram *program, const char *path, PLShaderStageType type);
 PL_EXTERN bool plLinkShaderProgram(PLShaderProgram *program); /* todo */
 
 PL_EXTERN void plSetShaderUniformFloat(PLShaderProgram *program, unsigned int slot, float value); /* todo */
