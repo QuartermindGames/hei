@@ -757,6 +757,7 @@ void GLLinkShaderProgram(PLShaderProgram *program) {
         return;
     }
 
+    GfxLog("LINKING SHADER PROGRAM...\n");
     glLinkProgram(program->internal.id);
 
     int status;
@@ -771,6 +772,8 @@ void GLLinkShaderProgram(PLShaderProgram *program) {
             free(log);
 
             ReportError(PL_RESULT_SHADER_COMPILE, "%s", log);
+        } else {
+            GfxLog(" UNKNOWN LINK ERROR!\n");
         }
     } else {
         GfxLog(" LINKED SUCCESSFULLY!\n");
