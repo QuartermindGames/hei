@@ -353,7 +353,7 @@ void plDrawBitmapString(PLBitmapFont *font, int x, int y, float scale, PLColour 
     int n_x = x;
     int n_y = y;
     for(unsigned int i = 0; i < length; i++) {
-        if(msg[i] < 0 || msg[i] > 255) {
+        if(msg[i] < 0 || msg[i] > 127) {
             // out of range
             continue;
         }

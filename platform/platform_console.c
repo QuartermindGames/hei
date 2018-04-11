@@ -884,7 +884,7 @@ void plLogMessage(int level, const char *msg, ...) {
     va_end(args);
 
     if(buf[c - 1] != '\n') {
-        strncat(buf, "\n", sizeof(buf));
+        strncat(buf, "\n", sizeof(buf) - strlen(buf) - 1);
     }
 
     printf("%s", buf);
