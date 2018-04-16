@@ -913,8 +913,8 @@ void _InitOpenGL(void) {
     glGetIntegerv(GL_MAJOR_VERSION, &gl_version_major);
     if(gl_version_major <= 0 && gl_version_minor <= 0) {
         if(gfx_state.hw_version != NULL && (gfx_state.hw_version[0] != '\0' && gfx_state.hw_version[2] != '\0')) {
-            gl_version_major = (int)gfx_state.hw_version[0];
-            gl_version_minor = (int)gfx_state.hw_version[2];
+            gl_version_major = (gfx_state.hw_version[0] - '0');
+            gl_version_minor = (gfx_state.hw_version[2] - '0');
         } else {
             GfxLog("failed to get OpenGL version, expect some functionality not to work!\n");
         }
