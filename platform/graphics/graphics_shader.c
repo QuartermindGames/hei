@@ -48,6 +48,8 @@ PLShaderStage *plCreateShaderStage(PLShaderStageType type) {
         return NULL;
     }
 
+    stage->type = type;
+
     CallGfxFunction(CreateShaderStage, stage);
 
     return stage;
@@ -190,7 +192,7 @@ bool plRegisterShaderStage(PLShaderProgram *program, const char *path, PLShaderS
 
     CallGfxFunction(AttachShaderStage, program, stage);
 
-    return false;
+    return true;
 }
 
 /**
