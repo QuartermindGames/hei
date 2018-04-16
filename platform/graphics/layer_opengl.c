@@ -909,20 +909,32 @@ void _InitOpenGL(void) {
 
     memset(&gl_capabilities, 0, sizeof(gl_capabilities));
 
-    glGetIntegerv(GL_NUM_EXTENSIONS, (GLint*)(&gl_num_extensions));
-
     glGetIntegerv(GL_MINOR_VERSION, &gl_version_minor);
     glGetIntegerv(GL_MAJOR_VERSION, &gl_version_major);
+    if(gl_version_major <= 0 && gl_version_minor <= 0) {
+        if(gfx_state.hw_version != NULL && (gfx_state.hw_version[0] != '\0' && gfx_state.hw_version[2] != '\0')) {
+            gl_version_major = (int)gfx_state.hw_version[0];
+            gl_version_minor = (int)gfx_state.hw_version[2];
+        } else {
+            GfxLog("failed to get OpenGL version, expect some functionality not to work!\n");
+        }
+    }
 
     GfxLog(" OpenGL %d.%d\n", gl_version_major, gl_version_minor);
     GfxLog("  renderer:   %s\n", gfx_state.hw_renderer);
     GfxLog("  vendor:     %s\n", gfx_state.hw_vendor);
     GfxLog("  version:    %s\n", gfx_state.hw_version);
     GfxLog("  extensions:\n");
-    for(unsigned int i = 0; i < gl_num_extensions; ++i) {
-        const uint8_t *extension = glGetStringi(GL_EXTENSIONS, i);
-        sprintf(gl_extensions[i], "%s", extension);
-        GfxLog("    %s\n", extension);
+
+    if(GLVersion(3,0)) {
+        glGetIntegerv(GL_NUM_EXTENSIONS, (GLint *) (&gl_num_extensions));
+        for (unsigned int i = 0; i < gl_num_extensions; ++i) {
+            const uint8_t *extension = glGetStringi(GL_EXTENSIONS, i);
+            sprintf(gl_extensions[i], "%s", extension);
+            GfxLog("    %s\n", extension);
+        }
+    } else {
+        // todo
     }
 
 #if defined(DEBUG_GL)
