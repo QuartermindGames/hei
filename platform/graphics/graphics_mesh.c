@@ -427,11 +427,13 @@ void plDrawTexturedRectangle(int x, int y, unsigned int w, unsigned int h, PLTex
     plSetMeshVertexST(mesh, 2, 1, 0);
     plSetMeshVertexST(mesh, 3, 1, 1);
 
-    mesh->texture = texture;
-
     plUploadMesh(mesh);
 
+    plSetTexture(texture, 0);
+
     plDrawMesh(mesh);
+
+    plSetTexture(NULL, 0);
 }
 
 void plDrawRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colour) {

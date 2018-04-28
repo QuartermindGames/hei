@@ -113,6 +113,7 @@ PL_EXTERN unsigned int plGetMaxTextureAnistropy(void);
 
 PL_EXTERN void plSetTextureAnisotropy(PLTexture *texture, unsigned int amount);
 
+PL_EXTERN void plSetTexture(PLTexture *texture, unsigned int tmu);
 PL_EXTERN void plSetTextureUnit(unsigned int target);
 PL_EXTERN void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode);
 PL_EXTERN void plSetTextureFlags(PLTexture *texture, unsigned int flags);

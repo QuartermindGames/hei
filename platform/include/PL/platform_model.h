@@ -128,8 +128,6 @@ void plDrawModelSkeleton(PLModel *model);
 
 void plApplyModelLighting(PLModel *model, PLLight *light, PLVector3 position);
 
-void plSetModelTexture(PLModel *model, unsigned int mesh_id, PLTexture *texture);
-
 void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path));
 
 void plGenerateModelNormals(PLModel *model);

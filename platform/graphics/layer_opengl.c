@@ -356,8 +356,6 @@ void GLDeleteMesh(PLMesh *mesh) {
 }
 
 void GLDrawMesh(PLMesh *mesh) {
-    BindTexture(mesh->texture);
-
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
         glEnableClientState(GL_VERTEX_ARRAY);
         glEnableClientState(GL_COLOR_ARRAY);
@@ -953,8 +951,10 @@ void _InitOpenGL(void) {
 
 void ShutdownOpenGL(void) {
 #if defined(DEBUG_GL)
-    glDisable(GL_DEBUG_OUTPUT);
-    glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    if(GLVersion(4,3)) {
+        glDisable(GL_DEBUG_OUTPUT);
+        glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    }
 #endif
 }
 

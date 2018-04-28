@@ -310,6 +310,20 @@ unsigned int plGetCurrentTextureUnit(void) {
     return gfx_state.current_textureunit;
 }
 
+void plSetTexture(PLTexture *texture, unsigned int tmu) {
+    plSetTextureUnit(tmu);
+
+    if((gfx_state.textures[tmu] != NULL) && (gfx_state.textures[tmu] == texture)) {
+        return;
+    }
+
+    CallGfxFunction(BindTexture, texture);
+
+    gfx_state.textures[tmu] = texture;
+
+    plSetTextureUnit(0);
+}
+
 void plSetTextureUnit(unsigned int target) {
     if (target == gfx_state.current_textureunit)
         return;
