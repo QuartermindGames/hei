@@ -267,15 +267,32 @@ PL_EXTERN PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType t
 PL_EXTERN void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length);
 
 PL_EXTERN bool plRegisterShaderStage(PLShaderProgram *program, const char *path, PLShaderStageType type);
-PL_EXTERN bool plLinkShaderProgram(PLShaderProgram *program); /* todo */
+PL_EXTERN bool plLinkShaderProgram(PLShaderProgram *program);
 
-PL_EXTERN void plSetShaderUniformFloat(PLShaderProgram *program, unsigned int slot, float value); /* todo */
-PL_EXTERN void plSetShaderUniformDouble(PLShaderProgram *program, unsigned int slot, double value); /* todo */
-PL_EXTERN void plSetShaderUniformBool(PLShaderProgram *program, unsigned int slot, bool value); /* todo */
-PL_EXTERN void plSetShaderUniformInt(PLShaderProgram *program, unsigned int slot, int value); /* todo */
-PL_EXTERN void plSetShaderUniformUInt(PLShaderProgram *program, unsigned int slot, unsigned int value); /* todo */
-PL_EXTERN void plSetShaderUniformVector3(PLShaderProgram *program, unsigned int slot, PLVector3 value); /* todo */
-PL_EXTERN void plSetShaderUniformVector2(PLShaderProgram *program, unsigned int slot, PLVector2 value); /* todo */
+PL_EXTERN int plGetShaderUniformSlot(PLShaderProgram *program, const char *name);
+
+PL_EXTERN void plSetShaderUniformFloat(PLShaderProgram *program, int slot, float value); /* todo */
+PL_EXTERN void plSetShaderUniformDouble(PLShaderProgram *program, int slot, double value); /* todo */
+PL_EXTERN void plSetShaderUniformBool(PLShaderProgram *program, int slot, bool value); /* todo */
+PL_EXTERN void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value);
+PL_EXTERN void plSetShaderUniformUInt(PLShaderProgram *program, int slot, unsigned int value); /* todo */
+PL_EXTERN void plSetShaderUniformVector3(PLShaderProgram *program, int slot, PLVector3 value); /* todo */
+PL_EXTERN void plSetShaderUniformVector2(PLShaderProgram *program, int slot, PLVector2 value); /* todo */
+
+#define plSetNamedShaderUniformFloat(program, name, value)  \
+    plSetShaderUniformFloat((program), plGetShaderUniformSlot((program), (name)), (value))
+#define plSetNamedShaderUniformDouble(program, name, value) \
+    plSetShaderUniformDouble((program), plGetShaderUniformSlot((program), (name)), (value))
+#define plSetNamedShaderUniformBool(program, name, value) \
+    plSetShaderUniformBool((program), plGetShaderUniformSlot((program), (name)), (value))
+#define plSetNamedShaderUniformInt(program, name, value) \
+    plSetShaderUniformInt((program), plGetShaderUniformSlot((program), (name)), (value))
+#define plSetNamedShaderUniformUInt(program, name, value) \
+    plSetShaderUniformUInt((program), plGetShaderUniformSlot((program), (name)), (value))
+#define plSetNamedShaderUniformVector3(program, name, value) \
+    plSetShaderUniformVector3((program), plGetShaderUniformSlot((program), (name)), (value))
+#define plSetNamedShaderUniformVector2(program, name, value) \
+    plSetShaderUniformVector2((program), plGetShaderUniformSlot((program), (name)), (value))
 
 PL_EXTERN PLShaderProgram *plCreateShaderProgram(void);
 PL_EXTERN void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages);
@@ -283,8 +300,7 @@ PL_EXTERN void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages)
 PL_EXTERN PLShaderProgram *plGetCurrentShaderProgram(void);
 
 PL_EXTERN bool plRegisterShaderProgramUniforms(PLShaderProgram *program);
-
-PL_EXTERN bool plRegisterShaderProgramAttribute(const char *name); /* todo */
+PL_EXTERN bool plRegisterShaderProgramAttributes(PLShaderProgram *program); /* todo */
 
 PL_EXTERN void plSetShaderProgram(PLShaderProgram *program);
 PL_EXTERN bool plIsShaderProgramEnabled(PLShaderProgram *program);

@@ -225,14 +225,14 @@ bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
 
     GfxLog("found %u uniforms in shader\n", program->num_uniforms);
 
-    program->uniforms = calloc((size_t)program->num_uniforms, sizeof(program->uniforms));
+    program->uniforms = calloc((size_t)program->num_uniforms, sizeof(*program->uniforms));
     if(program->uniforms == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate storage for uniforms");
         return false;
     }
 
     unsigned int registered = 0;
-    for(int i = 0; i < program->num_uniforms; ++i) {
+    for(unsigned int i = 0; i < program->num_uniforms; ++i) {
         char name[16];
         int name_length;
         unsigned int type;
@@ -246,7 +246,8 @@ bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
         GfxLog(" %20s (%d) %u\n", name, i, type);
 
         program->uniforms[i].type = GLConvertGLUniformType(type);
-        strncpy(program->uniforms[i].name, name, (size_t) name_length);
+        program->uniforms[i].slot = i;
+        strncpy(program->uniforms[i].name, name, sizeof(program->uniforms[i].name));
 
         registered++;
     }
@@ -323,6 +324,59 @@ void plSetShaderProgram(PLShaderProgram *program) {
     CallGfxFunction(SetShaderProgram, program);
 
     gfx_state.current_program = program;
+}
+
+/**
+ * searches through programs registered uniforms
+ * for the specified uniform entry.
+ *
+ * if it fails to find the uniform it'll return '-1'.
+ *
+ * @param program
+ * @param name
+ * @return index for the shader uniform
+ */
+int plGetShaderUniformSlot(PLShaderProgram *program, const char *name) {
+    for(unsigned int i = 0; i < program->num_uniforms; ++i) {
+        if(pl_strncasecmp(program->uniforms[i].name, name, sizeof(program->uniforms[i].name)) == 0) {
+            return i;
+        }
+    }
+
+    GfxLog("failed to find uniform slot \"%s\"!\n", name);
+    return -1;
+}
+
+/*****************************************************/
+
+void plSetShaderUniformFloat(PLShaderProgram *program, int slot, float value) {
+
+}
+
+void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value) {
+    if(program == NULL || program->uniforms == NULL) {
+        return;
+    }
+
+    if(slot == -1) {
+        GfxLog("invalid shader uniform slot, \"%d\"!\n", slot);
+        return;
+    } else if(slot >= program->num_uniforms) {
+        GfxLog("potential overflow for uniform slot! (%d / %d)\n", slot, program->num_uniforms);
+        return;
+    }
+
+    if(program->uniforms[slot].type == PL_INVALID_UNIFORM) {
+        return;
+    }
+
+    PLShaderProgram *old_program = plGetCurrentShaderProgram();
+    plSetShaderProgram(program);
+
+    /* todo, move into layer_opengl */
+    glUniform1i(program->uniforms[slot].slot, value);
+
+    plSetShaderProgram(old_program);
 }
 
 #define IMPLEMENT_UNIFORM_FUNCTION()    bool
