@@ -25,6 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 #include <PL/platform_console.h>
+#include <GL/glew.h>
+#include <PL/platform_graphics.h>
 
 #include "filesystem_private.h"
 #include "graphics_private.h"
@@ -173,7 +175,88 @@ void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages) {
 
     CallGfxFunction(DeleteShaderProgram, program);
 
+    free(program->uniforms);
+    free(program->attributes);
     free(program);
+}
+
+/* todo, move into layer_opengl */
+PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
+    switch(type) {
+        case GL_FLOAT:      return PL_UNIFORM_FLOAT;
+        case GL_FLOAT_VEC2: return PL_UNIFORM_VEC2;
+        case GL_FLOAT_VEC3: return PL_UNIFORM_VEC3;
+        case GL_FLOAT_VEC4: return PL_UNIFORM_VEC4;
+        case GL_FLOAT_MAT3: return PL_UNIFORM_MAT3;
+
+        case GL_DOUBLE: return PL_UNIFORM_DOUBLE;
+
+        case GL_INT:            return PL_UNIFORM_INT;
+        case GL_UNSIGNED_INT:   return PL_UNIFORM_UINT;
+
+        case GL_BOOL:   return PL_UNIFORM_BOOL;
+
+        case GL_SAMPLER_1D:         return PL_UNIFORM_SAMPLER1D;
+        case GL_SAMPLER_1D_SHADOW:  return PL_UNIFORM_SAMPLER1DSHADOW;
+        case GL_SAMPLER_2D:         return PL_UNIFORM_SAMPLER2D;
+        case GL_SAMPLER_2D_SHADOW:  return PL_UNIFORM_SAMPLER2DSHADOW;
+
+        default: {
+            GfxLog("unhandled GLSL data type, \"%u\"!\n", type);
+            return PL_INVALID_UNIFORM;
+        }
+    }
+}
+
+bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
+    /* todo, move into layer_opengl */
+
+    if(program->uniforms != NULL) {
+        GfxLog("uniforms has already been initialised!\n");
+        return true;
+    }
+
+    glGetProgramiv(program->internal.id, GL_ACTIVE_UNIFORMS, &program->num_uniforms);
+    if(program->num_uniforms <= 0) {
+        /* true, because technically this isn't a fault - there just aren't any */
+        GfxLog("no uniforms found in shader program...\n");
+        return true;
+    }
+
+    GfxLog("found %u uniforms in shader\n", program->num_uniforms);
+
+    program->uniforms = calloc((size_t)program->num_uniforms, sizeof(program->uniforms));
+    if(program->uniforms == NULL) {
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate storage for uniforms");
+        return false;
+    }
+
+    unsigned int registered = 0;
+    for(int i = 0; i < program->num_uniforms; ++i) {
+        char name[16];
+        int name_length;
+        unsigned int type;
+
+        glGetActiveUniform(program->internal.id, (GLuint) i, 16, NULL, &name_length, &type, name);
+        if(name_length <= 0) {
+            GfxLog("invalid name for uniform, ignoring!\n");
+            continue;
+        }
+
+        GfxLog(" %20s (%d) %u\n", name, i, type);
+
+        program->uniforms[i].type = GLConvertGLUniformType(type);
+        strncpy(program->uniforms[i].name, name, (size_t) name_length);
+
+        registered++;
+    }
+
+    if(registered == 0) {
+        GfxLog("failed to validate any uniforms!\n");
+        return false;
+    }
+
+    return true;
 }
 
 bool plRegisterShaderStage(PLShaderProgram *program, const char *path, PLShaderStageType type) {

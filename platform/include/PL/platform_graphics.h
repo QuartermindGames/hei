@@ -193,6 +193,8 @@ typedef enum PLShaderType {
 } PLShaderStageType;
 
 typedef enum PLShaderUniformType {
+    PL_INVALID_UNIFORM,
+
     PL_UNIFORM_FLOAT,
     PL_UNIFORM_INT,
     PL_UNIFORM_UINT,
@@ -239,14 +241,14 @@ typedef struct PLShaderProgram {
 
         PLShaderUniformType type;
     } *uniforms;
-    unsigned int num_uniforms;
+    int num_uniforms;
 
     struct {
         char name[32];
 
         unsigned int slot;
     } *attributes;
-    unsigned int num_attributes;
+    int num_attributes;
 
     PLShaderStage *stages[PL_NUM_SHADER_TYPES];
     unsigned int num_stages;
@@ -280,8 +282,7 @@ PL_EXTERN void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages)
 
 PL_EXTERN PLShaderProgram *plGetCurrentShaderProgram(void);
 
-PL_EXTERN bool plRegisterShaderProgramUniforms(void); /* todo */
-PL_EXTERN bool plRegisterShaderProgramUniform(const char *name, PLShaderUniformType type); /* todo */
+PL_EXTERN bool plRegisterShaderProgramUniforms(PLShaderProgram *program);
 
 PL_EXTERN bool plRegisterShaderProgramAttribute(const char *name); /* todo */
 
