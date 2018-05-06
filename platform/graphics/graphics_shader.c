@@ -216,12 +216,14 @@ bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
         return true;
     }
 
-    glGetProgramiv(program->internal.id, GL_ACTIVE_UNIFORMS, &program->num_uniforms);
-    if(program->num_uniforms <= 0) {
+    int num_uniforms = 0;
+    glGetProgramiv(program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms);
+    if(num_uniforms <= 0) {
         /* true, because technically this isn't a fault - there just aren't any */
         GfxLog("no uniforms found in shader program...\n");
         return true;
     }
+    program->num_uniforms = (unsigned int) num_uniforms;
 
     GfxLog("found %u uniforms in shader\n", program->num_uniforms);
 
@@ -361,7 +363,7 @@ void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value) {
     if(slot == -1) {
         GfxLog("invalid shader uniform slot, \"%d\"!\n", slot);
         return;
-    } else if(slot >= program->num_uniforms) {
+    } else if((unsigned int)(slot) >= program->num_uniforms) {
         GfxLog("potential overflow for uniform slot! (%d / %d)\n", slot, program->num_uniforms);
         return;
     }

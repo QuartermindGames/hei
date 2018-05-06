@@ -241,14 +241,14 @@ typedef struct PLShaderProgram {
 
         PLShaderUniformType type;
     } *uniforms;
-    int num_uniforms;
+    unsigned int num_uniforms;
 
     struct {
         char name[32];
 
         unsigned int slot;
     } *attributes;
-    int num_attributes;
+    unsigned int num_attributes;
 
     PLShaderStage *stages[PL_NUM_SHADER_TYPES];
     unsigned int num_stages;
