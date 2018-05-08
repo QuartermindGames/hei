@@ -43,8 +43,10 @@ ModelInterface model_interfaces[512]= {
         //{ "3d", LoadU3DModel },
         //{ "smd", LoadSMDModel },
         //{ "obj", LoadOBJModel },
+
+        { NULL, NULL }
 };
-unsigned int num_model_interfaces = plArrayElements(model_interfaces);
+unsigned int num_model_interfaces = (unsigned int)(-1);
 
 ///////////////////////////////////////
 
@@ -102,9 +104,17 @@ uint8_t *plSerializeModel(PLModel *model, unsigned int type) {
 //////////////////////////////////////////////////////////////////////////////
 
 void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path)) {
+    if(num_model_interfaces == (unsigned int)(-1)) {
+        for(unsigned int i = 0; i < plArrayElements(model_interfaces); ++i, ++num_model_interfaces) {
+            if(model_interfaces[i].ext == NULL && model_interfaces[i].LoadFunction == NULL) {
+                break;
+            }
+        }
+    }
+
+    num_model_interfaces++;
     model_interfaces[num_model_interfaces].ext = ext;
     model_interfaces[num_model_interfaces].LoadFunction = LoadFunction;
-    num_model_interfaces++;
 }
 
 PLModel *plLoadModel(const char *path) {
