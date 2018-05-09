@@ -107,14 +107,15 @@ void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *
     if(num_model_interfaces == (unsigned int)(-1)) {
         for(unsigned int i = 0; i < plArrayElements(model_interfaces); ++i, ++num_model_interfaces) {
             if(model_interfaces[i].ext == NULL && model_interfaces[i].LoadFunction == NULL) {
+                num_model_interfaces++;
                 break;
             }
         }
     }
 
-    num_model_interfaces++;
     model_interfaces[num_model_interfaces].ext = ext;
     model_interfaces[num_model_interfaces].LoadFunction = LoadFunction;
+    num_model_interfaces++;
 }
 
 PLModel *plLoadModel(const char *path) {
