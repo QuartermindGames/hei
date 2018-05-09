@@ -48,6 +48,7 @@ struct {
     bool texture_env_add;
     bool vertex_program;
     bool fragment_program;
+    bool direct_state_access;
 } gl_capabilities;
 
 int gl_version_major = 0;
@@ -944,6 +945,10 @@ void _InitOpenGL(void) {
         glDebugMessageCallback((GLDEBUGPROC) MessageCallback, NULL);
     }
 #endif
+
+    if(GLEW_ARB_direct_state_access || GLVersion(4,5)) {
+        gl_capabilities.direct_state_access = true;
+    }
 
     //glPointSize(5.f);
     //glLineWidth(2.f);
