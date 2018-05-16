@@ -43,7 +43,7 @@ void _InitTextures(void) {
     }
 
     gfx_state.max_textures  = 1024;
-    gfx_state.textures      = (PLTexture**)malloc(sizeof(PLTexture*) * gfx_state.max_textures);
+    gfx_state.textures      = (PLTexture**)pl_malloc(sizeof(PLTexture*) * gfx_state.max_textures);
     memset(gfx_state.textures, 0, sizeof(PLTexture*) * gfx_state.max_textures);
     gfx_state.num_textures  = 0;
 
@@ -186,7 +186,7 @@ PLTexture *plCreateTexture(void) {
     PLTexture **texture = gfx_state.textures; unsigned int slot;
     for(slot = 0; texture < gfx_state.textures + gfx_state.max_textures; ++texture, ++slot) {
         if(!(*texture)) {
-            (*texture) = (PLTexture*)malloc(sizeof(PLTexture));
+            (*texture) = (PLTexture*)pl_malloc(sizeof(PLTexture));
             if(!(*texture)) {
                 ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for Texture object, %d\n", sizeof(PLTexture));
                 return NULL;

@@ -120,7 +120,7 @@ PLModel *LoadU3DModel(const char *path) {
     fclose(anim_file);
     fclose(data_file);
 
-    PLModel *model = malloc(sizeof(PLModel));
+    PLModel *model = pl_malloc(sizeof(PLModel));
 
     return model;
 
@@ -185,7 +185,7 @@ PLModel *LoadU3DModel(const char *path) {
         return nullptr;
     }
 
-    PLAnimatedModel *model = (PLAnimatedModel*)malloc(sizeof(PLAnimatedModel));
+    PLAnimatedModel *model = (PLAnimatedModel*)pl_malloc(sizeof(PLAnimatedModel));
     if (model == nullptr) {
         _plSetErrorMessage("Failed to allocate animated model!\n");
 

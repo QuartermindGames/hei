@@ -375,7 +375,7 @@ bool plIsCompressedImageFormat(PLImageFormat format) {
 #define scale_5to8(i) ((((double)(i)) / 31) * 255)
 
 uint8_t *_plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels) {
-    uint8_t *dst = malloc(n_pixels * 4);
+    uint8_t *dst = pl_malloc(n_pixels * 4);
     if(dst == NULL) {
         return NULL;
     }
@@ -413,7 +413,7 @@ bool plFlipImageVertical(PLImage *image) {
 	
 	unsigned int bytes_per_row = width * bytes_per_pixel;
 	
-	unsigned char *swap = malloc(bytes_per_row);
+	unsigned char *swap = pl_malloc(bytes_per_row);
 	if(swap == NULL) {
 		ReportError(PL_RESULT_MEMORY_ALLOCATION, "Cannot allocate memory");
 		return false;

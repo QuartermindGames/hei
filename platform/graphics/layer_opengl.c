@@ -427,7 +427,7 @@ void GLSetupCamera(PLCamera *camera) {
                 glDeleteRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
 
                 free(camera->viewport.v_buffer);
-                camera->viewport.v_buffer = (uint8_t *) malloc(camera->viewport.r_w * camera->viewport.r_h * 4);
+                camera->viewport.v_buffer = (uint8_t *) pl_malloc(camera->viewport.r_w * camera->viewport.r_h * 4);
                 if(camera->viewport.v_buffer != NULL) {
                     glGenFramebuffers(1, &camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
                     glGenRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);

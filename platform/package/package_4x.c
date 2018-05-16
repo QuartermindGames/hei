@@ -38,7 +38,7 @@ For more information, please refer to <http://unlicense.org>
  * compression used on these packages. */
 
 bool LoadLSTPackageFile(FILE *fh, PLPackageIndex *pi) {
-    pi->file.data = malloc(pi->file.size);
+    pi->file.data = pl_malloc(pi->file.size);
     if(pi->file.data == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n", pi->file.size);
         return false;
@@ -106,7 +106,7 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
 
     //DebugPrint("LST INDICES %u\n", num_indices);
 
-    package = malloc(sizeof(PLPackage));
+    package = pl_malloc(sizeof(PLPackage));
     if(package == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
         goto ABORT;

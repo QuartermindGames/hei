@@ -271,7 +271,9 @@ PL_EXTERN void _plSetFunctionResult(PLresult result);
 
 #endif
 
+/* standard headers */
 #include <PL/platform_string.h>
+#include <PL/platform_memory.h>
 
 const char *plGetFormattedTime(void);
 

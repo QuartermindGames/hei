@@ -54,7 +54,7 @@ typedef struct __attribute__((packed)) MADIndex {
 } MADIndex;
 
 bool LoadMADPackageFile(FILE *fh, PLPackageIndex *pi) {
-    pi->file.data = malloc(pi->file.size);
+    pi->file.data = pl_malloc(pi->file.size);
     if(pi->file.data == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n", pi->file.size);
         return false;
@@ -119,7 +119,7 @@ PLPackage *LoadMADPackage(const char *path, bool cache) {
 
     /* Allocate the basic package structure now we know how many files are in the archive. */
 
-    package = malloc(sizeof(PLPackage));
+    package = pl_malloc(sizeof(PLPackage));
     if(package == NULL) {
         goto FAILED;
     }
@@ -127,7 +127,7 @@ PLPackage *LoadMADPackage(const char *path, bool cache) {
     memset(package, 0, sizeof(PLPackage));
 
 #if 0 // done after package load now
-    package->path = malloc(strlen(filename) + 1);
+    package->path = pl_malloc(strlen(filename) + 1);
     if(package->path == NULL) {
         goto FAILED;
     }
