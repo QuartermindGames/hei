@@ -25,8 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 #include <PL/platform_console.h>
-#include <GL/glew.h>
 #include <PL/platform_graphics.h>
+
+#include <GL/glew.h>
 
 #include "filesystem_private.h"
 #include "graphics_private.h"
@@ -34,17 +35,135 @@ For more information, please refer to <http://unlicense.org>
 /* shader implementation */
 
 /**********************************************************/
+/** preprocessor **/
+
+/**
+ * Sets up some basic properties for the given
+ * shader and deals with any macros such as 'include'
+ *
+ * todo: most of this can be rewritten into platform_parser : make it safe!
+ *
+ * @param buf
+ * @param length
+ */
+void plPreProcessGLSLShader(char *buf, size_t *length) {
+    size_t n_len = *length;
+    char *n_buf = pl_calloc(n_len, sizeof(char));
+    if(n_buf == NULL) {
+        ReportError(PL_RESULT_MEMORY_ALLOCATION,
+                    plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
+        return;
+    }
+
+    char *pos = &buf[0];
+    char *n_pos = &n_buf[0];
+
+#define InsertString(DEST, STR) {size_t sl = strlen(STR);strncpy(DEST, STR, sl);DEST += sl;}
+#define SkipSpaces()            while(*pos == ' ') { pos++; }
+#define SkipLine()              while(*pos != '\n' && *pos != '\r') { pos++; }
+
+    InsertString(n_pos, "#version 120\n");
+
+    while(*pos != '\0') {
+        if(*pos == '\n' || *pos == '\r' || *pos == '\t') {
+            pos++;
+            continue;
+        }
+
+        if(pos[0] == ' ' && pos[1] == ' ') {
+            pos += 2;
+            SkipSpaces();
+            continue;
+        }
+
+        /* skip comments */
+        if(pos[0] == '/' && pos[1] == '*') {
+            pos += 2;
+            while(!(pos[0] == '*' && pos[1] == '/')) pos++;
+            pos += 2;
+            continue;
+        }
+
+        if(pos[0] == '/' && pos[1] == '/') {
+            pos += 2;
+            SkipLine();
+            continue;
+        }
+
+        if(pos[0] == '#') {
+            pos++;
+            if(pl_strncasecmp(pos, "include", 7) == 0) {
+                pos += 7;
+
+                SkipSpaces();
+
+                /* pull the path out */
+                if(*pos++ == '\"') {
+                    pos += 2;
+                    char path[PL_SYSTEM_MAX_PATH];
+                    unsigned int i = 0;
+                    while(*pos != '\"') {
+                        path[i++] = *pos++;
+                    }   path[i] = '\0';
+                    pos += 2;
+#if 0
+                    FILE *s = fopen(path, "r");
+                    if(s == NULL) {
+                        GfxLog("failed to load shader \"%s\"!\n", path);
+                        continue;
+                    }
+#else
+                    printf("%s\n", path);
+#endif
+                }
+            } else if(pl_strncasecmp(pos, "ifdef", 5) == 0) {
+                /* todo */
+            } else if(pl_strncasecmp(pos, "if", 2) == 0) {
+                /* todo
+                 * should be followed by 'defined' or whatever? */
+            } else if(pl_strncasecmp(pos, "define", 6) == 0) {
+                /* todo
+                 * save result to table and overwrite any results */
+            }
+
+            continue;
+        }
+
+        *n_pos++ = *pos++;
+    }
+
+    printf("%s\n", n_buf);
+
+    /* resize and update buf to match */
+    char *old_buf = buf;
+    if(n_len > (*length)) {
+        if((old_buf = realloc(buf, n_len)) != NULL) {
+            buf = old_buf;
+        }
+    }
+
+    if(old_buf != NULL) {
+        memcpy(buf, n_buf, n_len);
+        *length = n_len;
+    }
+
+    free(n_buf);
+}
+
+/**********************************************************/
+
+/**********************************************************/
 /** shader stages **/
 
 /**
- * create the shader stage and generate it on the GPU,
+ * Create the shader stage and generate it on the GPU,
  * if applicable.
  *
  * @param type the type of shader stage.
  * @return the new shader stage.
  */
 PLShaderStage *plCreateShaderStage(PLShaderStageType type) {
-    PLShaderStage *stage = calloc(1, sizeof(PLShaderStage));
+    PLShaderStage *stage = pl_calloc(1, sizeof(PLShaderStage));
     if(stage == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate shader stage");
         return NULL;
@@ -58,7 +177,7 @@ PLShaderStage *plCreateShaderStage(PLShaderStageType type) {
 }
 
 /**
- * delete the given shader stage and wipe it off the
+ * Delete the given shader stage and wipe it off the
  * GPU, if applicable.
  *
  * @param stage stage we're deleting.
@@ -72,29 +191,32 @@ void plDeleteShaderStage(PLShaderStage *stage) {
 }
 
 /**
- * compiles the given shader stage on the GPU, otherwise it
+ * Compiles the given shader stage on the GPU, otherwise it
  * will be ignored when performing software-rendering or if
  * your GPU doesn't support the shader compilation.
  *
- * if the compilation fails an error will be reported and this will
+ * If the compilation fails an error will be reported and this will
  * automatically fallback when rendering anything if it's active.
  *
  * @param stage the stage we're going to be compiling.
  * @param buf pointer to buffer containing the shader we're compiling.
  * @param length the length of the buffer.
  */
-void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) {
+void plCompileShaderStage(PLShaderStage *stage, char *buf, size_t length) {
     _plResetError();
+
+    //plPreProcessGLSLShader(buf, &length);
+
     CallGfxFunction(CompileShaderStage, stage, buf, length);
 }
 
 /**
- * shortcut function that can be used to quickly produce a new
+ * Shortcut function that can be used to quickly produce a new
  * shader stage. this will automatically handle loading the given
  * shader into memory, compiling it and then returning the new
  * shader stage object.
  *
- * if the compilation fails an error will be reported and the
+ * If the compilation fails an error will be reported and the
  * function will return a null pointer.
  *
  * @param path path to the shader stage document.
@@ -141,7 +263,7 @@ PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
  * @return the new shader program.
  */
 PLShaderProgram *plCreateShaderProgram(void) {
-    PLShaderProgram *program = calloc(1, sizeof(PLShaderProgram));
+    PLShaderProgram *program = pl_calloc(1, sizeof(PLShaderProgram));
     if(program == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to create shader program");
         return NULL;
@@ -178,88 +300,6 @@ void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages) {
     free(program->uniforms);
     free(program->attributes);
     free(program);
-}
-
-/* todo, move into layer_opengl */
-PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
-    switch(type) {
-        case GL_FLOAT:      return PL_UNIFORM_FLOAT;
-        case GL_FLOAT_VEC2: return PL_UNIFORM_VEC2;
-        case GL_FLOAT_VEC3: return PL_UNIFORM_VEC3;
-        case GL_FLOAT_VEC4: return PL_UNIFORM_VEC4;
-        case GL_FLOAT_MAT3: return PL_UNIFORM_MAT3;
-
-        case GL_DOUBLE: return PL_UNIFORM_DOUBLE;
-
-        case GL_INT:            return PL_UNIFORM_INT;
-        case GL_UNSIGNED_INT:   return PL_UNIFORM_UINT;
-
-        case GL_BOOL:   return PL_UNIFORM_BOOL;
-
-        case GL_SAMPLER_1D:         return PL_UNIFORM_SAMPLER1D;
-        case GL_SAMPLER_1D_SHADOW:  return PL_UNIFORM_SAMPLER1DSHADOW;
-        case GL_SAMPLER_2D:         return PL_UNIFORM_SAMPLER2D;
-        case GL_SAMPLER_2D_SHADOW:  return PL_UNIFORM_SAMPLER2DSHADOW;
-
-        default: {
-            GfxLog("unhandled GLSL data type, \"%u\"!\n", type);
-            return PL_INVALID_UNIFORM;
-        }
-    }
-}
-
-bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
-    /* todo, move into layer_opengl */
-
-    if(program->uniforms != NULL) {
-        GfxLog("uniforms has already been initialised!\n");
-        return true;
-    }
-
-    int num_uniforms = 0;
-    glGetProgramiv(program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms);
-    if(num_uniforms <= 0) {
-        /* true, because technically this isn't a fault - there just aren't any */
-        GfxLog("no uniforms found in shader program...\n");
-        return true;
-    }
-    program->num_uniforms = (unsigned int) num_uniforms;
-
-    GfxLog("found %u uniforms in shader\n", program->num_uniforms);
-
-    program->uniforms = calloc((size_t)program->num_uniforms, sizeof(*program->uniforms));
-    if(program->uniforms == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate storage for uniforms");
-        return false;
-    }
-
-    unsigned int registered = 0;
-    for(unsigned int i = 0; i < program->num_uniforms; ++i) {
-        char name[16];
-        int name_length;
-        unsigned int type;
-
-        glGetActiveUniform(program->internal.id, (GLuint) i, 16, NULL, &name_length, &type, name);
-        if(name_length <= 0) {
-            GfxLog("invalid name for uniform, ignoring!\n");
-            continue;
-        }
-
-        GfxLog(" %20s (%d) %u\n", name, i, type);
-
-        program->uniforms[i].type = GLConvertGLUniformType(type);
-        program->uniforms[i].slot = i;
-        strncpy(program->uniforms[i].name, name, sizeof(program->uniforms[i].name));
-
-        registered++;
-    }
-
-    if(registered == 0) {
-        GfxLog("failed to validate any uniforms!\n");
-        return false;
-    }
-
-    return true;
 }
 
 bool plRegisterShaderStage(PLShaderProgram *program, const char *path, PLShaderStageType type) {
@@ -350,6 +390,96 @@ int plGetShaderUniformSlot(PLShaderProgram *program, const char *name) {
 }
 
 /*****************************************************/
+/** shader attribute **/
+
+bool plRegisterShaderProgramAttributes(PLShaderProgram *program) {
+    return false;
+}
+
+/*****************************************************/
+/** shader uniform **/
+
+/* todo, move into layer_opengl */
+PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
+    switch(type) {
+        case GL_FLOAT:      return PL_UNIFORM_FLOAT;
+        case GL_FLOAT_VEC2: return PL_UNIFORM_VEC2;
+        case GL_FLOAT_VEC3: return PL_UNIFORM_VEC3;
+        case GL_FLOAT_VEC4: return PL_UNIFORM_VEC4;
+        case GL_FLOAT_MAT3: return PL_UNIFORM_MAT3;
+
+        case GL_DOUBLE: return PL_UNIFORM_DOUBLE;
+
+        case GL_INT:            return PL_UNIFORM_INT;
+        case GL_UNSIGNED_INT:   return PL_UNIFORM_UINT;
+
+        case GL_BOOL:   return PL_UNIFORM_BOOL;
+
+        case GL_SAMPLER_1D:         return PL_UNIFORM_SAMPLER1D;
+        case GL_SAMPLER_1D_SHADOW:  return PL_UNIFORM_SAMPLER1DSHADOW;
+        case GL_SAMPLER_2D:         return PL_UNIFORM_SAMPLER2D;
+        case GL_SAMPLER_2D_SHADOW:  return PL_UNIFORM_SAMPLER2DSHADOW;
+
+        default: {
+            GfxLog("unhandled GLSL data type, \"%u\"!\n", type);
+            return PL_INVALID_UNIFORM;
+        }
+    }
+}
+
+bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
+    /* todo, move into layer_opengl */
+
+    if(program->uniforms != NULL) {
+        GfxLog("uniforms has already been initialised!\n");
+        return true;
+    }
+
+    int num_uniforms = 0;
+    glGetProgramiv(program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms);
+    if(num_uniforms <= 0) {
+        /* true, because technically this isn't a fault - there just aren't any */
+        GfxLog("no uniforms found in shader program...\n");
+        return true;
+    }
+    program->num_uniforms = (unsigned int) num_uniforms;
+
+    GfxLog("found %u uniforms in shader\n", program->num_uniforms);
+
+    program->uniforms = pl_calloc((size_t)program->num_uniforms, sizeof(*program->uniforms));
+    if(program->uniforms == NULL) {
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate storage for uniforms");
+        return false;
+    }
+
+    unsigned int registered = 0;
+    for(unsigned int i = 0; i < program->num_uniforms; ++i) {
+        char name[16];
+        int name_length;
+        unsigned int type;
+
+        glGetActiveUniform(program->internal.id, (GLuint) i, 16, NULL, &name_length, &type, name);
+        if(name_length <= 0) {
+            GfxLog("invalid name for uniform, ignoring!\n");
+            continue;
+        }
+
+        GfxLog(" %20s (%d) %u\n", name, i, type);
+
+        program->uniforms[i].type = GLConvertGLUniformType(type);
+        program->uniforms[i].slot = i;
+        strncpy(program->uniforms[i].name, name, sizeof(program->uniforms[i].name));
+
+        registered++;
+    }
+
+    if(registered == 0) {
+        GfxLog("failed to validate any uniforms!\n");
+        return false;
+    }
+
+    return true;
+}
 
 void plSetShaderUniformFloat(PLShaderProgram *program, int slot, float value) {
 
@@ -380,6 +510,3 @@ void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value) {
 
     plSetShaderProgram(old_program);
 }
-
-#define IMPLEMENT_UNIFORM_FUNCTION()    bool
-#define IMPLEMENT_ATTRIBUTE_FUNCTION()  bool
