@@ -95,5 +95,9 @@ if(PL_USE_GRAPHICS)
     endif()
 endif()
 
-target_include_directories(platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_include_directories(platform PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/
+        ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_include_directories(platform PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(platform m dl)
