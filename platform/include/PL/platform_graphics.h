@@ -264,7 +264,7 @@ PL_EXTERN_C
 
 PL_EXTERN PLShaderStage *plCreateShaderStage(PLShaderStageType type);
 PL_EXTERN PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type);
-PL_EXTERN void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length);
+PL_EXTERN void plCompileShaderStage(PLShaderStage *stage, char *buf, size_t length);
 
 PL_EXTERN bool plRegisterShaderStage(PLShaderProgram *program, const char *path, PLShaderStageType type);
 PL_EXTERN bool plLinkShaderProgram(PLShaderProgram *program);

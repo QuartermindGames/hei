@@ -146,7 +146,7 @@ PLBitmapFont *plParseBitmapFont(const char *name, char *buf, size_t length) {
         return NULL;
     }
 
-    PLBitmapFont *font = (PLBitmapFont*)calloc(1, sizeof(PLBitmapFont));
+    PLBitmapFont *font = (PLBitmapFont*)pl_calloc(1, sizeof(PLBitmapFont));
     if(font == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for BitmapFont, %d!\n", sizeof(PLBitmapFont));
         return NULL;
@@ -195,8 +195,8 @@ PLBitmapFont *plParseBitmapFont(const char *name, char *buf, size_t length) {
         image.size          = plGetImageSize(image.format, image.width, image.height);
         image.levels        = 1;
 
-        if((image.data = calloc(image.levels, sizeof(uint8_t*))) == NULL ||
-                (image.data[0] = calloc(image.size, sizeof(uint8_t))) == NULL) {
+        if((image.data = pl_calloc(image.levels, sizeof(uint8_t*))) == NULL ||
+                (image.data[0] = pl_calloc(image.size, sizeof(uint8_t))) == NULL) {
             plDeleteBitmapFont(font);
 
             ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for texture data");

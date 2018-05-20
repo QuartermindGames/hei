@@ -165,7 +165,7 @@ PLModel *LoadHDVModel(const char *path) {
         }
     }
 
-    PLModel *model = calloc(1, sizeof(PLModel));
+    PLModel *model = pl_calloc(1, sizeof(PLModel));
     if(model == NULL) {
         plDeleteMesh(mesh);
 
@@ -174,7 +174,7 @@ PLModel *LoadHDVModel(const char *path) {
     }
 
     model->num_lods = 1;
-    model->lods[0].meshes = calloc(1, sizeof(PLMesh));
+    model->lods[0].meshes = pl_calloc(1, sizeof(PLMesh));
     if(model->lods[0].meshes == NULL) {
         plDeleteMesh(mesh);
         plDeleteModel(model);

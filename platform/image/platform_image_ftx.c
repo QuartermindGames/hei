@@ -46,14 +46,14 @@ bool LoadFTXImage(FILE *fin, PLImage *out) {
     out->size = (unsigned int)(header.width * header.height * 4);
     out->levels = 1;
 
-    out->data = calloc(out->levels, sizeof(uint8_t*));
+    out->data = pl_calloc(out->levels, sizeof(uint8_t*));
     if(out->data == NULL) {
         plFreeImage(out);
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
         return false;
     }
 
-    out->data[0] = calloc(out->size, sizeof(uint8_t));
+    out->data[0] = pl_calloc(out->size, sizeof(uint8_t));
     if(out->data[0] == NULL) {
         plFreeImage(out);
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");

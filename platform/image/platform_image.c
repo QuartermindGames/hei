@@ -58,9 +58,9 @@ bool LoadSTBImage(FILE *fin, PLImage *out) {
     out->size           = plGetImageSize(out->format, out->width, out->height);
     out->levels         = 1;
 
-    out->data = calloc(out->levels, sizeof(uint8_t*));
+    out->data = pl_calloc(out->levels, sizeof(uint8_t*));
     if(out->data != NULL) {
-        out->data[0] = calloc(out->size, sizeof(uint8_t));
+        out->data[0] = pl_calloc(out->size, sizeof(uint8_t));
         if(out->data[0] != NULL) {
             out->data[0] = data;
             return true;
@@ -329,7 +329,7 @@ void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest) {
 }
 
 void _plAllocateImage(PLImage *image, PLuint size, PLuint levels) {
-    image->data = (uint8_t**)calloc(levels, sizeof(uint8_t));
+    image->data = (uint8_t**)pl_calloc(levels, sizeof(uint8_t));
 }
 
 void plFreeImage(PLImage *image) {

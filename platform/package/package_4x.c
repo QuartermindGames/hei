@@ -115,7 +115,7 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
     memset(package, 0, sizeof(PLPackage));
     package->internal.LoadFile = LoadLSTPackageFile;
     package->table_size = num_indices;
-    package->table = calloc(num_indices, sizeof(struct PLPackageIndex));
+    package->table = pl_calloc(num_indices, sizeof(struct PLPackageIndex));
     if(package->table == NULL) {
         goto ABORT;
     }

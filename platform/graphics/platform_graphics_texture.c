@@ -37,7 +37,7 @@ PLConsoleVariable pl_texture_anisotropy = { "gr_texture_anisotropy", "16", pl_in
 #define FREE_TEXTURE    ((unsigned int)-1)
 
 void _InitTextures(void) {
-    gfx_state.tmu = (PLTextureMappingUnit*)calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));
+    gfx_state.tmu = (PLTextureMappingUnit*)pl_calloc(plGetMaxTextureUnits(), sizeof(PLTextureMappingUnit));
     for (unsigned int i = 0; i < plGetMaxTextureUnits(); i++) {
         gfx_state.tmu[i].current_envmode = PL_TEXTUREMODE_REPLACE;
     }
@@ -226,7 +226,7 @@ PLTexture *plCreateTexture(void) {
 
     return (*texture);
 #else
-    PLTexture *texture = calloc(1, sizeof(PLTexture));
+    PLTexture *texture = pl_calloc(1, sizeof(PLTexture));
     if(texture == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes", sizeof(PLTexture));
         return NULL;

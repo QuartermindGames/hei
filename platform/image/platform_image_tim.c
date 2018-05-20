@@ -152,7 +152,7 @@ bool LoadTIMImage(FILE *fin, PLImage *out) {
             goto ERR_CLEANUP;
         }
 
-        palette = calloc(palette_size, sizeof(uint16_t));
+        palette = pl_calloc(palette_size, sizeof(uint16_t));
         if(palette == NULL) {
             ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate palette buffer");
             goto ERR_CLEANUP;
@@ -228,13 +228,13 @@ bool LoadTIMImage(FILE *fin, PLImage *out) {
     out->size   = plGetImageSize(out->format, out->width, out->height);
     out->levels = 1;
 
-    out->data = calloc(out->levels, sizeof(uint8_t*));
+    out->data = pl_calloc(out->levels, sizeof(uint8_t*));
     if(out->data == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
         goto ERR_CLEANUP;
     }
 
-    out->data[0] = calloc(out->size, sizeof(uint8_t));
+    out->data[0] = pl_calloc(out->size, sizeof(uint8_t));
     if(out->data[0] == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate output image buffer");
         goto ERR_CLEANUP;

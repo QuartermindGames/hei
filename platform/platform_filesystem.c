@@ -277,7 +277,7 @@ void plLoadFile(const char *path, PLIOBuffer *buffer) {
     strncpy(buffer->name, path, sizeof(buffer->name));
 
     buffer->size = plGetFileSize(path);
-    buffer->data = calloc(buffer->size, sizeof(uint8_t));
+    buffer->data = pl_calloc(buffer->size, sizeof(uint8_t));
     if(buffer->data != NULL) {
         if(fread(buffer->data, sizeof(uint8_t), buffer->size, fp) != buffer->size) {
             FSLog("failed to read complete file (%s)\n", path);
@@ -330,7 +330,7 @@ bool plCopyFile(const char *path, const char *dest) {
         return false;
     }
 
-    uint8_t *data = calloc(file_size, 1);
+    uint8_t *data = pl_calloc(file_size, 1);
     if(data == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate buffer for %s, with size %d", path, file_size);
         return false;

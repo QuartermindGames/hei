@@ -35,7 +35,7 @@ PLPackage *plCreatePackage(const char *dest) {
         return NULL;
     }
 
-    PLPackage *package = calloc(1, sizeof(PLPackage));
+    PLPackage *package = pl_calloc(1, sizeof(PLPackage));
     if(package == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
         return NULL;

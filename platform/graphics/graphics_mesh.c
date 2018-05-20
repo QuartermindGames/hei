@@ -112,7 +112,7 @@ void plApplyMeshLighting(PLMesh *mesh, const PLLight *light, PLVector3 position)
 PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts) {
     plAssert(num_verts);
 
-    PLMesh *mesh = (PLMesh*)calloc(1, sizeof(PLMesh));
+    PLMesh *mesh = (PLMesh*)pl_calloc(1, sizeof(PLMesh));
     if(mesh == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for Mesh, %d!\n", sizeof(PLMesh));
         return NULL;
@@ -126,7 +126,7 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
     mesh->internal.old_primitive = mesh->primitive;
 
     if(num_tris > 0) {
-        mesh->triangles = (PLTriangle*)calloc(num_tris, sizeof(PLTriangle));
+        mesh->triangles = (PLTriangle*)pl_calloc(num_tris, sizeof(PLTriangle));
         if(!mesh->triangles) {
             ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for Triangle, %d!\n",
                            sizeof(PLTriangle) * num_tris);
@@ -137,7 +137,7 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
 
         if(mesh->primitive == PL_MESH_TRIANGLES) {
             mesh->num_indices = num_tris * 3;
-            if((mesh->indices = calloc(mesh->num_indices, sizeof(uint16_t))) == NULL) {
+            if((mesh->indices = pl_calloc(mesh->num_indices, sizeof(uint16_t))) == NULL) {
                 ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for indices, %d!\n",
                             sizeof(uint16_t) * mesh->num_indices);
                 plDeleteMesh(mesh);
@@ -146,7 +146,7 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
         }
     }
 
-    mesh->vertices = (PLVertex*)calloc(num_verts, sizeof(PLVertex));
+    mesh->vertices = (PLVertex*)pl_calloc(num_verts, sizeof(PLVertex));
     if(mesh->vertices == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for Vertex, %d!\n",
             sizeof(PLVertex) * num_verts);

@@ -136,7 +136,7 @@ PLPackage *LoadMADPackage(const char *path, bool cache) {
 #endif
     package->internal.LoadFile  = LoadMADPackageFile;
     package->table_size         = num_indices;
-    package->table              = calloc(num_indices, sizeof(struct PLPackageIndex));
+    package->table              = pl_calloc(num_indices, sizeof(struct PLPackageIndex));
     if(package->table == NULL) {
         goto FAILED;
     }

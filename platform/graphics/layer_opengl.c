@@ -739,7 +739,7 @@ void GLCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) 
         int s_length;
         glGetShaderiv(stage->internal.id, GL_INFO_LOG_LENGTH, &s_length);
         if(s_length > 1) {
-            char *log = calloc((size_t) s_length, sizeof(char));
+            char *log = pl_calloc((size_t) s_length, sizeof(char));
             glGetShaderInfoLog(stage->internal.id, s_length, NULL, log);
             GfxLog(" COMPILE ERROR:\n%s\n",log);
             free(log);
@@ -765,7 +765,7 @@ void GLLinkShaderProgram(PLShaderProgram *program) {
         int s_length;
         glGetProgramiv(program->internal.id, GL_INFO_LOG_LENGTH, &s_length);
         if(s_length > 1) {
-            char *log = calloc((size_t)s_length, sizeof(char));
+            char *log = pl_calloc((size_t)s_length, sizeof(char));
             glGetProgramInfoLog(program->internal.id, s_length, NULL, log);
             GfxLog(" LINK ERROR:\n%s\n", log);
             free(log);

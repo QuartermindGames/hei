@@ -292,7 +292,7 @@ bool LoadVTFImage(FILE *fin, PLImage *out) {
     _plConvertVTFFormat(out, header.highresimageformat);
 
     out->levels = 1;
-    out->data = (uint8_t**)calloc(1, sizeof(uint8_t*));
+    out->data = (uint8_t**)pl_calloc(1, sizeof(uint8_t*));
 
     /*
     if (header.version[1] >= 3) {
@@ -316,7 +316,7 @@ bool LoadVTFImage(FILE *fin, PLImage *out) {
                     miph *= (unsigned int)pow(2, mipmap); //(out->height * (mipmap + 1)) / header.mipmaps;
                     PLuint mipsize = plGetImageSize(out->format, mipw, miph);
                     if(mipmap == (header.mipmaps - 1)) {
-                        out->data[0] = (uint8_t*)calloc(mipsize, sizeof(uint8_t));
+                        out->data[0] = (uint8_t*)pl_calloc(mipsize, sizeof(uint8_t));
                         if (fread(out->data[0], sizeof(uint8_t), mipsize, fin) != mipsize) {
                             plFreeImage(out);
                             ReportError(PL_RESULT_FILEREAD, "failed to head header");

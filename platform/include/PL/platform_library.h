@@ -24,24 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #pragma once
 
 #include "platform.h"
 
-typedef struct PLModuleFunction {
-    const char *name;
-
-    void **Function;
-} PLModuleFunction;
-
-PL_EXTERN_C
-
-PL_EXTERN PL_FARPROC plFindLibraryFunction(PL_INSTANCE instance, const char *function);
-
-PL_EXTERN void *plLoadLibraryInterface(PL_INSTANCE instance, const char *path, const char *entry, void *handle);
-
-PL_INSTANCE plLoadLibrary(const char *path);    // Loads new library instance.
-PL_EXTERN void plUnloadLibrary(PL_INSTANCE instance);    // Unloads library instance.
-
-PL_EXTERN_C_END
+/* todo */

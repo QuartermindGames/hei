@@ -133,7 +133,7 @@ PLMatrix4x4 plLookAtTargetVector(PLVector3 eye, PLVector3 target) {
 /////////////////////////////////////////////////////////////////////////////////////
 
 PLCamera *plCreateCamera(void) {
-    PLCamera *camera = (PLCamera*)calloc(1, sizeof(PLCamera));
+    PLCamera *camera = (PLCamera*)pl_calloc(1, sizeof(PLCamera));
     if(camera == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate memory for Camera, %d!\n", sizeof(PLCamera));
         return NULL;

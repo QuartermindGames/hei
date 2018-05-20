@@ -391,7 +391,7 @@ PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
 
 #if 0
 void plScreenshot(PLViewport *viewport, const PLchar *path) {
-    uint8_t *buffer = (uint8_t*)calloc(viewport->height * viewport->width * 3, sizeof(uint8_t));
+    uint8_t *buffer = (uint8_t*)pl_calloc(viewport->height * viewport->width * 3, sizeof(uint8_t));
     glReadPixels(viewport->x, viewport->y, viewport->width, viewport->height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
 
     free(buffer);
