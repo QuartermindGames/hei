@@ -397,6 +397,15 @@ typedef struct PLVector4 {
     float x, y, z, w;
 } PLVector4;
 
+PL_INLINE static PLVector4 plVector4Add(PLVector4 v, PLVector4 v2) {
+    return (PLVector4){
+        v.x + v2.x,
+        v.y + v2.y,
+        v.z + v2.z,
+        v.w + v2.w
+    };
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Colour
 
@@ -742,7 +751,6 @@ PL_INLINE static const char *plPrintColour(PLColour c) {
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Matrices
-// todo, none of this is correct yet
 
 typedef struct PLMatrix3x3 {
     float m[9];
@@ -750,6 +758,18 @@ typedef struct PLMatrix3x3 {
      * 0 0 0
      * 0 0 0
      */
+
+#ifdef __cplusplus
+
+    PLMatrix3x3() { }
+
+    PLMatrix3x3(PLVector3 x, PLVector3 y, PLVector3 z) {
+        m[0] = x.x; m[3] = y.x; m[6] = z.x;
+        m[1] = x.y; m[4] = y.y; m[7] = z.y;
+        m[2] = x.z; m[5] = y.z; m[8] = z.z;
+    }
+
+#endif
 } PLMatrix3x3;
 
 typedef struct PLMatrix3x4 {
@@ -769,27 +789,105 @@ typedef struct PLMatrix4x4 {
      */
 } PLMatrix4x4;
 
-#define plSetMatrix4x4(mat, col, row, val) (mat).m[(col) * 4 + (row)] = (val)
+/* I know, this is disgusting... */
+#define pl_3x3pos(col, row) m[(col) * 3 + (row)]
+#define pl_4x4pos(col, row) m[(col) * 4 + (row)]
 
-PL_INLINE static void plClearMatrix(PLMatrix4x4 *m) {
+#define plSetMatrix3x3(mat, col, row, val) (mat).pl_3x3pos(col, row) = (val)
+#define plSetMatrix4x4(mat, col, row, val) (mat).pl_4x4pos(col, row) = (val)
+
+/* ClearMatrix */
+
+PL_INLINE static void plClearMatrix3x3(PLMatrix3x3 *m) {
+    memset(m, 0, sizeof(PLMatrix3x3));
+}
+
+PL_INLINE static void plClearMatrix4x4(PLMatrix4x4 *m) {
     memset(m, 0, sizeof(PLMatrix4x4));
 }
 
-PL_INLINE static void plIdentityMatrix(PLMatrix4x4 *m) {
-    static const PLMatrix4x4 ident = {
-            {
-                1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1
-            }
-    };
-    memcpy(m, &ident, sizeof(PLMatrix4x4));
+/* Identity */
+
+PL_INLINE static PLMatrix3x3 plMatrix3x3Identity(void) {
+    PLMatrix3x3 out;
+    out.m[0] = 1; out.m[1] = 0; out.m[2] = 0;
+    out.m[3] = 0; out.m[4] = 1; out.m[5] = 0;
+    out.m[6] = 0; out.m[7] = 0; out.m[8] = 1;
+    return out;
 }
 
-PL_INLINE static void plAddMatrix(PLMatrix4x4 m, PLMatrix4x4 m2) {
-
+PL_INLINE static PLMatrix4x4 plMatrix4x4Identity(void) {
+    PLMatrix4x4 out;
+    out.m[0 ] = 1; out.m[1 ] = 0; out.m[2 ] = 0; out.m[3 ] = 0;
+    out.m[4 ] = 0; out.m[5 ] = 1; out.m[6 ] = 0; out.m[7 ] = 0;
+    out.m[8 ] = 0; out.m[9 ] = 0; out.m[10] = 1; out.m[11] = 0;
+    out.m[12] = 0; out.m[13] = 0; out.m[14] = 0; out.m[15] = 1;
+    return out;
 }
+
+/* Transpose */
+
+PL_INLINE static void plTransposeMatrix3x3(PLMatrix3x3 *m, PLMatrix3x3 m2) {
+    for(unsigned int j = 0; j < 3; ++j) {
+        for(unsigned int i = 0; i < 3; ++i) {
+            m->pl_3x3pos(i, j) = m2.pl_3x3pos(j, i);
+        }
+    }
+}
+
+PL_INLINE static void plTransposeMatrix4x4(PLMatrix4x4 *m, PLMatrix4x4 m2) {
+    for(unsigned int j = 0; j < 4; ++j) {
+        for(unsigned int i = 0; i < 4; ++i) {
+            m->pl_4x4pos(i, j) = m2.pl_4x4pos(j, i);
+        }
+    }
+}
+
+/* Add */
+
+PL_INLINE static PLMatrix3x3 plAddMatrix3x3(PLMatrix3x3 m, PLMatrix3x3 m2) {
+    PLMatrix3x3 out;
+    for(unsigned int i = 0; i < 3; ++i) {
+        for(unsigned int j = 0; j < 3; ++j) {
+            out.pl_3x3pos(i, j) = m.pl_3x3pos(i, j) + m2.pl_3x3pos(i, j);
+        }
+    }
+    return out;
+}
+
+PL_INLINE static PLMatrix4x4 plAddMatrix4x4(PLMatrix4x4 m, PLMatrix4x4 m2) {
+    PLMatrix4x4 out;
+    for(unsigned int i = 0; i < 4; ++i) {
+        for(unsigned int j = 0; j < 4; ++j) {
+            out.pl_4x4pos(i, j) = m.pl_4x4pos(i, j) + m2.pl_4x4pos(i, j);
+        }
+    }
+    return out;
+}
+
+/* Subtract */
+
+PL_INLINE static PLMatrix3x3 plSubtractMatrix3x3(PLMatrix3x3 m, PLMatrix3x3 m2) {
+    PLMatrix3x3 out;
+    for(unsigned int i = 0; i < 3; ++i) {
+        for(unsigned int j = 0; j < 3; ++j) {
+            out.pl_3x3pos(i, j) = m.pl_3x3pos(i, j) - m2.pl_3x3pos(i, j);
+        }
+    }
+    return out;
+}
+
+PL_INLINE static PLMatrix4x4 plSubtractMatrix4x4(PLMatrix4x4 m, PLMatrix4x4 m2) {
+    PLMatrix4x4 out;
+    for(unsigned int i = 0; i < 4; ++i) {
+        for(unsigned int j = 0; j < 4; ++j) {
+            out.pl_4x4pos(i, j) = m.pl_4x4pos(i, j) - m2.pl_4x4pos(i, j);
+        }
+    }
+    return out;
+}
+
+/* */
 
 PL_INLINE static void plMultiplyMatrix(PLMatrix4x4 *m, PLMatrix4x4 m2) {
 
