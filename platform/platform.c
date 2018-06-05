@@ -119,7 +119,7 @@ PLresult plInitialize(int argc, char **argv) {
         pl_arguments.exe_name = plGetFileName(argv[0]);
     }
 
-    //pl_arguments.arguments = (const char**)calloc(pl_arguments.num_arguments, sizeof(char*));
+    //pl_arguments.arguments = (const char**)pl_calloc(pl_arguments.num_arguments, sizeof(char*));
     for(unsigned int i = 0; i < pl_arguments.num_arguments; i++) {
         if(plIsEmptyString(argv[i])) {
             continue;

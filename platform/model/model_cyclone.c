@@ -334,9 +334,7 @@ PLModel *LoadRequiemModel(const char *path) {
         return NULL;
     }
 
-    model->num_lods = 1;
-    model->lods[0].meshes = pl_calloc(1, sizeof(PLMesh));
-    if(model->lods[0].meshes == NULL) {
+    if((model->meshes = pl_calloc(1, sizeof(PLModelMesh))) == NULL) {
         plDeleteMesh(mesh);
         plDeleteModel(model);
 
@@ -344,8 +342,8 @@ PLModel *LoadRequiemModel(const char *path) {
         return NULL;
     }
 
-    model->lods[0].num_meshes = 1;
-    model->lods[0].meshes[0] = *mesh;
+    model->num_meshes = 1;
+    model->meshes[0].mesh = mesh;
 
     plGenerateModelNormals(model);
     plGenerateModelAABB(model);

@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-
 #pragma once
 
 #include "platform.h"
@@ -72,15 +71,10 @@ typedef struct PLModelBoneWeight {
     PLVector3 direction;
 } PLModelBoneWeight;
 
-typedef struct PLModelLOD {
-    PLMesh *meshes;
-    unsigned int num_meshes;
-
-    PLModelBoneWeight *bone_weights;
-    unsigned int num_bone_weights;
-
-    float distance;
-} PLModelLOD;
+typedef struct PLModelMesh {
+    PLTexture *texture;
+    PLMesh *mesh;
+} PLModelMesh;
 
 typedef struct PLModel {
     char name[64];
@@ -89,8 +83,16 @@ typedef struct PLModel {
 
     PLModelSkeleton skeleton;
 
+    PLModelMesh *meshes;
+    unsigned int num_meshes;
+
+    PLModelBoneWeight *bone_weights;
+    unsigned int num_bone_weights;
+
+    /*
     PLModelLOD lods[PL_MAX_MODEL_LODS];
     unsigned int num_lods;
+     */
 
     PLVector3 origin;
 
@@ -98,7 +100,7 @@ typedef struct PLModel {
     PLAABB bounds;
 
     struct {
-        unsigned int current_lod;
+        //unsigned int current_lod;
         unsigned int current_animation;
         unsigned int current_frame;
     } internal;

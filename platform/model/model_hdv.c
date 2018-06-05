@@ -173,9 +173,8 @@ PLModel *LoadHDVModel(const char *path) {
         goto ABORT;
     }
 
-    model->num_lods = 1;
-    model->lods[0].meshes = pl_calloc(1, sizeof(PLMesh));
-    if(model->lods[0].meshes == NULL) {
+    model->num_meshes = 1;
+    if((model->meshes = pl_calloc(1, sizeof(PLModelMesh))) == NULL) {
         plDeleteMesh(mesh);
         plDeleteModel(model);
 
@@ -183,8 +182,7 @@ PLModel *LoadHDVModel(const char *path) {
         goto ABORT;
     }
 
-    model->lods[0].num_meshes = 1;
-    model->lods[0].meshes[0] = *mesh;
+    model->meshes[0].mesh = mesh;
 
     plGenerateModelNormals(model);
 

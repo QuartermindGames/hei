@@ -78,3 +78,6 @@ PL_INLINE static bool plIsSphereIntersecting(PLVector3 origin, float radius, PLV
     float sum_radius = radius + radius_b;
     return distance < sum_radius;
 }
+
+/************************************************************/
+

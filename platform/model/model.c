@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org>
 #include "model_private.h"
 
 #include <PL/platform_filesystem.h>
+#include <PL/platform_model.h>
 
 /* PLATFORM MODEL LOADER */
 
@@ -53,20 +54,16 @@ unsigned int num_model_interfaces = (unsigned int)(-1);
 void plGenerateModelNormals(PLModel *model) {
     plAssert(model);
 
-    for(unsigned int i = 0; i < model->num_lods; ++i) {
-        for(unsigned int j = 0; j < model->lods[i].num_meshes; ++j) {
-            plGenerateMeshNormals(&model->lods[i].meshes[j]);
-        }
+    for(unsigned int i = 0; i < model->num_meshes; ++i) {
+        plGenerateMeshNormals(model->meshes[i].mesh);
     }
 }
 
 void plGenerateModelAABB(PLModel *model) {
     plAssert(model);
 
-    for(unsigned int i = 0; i < model->num_lods; ++i) {
-        for(unsigned int j = 0; j < model->lods[i].num_meshes; ++j) {
-            plAddAABB(&model->bounds, plCalculateMeshAABB(&model->lods[i].meshes[j]));
-        }
+    for(unsigned int i = 0; i < model->num_meshes; ++i) {
+        plAddAABB(&model->bounds, plCalculateMeshAABB(model->meshes[i].mesh));
     }
 }
 
@@ -153,22 +150,20 @@ PLModel *plLoadModel(const char *path) {
 
 void plApplyMeshLighting(PLMesh *mesh, const PLLight *light, PLVector3 position);
 void plApplyModelLighting(PLModel *model, PLLight *light, PLVector3 position) {
-    for(unsigned int i = 0; i < model->lods[model->internal.current_lod].num_meshes; ++i) {
-        plApplyMeshLighting(&model->lods[model->internal.current_lod].meshes[i], light, position);
+    for(unsigned int i = 0; i < model->num_meshes; ++i) {
+        plApplyMeshLighting(model->meshes[i].mesh, light, position);
     }
 }
 
 void plDeleteModel(PLModel *model) {
     plAssert(model);
 
-    for(unsigned int i = 0; i < model->num_lods; ++i) {
-        for(unsigned int j = 0; j < model->lods[j].num_meshes; ++j) {
-            if(&model->lods[i].meshes[j] == NULL) {
-                continue;
-            }
-
-            plDeleteMesh(&model->lods[i].meshes[j]);
+    for(unsigned int j = 0; j < model->num_meshes; ++j) {
+        if(&model->meshes[j] == NULL) {
+            continue;
         }
+
+        plDeleteMesh(model->meshes[j].mesh);
     }
 
     free(model);
@@ -177,8 +172,11 @@ void plDeleteModel(PLModel *model) {
 void plDrawModel(PLModel *model) {
     plAssert(model);
 
-    for(unsigned int i = 0; i < model->lods[model->internal.current_lod].num_meshes; ++i) {
-        plDrawMesh(&model->lods[model->internal.current_lod].meshes[i]);
+    for(unsigned int i = 0; i < model->num_meshes; ++i) {
+        PLModelMesh *mesh = &model->meshes[i];
+        plSetTexture(mesh->texture, 0);
+
+        plDrawMesh(model->meshes[i].mesh);
     }
 }
 
