@@ -151,17 +151,17 @@ void WriteSMD(PLModel *model) {
 
     /* triangles block */
     fprintf(fout, "triangles\n");
-    for(unsigned int i = 0; i < model->lods[0].num_meshes; ++i) {
-        PLMesh *cur_mesh = &model->lods[0].meshes[i];
-        for(unsigned int j = 0; j < cur_mesh->num_indices; ) {
+    for(unsigned int i = 0; i < model->num_meshes; ++i) {
+        PLModelMesh *cur_mesh = &model->meshes[i];
+        for(unsigned int j = 0; j < cur_mesh->mesh->num_indices; ) {
             if(cur_mesh->texture == NULL) {
                 fprintf(fout, "null\n");
             } else {
                 fprintf(fout, "%s\n", cur_mesh->texture->name);
             }
-            WriteSMDVertex(fout, &cur_mesh->vertices[cur_mesh->indices[j++]]);
-            WriteSMDVertex(fout, &cur_mesh->vertices[cur_mesh->indices[j++]]);
-            WriteSMDVertex(fout, &cur_mesh->vertices[cur_mesh->indices[j++]]);
+            WriteSMDVertex(fout, &cur_mesh->mesh->vertices[cur_mesh->mesh->indices[j++]]);
+            WriteSMDVertex(fout, &cur_mesh->mesh->vertices[cur_mesh->mesh->indices[j++]]);
+            WriteSMDVertex(fout, &cur_mesh->mesh->vertices[cur_mesh->mesh->indices[j++]]);
         }
     }
     fprintf(fout, "end\n\n");
@@ -443,6 +443,21 @@ int main(int argc, char **argv) {
         //plApplyModelLighting(model, &light[1], PLVector3(0, 0, 0));
         //plApplyModelLighting(model, &light[2], PLVector3(0, 0, 0));
         //plApplyModelLighting(model, &light[3], PLVector3(0, 0, 0));
+
+        const char *vertex_stage = {
+                "#version 330\n"
+                "layout (location = 0) in vec3 inPosition;\n"
+                "layout (location = 1) in vec3 inColor;\n"
+                "smooth out vec3 theColor;\n"
+                "void main() {\n"
+                "gl_Position = vec4(inPosition, 1.0);\n"
+                "theColor = inColor;\n"
+                "}"
+        };
+
+        const char *fragment_stage = {
+                "#version 330\n"
+        };
 
         switch (view_mode) {
             default: {

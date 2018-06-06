@@ -196,46 +196,51 @@ bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
         return true;
     }
 
-    /* TODO: Make this thing more extensible... */
-    if(image->format == PL_IMAGEFORMAT_RGB5A1 && new_format == PL_IMAGEFORMAT_RGBA8) {
-        uint8_t *levels[image->levels];
-        memset(levels, 0, image->levels * sizeof(uint8_t*));
+    switch(image->format) {
+        case PL_IMAGEFORMAT_RGB5A1: {
+            if(new_format == PL_IMAGEFORMAT_RGBA8) {
+                uint8_t *levels[image->levels];
+                memset(levels, 0, image->levels * sizeof(uint8_t*));
 
-        /* Make a new copy of each detail level in the new format. */
+                /* Make a new copy of each detail level in the new format. */
 
-        unsigned int lw = image->width;
-        unsigned int lh = image->height;
+                unsigned int lw = image->width;
+                unsigned int lh = image->height;
 
-        for(unsigned int l = 0; l < image->levels; ++l) {
-            levels[l] = _plImageDataRGB5A1toRGBA8(image->data[l], lw * lh);
-            if(levels[l] == NULL) {
-                /* Memory allocation failed, ditch any buffers we've created so far. */
-                for(unsigned int m = 0; m < image->levels; ++m) {
-                    free(levels[m]);
+                for(unsigned int l = 0; l < image->levels; ++l) {
+                    levels[l] = _plImageDataRGB5A1toRGBA8(image->data[l], lw * lh);
+                    if(levels[l] == NULL) {
+                        /* Memory allocation failed, ditch any buffers we've created so far. */
+                        for(unsigned int m = 0; m < image->levels; ++m) {
+                            free(levels[m]);
+                        }
+
+                        ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate memory for image data");
+                        return false;
+                    }
+
+                    lw /= 2;
+                    lh /= 2;
                 }
 
-                ReportError(PL_RESULT_MEMORY_ALLOCATION, "Couldn't allocate memory for image data");
-                return false;
+                /* Now that all levels have been converted, free and replace the old buffers. */
+
+                for(unsigned int l = 0; l < image->levels; ++l) {
+                    free(image->data[l]);
+                    image->data[l] = levels[l];
+                }
+
+                image->format = new_format;
+                /* TODO: Update colour_format */
+
+                return true;
             }
+        } break;
 
-            lw /= 2;
-            lh /= 2;
-        }
-
-        /* Now that all levels have been converted, free and replace the old buffers. */
-
-        for(unsigned int l = 0; l < image->levels; ++l) {
-            free(image->data[l]);
-            image->data[l] = levels[l];
-        }
-
-        image->format = new_format;
-        /* TODO: Update colour_format */
-
-        return true;
+        default:break;
     }
 
-    ReportError(PL_RESULT_IMAGEFORMAT, "Unsupported image format conversion");
+    ReportError(PL_RESULT_IMAGEFORMAT, "unsupported image format conversion");
     return false;
 }
 
@@ -261,8 +266,7 @@ unsigned int plGetImageSize(PLImageFormat format, unsigned int width, unsigned i
 /* Returns the number of BYTES per pixel for the given PLImageFormat.
  *
  * If the format doesn't have a predictable size or the size isn't a multiple
- * of one byte, returns ZERO.
-*/
+ * of one byte, returns ZERO. */
 unsigned int _plImageBytesPerPixel(PLImageFormat format) {
     switch(format) {
         case PL_IMAGEFORMAT_RGBA4:   return 2;
@@ -273,9 +277,7 @@ unsigned int _plImageBytesPerPixel(PLImageFormat format) {
         case PL_IMAGEFORMAT_RGBA12:  return 6;
         case PL_IMAGEFORMAT_RGBA16:  return 8;
         case PL_IMAGEFORMAT_RGBA16F: return 8;
-
-        default:
-            return 0;
+        default:                     return 0;
     }
 }
 
@@ -292,10 +294,31 @@ void plInvertImageColour(PLImage *image) {
             }
         } break;
 
-        default: {
-            /* todo, log warning message */
-        } break;
+        default:break;
     }
+
+    ReportError(PL_RESULT_IMAGEFORMAT, "unsupported image format");
+}
+
+/* utility function */
+void plGenerateStipplePattern(PLImage *image, unsigned int depth) {
+    unsigned int p = 0;
+    unsigned int num_colours = plGetSamplesPerPixel(image->colour_format);
+    switch(image->format) {
+        case PL_IMAGEFORMAT_RGB8: break;
+        case PL_IMAGEFORMAT_RGBA8: {
+            for(unsigned int i = 0; i < image->size; i += num_colours) {
+                uint8_t *pixel = &image->data[0][i];
+                if(num_colours == 4) {
+                    //if()
+                }
+            }
+        } break;
+
+        default:break;
+    }
+
+    ReportError(PL_RESULT_IMAGEFORMAT, "unsupported image format");
 }
 
 void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest) {
@@ -322,10 +345,10 @@ void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest) {
             }
         } break;
 
-        default: {
-            /* todo, log warning message */
-        } break;
+        default:break;
     }
+
+    ReportError(PL_RESULT_IMAGEFORMAT, "unsupported image format");
 }
 
 void _plAllocateImage(PLImage *image, PLuint size, PLuint levels) {

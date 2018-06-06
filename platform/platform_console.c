@@ -342,9 +342,11 @@ PLresult _plInitConsole(void) {
     }
 
     /* todo, move this into graphics init code */
+#if defined(PL_USE_GRAPHICS)
     if((mesh_line = plCreateMesh(PL_MESH_LINES, PL_DRAW_IMMEDIATE, 0, 4)) == NULL) {
         return PL_RESULT_MEMORY_ALLOCATION;
     }
+#endif
 
     if((_pl_commands = (PLConsoleCommand**)pl_malloc(sizeof(PLConsoleCommand*) * _pl_commands_size)) == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for ConsoleCommand array, %d",
@@ -385,7 +387,9 @@ PLresult _plInitConsole(void) {
 void _plShutdownConsole(void) {
     console_visible = false;
 
+#if defined(PL_USE_GRAPHICS)
     plDeleteBitmapFont(console_font);
+#endif
 
     memset(&console_panes, 0, sizeof(PLConsolePane) * CONSOLE_MAX_INSTANCES);
     active_console_pane = num_console_panes = 0;
@@ -489,6 +493,7 @@ void plParseConsoleString(const char *string) {
 
 // todo, correctly handle rows and columns.
 void ResizeConsoles(void) {
+#if defined(PL_USE_GRAPHICS)
     unsigned int screen_w = gfx_state.current_viewport.w;
     unsigned int screen_h = gfx_state.current_viewport.h;
     if(screen_w == 0 || screen_h == 0) {
@@ -523,6 +528,7 @@ void ResizeConsoles(void) {
         console_panes[i].display.xy.x = position_x;
         console_panes[i].display.xy.x = position_y;
     }
+#endif
 }
 
 bool IsConsolePaneVisible(unsigned int id) {
@@ -649,6 +655,7 @@ void plSetConsoleColour(unsigned int id, PLColour colour) {
 #define _COLOUR_HEADER_ACTIVE_TOP       128, 0, 0, _COLOUR_ACTIVE_ALPHA_TOP
 #define _COLOUR_HEADER_ACTIVE_BOTTOM    82, 0, 0, _COLOUR_ACTIVE_ALPHA_BOTTOM
 
+#if defined(PL_USE_GRAPHICS)
 void plDrawConsole(void) {
     ResizeConsoles();
 
@@ -762,6 +769,7 @@ void plDrawConsole(void) {
 #endif
 #endif
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////

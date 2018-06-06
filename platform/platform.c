@@ -50,11 +50,13 @@ typedef struct PLSubSystem {
 } PLSubSystem;
 
 PLSubSystem pl_subsystems[]= {
+#if defined(PL_USE_GRAPHICS)
         {
                 PL_SUBSYSTEM_GRAPHICS,
                 &InitGraphics,
                 &ShutdownGraphics
         },
+#endif
 
         {
                 PL_SUBSYSTEM_IO,
@@ -380,5 +382,7 @@ void plProcess(double delta) {
         //plProcessPhysics();
     }
 
+#if defined(PL_USE_GRAPHICS)
     plProcessGraphics();
+#endif
 }
