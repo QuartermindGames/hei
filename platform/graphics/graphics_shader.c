@@ -202,12 +202,17 @@ void plDeleteShaderStage(PLShaderStage *stage) {
  * @param buf pointer to buffer containing the shader we're compiling.
  * @param length the length of the buffer.
  */
-void plCompileShaderStage(PLShaderStage *stage, char *buf, size_t length) {
+void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) {
     _plResetError();
 
+    // todo: enable this...
+    //char *n_buf = pl_malloc(length);
+    //memcpy(n_buf, buf, length);
     //plPreProcessGLSLShader(buf, &length);
 
     CallGfxFunction(CompileShaderStage, stage, buf, length);
+
+    //free(n_buf);
 }
 
 /**
@@ -274,6 +279,34 @@ PLShaderProgram *plCreateShaderProgram(void) {
     return program;
 }
 
+#if 0 /* sark proto */
+PLShaderProgram srCreateShaderProgram(void) {
+    static PLShaderProgram program;
+    memset(&program, 0, sizeof(PLShaderProgram));
+    CallGfxFunction(CreateShaderProgram, &program);
+    return program;
+}
+
+bool test_create_shader_program(void) {
+    printf("%s\n", __FUNCTION__);
+
+    PLShaderProgram my_program = srCreateShaderProgram();
+    printf(" %d\n", my_program.internal.id);
+
+    PLShaderProgram *my_program2 = plCreateShaderProgram();
+    if(my_program2 == NULL) {
+        printf("FAILED\n");
+        return false;
+    }
+
+    printf(" %d\n", my_program2->internal.id);
+
+    plDeleteShaderProgram(my_program2, false);
+
+    return true;
+}
+#endif
+
 /**
  * deletes the given shader program and also clears it on the GPU,
  * if applicable.
@@ -302,6 +335,13 @@ void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages) {
     free(program);
 }
 
+void plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {
+    plAssert(program != NULL);
+    plAssert(stage != NULL);
+    program->stages[program->num_stages++] = stage;
+    CallGfxFunction(AttachShaderStage, program, stage);
+}
+
 bool plRegisterShaderStage(PLShaderProgram *program, const char *path, PLShaderStageType type) {
     if((program->num_stages + 1) > 4) {
         ReportError(PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
@@ -314,9 +354,7 @@ bool plRegisterShaderStage(PLShaderProgram *program, const char *path, PLShaderS
         return false;
     }
 
-    program->stages[program->num_stages++] = stage;
-
-    CallGfxFunction(AttachShaderStage, program, stage);
+    plAttachShaderStage(program, stage);
 
     return true;
 }

@@ -383,6 +383,38 @@ int main(int argc, char **argv) {
     plSetModelTexture(model, 0, base_texture);
 #endif
 
+    /* compile shaders */
+
+    const char *vertex_stage = {
+            "#version 120\n"
+            "void main() {"
+            "   gl_Position = ftransform();"
+            "}\0"
+    };
+
+    const char *fragment_stage = {
+            "#version 120\n"
+            "void main() {"
+            "   gl_FragColor = vec4(1,1,1,1);"
+            "}\0"
+    };
+
+    PLShaderProgram *program = plCreateShaderProgram();
+    PLShaderStage *vert_stage = plCreateShaderStage(PL_SHADER_TYPE_VERTEX);
+    PLShaderStage *frag_stage = plCreateShaderStage(PL_SHADER_TYPE_FRAGMENT);
+
+    plCompileShaderStage(vert_stage, vertex_stage, sizeof(vertex_stage));
+    plCompileShaderStage(frag_stage, fragment_stage, sizeof(fragment_stage));
+
+    plAttachShaderStage(program, vert_stage);
+    plAttachShaderStage(program, frag_stage);
+
+    plLinkShaderProgram(program);
+
+    plSetShaderProgram(program);
+
+    /* done, now for main rendering loop! */
+
     while (plIsRunning()) {
         SDL_PumpEvents();
 
@@ -443,21 +475,6 @@ int main(int argc, char **argv) {
         //plApplyModelLighting(model, &light[1], PLVector3(0, 0, 0));
         //plApplyModelLighting(model, &light[2], PLVector3(0, 0, 0));
         //plApplyModelLighting(model, &light[3], PLVector3(0, 0, 0));
-
-        const char *vertex_stage = {
-                "#version 330\n"
-                "layout (location = 0) in vec3 inPosition;\n"
-                "layout (location = 1) in vec3 inColor;\n"
-                "smooth out vec3 theColor;\n"
-                "void main() {\n"
-                "gl_Position = vec4(inPosition, 1.0);\n"
-                "theColor = inColor;\n"
-                "}"
-        };
-
-        const char *fragment_stage = {
-                "#version 330\n"
-        };
 
         switch (view_mode) {
             default: {
