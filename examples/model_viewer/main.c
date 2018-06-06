@@ -386,25 +386,25 @@ int main(int argc, char **argv) {
     /* compile shaders */
 
     const char *vertex_stage = {
-            "#version 120\n"
             "void main() {"
             "   gl_Position = ftransform();"
-            "}\0"
+            "}"
+            "\0"
     };
 
     const char *fragment_stage = {
-            "#version 120\n"
             "void main() {"
             "   gl_FragColor = vec4(1,1,1,1);"
-            "}\0"
+            "}"
+            "\0"
     };
 
     PLShaderProgram *program = plCreateShaderProgram();
     PLShaderStage *vert_stage = plCreateShaderStage(PL_SHADER_TYPE_VERTEX);
     PLShaderStage *frag_stage = plCreateShaderStage(PL_SHADER_TYPE_FRAGMENT);
 
-    plCompileShaderStage(vert_stage, vertex_stage, sizeof(vertex_stage));
-    plCompileShaderStage(frag_stage, fragment_stage, sizeof(fragment_stage));
+    plCompileShaderStage(vert_stage, vertex_stage, strlen(vertex_stage));
+    plCompileShaderStage(frag_stage, fragment_stage, strlen(fragment_stage));
 
     plAttachShaderStage(program, vert_stage);
     plAttachShaderStage(program, frag_stage);

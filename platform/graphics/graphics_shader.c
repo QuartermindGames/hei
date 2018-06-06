@@ -46,8 +46,8 @@ For more information, please refer to <http://unlicense.org>
  * @param buf
  * @param length
  */
-void plPreProcessGLSLShader(char *buf, size_t *length) {
-    size_t n_len = *length;
+void plPreProcessGLSLShader(char **buf, size_t *length) {
+    size_t n_len = 1000000; /*(*length) * 2*/;
     char *n_buf = pl_calloc(n_len, sizeof(char));
     if(n_buf == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION,
@@ -55,7 +55,7 @@ void plPreProcessGLSLShader(char *buf, size_t *length) {
         return;
     }
 
-    char *pos = &buf[0];
+    char *pos = &*buf[0];
     char *n_pos = &n_buf[0];
 
 #define InsertString(DEST, STR) {size_t sl = strlen(STR);strncpy(DEST, STR, sl);DEST += sl;}
@@ -63,6 +63,10 @@ void plPreProcessGLSLShader(char *buf, size_t *length) {
 #define SkipLine()              while(*pos != '\n' && *pos != '\r') { pos++; }
 
     InsertString(n_pos, "#version 120\n");
+
+    /* built-in uniforms */
+    InsertString(n_pos, "uniform mat4 pl_model_matrix;");
+    InsertString(n_pos, "uniform mat4 pl_projection_matrix;");
 
     while(*pos != '\0') {
         if(*pos == '\n' || *pos == '\r' || *pos == '\t') {
@@ -135,15 +139,15 @@ void plPreProcessGLSLShader(char *buf, size_t *length) {
     printf("%s\n", n_buf);
 
     /* resize and update buf to match */
-    char *old_buf = buf;
+    char *old_buf = *buf;
     if(n_len > (*length)) {
-        if((old_buf = realloc(buf, n_len)) != NULL) {
-            buf = old_buf;
+        if((old_buf = realloc(*buf, n_len)) != NULL) {
+            *buf = old_buf;
         }
     }
 
     if(old_buf != NULL) {
-        memcpy(buf, n_buf, n_len);
+        memcpy(*buf, n_buf, n_len);
         *length = n_len;
     }
 
@@ -206,13 +210,13 @@ void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) 
     _plResetError();
 
     // todo: enable this...
-    //char *n_buf = pl_malloc(length);
-    //memcpy(n_buf, buf, length);
-    //plPreProcessGLSLShader(buf, &length);
+    char *n_buf = pl_malloc(length);
+    memcpy(n_buf, buf, length);
+    plPreProcessGLSLShader(&n_buf, &length);
 
-    CallGfxFunction(CompileShaderStage, stage, buf, length);
+    CallGfxFunction(CompileShaderStage, stage, n_buf, length);
 
-    //free(n_buf);
+    free(n_buf);
 }
 
 /**
