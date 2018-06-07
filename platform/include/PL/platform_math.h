@@ -393,6 +393,8 @@ PL_INLINE static const char *plPrintVector3(PLVector3 v) {
     return s;
 }
 
+/******************************************************************/
+
 typedef struct PLVector4 {
     float x, y, z, w;
 } PLVector4;
@@ -1316,6 +1318,97 @@ PL_INLINE static float plInOutPow(float x, float p) {
 
 PL_INLINE static float plToRadians(float degrees) {
     return degrees * (PL_PI / 180.f);
+}
+
+PL_INLINE PLMatrix4x4 plLookAt(PLVector3 eye, PLVector3 center, PLVector3 up) {
+    PLVector3 z = eye;
+    plSubtractVector3(&z, center);
+    float mag = plVector3Length(z);
+    if(mag > 0) {
+        plDivideVector3f(&z, mag);
+    }
+
+    PLVector3 y = up;
+    PLVector3 x = plVector3CrossProduct(y, z);
+    y = plVector3CrossProduct(z, x);
+
+    mag = plVector3Length(x);
+    if(mag > 0) {
+        plDivideVector3f(&x, mag);
+    }
+
+    mag = plVector3Length(y);
+    if(mag > 0) {
+        plDivideVector3f(&y, mag);
+    }
+
+    return (PLMatrix4x4){{
+                                 x.x, y.x, z.x, 0,
+                                 x.y, y.y, z.y, 0,
+                                 x.z, y.z, z.z, 0,
+                                 0  , 0  , 0  , 1
+                         }};
+}
+
+PL_INLINE static PLMatrix4x4 plFrustum(float left, float right, float bottom, float top, float near, float far) {
+    float m0 = 2.f * near;
+    float m1 = right - left;
+    float m2 = top - bottom;
+    float m3 = far - near;
+    return (PLMatrix4x4){{
+                                 m0 / m1, 0, 0, 0,
+                                 0, m0 / m2, 0, 0,
+                                 (right + left) / m1, (top + bottom) / m2, (-far - near) / m3, -1.f,
+                                 0, 0, 0, 1
+                         }};
+}
+
+PL_INLINE static PLMatrix4x4 plOrtho(float left, float right, float bottom, float top, float near, float far) {
+    float tx = - (right + left) / (right - left);
+    float ty = - (top + bottom) / (top - bottom);
+    float tz = - (far + near) / (far - near);
+    return (PLMatrix4x4) {{
+                                  2 / (right - left), 0, 0, 0,
+                                  0, 2 / (top - bottom), 0, 0,
+                                  0, 0, -2 / (far - near), 0,
+                                  tx, ty, tz, 1
+                          }};
+}
+
+PL_INLINE static PLMatrix4x4 plPerspective(float fov, float aspect, float near, float far) {
+    float y_max = near * tanf(fov * PL_PI / 360);
+    float x_max = y_max * aspect;
+    return plFrustum(-x_max, x_max, -y_max, y_max, near, far);
+}
+
+/* http://www.songho.ca/opengl/gl_anglestoaxes.html */
+PL_INLINE static void plAnglesAxes(PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *forward) {
+    /* pitch */
+    float theta = angles.x * PL_PI_DIV_180;
+    float sx = sinf(theta);
+    float cx = cosf(theta);
+
+    /* yaw */
+    theta = angles.y * PL_PI_DIV_180;
+    float sy = sinf(theta);
+    float cy = cosf(theta);
+
+    /* roll */
+    theta = angles.z * PL_PI_DIV_180;
+    float sz = sinf(theta);
+    float cz = cosf(theta);
+
+    left->x = cy * cz;
+    left->y = sx * sy * cz + cx * sz;
+    left->z = -cx * sy * cz + sx * sz;
+
+    up->x = -cy * sz;
+    up->y = -sx * sy * sz + cx * cz;
+    up->z = cx * sy * sz + sx * cz;
+
+    forward->x = sy;
+    forward->y = -sx * cy;
+    forward->z = cx * cy;
 }
 
 #define plClamp(min, val, max) (val) < (min) ? (min) : ((val) > (max) ? (max) : (val))
