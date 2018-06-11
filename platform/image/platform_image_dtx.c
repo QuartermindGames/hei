@@ -174,6 +174,7 @@ bool LoadDTXImage(FILE *fin, PLImage *out) {
     }
 #endif
 
+    out->levels = 1;
     out->data = pl_calloc(out->levels, sizeof(uint8_t*));
     if(out->data == NULL) {
         plFreeImage(out);

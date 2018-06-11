@@ -47,6 +47,8 @@ For more information, please refer to <http://unlicense.org>
 #define WIDTH   800
 #define HEIGHT  600
 
+bool use_mouse_look = false;
+
 //////////////////////////////////////////
 
 SDL_Window *window = NULL;
@@ -218,10 +220,19 @@ void ProcessKeyboard(void) {
         main_camera->angles.x += 4.f;
     }
 
+    PLVector3 left, up, forward;
+    plAnglesAxes(main_camera->angles, &left, &up, &forward);
     if(state[SDL_SCANCODE_W] || state[SDL_SCANCODE_UP]) {
-
+        main_camera->position = plVector3Add(main_camera->position, main_camera->forward);
+        //main_camera->position = plVector3Scale(main_camera->position, PLVector3(0.5f, 0.5f, 4.f));
     } else if(state[SDL_SCANCODE_D] || state[SDL_SCANCODE_DOWN]) {
+        main_camera->position = plVector3Subtract(main_camera->position, main_camera->forward);
+        //main_camera->position = plVector3Scale(main_camera->position, PLVector3(4.f, 4.f, 4.f));
+    }
 
+    if(state[SDL_SCANCODE_Q]) {
+        use_mouse_look = !use_mouse_look;
+        SDL_SetRelativeMouseMode((SDL_bool) use_mouse_look);
     }
 
     if(state[SDL_SCANCODE_C]) {
@@ -374,29 +385,49 @@ int main(int argc, char **argv) {
     light[0].colour     = plCreateColour4f(1.5f, .5f, .5f, 128.f);
     light[0].type       = PL_LIGHT_TYPE_OMNI;
 
-#if 0
-    PLTexture *base_texture = plLoadTextureImage("./textures/base_uv.png", PL_TEXTURE_FILTER_NEAREST);
-    if(base_texture == NULL) {
-        PRINT("failed to load base texture\n");
-    }
+    PLImage uv_chart;
+    memset(&uv_chart, 0, sizeof(PLImage));
+    uv_chart.levels         = 1;
+    uv_chart.width          = 2;
+    uv_chart.height         = 2;
+    uv_chart.colour_format  = PL_COLOURFORMAT_RGB;
+    uv_chart.format         = PL_IMAGEFORMAT_RGB8;
+    uv_chart.size           = uv_chart.width * uv_chart.height * 3;
+    uv_chart.data           = pl_calloc(uv_chart.levels, sizeof(uint8_t*));
+    uv_chart.data[0]        = pl_malloc(uv_chart.size);
 
-    plSetModelTexture(model, 0, base_texture);
-#endif
+    unsigned char uv_map_layout[12]={
+            255,0  ,255,
+            0  ,0  ,0  ,
+            0  ,0  ,0  ,
+            0  ,0  ,0
+    };
+    memcpy(uv_chart.data[0], uv_map_layout, uv_chart.size);
+
+    PLTexture *uv_texture = plCreateTexture();
+    plUploadTextureImage(uv_texture, &uv_chart);
+
+    plFreeImage(&uv_chart);
+
+    for(unsigned int i = 0; i < model->num_meshes; ++i) {
+        if(model->meshes[i].texture == NULL) {
+            model->meshes[i].texture = uv_texture;
+        }
+    }
 
     /* compile shaders */
 
+#if 1
     const char *vertex_stage = {
             "void main() {"
             "   gl_Position = ftransform();"
             "}"
-            "\0"
     };
 
     const char *fragment_stage = {
             "void main() {"
             "   gl_FragColor = vec4(1,1,1,1);"
             "}"
-            "\0"
     };
 
     PLShaderProgram *program = plCreateShaderProgram();
@@ -412,6 +443,7 @@ int main(int argc, char **argv) {
     plLinkShaderProgram(program);
 
     plSetShaderProgram(program);
+#endif
 
     /* done, now for main rendering loop! */
 
@@ -422,39 +454,51 @@ int main(int argc, char **argv) {
         int xpos, ypos;
         unsigned int state = SDL_GetMouseState(&xpos, &ypos);
 
-        // Camera rotation
-        static double oldlmpos[2] = {0, 0};
-        static PLVector3 angles = { 0, 0 };
-        if (state & SDL_BUTTON(SDL_BUTTON_LEFT)) {
-            double nxpos = xpos - oldlmpos[0];
-            double nypos = ypos - oldlmpos[1];
-            angles.x += (nxpos / 50.f);
-            angles.y += (nypos / 50.f);
-        } else {
-            oldlmpos[0] = xpos;
-            oldlmpos[1] = ypos;
-        }
+        static PLVector3 object_angles = {0, 0};
+        if(use_mouse_look) {
+            object_angles = PLVector3(0, 0, 0);
 
-        // Zoom in and out thing...
-        static double oldrmpos[2] = {0, 0};
-        if (state & SDL_BUTTON(SDL_BUTTON_RIGHT)) {
-            double nypos = ypos - oldrmpos[1];
-            main_camera->position.z += (nypos / 100.f);
-        } else {
-            oldrmpos[0] = xpos;
-            oldrmpos[1] = ypos;
-        }
+            double n_pos[2] = { xpos - (WIDTH / 2), ypos - (HEIGHT / 2) };
+            main_camera->angles.x += (n_pos[0] - WIDTH / 2) / 100.f; //n_pos[0] * (WIDTH / 2 - xpos);
+            main_camera->angles.y += (n_pos[1] - HEIGHT / 2) / 100.f;
 
-        // panning thing
-        static double oldmmpos[2] = {0, 0};
-        if(state & SDL_BUTTON(SDL_BUTTON_MIDDLE)) {
-            double nxpos = xpos - oldmmpos[0];
-            double nypos = ypos - oldmmpos[1];
-            main_camera->position.y += (nypos / 50.f);
-            main_camera->position.x -= (nxpos / 50.f);
+            main_camera->angles.y = plClamp(-90, main_camera->angles.y, 90);
+
+            SDL_WarpMouseInWindow(window, WIDTH / 2, HEIGHT / 2);
         } else {
-            oldmmpos[0] = xpos;
-            oldmmpos[1] = ypos;
+            // Camera rotation
+            static double old_left_pos[2] = {0, 0};
+            if (state & SDL_BUTTON(SDL_BUTTON_LEFT)) {
+                double nxpos = xpos - old_left_pos[0];
+                double nypos = ypos - old_left_pos[1];
+                object_angles.x += (nxpos / 50.f);
+                object_angles.y += (nypos / 50.f);
+            } else {
+                old_left_pos[0] = xpos;
+                old_left_pos[1] = ypos;
+            }
+
+            // Zoom in and out thing...
+            static double old_right_pos[2] = {0, 0};
+            if (state & SDL_BUTTON(SDL_BUTTON_RIGHT)) {
+                double nypos = ypos - old_right_pos[1];
+                main_camera->position.z += (nypos / 100.f);
+            } else {
+                old_right_pos[0] = xpos;
+                old_right_pos[1] = ypos;
+            }
+
+            // panning thing
+            static double old_middle_pos[2] = {0, 0};
+            if (state & SDL_BUTTON(SDL_BUTTON_MIDDLE)) {
+                double nxpos = xpos - old_middle_pos[0];
+                double nypos = ypos - old_middle_pos[1];
+                main_camera->position.y += (nypos / 50.f);
+                main_camera->position.x -= (nxpos / 50.f);
+            } else {
+                old_middle_pos[0] = xpos;
+                old_middle_pos[1] = ypos;
+            }
         }
         // input handlers end...
 
@@ -466,9 +510,9 @@ int main(int argc, char **argv) {
 
         glLoadIdentity();
         glPushMatrix();
-        glRotatef(angles.y, 1, 0, 0);
-        glRotatef(angles.x, 0, 1, 0);
-        glRotatef(angles.z, 0, 0, 1);
+        glRotatef(object_angles.y, 1, 0, 0);
+        glRotatef(object_angles.x, 0, 1, 0);
+        glRotatef(object_angles.z, 0, 0, 1);
 
         //light[0].position = PLVector3(0, 10.f, 0);
         //plApplyModelLighting(model, &light[0], PLVector3(20.f, 50.f, 80.f));
@@ -507,7 +551,9 @@ int main(int argc, char **argv) {
 
         plSetupCamera(ui_camera);
 
-        plDrawBitmapString(font, 10, 10, 4.f, PLColour(255, 0, 0, 255), "Hello World!\n");
+        //plDrawBitmapString(font, 10, 10, 1.f, PLColour(255, 255, 255, 255), "Hello World!\n");
+
+        plDrawTexturedRectangle(32, 32, 128, 128, uv_texture);
 
         //plDrawConsole();
 

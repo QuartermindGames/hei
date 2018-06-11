@@ -1320,7 +1320,7 @@ PL_INLINE static float plToRadians(float degrees) {
     return degrees * (PL_PI / 180.f);
 }
 
-PL_INLINE PLMatrix4x4 plLookAt(PLVector3 eye, PLVector3 center, PLVector3 up) {
+PL_INLINE static PLMatrix4x4 plLookAt(PLVector3 eye, PLVector3 center, PLVector3 up) {
     PLVector3 z = eye;
     plSubtractVector3(&z, center);
     float mag = plVector3Length(z);

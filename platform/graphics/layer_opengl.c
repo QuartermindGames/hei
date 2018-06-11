@@ -489,6 +489,8 @@ void GLSetupCamera(PLCamera *camera) {
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 #endif
+            //camera->view = plLookAt(camera->position, /* !!!!todo!!!! */, PLVector3(0, -1.f, 0))
+
             break;
         }
 

@@ -410,6 +410,7 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
     texture->w          = upload->width;
     texture->h          = upload->height;
     texture->format     = upload->format;
+    texture->pixel      = upload->colour_format;
     texture->size       = upload->size;
     texture->levels     = upload->levels;
 

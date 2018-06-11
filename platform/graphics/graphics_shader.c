@@ -209,8 +209,7 @@ void plDeleteShaderStage(PLShaderStage *stage) {
 void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) {
     _plResetError();
 
-    // todo: enable this...
-    char *n_buf = pl_malloc(length);
+    char *n_buf = pl_calloc(sizeof(char), length);
     memcpy(n_buf, buf, length);
     plPreProcessGLSLShader(&n_buf, &length);
 
