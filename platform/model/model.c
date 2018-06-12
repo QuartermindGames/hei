@@ -163,9 +163,13 @@ void plDeleteModel(PLModel *model) {
             continue;
         }
 
+        free(model->meshes[j].bone_weights);
+
         plDeleteMesh(model->meshes[j].mesh);
     }
 
+    free(model->meshes);
+    free(model->bones);
     free(model);
 }
 
@@ -175,7 +179,6 @@ void plDrawModel(PLModel *model) {
     for(unsigned int i = 0; i < model->num_meshes; ++i) {
         PLModelMesh *mesh = &model->meshes[i];
         plSetTexture(mesh->texture, 0);
-
         plDrawMesh(model->meshes[i].mesh);
     }
 }

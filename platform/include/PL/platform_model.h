@@ -48,32 +48,29 @@ typedef struct PLAnimation {
 
 ////////////////////////////////////////////////////////////////////////////
 
-typedef struct PLModelBone {
+typedef struct PLBoneWeight {
+    unsigned int bone_index;
+    unsigned int vertex_index;
+
+    float bone_weight;
+
+    PLVector3 direction;
+} PLBoneWeight;
+
+typedef struct PLBone {
     char name[64];
     unsigned int parent;
     PLVector3 coords;
-} PLModelBone;
-
-typedef struct PLModelSkeleton {
-    PLModelBone *bones;
-    unsigned int num_bones;
-    unsigned int root_index;
-} PLModelSkeleton;
+} PLBone;
 
 /* * * * * * * * * * * * * * * * * */
-
-typedef struct PLModelBoneWeight {
-    unsigned int bone_index;
-    float bone_weight;
-
-    unsigned int vertex_index;
-
-    PLVector3 direction;
-} PLModelBoneWeight;
 
 typedef struct PLModelMesh {
     PLTexture *texture;
     PLMesh *mesh;
+
+    PLBoneWeight *bone_weights;
+    unsigned int num_bone_weights;
 } PLModelMesh;
 
 typedef struct PLModel {
@@ -81,18 +78,12 @@ typedef struct PLModel {
 
     unsigned int flags;
 
-    PLModelSkeleton skeleton;
+    PLBone *bones;
+    unsigned int num_bones;
+    unsigned int root_index;
 
     PLModelMesh *meshes;
     unsigned int num_meshes;
-
-    PLModelBoneWeight *bone_weights;
-    unsigned int num_bone_weights;
-
-    /*
-    PLModelLOD lods[PL_MAX_MODEL_LODS];
-    unsigned int num_lods;
-     */
 
     PLVector3 origin;
 
