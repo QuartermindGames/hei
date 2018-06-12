@@ -47,6 +47,9 @@ For more information, please refer to <http://unlicense.org>
 #define WIDTH   800
 #define HEIGHT  600
 
+#define CENTER_X    (WIDTH >> 1)
+#define CENTER_Y    (HEIGHT >> 1)
+
 bool use_mouse_look = false;
 
 //////////////////////////////////////////
@@ -232,7 +235,9 @@ void ProcessKeyboard(void) {
 
     if(state[SDL_SCANCODE_Q]) {
         use_mouse_look = !use_mouse_look;
-        SDL_SetRelativeMouseMode((SDL_bool) use_mouse_look);
+        //SDL_SetRelativeMouseMode((SDL_bool) use_mouse_look);
+        main_camera->position = PLVector3(0, 2, -50);
+        main_camera->angles = PLVector3(0, 0, 0);
     }
 
     if(state[SDL_SCANCODE_C]) {
@@ -458,21 +463,20 @@ int main(int argc, char **argv) {
         if(use_mouse_look) {
             object_angles = PLVector3(0, 0, 0);
 
-            double n_pos[2] = { xpos - (WIDTH / 2), ypos - (HEIGHT / 2) };
-            main_camera->angles.x += (n_pos[0] - WIDTH / 2) / 100.f; //n_pos[0] * (WIDTH / 2 - xpos);
-            main_camera->angles.y += (n_pos[1] - HEIGHT / 2) / 100.f;
-
+            double n_pos[2] = { xpos - CENTER_X, ypos - CENTER_Y };
+            main_camera->angles.x += (n_pos[0] / 10.f);
+            main_camera->angles.y += (n_pos[1] / 10.f);
             main_camera->angles.y = plClamp(-90, main_camera->angles.y, 90);
 
-            SDL_WarpMouseInWindow(window, WIDTH / 2, HEIGHT / 2);
+            SDL_WarpMouseInWindow(window, CENTER_X, CENTER_Y);
         } else {
             // Camera rotation
             static double old_left_pos[2] = {0, 0};
             if (state & SDL_BUTTON(SDL_BUTTON_LEFT)) {
-                double nxpos = xpos - old_left_pos[0];
-                double nypos = ypos - old_left_pos[1];
-                object_angles.x += (nxpos / 50.f);
-                object_angles.y += (nypos / 50.f);
+                double n_x_pos = xpos - old_left_pos[0];
+                double n_y_pos = ypos - old_left_pos[1];
+                object_angles.x += (n_x_pos / 50.f);
+                object_angles.y += (n_y_pos / 50.f);
             } else {
                 old_left_pos[0] = xpos;
                 old_left_pos[1] = ypos;
@@ -481,8 +485,8 @@ int main(int argc, char **argv) {
             // Zoom in and out thing...
             static double old_right_pos[2] = {0, 0};
             if (state & SDL_BUTTON(SDL_BUTTON_RIGHT)) {
-                double nypos = ypos - old_right_pos[1];
-                main_camera->position.z += (nypos / 100.f);
+                double n_y_pos = ypos - old_right_pos[1];
+                main_camera->position.z += (n_y_pos / 100.f);
             } else {
                 old_right_pos[0] = xpos;
                 old_right_pos[1] = ypos;
@@ -491,10 +495,10 @@ int main(int argc, char **argv) {
             // panning thing
             static double old_middle_pos[2] = {0, 0};
             if (state & SDL_BUTTON(SDL_BUTTON_MIDDLE)) {
-                double nxpos = xpos - old_middle_pos[0];
-                double nypos = ypos - old_middle_pos[1];
-                main_camera->position.y += (nypos / 50.f);
-                main_camera->position.x -= (nxpos / 50.f);
+                double n_x_pos = xpos - old_middle_pos[0];
+                double n_y_pos = ypos - old_middle_pos[1];
+                main_camera->position.y += (n_y_pos / 50.f);
+                main_camera->position.x -= (n_x_pos / 50.f);
             } else {
                 old_middle_pos[0] = xpos;
                 old_middle_pos[1] = ypos;
