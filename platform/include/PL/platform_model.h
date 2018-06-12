@@ -60,7 +60,9 @@ typedef struct PLBoneWeight {
 typedef struct PLBone {
     char name[64];
     unsigned int parent;
-    PLVector3 coords;
+
+    PLVector3 position;
+    PLQuaternion orientation;
 } PLBone;
 
 /* * * * * * * * * * * * * * * * * */
