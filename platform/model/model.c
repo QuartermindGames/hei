@@ -191,7 +191,7 @@ void plDrawModelBounds(PLModel *model) {
 void plDrawModelSkeleton(PLModel *model) {
     plAssert(model);
 
-    if(model->skeleton.num_bones == 0) {
+    if(model->num_bones == 0) {
         return;
     }
 
