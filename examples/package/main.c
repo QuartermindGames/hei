@@ -65,14 +65,14 @@ int main(int argc, char **argv) {
     plCreateDirectory("./packs/extracted/");
     for(unsigned int i = 0; i < pack->table_size; ++i) {
         char out_path[PL_SYSTEM_MAX_PATH];
-        snprintf(out_path, sizeof(out_path), "./packs/extracted/%s", pack->table[i].name);
+        snprintf(out_path, sizeof(out_path), "./packs/extracted/%s", pack->table[i].file.name);
         FILE *fout = fopen(out_path, "wb");
         if(fout == NULL) {
             printf("failed to open %s for writing\n", out_path);
             continue;
         }
 
-        fwrite(pack->table[i].data, pack->table[i].length, 1, fout);
+        fwrite(pack->table[i].file.data, pack->table[i].file.size, 1, fout);
         fclose(fout);
     }
 

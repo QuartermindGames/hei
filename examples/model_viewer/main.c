@@ -133,20 +133,20 @@ void WriteSMD(PLModel *model) {
 
     /* write out the nodes block */
     fprintf(fout, "nodes\n");
-    if(model->skeleton.num_bones == 0) {
+    if(model->num_bones == 0) {
         /* write out a dummy bone! */
         fprintf(fout, "0 \"root\" -1\n");
     } else {
         /* todo, revisit this so we're correctly connecting child/parent */
-        for (unsigned int i = 0; i < model->skeleton.num_bones; ++i) {
-            fprintf(fout, "%u %s %d\n", i, model->skeleton.bones[i].name, (int) i - 1);
+        for (unsigned int i = 0; i < model->num_bones; ++i) {
+            fprintf(fout, "%u %s %d\n", i, model->bones[i].name, (int) i - 1);
         }
     }
     fprintf(fout, "end\n\n");
 
     /* skeleton block */
     fprintf(fout, "skeleton\ntime 0\n");
-    if(model->skeleton.num_bones == 0) {
+    if(model->num_bones == 0) {
         /* write out dummy bone coords! */
         fprintf(fout, "0 0 0 0 0 0 0\n");
     } else {
@@ -233,20 +233,29 @@ void ProcessKeyboard(void) {
         //main_camera->position = plVector3Scale(main_camera->position, PLVector3(4.f, 4.f, 4.f));
     }
 
-    if(state[SDL_SCANCODE_Q]) {
-        use_mouse_look = !use_mouse_look;
-        //SDL_SetRelativeMouseMode((SDL_bool) use_mouse_look);
-        main_camera->position = PLVector3(0, 2, -50);
-        main_camera->angles = PLVector3(0, 0, 0);
-    }
+    static unsigned int toggle_delay = 0;
+    if(toggle_delay == 0) {
+        if(state[SDL_SCANCODE_Q]) {
+            use_mouse_look = !use_mouse_look;
+            SDL_ShowCursor(!use_mouse_look);
+            main_camera->position = PLVector3(0, 2, -50);
+            main_camera->angles = PLVector3(0, 0, 0);
 
-    if(state[SDL_SCANCODE_C]) {
-        static bool cull = false;
-        if(cull) {
-            plSetCullMode(PL_CULL_NONE);
-        } else {
-            plSetCullMode(PL_CULL_NEGATIVE);
+            toggle_delay = 10;
         }
+
+        if(state[SDL_SCANCODE_C]) {
+            static bool cull = false;
+            if(cull) {
+                plSetCullMode(PL_CULL_NONE);
+            } else {
+                plSetCullMode(PL_CULL_NEGATIVE);
+            }
+
+            toggle_delay = 10;
+        }
+    } else {
+        toggle_delay--;
     }
 
     if(state[SDL_SCANCODE_ESCAPE]) {
@@ -447,7 +456,7 @@ int main(int argc, char **argv) {
 
     plLinkShaderProgram(program);
 
-    plSetShaderProgram(program);
+    //plSetShaderProgram(program);
 #endif
 
     /* done, now for main rendering loop! */
