@@ -116,7 +116,7 @@ bool plHWSupportsShaders(void) {
 PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h) {
     PLFrameBuffer *buffer = (PLFrameBuffer*)pl_malloc(sizeof(PLFrameBuffer));
     if(!buffer) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes for FrameBuffer!", sizeof(PLFrameBuffer));
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes for FrameBuffer", sizeof(PLFrameBuffer));
         return NULL;
     }
 

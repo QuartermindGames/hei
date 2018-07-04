@@ -117,7 +117,7 @@ void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *
 
 PLModel *plLoadModel(const char *path) {
     if(!plFileExists(path)) {
-        ReportError(PL_RESULT_FILEREAD, "Failed to load model, %s!", path);
+        ReportError(PL_RESULT_FILEREAD, "failed to load model, %s", path);
         return NULL;
     }
 
