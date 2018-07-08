@@ -31,6 +31,7 @@ For more information, please refer to <http://unlicense.org>
 #include <dirent.h>
 
 #include <PL/platform_console.h>
+#include <pwd.h>
 
 #include "filesystem_private.h"
 #include "platform_private.h"
@@ -169,33 +170,50 @@ const char *plGetFileName(const char *path) {
  *
  * @param out
  */
-void plGetUserName(char *out) {
+char *plGetUserName(char *out, size_t n) {
 #ifdef _WIN32
-
-    char userstring[PL_SYSTEM_MAX_USERNAME];
+    char user_string[PL_SYSTEM_MAX_USERNAME];
     ULONG size = PL_SYSTEM_MAX_USERNAME;
-    if (GetUserNameEx(NameDisplay, userstring, &size) == 0) {
-        snprintf(userstring, sizeof(userstring), "user");
+    if (GetUserNameEx(NameDisplay, user_string, &size) == 0) {
+        snprintf(user_string, sizeof(user_string), "user");
     }
-
 #else   // Linux
-
-    char *userstring = getenv("LOGNAME");
-    if (userstring == NULL) {
-        // If it fails, just set it to user.
-        userstring = "user";
+    char *user_string = getenv("LOGNAME");
+    if (user_string == NULL) {
+        user_string = "user";
     }
-
 #endif
 
-    int i = 0, userlength = (int) strlen(userstring);
-    while (i < userlength) {
-        if (userstring[i] == ' ') {
-            out[i] = '_';
-        } else {
-            out[i] = (char) tolower(userstring[i]);
-        } i++;
+    strncpy(out, user_string, n);
+    return out;
+}
+
+/**
+ * Returns directory for saving application data.
+ *
+ * @param app_name Name of your application.
+ * @param out Buffer we'll be storing the path to.
+ * @param n Length of the buffer.
+ * @return Pointer to the output, will return NULL on error.
+ */
+char *plGetApplicationDataDirectory(const char *app_name, char *out, size_t n) {
+    if(plIsEmptyString(app_name)) {
+        ReportError(PL_RESULT_FILEPATH, "invalid app name");
+        return NULL;
     }
+
+#ifndef _WIN32
+    const char *home;
+    if((home = getenv("HOME")) == NULL) {
+        struct passwd *pw = getpwuid(getuid());
+        home = pw->pw_dir;
+    }
+    snprintf(out, n, "%s/.%s", home, app_name);
+#else /* Beautiful Windows, ever graceful */
+    assert(0); /* todo */
+#endif
+
+    return out;
 }
 
 /**

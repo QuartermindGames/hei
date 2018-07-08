@@ -44,10 +44,12 @@ typedef struct PLIOBuffer {
 
 PL_EXTERN_C
 
-PL_EXTERN void plGetUserName(char *out);
+PL_EXTERN char *plGetUserName(char *out, size_t n);
 
 PL_EXTERN const char *plGetWorkingDirectory(void);
 PL_EXTERN void plSetWorkingDirectory(const char *path);
+
+PL_EXTERN char *plGetApplicationDataDirectory(const char *app_name, char *out, size_t n);
 
 PL_EXTERN void plStripExtension(char *dest, const char *in);
 
