@@ -96,7 +96,6 @@ PL_INLINE static void WritePackageIndexHeader(FILE *handle, uint16_t type, uint3
 
 PLPackage *LoadMADPackage(const char *path, bool cache);
 PLPackage *LoadARTPackage(const char *path, bool cache);
-PLPackage *LoadLSTPackage(const char *path, bool cache);
 
 PL_EXTERN_C_END
 

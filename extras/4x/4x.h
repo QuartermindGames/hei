@@ -24,34 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #pragma once
 
-#include <PL/platform.h>
-#include <PL/platform_filesystem.h>
-
-typedef struct PLPackageIndex {
-    size_t offset;
-    PLIOBuffer file;
-} PLPackageIndex;
-
-typedef struct PLPackage {
-    char path[PL_SYSTEM_MAX_PATH];
-
-    unsigned int table_size;
-    PLPackageIndex *table;
-
-    struct {
-        bool(*LoadFile)(FILE *fh, PLPackageIndex *pi);
-    } internal;
-} PLPackage;
-
-PL_EXTERN_C
-
-PL_EXTERN PLPackage *plLoadPackage(const char *path, bool cache);
-PL_EXTERN void plDeletePackage(PLPackage *package);
-
-PL_EXTERN void plRegisterPackageInterface(const char *ext, PLPackage*(*LoadFunction)(const char *path, bool cache));
-
-PL_EXTERN PLPackage *plCreatePackage(const char *dest);
-
-PL_EXTERN_C_END
+void Register4xPackageInterface(void);

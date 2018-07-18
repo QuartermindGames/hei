@@ -117,14 +117,14 @@ void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *
 
 PLModel *plLoadModel(const char *path) {
     if(!plFileExists(path)) {
-        ReportError(PL_RESULT_FILEREAD, "Failed to load model, %s!", path);
+        ReportError(PL_RESULT_FILEREAD, "failed to load model, %s", path);
         return NULL;
     }
 
     const char *extension = plGetFileExtension(path);
     for(unsigned int i = 0; i < num_model_interfaces; ++i) {
         if(model_interfaces[i].LoadFunction == NULL) {
-            continue;
+            break;
         }
 
         if(!plIsEmptyString(model_interfaces[i].ext)) {

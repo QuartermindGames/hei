@@ -27,9 +27,12 @@ For more information, please refer to <http://unlicense.org>
 
 project(example_package)
 
-file(GLOB EXAMPLE_PACKAGE_SOURCE_FILES *.*)
+file(GLOB EXAMPLE_PACKAGE_SOURCE_FILES
+        *.*
+        ../../extras/4x/*.*)
 
-add_executable(example_package ${EXAMPLE_PACKAGE_SOURCE_FILES})
+add_executable(example_package
+        ${EXAMPLE_PACKAGE_SOURCE_FILES})
 
-target_include_directories(example_package PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_include_directories(example_package PUBLIC ./../../extras/ . ${CMAKE_SYSTEM_INCLUDE_PATH})
 target_link_libraries(example_package platform)

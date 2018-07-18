@@ -25,8 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_package.h>
-
+#include "platform_private.h"
 #include "package_private.h"
 
 PLPackage *plCreatePackage(const char *dest) {
@@ -76,21 +75,30 @@ void plWritePackage(PLPackage *package) {
 /////////////////////////////////////////////////////////////////
 
 typedef struct PLPackageLoader {
-    const char *extensions[32];
-    unsigned int num_extensions;
-
-    PLPackage*(*LoadPackage)(const char *path, bool precache);
+    const char *ext;
+    PLPackage*(*LoadFunction)(const char *path, bool cache);
 } PLPackageLoader;
 
-PLPackageLoader load_packs[]= {
-        { { "package" }, 1, NULL },
+PLPackageLoader package_interfaces[MAX_OBJECT_INTERFACES]= {
+        { "package", NULL },
 
         // Third-party package formats
-        { { "mad", "mtd" }, 2, LoadMADPackage },
-        { { "dat", "art" }, 2, LoadARTPackage },
-        { { "lst" }, 1, LoadLSTPackage },
+
+        /* Gremlin Interactive */
+        { "mad", LoadMADPackage },
+        { "mtd", LoadMADPackage },
+
+        /* Cyclone */
+        //{ "dat", LoadARTPackage },
+        //{ "art", LoadARTPackage },
 };
-unsigned int num_load_packs = plArrayElements(load_packs);
+unsigned int num_package_interfaces = 3;
+
+void plRegisterPackageInterface(const char *ext, PLPackage*(*LoadFunction)(const char *path, bool cache)) {
+    package_interfaces[num_package_interfaces].ext = ext;
+    package_interfaces[num_package_interfaces].LoadFunction = LoadFunction;
+    num_package_interfaces++;
+}
 
 PLPackage *plLoadPackage(const char *path, bool cache) {
     if(!plFileExists(path)) {
@@ -99,21 +107,20 @@ PLPackage *plLoadPackage(const char *path, bool cache) {
     }
 
     const char *ext = plGetFileExtension(path);
-    if(ext[0] != '\0') {
-        for(unsigned int i = 0; i < num_load_packs; ++i) {
-            for (unsigned int j = 0; j < load_packs[i].num_extensions; ++j) {
-                if (pl_strcasecmp(ext, load_packs[i].extensions[j]) == 0) {
-                    PLPackage *package = load_packs[i].LoadPackage(path, cache);
-                    if (package != NULL) {
-                        return package;
-                    }
-                    break;
+    for(unsigned int i = 0; i < num_package_interfaces; ++i) {
+        if(package_interfaces[i].LoadFunction == NULL) {
+            break;
+        }
+
+        if(!plIsEmptyString(ext) && !plIsEmptyString(package_interfaces[i].ext)) {
+            if(pl_strncasecmp(ext, package_interfaces[i].ext, sizeof(package_interfaces[i].ext)) == 0) {
+                PLPackage *package = package_interfaces[i].LoadFunction(path, cache);
+                if(package != NULL) {
+                    return package;
                 }
             }
-        }
-    } else {
-        for(unsigned int i = 0; i < num_load_packs; ++i) {
-            PLPackage *package = load_packs[i].LoadPackage(path, cache);
+        } else if(plIsEmptyString(ext) && plIsEmptyString(package_interfaces[i].ext)) {
+            PLPackage *package = package_interfaces[i].LoadFunction(path, cache);
             if(package != NULL) {
                 return package;
             }

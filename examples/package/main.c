@@ -30,6 +30,8 @@ For more information, please refer to <http://unlicense.org>
 
 #include "../shared.h"
 
+#include "4x/4x.h"
+
 #define TITLE "Package Example"
 
 int main(int argc, char **argv) {
@@ -55,6 +57,8 @@ int main(int argc, char **argv) {
 
     plDeletePackage(new_package);
 #endif
+
+    Register4xPackageInterface();
 
     PLPackage *pack = plLoadPackage("./packs/Others.lst", true);
     if(pack == NULL) {

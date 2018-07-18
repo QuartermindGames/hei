@@ -24,10 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#include <PL/platform_console.h>
 
-#include "platform_private.h"
-#include "package_private.h"
+#include <PL/platform_console.h>
+#include <PL/platform_package.h>
 
 /* 4X Technologies Package Format
  * These come in both an IBF and LST format;
@@ -130,7 +129,7 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
 
     for(unsigned int i = 0; i < num_indices; ++i) {
         if(feof(fh) != 0) {
-            PrintWarning("unexpected end of package in %s, ignoring!\n", path);
+            printf("unexpected end of package in %s, ignoring!\n", path);
             break;
         }
 
@@ -178,4 +177,8 @@ PLPackage *LoadLSTPackage(const char *path, bool cache) {
     fclose(fh);
 
     return NULL;
+}
+
+void Register4xPackageInterface(void) {
+    plRegisterPackageInterface("lst", LoadLSTPackage);
 }

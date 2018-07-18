@@ -26,6 +26,14 @@ For more information, please refer to <http://unlicense.org>
 */
 #pragma once
 
+#include <PL/platform.h>
+
+/* Hard Limits */
+
+#define MAX_OBJECT_INTERFACES   512
+
+/*********************************/
+
 enum {
     LOG_LEVEL_HIGH = -1,
     LOG_LEVEL_MEDIUM = -2,
