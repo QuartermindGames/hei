@@ -69,8 +69,8 @@ enum PLTextureFlag {
 typedef struct PLTextureMappingUnit {
     bool active;
 
-    PLuint current_texture;
-    PLuint current_capabilities;
+    unsigned int current_texture;
+    unsigned int current_capabilities;
 
     PLTextureEnvironmentMode current_envmode;
 } PLTextureMappingUnit;

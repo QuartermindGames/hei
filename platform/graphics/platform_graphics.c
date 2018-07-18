@@ -175,9 +175,8 @@ void plClearBuffers(unsigned int buffers) {
 ===========================*/
 
 typedef struct _PLGraphicsCapabilities {
-    PLuint pl_parm, to_parm;
-
-    const PLchar *ident;
+    unsigned int pl_parm, to_parm;
+    const char *ident;
 } _PLGraphicsCapabilities;
 
 _PLGraphicsCapabilities graphics_capabilities[] =
@@ -219,13 +218,13 @@ _PLGraphicsCapabilities graphics_capabilities[] =
                 {0}
         };
 
-bool plIsGraphicsStateEnabled(PLuint flags) {
+bool plIsGraphicsStateEnabled(unsigned int flags) {
     GRAPHICS_TRACK();
 
     return (bool)(flags & gfx_state.current_capabilities);
 }
 
-void plEnableGraphicsStates(PLuint flags) {
+void plEnableGraphicsStates(unsigned int flags) {
     GRAPHICS_TRACK();
 
     if (plIsGraphicsStateEnabled(flags)) {
@@ -266,7 +265,7 @@ void plEnableGraphicsStates(PLuint flags) {
     }
 }
 
-void plDisableGraphicsStates(PLuint flags) {
+void plDisableGraphicsStates(unsigned int flags) {
     GRAPHICS_TRACK();
 
     if (!plIsGraphicsStateEnabled(flags)) {
@@ -327,10 +326,10 @@ PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
     _plSetActiveTexture(texture);
 
 #if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
-    PLuint storage = _plTranslateTextureStorageFormat(upload->storage_type);
-    PLuint format = _plTranslateTextureFormat(upload->format);
+    unsigned int storage = _plTranslateTextureStorageFormat(upload->storage_type);
+    unsigned int format = _plTranslateTextureFormat(upload->format);
 
-    PLuint levels = upload->levels;
+    unsigned int levels = upload->levels;
     if(!levels) {
         levels = 1;
     }
@@ -390,7 +389,7 @@ PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
 ===========================*/
 
 #if 0
-void plScreenshot(PLViewport *viewport, const PLchar *path) {
+void plScreenshot(PLViewport *viewport, const char *path) {
     uint8_t *buffer = (uint8_t*)pl_calloc(viewport->height * viewport->width * 3, sizeof(uint8_t));
     glReadPixels(viewport->x, viewport->y, viewport->width, viewport->height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
 

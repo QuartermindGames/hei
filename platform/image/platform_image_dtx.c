@@ -158,7 +158,7 @@ bool LoadDTXImage(FILE *fin, PLImage *out) {
         default:
         case DTX_FORMAT_16:
         case DTX_FORMAT_32:
-            out->size = (PLuint)(header.width * header.height * 4);
+            out->size = (unsigned int)(header.width * header.height * 4);
             out->format = PL_IMAGEFORMAT_RGBA8;
             out->colour_format = PL_COLOURFORMAT_RGBA;
             break;
@@ -191,7 +191,7 @@ bool LoadDTXImage(FILE *fin, PLImage *out) {
 
     fread(out->data[0], sizeof(uint8_t), out->size, fin);
 
-    /*	for (PLuint i = 0; i < (PLuint)size; i += 4)
+    /*	for (unsigned int i = 0; i < (unsigned int)size; i += 4)
     {
     image[i + 0] ^= image[i + 2];
     image[i + 2] ^= image[i + 0];

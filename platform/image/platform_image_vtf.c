@@ -296,7 +296,7 @@ bool LoadVTFImage(FILE *fin, PLImage *out) {
 
     /*
     if (header.version[1] >= 3) {
-        for (PLuint i = 0; i < header3.numresources; i++) {
+        for (unsigned int i = 0; i < header3.numresources; i++) {
             // todo, support for later VTF versions.
         }
     } else */ {
@@ -314,7 +314,7 @@ bool LoadVTFImage(FILE *fin, PLImage *out) {
                     // We'll just skip the smaller mipmaps for now, can generate these later.
                     mipw *= (unsigned int)pow(2, mipmap); //(out->width * (mipmap + 1)) / header.mipmaps;
                     miph *= (unsigned int)pow(2, mipmap); //(out->height * (mipmap + 1)) / header.mipmaps;
-                    PLuint mipsize = plGetImageSize(out->format, mipw, miph);
+                    unsigned int mipsize = plGetImageSize(out->format, mipw, miph);
                     if(mipmap == (header.mipmaps - 1)) {
                         out->data[0] = (uint8_t*)pl_calloc(mipsize, sizeof(uint8_t));
                         if (fread(out->data[0], sizeof(uint8_t), mipsize, fin) != mipsize) {

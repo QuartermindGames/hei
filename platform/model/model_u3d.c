@@ -200,7 +200,7 @@ PLModel *LoadU3DModel(const char *path) {
 
     // Allocate the triangle/vertex arrays.
     model->frames = new PLModelFrame[model->num_frames];
-    for (PLuint i = 0; i < model->num_frames; i++) {
+    for (unsigned int i = 0; i < model->num_frames; i++) {
         model->frames[i].vertices = new PLVertex[model->num_vertices];
         model->frames[i].triangles = new PLTriangle[model->num_triangles];
     }

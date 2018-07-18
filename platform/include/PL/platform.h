@@ -117,11 +117,10 @@ support.
 #   define plAssert(a) (a)
 #endif
 
-typedef unsigned int    PLuint;
-typedef char            PLchar;
-
 #define plArrayElements(a)  (sizeof(a) / sizeof(*(a)))          // Returns the number of elements within an array.
 #define plIsEmptyString(a)  (((a)[0] == '\0') || ((a)[0] == ' '))
+
+#define plStringify(num) #num
 
 //////////////////////////////////////////////////////////////////
 
@@ -292,12 +291,12 @@ PL_EXTERN_C_END
 /*	Converts string to time.
 	http://stackoverflow.com/questions/1765014/convert-string-from-date-into-a-time-t
 */
-static PL_INLINE time_t plStringToTime(const PLchar *ts) {
-    PLchar s_month[5];
+static PL_INLINE time_t plStringToTime(const char *ts) {
+    char s_month[5];
     int day, year;
     sscanf(ts, "%s %d %d", s_month, &day, &year);
 
-    static const PLchar months[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
+    static const char months[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
     int month = (int)((strstr(months, s_month) - months) / 3);
     struct tm time = {0};
     time.tm_mon = month;

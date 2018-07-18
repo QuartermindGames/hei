@@ -55,8 +55,8 @@ enum DDSFlag {
 bool DDSFormatCheck(FILE *fin) {
     rewind(fin);
 
-    PLchar ident[4];
-    fread(ident, sizeof(PLchar), 4, fin);
+    char ident[4];
+    fread(ident, sizeof(char), 4, fin);
 
     return (bool)(strncmp(ident, "DDS", 3) == 0);
 }
