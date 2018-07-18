@@ -430,7 +430,7 @@ bool plFlipImageVertical(PLImage *image) {
 	
 	unsigned int bytes_per_pixel = _plImageBytesPerPixel(image->format);
 	if(bytes_per_pixel == 0) {
-		ReportError(PL_RESULT_IMAGEFORMAT, "Cannot flip images in this format");
+		ReportError(PL_RESULT_IMAGEFORMAT, "cannot flip images in this format");
 		return false;
 	}
 	
@@ -438,7 +438,7 @@ bool plFlipImageVertical(PLImage *image) {
 	
 	unsigned char *swap = pl_malloc(bytes_per_row);
 	if(swap == NULL) {
-		ReportError(PL_RESULT_MEMORY_ALLOCATION, "Cannot allocate memory");
+		ReportError(PL_RESULT_MEMORY_ALLOCATION, "cannot allocate memory");
 		return false;
 	}
 	

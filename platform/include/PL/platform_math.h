@@ -1046,6 +1046,15 @@ PL_INLINE static const char *plPrintQuaternion(PLQuaternion q) {
     return s;
 }
 
+PL_INLINE static void plComputeQuaternionW(PLQuaternion *q) {
+    float t = 1.f - (q->x * q->x) - (q->y * q->y) - (q->z * q->z);
+    if(t < 0) {
+        q->w = 0;
+    } else {
+        q->w = -sqrtf(t);
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Primitives
 
