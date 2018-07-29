@@ -41,15 +41,3 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -std=c11")
 
 add_subdirectory(platform)
-
-if(PL_BUILD_EXAMPLES)
-    add_subdirectory(examples/console)
-    add_subdirectory(examples/model_viewer)
-    add_subdirectory(examples/package)
-    add_subdirectory(examples/image_export)
-endif(PL_BUILD_EXAMPLES)
-
-if(PL_BUILD_UTILITIES)
-    add_subdirectory(utilities/ibsp2level)
-endif(PL_BUILD_UTILITIES)
-
