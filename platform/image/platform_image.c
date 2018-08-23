@@ -302,8 +302,7 @@ void plInvertImageColour(PLImage *image) {
 
 /* utility function */
 void plGenerateStipplePattern(PLImage *image, unsigned int depth) {
-    plAssert(0); /* todo */
-
+#if 0
     unsigned int p = 0;
     unsigned int num_colours = plGetSamplesPerPixel(image->colour_format);
     switch(image->format) {
@@ -321,6 +320,9 @@ void plGenerateStipplePattern(PLImage *image, unsigned int depth) {
     }
 
     ReportError(PL_RESULT_IMAGEFORMAT, "unsupported image format");
+#else
+    /* todo */
+#endif
 }
 
 void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest) {
