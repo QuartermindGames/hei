@@ -198,7 +198,7 @@ void plSetConsoleVariable(PLConsoleVariable *var, const char *value) {
                 return;
             }
 
-            var->i_value = (int)strtol(value, NULL, 8);
+            var->i_value = (int)strtol(value, NULL, 10);
         } break;
 
         case pl_string_var: {
@@ -341,11 +341,12 @@ PLresult _plInitConsole(void) {
         console_panes[i].colour = plCreateColour4b(CONSOLE_DEFAULT_COLOUR);
     }
 
-    /* todo, move this into graphics init code */
+#if 0 /* todo, move this into graphics init code */
 #if defined(PL_USE_GRAPHICS)
     if((mesh_line = plCreateMesh(PL_MESH_LINES, PL_DRAW_IMMEDIATE, 0, 4)) == NULL) {
         return PL_RESULT_MEMORY_ALLOCATION;
     }
+#endif
 #endif
 
     if((_pl_commands = (PLConsoleCommand**)pl_malloc(sizeof(PLConsoleCommand*) * _pl_commands_size)) == NULL) {

@@ -38,7 +38,7 @@ For more information, please refer to <http://unlicense.org>
 #   define PL_SYSTEM_NAME               "WINDOWS"
 #   define PL_SYSTEM_LIBRARY_EXTENSION  ".dll"
 
-#   define PL_SYSTEM_MAX_PATH           (260 - 1)
+#   define PL_SYSTEM_MAX_PATH           259
 #   define PL_SYSTEM_MAX_USERNAME       128
 
 #	ifdef _MSC_VER
@@ -84,8 +84,8 @@ For more information, please refer to <http://unlicense.org>
 
 #	endif
 
-#   define PL_SYSTEM_NAME   "LINUX"
-#   define PL_SYSTEM_LIBRARY_EXTENSION ".so"
+#   define PL_SYSTEM_NAME               "LINUX"
+#   define PL_SYSTEM_LIBRARY_EXTENSION  ".so"
 
 #   define PL_SYSTEM_MAX_PATH       256
 #   define PL_SYSTEM_MAX_USERNAME   32

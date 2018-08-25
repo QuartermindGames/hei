@@ -37,15 +37,16 @@ enum {
 
 typedef struct PLViewport {
     int x, y;
-    unsigned int w, h;
+    int h;
+    int w;
 
     uint8_t *v_buffer;
     unsigned int buffers[32];
 
     PLImageFormat format;
 
-    unsigned int r_w, r_h;
-    unsigned int old_r_w, old_r_h;
+    int r_w, r_h;
+    int old_r_w, old_r_h;
 } PLViewport;
 
 typedef struct PLCamera {

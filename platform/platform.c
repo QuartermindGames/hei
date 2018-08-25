@@ -157,20 +157,44 @@ const char *plGetExecutableName(void) {
     return pl_arguments.exe_name;
 }
 
+bool plHasCommandLineArgument(const char *arg) {
+    if(pl_arguments.num_arguments < 1) {
+        return false;
+    }
+
+    for(unsigned int i = 0; i < pl_arguments.num_arguments; i++) {
+        if(strcmp(pl_arguments.arguments[i], arg) == 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // Returns result for a single command line argument.
-const char *plGetCommandLineArgument(const char *arg) {
+const char *plGetCommandLineArgumentValue(const char *arg) {
+    if(plIsEmptyString(arg)) {
+        return NULL;
+    }
+
     if(pl_arguments.num_arguments < 2) {
         return NULL;
     }
 
-    if(plIsEmptyString(arg)) {
-        // todo, get current log output and print warning there?
-        return NULL;
-    }
-
     for(unsigned int i = 0; i < pl_arguments.num_arguments; i++) {
-        if(!strcmp(pl_arguments.arguments[i], arg)) {
-            return pl_arguments.arguments[i + 1];
+        if(strcmp(pl_arguments.arguments[i], arg) == 0) {
+            // check the string is valid before passing it back
+
+            if(i + 1 >= pl_arguments.num_arguments) {
+                return NULL;
+            }
+
+            const char *ret = pl_arguments.arguments[i + 1];
+            if(plIsEmptyString(ret)) {
+                return NULL;
+            }
+
+            return ret;
         }
     }
 

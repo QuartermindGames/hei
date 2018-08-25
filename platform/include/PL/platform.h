@@ -246,7 +246,8 @@ PL_EXTERN const char * plGetError(void);        // Returns the last recorded err
 #endif
 
 // CL Arguments
-PL_EXTERN const char *plGetCommandLineArgument(const char *arg);
+PL_EXTERN const char *plGetCommandLineArgumentValue(const char *arg);
+PL_EXTERN bool plHasCommandLineArgument(const char *arg);
 
 //////////////////////////////////////////////////////////////////
 

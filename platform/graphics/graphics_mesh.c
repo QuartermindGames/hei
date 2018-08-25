@@ -401,7 +401,7 @@ void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, 
     plDrawMesh(mesh);
 }
 
-void plDrawTexturedRectangle(int x, int y, unsigned int w, unsigned int h, PLTexture *texture) {
+void plDrawTexturedRectangle(int x, int y, int w, int h, PLTexture *texture) {
     static PLMesh *mesh = NULL;
     if(mesh == NULL) {
         if((mesh = plCreateMesh(
