@@ -591,13 +591,14 @@ PL_INLINE static const char *plPrintColour(PLColour c) {
 #ifndef __cplusplus
 
 #   define PLColour(r, g, b, a) (PLColour){r  , g  , b  , a  }
-#   define PLColourRGB(r, g, b) (PLColour){r  , g  , b  , 255}
-#   define PLColourR(r)         (PLColour){r  , 255, 255, 255}
-#   define PLColourG(g)         (PLColour){255, g  , 255, 255}
-#   define PLColourB(b)         (PLColour){255, 255, b  , 255}
-#   define PLColourA(a)         (PLColour){255, 255, 255, a  }
 
 #endif
+
+#define PLColourRGB(r, g, b) (PLColour){r  , g  , b  , 255}
+#define PLColourR(r)         (PLColour){r  , 255, 255, 255}
+#define PLColourG(g)         (PLColour){255, g  , 255, 255}
+#define PLColourB(b)         (PLColour){255, 255, b  , 255}
+#define PLColourA(a)         (PLColour){255, 255, 255, a  }
 
 /* pinks */
 #define PL_COLOUR_PINK                      PLColourRGB(255, 192, 203)
