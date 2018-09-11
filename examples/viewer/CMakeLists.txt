@@ -1,4 +1,4 @@
-/*
+#[[
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,37 +23,18 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-*/
+]]
 
-#pragma once
+project(model_viewer)
 
-#include <PL/platform.h>
-#include <PL/platform_filesystem.h>
+file(GLOB MODEL_VIEWER_SOURCE_FILES
+        *.*
 
-typedef struct PLPackageIndex {
-    size_t offset;
-    PLIOBuffer file;
-} PLPackageIndex;
+        ../4x/4x_package.c
 
-typedef struct PLPackage {
-    char path[PL_SYSTEM_MAX_PATH];
+        )
 
-    unsigned int table_size;
-    PLPackageIndex *table;
+add_executable(model_viewer ${MODEL_VIEWER_SOURCE_FILES})
 
-    struct {
-        bool(*LoadFile)(FILE *fh, PLPackageIndex *pi);
-    } internal;
-} PLPackage;
-
-PL_EXTERN_C
-
-PL_EXTERN PLPackage *plLoadPackage(const char *path, bool cache);
-PL_EXTERN bool plLoadPackageFile(PLPackage *package, const char *file, const uint8_t **data, size_t *size);
-PL_EXTERN void plDeletePackage(PLPackage *package);
-
-PL_EXTERN void plRegisterPackageInterface(const char *ext, PLPackage*(*LoadFunction)(const char *path, bool cache));
-
-PL_EXTERN PLPackage *plCreatePackage(const char *dest);
-
-PL_EXTERN_C_END
+target_include_directories(model_viewer PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
+target_link_libraries(model_viewer platform SDL2)
