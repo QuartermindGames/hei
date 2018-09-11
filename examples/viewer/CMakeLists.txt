@@ -27,12 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 project(model_viewer)
 
-file(GLOB MODEL_VIEWER_SOURCE_FILES
-        *.*
-
-        ../4x/4x_package.c
-
-        )
+file(GLOB MODEL_VIEWER_SOURCE_FILES *.*)
 
 add_executable(model_viewer ${MODEL_VIEWER_SOURCE_FILES})
 

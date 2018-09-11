@@ -27,6 +27,8 @@ For more information, please refer to <http://unlicense.org>
 
 cmake_minimum_required(VERSION 3.5.1)
 
+option(BUILD_EXAMPLES "Build example applications" ON)
+
 # Set all of our output directories.
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
@@ -38,3 +40,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -std=c11")
 
 add_subdirectory(platform)
+
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples/viewer)
+endif(BUILD_EXAMPLES)
