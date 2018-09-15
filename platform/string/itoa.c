@@ -37,20 +37,20 @@ int pl_dectobin(int dec) {
 
 // lazy ass implementation ...
 char *pl_itoa(int val, char *buf, size_t len, int base) {
-    char b[2] = {'%'};
+    const char *b;
     switch(base) {
         default:return buf;
         case 10:
-            b[1] = 'd';
+            b = "%d";
             break;
         case 16:
-            b[1] = 'x';
+            b = "%x";
             break;
         case 8:
-            b[1] = 'o';
+            b = "%o";
             break;
         case 2:
-            b[1] = 'd';
+            b = "%d";
             val = pl_dectobin(val);
             break;
     }
