@@ -777,7 +777,7 @@ void plDrawConsole(void) {
 
 /*	Log System	*/
 
-#define MAX_LOG_LEVELS  128
+#define MAX_LOG_LEVELS  512
 
 typedef struct LogLevel {
     int id;

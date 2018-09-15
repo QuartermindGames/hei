@@ -51,14 +51,14 @@ struct {
     bool direct_state_access;
 } gl_capabilities;
 
-int gl_version_major = 0;
-int gl_version_minor = 0;
+static int gl_version_major = 0;
+static int gl_version_minor = 0;
 
 #define GLVersion(maj, min) (((maj) == gl_version_major && (min) <= gl_version_minor) || (maj) < gl_version_major)
 
 unsigned int gl_num_extensions = 0;
 
-void ClearBoundTextures(void) {
+static void ClearBoundTextures(void) {
     for(unsigned int i = 0; i < gfx_state.hw_maxtextureunits; ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -66,28 +66,28 @@ void ClearBoundTextures(void) {
     glActiveTexture(GL_TEXTURE0);
 }
 
-void ClearBoundBuffers(void) {
+static void ClearBoundBuffers(void) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
 /////////////////////////////////////////////////////////////
 
-bool GLHWSupportsShaders(void) {
+static bool GLHWSupportsShaders(void) {
     return (GLVersion(2, 1) || (gl_capabilities.fragment_program && gl_capabilities.vertex_program));
 }
 
-bool GLHWSupportsMultitexture(void) {
+static bool GLHWSupportsMultitexture(void) {
     return gl_capabilities.multitexture;
 }
 
-void GLGetMaxTextureUnits(unsigned int *num_units) {
+static void GLGetMaxTextureUnits(unsigned int *num_units) {
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint *) num_units);
 }
 
 /////////////////////////////////////////////////////////////
 
-void GLSetClearColour(PLColour rgba) {
+static void GLSetClearColour(PLColour rgba) {
     glClearColor(
             plByteToFloat(rgba.r),
             plByteToFloat(rgba.g),
@@ -96,7 +96,7 @@ void GLSetClearColour(PLColour rgba) {
     );
 }
 
-void GLClearBuffers(unsigned int buffers) {
+static void GLClearBuffers(unsigned int buffers) {
     // Rather ugly, but translate it over to GL.
     unsigned int glclear = 0;
     if(buffers & PL_BUFFER_COLOUR)  glclear |= GL_COLOR_BUFFER_BIT;
@@ -107,7 +107,7 @@ void GLClearBuffers(unsigned int buffers) {
 
 /////////////////////////////////////////////////////////////
 
-unsigned int TranslateBlendFunc(PLBlend blend) {
+static unsigned int TranslateBlendFunc(PLBlend blend) {
     switch(blend) {
         default:
         case PL_BLEND_ONE: return GL_ONE;
@@ -124,7 +124,7 @@ unsigned int TranslateBlendFunc(PLBlend blend) {
     }
 }
 
-void GLSetBlendMode(PLBlend a, PLBlend b) {
+static void GLSetBlendMode(PLBlend a, PLBlend b) {
     if(a == PL_BLEND_NONE && b == PL_BLEND_NONE) {
         glDisable(GL_BLEND);
     } else {
@@ -134,7 +134,7 @@ void GLSetBlendMode(PLBlend a, PLBlend b) {
     glBlendFunc(TranslateBlendFunc(a), TranslateBlendFunc(b));
 }
 
-void GLSetCullMode(PLCullMode mode) {
+static void GLSetCullMode(PLCullMode mode) {
     if(mode == gfx_state.current_cullmode) {
         return;
     }
@@ -162,7 +162,7 @@ void GLSetCullMode(PLCullMode mode) {
 /////////////////////////////////////////////////////////////
 // Texture
 
-unsigned int TranslateImageFormat(PLImageFormat format) {
+static unsigned int TranslateImageFormat(PLImageFormat format) {
     switch(format) {
         case PL_IMAGEFORMAT_RGB8:       return GL_RGB8;
         case PL_IMAGEFORMAT_RGBA8:      return GL_RGBA8;
@@ -179,7 +179,7 @@ unsigned int TranslateImageFormat(PLImageFormat format) {
     }
 }
 
-unsigned int TranslateImageColourFormat(PLColourFormat format) {
+static unsigned int TranslateImageColourFormat(PLColourFormat format) {
     switch(format) {
         default:
         case PL_COLOURFORMAT_RGBA:  return GL_RGBA;
@@ -187,15 +187,15 @@ unsigned int TranslateImageColourFormat(PLColourFormat format) {
     }
 }
 
-void GLCreateTexture(PLTexture *texture) {
+static void GLCreateTexture(PLTexture *texture) {
     glGenTextures(1, &texture->internal.id);
 }
 
-void GLDeleteTexture(PLTexture *texture) {
+static void GLDeleteTexture(PLTexture *texture) {
     glDeleteTextures(1, &texture->internal.id);
 }
 
-void GLBindTexture(const PLTexture *texture) {
+static void GLBindTexture(const PLTexture *texture) {
     unsigned int id = 0;
     if(texture != NULL) {
         id = texture->internal.id;
@@ -207,7 +207,7 @@ void GLBindTexture(const PLTexture *texture) {
     glBindTexture(GL_TEXTURE_2D, id);
 }
 
-void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
+static void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
@@ -278,6 +278,11 @@ void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
     }
 }
 
+void GLSetTextureAnisotropy(PLTexture *texture, uint32_t value) {
+    plSetTexture(texture, gfx_state.current_textureunit);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (int) value);
+}
+
 /////////////////////////////////////////////////////////////
 // Mesh
 
@@ -287,7 +292,7 @@ typedef struct MeshTranslatePrimitive {
     const char *name;
 } MeshTranslatePrimitive;
 
-MeshTranslatePrimitive primitives[] = {
+static MeshTranslatePrimitive primitives[] = {
     {PL_MESH_LINES, GL_LINES, "LINES"},
     {PL_MESH_LINE_LOOP, GL_LINE_LOOP, "LINE_LOOP"},
     {PL_MESH_POINTS, GL_POINTS, "POINTS"},
@@ -298,7 +303,7 @@ MeshTranslatePrimitive primitives[] = {
     {PL_MESH_QUADS, GL_TRIANGLES, "QUADS"}   // todo, translate
 };
 
-unsigned int TranslatePrimitiveMode(PLMeshPrimitive mode) {
+static unsigned int TranslatePrimitiveMode(PLMeshPrimitive mode) {
     for (unsigned int i = 0; i < plArrayElements(primitives); i++) {
         if (mode == primitives[i].mode)
             return primitives[i].target;
@@ -308,7 +313,7 @@ unsigned int TranslatePrimitiveMode(PLMeshPrimitive mode) {
     return primitives[0].target;
 }
 
-unsigned int TranslateDrawMode(PLMeshDrawMode mode) {
+static unsigned int TranslateDrawMode(PLMeshDrawMode mode) {
     switch(mode) {
         case PL_DRAW_DYNAMIC:   return GL_DYNAMIC_DRAW;
         case PL_DRAW_STATIC:    return GL_STATIC_DRAW;
@@ -321,7 +326,7 @@ enum {
     BUFFER_TRIANGLE_DATA,
 };
 
-void GLCreateMeshPOST(PLMesh *mesh) {
+static void GLCreateMeshPOST(PLMesh *mesh) {
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
         return;
     }
@@ -329,7 +334,7 @@ void GLCreateMeshPOST(PLMesh *mesh) {
     glGenBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA]);
 }
 
-void GLUploadMesh(PLMesh *mesh) {
+static void GLUploadMesh(PLMesh *mesh) {
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
         return;
     }
@@ -348,7 +353,7 @@ void GLUploadMesh(PLMesh *mesh) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void GLDeleteMesh(PLMesh *mesh) {
+static void GLDeleteMesh(PLMesh *mesh) {
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
         return;
     }
@@ -356,7 +361,7 @@ void GLDeleteMesh(PLMesh *mesh) {
     glDeleteBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA]);
 }
 
-void GLDrawMesh(PLMesh *mesh) {
+static void GLDrawMesh(PLMesh *mesh) {
     if(mesh->mode == PL_DRAW_IMMEDIATE) {
         glEnableClientState(GL_VERTEX_ARRAY);
         glEnableClientState(GL_COLOR_ARRAY);
@@ -407,15 +412,15 @@ enum {
     VIEWPORT_RENDERBUFFER_COLOUR,
 };
 
-void GLCreateCamera(PLCamera *camera) {
+static void GLCreateCamera(PLCamera *camera) {
     plAssert(camera);
 }
 
-void GLDeleteCamera(PLCamera *camera) {
+static void GLDeleteCamera(PLCamera *camera) {
     plAssert(camera);
 }
 
-void GLSetupCamera(PLCamera *camera) {
+static void GLSetupCamera(PLCamera *camera) {
     plAssert(camera);
 
     if(GLVersion(3, 0)) {
@@ -427,7 +432,8 @@ void GLSetupCamera(PLCamera *camera) {
                 glDeleteRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
 
                 free(camera->viewport.v_buffer);
-                camera->viewport.v_buffer = (uint8_t *) pl_malloc(camera->viewport.r_w * camera->viewport.r_h * 4);
+                camera->viewport.v_buffer = (uint8_t *) pl_malloc(
+                        (size_t) (camera->viewport.r_w * camera->viewport.r_h * 4));
                 if(camera->viewport.v_buffer != NULL) {
                     glGenFramebuffers(1, &camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
                     glGenRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
@@ -531,7 +537,7 @@ void GLSetupCamera(PLCamera *camera) {
     gfx_state.current_viewport = camera->viewport;
 }
 
-void GLDrawPerspectivePOST(PLCamera *camera) {
+static void GLDrawPerspectivePOST(PLCamera *camera) {
     plAssert(camera);
     if(GLVersion(3, 0)) {
         if (UseBufferScaling(camera) && (camera->viewport.v_buffer != NULL)) {
@@ -566,21 +572,21 @@ void GLDrawPerspectivePOST(PLCamera *camera) {
 /////////////////////////////////////////////////////////////
 // Shader
 
-const char *default_vertex_shader = {
+static const char *default_vertex_shader = {
 "#version 330\n"
 "layout (location = 0) in vec3 inPosition;\n"
 "layout (location = 1) in vec3 inColour;\n"
 "smooth out vec3 "
 };
 
-const char *default_fragment_shader = {
+static const char *default_fragment_shader = {
 "#version 330\n"
 
 };
 
 #define SHADER_INVALID_TYPE ((uint32_t)0 - 1)
 
-GLenum TranslateShaderStageType(PLShaderStageType type) {
+static GLenum TranslateShaderStageType(PLShaderStageType type) {
     switch(type) {
         case PL_SHADER_TYPE_VERTEX:     return GL_VERTEX_SHADER;
         case PL_SHADER_TYPE_COMPUTE:    return GL_COMPUTE_SHADER;
@@ -590,7 +596,7 @@ GLenum TranslateShaderStageType(PLShaderStageType type) {
     }
 }
 
-const char *GetGLShaderStageDescriptor(GLenum type) {
+static const char *GetGLShaderStageDescriptor(GLenum type) {
     switch(type) {
         case GL_VERTEX_SHADER:      return "GL_VERTEX_SHADER";
         case GL_COMPUTE_SHADER:     return "GL_COMPUTE_SHADER";
@@ -600,7 +606,7 @@ const char *GetGLShaderStageDescriptor(GLenum type) {
     }
 }
 
-GLenum TranslateShaderUniformType(PLShaderUniformType type) {
+static GLenum TranslateShaderUniformType(PLShaderUniformType type) {
     switch(type) {
         case PL_UNIFORM_BOOL:   return GL_BOOL;
         case PL_UNIFORM_DOUBLE: return GL_DOUBLE;
@@ -625,7 +631,7 @@ GLenum TranslateShaderUniformType(PLShaderUniformType type) {
     }
 }
 
-unsigned int TranslateGLShaderUniformType(GLenum type) {
+static unsigned int TranslateGLShaderUniformType(GLenum type) {
     switch(type) {
         case GL_BOOL:           return PL_UNIFORM_BOOL;
         case GL_DOUBLE:         return PL_UNIFORM_DOUBLE;
@@ -650,7 +656,7 @@ unsigned int TranslateGLShaderUniformType(GLenum type) {
     }
 }
 
-void GLCreateShaderProgram(PLShaderProgram *program) {
+static void GLCreateShaderProgram(PLShaderProgram *program) {
     if(!GLVersion(2,0)) {
         GfxLog("HW shaders unsupported on platform, relying on SW fallback\n");
         return;
@@ -663,7 +669,7 @@ void GLCreateShaderProgram(PLShaderProgram *program) {
     }
 }
 
-void GLDeleteShaderProgram(PLShaderProgram *program) {
+static void GLDeleteShaderProgram(PLShaderProgram *program) {
     if(program->internal.id == 0) {
         return;
     }
@@ -675,7 +681,7 @@ void GLDeleteShaderProgram(PLShaderProgram *program) {
     program->internal.id = 0;
 }
 
-void GLCreateShaderStage(PLShaderStage *stage) {
+static void GLCreateShaderStage(PLShaderStage *stage) {
     if(!GLVersion(2,0)) {
         GfxLog("HW shaders unsupported on platform, relying on SW fallback\n");
         return;
@@ -704,7 +710,7 @@ void GLCreateShaderStage(PLShaderStage *stage) {
     }
 }
 
-void GLDeleteShaderStage(PLShaderStage *stage) {
+static void GLDeleteShaderStage(PLShaderStage *stage) {
     if(!GLVersion(2,0)) {
         return;
     }
@@ -717,7 +723,7 @@ void GLDeleteShaderStage(PLShaderStage *stage) {
     stage->internal.id = 0;
 }
 
-void GLAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {
+static void GLAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {
     if(!GLVersion(2,0)) {
         return;
     }
@@ -725,7 +731,7 @@ void GLAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {
     glAttachShader(program->internal.id, stage->internal.id);
 }
 
-void GLCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) {
+static void GLCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) {
     if(!GLVersion(2,0)) {
         return;
     }
@@ -753,7 +759,7 @@ void GLCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) 
     }
 }
 
-void GLLinkShaderProgram(PLShaderProgram *program) {
+static void GLLinkShaderProgram(PLShaderProgram *program) {
     if(!GLVersion(2,0)) {
         return;
     }
@@ -782,7 +788,7 @@ void GLLinkShaderProgram(PLShaderProgram *program) {
     }
 }
 
-void GLSetShaderProgram(PLShaderProgram *program) {
+static void GLSetShaderProgram(PLShaderProgram *program) {
     if(!GLVersion(2,0)) {
         return;
     }
@@ -800,7 +806,7 @@ void GLSetShaderProgram(PLShaderProgram *program) {
 char gl_extensions[4096][4096] = { { '\0' } };
 
 #if defined(DEBUG_GL)
-void MessageCallback(
+static void MessageCallback(
         GLenum source,
         GLenum type,
         GLuint id,
@@ -880,6 +886,7 @@ void _InitOpenGL(void) {
     gfx_layer.DeleteTexture             = GLDeleteTexture;
     gfx_layer.BindTexture               = GLBindTexture;
     gfx_layer.UploadTexture             = GLUploadTexture;
+    gfx_layer.SetTextureAnisotropy      = GLSetTextureAnisotropy;
 
     gfx_layer.CreateMeshPOST            = GLCreateMeshPOST;
     gfx_layer.DeleteMesh                = GLDeleteMesh;

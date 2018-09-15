@@ -109,10 +109,6 @@ PLresult plInitialize(int argc, char **argv) {
     static bool is_initialized = false;
     if(!is_initialized) {
         _plInitConsole();
-
-#if defined(PL_USE_SDL2)
-        SDL_Init(SDL_INIT_EVERYTHING);
-#endif
     }
 
     memset(&pl_arguments, 0, sizeof(PLArguments));

@@ -357,9 +357,7 @@ unsigned int plGetMaxTextureAnistropy(void) {
 
 // todo, hook this up with var
 void plSetTextureAnisotropy(PLTexture *texture, unsigned int amount) {
-#if defined (PL_MODE_OPENGL) && !defined(PL_MODE_OPENGL_CORE)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (int) amount);
-#endif
+    CallGfxFunction(SetTextureAnisotropy, texture, amount);
 }
 
 void BindTexture(const PLTexture *texture) {
