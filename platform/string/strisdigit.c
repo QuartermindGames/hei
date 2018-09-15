@@ -24,11 +24,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #include <ctype.h>
+#include <stdbool.h>
 
 int pl_strisdigit(const char *s) {
     for(unsigned int i = 0; s[i] != '\0'; ++i) {
-        if(isdigit(s[i])) {
+        if(!(i == 0 && s[i] == '-' && isdigit(s[i + 1]) || isdigit(s[i]))) {
             return i;
         }
     }
@@ -40,7 +42,7 @@ int pl_strnisdigit(const char *s, unsigned int n) {
         if(s[i] == '\0') {
             break;
         }
-        if(isdigit(s[i])) {
+        if(!(i == 0 && s[i] == '-' && isdigit(s[i + 1]) || isdigit(s[i]))) {
             return i;
         }
     }

@@ -193,7 +193,7 @@ void plSetConsoleVariable(PLConsoleVariable *var, const char *value) {
         } return;
 
         case pl_int_var: {
-            if(pl_strisdigit(value) == -1) {
+            if(pl_strisdigit(value) != -1) {
                 Print("Unknown argument type %s, failed to set!\n", value);
                 return;
             }
