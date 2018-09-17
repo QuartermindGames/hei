@@ -37,6 +37,8 @@ For more information, please refer to <http://unlicense.org>
 /**********************************************************/
 /** preprocessor **/
 
+#if defined(PL_SUPPORT_OPENGL)
+
 /**
  * Sets up some basic properties for the given
  * shader and deals with any macros such as 'include'
@@ -154,6 +156,8 @@ void plPreProcessGLSLShader(char **buf, size_t *length) {
     free(n_buf);
 }
 
+#endif
+
 /**********************************************************/
 
 /**********************************************************/
@@ -209,6 +213,8 @@ void plDeleteShaderStage(PLShaderStage *stage) {
 void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) {
     _plResetError();
 
+#if defined(PL_SUPPORT_OPENGL)
+
     char *n_buf = pl_calloc(sizeof(char), length);
     memcpy(n_buf, buf, length);
     plPreProcessGLSLShader(&n_buf, &length);
@@ -216,6 +222,12 @@ void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) 
     CallGfxFunction(CompileShaderStage, stage, n_buf, length);
 
     free(n_buf);
+
+#else
+
+    CallGfxFunction(CompileShaderStage, stage, buf, length);
+
+#endif
 }
 
 /**
@@ -440,6 +452,8 @@ bool plRegisterShaderProgramAttributes(PLShaderProgram *program) {
 /*****************************************************/
 /** shader uniform **/
 
+#if defined(PL_SUPPORT_OPENGL)
+
 /* todo, move into layer_opengl */
 PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
     switch(type) {
@@ -468,8 +482,12 @@ PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
     }
 }
 
+#endif
+
 bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
     /* todo, move into layer_opengl */
+
+#if defined(PL_SUPPORT_OPENGL)
 
     if(program->uniforms != NULL) {
         GfxLog("uniforms has already been initialised!\n");
@@ -519,6 +537,8 @@ bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
         return false;
     }
 
+#endif
+
     return true;
 }
 
@@ -546,8 +566,12 @@ void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value) {
     PLShaderProgram *old_program = plGetCurrentShaderProgram();
     plSetShaderProgram(program);
 
+#if defined(PL_SUPPORT_OPENGL)
+
     /* todo, move into layer_opengl */
     glUniform1i(program->uniforms[slot].slot, value);
+
+#endif
 
     plSetShaderProgram(old_program);
 }
