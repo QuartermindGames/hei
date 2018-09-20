@@ -471,8 +471,17 @@ static void GLSetupCamera(PLCamera *camera) {
         }
     }
 
-    glViewport(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
-    glScissor(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
+    int w, h;
+    if(UseBufferScaling(camera)) {
+        w = camera->viewport.r_w;
+        h = camera->viewport.r_h;
+    } else {
+        w = camera->viewport.w;
+        h = camera->viewport.h;
+    }
+
+    glViewport(camera->viewport.x, camera->viewport.y, w, h);
+    glScissor(camera->viewport.x, camera->viewport.y, w, h);
 
     glMatrixMode(GL_PROJECTION);
 
@@ -480,7 +489,7 @@ static void GLSetupCamera(PLCamera *camera) {
         case PL_CAMERA_MODE_PERSPECTIVE: {
             camera->perspective = plPerspective(
                     camera->fov,
-                    (float)camera->viewport.w / (float)camera->viewport.h,
+                    (float)w / (float)h,
                     camera->near,
                     camera->far);
 
@@ -501,7 +510,7 @@ static void GLSetupCamera(PLCamera *camera) {
         }
 
         case PL_CAMERA_MODE_ORTHOGRAPHIC: {
-            camera->perspective = plOrtho(0, camera->viewport.w, camera->viewport.h, 0, camera->near, camera->far);
+            camera->perspective = plOrtho(0, w, h, 0, camera->near, camera->far);
 
 #if 1 // todo, modernize start
             glLoadMatrixf(camera->perspective.m);
@@ -518,7 +527,6 @@ static void GLSetupCamera(PLCamera *camera) {
 #if 1 // todo, modernize start
             glMatrixMode(GL_PROJECTION);
             glLoadMatrixf(camera->perspective.m);
-#endif
 
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
@@ -527,6 +535,7 @@ static void GLSetupCamera(PLCamera *camera) {
             glRotatef(camera->angles.x, 0, 1, 0);
 
             glTranslatef(camera->position.x, camera->position.y, camera->position.z);
+#endif
             break;
         }
 
@@ -552,8 +561,6 @@ static void GLDrawPerspectivePOST(PLCamera *camera) {
                     camera->viewport.v_buffer
             );
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-            //glScissor(0, 0, camera->viewport.w, camera->viewport.h);
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
             glBlitFramebuffer(
