@@ -171,7 +171,7 @@ void plPreProcessGLSLShader(char **buf, size_t *length) {
  * @param type the type of shader stage.
  * @return the new shader stage.
  */
-PLShaderStage *plCreateShaderStage(PLShaderStageType type) {
+static PLShaderStage *CreateShaderStage(PLShaderStageType type) {
     PLShaderStage *stage = pl_calloc(1, sizeof(PLShaderStage));
     if(stage == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate shader stage");
@@ -232,7 +232,7 @@ void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) 
 }
 
 PLShaderStage *plParseShaderStage(PLShaderStageType type, const char *buf, size_t length) {
-    PLShaderStage *stage = plCreateShaderStage(type);
+    PLShaderStage *stage = CreateShaderStage(type);
     if(stage == NULL) {
         return NULL;
     }
@@ -362,7 +362,25 @@ void plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {
     CallGfxFunction(AttachShaderStage, program, stage);
 }
 
-bool plRegisterShaderStage(PLShaderProgram *program, const char *path, PLShaderStageType type) {
+bool plRegisterShaderStageFromMemory(PLShaderProgram *program, const char *buffer, size_t length,
+                                     PLShaderStageType type) {
+    if((program->num_stages + 1) > 4) {
+        ReportError(PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
+                    program->num_stages);
+        return false;
+    }
+
+    PLShaderStage *stage = plParseShaderStage(type, buffer, length);
+    if(stage == NULL) {
+        return false;
+    }
+
+    plAttachShaderStage(program, stage);
+
+    return true;
+}
+
+bool plRegisterShaderStageFromDisk(PLShaderProgram *program, const char *path, PLShaderStageType type) {
     if((program->num_stages + 1) > 4) {
         ReportError(PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
                     program->num_stages);

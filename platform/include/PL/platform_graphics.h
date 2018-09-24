@@ -262,13 +262,15 @@ typedef struct PLShaderProgram {
 
 PL_EXTERN_C
 
-PL_EXTERN PLShaderStage *plCreateShaderStage(PLShaderStageType type);
+//PL_EXTERN PLShaderStage *plCreateShaderStage(PLShaderStageType type);
 PL_EXTERN PLShaderStage *plParseShaderStage(PLShaderStageType type, const char *buf, size_t length);
 PL_EXTERN PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type);
 PL_EXTERN void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length);
 
 PL_EXTERN void plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage);
-PL_EXTERN bool plRegisterShaderStage(PLShaderProgram *program, const char *path, PLShaderStageType type);
+PL_EXTERN bool plRegisterShaderStageFromMemory(PLShaderProgram *program, const char *buffer, size_t length,
+                                               PLShaderStageType type);
+PL_EXTERN bool plRegisterShaderStageFromDisk(PLShaderProgram *program, const char *path, PLShaderStageType type);
 PL_EXTERN bool plLinkShaderProgram(PLShaderProgram *program);
 
 PL_EXTERN int plGetShaderUniformSlot(PLShaderProgram *program, const char *name);

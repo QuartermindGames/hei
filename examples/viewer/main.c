@@ -445,14 +445,8 @@ int main(int argc, char **argv) {
     };
 
     PLShaderProgram *program = plCreateShaderProgram();
-    PLShaderStage *vert_stage = plCreateShaderStage(PL_SHADER_TYPE_VERTEX);
-    PLShaderStage *frag_stage = plCreateShaderStage(PL_SHADER_TYPE_FRAGMENT);
-
-    plCompileShaderStage(vert_stage, vertex_stage, strlen(vertex_stage));
-    plCompileShaderStage(frag_stage, fragment_stage, strlen(fragment_stage));
-
-    plAttachShaderStage(program, vert_stage);
-    plAttachShaderStage(program, frag_stage);
+    plRegisterShaderStageFromMemory(program, vertex_stage, strlen(vertex_state), PL_SHADER_TYPE_VERTEX);
+    plRegisterShaderStageFromMemory(program, fragment_stage, strlen(fragment_state), PL_SHADER_TYPE_FRAGMENT);
 
     plLinkShaderProgram(program);
 
