@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #include <PL/platform_console.h>
 #include <PL/platform_graphics.h>
 
@@ -230,6 +231,21 @@ void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) 
 #endif
 }
 
+PLShaderStage *plParseShaderStage(PLShaderStageType type, const char *buf, size_t length) {
+    PLShaderStage *stage = plCreateShaderStage(type);
+    if(stage == NULL) {
+        return NULL;
+    }
+
+    plCompileShaderStage(stage, buf, length);
+    if(plGetFunctionResult() == PL_RESULT_SHADER_COMPILE) {
+        plDeleteShaderStage(stage);
+        return NULL;
+    }
+
+    return stage;
+}
+
 /**
  * Shortcut function that can be used to quickly produce a new
  * shader stage. this will automatically handle loading the given
@@ -259,18 +275,7 @@ PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
 
     fclose(fp);
 
-    PLShaderStage *stage = plCreateShaderStage(type);
-    if(stage == NULL) {
-        return NULL;
-    }
-
-    plCompileShaderStage(stage, buf, length);
-    if(plGetFunctionResult() == PL_RESULT_SHADER_COMPILE) {
-        plDeleteShaderStage(stage);
-        return NULL;
-    }
-
-    return stage;
+    return plParseShaderStage(type, buf, length);
 }
 
 /**********************************************************/
