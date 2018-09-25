@@ -55,6 +55,10 @@ typedef struct PLConsoleVariable {
     };
 
     char value[1024];
+
+    /////////////////////////////
+
+    bool archive;
 } PLConsoleVariable;
 
 #define plGetConsoleVariableValue(var) \
