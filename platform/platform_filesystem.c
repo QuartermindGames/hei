@@ -140,15 +140,19 @@ const char *plGetFileExtension(const char *in) {
 }
 
 // Strips the extension from the filename.
-void plStripExtension(char *dest, const char *in) {
+void plStripExtension(char *dest, size_t length, const char *in) {
     if (plIsEmptyString(in)) {
         *dest = 0;
         return;
     }
 
     const char *s = strrchr(in, '.');
-    while (in < s) *dest++ = *in++;
-    *dest = 0;
+    while (in < s) {
+        if(--length <= 1) {
+            break;
+        }
+        *dest++ = *in++;
+    } *dest = 0;
 }
 
 /**
@@ -158,15 +162,19 @@ void plStripExtension(char *dest, const char *in) {
  * @return
  */
 const char *plGetFileName(const char *path) {
-    const char *lslash = strrchr(path, '/');
+    const char *lslash;
+    if((lslash = strrchr(path, '/')) == NULL) {
+        lslash = strrchr(path, '\\');
+    }
+
     if (lslash != NULL) {
         path = lslash + 1;
     }
+
     return path;
 }
 
-/**
- * returns the name of the systems current user.
+/** Returns the name of the systems current user.
  *
  * @param out
  */
@@ -188,8 +196,7 @@ char *plGetUserName(char *out, size_t n) {
     return out;
 }
 
-/**
- * Returns directory for saving application data.
+/** Returns directory for saving application data.
  *
  * @param app_name Name of your application.
  * @param out Buffer we'll be storing the path to.
@@ -216,8 +223,7 @@ char *plGetApplicationDataDirectory(const char *app_name, char *out, size_t n) {
     return out;
 }
 
-/**
- * scans the given directory.
+/** Scans the given directory.
  * on each file that's found, it calls the given function to handle the file.
  *
  * @param path path to directory.
