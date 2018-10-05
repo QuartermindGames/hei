@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #if defined(PL_SUPPORT_OPENGL)
+
 #include <PL/platform_console.h>
 
 #include "graphics_private.h"

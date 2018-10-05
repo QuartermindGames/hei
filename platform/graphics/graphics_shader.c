@@ -28,7 +28,9 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_console.h>
 #include <PL/platform_graphics.h>
 
+#if defined(PL_SUPPORT_OPENGL)
 #include <GL/glew.h>
+#endif
 
 #include "filesystem_private.h"
 #include "graphics_private.h"
@@ -50,6 +52,7 @@ For more information, please refer to <http://unlicense.org>
  * @param length
  */
 void plPreProcessGLSLShader(char **buf, size_t *length) {
+#if defined(PL_SUPPORT_OPENGL)
     size_t n_len = 1000000; /*(*length) * 2*/;
     char *n_buf = pl_calloc(n_len, sizeof(char));
     if(n_buf == NULL) {
@@ -155,6 +158,7 @@ void plPreProcessGLSLShader(char **buf, size_t *length) {
     }
 
     free(n_buf);
+#endif
 }
 
 #endif
@@ -509,6 +513,7 @@ PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
 
 bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
     /* todo, move into layer_opengl */
+#if defined(PL_SUPPORT_OPENGL)
 
 #if defined(PL_SUPPORT_OPENGL)
 
@@ -559,6 +564,7 @@ bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
         GfxLog("failed to validate any uniforms!\n");
         return false;
     }
+#endif
 
 #endif
 
@@ -570,6 +576,7 @@ void plSetShaderUniformFloat(PLShaderProgram *program, int slot, float value) {
 }
 
 void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value) {
+#if defined(PL_SUPPORT_OPENGL)
     if(program == NULL || program->uniforms == NULL) {
         return;
     }
@@ -597,4 +604,5 @@ void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value) {
 #endif
 
     plSetShaderProgram(old_program);
+#endif
 }
