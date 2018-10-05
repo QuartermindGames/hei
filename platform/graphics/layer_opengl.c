@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #if defined(PL_SUPPORT_OPENGL)
 #include <PL/platform_console.h>
 
@@ -179,6 +180,14 @@ static unsigned int TranslateImageFormat(PLImageFormat format) {
     }
 }
 
+static unsigned int TranslateStorageFormat(PLDataFormat format) {
+    switch(format) {
+        case PL_UNSIGNED_BYTE:              return GL_UNSIGNED_BYTE;
+        case PL_UNSIGNED_INT_8_8_8_8_REV:   return GL_UNSIGNED_INT_8_8_8_8_REV;
+        default:                            plAssert(0); break; /* todo */
+    }
+}
+
 static unsigned int TranslateImageColourFormat(PLColourFormat format) {
     switch(format) {
         default:
@@ -196,15 +205,14 @@ static void GLDeleteTexture(PLTexture *texture) {
 }
 
 static void GLBindTexture(const PLTexture *texture) {
-    unsigned int id = 0;
-    if(texture != NULL) {
-        id = texture->internal.id;
-        glEnable(GL_TEXTURE_2D);
-    } else {
+    if(texture == NULL) {
         glDisable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        return;
     }
 
-    glBindTexture(GL_TEXTURE_2D, id);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture->internal.id);
 }
 
 static void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
@@ -215,11 +223,13 @@ static void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
     switch(texture->filter) {
         case PL_TEXTURE_FILTER_LINEAR: {    // linear
             min = mag = GL_LINEAR;
+            texture->flags |= PL_TEXTURE_FLAG_NOMIPS;
         } break;
 
         default:
         case PL_TEXTURE_FILTER_NEAREST: {   // nearest
             min = mag = GL_NEAREST;
+            texture->flags |= PL_TEXTURE_FLAG_NOMIPS;
         } break;
 
         case PL_TEXTURE_FILTER_MIPMAP_LINEAR: {
@@ -246,14 +256,19 @@ static void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
         levels = 1;
     }
 
+    uint image_format = TranslateImageFormat(upload->format);
+    uint colour_format = TranslateImageColourFormat(upload->colour_format);
+    uint storage_format = TranslateStorageFormat(texture->storage);
+
     for(unsigned int i = 0; i < levels; ++i) {
+        GLsizei w = texture->w / (unsigned int)pow(2, i);
+        GLsizei h = texture->h / (unsigned int)pow(2, i);
         if(plIsCompressedImageFormat(upload->format)) {
             glCompressedTexImage2D(
                     GL_TEXTURE_2D,
                     i,
-                    TranslateImageFormat(upload->format),
-                    texture->w / (unsigned int)pow(2, i),
-                    texture->h / (unsigned int)pow(2, i),
+                    image_format,
+                    w, h,
                     0,
                     (GLsizei) upload->size,
                     upload->data[0]
@@ -262,12 +277,11 @@ static void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
             glTexImage2D(
                     GL_TEXTURE_2D,
                     i,
-                    TranslateImageFormat(upload->format),
-                    texture->w / (unsigned int)pow(2, i),
-                    texture->h / (unsigned int)pow(2, i),
+                    image_format,
+                    w, h,
                     0,
-                    TranslateImageColourFormat(upload->colour_format),
-                    GL_UNSIGNED_BYTE,
+                    colour_format,
+                    storage_format,
                     upload->data[0]
             );
         }
@@ -281,6 +295,10 @@ static void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
 void GLSetTextureAnisotropy(PLTexture *texture, uint32_t value) {
     plSetTexture(texture, gfx_state.current_textureunit);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (int) value);
+}
+
+void GLActiveTexture(unsigned int target) {
+    glActiveTexture(GL_TEXTURE0 + target);
 }
 
 /////////////////////////////////////////////////////////////
@@ -578,18 +596,6 @@ static void GLDrawPerspectivePOST(PLCamera *camera) {
 
 /////////////////////////////////////////////////////////////
 // Shader
-
-static const char *default_vertex_shader = {
-"#version 330\n"
-"layout (location = 0) in vec3 inPosition;\n"
-"layout (location = 1) in vec3 inColour;\n"
-"smooth out vec3 "
-};
-
-static const char *default_fragment_shader = {
-"#version 330\n"
-
-};
 
 #define SHADER_INVALID_TYPE ((uint32_t)0 - 1)
 
@@ -894,6 +900,7 @@ void _InitOpenGL(void) {
     gfx_layer.BindTexture               = GLBindTexture;
     gfx_layer.UploadTexture             = GLUploadTexture;
     gfx_layer.SetTextureAnisotropy      = GLSetTextureAnisotropy;
+    gfx_layer.ActiveTexture             = GLActiveTexture;
 
     gfx_layer.CreateMeshPOST            = GLCreateMeshPOST;
     gfx_layer.DeleteMesh                = GLDeleteMesh;

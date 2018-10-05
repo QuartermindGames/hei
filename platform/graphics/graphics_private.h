@@ -119,6 +119,7 @@ typedef struct GfxLayer {
     void(*UploadTexture)(PLTexture *texture, const PLImage *upload);
     void(*SwizzleTexture)(PLTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
     void(*SetTextureAnisotropy)(PLTexture *texture, uint32_t value);
+    void(*ActiveTexture)(unsigned int target);
 
     // Camera
     void(*CreateCamera)(PLCamera *camera);
@@ -148,9 +149,13 @@ typedef struct GfxLayer {
 
 ///////////////////////////////////////////////////////
 
-#define UseBufferScaling(a) \
+#if 1
+#   define UseBufferScaling(a) \
     ((a)->viewport.r_w != 0 && (a)->viewport.r_h != 0) && \
     ((a)->viewport.r_w != (a)->viewport.w && (a)->viewport.r_h != (a)->viewport.h)
+#else /* for debugging purposes */
+#   define UseBufferScaling(a) 0
+#endif
 
 ///////////////////////////////////////////////////////
 

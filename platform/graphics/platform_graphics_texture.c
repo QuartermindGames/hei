@@ -334,9 +334,7 @@ void plSetTextureUnit(unsigned int target) {
         return;
     }
 
-#if defined (PL_MODE_OPENGL)
-    glActiveTexture(_plTranslateTextureUnit(target));
-#endif
+    CallGfxFunction(ActiveTexture, target);
 
     gfx_state.current_textureunit = target;
 }
