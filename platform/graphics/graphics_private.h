@@ -140,12 +140,16 @@ typedef struct GfxLayer {
     void(*CompileShaderStage)(PLShaderStage *stage, const char *buf, size_t length);
 } GfxLayer;
 
-#define CallGfxFunction(FUNCTION, ...) \
+#if defined(PL_USE_GRAPHICS)
+#   define CallGfxFunction(FUNCTION, ...) \
     if(gfx_layer.FUNCTION != NULL) { \
         gfx_layer.FUNCTION(__VA_ARGS__); \
     } else { \
         GfxLog("unbound layer function %s was called\n", #FUNCTION); \
     }
+#else
+#   define CallGfxFunction(FUNCTION, ...)
+#endif
 
 ///////////////////////////////////////////////////////
 

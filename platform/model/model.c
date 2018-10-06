@@ -177,6 +177,8 @@ void plDeleteModel(PLModel *model) {
     free(model);
 }
 
+#if defined(PL_USE_GRAPHICS) /* todo: move */
+
 void plDrawModel(PLModel *model) {
     plAssert(model);
 
@@ -206,3 +208,5 @@ void plDrawModelSkeleton(PLModel *model) {
 
     }
 }
+
+#endif

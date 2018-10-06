@@ -24,10 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #include <PL/platform_console.h>
 #include <PL/platform_mesh.h>
 
-#include "graphics_private.h"
+#include "../graphics/graphics_private.h"
 
 void plGenerateMeshNormals(PLMesh *mesh) {
     plAssert(mesh);
@@ -283,6 +284,8 @@ PLAABB plCalculateMeshAABB(PLMesh *mesh) {
 
 /* primitive types */
 
+#if defined(PL_USE_GRAPHICS)    /* todo: move these... */
+
 void plDrawRaisedBox(int x, int y, unsigned int w, unsigned int h) {
     static PLMesh *mesh = NULL;
     if(mesh == NULL) {
@@ -518,3 +521,5 @@ void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
 
     plDrawMesh(mesh);
 }
+
+#endif
