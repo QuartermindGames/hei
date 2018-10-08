@@ -81,7 +81,7 @@ PLresult WriteTIMImage(const PLImage *image, const char *path) {
         return PL_RESULT_FILEPATH;
     }
 
-    return PL_RESULT_SUCCESS;
+    return PL_RESULT_UNSUPPORTED;
 }
 
 /* Convert a 16-bit TIM colour value to RGB5A1. */

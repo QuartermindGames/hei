@@ -127,6 +127,7 @@ support.
 // Error return values
 typedef enum {
     PL_RESULT_SUCCESS,
+    PL_RESULT_UNSUPPORTED,
 
     // FILE I/O
     PL_RESULT_FILEREAD,     // Failed to read file!

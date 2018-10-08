@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_graphics.h>
 
 #if defined(PL_SUPPORT_OPENGL)
-#include <GL/glew.h>
+#   include <GL/glew.h>
 #endif
 
 #include "filesystem_private.h"
