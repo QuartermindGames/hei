@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #include <PL/platform_image.h>
 #include <PL/platform_filesystem.h>
 #include <PL/platform_math.h>
@@ -107,7 +108,12 @@ bool plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     }
 #endif
 
-    ReportError(PL_RESULT_FILETYPE, "unrecognised image type");
+    /* if we reached here, and our status is still successful, that's clearly
+     * not correct... because we're here! we haven't loaded anything! */
+    if(plGetFunctionResult() == PL_RESULT_SUCCESS) {
+        ReportError(PL_RESULT_FILETYPE, "unrecognised image type (%s)", path);
+    }
+
     return false;
 }
 
