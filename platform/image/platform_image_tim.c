@@ -109,7 +109,7 @@ static uint16_t _tim16toRGB51A(uint16_t colour_in) {
 
     /* Handle the alpha channel... if the "STP" bit in the TIM data is on, the colour is
      * transparent, unless the colour is black, in which case the bit is inverted.
-    */
+     */
 
     bool is_black = (colour_out == 0);
     bool stp_on   = (cin[1] & 0x80);
@@ -282,7 +282,18 @@ bool LoadTIMImage(FILE *fin, PLImage *out) {
             break;
         }
 
-        case TIM_TYPE_16BPP:
+        case TIM_TYPE_16BPP: {
+            uint8_t *indata  = image_data;
+            uint8_t *outdata = out->data[0];
+
+            for(; indata < (uint8_t*)(image_data + image_data_len); ++indata) {
+                uint16_t colour = (uint16_t)((*indata) + ((*indata) << 8));
+                *(outdata++) = (uint8_t) (colour);  //(_tim16toRGB51A(colour));
+            }
+
+            break;
+        }
+
         case TIM_TYPE_24BPP:
         default:
             ReportError(PL_RESULT_IMAGEFORMAT, "unsupported tim type (%d)", type);
