@@ -83,6 +83,12 @@ bool plLoadImagef(FILE *fin, const char *path, PLImage *out) {
 
     strncpy(out->path, path, sizeof(out->path));
 
+#if defined(STB_IMAGE_IMPLEMENTATION)
+    if(LoadSTBImage(fin, out)) {
+        return true;
+    }
+#endif
+
     if(DDSFormatCheck(fin) && LoadDDSImage(fin, out)) {
         return true;
     } else if(TIMFormatCheck(fin) && LoadTIMImage(fin, out)) {
@@ -101,12 +107,6 @@ bool plLoadImagef(FILE *fin, const char *path, PLImage *out) {
             }
         }
     }
-
-#if defined(STB_IMAGE_IMPLEMENTATION)
-    if(LoadSTBImage(fin, out)) {
-        return true;
-    }
-#endif
 
     /* if we reached here, and our status is still successful, that's clearly
      * not correct... because we're here! we haven't loaded anything! */
