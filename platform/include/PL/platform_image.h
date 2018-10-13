@@ -94,7 +94,8 @@ typedef struct PLImage {
 PL_EXTERN_C
 
 PL_EXTERN bool plLoadImage(const char *path, PLImage *out);
-PL_EXTERN bool plLoadImagef(FILE *fin, const char *path, PLImage *out);
+PL_EXTERN bool plLoadImageFromMemory(const uint8_t *data, size_t length, const char *type, PLImage *out);
+PL_EXTERN bool plLoadImageFromFile(FILE *fin, const char *path, PLImage *out);
 PL_EXTERN bool plWriteImage(const PLImage *image, const char *path);
 
 PL_EXTERN unsigned int plGetSamplesPerPixel(PLColourFormat format);
@@ -107,13 +108,15 @@ void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest);
 PL_EXTERN bool plIsValidImageSize(unsigned int width, unsigned int height);
 PL_EXTERN bool plIsCompressedImageFormat(PLImageFormat format);
 
-bool plFlipImageVertical(PLImage *image);
+PL_EXTERN bool plFlipImageVertical(PLImage *image);
+
+PL_EXTERN void plFreeImage(PLImage *image);
+
+PL_EXTERN unsigned int plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height);
 
 #if defined(PL_INTERNAL)
 
-void plFreeImage(PLImage *image);
 
-unsigned int plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height);
 unsigned int _plImageBytesPerPixel(PLImageFormat format);
 
 uint8_t *_plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels);
