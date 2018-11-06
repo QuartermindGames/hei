@@ -167,15 +167,7 @@ unsigned int _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
     }
 }
 
-int _plTranslateColourChannel(int channel) {
-    switch(channel) {
-        case PL_RED:    return GL_RED;
-        case PL_GREEN:  return GL_GREEN;
-        case PL_BLUE:   return GL_BLUE;
-        case PL_ALPHA:  return GL_ALPHA;
-        default:        return channel;
-    }
-}
+
 
 #endif
 
@@ -325,8 +317,9 @@ void plSetTexture(PLTexture *texture, unsigned int tmu) {
 }
 
 void plSetTextureUnit(unsigned int target) {
-    if (target == gfx_state.current_textureunit)
+    if (target == gfx_state.current_textureunit) {
         return;
+    }
 
     if (target > plGetMaxTextureUnits()) {
         GfxLog("Attempted to select a texture image unit beyond what's supported by your hardware! (%i)\n",
@@ -367,13 +360,14 @@ void BindTexture(const PLTexture *texture) {
         id = texture->internal.id;
     }
 
-    if (id == gfx_state.tmu[plGetCurrentTextureUnit()].current_texture) {
+    PLTextureMappingUnit *unit = &gfx_state.tmu[plGetCurrentTextureUnit()];
+    if (id == unit->current_texture) {
         return;
     }
 
     CallGfxFunction(BindTexture, texture);
 
-    gfx_state.tmu[plGetCurrentTextureUnit()].current_texture = id;
+    unit->current_texture = id;
 }
 
 void plSetTextureFlags(PLTexture *texture, unsigned int flags) {
@@ -431,23 +425,5 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
 }
 
 void plSwizzleTexture(PLTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-    plAssert(texture);
-
-    BindTexture(texture);
-
-#if 0
-    if(_PLGL_VERSION(3,3)) {
-        int swizzle[] = {
-                _plTranslateColourChannel(r),
-                _plTranslateColourChannel(g),
-                _plTranslateColourChannel(b),
-                _plTranslateColourChannel(a)
-        };
-        glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
-    } else {
-        // todo, software implementation
-    }
-#endif
-
     CallGfxFunction(SwizzleTexture, texture, r, g, b, a);
 }
