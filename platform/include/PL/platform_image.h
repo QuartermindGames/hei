@@ -91,6 +91,12 @@ typedef struct PLImage {
 #define PL_EXTENSION_VTF    "vtf"   // Valve Texture Format (Source Engine)
 #define PL_EXTENSION_BMP    "bmp"
 
+typedef struct PLPalette {
+    PLImageFormat   format;
+    uint8_t         *colours;
+    unsigned int    num_colours;
+} PLPalette;
+
 PL_EXTERN_C
 
 PL_EXTERN bool plLoadImage(const char *path, PLImage *out);
