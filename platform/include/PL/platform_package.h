@@ -31,15 +31,15 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_filesystem.h>
 
 typedef struct PLPackageIndex {
-    size_t offset;
-    PLIOBuffer file;
+    size_t      offset;
+    PLIOBuffer  file;
 } PLPackageIndex;
 
 typedef struct PLPackage {
     char path[PL_SYSTEM_MAX_PATH];
 
-    unsigned int table_size;
-    PLPackageIndex *table;
+    unsigned int    table_size;
+    PLPackageIndex  *table;
 
     struct {
         bool(*LoadFile)(FILE *fh, PLPackageIndex *pi);

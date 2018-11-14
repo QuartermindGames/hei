@@ -284,10 +284,10 @@ void plSetWorkingDirectory(const char *path) {
 // FILE I/O
 
 /* loads an entire file into the PLIOBuffer struct */
-void plLoadFile(const char *path, PLIOBuffer *buffer) {
+bool plLoadFile(const char *path, PLIOBuffer *buffer) {
     if(plIsEmptyString(path)) {
         ReportError(PL_RESULT_FILEPATH, "invalid path");
-        return;
+        return false;
     }
 
     memset(buffer, 0, sizeof(PLIOBuffer));
@@ -295,7 +295,7 @@ void plLoadFile(const char *path, PLIOBuffer *buffer) {
     FILE *fp = fopen(path, "rb");
     if(fp == NULL) {
         ReportError(PL_RESULT_FILEREAD, strerror(errno));
-        return;
+        return false;
     }
 
     strncpy(buffer->name, path, sizeof(buffer->name));
@@ -311,6 +311,8 @@ void plLoadFile(const char *path, PLIOBuffer *buffer) {
     }
 
     fclose(fp);
+    
+    return true;
 }
 
 /**

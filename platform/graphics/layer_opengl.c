@@ -302,13 +302,40 @@ void GLActiveTexture(unsigned int target) {
     glActiveTexture(GL_TEXTURE0 + target);
 }
 
+/* Swizzle texture channels */
+
+static int TranslateColourChannel(int channel) {
+    switch(channel) {
+        case PL_RED:    return GL_RED;
+        case PL_GREEN:  return GL_GREEN;
+        case PL_BLUE:   return GL_BLUE;
+        case PL_ALPHA:  return GL_ALPHA;
+        default:        return channel;
+    }
+}
+
+static void SwizzleTexture(const PLTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    GLBindTexture(texture);
+    if(GLVersion(3, 3)) {
+        int swizzle[] = {
+                TranslateColourChannel(r),
+                TranslateColourChannel(g),
+                TranslateColourChannel(b),
+                TranslateColourChannel(a)
+        };
+        glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+    } else {
+        ReportError(PL_RESULT_UNSUPPORTED, "missing software implementation");
+    }
+}
+
 /////////////////////////////////////////////////////////////
 // Mesh
 
 typedef struct MeshTranslatePrimitive {
-    PLMeshPrimitive mode;
-    unsigned int target;
-    const char *name;
+    PLMeshPrimitive     mode;
+    unsigned int        target;
+    const char          *name;
 } MeshTranslatePrimitive;
 
 static MeshTranslatePrimitive primitives[] = {

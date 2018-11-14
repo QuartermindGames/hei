@@ -41,16 +41,8 @@ For more information, please refer to <http://unlicense.org>
 #define STB_IMAGE_IMPLEMENTATION
 #if defined(STB_IMAGE_IMPLEMENTATION)
 #   include "stb_image.h"
-bool LoadSTBImage(FILE *fin, PLImage *out) {
-    rewind(fin);
 
-    int x, y, component;
-    unsigned char *data = stbi_load_from_file(fin, &x, &y, &component, 4);
-    if(data == NULL) {
-        ReportError(PL_RESULT_FILEREAD, "failed to read in image, %s", stbi_failure_reason());
-        return false;
-    }
-
+static bool LoadSTBImage(uint8_t *data, int x, int y, int component, PLImage *out) {
     memset(out, 0, sizeof(PLImage));
     out->colour_format  = PL_COLOURFORMAT_RGBA;
     out->format         = PL_IMAGEFORMAT_RGBA8;
@@ -73,9 +65,34 @@ bool LoadSTBImage(FILE *fin, PLImage *out) {
     ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for image buffer");
     return false;
 }
+
+static bool LoadSTBImageFromFile(FILE *fp, PLImage *out) {
+    rewind(fp);
+
+    int x, y, component;
+    uint8_t *data = stbi_load_from_file(fp, &x, &y, &component, 4);
+    if(data == NULL) {
+        ReportError(PL_RESULT_FILEREAD, "failed to read in image (%s)", stbi_failure_reason());
+        return false;
+    }
+
+    return LoadSTBImage(data, x, y, component, out);
+}
+
+static bool LoadSTBImageFromMemory(const uint8_t *buffer, size_t length, PLImage *out) {
+    int x, y, component;
+    unsigned char *data = stbi_load_from_memory(buffer, (int) length, &x, &y, &component, 4);
+    if(data == NULL) {
+        ReportError(PL_RESULT_FILEREAD, "failed to read in image (%s)", stbi_failure_reason());
+        return false;
+    }
+
+    return LoadSTBImage(data, x, y, component, out);
+}
+
 #endif
 
-bool plLoadImagef(FILE *fin, const char *path, PLImage *out) {
+bool plLoadImageFromFile(FILE *fin, const char *path, PLImage *out) {
     if(fin == NULL) {
         ReportError(PL_RESULT_FILEREAD, "invalid file handle");
         return false;
@@ -84,7 +101,7 @@ bool plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     strncpy(out->path, path, sizeof(out->path));
 
 #if defined(STB_IMAGE_IMPLEMENTATION)
-    if(LoadSTBImage(fin, out)) {
+    if(LoadSTBImageFromFile(fin, out)) {
         return true;
     }
 #endif
@@ -117,11 +134,43 @@ bool plLoadImagef(FILE *fin, const char *path, PLImage *out) {
     return false;
 }
 
+bool plLoadImageFromMemory(const uint8_t *data, size_t length, const char *type, PLImage *out) {
+    if(data == NULL || length == 0) {
+        ReportError(PL_RESULT_MEMORY_EOA, "invalid data buffer for image (%s) (%d)", type, length);
+        return false;
+    }
+
+    if(LoadSTBImageFromMemory(data, length, out)) {
+        return true;
+    }
+
+    /* todo: need to overhaul loaders for this to work everywhere else... */
+
+    /* if we reached here, and our status is still successful, that's clearly
+     * not correct... because we're here! we haven't loaded anything! */
+    if(plGetFunctionResult() == PL_RESULT_SUCCESS) {
+        ReportError(PL_RESULT_IMAGEFORMAT, "unrecognised image type");
+    }
+
+    return false;
+}
+
 bool plLoadImage(const char *path, PLImage *out) {
     if (plIsEmptyString(path)) {
         ReportError(PL_RESULT_FILEPATH, "invalid path (%s) passed for image", path);
         return false;
     }
+
+#if 0 /* wip future implementation */
+
+    PLIOBuffer buffer;
+    plLoadFile(path, &buffer);
+
+    const char *ext = plGetFileExtension(path);
+
+    plLoadFromMemory(buffer.data, buffer.size, ext, out);
+
+#else
 
     FILE *fin = fopen(path, "rb");
     if(fin == NULL) {
@@ -134,9 +183,11 @@ bool plLoadImage(const char *path, PLImage *out) {
         // example/package.wad:myimage
     }
 
-    bool result = plLoadImagef(fin, path, out);
+    bool result = plLoadImageFromFile(fin, path, out);
 
     fclose(fin);
+
+#endif
 
     return result;
 }
@@ -155,19 +206,19 @@ bool plWriteImage(const PLImage *image, const char *path) {
 
     const char *extension = plGetFileExtension(path);
     if(!plIsEmptyString(extension)) {
-        if (!strncmp(extension, PL_EXTENSION_BMP, 3)) {
+        if (!pl_strncasecmp(extension, PL_EXTENSION_BMP, 3)) {
             if(stbi_write_bmp(path, image->width, image->height, comp, image->data[0]) == 1) {
                 return true;
             }
-        } else if(!strncmp(extension, PL_EXTENSION_PNG, 3)) {
+        } else if(!pl_strncasecmp(extension, PL_EXTENSION_PNG, 3)) {
             if(stbi_write_png(path, image->width, image->height, comp, image->data[0], 0) == 1) {
                 return true;
             }
-        } else if(!strncmp(extension, PL_EXTENSION_TGA, 3)) {
+        } else if(!pl_strncasecmp(extension, PL_EXTENSION_TGA, 3)) {
             if(stbi_write_tga(path, image->width, image->height, comp, image->data[0]) == 1) {
                 return true;
             }
-        } else if(!strncmp(extension, PL_EXTENSION_JPG, 3)) {
+        } else if(!pl_strncasecmp(extension, PL_EXTENSION_JPG, 3)) {
             if(stbi_write_jpg(path, image->width, image->height, comp, image->data[0], 90) == 1) {
                 return true;
             }
