@@ -94,6 +94,11 @@ PLPackageLoader package_interfaces[MAX_OBJECT_INTERFACES]= {
 };
 unsigned int num_package_interfaces = 3;
 
+void plClearPackageInterfaces(void) {
+    memset(package_interfaces, 0, sizeof(PLPackageLoader) * MAX_OBJECT_INTERFACES);
+    num_package_interfaces = 0;
+}
+
 void plRegisterPackageInterface(const char *ext, PLPackage*(*LoadFunction)(const char *path, bool cache)) {
     package_interfaces[num_package_interfaces].ext = ext;
     package_interfaces[num_package_interfaces].LoadFunction = LoadFunction;
