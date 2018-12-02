@@ -47,7 +47,7 @@ PLPackage *plCreatePackage(const char *dest) {
     return NULL;
 }
 
-void PurgePackageData(PLPackage *package) {
+static void PurgePackageData(PLPackage *package) {
     plAssert(package);
 
     for(unsigned int i = 0; i < package->table_size; ++i) {
@@ -79,7 +79,7 @@ typedef struct PLPackageLoader {
     PLPackage*(*LoadFunction)(const char *path, bool cache);
 } PLPackageLoader;
 
-PLPackageLoader package_interfaces[MAX_OBJECT_INTERFACES]= {
+static PLPackageLoader package_interfaces[MAX_OBJECT_INTERFACES]= {
         { "package", NULL },
 
         // Third-party package formats
@@ -92,7 +92,7 @@ PLPackageLoader package_interfaces[MAX_OBJECT_INTERFACES]= {
         //{ "dat", LoadARTPackage },
         //{ "art", LoadARTPackage },
 };
-unsigned int num_package_interfaces = 3;
+static unsigned int num_package_interfaces = 3;
 
 void plClearPackageInterfaces(void) {
     memset(package_interfaces, 0, sizeof(PLPackageLoader) * MAX_OBJECT_INTERFACES);

@@ -46,14 +46,14 @@ For more information, please refer to <http://unlicense.org>
 // todo, mouse input callback
 // todo, keyboard input callback
 
-PLConsoleCommand **_pl_commands = NULL;
-size_t _pl_num_commands = 0;
-size_t _pl_commands_size = 512;
+static PLConsoleCommand **_pl_commands = NULL;
+static size_t _pl_num_commands = 0;
+static size_t _pl_commands_size = 512;
 
 #define IMPLEMENT_COMMAND(NAME, DESC) \
     void NAME ## _func(unsigned int argc, char *argv[]); \
-    PLConsoleCommand NAME ## _var = {#NAME, NAME ## _func, DESC}; \
-    void NAME ## _func(unsigned int argc, char *argv[])
+    static PLConsoleCommand NAME ## _var = {#NAME, NAME ## _func, DESC}; \
+    static void NAME ## _func(unsigned int argc, char *argv[])
 
 void plRegisterConsoleCommand(const char *name, void(*CallbackFunction)(unsigned int argc, char *argv[]),
                               const char *description) {
@@ -116,11 +116,9 @@ PLConsoleCommand *plGetConsoleCommand(const char *name) {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-// todo, console variable implementation goes here!
-
-PLConsoleVariable **_pl_variables = NULL;
-size_t _pl_num_variables = 0;
-size_t _pl_variables_size = 512;
+static PLConsoleVariable **_pl_variables = NULL;
+static size_t _pl_num_variables = 0;
+static size_t _pl_variables_size = 512;
 
 PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, PLVariableType type,
                                              void(*CallbackFunction)(const PLConsoleVariable *variable),
@@ -243,11 +241,11 @@ typedef struct PLConsolePane {
     unsigned int buffer_pos;
 } PLConsolePane;
 
-PLConsolePane console_panes[CONSOLE_MAX_INSTANCES];
-unsigned int num_console_panes;
-unsigned int active_console_pane = 0;
+static PLConsolePane console_panes[CONSOLE_MAX_INSTANCES];
+static unsigned int num_console_panes;
+static unsigned int active_console_pane = 0;
 
-bool console_visible = false;
+static bool console_visible = false;
 
 /////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE
@@ -787,8 +785,8 @@ typedef struct LogLevel {
     PLColour colour;
 } LogLevel;
 
-LogLevel levels[MAX_LOG_LEVELS];
-LogLevel *GetLogLevel(int level) {
+static LogLevel levels[MAX_LOG_LEVELS];
+static LogLevel *GetLogLevel(int level) {
     static bool mem_cleared = false;
     if(!mem_cleared) {
         memset(levels, 0, sizeof(LogLevel) * MAX_LOG_LEVELS);
@@ -831,7 +829,7 @@ LogLevel *GetLogLevel(int level) {
 /////////////////////////////////////////////////////////////////////////////////////
 // public
 
-char log_output_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+static char log_output_path[PL_SYSTEM_MAX_PATH] = {'\0'};
 
 void plSetupLogOutput(const char *path) {
     if(path == NULL || path[0] == '\0') {

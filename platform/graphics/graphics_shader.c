@@ -64,7 +64,7 @@ void plPreProcessGLSLShader(char **buf, size_t *length) {
     char *pos = &*buf[0];
     char *n_pos = &n_buf[0];
 
-#define InsertString(DEST, STR) {size_t sl = strlen(STR);strncpy(DEST, STR, sl);DEST += sl;}
+#define InsertString(DEST, STR) {size_t sl = strlen(STR);strncpy(DEST, STR, sl);(DEST) += sl;}
 #define SkipSpaces()            while(*pos == ' ') { pos++; }
 #define SkipLine()              while(*pos != '\n' && *pos != '\r') { pos++; }
 

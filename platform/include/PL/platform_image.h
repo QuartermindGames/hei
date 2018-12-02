@@ -125,7 +125,7 @@ PL_EXTERN unsigned int plGetImageSize(PLImageFormat format, unsigned int width, 
 
 unsigned int _plImageBytesPerPixel(PLImageFormat format);
 
-uint8_t *_plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels);
+uint8_t *plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels);
 
 #endif
 

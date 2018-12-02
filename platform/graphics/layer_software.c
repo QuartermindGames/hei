@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org>
 uint8_t *sw_backbuffer = NULL;
 unsigned int sw_backbuffer_size = 0;
 
-void SWClearBuffers(unsigned int buffers) {
+static void SWClearBuffers(unsigned int buffers) {
     if(buffers & PL_BUFFER_COLOUR) {
         for(unsigned int i = 0; i < sw_backbuffer_size; i += 4) {
             sw_backbuffer[i]        = gfx_state.current_clearcolour.r;
@@ -45,11 +45,11 @@ void SWClearBuffers(unsigned int buffers) {
 
 /***********************************************/
 
-void _InitSoftware(void) {
+void plInitSoftwareGraphicsLayer(void) {
 
 }
 
-void ShutdownSoftware(void) {
+void plShutdownSoftwareGraphicsLayer(void) {
     free(sw_backbuffer);
     sw_backbuffer_size = 0;
 }

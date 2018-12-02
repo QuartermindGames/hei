@@ -171,11 +171,11 @@ PL_EXTERN GfxLayer gfx_layer;
 void BindTexture(const PLTexture *texture);
 
 #if defined(PL_SUPPORT_OPENGL)
-void _InitOpenGL(void);
-void ShutdownOpenGL(void);
+void plInitOpenGL(void);
+void plShutdownOpenGL(void);
 #endif
 
-void _InitSoftware(void);
-void ShutdownSoftware(void);
+void plInitSoftwareGraphicsLayer(void);
+void plShutdownSoftwareGraphicsLayer(void);
 
 PL_EXTERN_C_END

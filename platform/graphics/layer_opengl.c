@@ -293,12 +293,12 @@ static void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
     }
 }
 
-void GLSetTextureAnisotropy(PLTexture *texture, uint32_t value) {
+static void GLSetTextureAnisotropy(PLTexture *texture, uint32_t value) {
     plSetTexture(texture, gfx_state.current_textureunit);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (int) value);
 }
 
-void GLActiveTexture(unsigned int target) {
+static void GLActiveTexture(unsigned int target) {
     glActiveTexture(GL_TEXTURE0 + target);
 }
 
@@ -844,7 +844,7 @@ static void GLSetShaderProgram(PLShaderProgram *program) {
 
 /////////////////////////////////////////////////////////////
 
-char gl_extensions[4096][4096] = { { '\0' } };
+static char gl_extensions[4096][4096] = { { '\0' } };
 
 #if defined(DEBUG_GL)
 static void MessageCallback(
@@ -905,7 +905,7 @@ static void MessageCallback(
 }
 #endif
 
-void _InitOpenGL(void) {
+void plInitOpenGL(void) {
     GLenum err = glewInit();
     if(err != GLEW_OK) {
         ReportError(PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", glewGetErrorString(err));
@@ -1005,7 +1005,7 @@ void _InitOpenGL(void) {
     //glLineWidth(2.f);
 }
 
-void ShutdownOpenGL(void) {
+void plShutdownOpenGL(void) {
 #if defined(DEBUG_GL)
     if(GLVersion(4,3)) {
         glDisable(GL_DEBUG_OUTPUT);

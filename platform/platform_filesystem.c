@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -45,11 +46,11 @@ For more information, please refer to <http://unlicense.org>
 
 /*	File System	*/
 
-PLresult _InitIO(void) {
+PLresult plInitFileSystem(void) {
     return PL_RESULT_SUCCESS;
 }
 
-void _ShutdownIO(void) {
+void plShutdownFileSystem(void) {
 
 }
 

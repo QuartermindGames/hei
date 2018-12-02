@@ -50,7 +50,7 @@ void _InitTextures(void) {
     plRegisterConsoleVariable(NULL, NULL, pl_float_var, 0, NULL);
 }
 
-void ShutdownTextures(void) {
+void plShutdownTextures(void) {
     if(gfx_state.tmu) {
         free(gfx_state.tmu);
     }

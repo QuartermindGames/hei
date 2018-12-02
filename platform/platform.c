@@ -53,15 +53,15 @@ PLSubSystem pl_subsystems[]= {
 #if defined(PL_USE_GRAPHICS)
         {
                 PL_SUBSYSTEM_GRAPHICS,
-                &InitGraphics,
-                &ShutdownGraphics
+                &plInitGraphics,
+                &plShutdownGraphics
         },
 #endif
 
         {
                 PL_SUBSYSTEM_IO,
-                &_InitIO,
-                &_ShutdownIO
+                &plInitFileSystem,
+                &plShutdownFileSystem
         },
 
         {

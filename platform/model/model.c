@@ -36,7 +36,7 @@ typedef struct ModelInterface {
     PLModel*(*LoadFunction)(const char *path);
 } ModelInterface;
 
-ModelInterface model_interfaces[512]= {
+static ModelInterface model_interfaces[512]= {
         { "hdv", LoadHDVModel },
         { "mdl", LoadRequiemModel },
         //{ "mdl", LoadSourceModel },
@@ -47,7 +47,7 @@ ModelInterface model_interfaces[512]= {
 
         { NULL, NULL }
 };
-unsigned int num_model_interfaces = (unsigned int)(-1);
+static unsigned int num_model_interfaces = (unsigned int)(-1);
 
 ///////////////////////////////////////
 

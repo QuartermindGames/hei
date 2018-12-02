@@ -59,11 +59,11 @@ enum {
 /* * * * * * * * * * * * * * * * * * * */
 /* Sub Systems                         */
 
-PLresult InitGraphics(void);
-void ShutdownGraphics(void);
+PLresult plInitGraphics(void);
+void plShutdownGraphics(void);
 
-PLresult _InitIO(void);
-void _ShutdownIO(void);
+PLresult plInitFileSystem(void);
+void plShutdownFileSystem(void);
 
 PLresult _plInitConsole(void);
 void _plShutdownConsole(void);

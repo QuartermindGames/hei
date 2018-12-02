@@ -265,7 +265,7 @@ bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
                 unsigned int lh = image->height;
 
                 for(unsigned int l = 0; l < image->levels; ++l) {
-                    levels[l] = _plImageDataRGB5A1toRGBA8(image->data[l], lw * lh);
+                    levels[l] = plImageDataRGB5A1toRGBA8(image->data[l], lw * lh);
                     if(levels[l] == NULL) {
                         /* Memory allocation failed, ditch any buffers we've created so far. */
                         for(unsigned int m = 0; m < image->levels; ++m) {
@@ -412,9 +412,11 @@ void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest) {
     ReportError(PL_RESULT_IMAGEFORMAT, "unsupported image format");
 }
 
+#if 0 /* unused */
 void _plAllocateImage(PLImage *image, unsigned int size, unsigned int levels) {
     image->data = (uint8_t**)pl_calloc(levels, sizeof(uint8_t));
 }
+#endif
 
 void plFreeImage(PLImage *image) {
     plFunctionStart();
@@ -458,7 +460,7 @@ bool plIsCompressedImageFormat(PLImageFormat format) {
 
 #define scale_5to8(i) ((((double)(i)) / 31) * 255)
 
-uint8_t *_plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels) {
+uint8_t *plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels) {
     uint8_t *dst = pl_malloc(n_pixels * 4);
     if(dst == NULL) {
         return NULL;

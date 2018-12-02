@@ -56,7 +56,7 @@ data for each of these functions
 void _InitTextures(void);     // platform_graphics_texture
 void _InitMaterials(void);    // material
 
-PLresult InitGraphics(void) {
+PLresult plInitGraphics(void) {
     memset(&gfx_state, 0, sizeof(GfxState));
     memset(&gfx_layer, 0, sizeof(GfxLayer));
 
@@ -65,12 +65,12 @@ PLresult InitGraphics(void) {
     return PL_RESULT_SUCCESS;
 }
 
-void ShutdownTextures(void); // platform_graphics_texture
+void plShutdownTextures(void); // platform_graphics_texture
 
-void ShutdownGraphics(void) {
+void plShutdownGraphics(void) {
     GRAPHICS_TRACK();
 
-    ShutdownTextures();
+    plShutdownTextures();
 
     switch(gfx_layer.mode) {
         default: break;
@@ -79,7 +79,7 @@ void ShutdownGraphics(void) {
         case PL_GFX_MODE_OPENGL_ES:
         case PL_GFX_MODE_OPENGL: {
 #if defined(PL_SUPPORT_OPENGL)
-            ShutdownOpenGL();
+            plShutdownOpenGL();
 #endif
         } break;
     }
@@ -416,14 +416,14 @@ void plSetGraphicsMode(PLGfxMode mode) {
 #endif
 
         case PL_GFX_MODE_SOFTWARE: {
-            _InitSoftware();
+            plInitSoftwareGraphicsLayer();
         } break;
 
 #if defined(PL_SUPPORT_OPENGL)
         case PL_GFX_MODE_OPENGL_CORE:
         case PL_GFX_MODE_OPENGL_ES:
         case PL_GFX_MODE_OPENGL: {
-            _InitOpenGL();
+            plInitOpenGL();
         } break;
 #endif
 
