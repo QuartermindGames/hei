@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #include "graphics_private.h"
 
 #define DEFAULT_WIDTH   320

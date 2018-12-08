@@ -62,34 +62,19 @@ typedef enum PLColourFormat {
 
 typedef struct PLImage {
 #if 1
-    uint8_t **data;
+    uint8_t         **data;
 #else
-    uint8_t *data;
+    uint8_t         *data;
 #endif
-
-    unsigned int x, y;
-    unsigned int width, height;
-    size_t size;
-    unsigned int levels;
-
-    char path[PL_SYSTEM_MAX_PATH];
-
-    PLImageFormat format;
-    PLColourFormat colour_format;
-
-    unsigned int flags;
+    unsigned int    x, y;
+    unsigned int    width, height;
+    size_t          size;
+    unsigned int    levels;
+    char            path[PL_SYSTEM_MAX_PATH];
+    PLImageFormat   format;
+    PLColourFormat  colour_format;
+    unsigned int    flags;
 } PLImage;
-
-#define PL_EXTENSION_FTX    "ftx"   // Ritual's FTX image format
-#define PL_EXTENSION_DTX    "dtx"   // Direct Texture (LithTech)
-#define PL_EXTENSION_PPM    "ppm"   // Portable Pixel Map
-#define PL_EXTENSION_KTX    "ktx"
-#define PL_EXTENSION_TGA    "tga"
-#define PL_EXTENSION_JPG    "jpg"
-#define PL_EXTENSION_PNG    "png"
-#define PL_EXTENSION_DDS    "dds"
-#define PL_EXTENSION_VTF    "vtf"   // Valve Texture Format (Source Engine)
-#define PL_EXTENSION_BMP    "bmp"
 
 typedef struct PLPalette {
     PLImageFormat   format;
@@ -111,7 +96,7 @@ bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format);
 void plInvertImageColour(PLImage *image);
 void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest);
 
-PL_EXTERN bool plIsValidImageSize(unsigned int width, unsigned int height);
+PL_EXTERN bool plImageIsPowerOfTwo(unsigned int width, unsigned int height);
 PL_EXTERN bool plIsCompressedImageFormat(PLImageFormat format);
 
 PL_EXTERN bool plFlipImageVertical(PLImage *image);
@@ -122,8 +107,7 @@ PL_EXTERN unsigned int plGetImageSize(PLImageFormat format, unsigned int width, 
 
 #if defined(PL_INTERNAL)
 
-
-unsigned int _plImageBytesPerPixel(PLImageFormat format);
+unsigned int plImageBytesPerPixel(PLImageFormat format);
 
 uint8_t *plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels);
 

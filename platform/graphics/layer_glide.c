@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #ifdef PL_SUPPORT_GLIDE
 
 #include <PL/platform_console.h>
@@ -32,7 +33,7 @@ For more information, please refer to <http://unlicense.org>
 
 /////////////////////////////////////////////////////////////
 
-void GlideClearBuffers(unsigned int buffers) {
+static void GlideClearBuffers(unsigned int buffers) {
     // Glide only supports clearing a single buffer.
     grBufferClear(
             // Convert buffer_clearcolour to something that works with Glide.

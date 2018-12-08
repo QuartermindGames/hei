@@ -313,8 +313,8 @@ IMPLEMENT_COMMAND(help, "Returns information regarding specified command or vari
 
 //////////////////////////////////////////////
 
-PLMesh *mesh_line = NULL;
-PLBitmapFont *console_font = NULL;
+static PLMesh *mesh_line = NULL;
+static PLBitmapFont *console_font = NULL;
 
 void (*ConsoleOutputCallback)(int level, const char *msg);
 
@@ -364,6 +364,7 @@ PLresult plInitConsole(void) {
             cmds_var,
             vars_var,
             pwd_var,
+            echo_var,
     };
     for(unsigned int i = 0; i < plArrayElements(base_commands); ++i) {
         plRegisterConsoleCommand(base_commands[i].cmd, base_commands[i].Callback, base_commands[i].description);

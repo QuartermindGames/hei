@@ -249,7 +249,7 @@ bool plLoadVTFImage(FILE *fin, PLImage *out) {
         return false;
     }
 
-    if (!plIsValidImageSize(header.width, header.height)) {
+    if (!plImageIsPowerOfTwo(header.width, header.height)) {
         ReportError(PL_RESULT_IMAGERESOLUTION, "invalid resolution: %dx%d", header.width, header.height);
         return false;
     }

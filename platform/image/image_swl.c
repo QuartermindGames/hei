@@ -45,34 +45,20 @@ bool plSWLFormatCheck(FILE *fin) {
         return false;
     }
 
-    debug_printf(
-            "path: %s\n"
-            "w   : %d\n"
-            "h   : %d\n"
-            ,
+    rewind(fin);
 
-            header.path,
-            header.width,
-            header.height
-            );
+    if(header.width > 512 || header.width == 0 ||
+       header.height > 512 || header.height == 0) {
+        SetResult(PL_RESULT_IMAGERESOLUTION);
+        return false;
+    }
 
-#if 0
-    if(pl_strnisalnum(header.path, sizeof(header.path)) == 0) {
-        SetResult(PL_RESULT_FILETYPE);
+#if 0 /* sadly, isn't always true... */
+    if(!plImageIsPowerOfTwo(header.width, header.height)) {
+        SetResult(PL_RESULT_IMAGERESOLUTION);
         return false;
     }
 #endif
-
-    if(header.width > 1024 || header.width == 0 ||
-       header.height > 1024 || header.height == 0) {
-        SetResult(PL_RESULT_IMAGERESOLUTION);
-        return false;
-    }
-
-    if(!plIsValidImageSize(header.width, header.height)) {
-        SetResult(PL_RESULT_IMAGERESOLUTION);
-        return false;
-    }
 
     return true;
 }
@@ -88,19 +74,16 @@ bool plLoadSWLImage(FILE *fin, PLImage *out) {
     out->width  = header.width;
     out->height = header.height;
 
-    static const unsigned int palette_size = 1024;
-    unsigned char palette[palette_size];
-    if(fread(palette, sizeof(unsigned char), 1024, fin) != 1024) {
+    struct {
+        uint8_t r, g, b, a;
+    } palette[256];
+    if(fread(palette, 4, 256, fin) != 256) {
         SetResult(PL_RESULT_FILEREAD);
         return false;
     }
 
-    for(unsigned int i = 0; i < 1024; ++i) {
-        debug_printf("%d ", palette[i]);
-    } debug_printf("\n");
-
     /* according to sources, this is a collection of misc data that's
-     * specific to SiN itself. */
+     * specific to SiN itself, so we'll skip it. */
     if(fseek(fin, 0x4D4, SEEK_SET) != 0) {
         SetResult(PL_RESULT_FILEREAD);
         return false;
@@ -114,22 +97,51 @@ bool plLoadSWLImage(FILE *fin, PLImage *out) {
         return false;
     }
 
-    out->colour_format  = PL_COLOURFORMAT_RGB;
-    out->format         = PL_IMAGEFORMAT_RGB8;
+    out->colour_format  = PL_COLOURFORMAT_RGBA;
+    out->format         = PL_IMAGEFORMAT_RGBA8;
     out->size           = plGetImageSize(out->format, out->width, out->height);
 
+    unsigned int mip_w = out->width;
+    unsigned int mip_h = out->height;
     for(unsigned int i = 0; i < out->levels; ++i) {
-        unsigned int mip_w = out->width >> (i + 1);
-        unsigned int mip_h = out->height >> (i + 1);
-        out->data[0] = pl_calloc(out->size, sizeof(uint8_t));
-        if(out->data[0] == NULL) {
+        if(i > 0) {
+            mip_w = out->width >> (i + 1);
+            mip_h = out->height >> (i + 1);
+        }
+
+        size_t buf_size = mip_w * mip_h;
+        uint8_t buf[buf_size];
+        if(fread(buf, 1, sizeof(buf), fin) != buf_size) {
+            plFreeImage(out);
+            SetResult(PL_RESULT_FILEREAD);
+            return false;
+        }
+
+        size_t level_size = plGetImageSize(out->format, mip_w, mip_h);
+        out->data[i] = pl_calloc(level_size, sizeof(uint8_t));
+        if(out->data[i] == NULL) {
             plFreeImage(out);
             SetResult(PL_RESULT_MEMORY_ALLOCATION);
             return false;
         }
-    }
 
-//    out->data
+        /* now we fill in the buf we just allocated,
+         * by using the palette */
+        for(unsigned int j = 0, k = 0; j < buf_size; ++j, k += 4) {
+            out->data[i][k]     = palette[buf[j]].r;
+            out->data[i][k + 1] = palette[buf[j]].g;
+            out->data[i][k + 2] = palette[buf[j]].b;
+
+            /* the alpha channel appears to be used more like
+             * a flag to say "yes this texture will be transparent",
+             * rather than actual levels of alpha for this pixel.
+             *
+             * because of that we'll just ignore it */
+            out->data[i][k + 3] = 255; /*(uint8_t) (255 - palette[buf[j]].a);*/
+        }
+    }
 
     return true;
 }
+
+bool plWriteSWLImage(const PLImage *image, const char *path) { /* todo */ }

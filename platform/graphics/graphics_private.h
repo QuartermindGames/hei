@@ -24,10 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#include <PL/platform_graphics.h>
-#include <PL/platform_graphics_camera.h>
 
 #include "platform_private.h"
+
+#include <PL/platform_graphics.h>
+#include <PL/platform_graphics_camera.h>
 
 #ifdef _DEBUG
 #   define GfxLog(...) plLogMessage(LOG_LEVEL_GRAPHICS, __VA_ARGS__)

@@ -99,6 +99,7 @@ typedef struct PLImageLoader {
 
     bool(*CheckFormat)(uint8_t *data, size_t length);
     bool(*LoadImage)(uint8_t *data, size_t length, PLImage *out);
+    bool(*WriteImage)(PLImage *in, const char *dest);
 } PLImageLoader;
 
 PLImageLoader image_formats[]={
@@ -142,7 +143,7 @@ bool plNewLoadImage(const char *ext, uint8_t *data, size_t length, PLImage *out)
     return true;
 }
 
-#endif
+#endif /* PL_NEW_IMAGE_SUBSYSTEM */
 
 bool plLoadImageFromFile(FILE *fin, const char *path, PLImage *out) {
     if(fin == NULL) {
@@ -171,9 +172,9 @@ bool plLoadImageFromFile(FILE *fin, const char *path, PLImage *out) {
     } else {
         const char *extension = plGetFileExtension(path);
         if(extension && extension[0] != '\0') {
-            if (!strncmp(extension, PL_EXTENSION_FTX, 3) && LoadFTXImage(fin, out)) {
+            if (!strncmp(extension, "ftx", 3) && LoadFTXImage(fin, out)) {
                 return true;
-            } else if (!strncmp(extension, PL_EXTENSION_PPM, 3) && LoadPPMImage(fin, out)) {
+            } else if (!strncmp(extension, "ppm", 3) && LoadPPMImage(fin, out)) {
                 return true;
             }
         }
@@ -215,17 +216,14 @@ bool plLoadImage(const char *path, PLImage *out) {
         return false;
     }
 
-#if 0 /* wip future implementation */
-
+#ifdef PL_NEW_IMAGE_SUBSYSTEM /* wip future implementation */
     PLIOBuffer buffer;
     plLoadFile(path, &buffer);
 
     const char *ext = plGetFileExtension(path);
 
     plLoadFromMemory(buffer.data, buffer.size, ext, out);
-
 #else
-
     FILE *fin = fopen(path, "rb");
     if(fin == NULL) {
         ReportError(PL_RESULT_FILEREAD, "failed to load image (%s) (%s)", path, strerror(errno));
@@ -240,8 +238,7 @@ bool plLoadImage(const char *path, PLImage *out) {
     bool result = plLoadImageFromFile(fin, path, out);
 
     fclose(fin);
-
-#endif
+#endif /* PL_NEW_IMAGE_SUBSYSTEM */
 
     return result;
 }
@@ -260,19 +257,19 @@ bool plWriteImage(const PLImage *image, const char *path) {
 
     const char *extension = plGetFileExtension(path);
     if(!plIsEmptyString(extension)) {
-        if (!pl_strncasecmp(extension, PL_EXTENSION_BMP, 3)) {
+        if (!pl_strncasecmp(extension, "bmp", 3)) {
             if(stbi_write_bmp(path, image->width, image->height, comp, image->data[0]) == 1) {
                 return true;
             }
-        } else if(!pl_strncasecmp(extension, PL_EXTENSION_PNG, 3)) {
+        } else if(!pl_strncasecmp(extension, "png", 3)) {
             if(stbi_write_png(path, image->width, image->height, comp, image->data[0], 0) == 1) {
                 return true;
             }
-        } else if(!pl_strncasecmp(extension, PL_EXTENSION_TGA, 3)) {
+        } else if(!pl_strncasecmp(extension, "tga", 3)) {
             if(stbi_write_tga(path, image->width, image->height, comp, image->data[0]) == 1) {
                 return true;
             }
-        } else if(!pl_strncasecmp(extension, PL_EXTENSION_JPG, 3)) {
+        } else if(!pl_strncasecmp(extension, "jpg", 3) || !pl_strncasecmp(extension, "jpeg", 3)) {
             if(stbi_write_jpg(path, image->width, image->height, comp, image->data[0], 90) == 1) {
                 return true;
             }
@@ -378,7 +375,7 @@ unsigned int plGetImageSize(PLImageFormat format, unsigned int width, unsigned i
  *
  * If the format doesn't have a predictable size or the size isn't a multiple
  * of one byte, returns ZERO. */
-unsigned int _plImageBytesPerPixel(PLImageFormat format) {
+unsigned int plImageBytesPerPixel(PLImageFormat format) {
     switch(format) {
         case PL_IMAGEFORMAT_RGBA4:   return 2;
         case PL_IMAGEFORMAT_RGB5A1:  return 2;
@@ -492,8 +489,8 @@ void plFreeImage(PLImage *image) {
     image->data = NULL;
 }
 
-bool plIsValidImageSize(unsigned int width, unsigned int height) {
-    if(((width < 2) || (height < 2)) || (!plIsPowerOfTwo(width) || !plIsPowerOfTwo(height))) {
+bool plImageIsPowerOfTwo(unsigned int width, unsigned int height) {
+    if(((width == 0) || (height == 0)) || (!plIsPowerOfTwo(width) || !plIsPowerOfTwo(height))) {
         return false;
     }
 
@@ -545,7 +542,7 @@ bool plFlipImageVertical(PLImage *image) {
 	unsigned int width  = image->width;
 	unsigned int height = image->height;
 	
-	unsigned int bytes_per_pixel = _plImageBytesPerPixel(image->format);
+	unsigned int bytes_per_pixel = plImageBytesPerPixel(image->format);
 	if(bytes_per_pixel == 0) {
 		ReportError(PL_RESULT_IMAGEFORMAT, "cannot flip images in this format");
 		return false;
