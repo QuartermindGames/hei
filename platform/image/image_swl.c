@@ -25,8 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_image.h>
-#include "platform_private.h"
+#include "image_private.h"
 
 /* Ritual Entertainment's SWL Format, used by SiN */
 
