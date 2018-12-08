@@ -24,8 +24,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #pragma once
 
+#include "platform_private.h"
 #include <PL/platform_filesystem.h>
 #include <PL/platform_package.h>
 

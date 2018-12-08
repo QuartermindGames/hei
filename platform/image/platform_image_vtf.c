@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "PL/platform_image.h"
+#include "image_private.h"
 
 /*  Valve's VTF Format (https://developer.valvesoftware.com/wiki/Valve_Texture_Format)  */
 
@@ -225,7 +225,7 @@ void _plConvertVTFFormat(PLImage *image, unsigned int in) {
     }
 }
 
-bool VTFFormatCheck(FILE *fin) {
+bool plVTFFormatCheck(FILE *fin) {
     rewind(fin);
 
     char ident[4];
@@ -234,7 +234,7 @@ bool VTFFormatCheck(FILE *fin) {
     return (bool)(strncmp(ident, "VTF", 3) == 0);
 }
 
-bool LoadVTFImage(FILE *fin, PLImage *out) {
+bool plLoadVTFImage(FILE *fin, PLImage *out) {
     VTFHeader header;
     memset(&header, 0, sizeof(VTFHeader));
 #define VTF_VERSION(maj, min)   ((((maj)) == header.version[1] && (min) <= header.version[0]) || (maj) < header.version[0])

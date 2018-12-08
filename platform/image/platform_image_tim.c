@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_image.h>
+#include "image_private.h"
 
 /*  http://rewiki.regengedanken.de/wiki/.TIM
  *  https://mrclick.zophar.net/TilEd/download/timgfx.txt
@@ -66,7 +66,7 @@ enum TIMType {
 
 #define TIM_IDENT   16
 
-bool TIMFormatCheck(FILE *fin) {
+bool plTIMFormatCheck(FILE *fin) {
     rewind(fin);
 
     uint32_t ident;
@@ -121,7 +121,7 @@ static uint16_t _tim16toRGB51A(uint16_t colour_in) {
     return colour_out;
 }
 
-bool LoadTIMImage(FILE *fin, PLImage *out) {
+bool plLoadTIMImage(FILE *fin, PLImage *out) {
     memset(out, 0, sizeof(PLImage));
 
     uint16_t *palette = NULL;

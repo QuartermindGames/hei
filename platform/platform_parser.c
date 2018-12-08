@@ -24,7 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#include <PL/platform.h>
+
+#include "platform_private.h"
 
 struct {
     char *buffer, *line_buffer;

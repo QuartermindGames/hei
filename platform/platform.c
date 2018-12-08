@@ -108,7 +108,7 @@ PLArguments pl_arguments;
 PLresult plInitialize(int argc, char **argv) {
     static bool is_initialized = false;
     if(!is_initialized) {
-        _plInitConsole();
+        plInitConsole();
     }
 
     memset(&pl_arguments, 0, sizeof(PLArguments));
@@ -220,7 +220,7 @@ void plShutdown(void) {
         pl_subsystems[i].active = false;
     }
 
-    _plShutdownConsole();
+    plShutdownConsole();
 }
 
 /*-------------------------------------------------------------------
@@ -278,7 +278,7 @@ char
 PLresult global_result = PL_RESULT_SUCCESS;
 
 // Sets the name of the current function.
-void _plSetCurrentFunction(const char *function, ...) {
+void plSetCurrentFunction(const char *function, ...) {
 #ifdef _DEBUG
     char out[2048]; // todo, shitty work around because linux crap
     va_list args;
@@ -291,7 +291,7 @@ void _plSetCurrentFunction(const char *function, ...) {
 #endif
 }
 
-void _plSetFunctionResult(PLresult result) {
+void plSetFunctionResult(PLresult result) {
     global_result = result;
 }
 

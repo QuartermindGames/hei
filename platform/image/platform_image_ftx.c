@@ -24,8 +24,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#include "PL/platform_image.h"
-#include "PL/platform_filesystem.h"
+
+#include "image_private.h"
+#include <PL/platform_filesystem.h>
 
 /*	Ritual's FTX Format	*/
 

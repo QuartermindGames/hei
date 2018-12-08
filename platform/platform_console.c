@@ -24,18 +24,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #include <PL/platform_console.h>
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_filesystem.h>
-
 #include <errno.h>
-
 #if defined(_WIN32)
-
-#include <io.h>
-
+#   include <io.h>
 #endif
-
 #include "platform_private.h"
 #include "graphics/graphics_private.h"
 
@@ -51,7 +47,7 @@ static size_t _pl_num_commands = 0;
 static size_t _pl_commands_size = 512;
 
 #define IMPLEMENT_COMMAND(NAME, DESC) \
-    void NAME ## _func(unsigned int argc, char *argv[]); \
+    static void NAME ## _func(unsigned int argc, char *argv[]); \
     static PLConsoleCommand NAME ## _var = {#NAME, NAME ## _func, DESC}; \
     static void NAME ## _func(unsigned int argc, char *argv[])
 
@@ -322,7 +318,7 @@ PLBitmapFont *console_font = NULL;
 
 void (*ConsoleOutputCallback)(int level, const char *msg);
 
-PLresult _plInitConsole(void) {
+PLresult plInitConsole(void) {
     console_visible = false;
 
 #if 0
@@ -383,7 +379,7 @@ PLresult _plInitConsole(void) {
     return PL_RESULT_SUCCESS;
 }
 
-void _plShutdownConsole(void) {
+void plShutdownConsole(void) {
     console_visible = false;
 
 #if defined(PL_USE_GRAPHICS)
@@ -491,7 +487,7 @@ void plParseConsoleString(const char *string) {
 #define _MAX_COLUMNS    2
 
 // todo, correctly handle rows and columns.
-void ResizeConsoles(void) {
+static void ResizeConsoles(void) {
 #if defined(PL_USE_GRAPHICS)
     unsigned int screen_w = gfx_state.current_viewport.w;
     unsigned int screen_h = gfx_state.current_viewport.h;
@@ -530,7 +526,7 @@ void ResizeConsoles(void) {
 #endif
 }
 
-bool IsConsolePaneVisible(unsigned int id) {
+static bool IsConsolePaneVisible(unsigned int id) {
     if(!console_visible) {
         return false;
     }

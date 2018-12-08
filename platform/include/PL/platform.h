@@ -228,7 +228,7 @@ PL_EXTERN void _plResetError(void); // Resets the error message to "null", so yo
 PL_EXTERN void
 SetErrorMessage(const char *msg, ...);   // Sets the error message, so we can grab it outside the library.
 PL_EXTERN void
-_plSetCurrentFunction(const char *function, ...);  // Sets the currently active function, for error reporting.
+plSetCurrentFunction(const char *function, ...);  // Sets the currently active function, for error reporting.
 // kill end
 
 PL_EXTERN PLresult plGetFunctionResult(void);
@@ -255,21 +255,9 @@ PL_EXTERN void pl_crc32(const void *data, size_t n_bytes, uint32_t *crc);
 
 //////////////////////////////////////////////////////////////////
 
-#if defined(PL_INTERNAL)
-
-PL_EXTERN bool _plIsSubSystemActive(unsigned int subsystem);
+bool plIsSubSystemActive(unsigned int subsystem);
 
 //////////////////////////////////////////////////////////////////
-
-PL_EXTERN void _plSetFunctionResult(PLresult result);
-
-#define _plUpdateErrorFunction()    _plSetCurrentFunction(PL_FUNCTION)
-#define ReportError(type, ...) \
-    _plUpdateErrorFunction(); \
-    _plSetFunctionResult(type); \
-    SetErrorMessage(__VA_ARGS__)
-
-#endif
 
 /* standard headers */
 #include <PL/platform_string.h>

@@ -52,7 +52,7 @@ enum DDSFlag {
     DDS_CAPS,
 };
 
-bool DDSFormatCheck(FILE *fin) {
+bool plDDSFormatCheck(FILE *fin) {
     rewind(fin);
 
     char ident[4];
@@ -61,7 +61,7 @@ bool DDSFormatCheck(FILE *fin) {
     return (bool)(strncmp(ident, "DDS", 3) == 0);
 }
 
-bool LoadDDSImage(FILE *fin, PLImage *out) {
+bool plLoadDDSImage(FILE *fin, PLImage *out) {
     DDSHeader header;
     memset(&header, 0, sizeof(DDSHeader));
     if(fread(&header, sizeof(DDSHeader), 1, fin) != 1) {

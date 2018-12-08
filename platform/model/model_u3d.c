@@ -24,6 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
+#include "platform_private.h"
 #include <PL/platform_filesystem.h>
 #include <PL/platform_model.h>
 
@@ -125,7 +127,7 @@ PLModel *LoadU3DModel(const char *path) {
     return model;
 
 #if 0
-    _plSetCurrentFunction("plLoadU3DModel");
+    plSetCurrentFunction("plLoadU3DModel");
 
     pl_u3d_dataf = std::fopen(path, "rb");
     if (!pl_u3d_dataf) {

@@ -92,6 +92,58 @@ static bool LoadSTBImageFromMemory(const uint8_t *buffer, size_t length, PLImage
 
 #endif
 
+#ifdef PL_NEW_IMAGE_SUBSYSTEM
+
+typedef struct PLImageLoader {
+    const char  *ext[32];   /* file extensions */
+
+    bool(*CheckFormat)(uint8_t *data, size_t length);
+    bool(*LoadImage)(uint8_t *data, size_t length, PLImage *out);
+} PLImageLoader;
+
+PLImageLoader image_formats[]={
+        { { "swl" }, plSWLFormatCheck, plLoadSWLImage },
+        { { "ftx" }, NULL, plLoadFTXImage },
+};
+
+bool plNewLoadImage(const char *ext, uint8_t *data, size_t length, PLImage *out) {
+    for(unsigned int i = 0; i < plArrayElements(image_formats); ++i) {
+        PLImageLoader *loader = NULL;
+        for(unsigned int j = 0; j < 32; j++) {
+            if(pl_strncasecmp(ext, image_formats[i].ext[j], sizeof(ext)) == 0) {
+                loader = &image_formats[i];
+                break;
+            }
+        }
+
+        if(loader == NULL) {
+            SetResult(PL_RESULT_IMAGEFORMAT);
+            continue;
+        }
+
+        if(loader->CheckFormat && !loader->CheckFormat(data, length)) {
+            /* CheckFormat sets result for us */
+            continue;
+        }
+
+        if(!loader->LoadImage(data, length, out)) {
+            /* LoadImage sets result for us */
+            continue;
+        }
+    }
+
+    /* check if it's been successfully loaded... for now
+     * we'll go by levels, but maybe we should do this
+     * differently? */
+    if(out->levels == 0) {
+        return false;
+    }
+
+    return true;
+}
+
+#endif
+
 bool plLoadImageFromFile(FILE *fin, const char *path, PLImage *out) {
     if(fin == NULL) {
         ReportError(PL_RESULT_FILEREAD, "invalid file handle");
@@ -106,13 +158,15 @@ bool plLoadImageFromFile(FILE *fin, const char *path, PLImage *out) {
     }
 #endif
 
-    if(DDSFormatCheck(fin) && LoadDDSImage(fin, out)) {
+    if(plDDSFormatCheck(fin) && plLoadDDSImage(fin, out)) {
         return true;
-    } else if(TIMFormatCheck(fin) && LoadTIMImage(fin, out)) {
+    } else if(plSWLFormatCheck(fin) && plLoadSWLImage(fin, out)) {
         return true;
-    } else if(VTFFormatCheck(fin) && LoadVTFImage(fin, out)) {
+    } else if(plTIMFormatCheck(fin) && plLoadTIMImage(fin, out)) {
         return true;
-    } else if(DTXFormatCheck(fin) && LoadDTXImage(fin, out)) {
+    } else if(plVTFFormatCheck(fin) && plLoadVTFImage(fin, out)) {
+        return true;
+    } else if(plDTXFormatCheck(fin) && plLoadDTXImage(fin, out)) {
         return true;
     } else {
         const char *extension = plGetFileExtension(path);

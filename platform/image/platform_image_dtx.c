@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "PL/platform_image.h"
+#include "image_private.h"
 
 /*	Monolith's DTX Format (http://www.cnblogs.com/crsky/p/4702916.html)	*/
 
@@ -96,7 +96,7 @@ uint8_t GetDTXFormat(DTXHeader *dtx) {
     return dtx->extra[2];
 }
 
-bool DTXFormatCheck(FILE *fin) {
+bool plDTXFormatCheck(FILE *fin) {
     rewind(fin);
 
     // Try reading in the type first, as Lithtech has "resource types" rather than idents.
@@ -108,7 +108,7 @@ bool DTXFormatCheck(FILE *fin) {
     return (type == 0);
 }
 
-bool LoadDTXImage(FILE *fin, PLImage *out) {
+bool plLoadDTXImage(FILE *fin, PLImage *out) {
     DTXHeader header;
     memset(&header, 0, sizeof(header));
     if (fread(&header, sizeof(DTXHeader), 1, fin) != 1) {

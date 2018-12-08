@@ -14,7 +14,7 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 0. You just DO WHAT THE FUCK YOU WANT TO.
 */
 
-#include "PL/platform_image.h"
+#include "image_private.h"
 
 /*	PPM Format	*/
 
