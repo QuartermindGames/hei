@@ -143,4 +143,4 @@ bool plLoadSWLImage(FILE *fin, PLImage *out) {
     return true;
 }
 
-bool plWriteSWLImage(const PLImage *image, const char *path) { /* todo */ }
+bool plWriteSWLImage(const PLImage *image, const char *path) { /* todo */ return false; }

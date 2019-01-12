@@ -123,27 +123,53 @@ typedef struct MDLPolygon {
  *
  * 56 bytes for each block following header
  * perhaps these are descriptors for the skeleton?
+ *
+ * -----
+ *
+ * Even better!
+ *
+ * 0000:0000 > ?
+ * 0000:0016 > uint8_t / length of texture string
+ * 0000:001C > uint32_t / unknown, same for all?
+ * 0000:0020 > int32_t / unknown, same for all?
+ * 0000:002C > start of texture string, end of header!
  */
 
-PLModel *LoadRequiemModel(const char *path) {
-    FILE *file = fopen(path, "rb");
-    if(file == NULL) {
-        ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
+typedef struct MDLAniHeader { /* should be 44 bytes */
+    uint32_t    flag;   /* unconfirmed */
+    int32_t     u0;     /* appears to be unused? */
+    uint32_t    u1;     /* ... */
+} MDLAniHeader;
+
+#define AbortLoad(...) ModelLog(__VA_ARGS__); ReportError(PL_RESULT_FILEREAD, __VA_ARGS__); fclose(fp)
+
+PLModel *LoadAnimatedRequiemModel(FILE *fp) {
+    rewind(fp);
+
+    /* now read in the header */
+
+    MDLAniHeader header;
+    if(fread(&header, sizeof(MDLAniHeader), 1, fp) != 1) {
+        AbortLoad("Invalid file length, failed to get model header!\n");
         return NULL;
     }
 
-    // attempt to figure out if it's valid or not... ho boy...
+    /* todo: the rest */
 
-#define AbortLoad(...) ModelLog(__VA_ARGS__); ReportError(PL_RESULT_FILEREAD, __VA_ARGS__); fclose(file)
+    return NULL;
+}
+
+PLModel *LoadStaticRequiemModel(FILE *fp) {
+    rewind(fp);
 
     // check which flags have been set for this particular mesh
-    int flags = fgetc(file);
+    int flags = fgetc(fp);
     if(flags & MDL_FLAG_FLAT) {} // flat
     if(flags & MDL_FLAG_UNLIT) {} // unlit
     if(!(flags & MDL_FLAG_FLAT) && !(flags & MDL_FLAG_UNLIT)) {} // shaded
 
     uint32_t texture_name_length = 0;
-    if(fread(&texture_name_length, sizeof(uint32_t), 1, file) != 1) {
+    if(fread(&texture_name_length, sizeof(uint32_t), 1, fp) != 1) {
         AbortLoad("Invalid file length, failed to get texture name length!\n");
         return NULL;
     }
@@ -154,13 +180,13 @@ PLModel *LoadRequiemModel(const char *path) {
     }
 
     char texture_name[texture_name_length];
-    if(fread(texture_name, sizeof(char), texture_name_length, file) != texture_name_length) {
+    if(fread(texture_name, sizeof(char), texture_name_length, fp) != texture_name_length) {
         AbortLoad("Invalid file length, failed to get texture name!\n");
         return NULL;
     }
 
     uint32_t num_vertices;
-    if(fread(&num_vertices, sizeof(uint32_t), 1, file) != 1) {
+    if(fread(&num_vertices, sizeof(uint32_t), 1, fp) != 1) {
         AbortLoad("Invalid file length, failed to get number of vertices!\n");
         return NULL;
     }
@@ -171,7 +197,7 @@ PLModel *LoadRequiemModel(const char *path) {
     }
 
     uint32_t num_polygons;
-    if(fread(&num_polygons, sizeof(uint32_t), 1, file) != 1) {
+    if(fread(&num_polygons, sizeof(uint32_t), 1, fp) != 1) {
         AbortLoad("Invalid file length, failed to get number of polygons!\n");
         return NULL;
     }
@@ -182,7 +208,7 @@ PLModel *LoadRequiemModel(const char *path) {
     }
 
     MDLVertex vertices[num_vertices];
-    if(fread(vertices, sizeof(MDLVertex), num_vertices, file) != num_vertices) {
+    if(fread(vertices, sizeof(MDLVertex), num_vertices, fp) != num_vertices) {
         AbortLoad("Invalid file length, failed to load vertices!\n");
         return NULL;
     }
@@ -206,14 +232,14 @@ PLModel *LoadRequiemModel(const char *path) {
          */
 
         //long pos = ftell(file);
-        if(fread(&polygons[i].num_indices, sizeof(uint32_t), 1, file) != 1) {
-            AbortLoad("Invalid file length, failed to load number of indices! (offset: %ld)\n", ftell(file));
+        if(fread(&polygons[i].num_indices, sizeof(uint32_t), 1, fp) != 1) {
+            AbortLoad("Invalid file length, failed to load number of indices! (offset: %ld)\n", ftell(fp));
             return NULL;
         }
 
         if(polygons[i].num_indices < MIN_INDICES_PER_POLYGON || polygons[i].num_indices > MAX_INDICES_PER_POLYGON) {
             AbortLoad("Invalid number of indices, %d, required for polygon %d! (offset: %ld)\n",
-                      polygons[i].num_indices, i, ftell(file));
+                      polygons[i].num_indices, i, ftell(fp));
             return NULL;
         }
 
@@ -225,15 +251,15 @@ PLModel *LoadRequiemModel(const char *path) {
             num_indices += polygons[i].num_indices * 100;
         }
 
-        fseek(file, 16, SEEK_CUR); // todo, figure these out
-        if(fread(polygons[i].indices, sizeof(uint16_t), polygons[i].num_indices, file) != polygons[i].num_indices) {
+        fseek(fp, 16, SEEK_CUR); // todo, figure these out
+        if(fread(polygons[i].indices, sizeof(uint16_t), polygons[i].num_indices, fp) != polygons[i].num_indices) {
             AbortLoad("invalid file length, failed to load indices\n");
             return NULL;
         }
 
         unsigned int num_uv_coords = (unsigned int) (polygons[i].num_indices * 4);
         //ModelLog(" num bytes for UV coords is %lu\n", num_uv_coords * sizeof(int16_t));
-        if(fread(polygons[i].uv, sizeof(int16_t), num_uv_coords, file) != num_uv_coords) {
+        if(fread(polygons[i].uv, sizeof(int16_t), num_uv_coords, fp) != num_uv_coords) {
             AbortLoad("invalid file length, failed to load UV coords\n");
             return NULL;
         }
@@ -242,7 +268,7 @@ PLModel *LoadRequiemModel(const char *path) {
         //ModelLog(" Read %ld bytes for polygon %d (indices %d)\n", npos - pos, i, polygons[i].num_indices);
     }
 
-    fclose(file);
+    fclose(fp);
 
 #if 0 // check the indices are in range
     for(unsigned int i = 0; i < num_polygons; ++i) {
@@ -349,4 +375,24 @@ PLModel *LoadRequiemModel(const char *path) {
     plGenerateModelAABB(model);
 
     return model;
+}
+
+PLModel *LoadRequiemModel(const char *path) {
+    FILE *fp = fopen(path, "rb");
+    if(fp == NULL) {
+        ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
+        return NULL;
+    }
+
+    /* attempt to figure out what kind of model it is */
+
+    fseek(fp, SEEK_SET, 1);
+    int len = fgetc(fp);
+    if(len == 0) {
+        /* assume it's an animated model */
+        ModelLog("Texture name length of %d, assuming animated Requiem model...\n", len);
+        return LoadAnimatedRequiemModel(fp);
+    }
+
+    return LoadStaticRequiemModel(fp);
 }

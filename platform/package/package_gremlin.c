@@ -152,7 +152,7 @@ PLPackage *LoadMADPackage(const char *path, bool cache) {
             goto FAILED;
         }
 
-        strncpy(package->table[i].file.name, index.file, sizeof(index.file));
+        strncpy(package->table[i].file.name, index.file, sizeof(package->table[i].file.name));
         package->table[i].file.name[sizeof(index.file) - 1] = '\0';
         package->table[i].file.size = index.length;
 

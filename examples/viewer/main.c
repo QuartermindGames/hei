@@ -50,12 +50,12 @@ For more information, please refer to <http://unlicense.org>
 #define CENTER_X    (WIDTH >> 1)
 #define CENTER_Y    (HEIGHT >> 1)
 
-bool use_mouse_look = false;
+static bool use_mouse_look = false;
 
 //////////////////////////////////////////
 
 SDL_Window *window = NULL;
-void CreateWindow(void) {
+static void CreateWindow(void) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
@@ -82,7 +82,7 @@ void CreateWindow(void) {
     SDL_DisableScreenSaver();
 }
 
-void DestroyWindow(void) {
+static void DestroyWindow(void) {
     if(window == NULL) {
         return;
     }
@@ -91,7 +91,7 @@ void DestroyWindow(void) {
 }
 
 /* Displays a simple dialogue window. */
-void MessageBox(const char *title, const char *msg, ...) {
+static void MessageBox(const char *title, const char *msg, ...) {
     char buf[4096];
     va_list args;
     va_start(args, msg);
@@ -102,7 +102,7 @@ void MessageBox(const char *title, const char *msg, ...) {
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void WriteSMDVertex(FILE *file, const PLVertex *vertex) {
+static void WriteSMDVertex(FILE *file, const PLVertex *vertex) {
     /*             P X  Y  Z  NX NY NZ U  V */
     fprintf(file, "0 %f %f %f %f %f %f %f %f\n",
 
@@ -119,7 +119,7 @@ void WriteSMDVertex(FILE *file, const PLVertex *vertex) {
 }
 
 /* writes given model out to Valve's SMD model format */
-void WriteSMD(PLModel *model) {
+static void WriteSMD(PLModel *model) {
     char body_path[PL_SYSTEM_MAX_PATH];
     snprintf(body_path, sizeof(body_path), "./%s_body.smd", model->name);
     FILE *fout = fopen(body_path, "w");
@@ -179,10 +179,10 @@ void WriteSMD(PLModel *model) {
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-PLCamera *main_camera;
+static PLCamera *main_camera;
 
 // loads a model in and then frees it
-void TempModelLoad(const char *path) {
+static void TempModelLoad(const char *path) {
     PLModel *model = plLoadModel(path);
     if(model != NULL) {
         plDeleteModel(model);
@@ -197,7 +197,7 @@ enum {
     VIEW_MODE_SKELETON
 };
 int view_mode = VIEW_MODE_WIREFRAME;
-void ProcessKeyboard(void) {
+static void ProcessKeyboard(void) {
     const uint8_t *state = SDL_GetKeyboardState(NULL);
     if(state[SDL_SCANCODE_1]) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -431,7 +431,6 @@ int main(int argc, char **argv) {
 
     /* compile shaders */
 
-#if 1
     const char *vertex_stage = {
             "void main() {"
             "   gl_Position = ftransform();"
@@ -445,13 +444,12 @@ int main(int argc, char **argv) {
     };
 
     PLShaderProgram *program = plCreateShaderProgram();
-    plRegisterShaderStageFromMemory(program, vertex_stage, strlen(vertex_state), PL_SHADER_TYPE_VERTEX);
-    plRegisterShaderStageFromMemory(program, fragment_stage, strlen(fragment_state), PL_SHADER_TYPE_FRAGMENT);
+    plRegisterShaderStageFromMemory(program, vertex_stage, strlen(vertex_stage), PL_SHADER_TYPE_VERTEX);
+    plRegisterShaderStageFromMemory(program, fragment_stage, strlen(fragment_stage), PL_SHADER_TYPE_FRAGMENT);
 
     plLinkShaderProgram(program);
 
-    //plSetShaderProgram(program);
-#endif
+    plSetShaderProgram(NULL);
 
     /* done, now for main rendering loop! */
 

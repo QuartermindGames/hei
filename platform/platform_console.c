@@ -313,7 +313,7 @@ IMPLEMENT_COMMAND(help, "Returns information regarding specified command or vari
 
 //////////////////////////////////////////////
 
-static PLMesh *mesh_line = NULL;
+//static PLMesh *mesh_line = NULL;
 static PLBitmapFont *console_font = NULL;
 
 void (*ConsoleOutputCallback)(int level, const char *msg);
