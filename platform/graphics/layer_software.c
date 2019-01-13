@@ -30,8 +30,8 @@ For more information, please refer to <http://unlicense.org>
 #define DEFAULT_WIDTH   320
 #define DEFAULT_HEIGHT  240
 
-uint8_t *sw_backbuffer = NULL;
-unsigned int sw_backbuffer_size = 0;
+static uint8_t *sw_backbuffer = NULL;
+static unsigned int sw_backbuffer_size = 0;
 
 static void SWClearBuffers(unsigned int buffers) {
     if(buffers & PL_BUFFER_COLOUR) {

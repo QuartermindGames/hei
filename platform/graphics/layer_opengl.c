@@ -185,7 +185,9 @@ static unsigned int TranslateStorageFormat(PLDataFormat format) {
     switch(format) {
         case PL_UNSIGNED_BYTE:              return GL_UNSIGNED_BYTE;
         case PL_UNSIGNED_INT_8_8_8_8_REV:   return GL_UNSIGNED_INT_8_8_8_8_REV;
-        default:                            plAssert(0); break; /* todo */
+        default:
+            plAssert(0);
+            return 0; /* todo */
     }
 }
 
@@ -257,9 +259,9 @@ static void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
         levels = 1;
     }
 
-    uint image_format = TranslateImageFormat(upload->format);
-    uint colour_format = TranslateImageColourFormat(upload->colour_format);
-    uint storage_format = TranslateStorageFormat(texture->storage);
+    unsigned int image_format = TranslateImageFormat(upload->format);
+    unsigned int colour_format = TranslateImageColourFormat(upload->colour_format);
+    unsigned int storage_format = TranslateStorageFormat(texture->storage);
 
     for(unsigned int i = 0; i < levels; ++i) {
         GLsizei w = texture->w / (unsigned int)pow(2, i);

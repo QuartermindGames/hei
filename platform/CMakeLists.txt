@@ -25,6 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
+if(WIN32)
+    add_subdirectory(3rdparty/glew-2.2.0/build/cmake)
+endif()
+
 project(platform)
 
 ############################################################
@@ -55,10 +59,13 @@ file(
         )
 
 file(GLOB PLATFORM_PACKAGE_FILES package/*.*)
+
 if(PL_USE_MODEL)
     file(GLOB PLATFORM_MODEL_FILES model/*.*)
 endif()
+
 file(GLOB PLATFORM_IMAGE_FILES image/*.*)
+
 if(PL_USE_GRAPHICS)
     file(GLOB PLATFORM_GRAPHICS_FILES graphics/*.*)
 endif()
@@ -84,9 +91,9 @@ if(PL_USE_GRAPHICS)
     if(PL_SUPPORT_OPENGL)
         add_definitions("-DPL_SUPPORT_OPENGL")
         if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-            target_link_libraries(platform "-framework OpenGL" GLEW)
+            target_link_libraries(platform "-framework OpenGL" glew)
         else()
-            target_link_libraries(platform GL GLU GLEW)
+            target_link_libraries(platform glew)
         endif()
     endif()
 
@@ -99,9 +106,17 @@ if(PL_USE_GRAPHICS)
     endif()
 endif()
 
+# Platform specific libraries should be provided here
+if(UNIX)
+    target_link_libraries(platform dl)
+elseif(WIN32)
+    target_link_libraries(platform Secur32)
+    target_include_directories(platform PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glew-2.2.0/include/)
+endif()
+
 target_include_directories(platform PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/
         ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_include_directories(platform PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(platform m dl)
+target_include_directories(platform PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(platform m)

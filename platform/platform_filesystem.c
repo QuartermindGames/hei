@@ -32,16 +32,19 @@ For more information, please refer to <http://unlicense.org>
 #include <dirent.h>
 
 #include <PL/platform_console.h>
-#include <pwd.h>
 
 #include "filesystem_private.h"
 #include "platform_private.h"
 
 #ifdef _WIN32
+/*  this is required by secext.h */
+#   define SECURITY_WIN32
 
-#include <afxres.h>
-#include <secext.h>
-
+#   include <afxres.h>
+#   include <security.h>
+#   include <direct.h>
+#else
+#   include <pwd.h>
 #endif
 
 /*	File System	*/
