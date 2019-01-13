@@ -102,83 +102,6 @@ static void MessageBox(const char *title, const char *msg, ...) {
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-static void WriteSMDVertex(FILE *file, const PLVertex *vertex) {
-    /*             P X  Y  Z  NX NY NZ U  V */
-    fprintf(file, "0 %f %f %f %f %f %f %f %f\n",
-
-            vertex->position.x,
-            vertex->position.y,
-            vertex->position.z,
-
-            vertex->normal.x,
-            vertex->normal.y,
-            vertex->normal.z,
-
-            vertex->st[0].x,
-            vertex->st[0].y);
-}
-
-/* writes given model out to Valve's SMD model format */
-static void WriteSMD(PLModel *model) {
-    char body_path[PL_SYSTEM_MAX_PATH];
-    snprintf(body_path, sizeof(body_path), "./%s_body.smd", model->name);
-    FILE *fout = fopen(body_path, "w");
-    if(fout == NULL) {
-        printf("%s\n", plGetError());
-        exit(EXIT_FAILURE);
-    }
-
-    /* header */
-    fprintf(fout, "version 1\n\n");
-
-    /* write out the nodes block */
-    fprintf(fout, "nodes\n");
-    if(model->num_bones == 0) {
-        /* write out a dummy bone! */
-        fprintf(fout, "0 \"root\" -1\n");
-    } else {
-        /* todo, revisit this so we're correctly connecting child/parent */
-        for (unsigned int i = 0; i < model->num_bones; ++i) {
-            fprintf(fout, "%u %s %d\n", i, model->bones[i].name, (int) i - 1);
-        }
-    }
-    fprintf(fout, "end\n\n");
-
-    /* skeleton block */
-    fprintf(fout, "skeleton\ntime 0\n");
-    if(model->num_bones == 0) {
-        /* write out dummy bone coords! */
-        fprintf(fout, "0 0 0 0 0 0 0\n");
-    } else {
-        /* todo, print out default coords for each bone */
-    }
-    fprintf(fout, "end\n\n");
-
-    /* triangles block */
-    fprintf(fout, "triangles\n");
-    for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        PLModelMesh *cur_mesh = &model->meshes[i];
-        for(unsigned int j = 0; j < cur_mesh->mesh->num_indices; ) {
-            if(cur_mesh->texture == NULL) {
-                fprintf(fout, "null\n");
-            } else {
-                fprintf(fout, "%s\n", cur_mesh->texture->name);
-            }
-            WriteSMDVertex(fout, &cur_mesh->mesh->vertices[cur_mesh->mesh->indices[j++]]);
-            WriteSMDVertex(fout, &cur_mesh->mesh->vertices[cur_mesh->mesh->indices[j++]]);
-            WriteSMDVertex(fout, &cur_mesh->mesh->vertices[cur_mesh->mesh->indices[j++]]);
-        }
-    }
-    fprintf(fout, "end\n\n");
-
-    /* and leave a blank line at the end, to keep studiomdl happy */
-    fprintf(fout, "\n");
-
-    fclose(fout);
-}
-
-////////////////////////////////////////////////////////////////////////////////////
-
 static PLCamera *main_camera;
 
 // loads a model in and then frees it
@@ -344,7 +267,7 @@ int main(int argc, char **argv) {
     }
 
     if(extract_model) {
-        WriteSMD(model);
+        plWriteModel("output", model, PL_MODEL_OUTPUT_SMD);
         return EXIT_SUCCESS;
     }
 

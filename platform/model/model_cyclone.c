@@ -377,7 +377,7 @@ PLModel *LoadStaticRequiemModel(FILE *fp) {
     return model;
 }
 
-PLModel *LoadRequiemModel(const char *path) {
+PLModel *plLoadRequiemModel(const char *path) {
     FILE *fp = fopen(path, "rb");
     if(fp == NULL) {
         ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));

@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #pragma once
 
 #include "platform_private.h"
@@ -33,8 +34,10 @@ For more information, please refer to <http://unlicense.org>
 
 PL_EXTERN_C
 
-PLModel *LoadU3DModel(const char *path);
-PLModel *LoadHDVModel(const char *path);
-PLModel *LoadRequiemModel(const char *path);
+PLModel *plLoadU3DModel(const char *path);
+PLModel *plLoadHDVModel(const char *path);
+PLModel *plLoadRequiemModel(const char *path);
+
+bool _plWriteSMDModel(const char *path, const PLModel *model);
 
 PL_EXTERN_C_END

@@ -38,8 +38,8 @@ typedef struct ModelInterface {
 } ModelInterface;
 
 static ModelInterface model_interfaces[512]= {
-        { "hdv", LoadHDVModel },
-        { "mdl", LoadRequiemModel },
+        { "hdv", plLoadHDVModel },
+        { "mdl", plLoadRequiemModel },
         //{ "mdl", LoadSourceModel },
         //{ "mdl", LoadGoldSrcModel },
         //{ "3d", LoadU3DModel },
@@ -69,6 +69,22 @@ void plGenerateModelAABB(PLModel *model) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
+
+bool plWriteModel(const char *path, const PLModel *model, PLModelOutputType type) {
+    if(plIsEmptyString(path)) {
+        ReportError(PL_RESULT_FILEPATH, plGetResultString(PL_RESULT_FILEPATH));
+        return false;
+    }
+
+    switch(type) {
+        case PL_MODEL_OUTPUT_SMD: return _plWriteSMDModel(path, model);
+
+        default:{
+            ReportError(PL_RESULT_UNSUPPORTED, "unsupported output type for %s (%u)", path, type);
+            return false;
+        }
+    }
+}
 
 uint8_t *plSerializeModel(PLModel *model, unsigned int type) {
     if(type >= PL_SERIALIZE_MODEL_END) {

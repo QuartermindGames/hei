@@ -86,7 +86,7 @@ typedef struct U3DTriangle {
     uint8_t flags;      // Triangle flags
 } U3DTriangle;
 
-PLModel *LoadU3DModel(const char *path) {
+PLModel *plLoadU3DModel(const char *path) {
     char anim_path[PL_SYSTEM_MAX_PATH];
     strncpy(anim_path, path, sizeof(anim_path));
     char *p_ext = strstr(anim_path, "DATA");

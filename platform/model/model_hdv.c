@@ -67,7 +67,7 @@ typedef struct __attribute__((packed)) HDVVertex {
     int32_t z;
 } HDVVertex;
 
-PLModel *LoadHDVModel(const char *path) {
+PLModel *plLoadHDVModel(const char *path) {
     FILE *file = fopen(path, "rb");
     if(file == NULL) {
         ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));

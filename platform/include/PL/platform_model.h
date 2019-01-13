@@ -103,6 +103,13 @@ PL_EXTERN_C
 
 PLModel *plLoadModel(const char *path);
 
+typedef enum PLModelOutputType {
+    PL_MODEL_OUTPUT_DEFAULT,
+    PL_MODEL_OUTPUT_SMD,
+    PL_MAX_MODEL_OUTPUT_FORMATS
+} PLModelOutputType;
+bool plWriteModel(const char *path, const PLModel *model, PLModelOutputType type);
+
 enum {
     PL_SERIALIZE_MODEL_BASE,
     PL_SERIALIZE_MODEL_VERTICES,
