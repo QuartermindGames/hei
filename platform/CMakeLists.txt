@@ -104,8 +104,11 @@ if(PL_USE_GRAPHICS)
     endif()
 endif()
 
+# Platform specific libraries should be provided here
 if(UNIX)
     target_link_libraries(platform dl)
+elseif(WIN32)
+    target_link_libraries(platform Secur32)
 endif()
 
 target_include_directories(platform PUBLIC

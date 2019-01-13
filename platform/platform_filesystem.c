@@ -41,7 +41,7 @@ For more information, please refer to <http://unlicense.org>
 #   define SECURITY_WIN32
 
 #   include <afxres.h>
-#   include <secext.h>
+#   include <security.h>
 #   include <direct.h>
 #else
 #   include <pwd.h>
