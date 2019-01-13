@@ -25,7 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-add_subdirectory(3rdparty/glew-2.2.0/build/cmake)
+if(WIN32)
+    add_subdirectory(3rdparty/glew-2.2.0/build/cmake)
+endif()
 
 project(platform)
 
@@ -109,12 +111,12 @@ if(UNIX)
     target_link_libraries(platform dl)
 elseif(WIN32)
     target_link_libraries(platform Secur32)
+    target_include_directories(platform PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glew-2.2.0/include/)
 endif()
 
 target_include_directories(platform PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/
         ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_include_directories(platform PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glew-2.2.0/include/)
+target_include_directories(platform PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(platform m)
