@@ -25,17 +25,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#define COMMAND_ONLY    /* uncomment if you want the viewer window */
+
 #include <PL/platform_math.h>
 #include <PL/platform_console.h>
+#ifndef COMMAND_ONLY
 #include <PL/platform_graphics.h>
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_graphics_camera.h>
+#endif
 #include <PL/platform_model.h>
 #include <PL/platform_filesystem.h>
 
+#ifndef COMMAND_ONLY
 #include <SDL2/SDL.h>
-
 #include <GL/glew.h>
+#endif
 
 #include "../shared.h"
 
@@ -43,6 +48,8 @@ For more information, please refer to <http://unlicense.org>
 
 #define VERSION_MAJOR   0
 #define VERSION_MINOR   3
+
+#ifndef COMMAND_ONLY
 
 #define WIDTH   800
 #define HEIGHT  600
@@ -103,14 +110,6 @@ static void MessageBox(const char *title, const char *msg, ...) {
 ////////////////////////////////////////////////////////////////////////////////////
 
 static PLCamera *main_camera;
-
-// loads a model in and then frees it
-static void TempModelLoad(const char *path) {
-    PLModel *model = plLoadModel(path);
-    if(model != NULL) {
-        plDeleteModel(model);
-    }
-}
 
 enum {
     VIEW_MODE_LIT,
@@ -183,6 +182,16 @@ static void ProcessKeyboard(void) {
 
     if(state[SDL_SCANCODE_ESCAPE]) {
         exit(EXIT_SUCCESS);
+    }
+}
+
+#endif
+
+// loads a model in and then frees it
+static void TempModelLoad(const char *path) {
+    PLModel *model = plLoadModel(path);
+    if(model != NULL) {
+        plDeleteModel(model);
     }
 }
 
@@ -267,10 +276,13 @@ int main(int argc, char **argv) {
     }
 
     if(extract_model) {
-        plWriteModel("output", model, PL_MODEL_OUTPUT_SMD);
+        if(!plWriteModel("output", model, PL_MODEL_OUTPUT_SMD)) {
+            PRINT_ERROR("Failed to write model \"%s\"!\n%s\n", model->name, plGetError());
+        }
         return EXIT_SUCCESS;
     }
 
+#ifndef COMMAND_ONLY
     CreateWindow();
 
     plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
@@ -492,6 +504,7 @@ int main(int argc, char **argv) {
     plDeleteCamera(main_camera);
 
     DestroyWindow();
+#endif
 
     plShutdown();
 

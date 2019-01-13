@@ -29,9 +29,6 @@ For more information, please refer to <http://unlicense.org>
 
 /* Support for Shadow Man's old and new mesh formats */
 
-static const char *new_mesh_identifier = "EMsh";
-static const char *old_mesh_identifier = "MESH";
-
 static PLModel *LoadEMsh(const char *path, FILE *fp) {
     ReportError(PL_RESULT_UNSUPPORTED, "EMsh is not supported");
     fclose(fp);
