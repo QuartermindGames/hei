@@ -26,8 +26,11 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include "model_private.h"
+#include "filesystem_private.h"
 
 /* Support for Shadow Man's old and new mesh formats */
+
+/* new formats */
 
 static PLModel *LoadEMsh(const char *path, FILE *fp) {
     ReportError(PL_RESULT_UNSUPPORTED, "EMsh is not supported");
@@ -35,11 +38,15 @@ static PLModel *LoadEMsh(const char *path, FILE *fp) {
     return NULL;
 }
 
+/* old formats */
+
+#define VERSION_WEI 3
+
+typedef struct WEIHeader {
+    char    identity[4];    /* last byte is the version */
+} WEIHeader;
+
 static PLModel *LoadMESH(const char *path, FILE *fp) {
-    /* check for other required files first */
-
-
-
     uint32_t u0;
     if(fread(&u0, sizeof(uint32_t), 1, fp) != 1) {
         ReportBasicError(PL_RESULT_FILEREAD);
@@ -57,13 +64,17 @@ static PLModel *LoadMESH(const char *path, FILE *fp) {
         goto ABORT;
     }
 
-
+    char filename[64];
+    strncpy(filename, plGetFileName(path), sizeof(filename));
+    filename[strlen(filename) - 3] = '\0';
 
     ABORT:
 
     fclose(fp);
     return NULL;
 }
+
+/* */
 
 PLModel *plLoadMSHModel(const char *path) {
     FILE *fp = fopen(path, "rb");
