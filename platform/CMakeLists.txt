@@ -25,10 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-if(WIN32)
-    add_subdirectory(3rdparty/glew-2.2.0/build/cmake)
-endif()
-
 project(platform)
 
 ############################################################
@@ -89,6 +85,10 @@ if(PL_USE_GRAPHICS)
     add_definitions("-DPL_USE_GRAPHICS")
 
     if(PL_SUPPORT_OPENGL)
+        if(WIN32)
+            add_subdirectory(3rdparty/glew-2.2.0/build/cmake)
+        endif()
+
         add_definitions("-DPL_SUPPORT_OPENGL")
         if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
             target_link_libraries(platform "-framework OpenGL" glew)

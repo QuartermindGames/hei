@@ -43,6 +43,7 @@ For more information, please refer to <http://unlicense.org>
 #   include <afxres.h>
 #   include <security.h>
 #   include <direct.h>
+#   include <shlobj.h>
 #else
 #   include <pwd.h>
 #endif
@@ -220,8 +221,13 @@ char *plGetApplicationDataDirectory(const char *app_name, char *out, size_t n) {
         home = pw->pw_dir;
     }
     snprintf(out, n, "%s/.%s", home, app_name);
-#else /* Beautiful Windows, ever graceful */
-    assert(0); /* todo */
+#else
+    char home[MAX_PATH];
+    if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, home))) {
+        snprintf(out, n, "%s/.%s", home, app_name);
+        return out;
+    }
+    snprintf(home, sizeof(home), ".");
 #endif
 
     return out;
