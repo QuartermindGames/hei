@@ -93,7 +93,7 @@ if(PL_USE_GRAPHICS)
         if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
             target_link_libraries(platform "-framework OpenGL" glew)
         else()
-            target_link_libraries(platform glew)
+            target_link_libraries(platform GLEW GL)
         endif()
     endif()
 
