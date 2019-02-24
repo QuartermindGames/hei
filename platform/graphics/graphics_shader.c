@@ -220,8 +220,8 @@ void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) 
 
 #if defined(PL_SUPPORT_OPENGL)
 
-    char *n_buf = pl_calloc(sizeof(char), length);
-    memcpy(n_buf, buf, length);
+    char *n_buf = pl_calloc(sizeof(char), length + 1);
+    strcpy(n_buf, buf);
     plPreProcessGLSLShader(&n_buf, &length);
 
     CallGfxFunction(CompileShaderStage, stage, n_buf, length);
