@@ -66,7 +66,7 @@ if(PL_USE_GRAPHICS)
     file(GLOB PLATFORM_GRAPHICS_FILES graphics/*.*)
 endif()
 
-add_library(platform SHARED
+add_library(platform STATIC
         ${PLATFORM_SOURCE_FILES}
         ${PLATFORM_GRAPHICS_FILES}
         ${PLATFORM_IMAGE_FILES}
