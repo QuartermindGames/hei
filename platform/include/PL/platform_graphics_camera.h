@@ -75,4 +75,6 @@ PL_EXTERN void plSetupCamera(PLCamera *camera);
 
 PL_EXTERN void plDrawPerspectivePOST(PLCamera *camera);
 
+PL_EXTERN const PLViewport *plGetCurrentViewport(void);
+
 PL_EXTERN_C_END

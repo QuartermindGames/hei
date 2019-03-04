@@ -108,3 +108,7 @@ void plSetupCamera(PLCamera *camera) {
 void plDrawPerspectivePOST(PLCamera *camera) {
     CallGfxFunction(DrawPerspectivePOST, camera);
 }
+
+const PLViewport *plGetCurrentViewport(void) {
+    return &gfx_state.current_viewport;
+}
