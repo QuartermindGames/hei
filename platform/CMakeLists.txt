@@ -81,6 +81,11 @@ set_target_properties(platform PROPERTIES
 
 target_compile_options(platform PUBLIC -fPIC -DPL_INTERNAL)
 
+function(build_glew)
+    set(BUILD_UTILS OFF CACHE BOOL "utilities")
+    add_subdirectory(3rdparty/glew-2.2.0/build/cmake)
+endfunction()
+
 if(PL_USE_GRAPHICS)
     add_definitions("-DPL_USE_GRAPHICS")
 
@@ -89,7 +94,7 @@ if(PL_USE_GRAPHICS)
         if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
             target_link_libraries(platform "-framework OpenGL" glew)
         elseif(WIN32)
-            add_subdirectory(3rdparty/glew-2.2.0/build/cmake)
+            build_glew()
             target_link_libraries(platform glew_s)
         else()
             target_link_libraries(platform GLEW GL)
