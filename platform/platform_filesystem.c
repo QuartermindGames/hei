@@ -360,6 +360,22 @@ bool plDeleteFile(const char *path) {
     return false;
 }
 
+bool plWriteFile(const char *path, uint8_t *buf, size_t length) {
+    FILE *fp = fopen(path, "wb");
+    if(fp == NULL) {
+        ReportError(PL_RESULT_FILEREAD, "failed to open %s", path);
+        return false;
+    }
+
+    if(fwrite(buf, sizeof(char), length, fp) != length) {
+        ReportError(PL_RESULT_FILEWRITE, "failed to write entirety of file");
+    }
+
+    fclose(fp);
+
+    return true;
+}
+
 bool plCopyFile(const char *path, const char *dest) {
     size_t file_size = plGetFileSize(path);
     if(file_size == 0) {
