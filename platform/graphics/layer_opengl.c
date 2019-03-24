@@ -505,8 +505,6 @@ static void GLSetupCamera(PLCamera *camera) {
                     }
 
                     ClearBoundBuffers();
-                } else {
-                    ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
                 }
 
                 camera->viewport.old_r_w = camera->viewport.r_w;

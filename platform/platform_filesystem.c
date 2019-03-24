@@ -316,8 +316,6 @@ bool plLoadFile(const char *path, PLIOBuffer *buffer) {
         if(fread(buffer->data, sizeof(uint8_t), buffer->size, fp) != buffer->size) {
             FSLog("failed to read complete file (%s)\n", path);
         }
-    } else {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes", buffer->size);
     }
 
     fclose(fp);
@@ -367,13 +365,15 @@ bool plWriteFile(const char *path, uint8_t *buf, size_t length) {
         return false;
     }
 
+    bool result = true;
     if(fwrite(buf, sizeof(char), length, fp) != length) {
         ReportError(PL_RESULT_FILEWRITE, "failed to write entirety of file");
+        result = false;
     }
 
     fclose(fp);
 
-    return true;
+    return result;
 }
 
 bool plCopyFile(const char *path, const char *dest) {
@@ -384,7 +384,6 @@ bool plCopyFile(const char *path, const char *dest) {
 
     uint8_t *data = pl_calloc(file_size, 1);
     if(data == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate buffer for %s, with size %d", path, file_size);
         return false;
     }
 

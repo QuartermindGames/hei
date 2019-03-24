@@ -24,7 +24,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #include <stdlib.h>
 
-void *(*pl_malloc)(size_t size) = malloc;
-void *(*pl_calloc)(size_t num, size_t size) = calloc;
+#include "platform_private.h"
+
+static void *MemoryAlloc(size_t size) {
+    void *buf = malloc(size);
+    if(buf == NULL) {
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %lu bytes!\n", (unsigned long) size);
+    }
+    return buf;
+}
+
+static void *MemoryCountAlloc(size_t num, size_t size) {
+    return MemoryAlloc(size * num);
+}
+
+void *(*pl_malloc)(size_t size) = MemoryAlloc;
+void *(*pl_calloc)(size_t num, size_t size) = MemoryCountAlloc;

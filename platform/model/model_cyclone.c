@@ -356,15 +356,12 @@ PLModel *LoadStaticRequiemModel(FILE *fp) {
 
     PLModel *model = pl_calloc(1, sizeof(PLModel));
     if(model == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
         return NULL;
     }
 
     if((model->meshes = pl_calloc(1, sizeof(PLModelMesh))) == NULL) {
         plDeleteMesh(mesh);
         plDeleteModel(model);
-
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
         return NULL;
     }
 

@@ -168,8 +168,6 @@ PLModel *plLoadHDVModel(const char *path) {
     PLModel *model = pl_calloc(1, sizeof(PLModel));
     if(model == NULL) {
         plDeleteMesh(mesh);
-
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate model");
         goto ABORT;
     }
 
@@ -177,8 +175,6 @@ PLModel *plLoadHDVModel(const char *path) {
     if((model->meshes = pl_calloc(1, sizeof(PLModelMesh))) == NULL) {
         plDeleteMesh(mesh);
         plDeleteModel(model);
-
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate mesh slots");
         goto ABORT;
     }
 

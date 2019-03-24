@@ -79,8 +79,6 @@ void plRegisterConsoleCommand(const char *name, void(*CallbackFunction)(unsigned
     if(_pl_num_commands < _pl_commands_size) {
         _pl_commands[_pl_num_commands] = (PLConsoleCommand*)pl_malloc(sizeof(PLConsoleCommand));
         if(!_pl_commands[_pl_num_commands]) {
-            ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for ConsoleCommand, %d",
-                        sizeof(PLConsoleCommand));
             return;
         }
 
@@ -344,14 +342,10 @@ PLresult plInitConsole(void) {
 #endif
 
     if((_pl_commands = (PLConsoleCommand**)pl_malloc(sizeof(PLConsoleCommand*) * _pl_commands_size)) == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for ConsoleCommand array, %d",
-                       sizeof(PLConsoleCommand) * _pl_commands_size);
         return PL_RESULT_MEMORY_ALLOCATION;
     }
 
     if((_pl_variables = (PLConsoleVariable**)pl_malloc(sizeof(PLConsoleVariable*) * _pl_variables_size)) == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for ConsoleVariable array, %d",
-                       sizeof(PLConsoleCommand) * _pl_commands_size);
         return PL_RESULT_MEMORY_ALLOCATION;
     }
 
@@ -434,13 +428,11 @@ void plParseConsoleString(const char *string) {
     static char **argv = NULL;
     if(argv == NULL) {
         if((argv = (char**)pl_malloc(sizeof(char*) * CONSOLE_MAX_ARGUMENTS)) == NULL) {
-            ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
             return;
         }
         for(char **arg = argv; arg < argv + CONSOLE_MAX_ARGUMENTS; ++arg) {
             (*arg) = (char*)pl_malloc(sizeof(char) * 1024);
             if((*arg) == NULL) {
-                ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
                 break; // continue to our doom... ?
             }
         }

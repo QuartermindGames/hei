@@ -56,8 +56,6 @@ void plPreProcessGLSLShader(char **buf, size_t *length) {
     size_t n_len = 1000000; /*(*length) * 2*/;
     char *n_buf = pl_calloc(n_len, sizeof(char));
     if(n_buf == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION,
-                    plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
         return;
     }
 
@@ -178,7 +176,6 @@ void plPreProcessGLSLShader(char **buf, size_t *length) {
 static PLShaderStage *CreateShaderStage(PLShaderStageType type) {
     PLShaderStage *stage = pl_calloc(1, sizeof(PLShaderStage));
     if(stage == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate shader stage");
         return NULL;
     }
 
@@ -294,7 +291,6 @@ PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
 PLShaderProgram *plCreateShaderProgram(void) {
     PLShaderProgram *program = pl_calloc(1, sizeof(PLShaderProgram));
     if(program == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to create shader program");
         return NULL;
     }
 
@@ -535,7 +531,6 @@ bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
 
     program->uniforms = pl_calloc((size_t)program->num_uniforms, sizeof(*program->uniforms));
     if(program->uniforms == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate storage for uniforms");
         return false;
     }
 

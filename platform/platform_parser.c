@@ -101,8 +101,7 @@ void plParseLine(void) {
 void plSetupParser(const char *buffer, unsigned int length) {
     plAssert(length);
 
-    if(!(parser_block.buffer = (char*)malloc(length))) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "");
+    if(!(parser_block.buffer = (char*)pl_malloc(length))) {
     }
 
     parser_block.buffer_size = length;

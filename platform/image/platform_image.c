@@ -62,7 +62,6 @@ static bool LoadSTBImage(uint8_t *data, int x, int y, int component, PLImage *ou
     }
     free(data);
 
-    ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for image buffer");
     return false;
 }
 
@@ -552,7 +551,6 @@ bool plFlipImageVertical(PLImage *image) {
 	
 	unsigned char *swap = pl_malloc(bytes_per_row);
 	if(swap == NULL) {
-		ReportError(PL_RESULT_MEMORY_ALLOCATION, "cannot allocate memory");
 		return false;
 	}
 	
