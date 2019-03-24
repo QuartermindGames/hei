@@ -56,21 +56,19 @@ typedef struct __attribute__((packed)) MADIndex {
 bool LoadMADPackageFile(FILE *fh, PLPackageIndex *pi) {
     pi->file.data = pl_malloc(pi->file.size);
     if(pi->file.data == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "Failed to allocate %d bytes!\n", pi->file.size);
         return false;
     }
 
     if(fseek(fh, pi->offset, SEEK_SET) != 0 || fread(pi->file.data, pi->file.size, 1, fh) != 1) {
         free(pi->file.data);
         pi->file.data = NULL;
-
         return false;
     }
 
     return true;
 }
 
-PLPackage *LoadMADPackage(const char *path, bool cache) {
+PLPackage *plLoadMADPackage(const char *path, bool cache) {
     FILE *fh = fopen(path, "rb");
     if(fh == NULL) {
         return NULL;

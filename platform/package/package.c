@@ -36,7 +36,6 @@ PLPackage *plCreatePackage(const char *dest) {
 
     PLPackage *package = pl_calloc(1, sizeof(PLPackage));
     if(package == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
         return NULL;
     }
 
@@ -84,11 +83,11 @@ static PLPackageLoader package_interfaces[MAX_OBJECT_INTERFACES]= {
 
         // Third-party package formats
 
-        /* Gremlin Interactive */
-        { "mad", LoadMADPackage },
-        { "mtd", LoadMADPackage },
+        { "mad", plLoadMADPackage },
+        { "mtd", plLoadMADPackage },
+        { "lst", plLoadLSTPackage },
+        { "tab", plLoadTABPackage },
 
-        /* Cyclone */
         //{ "dat", LoadARTPackage },
         //{ "art", LoadARTPackage },
 };
