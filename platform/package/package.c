@@ -91,7 +91,7 @@ static PLPackageLoader package_interfaces[MAX_OBJECT_INTERFACES]= {
         //{ "dat", LoadARTPackage },
         //{ "art", LoadARTPackage },
 };
-static unsigned int num_package_interfaces = 3;
+static unsigned int num_package_interfaces = 5;
 
 void plClearPackageInterfaces(void) {
     memset(package_interfaces, 0, sizeof(PLPackageLoader) * MAX_OBJECT_INTERFACES);
