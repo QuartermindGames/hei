@@ -294,13 +294,13 @@ void plSetWorkingDirectory(const char *path) {
 // FILE I/O
 
 /* loads an entire file into the PLIOBuffer struct */
-bool plLoadFile(const char *path, PLIOBuffer *buffer) {
+bool plLoadFile(const char *path, PLFileBuffer *buffer) {
     if(plIsEmptyString(path)) {
         ReportError(PL_RESULT_FILEPATH, "invalid path");
         return false;
     }
 
-    memset(buffer, 0, sizeof(PLIOBuffer));
+    memset(buffer, 0, sizeof(PLFileBuffer));
 
     FILE *fp = fopen(path, "rb");
     if(fp == NULL) {
@@ -441,7 +441,7 @@ size_t plGetFileSize(const char *path) {
 
 ///////////////////////////////////////////
 
-void plFileIOPush(PLIOBuffer *file) {}
+void plFileIOPush(PLFileBuffer *file) {}
 void plFileIOPop(void) {}
 
 int16_t plGetLittleShort(FILE *fin) {

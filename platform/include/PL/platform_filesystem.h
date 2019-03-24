@@ -29,11 +29,11 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform.h"
 
-typedef struct PLIOBuffer {
+typedef struct PLFileBuffer {
     char        name[PL_SYSTEM_MAX_PATH];
     size_t      size;
     uint8_t     *data;
-} PLIOBuffer;
+} PLFileBuffer;
 
 #define plBytesToKilobytes(a)   ((double)((a)) / 1000)
 #define plBytesToMegabytes(a)   (plBytesToKilobytes(a) / 1000)
@@ -67,7 +67,7 @@ PL_EXTERN bool plCreatePath(const char *path);
 PL_EXTERN bool plFileExists(const char *path);
 PL_EXTERN bool plPathExists(const char *path);
 
-PL_EXTERN bool plLoadFile(const char *path, PLIOBuffer *buffer);
+PL_EXTERN bool plLoadFile(const char *path, PLFileBuffer *buffer);
 PL_EXTERN bool plCopyFile(const char *path, const char *dest);
 PL_EXTERN bool plWriteFile(const char *path, uint8_t *buf, size_t length);
 PL_EXTERN bool plDeleteFile(const char *path);
