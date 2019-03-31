@@ -27,6 +27,8 @@ For more information, please refer to <http://unlicense.org>
 
 #include "package_private.h"
 
+#include "3rdparty/portable_endian.h"
+
 /* Loader for SFA TAB/BIN format */
 
 static bool LoadTABPackageFile(FILE *fh, PLPackageIndex *pi) {
