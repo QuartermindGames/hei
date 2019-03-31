@@ -69,8 +69,8 @@ void plPreProcessGLSLShader(char **buf, size_t *length) {
     InsertString(n_pos, "#version 150\n"); //OpenGL 3.2 == GLSL 150
 
     /* built-in uniforms */
-    InsertString(n_pos, "uniform mat4 modelView;");
-    InsertString(n_pos, "uniform mat4 proj;");
+    InsertString(n_pos, "uniform mat4 pl_model_view;");
+    InsertString(n_pos, "uniform mat4 pl_proj;");
 
     while(*pos != '\0') {
         if(*pos == '\n' || *pos == '\r' || *pos == '\t') {

@@ -147,7 +147,8 @@ typedef enum PLFBORenderFlags {
 
 typedef struct PLFrameBuffer {
     unsigned int fbo;
-    unsigned int rbo[3];//Colour / depth / stencil
+    unsigned int rbo_colour;
+    unsigned int rbo_depth;
     unsigned int width;
     unsigned int height;
     PLFBORenderFlags flags;
@@ -155,8 +156,12 @@ typedef struct PLFrameBuffer {
 
 PL_EXTERN_C
 
-PL_EXTERN void plSetClearColour(PLColour rgba);
+PL_EXTERN PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h, PLFBORenderFlags flags);
+PL_EXTERN void plDeleteFrameBuffer(PLFrameBuffer *buffer);
+PL_EXTERN void plBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget target_binding);
+PL_EXTERN void plBlitFrameBuffers(PLFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, bool linear );
 
+PL_EXTERN void plSetClearColour(PLColour rgba);
 PL_EXTERN void plClearBuffers(unsigned int buffers);
 
 PL_EXTERN_C_END

@@ -60,9 +60,7 @@ static int gl_version_minor = 0;
 
 unsigned int gl_num_extensions = 0;
 
-
-
-GLuint VAO[1];
+static GLuint VAO[1];
 
 
 static void ClearBoundTextures(void) {
@@ -187,17 +185,17 @@ static void GLCreateFrameBuffer(PLFrameBuffer *buffer) {
     GfxLog("Created framebuffer %dx%d", buffer->width, buffer->height);
 
     if(buffer->flags & PL_BUFFER_COLOUR){
-            glGenRenderbuffers(1, &buffer->rbo[0]);
-            glBindRenderbuffer(GL_RENDERBUFFER, buffer->rbo[0]);
+            glGenRenderbuffers(1, &buffer->rbo_colour);
+            glBindRenderbuffer(GL_RENDERBUFFER, buffer->rbo_colour);
             glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB, buffer->width, buffer->height);
-            glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->rbo[0]);
+            glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->rbo_colour);
             GfxLog("Created colour renderbuffer %dx%d", buffer->width, buffer->height);
     }
     if(buffer->flags & PL_BUFFER_DEPTH){
-            glGenRenderbuffers(1, &buffer->rbo[1]);
-            glBindRenderbuffer(GL_RENDERBUFFER, buffer->rbo[1]);
+            glGenRenderbuffers(1, &buffer->rbo_depth);
+            glBindRenderbuffer(GL_RENDERBUFFER, buffer->rbo_depth);
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, buffer->width, buffer->height);
-            glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->rbo[1]);
+            glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->rbo_depth);
             GfxLog("Created depth renderbuffer %dx%d", buffer->width, buffer->height);
     }
     if(buffer->flags & PL_BUFFER_STENCIL){
@@ -209,20 +207,17 @@ static void GLCreateFrameBuffer(PLFrameBuffer *buffer) {
 static void GLDeleteFrameBuffer(PLFrameBuffer *buffer) {
     if(buffer){
         glDeleteFramebuffers(1, &buffer->fbo);
-        if(buffer->rbo[0]){
-            glDeleteRenderbuffers(1, &buffer->rbo[0]);
+        if(buffer->rbo_colour){
+            glDeleteRenderbuffers(1, &buffer->rbo_colour);
         }
-        if(buffer->rbo[1]){
-            glDeleteRenderbuffers(1, &buffer->rbo[1]);
-        }
-        if(buffer->rbo[2]){
-            glDeleteRenderbuffers(1, &buffer->rbo[2]);
+        if(buffer->rbo_depth){
+            glDeleteRenderbuffers(1, &buffer->rbo_depth);
         }
     }
 }
 
-static void GLBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget targetBinding) {
-    GLuint binding = TranslateFrameBufferBinding(targetBinding);
+static void GLBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget target_binding) {
+    GLuint binding = TranslateFrameBufferBinding(target_binding);
     if(buffer){
         glBindFramebuffer(binding, buffer->fbo);
     }
@@ -231,22 +226,22 @@ static void GLBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget targetBinding) 
     }
 }
 
-static void GLBlitFrameBuffers(PLFrameBuffer *srcBuffer, unsigned int srcW, unsigned int srcH, PLFrameBuffer *dstBuffer, unsigned int dstW, unsigned int dstH, bool linear ){
+static void GLBlitFrameBuffers(PLFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, bool linear ){
 
-    if(srcBuffer){
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, srcBuffer->fbo);
+    if(src_buffer){
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, src_buffer->fbo);
     }
     else{
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0); //Bind default backbuffer
     }
-    if(dstBuffer){
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstBuffer->fbo);
+    if(dst_buffer){
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dst_buffer->fbo);
     }
     else{
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); //Bind default backbuffer
     }
 
-    glBlitFramebuffer(0, 0, srcW, srcH, 0, 0, dstW, dstH, GL_COLOR_BUFFER_BIT, linear ? GL_LINEAR : GL_NEAREST);
+    glBlitFramebuffer(0, 0, src_w, src_h, 0, 0, dst_w, dst_h, GL_COLOR_BUFFER_BIT, linear ? GL_LINEAR : GL_NEAREST);
 }
 
 
@@ -462,10 +457,6 @@ enum {
 };
 
 static void GLCreateMeshPOST(PLMesh *mesh) {
-    if(false) {
-        return;
-    }
-
     GLsizeiptr VBOsize = sizeof(PLVertex) * mesh->num_verts;
     //Create VBO
     glGenBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA]);
@@ -497,10 +488,6 @@ static void GLUploadMesh(PLMesh *mesh) {
 }
 
 static void GLDeleteMesh(PLMesh *mesh) {
-    if(false) {
-        return;
-    }
-
     glDeleteBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA]);
 }
 
@@ -511,10 +498,10 @@ static void GLDrawMesh(PLMesh *mesh) {
     }
 
     //Write camera matrices to shader shared uniforms
-    GLuint modelViewLoc = glGetUniformLocation(gfx_state.current_program->internal.id, "modelView");
-    GLuint projLoc = glGetUniformLocation(gfx_state.current_program->internal.id, "proj");
-    glUniformMatrix4fv( modelViewLoc, 1, GL_FALSE, gfx_state.model_matrix.m);
-    glUniformMatrix4fv( projLoc, 1, GL_FALSE, gfx_state.projection_matrix.m);
+    GLuint model_view_loc = glGetUniformLocation(gfx_state.current_program->internal.id, "pl_model_view");
+    GLuint proj_loc = glGetUniformLocation(gfx_state.current_program->internal.id, "pl_proj");
+    glUniformMatrix4fv( model_view_loc, 1, GL_FALSE, gfx_state.model_matrix.m);
+    glUniformMatrix4fv( proj_loc, 1, GL_FALSE, gfx_state.projection_matrix.m);
 
     //Ensure VAO/VBO are bound
     glBindVertexArray(VAO[0]);
@@ -553,18 +540,15 @@ static void GLSetupCamera(PLCamera *camera) {
     int w, h;
     w = camera->viewport.w;
     h = camera->viewport.h;
-    if(camera->viewport.autoScale){
-        GLint boundRBW, boundRBH;
-        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &boundRBW);
-        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &boundRBH);
+    if(camera->viewport.auto_scale){
+        GLint bound_rbo_w, bound_rbo_h;
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &bound_rbo_w);
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &bound_rbo_h);
         camera->viewport.x = 0;
         camera->viewport.y = 0;
-        camera->viewport.w = boundRBW;
-        camera->viewport.h = boundRBH;
+        camera->viewport.w = bound_rbo_w;
+        camera->viewport.h = bound_rbo_h;
     }
-
-    
-    
 
     glViewport(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
     glScissor(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);

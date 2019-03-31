@@ -142,15 +142,15 @@ void plDeleteFrameBuffer(PLFrameBuffer *buffer) {
     //TODO: Dealloc object here
 }
 
-void plBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget targetBinding) {
+void plBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget target_binding) {
     //NOTE: NULL is valid for *buffer, to bind the SDL window default backbuffer
-    CallGfxFunction(BindFrameBuffer, buffer, targetBinding)
+    CallGfxFunction(BindFrameBuffer, buffer, target_binding)
 }
 
-void plBlitFrameBuffers(PLFrameBuffer *srcBuffer, unsigned int srcW, unsigned int srcH, PLFrameBuffer *dstBuffer, unsigned int dstW, unsigned int dstH, bool linear ) {
+void plBlitFrameBuffers(PLFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, bool linear ) {
     //NOTE: NULL is valid for *srcBuffer/*dstBuffer, to bind the SDL window default backbuffer
     //      SRC and DST can be the same buffer, in order to quickly copy a subregion of the buffer to a new location
-    CallGfxFunction(BlitFrameBuffers, srcBuffer, srcW, srcH, dstBuffer, dstW, dstH, linear);
+    CallGfxFunction(BlitFrameBuffers, src_buffer, src_w, src_h, dst_buffer, dst_w, dst_h, linear);
 }
 
 void plSetClearColour(PLColour rgba) {
