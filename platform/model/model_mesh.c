@@ -282,7 +282,7 @@ void plDrawRaisedBox(int x, int y, unsigned int w, unsigned int h) {
     if(mesh == NULL) {
         if((mesh = plCreateMesh(
                 PL_MESH_LINES,
-                PL_DRAW_IMMEDIATE,
+                PL_DRAW_DYNAMIC,
                 0, 4
         )) == NULL) {
             return;
@@ -295,7 +295,7 @@ void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h) {
     if(mesh == NULL) {
         if((mesh = plCreateMesh(
                 PL_MESH_LINES,
-                PL_DRAW_IMMEDIATE,
+                PL_DRAW_DYNAMIC,
                 0, 16
         )) == NULL) {
             return;
@@ -372,7 +372,7 @@ void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, 
     if(mesh == NULL) {
         if((mesh = plCreateMesh(
                 PL_MESH_TRIANGLE_FAN,
-                PL_DRAW_IMMEDIATE,
+                PL_DRAW_DYNAMIC,
                 0, segments
         )) == NULL) {
             return;
@@ -400,7 +400,7 @@ void plDrawTexturedRectangle(int x, int y, int w, int h, PLTexture *texture) {
     if(mesh == NULL) {
         if((mesh = plCreateMesh(
                 PL_MESH_TRIANGLE_STRIP,
-                PL_DRAW_IMMEDIATE,
+                PL_DRAW_DYNAMIC,
                 2, 4
         )) == NULL) {
             return;
@@ -435,7 +435,7 @@ void plDrawRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colo
     if(mesh == NULL) {
         if((mesh = plCreateMesh(
                 PL_MESH_LINE_LOOP,
-                PL_DRAW_IMMEDIATE,
+                PL_DRAW_DYNAMIC,
                 0, 4
         )) == NULL) {
             return;
@@ -460,7 +460,7 @@ void plDrawFilledRectangle(PLRectangle2D rect) {
     if(mesh == NULL) {
         if((mesh = plCreateMesh(
                 PL_MESH_TRIANGLE_STRIP,
-                PL_DRAW_IMMEDIATE,
+                PL_DRAW_DYNAMIC,
                 2, 4
         )) == NULL) {
             return;
@@ -489,7 +489,7 @@ void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
     if (mesh == NULL) {
         if((mesh = plCreateMesh(
                 PL_MESH_TRIANGLE_FAN,
-                PL_DRAW_IMMEDIATE,
+                PL_DRAW_DYNAMIC,
                 1, 3
         )) == NULL) {
             return;

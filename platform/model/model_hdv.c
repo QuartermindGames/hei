@@ -125,7 +125,7 @@ PLModel *plLoadHDVModel(const char *path) {
     fclose(file);
     file = NULL;
 
-    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_IMMEDIATE,
+    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC,
                                 (unsigned int) (header.num_faces - 2) * 2, header.num_vertices);
     if(mesh == NULL) {
         goto ABORT;

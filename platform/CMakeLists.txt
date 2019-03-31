@@ -115,7 +115,7 @@ if(UNIX)
     target_link_libraries(platform dl)
 elseif(WIN32)
     target_compile_options(platform PRIVATE -static -static-libstdc++ -static-libgcc)
-    target_link_libraries(platform Secur32)
+    target_link_libraries(platform Secur32 ws2_32)
     target_include_directories(platform PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glew-2.2.0/include/)
 endif()

@@ -66,11 +66,11 @@ void plPreProcessGLSLShader(char **buf, size_t *length) {
 #define SkipSpaces()            while(*pos == ' ') { pos++; }
 #define SkipLine()              while(*pos != '\n' && *pos != '\r') { pos++; }
 
-    InsertString(n_pos, "#version 120\n");
+    InsertString(n_pos, "#version 150\n"); //OpenGL 3.2 == GLSL 150
 
     /* built-in uniforms */
-    InsertString(n_pos, "uniform mat4 pl_model_matrix;");
-    InsertString(n_pos, "uniform mat4 pl_projection_matrix;");
+    InsertString(n_pos, "uniform mat4 pl_model_view;");
+    InsertString(n_pos, "uniform mat4 pl_proj;");
 
     while(*pos != '\0') {
         if(*pos == '\n' || *pos == '\r' || *pos == '\t') {

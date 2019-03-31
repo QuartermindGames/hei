@@ -113,20 +113,21 @@ bool plHWSupportsShaders(void) {
 	FRAMEBUFFERS
 ===========================*/
 
-PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h) {
+PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h, PLFBORenderFlags flags) {
+    if(flags == 0){
+        return NULL;
+    }
+
     PLFrameBuffer *buffer = (PLFrameBuffer*)pl_malloc(sizeof(PLFrameBuffer));
     if(!buffer) {
         return NULL;
     }
 
-#if 0
-    glGenFramebuffers(1, &buffer->fbo);
-    glGenRenderbuffers(1, &buffer->rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, buffer->rbo);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, w, h);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer->fbo);
-    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->rbo);
-#endif
+    buffer->width = w;
+    buffer->height = h;
+    buffer->flags = flags;
+
+    CallGfxFunction(CreateFrameBuffer, buffer);
 
     return buffer;
 }
@@ -136,21 +137,20 @@ void plDeleteFrameBuffer(PLFrameBuffer *buffer) {
         return;
     }
 
-#if 0
-    glDeleteFramebuffers(1, &buffer->fbo);
-    glDeleteRenderbuffers(1, &buffer->rbo);
-#endif
+    CallGfxFunction(DeleteFrameBuffer, buffer);
+
+    //TODO: Dealloc object here
 }
 
-void plBindFrameBuffer(PLFrameBuffer *buffer) {
-    if(buffer == NULL) {
-        // todo, warning regarding invalid buffer blah blah
-        return;
-    }
+void plBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget target_binding) {
+    //NOTE: NULL is valid for *buffer, to bind the SDL window default backbuffer
+    CallGfxFunction(BindFrameBuffer, buffer, target_binding)
+}
 
-#if defined(PL_MODE_OPENGL)
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer->fbo);
-#endif
+void plBlitFrameBuffers(PLFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, bool linear ) {
+    //NOTE: NULL is valid for *srcBuffer/*dstBuffer, to bind the SDL window default backbuffer
+    //      SRC and DST can be the same buffer, in order to quickly copy a subregion of the buffer to a new location
+    CallGfxFunction(BlitFrameBuffers, src_buffer, src_w, src_h, dst_buffer, dst_w, dst_h, linear);
 }
 
 void plSetClearColour(PLColour rgba) {
