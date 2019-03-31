@@ -296,7 +296,7 @@ PLModel *LoadStaticRequiemModel(FILE *fp) {
     ModelLog("num_indices:         %d\n", num_indices);
 #endif
 
-    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_IMMEDIATE, num_triangles, num_vertices);
+    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, num_triangles, num_vertices);
     if(mesh == NULL) {
         return NULL;
     }

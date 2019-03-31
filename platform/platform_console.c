@@ -335,7 +335,7 @@ PLresult plInitConsole(void) {
 
 #if 0 /* todo, move this into graphics init code */
 #if defined(PL_USE_GRAPHICS)
-    if((mesh_line = plCreateMesh(PL_MESH_LINES, PL_DRAW_IMMEDIATE, 0, 4)) == NULL) {
+    if((mesh_line = plCreateMesh(PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 4)) == NULL) {
         return PL_RESULT_MEMORY_ALLOCATION;
     }
 #endif

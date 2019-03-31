@@ -36,17 +36,10 @@ enum {
 };
 
 typedef struct PLViewport {
+    bool autoScale; //If true, viewport will update to match height/width of currently bound FBO when SetupCamera() is called
     int x, y;
     int h;
     int w;
-
-    uint8_t *v_buffer;
-    unsigned int buffers[32];
-
-    PLImageFormat format;
-
-    int r_w, r_h;
-    int old_r_w, old_r_h;
 } PLViewport;
 
 typedef struct PLCamera {
@@ -72,8 +65,6 @@ PL_EXTERN PLCamera *plCreateCamera(void);
 PL_EXTERN void plDeleteCamera(PLCamera *camera);
 
 PL_EXTERN void plSetupCamera(PLCamera *camera);
-
-PL_EXTERN void plDrawPerspectivePOST(PLCamera *camera);
 
 PL_EXTERN const PLViewport *plGetCurrentViewport(void);
 

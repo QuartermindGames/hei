@@ -52,12 +52,6 @@ typedef unsigned int PLRenderBuffer;
 
 typedef void PLGraphicsContext;
 
-typedef struct PLFrameBuffer {
-#if defined(PL_MODE_OPENGL)
-    unsigned int fbo, rbo;
-#endif
-} PLFrameBuffer;
-
 typedef enum PLDataFormat {
     PL_UNSIGNED_BYTE,
     PL_UNSIGNED_INT_8_8_8_8_REV,
@@ -145,11 +139,19 @@ typedef enum PLFBOTarget {
     PL_FRAMEBUFFER_READ
 } PLFBOTarget;
 
-enum {
+typedef enum PLFBORenderFlags {
     PL_BUFFER_COLOUR    = (1 << 0),
     PL_BUFFER_DEPTH     = (1 << 1),
     PL_BUFFER_STENCIL   = (1 << 2),
-};
+} PLFBORenderFlags;
+
+typedef struct PLFrameBuffer {
+    unsigned int fbo;
+    unsigned int rbo[3];//Colour / depth / stencil
+    unsigned int width;
+    unsigned int height;
+    PLFBORenderFlags flags;
+} PLFrameBuffer;
 
 PL_EXTERN_C
 

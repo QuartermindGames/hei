@@ -60,6 +60,11 @@ static int gl_version_minor = 0;
 
 unsigned int gl_num_extensions = 0;
 
+
+
+GLuint VAO[1];
+
+
 static void ClearBoundTextures(void) {
     for(unsigned int i = 0; i < gfx_state.hw_maxtextureunits; ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
@@ -161,6 +166,90 @@ static void GLSetCullMode(PLCullMode mode) {
     gfx_state.current_cullmode = mode;
 }
 
+
+
+/////////////////////////////////////////////////////////////
+// Framebuffer
+
+static unsigned int TranslateFrameBufferBinding(PLFBOTarget targetBinding) {
+    switch(targetBinding) {
+        case PL_FRAMEBUFFER_DEFAULT:    return GL_FRAMEBUFFER;
+        case PL_FRAMEBUFFER_DRAW:       return GL_DRAW_FRAMEBUFFER;
+        case PL_FRAMEBUFFER_READ:       return GL_READ_FRAMEBUFFER;
+        default:                        return 0;
+    }
+}
+
+static void GLCreateFrameBuffer(PLFrameBuffer *buffer) {
+
+    glGenFramebuffers(1, &buffer->fbo );
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer->fbo);
+    GfxLog("Created framebuffer %dx%d", buffer->width, buffer->height);
+
+    if(buffer->flags & PL_BUFFER_COLOUR){
+            glGenRenderbuffers(1, &buffer->rbo[0]);
+            glBindRenderbuffer(GL_RENDERBUFFER, buffer->rbo[0]);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB, buffer->width, buffer->height);
+            glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->rbo[0]);
+            GfxLog("Created colour renderbuffer %dx%d", buffer->width, buffer->height);
+    }
+    if(buffer->flags & PL_BUFFER_DEPTH){
+            glGenRenderbuffers(1, &buffer->rbo[1]);
+            glBindRenderbuffer(GL_RENDERBUFFER, buffer->rbo[1]);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, buffer->width, buffer->height);
+            glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->rbo[1]);
+            GfxLog("Created depth renderbuffer %dx%d", buffer->width, buffer->height);
+    }
+    if(buffer->flags & PL_BUFFER_STENCIL){
+            GfxLog("Stencil renderbuffer not supported yet!");
+    }
+
+}
+
+static void GLDeleteFrameBuffer(PLFrameBuffer *buffer) {
+    if(buffer){
+        glDeleteFramebuffers(1, &buffer->fbo);
+        if(buffer->rbo[0]){
+            glDeleteRenderbuffers(1, &buffer->rbo[0]);
+        }
+        if(buffer->rbo[1]){
+            glDeleteRenderbuffers(1, &buffer->rbo[1]);
+        }
+        if(buffer->rbo[2]){
+            glDeleteRenderbuffers(1, &buffer->rbo[2]);
+        }
+    }
+}
+
+static void GLBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget targetBinding) {
+    GLuint binding = TranslateFrameBufferBinding(targetBinding);
+    if(buffer){
+        glBindFramebuffer(binding, buffer->fbo);
+    }
+    else{
+        glBindFramebuffer(binding, 0); //Bind default backbuffer
+    }
+}
+
+static void GLBlitFrameBuffers(PLFrameBuffer *srcBuffer, unsigned int srcW, unsigned int srcH, PLFrameBuffer *dstBuffer, unsigned int dstW, unsigned int dstH, bool linear ){
+
+    if(srcBuffer){
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, srcBuffer->fbo);
+    }
+    else{
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0); //Bind default backbuffer
+    }
+    if(dstBuffer){
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstBuffer->fbo);
+    }
+    else{
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); //Bind default backbuffer
+    }
+
+    glBlitFramebuffer(0, 0, srcW, srcH, 0, 0, dstW, dstH, GL_COLOR_BUFFER_BIT, linear ? GL_LINEAR : GL_NEAREST);
+}
+
+
 /////////////////////////////////////////////////////////////
 // Texture
 
@@ -209,12 +298,9 @@ static void GLDeleteTexture(PLTexture *texture) {
 
 static void GLBindTexture(const PLTexture *texture) {
     if(texture == NULL) {
-        glDisable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
         return;
     }
-
-    glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture->internal.id);
 }
 
@@ -365,6 +451,7 @@ static unsigned int TranslateDrawMode(PLMeshDrawMode mode) {
     switch(mode) {
         case PL_DRAW_DYNAMIC:   return GL_DYNAMIC_DRAW;
         case PL_DRAW_STATIC:    return GL_STATIC_DRAW;
+        case PL_DRAW_STREAM:    return GL_STREAM_DRAW;
         default:                return 0;
     }
 }
@@ -375,34 +462,42 @@ enum {
 };
 
 static void GLCreateMeshPOST(PLMesh *mesh) {
-    if(mesh->mode == PL_DRAW_IMMEDIATE) {
+    if(false) {
         return;
     }
 
+    GLsizeiptr VBOsize = sizeof(PLVertex) * mesh->num_verts;
+    //Create VBO
     glGenBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA]);
+    //Bind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
+    //Allocate & populate VBO
+    glBufferData(GL_ARRAY_BUFFER, VBOsize, &mesh->vertices[0], GL_DYNAMIC_DRAW); //Todo: Respect draw type
+    //We should now have a VBO in VRAM, containing the vertices at time of mesh creation
+
 }
 
 static void GLUploadMesh(PLMesh *mesh) {
-    if(mesh->mode == PL_DRAW_IMMEDIATE) {
-        return;
-    }
-
+    //Write the current CPU vertex data into the VBO
     unsigned int mode = TranslateDrawMode(mesh->mode);
+    GLsizeiptr VBOsize = sizeof(PLVertex) * mesh->num_verts;
+    glBufferData(GL_ARRAY_BUFFER, VBOsize, &mesh->vertices[0], mode);
 
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
-    GLsizeiptr size = sizeof(PLVertex) * mesh->num_verts;
-    glBufferData(GL_ARRAY_BUFFER, size, mesh->vertices, mode);
+    //Point to the different substreams of the interleaved BVO
+    //Args: Index, Size, Type, (Normalized), Stride, StartPtr
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex), (const GLvoid *)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,  sizeof(PLVertex), (const GLvoid *)12);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(PLVertex), (const GLvoid *)24);
+    glVertexAttribPointer(3, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PLVertex), (const GLvoid *)32);
 
-    glVertexPointer(3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].position);
-    glNormalPointer(GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].normal);
-    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(PLVertex), &mesh->vertices[0].colour);
-    glTexCoordPointer(2, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].st[0]);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 static void GLDeleteMesh(PLMesh *mesh) {
-    if(mesh->mode == PL_DRAW_IMMEDIATE) {
+    if(false) {
         return;
     }
 
@@ -410,30 +505,22 @@ static void GLDeleteMesh(PLMesh *mesh) {
 }
 
 static void GLDrawMesh(PLMesh *mesh) {
-    if(mesh->mode == PL_DRAW_IMMEDIATE) {
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_COLOR_ARRAY);
-        glEnableClientState(GL_NORMAL_ARRAY);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-        glVertexPointer(3, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].position);
-        glNormalPointer(GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].normal);
-        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(PLVertex), &mesh->vertices[0].colour);
-        glTexCoordPointer(2, GL_FLOAT, sizeof(PLVertex), &mesh->vertices[0].st[0]);
-    } else {
-        if(mesh->internal.buffers[BUFFER_VERTEX_DATA] == 0) {
-            GfxLog("invalid buffer provided, skipping draw!\n");
-            return;
-        }
-
-        glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex), &mesh->vertices[0].position);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex), &mesh->vertices[0].normal);
-        glVertexAttribPointer(0, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(PLVertex), &mesh->vertices[0].colour);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(PLVertex), &mesh->vertices[0].st[0]);
+    if(mesh->internal.buffers[BUFFER_VERTEX_DATA] == 0) {
+        GfxLog("invalid buffer provided, skipping draw!\n");
+        return;
     }
 
+    //Write camera matrices to shader shared uniforms
+    GLuint modelViewLoc = glGetUniformLocation(gfx_state.current_program->internal.id, "modelView");
+    GLuint projLoc = glGetUniformLocation(gfx_state.current_program->internal.id, "proj");
+    glUniformMatrix4fv( modelViewLoc, 1, GL_FALSE, gfx_state.model_matrix.m);
+    glUniformMatrix4fv( projLoc, 1, GL_FALSE, gfx_state.projection_matrix.m);
+
+    //Ensure VAO/VBO are bound
+    glBindVertexArray(VAO[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
+
+    //draw
     GLuint mode = TranslatePrimitiveMode(mesh->primitive);
     if(mesh->num_indices > 0) {
         glDrawElements(mode, mesh->num_indices, GL_UNSIGNED_SHORT, mesh->indices);
@@ -441,14 +528,6 @@ static void GLDrawMesh(PLMesh *mesh) {
         glDrawArrays(mode, 0, mesh->num_verts);
     }
 
-    if(mesh->mode == PL_DRAW_IMMEDIATE) {
-        glDisableClientState(GL_VERTEX_ARRAY);
-        glDisableClientState(GL_COLOR_ARRAY);
-        glDisableClientState(GL_NORMAL_ARRAY);
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    } else {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
 }
 
 /////////////////////////////////////////////////////////////
@@ -471,65 +550,24 @@ static void GLDeleteCamera(PLCamera *camera) {
 static void GLSetupCamera(PLCamera *camera) {
     plAssert(camera);
 
-    if(GLVersion(3, 0)) {
-        if (UseBufferScaling(camera)) {
-            if (camera->viewport.old_r_h != camera->viewport.r_h &&
-                camera->viewport.old_r_w != camera->viewport.r_w) {
-                glDeleteFramebuffers(1, &camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
-                glDeleteRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
-                glDeleteRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
-
-                free(camera->viewport.v_buffer);
-                camera->viewport.v_buffer = (uint8_t *) pl_malloc(
-                        (size_t) (camera->viewport.r_w * camera->viewport.r_h * 4));
-                if(camera->viewport.v_buffer != NULL) {
-                    glGenFramebuffers(1, &camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
-                    glGenRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
-                    glGenRenderbuffers(1, &camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
-
-                    /* colour */
-                    glBindRenderbuffer(GL_RENDERBUFFER, camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
-                    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB4, camera->viewport.r_w, camera->viewport.r_h);
-                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
-                    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
-                                              camera->viewport.buffers[VIEWPORT_RENDERBUFFER_COLOUR]);
-
-                    /* depth */
-                    glBindRenderbuffer(GL_RENDERBUFFER, camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
-                    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, camera->viewport.r_w, camera->viewport.r_h);
-                    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
-                                              camera->viewport.buffers[VIEWPORT_RENDERBUFFER_DEPTH]);
-
-                    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-                        GfxLog("invalid framebuffer status on frame!\n");
-                    }
-
-                    ClearBoundBuffers();
-                }
-
-                camera->viewport.old_r_w = camera->viewport.r_w;
-                camera->viewport.old_r_h = camera->viewport.r_h;
-            }
-
-            if(camera->viewport.v_buffer != NULL) {
-                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
-            }
-        }
-    }
-
     int w, h;
-    if(UseBufferScaling(camera)) {
-        w = camera->viewport.r_w;
-        h = camera->viewport.r_h;
-    } else {
-        w = camera->viewport.w;
-        h = camera->viewport.h;
+    w = camera->viewport.w;
+    h = camera->viewport.h;
+    if(camera->viewport.autoScale){
+        GLint boundRBW, boundRBH;
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &boundRBW);
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &boundRBH);
+        camera->viewport.x = 0;
+        camera->viewport.y = 0;
+        camera->viewport.w = boundRBW;
+        camera->viewport.h = boundRBH;
     }
 
-    glViewport(camera->viewport.x, camera->viewport.y, w, h);
-    glScissor(camera->viewport.x, camera->viewport.y, w, h);
+    
+    
 
-    glMatrixMode(GL_PROJECTION);
+    glViewport(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
+    glScissor(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
 
     switch(camera->mode) {
         case PL_CAMERA_MODE_PERSPECTIVE: {
@@ -538,50 +576,16 @@ static void GLSetupCamera(PLCamera *camera) {
                     (float)w / (float)h,
                     camera->near,
                     camera->far);
-
-#if 1 // todo, modernize start
-            glLoadMatrixf(camera->perspective.m);
-
-            glRotatef(camera->angles.y, 1, 0, 0);
-            glRotatef(camera->angles.x, 0, 1, 0);
-            glRotatef(camera->angles.z, 0, 0, 1);
-            glTranslatef(camera->position.x, camera->position.y, camera->position.z);
-
-            glMatrixMode(GL_MODELVIEW);
-            glLoadIdentity();
-#endif
-            //camera->view = plLookAt(camera->position, /* !!!!todo!!!! */, PLVector3(0, -1.f, 0))
-
             break;
         }
 
         case PL_CAMERA_MODE_ORTHOGRAPHIC: {
             camera->perspective = plOrtho(0, w, h, 0, camera->near, camera->far);
-
-#if 1 // todo, modernize start
-            glLoadMatrixf(camera->perspective.m);
-
-            glMatrixMode(GL_MODELVIEW);
-            glLoadIdentity();
-#endif
             break;
         }
 
         case PL_CAMERA_MODE_ISOMETRIC: {
             camera->perspective = plOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
-
-#if 1 // todo, modernize start
-            glMatrixMode(GL_PROJECTION);
-            glLoadMatrixf(camera->perspective.m);
-
-            glMatrixMode(GL_MODELVIEW);
-            glLoadIdentity();
-
-            glRotatef(35.264f, 1, 0, 0);
-            glRotatef(camera->angles.x, 0, 1, 0);
-
-            glTranslatef(camera->position.x, camera->position.y, camera->position.z);
-#endif
             break;
         }
 
@@ -590,36 +594,11 @@ static void GLSetupCamera(PLCamera *camera) {
 
     // keep the gfx_state up-to-date on the situation
     gfx_state.current_viewport = camera->viewport;
-}
 
-static void GLDrawPerspectivePOST(PLCamera *camera) {
-    plAssert(camera);
-    if(GLVersion(3, 0)) {
-        if (UseBufferScaling(camera) && (camera->viewport.v_buffer != NULL)) {
-            glBindFramebuffer(GL_FRAMEBUFFER, camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
-            glReadBuffer(GL_COLOR_ATTACHMENT0);
-            glReadPixels(
-                    0, 0,
-                    camera->viewport.r_w,
-                    camera->viewport.r_h,
-                    GL_BGRA,
-                    GL_UNSIGNED_BYTE,
-                    camera->viewport.v_buffer
-            );
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    //Copy camera matrices
+    gfx_state.model_matrix = plMatrix4x4Identity();//TODO: Proper camera movement and per-object transforms    
+    gfx_state.projection_matrix = camera->perspective;
 
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, camera->viewport.buffers[VIEWPORT_FRAMEBUFFER]);
-            glBlitFramebuffer(
-                    0, 0,
-                    camera->viewport.r_w, camera->viewport.r_h,
-                    0, 0,
-                    camera->viewport.w, camera->viewport.h,
-                    GL_COLOR_BUFFER_BIT, GL_LINEAR
-            );
-
-            ClearBoundBuffers();
-        }
-    }
 }
 
 /////////////////////////////////////////////////////////////
@@ -906,6 +885,7 @@ static void MessageCallback(
 #endif
 
 void plInitOpenGL(void) {
+    glewExperimental = true; 
     GLenum err = glewInit();
     if(err != GLEW_OK) {
         ReportError(PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", glewGetErrorString(err));
@@ -923,6 +903,11 @@ void plInitOpenGL(void) {
     gfx_layer.SetClearColour            = GLSetClearColour;
     gfx_layer.ClearBuffers              = GLClearBuffers;
 
+    gfx_layer.CreateFrameBuffer         = GLCreateFrameBuffer;
+    gfx_layer.DeleteFrameBuffer         = GLDeleteFrameBuffer;
+    gfx_layer.BindFrameBuffer           = GLBindFrameBuffer;
+    gfx_layer.BlitFrameBuffers          = GLBlitFrameBuffers;
+
     gfx_layer.CreateTexture             = GLCreateTexture;
     gfx_layer.DeleteTexture             = GLDeleteTexture;
     gfx_layer.BindTexture               = GLBindTexture;
@@ -938,7 +923,6 @@ void plInitOpenGL(void) {
     gfx_layer.CreateCamera              = GLCreateCamera;
     gfx_layer.DeleteCamera              = GLDeleteCamera;
     gfx_layer.SetupCamera               = GLSetupCamera;
-    gfx_layer.DrawPerspectivePOST       = GLDrawPerspectivePOST;
 
     gfx_layer.CreateShaderProgram       = GLCreateShaderProgram;
     gfx_layer.DeleteShaderProgram       = GLDeleteShaderProgram;
@@ -1001,8 +985,11 @@ void plInitOpenGL(void) {
         gl_capabilities.direct_state_access = true;
     }
 
-    //glPointSize(5.f);
-    //glLineWidth(2.f);
+
+    // Init vertex attributes
+    glGenVertexArrays(1, VAO);
+    glBindVertexArray(VAO[0]);
+
 }
 
 void plShutdownOpenGL(void) {
