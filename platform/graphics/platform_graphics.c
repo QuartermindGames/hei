@@ -86,6 +86,23 @@ void plShutdownGraphics(void) {
 }
 
 /*===========================
+	DEBUGGING
+===========================*/
+
+void plInsertDebugMarker(const char *msg) {
+    CallGfxFunction(InsertDebugMarker, msg);
+}
+
+void plPushDebugGroupMarker(const char *msg) {
+    CallGfxFunction(PushDebugGroupMarker, msg);
+}
+
+void plPopDebugGroupMarker() {
+    CallGfxFunction(PopDebugGroupMarker);
+}
+
+
+/*===========================
 	HARDWARE INFORMATION
 ===========================*/
 

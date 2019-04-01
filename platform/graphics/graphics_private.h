@@ -92,6 +92,11 @@ typedef struct PLGraphicsState {
 typedef struct GfxLayer {
     PLGfxMode mode;    // Current gfx interface
 
+    // Debug
+    void (*InsertDebugMarker)(const char *msg);
+    void (*PushDebugGroupMarker)(const char *msg);
+    void (*PopDebugGroupMarker)(void);
+
     /* hw information */
 
     bool(*HWSupportsMultitexture)(void);

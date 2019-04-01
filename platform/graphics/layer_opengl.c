@@ -62,6 +62,21 @@ unsigned int gl_num_extensions = 0;
 
 static GLuint VAO[1];
 
+///////////////////////////////////////////
+// Debug
+
+static void GLInsertDebugMarker(const char *msg) {
+    glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_MARKER, 0, GL_DEBUG_SEVERITY_NOTIFICATION, -1, msg );
+}
+
+static void GLPushDebugGroupMarker(const char *msg) {
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, msg);
+}
+
+static void GLPopDebugGroupMarker() {
+    glPopDebugGroup();
+}
+
 
 static void ClearBoundTextures(void) {
     for(unsigned int i = 0; i < gfx_state.hw_maxtextureunits; ++i) {
@@ -877,6 +892,10 @@ void plInitOpenGL(void) {
     }
 
     // setup the gfx layer
+    gfx_layer.InsertDebugMarker         = GLInsertDebugMarker;
+    gfx_layer.PushDebugGroupMarker      = GLPushDebugGroupMarker;
+    gfx_layer.PopDebugGroupMarker       = GLPopDebugGroupMarker;
+
     gfx_layer.HWSupportsShaders         = GLHWSupportsShaders;
     gfx_layer.HWSupportsMultitexture    = GLHWSupportsMultitexture;
     gfx_layer.GetMaxTextureUnits        = GLGetMaxTextureUnits;
