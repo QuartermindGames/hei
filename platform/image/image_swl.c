@@ -92,7 +92,6 @@ bool plLoadSWLImage(FILE *fin, PLImage *out) {
     out->data = pl_calloc(out->levels, sizeof(uint8_t*));
     if(out->data == NULL) {
         plFreeImage(out);
-        SetResult(PL_RESULT_MEMORY_ALLOCATION);
         return false;
     }
 
@@ -120,7 +119,6 @@ bool plLoadSWLImage(FILE *fin, PLImage *out) {
         out->data[i] = pl_calloc(level_size, sizeof(uint8_t));
         if(out->data[i] == NULL) {
             plFreeImage(out);
-            SetResult(PL_RESULT_MEMORY_ALLOCATION);
             return false;
         }
 

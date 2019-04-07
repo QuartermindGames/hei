@@ -52,12 +52,6 @@ typedef unsigned int PLRenderBuffer;
 
 typedef void PLGraphicsContext;
 
-typedef struct PLFrameBuffer {
-#if defined(PL_MODE_OPENGL)
-    unsigned int fbo, rbo;
-#endif
-} PLFrameBuffer;
-
 typedef enum PLDataFormat {
     PL_UNSIGNED_BYTE,
     PL_UNSIGNED_INT_8_8_8_8_REV,
@@ -145,16 +139,29 @@ typedef enum PLFBOTarget {
     PL_FRAMEBUFFER_READ
 } PLFBOTarget;
 
-enum {
+typedef enum PLFBORenderFlags {
     PL_BUFFER_COLOUR    = (1 << 0),
     PL_BUFFER_DEPTH     = (1 << 1),
     PL_BUFFER_STENCIL   = (1 << 2),
-};
+} PLFBORenderFlags;
+
+typedef struct PLFrameBuffer {
+    unsigned int fbo;
+    unsigned int rbo_colour;
+    unsigned int rbo_depth;
+    unsigned int width;
+    unsigned int height;
+    PLFBORenderFlags flags;
+} PLFrameBuffer;
 
 PL_EXTERN_C
 
-PL_EXTERN void plSetClearColour(PLColour rgba);
+PL_EXTERN PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h, PLFBORenderFlags flags);
+PL_EXTERN void plDeleteFrameBuffer(PLFrameBuffer *buffer);
+PL_EXTERN void plBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget target_binding);
+PL_EXTERN void plBlitFrameBuffers(PLFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, bool linear );
 
+PL_EXTERN void plSetClearColour(PLColour rgba);
 PL_EXTERN void plClearBuffers(unsigned int buffers);
 
 PL_EXTERN_C_END
@@ -314,6 +321,11 @@ PL_EXTERN_C_END
 //-----------------
 
 PL_EXTERN_C
+
+// Debugging
+PL_EXTERN void plInsertDebugMarker(const char *msg);
+PL_EXTERN void plPushDebugGroupMarker(const char *msg);
+PL_EXTERN void plPopDebugGroupMarker();
 
 // Hardware Information
 PL_EXTERN const char *plGetHWExtensions(void);

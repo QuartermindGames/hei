@@ -127,7 +127,7 @@ typedef struct PLVector2 {
 #endif
 
 PL_INLINE static void plClearVector2(PLVector2 *v) {
-    memset(v, 0, sizeof(PLVector2));
+    v->x = v->y = 0;
 }
 
 PL_INLINE static void plAddVector2(PLVector2 *v, PLVector2 v2) {
@@ -338,7 +338,7 @@ PL_INLINE static PLVector3 plVector3Inverse(PLVector3 v) {
 }
 
 PL_INLINE static void plClearVector3(PLVector3 *v) {
-    memset(v, 0, sizeof(PLVector3));
+    v->x = v->y = v->z = 0;
 }
 
 PL_INLINE static bool plCompareVector3(PLVector3 v, PLVector3 v2) {
@@ -541,10 +541,6 @@ PL_INLINE static PLColour plCreateColour4f(float r, float g, float b, float a) {
     return c;
 }
 
-PL_INLINE static void plClearColour(PLColour *c) {
-    memset(c, 0, sizeof(PLColour));
-}
-
 PL_INLINE static void plSetColour4b(PLColour *c, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     c->r = r; c->g = g; c->b = b; c->a = a;
 }
@@ -554,6 +550,10 @@ PL_INLINE static void plSetColour4f(PLColour *c, float r, float g, float b, floa
     c->g = plFloatToByte(g);
     c->b = plFloatToByte(b);
     c->a = plFloatToByte(a);
+}
+
+PL_INLINE static void plClearColour(PLColour *c) {
+    plSetColour4b(c, 0, 0, 0, 0);
 }
 
 PL_INLINE static bool plCompareColour(PLColour c, PLColour c2) {
@@ -802,11 +802,11 @@ typedef struct PLMatrix4x4 {
 /* ClearMatrix */
 
 PL_INLINE static void plClearMatrix3x3(PLMatrix3x3 *m) {
-    memset(m, 0, sizeof(PLMatrix3x3));
+    for(unsigned int i = 0; i < 9; ++i) { m->m[i] = 0; }
 }
 
 PL_INLINE static void plClearMatrix4x4(PLMatrix4x4 *m) {
-    memset(m, 0, sizeof(PLMatrix4x4));
+    for(unsigned int i = 0; i < 16; ++i) { m->m[i] = 0; }
 }
 
 /* Identity */
@@ -987,7 +987,7 @@ typedef struct PLQuaternion {
 } PLQuaternion;
 
 PL_INLINE static void plClearQuaternion(PLQuaternion *q) {
-    memset(q, 0, sizeof(PLQuaternion));
+    q->x = q->y = q->z = q->w = 0;
 }
 
 PL_INLINE static void plMultiplyQuaternion(PLQuaternion *q, PLQuaternion q2) {
@@ -1092,7 +1092,8 @@ PL_INLINE static PLRectangle2D plCreateRectangle(
 }
 
 PL_INLINE static void plClearRectangle(PLRectangle2D *r) {
-    memset(r, 0, sizeof(PLRectangle2D));
+    r->xy = r->wh = (PLVector2){0, 0};
+    r->ul = r->ur = r->ll = r->lr = (PLColour){0, 0, 0, 0};
 }
 
 PL_INLINE static void plSetRectangleUniformColour(PLRectangle2D *r, PLColour colour) {

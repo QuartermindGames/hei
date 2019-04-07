@@ -296,7 +296,7 @@ PLModel *LoadStaticRequiemModel(FILE *fp) {
     ModelLog("num_indices:         %d\n", num_indices);
 #endif
 
-    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_IMMEDIATE, num_triangles, num_vertices);
+    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, num_triangles, num_vertices);
     if(mesh == NULL) {
         return NULL;
     }
@@ -356,15 +356,12 @@ PLModel *LoadStaticRequiemModel(FILE *fp) {
 
     PLModel *model = pl_calloc(1, sizeof(PLModel));
     if(model == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
         return NULL;
     }
 
     if((model->meshes = pl_calloc(1, sizeof(PLModelMesh))) == NULL) {
         plDeleteMesh(mesh);
         plDeleteModel(model);
-
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, plGetResultString(PL_RESULT_MEMORY_ALLOCATION));
         return NULL;
     }
 

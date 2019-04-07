@@ -44,7 +44,6 @@ PLMatrix4x4 plLookAtTargetVector(PLVector3 eye, PLVector3 target) {
 PLCamera *plCreateCamera(void) {
     PLCamera *camera = (PLCamera*)pl_calloc(1, sizeof(PLCamera));
     if(camera == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for Camera, %d", sizeof(PLCamera));
         return NULL;
     }
 
@@ -62,8 +61,6 @@ PLCamera *plCreateCamera(void) {
      */
     camera->viewport.w      = CAMERA_DEFAULT_WIDTH;
     camera->viewport.h      = CAMERA_DEFAULT_HEIGHT;
-    camera->viewport.r_w    = 0;
-    camera->viewport.r_h    = 0;
 
     camera->forward = PLVector3(0, 0, 1);
     camera->up = PLVector3(0, 1, 0);
@@ -85,7 +82,6 @@ void plDeleteCamera(PLCamera *camera) {
 
     CallGfxFunction(DeleteCamera, camera);
 
-    free(camera->viewport.v_buffer);
     free(camera);
 }
 
@@ -105,6 +101,6 @@ void plSetupCamera(PLCamera *camera) {
     CallGfxFunction(SetupCamera, camera);
 }
 
-void plDrawPerspectivePOST(PLCamera *camera) {
-    CallGfxFunction(DrawPerspectivePOST, camera);
+const PLViewport *plGetCurrentViewport(void) {
+    return &gfx_state.current_viewport;
 }

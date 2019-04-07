@@ -43,6 +43,7 @@ For more information, please refer to <http://unlicense.org>
 #   include <afxres.h>
 #   include <security.h>
 #   include <direct.h>
+#   include <shlobj.h>
 #else
 #   include <pwd.h>
 #endif
@@ -220,8 +221,13 @@ char *plGetApplicationDataDirectory(const char *app_name, char *out, size_t n) {
         home = pw->pw_dir;
     }
     snprintf(out, n, "%s/.%s", home, app_name);
-#else /* Beautiful Windows, ever graceful */
-    assert(0); /* todo */
+#else
+    char home[MAX_PATH];
+    if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, home))) {
+        snprintf(out, n, "%s/.%s", home, app_name);
+        return out;
+    }
+    snprintf(home, sizeof(home), ".");
 #endif
 
     return out;
@@ -288,13 +294,13 @@ void plSetWorkingDirectory(const char *path) {
 // FILE I/O
 
 /* loads an entire file into the PLIOBuffer struct */
-bool plLoadFile(const char *path, PLIOBuffer *buffer) {
+bool plLoadFile(const char *path, PLFileBuffer *buffer) {
     if(plIsEmptyString(path)) {
         ReportError(PL_RESULT_FILEPATH, "invalid path");
         return false;
     }
 
-    memset(buffer, 0, sizeof(PLIOBuffer));
+    memset(buffer, 0, sizeof(PLFileBuffer));
 
     FILE *fp = fopen(path, "rb");
     if(fp == NULL) {
@@ -310,8 +316,6 @@ bool plLoadFile(const char *path, PLIOBuffer *buffer) {
         if(fread(buffer->data, sizeof(uint8_t), buffer->size, fp) != buffer->size) {
             FSLog("failed to read complete file (%s)\n", path);
         }
-    } else {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes", buffer->size);
     }
 
     fclose(fp);
@@ -354,6 +358,24 @@ bool plDeleteFile(const char *path) {
     return false;
 }
 
+bool plWriteFile(const char *path, uint8_t *buf, size_t length) {
+    FILE *fp = fopen(path, "wb");
+    if(fp == NULL) {
+        ReportError(PL_RESULT_FILEREAD, "failed to open %s", path);
+        return false;
+    }
+
+    bool result = true;
+    if(fwrite(buf, sizeof(char), length, fp) != length) {
+        ReportError(PL_RESULT_FILEWRITE, "failed to write entirety of file");
+        result = false;
+    }
+
+    fclose(fp);
+
+    return result;
+}
+
 bool plCopyFile(const char *path, const char *dest) {
     size_t file_size = plGetFileSize(path);
     if(file_size == 0) {
@@ -362,7 +384,6 @@ bool plCopyFile(const char *path, const char *dest) {
 
     uint8_t *data = pl_calloc(file_size, 1);
     if(data == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate buffer for %s, with size %d", path, file_size);
         return false;
     }
 
@@ -420,7 +441,7 @@ size_t plGetFileSize(const char *path) {
 
 ///////////////////////////////////////////
 
-void plFileIOPush(PLIOBuffer *file) {}
+void plFileIOPush(PLFileBuffer *file) {}
 void plFileIOPop(void) {}
 
 int16_t plGetLittleShort(FILE *fin) {

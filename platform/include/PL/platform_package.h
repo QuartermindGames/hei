@@ -31,8 +31,8 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_filesystem.h>
 
 typedef struct PLPackageIndex {
-    size_t      offset;
-    PLIOBuffer  file;
+    size_t          offset;
+    PLFileBuffer    file;
 } PLPackageIndex;
 
 typedef struct PLPackage {

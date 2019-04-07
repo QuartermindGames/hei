@@ -50,7 +50,7 @@ typedef struct ARTHeader {
     uint32_t unknown2;
 } ARTHeader;
 
-PLPackage *LoadARTPackage(const char *path, bool cache) {
+PLPackage *plLoadARTPackage(const char *path, bool cache) {
     char dat_path[PL_SYSTEM_MAX_PATH] = {'\0'};
     char art_path[PL_SYSTEM_MAX_PATH] = {'\0'};
     const char *extension = plGetFileExtension(path);

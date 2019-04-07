@@ -46,16 +46,16 @@ typedef enum PLMeshPrimitive {
 } PLMeshPrimitive;
 
 typedef enum PLMeshDrawMode {
-    PL_DRAW_DYNAMIC,
+    PL_DRAW_STREAM,
     PL_DRAW_STATIC,
-    PL_DRAW_IMMEDIATE,  // Not necessarily supported in all cases, will just revert to dynamic otherwise!
+    PL_DRAW_DYNAMIC,
 
     PL_NUM_DRAWMODES
 } PLMeshDrawMode;
 
 typedef struct PLVertex {
     PLVector3 position, normal;
-    PLVector2 st[16];
+    PLVector2 st[1];//[16]; Limit to one UV channel while setting up graphics
 
     PLColour colour;
 } PLVertex;

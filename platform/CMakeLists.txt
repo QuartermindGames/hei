@@ -25,10 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-if(WIN32)
-    add_subdirectory(3rdparty/glew-2.2.0/build/cmake)
-endif()
-
 project(platform)
 
 ############################################################
@@ -70,7 +66,7 @@ if(PL_USE_GRAPHICS)
     file(GLOB PLATFORM_GRAPHICS_FILES graphics/*.*)
 endif()
 
-add_library(platform SHARED
+add_library(platform STATIC
         ${PLATFORM_SOURCE_FILES}
         ${PLATFORM_GRAPHICS_FILES}
         ${PLATFORM_IMAGE_FILES}
@@ -85,6 +81,11 @@ set_target_properties(platform PROPERTIES
 
 target_compile_options(platform PUBLIC -fPIC -DPL_INTERNAL)
 
+function(build_glew)
+    set(BUILD_UTILS OFF CACHE BOOL "utilities")
+    add_subdirectory(3rdparty/glew-2.2.0/build/cmake)
+endfunction()
+
 if(PL_USE_GRAPHICS)
     add_definitions("-DPL_USE_GRAPHICS")
 
@@ -92,8 +93,11 @@ if(PL_USE_GRAPHICS)
         add_definitions("-DPL_SUPPORT_OPENGL")
         if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
             target_link_libraries(platform "-framework OpenGL" glew)
+        elseif(WIN32)
+            build_glew()
+            target_link_libraries(platform glew_s)
         else()
-            target_link_libraries(platform glew)
+            target_link_libraries(platform GLEW GL)
         endif()
     endif()
 
@@ -110,7 +114,8 @@ endif()
 if(UNIX)
     target_link_libraries(platform dl)
 elseif(WIN32)
-    target_link_libraries(platform Secur32)
+    target_compile_options(platform PRIVATE -static -static-libstdc++ -static-libgcc)
+    target_link_libraries(platform Secur32 ws2_32)
     target_include_directories(platform PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glew-2.2.0/include/)
 endif()

@@ -92,6 +92,11 @@ typedef struct PLGraphicsState {
 typedef struct GfxLayer {
     PLGfxMode mode;    // Current gfx interface
 
+    // Debug
+    void (*InsertDebugMarker)(const char *msg);
+    void (*PushDebugGroupMarker)(const char *msg);
+    void (*PopDebugGroupMarker)(void);
+
     /* hw information */
 
     bool(*HWSupportsMultitexture)(void);
@@ -113,6 +118,12 @@ typedef struct GfxLayer {
     void(*DrawMesh)(PLMesh *mesh);
     void(*DeleteMesh)(PLMesh *mesh);
 
+    // Framebuffer
+    void(*CreateFrameBuffer)(PLFrameBuffer *buffer);
+    void(*DeleteFrameBuffer)(PLFrameBuffer *buffer);
+    void(*BindFrameBuffer)(PLFrameBuffer *buffer, PLFBOTarget targetBinding);
+    void(*BlitFrameBuffers)(PLFrameBuffer *srcBuffer, unsigned int srcW, unsigned int srcH, PLFrameBuffer *dstBuffer, unsigned int dstW, unsigned int dstH, bool linear );
+
     // Texture
     void(*CreateTexture)(PLTexture *texture);
     void(*DeleteTexture)(PLTexture *texture);
@@ -127,7 +138,6 @@ typedef struct GfxLayer {
     void(*DeleteCamera)(PLCamera *camera);
     void(*SetupCamera)(PLCamera *camera);
     ///////////////////////////////////////////
-    void(*DrawPerspectivePOST)(PLCamera *camera);
 
     // Shaders
     void(*CreateShaderProgram)(PLShaderProgram *program);

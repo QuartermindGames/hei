@@ -367,7 +367,7 @@ const char *plGetFormattedTime(void) {
 
     static char time_out[32] = { '\0' };
     time_t sec = time.tv_sec;
-    strftime(time_out, sizeof(time_out), "%F %T", localtime(&sec));
+    strftime(time_out, sizeof(time_out), "%x %X", localtime(&sec));
     return time_out;
 }
 
