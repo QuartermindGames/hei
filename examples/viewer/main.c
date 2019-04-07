@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#define COMMAND_ONLY    /* uncomment if you want the viewer window */
+//#define COMMAND_ONLY    /* uncomment if you want the viewer window */
 
 #include <PL/platform_math.h>
 #include <PL/platform_console.h>
@@ -270,6 +270,13 @@ int main(int argc, char **argv) {
      * lamp4
      */
 
+#ifndef COMMAND_ONLY
+    CreateWindow();
+
+    plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
+    plSetGraphicsMode(PL_GFX_MODE_OPENGL);
+#endif
+
     PLModel *model = plLoadModel(model_path);
     if(model == NULL) {
         PRINT_ERROR("Failed to load model \"%s\"!\n%s", model_path, plGetError());
@@ -283,11 +290,6 @@ int main(int argc, char **argv) {
     }
 
 #ifndef COMMAND_ONLY
-    CreateWindow();
-
-    plInitializeSubSystems(PL_SUBSYSTEM_GRAPHICS);
-    plSetGraphicsMode(PL_GFX_MODE_OPENGL);
-
     plSetClearColour(PLColour(0, 0, 128, 255));
 
     plSetupConsole(1);
@@ -303,23 +305,6 @@ int main(int argc, char **argv) {
     main_camera->position = PLVector3(0, 2, -50);
     main_camera->viewport.w = WIDTH;
     main_camera->viewport.h = HEIGHT;
-    //main_camera->viewport.r_w = 320;
-    //main_camera->viewport.r_h = 224;
-
-    PLCamera *ui_camera = plCreateCamera();
-    if(ui_camera == NULL) {
-        PRINT_ERROR("failed to create ui camera!\n");
-    }
-    ui_camera->mode         = PL_CAMERA_MODE_ORTHOGRAPHIC;
-    ui_camera->viewport.w   = WIDTH;
-    ui_camera->viewport.h   = HEIGHT;
-    ui_camera->near         = 0;
-    ui_camera->far          = 1000;
-
-    PLBitmapFont *font = plCreateDefaultBitmapFont();
-    if(font == NULL) {
-        PRINT_ERROR("%s", plGetError());
-    }
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -384,7 +369,7 @@ int main(int argc, char **argv) {
 
     plLinkShaderProgram(program);
 
-    plSetShaderProgram(NULL);
+    plSetShaderProgram(program);
 
     /* done, now for main rendering loop! */
 
@@ -486,16 +471,6 @@ int main(int argc, char **argv) {
         }
 
         glPopMatrix();
-
-        plDrawPerspectivePOST(main_camera);
-
-        plSetupCamera(ui_camera);
-
-        //plDrawBitmapString(font, 10, 10, 1.f, PLColour(255, 255, 255, 255), "Hello World!\n");
-
-        plDrawTexturedRectangle(32, 32, 128, 128, uv_texture);
-
-        //plDrawConsole();
 
         SDL_GL_SwapWindow(window);
     }
