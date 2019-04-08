@@ -256,7 +256,7 @@ void plScanDirectory(const char *path, const char *extension, void (*Function)(c
             struct stat st;
             if(stat(filestring, &st) == 0) {
                 if(S_ISREG(st.st_mode)) {
-                    if(pl_strcasecmp(plGetFileExtension(entry->d_name), extension) == 0) {
+                    if(extension == NULL || pl_strcasecmp(plGetFileExtension(entry->d_name), extension) == 0) {
                         Function(filestring);
                     }
                 } else if(S_ISDIR(st.st_mode) && recursive) {
