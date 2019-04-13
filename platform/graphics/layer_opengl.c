@@ -769,9 +769,8 @@ static void GLCompileShaderStage(PLShaderStage *stage, const char *buf, size_t l
             char *log = pl_calloc((size_t) s_length, sizeof(char));
             glGetShaderInfoLog(stage->internal.id, s_length, NULL, log);
             GfxLog(" COMPILE ERROR:\n%s\n",log);
-            free(log);
-
             ReportError(PL_RESULT_SHADER_COMPILE, "%s", log);
+            free(log);
         }
     } else {
         GfxLog(" COMPLETED SUCCESSFULLY!\n");

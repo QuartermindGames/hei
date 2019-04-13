@@ -33,7 +33,8 @@ For more information, please refer to <http://unlicense.org>
 void plGenerateMeshNormals(PLMesh *mesh) {
     plAssert(mesh);
 
-#if 1 // per face...
+#if 0
+#if 0 // per face...
     for (unsigned int j = 0; j < mesh->num_triangles; j++) {
         mesh->triangles[j].normal = plGenerateVertexNormal(
                 mesh->vertices[mesh->triangles[j].indices[0]].position,
@@ -47,6 +48,7 @@ void plGenerateMeshNormals(PLMesh *mesh) {
 
             }
         }
+#endif
 #endif
 }
 

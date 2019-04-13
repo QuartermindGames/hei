@@ -126,7 +126,7 @@ PLModel *plLoadHDVModel(const char *path) {
     file = NULL;
 
     PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC,
-                                (unsigned int) (header.num_faces - 2) * 2, header.num_vertices);
+                                (header.num_faces - 2U) * 2, header.num_vertices);
     if(mesh == NULL) {
         goto ABORT;
     }
@@ -143,7 +143,7 @@ PLModel *plLoadHDVModel(const char *path) {
 #endif
 
     unsigned int cur_index = 0;
-    for(unsigned int i = 0; i < (unsigned int)(header.num_faces - 2); ++i) {
+    for(unsigned int i = 0; i < (header.num_faces - 2U); ++i) {
         /* cast above to shut the compiler up, very odd... */
 
         //ModelLog(" num_verts %u\n", faces[i].u0[0]);
@@ -164,6 +164,8 @@ PLModel *plLoadHDVModel(const char *path) {
             );
         }
     }
+
+    plUploadMesh(mesh);
 
     PLModel *model = pl_calloc(1, sizeof(PLModel));
     if(model == NULL) {

@@ -302,7 +302,7 @@ void SetErrorMessage(const char *msg, ...) {
     va_list args;
 
     va_start(args, msg);
-    vsprintf(out, msg, args);
+    vsnprintf(out, sizeof(out), msg, args);
     va_end(args);
 
     strncpy(loc_error, out, sizeof(loc_error));

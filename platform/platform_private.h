@@ -62,6 +62,8 @@ void plSetFunctionResult(PLresult result);
     plSetCurrentFunction(PL_FUNCTION); \
     plSetFunctionResult(type); \
     SetErrorMessage(__VA_ARGS__)
+#define ReportBasicError(type) \
+    ReportError((type), plGetResultString((type)))
 
 #define SetResult(r)    ReportError(r, plGetResultString((r)))
 
