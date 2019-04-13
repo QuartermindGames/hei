@@ -87,7 +87,7 @@ typedef struct PLModel {
     PLModelMesh *meshes;
     unsigned int num_meshes;
 
-    PLVector3 origin;
+    PLMatrix4x4 model_matrix;
 
     float radius;
     PLAABB bounds;

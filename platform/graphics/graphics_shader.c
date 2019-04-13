@@ -69,7 +69,8 @@ void plPreProcessGLSLShader(char **buf, size_t *length) {
     InsertString(n_pos, "#version 150\n"); //OpenGL 3.2 == GLSL 150
 
     /* built-in uniforms */
-    InsertString(n_pos, "uniform mat4 pl_model_view;");
+    InsertString(n_pos, "uniform mat4 pl_model;")
+    InsertString(n_pos, "uniform mat4 pl_view;");
     InsertString(n_pos, "uniform mat4 pl_proj;");
 
     while(*pos != '\0') {
@@ -399,7 +400,14 @@ bool plRegisterShaderStageFromDisk(PLShaderProgram *program, const char *path, P
 
 /**
  * returns the currently active shader program.
- *
+ *PLShaderProgram *prg = program;
+    if (prg == NULL) {
+        prg = gfx_state.current_program;
+        if(prg == NULL){
+            GfxLog("NULL shader specified for uniform, and no active shader program bound!\n");
+            return;
+        }
+    }
  * @return pointer to the currently active shader program.
  */
 PLShaderProgram *plGetCurrentShaderProgram(void) {
@@ -455,8 +463,17 @@ void plSetShaderProgram(PLShaderProgram *program) {
  * @return index for the shader uniform
  */
 int plGetShaderUniformSlot(PLShaderProgram *program, const char *name) {
-    for(unsigned int i = 0; i < program->num_uniforms; ++i) {
-        if(pl_strncasecmp(program->uniforms[i].name, name, sizeof(program->uniforms[i].name)) == 0) {
+    PLShaderProgram *prg = program;
+    if (prg == NULL) {
+        prg = gfx_state.current_program;
+        if(prg == NULL){
+            GfxLog("NULL shader specified for uniform write, and no active shader program bound!\n");
+            return;
+        }
+    }
+
+    for(unsigned int i = 0; i < prg->num_uniforms; ++i) {
+        if(pl_strncasecmp(prg->uniforms[i].name, name, sizeof(prg->uniforms[i].name)) == 0) {
             return i;
         }
     }
@@ -600,4 +617,21 @@ void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value) {
 
     plSetShaderProgram(old_program);
 #endif
+}
+
+void plSetShaderUniformMatrix4x4(PLShaderProgram *program, int slot, PLMatrix4x4 value, bool transpose){
+    PLShaderProgram *prg = program;
+    if (prg == NULL) {
+        prg = gfx_state.current_program;
+        if(prg == NULL){
+            GfxLog("NULL shader specified for uniform write, and no active shader program bound!\n");
+            return;
+        }
+    }
+
+    if(slot < 0 || slot >= prg->num_uniforms ) {
+        GfxLog("Invalid shader uniform slot, \"%d\"!\n", slot);
+        return;
+    }
+    CallGfxFunction(SetShaderUniformMatrix4x4, prg, slot, value, transpose);
 }

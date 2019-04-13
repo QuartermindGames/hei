@@ -513,9 +513,9 @@ static void GLDrawMesh(PLMesh *mesh) {
     }
 
     //Write camera matrices to shader shared uniforms
-    GLuint model_view_loc = glGetUniformLocation(gfx_state.current_program->internal.id, "pl_model_view");
+    GLuint view_loc = glGetUniformLocation(gfx_state.current_program->internal.id, "pl_view");
     GLuint proj_loc = glGetUniformLocation(gfx_state.current_program->internal.id, "pl_proj");
-    glUniformMatrix4fv( model_view_loc, 1, GL_FALSE, gfx_state.model_matrix.m);
+    glUniformMatrix4fv( view_loc, 1, GL_FALSE, gfx_state.view_matrix.m);
     glUniformMatrix4fv( proj_loc, 1, GL_FALSE, gfx_state.projection_matrix.m);
 
     //Ensure VAO/VBO are bound
@@ -595,7 +595,7 @@ static void GLSetupCamera(PLCamera *camera) {
     gfx_state.current_viewport = camera->viewport;
 
     //Copy camera matrices
-    gfx_state.model_matrix = plMatrix4x4Identity();//TODO: Proper camera movement and per-object transforms    
+    gfx_state.view_matrix = plMatrix4x4Identity();//TODO: Proper camera movement and per-object transforms    
     gfx_state.projection_matrix = camera->perspective;
 
 }
@@ -778,6 +778,11 @@ static void GLCompileShaderStage(PLShaderStage *stage, const char *buf, size_t l
     }
 }
 
+static void GLSetShaderUniformMatrix4x4(PLShaderProgram *program, int slot, PLMatrix4x4 value, bool transpose) {
+    GLuint loc = (GLuint)slot;
+    glUniformMatrix4fv( loc, 1, transpose ? GL_TRUE : GL_FALSE, value.m);
+}
+
 static void GLLinkShaderProgram(PLShaderProgram *program) {
     if(!GLVersion(2,0)) {
         return;
@@ -935,6 +940,8 @@ void plInitOpenGL(void) {
     gfx_layer.DeleteShaderStage         = GLDeleteShaderStage;
     gfx_layer.AttachShaderStage         = GLAttachShaderStage;
     gfx_layer.CompileShaderStage        = GLCompileShaderStage;
+
+    gfx_layer.SetShaderUniformMatrix4x4   = GLSetShaderUniformMatrix4x4;
 
     /////////////////////////////////////////////////////////////
 

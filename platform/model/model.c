@@ -148,6 +148,7 @@ PLModel *plLoadModel(const char *path) {
             if (pl_strncasecmp(extension, model_interfaces[i].ext, sizeof(model_interfaces[i].ext)) == 0) {
                 PLModel *model = model_interfaces[i].LoadFunction(path);
                 if(model != NULL) {
+                    model->model_matrix = plMatrix4x4Identity();
                     const char *name = plGetFileName(path);
                     if(!plIsEmptyString(name)) {
                         size_t nme_len = strlen(name);
@@ -202,6 +203,8 @@ void plDrawModel(PLModel *model) {
     for(unsigned int i = 0; i < model->num_meshes; ++i) {
         PLModelMesh *mesh = &model->meshes[i];
         plSetTexture(mesh->texture, 0);
+        plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", model->model_matrix, true);
+        plUploadMesh(model->meshes[i].mesh);
         plDrawMesh(model->meshes[i].mesh);
     }
 }

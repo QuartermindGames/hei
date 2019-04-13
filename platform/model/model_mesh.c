@@ -111,6 +111,10 @@ void plApplyMeshLighting(PLMesh *mesh, const PLLight *light, PLVector3 position)
 }
 
 PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts) {
+    return plCreateMeshInit(primitive, mode, num_tris, num_verts, NULL, NULL);
+}
+
+PLMesh *plCreateMeshInit(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts, void* indexData, void* vertexData) {
     plAssert(num_verts);
 
     PLMesh *mesh = (PLMesh*)pl_calloc(1, sizeof(PLMesh));
@@ -131,12 +135,18 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
             plDeleteMesh(mesh);
             return NULL;
         }
+        if(vertexData != NULL){
+            memcpy(mesh->triangles, vertexData, num_tris * sizeof(PLTriangle));
+        }
 
         if(mesh->primitive == PL_MESH_TRIANGLES) {
             mesh->num_indices = num_tris * 3;
             if((mesh->indices = pl_calloc(mesh->num_indices, sizeof(uint16_t))) == NULL) {
                 plDeleteMesh(mesh);
                 return NULL;
+            }
+            if(indexData != NULL){
+                memcpy(mesh->indices, indexData, mesh->num_indices * sizeof(uint16_t));
             }
         }
     }
@@ -350,8 +360,8 @@ void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h) {
     plSetMeshVertexColour(mesh, 14, PLColourRGB(63, 63, 63));
     plSetMeshVertexColour(mesh, 15, PLColourRGB(63, 63, 63));
 
+    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
     plUploadMesh(mesh);
-
     plDrawMesh(mesh);
 }
 
@@ -390,8 +400,8 @@ void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, 
                 (position.y + h) + sinf(plDegreesToRadians(i)) * h, 0));
     }
 
+    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
     plUploadMesh(mesh);
-
     plDrawMesh(mesh);
 }
 
@@ -421,10 +431,10 @@ void plDrawTexturedRectangle(int x, int y, int w, int h, PLTexture *texture) {
     plSetMeshVertexST(mesh, 2, 1, 0);
     plSetMeshVertexST(mesh, 3, 1, 1);
 
-    plUploadMesh(mesh);
-
     plSetTexture(texture, 0);
 
+    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
+    plUploadMesh(mesh);
     plDrawMesh(mesh);
 
     plSetTexture(NULL, 0);
@@ -451,6 +461,7 @@ void plDrawRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colo
 
     plSetMeshUniformColour(mesh, colour);
 
+    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
     plUploadMesh(mesh);
     plDrawMesh(mesh);
 }
@@ -479,8 +490,8 @@ void plDrawFilledRectangle(PLRectangle2D rect) {
     plSetMeshVertexColour(mesh, 2, rect.lr);
     plSetMeshVertexColour(mesh, 3, rect.ur);
 
+    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
     plUploadMesh(mesh);
-
     plDrawMesh(mesh);
 }
 
@@ -508,8 +519,8 @@ void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
 
     //plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
 
+    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
     plUploadMesh(mesh);
-
     plDrawMesh(mesh);
 }
 
