@@ -76,6 +76,8 @@ typedef struct PLMesh {
     unsigned int num_verts;
     unsigned int num_triangles;
 
+    PLTexture *texture;
+
     PLMeshPrimitive primitive;
     PLMeshDrawMode mode;
 

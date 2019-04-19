@@ -68,7 +68,6 @@ typedef struct PLBone {
 /* * * * * * * * * * * * * * * * * */
 
 typedef struct PLModelMesh {
-    PLTexture *texture;
     PLMesh *mesh;
 
     PLBoneWeight *bone_weights;

@@ -197,13 +197,16 @@ void plDeleteModel(PLModel *model) {
 
 #if defined(PL_USE_GRAPHICS) /* todo: move */
 
+#include "graphics/graphics_private.h"
+
 void plDrawModel(PLModel *model) {
     plAssert(model);
 
     for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        PLModelMesh *mesh = &model->meshes[i];
-        plSetTexture(mesh->texture, 0);
+        plSetTexture(model->meshes[i].mesh->texture, 0);
+
         plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", model->model_matrix, true);
+
         plUploadMesh(model->meshes[i].mesh);
         plDrawMesh(model->meshes[i].mesh);
     }

@@ -84,16 +84,15 @@ bool _plWriteSMDModel(const char *path, const PLModel *model) {
     /* triangles block */
     fprintf(fp_out, "triangles\n");
     for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        PLModelMesh *cur_mesh = &model->meshes[i];
-        for(unsigned int j = 0; j < cur_mesh->mesh->num_indices; ) {
-            if(cur_mesh->texture == NULL) {
+        for(unsigned int j = 0; j < model->meshes[i].mesh->num_indices; ) {
+            if(model->meshes[i].mesh->texture == NULL) {
                 fprintf(fp_out, "null\n");
             } else {
-                fprintf(fp_out, "%s\n", cur_mesh->texture->name);
+                fprintf(fp_out, "%s\n", model->meshes[i].mesh->texture->name);
             }
-            WriteSMDVertex(&cur_mesh->mesh->vertices[cur_mesh->mesh->indices[j++]]);
-            WriteSMDVertex(&cur_mesh->mesh->vertices[cur_mesh->mesh->indices[j++]]);
-            WriteSMDVertex(&cur_mesh->mesh->vertices[cur_mesh->mesh->indices[j++]]);
+            WriteSMDVertex(&model->meshes[i].mesh->vertices[model->meshes[i].mesh->indices[j++]]);
+            WriteSMDVertex(&model->meshes[i].mesh->vertices[model->meshes[i].mesh->indices[j++]]);
+            WriteSMDVertex(&model->meshes[i].mesh->vertices[model->meshes[i].mesh->indices[j++]]);
         }
     }
     fprintf(fp_out, "end\n\n");

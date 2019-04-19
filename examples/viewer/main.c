@@ -344,8 +344,8 @@ int main(int argc, char **argv) {
     plFreeImage(&uv_chart);
 
     for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        if(model->meshes[i].texture == NULL) {
-            model->meshes[i].texture = uv_texture;
+        if(model->meshes[i].mesh->texture == NULL) {
+            model->meshes[i].mesh->texture = uv_texture;
         }
     }
 
