@@ -59,6 +59,8 @@ void plPreProcessGLSLShader(char **buf, size_t *length) {
         return;
     }
 
+    memset(n_buf, 0, n_len);
+
     char *pos = &*buf[0];
     char *n_pos = &n_buf[0];
 

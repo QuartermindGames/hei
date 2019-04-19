@@ -142,8 +142,8 @@ PLPackage *plLoadLSTPackage(const char *path, bool cache) {
             goto ABORT;
         }
 
-        strncpy(package->table[i].file.name, index.name, sizeof(index.name));
-        package->table[i].file.name[sizeof(index.name) - 1] = '\0';
+        strncpy(package->table[i].file.name, index.name, sizeof(package->table[i].file.name));
+        package->table[i].file.name[sizeof(package->table[i].file.name) - 1] = '\0';
         package->table[i].file.size = index.data_length;
         package->table[i].offset = index.data_offset;
     }
