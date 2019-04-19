@@ -297,6 +297,8 @@ PLShaderProgram *plCreateShaderProgram(void) {
         return NULL;
     }
 
+    memset(program, 0, sizeof(PLShaderProgram));
+
     CallGfxFunction(CreateShaderProgram, program);
 
     return program;

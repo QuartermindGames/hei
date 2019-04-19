@@ -369,6 +369,8 @@ int main(int argc, char **argv) {
 
     plLinkShaderProgram(program);
 
+    plRegisterShaderProgramUniforms(program);
+
     plSetShaderProgram(program);
 
     /* done, now for main rendering loop! */
