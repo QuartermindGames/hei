@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics.h>
 
@@ -77,6 +78,7 @@ PLSubSystem pl_subsystems[]= {
         }
 };
 
+#if 0 /* incomplete interface? */
 typedef struct PLArgument {
     const char *parm;
 
@@ -88,13 +90,14 @@ PLArgument arguments[]={
         { "arg1" },
 };
 
-void plParseArguments(PLArgument arguments[], unsigned int size) {
+void plParseArguments(PLArgument args[], unsigned int size) {
     for(unsigned int i = 0; i < size; i++) {
-        if(arguments[i].Callback) {
-            arguments[i].Callback("");
+        if(args[i].Callback) {
+            args[i].Callback("");
         }
     }
 }
+#endif
 
 typedef struct PLArguments {
     const char *exe_name;
@@ -125,6 +128,9 @@ PLresult plInitialize(int argc, char **argv) {
 
         pl_arguments.arguments[i] = argv[i];
     }
+
+    _plInitPackageSubSystem();
+    _plInitModelSubSystem();
 
     is_initialized = true;
 

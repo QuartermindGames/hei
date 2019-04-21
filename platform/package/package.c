@@ -78,30 +78,35 @@ typedef struct PLPackageLoader {
     PLPackage*(*LoadFunction)(const char *path, bool cache);
 } PLPackageLoader;
 
-static PLPackageLoader package_interfaces[MAX_OBJECT_INTERFACES]= {
-        { "package", NULL },
+static PLPackageLoader package_loaders[MAX_OBJECT_INTERFACES];
+static unsigned int num_package_loaders = 0;
 
-        // Third-party package formats
+void _plInitPackageSubSystem(void) {
+    plClearPackageLoaders();
+}
 
         { "mad", plLoadMADPackage },
         { "mtd", plLoadMADPackage },
         { "lst", plLoadLSTPackage },
         { "tab", plLoadTABPackage },
 
-        //{ "dat", LoadARTPackage },
-        //{ "art", LoadARTPackage },
-};
-static unsigned int num_package_interfaces = 5;
-
-void plClearPackageInterfaces(void) {
-    memset(package_interfaces, 0, sizeof(PLPackageLoader) * MAX_OBJECT_INTERFACES);
-    num_package_interfaces = 0;
+void plClearPackageLoaders(void) {
+    memset(package_loaders, 0, sizeof(PLPackageLoader) * MAX_OBJECT_INTERFACES);
+    num_package_loaders = 0;
 }
 
-void plRegisterPackageInterface(const char *ext, PLPackage*(*LoadFunction)(const char *path, bool cache)) {
-    package_interfaces[num_package_interfaces].ext = ext;
-    package_interfaces[num_package_interfaces].LoadFunction = LoadFunction;
-    num_package_interfaces++;
+void plRegisterPackageLoader(const char *ext, PLPackage *(*LoadFunction)(const char *path, bool cache)) {
+    package_loaders[num_package_loaders].ext = ext;
+    package_loaders[num_package_loaders].LoadFunction = LoadFunction;
+    num_package_loaders++;
+}
+
+void plRegisterStandardPackageLoaders(void) {
+    plRegisterPackageLoader("mad", plLoadMADPackage);
+    plRegisterPackageLoader("mtd", plLoadMADPackage);
+    plRegisterPackageLoader("lst", plLoadLSTPackage);
+    plRegisterPackageLoader("tab", plLoadTABPackage);
+    plRegisterPackageLoader("vsr", plLoadVSRPackage);
 }
 
 PLPackage *plLoadPackage(const char *path, bool cache) {
@@ -111,20 +116,20 @@ PLPackage *plLoadPackage(const char *path, bool cache) {
     }
 
     const char *ext = plGetFileExtension(path);
-    for(unsigned int i = 0; i < num_package_interfaces; ++i) {
-        if(package_interfaces[i].LoadFunction == NULL) {
+    for(unsigned int i = 0; i < num_package_loaders; ++i) {
+        if(package_loaders[i].LoadFunction == NULL) {
             break;
         }
 
-        if(!plIsEmptyString(ext) && !plIsEmptyString(package_interfaces[i].ext)) {
-            if(pl_strncasecmp(ext, package_interfaces[i].ext, sizeof(package_interfaces[i].ext)) == 0) {
-                PLPackage *package = package_interfaces[i].LoadFunction(path, cache);
+        if(!plIsEmptyString(ext) && !plIsEmptyString(package_loaders[i].ext)) {
+            if(pl_strncasecmp(ext, package_loaders[i].ext, sizeof(package_loaders[i].ext)) == 0) {
+                PLPackage *package = package_loaders[i].LoadFunction(path, cache);
                 if(package != NULL) {
                     return package;
                 }
             }
-        } else if(plIsEmptyString(ext) && plIsEmptyString(package_interfaces[i].ext)) {
-            PLPackage *package = package_interfaces[i].LoadFunction(path, cache);
+        } else if(plIsEmptyString(ext) && plIsEmptyString(package_loaders[i].ext)) {
+            PLPackage *package = package_loaders[i].LoadFunction(path, cache);
             if(package != NULL) {
                 return package;
             }

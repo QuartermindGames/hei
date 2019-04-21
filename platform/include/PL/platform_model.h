@@ -130,6 +130,8 @@ void plDrawModelSkeleton(PLModel *model);
 void plApplyModelLighting(PLModel *model, PLLight *light, PLVector3 position);
 
 void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path));
+void plRegisterStandardModelLoaders(void);
+void plClearModelLoaders(void);
 
 void plGenerateModelNormals(PLModel *model);
 void plGenerateModelAABB(PLModel *model);

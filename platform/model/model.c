@@ -32,23 +32,17 @@ For more information, please refer to <http://unlicense.org>
 
 /* PLATFORM MODEL LOADER */
 
-typedef struct ModelInterface {
+typedef struct ModelLoader {
     const char *ext;
     PLModel*(*LoadFunction)(const char *path);
-} ModelInterface;
+} ModelLoader;
 
-static ModelInterface model_interfaces[512]= {
-        { "hdv", plLoadHDVModel },
-        { "mdl", plLoadRequiemModel },
-        //{ "mdl", LoadSourceModel },
-        //{ "mdl", LoadGoldSrcModel },
-        //{ "3d", LoadU3DModel },
-        //{ "smd", LoadSMDModel },
-        //{ "obj", LoadOBJModel },
+static ModelLoader model_interfaces[MAX_OBJECT_INTERFACES];
+static unsigned int num_model_loaders = 0;
 
-        { NULL, NULL }
-};
-static unsigned int num_model_interfaces = (unsigned int)(-1);
+void _plInitModelSubSystem(void) {
+    plClearModelLoaders();
+}
 
 ///////////////////////////////////////
 
@@ -118,18 +112,28 @@ uint8_t *plSerializeModel(PLModel *model, unsigned int type) {
 //////////////////////////////////////////////////////////////////////////////
 
 void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path)) {
-    if(num_model_interfaces == (unsigned int)(-1)) {
-        for(unsigned int i = 0; i < plArrayElements(model_interfaces); ++i, ++num_model_interfaces) {
+    if(num_model_loaders == (unsigned int)(-1)) {
+        for(unsigned int i = 0; i < plArrayElements(model_interfaces); ++i, ++num_model_loaders) {
             if(model_interfaces[i].ext == NULL && model_interfaces[i].LoadFunction == NULL) {
-                num_model_interfaces++;
+                num_model_loaders++;
                 break;
             }
         }
     }
 
-    model_interfaces[num_model_interfaces].ext = ext;
-    model_interfaces[num_model_interfaces].LoadFunction = LoadFunction;
-    num_model_interfaces++;
+    model_interfaces[num_model_loaders].ext = ext;
+    model_interfaces[num_model_loaders].LoadFunction = LoadFunction;
+    num_model_loaders++;
+}
+
+void plRegisterStandardModelLoaders(void) {
+    plRegisterModelLoader("hdv", plLoadHDVModel);
+    plRegisterModelLoader("mdl", plLoadRequiemModel);
+}
+
+void plClearModelLoaders(void) {
+    memset(model_interfaces, 0, sizeof(ModelLoader) * MAX_OBJECT_INTERFACES);
+    num_model_loaders = 0;
 }
 
 PLModel *plLoadModel(const char *path) {
@@ -139,7 +143,7 @@ PLModel *plLoadModel(const char *path) {
     }
 
     const char *extension = plGetFileExtension(path);
-    for(unsigned int i = 0; i < num_model_interfaces; ++i) {
+    for(unsigned int i = 0; i < num_model_loaders; ++i) {
         if(model_interfaces[i].LoadFunction == NULL) {
             break;
         }

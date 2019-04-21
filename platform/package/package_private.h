@@ -100,17 +100,6 @@ PLPackage *plLoadMADPackage(const char *path, bool cache);
 PLPackage *plLoadARTPackage(const char *path, bool cache);
 PLPackage *plLoadLSTPackage(const char *path, bool cache);
 PLPackage *plLoadTABPackage(const char *path, bool cache);
+PLPackage *plLoadVSRPackage(const char *path, bool cache);
 
 PL_EXTERN_C_END
-
-/////////////////////////////////////////////////////////////////
-
-/*  Platform Level Format   */
-
-typedef struct {
-} PLLevelIndex;
-
-typedef struct {
-    uint32_t num_triangles;
-    uint32_t num_portals;
-} PLLevelSector;

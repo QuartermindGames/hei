@@ -210,6 +210,9 @@ int main(int argc, char **argv) {
     plInitialize(argc, argv);
     plSetupLogOutput("./viewer.log");
 
+    plRegisterStandardPackageLoaders();
+    plRegisterStandardModelLoaders();
+
     if(argc < 2) {
         PRINT(" viewer -<optional mode> <model path>\n");
         PRINT("  -smd    : write model out to an SMD\n");

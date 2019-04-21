@@ -58,6 +58,9 @@ enum {
 
 void plSetFunctionResult(PLresult result);
 
+#define FunctionStart() \
+    _plResetError()
+
 #define ReportError(type, ...) \
     plSetCurrentFunction(PL_FUNCTION); \
     plSetFunctionResult(type); \
@@ -78,6 +81,9 @@ void plShutdownFileSystem(void);
 
 PLresult plInitConsole(void);
 void plShutdownConsole(void);
+
+void _plInitPackageSubSystem(void);
+void _plInitModelSubSystem(void);
 
 /* * * * * * * * * * * * * * * * * * * */
 
