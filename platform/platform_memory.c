@@ -29,16 +29,16 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform_private.h"
 
-static void *MemoryAlloc(size_t size) {
-    void *buf = malloc(size);
+static void *MemoryCountAlloc(size_t num, size_t size) {
+    void *buf = calloc(num, size);
     if(buf == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %lu bytes!\n", (unsigned long) size);
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %lu bytes!\n", (unsigned long) size * num);
     }
     return buf;
 }
 
-static void *MemoryCountAlloc(size_t num, size_t size) {
-    return MemoryAlloc(size * num);
+static void *MemoryAlloc(size_t size) {
+    return MemoryCountAlloc(1, size);
 }
 
 void *(*pl_malloc)(size_t size) = MemoryAlloc;
