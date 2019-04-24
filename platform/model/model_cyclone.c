@@ -359,14 +359,17 @@ PLModel *LoadStaticRequiemModel(FILE *fp) {
         return NULL;
     }
 
-    if((model->meshes = pl_calloc(1, sizeof(PLModelMesh))) == NULL) {
-        plDeleteMesh(mesh);
-        plDeleteModel(model);
+    memset(model, 0, sizeof(PLModel));
+    model->type = PL_MODELTYPE_STATIC;
+
+    PLModelLod *lod = plGetModelLodLevel(model, 0);
+    if(lod == NULL) {
+        plDestroyModel(model);
         return NULL;
     }
-
-    model->num_meshes = 1;
-    model->meshes[0].mesh = mesh;
+    
+    lod->meshes = mesh;
+    lod->num_meshes = 1;
 
     plGenerateModelNormals(model);
     plGenerateModelAABB(model);

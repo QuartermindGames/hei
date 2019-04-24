@@ -126,6 +126,7 @@ support.
 // Error return values
 typedef enum {
     PL_RESULT_SUCCESS,
+    PL_RESULT_FAIL,
     PL_RESULT_UNSUPPORTED,
 
     // FILE I/O

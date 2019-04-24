@@ -169,14 +169,14 @@ PLModel *plLoadHDVModel(const char *path) {
 
     PLModel *model = pl_calloc(1, sizeof(PLModel));
     if(model == NULL) {
-        plDeleteMesh(mesh);
+        plDestroyMesh(mesh);
         goto ABORT;
     }
 
     model->num_meshes = 1;
     if((model->meshes = pl_calloc(1, sizeof(PLModelMesh))) == NULL) {
-        plDeleteMesh(mesh);
-        plDeleteModel(model);
+        plDestroyMesh(mesh);
+        plDestroyModel(model);
         goto ABORT;
     }
 

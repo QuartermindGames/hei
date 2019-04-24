@@ -54,10 +54,12 @@ typedef enum PLMeshDrawMode {
 } PLMeshDrawMode;
 
 typedef struct PLVertex {
-    PLVector3 position, normal;
-    PLVector2 st[1];//[16]; Limit to one UV channel while setting up graphics
-
-    PLColour colour;
+    PLVector3       position, normal;
+    PLVector2       st[1];//[16]; Limit to one UV channel while setting up graphics
+    PLColour        colour;
+    /* specific to skeletal animation */
+    unsigned int    bone_index;
+    float           bone_weight;
 } PLVertex;
 
 typedef struct PLTriangle {
@@ -96,7 +98,7 @@ PL_EXTERN_C
 
 PL_EXTERN PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts);
 PL_EXTERN PLMesh *plCreateMeshInit(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts, void* indexData, void* vertexData);
-PL_EXTERN void plDeleteMesh(PLMesh *mesh);
+PL_EXTERN void plDestroyMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h);
 PL_EXTERN void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, PLColour colour);

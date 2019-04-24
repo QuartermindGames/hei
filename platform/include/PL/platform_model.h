@@ -38,63 +38,77 @@ typedef struct PLAnimationFrame {
 } PLAnimationFrame;
 
 typedef struct PLAnimation {
-    char name[64];
-
-    PLAnimationFrame *frames;
-    unsigned int num_frames;
-
-    float framerate;
+    char                name[64];
+    PLAnimationFrame*   frames;
+    unsigned int        num_frames;
+    float               framerate;
 } PLAnimation;
 
 ////////////////////////////////////////////////////////////////////////////
 
-typedef struct PLBoneWeight {
-    unsigned int bone_index;
-    unsigned int vertex_index;
-
-    float bone_weight;
-
-    PLVector3 direction;
-} PLBoneWeight;
-
-typedef struct PLBone {
-    char name[64];
-    unsigned int parent;
-
-    PLVector3 position;
-    PLQuaternion orientation;
-} PLBone;
 
 /* * * * * * * * * * * * * * * * * */
 
-typedef struct PLModelMesh {
-    PLMesh *mesh;
+typedef enum PLModelType {
+    PL_MODELTYPE_STATIC,    /* static non-animated */
+    PL_MODELTYPE_VERTEX,    /* per-vertex animated */
+    PL_MODELTYPE_SKELETAL,  /* skeletal/bones animated */
 
-    PLBoneWeight *bone_weights;
-    unsigned int num_bone_weights;
-} PLModelMesh;
+    PL_NUM_MODELTYPES
+} PLModelType;
+
+typedef struct PLModelLod {
+    PLMesh*         meshes;
+    unsigned int    num_meshes;
+} PLModelLod;
+
+typedef struct PLStaticModelData {
+    PLModelLod      levels[PL_MAX_MODEL_LODS];
+} PLStaticModelData;
+
+typedef struct PLVertexAnimModelData {
+} PLVertexAnimModelData;
+
+/* * * * * * * * * * * * * * * * * */
+/* Skeletal Model Data */
+
+typedef struct PLModelBoneWeight {
+    PLVector3       direction;
+} PLModelBoneWeight;
+
+typedef struct PLModelBone {
+    char            name[64];
+    unsigned int    parent;
+    PLVector3       position;
+    PLQuaternion    orientation;
+} PLModelBone;
+
+typedef struct PLSkeletalModelData {
+    PLModelLod      levels[PL_MAX_MODEL_LODS];
+    PLModelBone*    bones;
+    unsigned int    num_bones;
+    unsigned int    root_index;
+} PLSkeletalModelData;
+
+/* * * * * * * * * * * * * * * * * */
 
 typedef struct PLModel {
-    char name[64];
-
-    unsigned int flags;
-
-    PLBone *bones;
-    unsigned int num_bones;
-    unsigned int root_index;
-
-    PLModelMesh *meshes;
-    unsigned int num_meshes;
-
-    PLMatrix4x4 model_matrix;
-
-    float radius;
-    PLAABB bounds;
-
+    char            name[64];       /* todo: what's this for? */
+    PLModelType     type;
+    unsigned int    flags;
+    float           radius;         /* used for visibility culling */
+    unsigned int    num_levels;     /* levels of detail provided */
+    PLMatrix4x4     model_matrix;
     struct {
-        //unsigned int current_lod;
-        unsigned int current_animation;
-        unsigned int current_frame;
+        unsigned int    current_level;      /* current lod level, used for rendering */
+        unsigned int    current_animation;  /* current animation index */
+        unsigned int    current_frame;      /* current animation frame */
+        /* model type data */
+        union {
+            PLSkeletalModelData     skeletal_data;  /* skeletal animation data */
+            PLStaticModelData       static_data;    /* static model data */
+            PLVertexAnimModelData   vertex_data;    /* per-vertex animation data */
+        };
     } internal;
 } PLModel;
 
@@ -122,7 +136,7 @@ uint8_t *plSerializeModel(PLModel *model, unsigned int type);
 
 ///////////////////////////////////////////////////////////////////
 
-void plDeleteModel(PLModel *model);
+void plDestroyModel(PLModel *model);
 
 void plDrawModel(PLModel *model);
 void plDrawModelSkeleton(PLModel *model);
@@ -135,5 +149,7 @@ void plClearModelLoaders(void);
 
 void plGenerateModelNormals(PLModel *model);
 void plGenerateModelAABB(PLModel *model);
+
+PLModelLod *plGetModelLodLevel(PLModel *model, unsigned int level);
 
 PL_EXTERN_C_END

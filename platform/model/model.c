@@ -44,21 +44,63 @@ void _plInitModelSubSystem(void) {
     plClearModelLoaders();
 }
 
+#define StaticModelData(a)      (a)->internal.static_data
+#define VertexModelData(a)      (a)->internal.vertex_data
+#define SkeletalModelData(a)    (a)->internal.skeletal_data
+
+PLModelLod *plGetModelLodLevel(PLModel *model, unsigned int level) {
+    if(level > model->num_levels || level >= PL_MAX_MODEL_LODS) {
+        ReportError(PL_RESULT_FAIL, "invalid lod level");
+        return NULL;
+    }
+
+    if      (model->type == PL_MODELTYPE_SKELETAL)  return &SkeletalModelData(model).levels[level];
+    else if (model->type == PL_MODELTYPE_STATIC)    return &StaticModelData(model).levels[level];
+
+    ReportError(PL_RESULT_FAIL, "unknown model type");
+    return NULL;
+}
+
+/**
+ *
+ * @param model Pointer to model.
+ * @param num_levels Levels of detail for model.
+ * @return Number of levels if successful, otherwise 0.
+ */
+unsigned int plSetModelLodLevels(PLModel *model, unsigned int num_levels) {
+    if(model->num_levels == num_levels) {
+        return num_levels;
+    }
+
+    /* clear all of the lod levels that followed it */
+    for(unsigned int i = num_levels; i < model->num_levels; ++i) {
+        PLModelLod *lod = plGetModelLodLevel(model, i);
+        if(lod == NULL) {
+            break;
+        }
+
+        if(lod->num_meshes == 0) {
+            continue;
+        }
+
+
+    }
+
+    if      (model->type == PL_MODELTYPE_STATIC)    StaticModelData(model).num_levels = num_levels;
+    else if (model->type == PL_MODELTYPE_VERTEX)    VertexModelData(model).num_levels = num_levels;
+    else if (model->type == PL_MODELTYPE_SKELETAL)  SkeletalModelData(model).num_levels = num_levels;
+}
+
 ///////////////////////////////////////
 
 void plGenerateModelNormals(PLModel *model) {
     plAssert(model);
 
-    for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        plGenerateMeshNormals(model->meshes[i].mesh);
-    }
-}
-
-void plGenerateModelAABB(PLModel *model) {
-    plAssert(model);
-
-    for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        plAddAABB(&model->bounds, plCalculateMeshAABB(model->meshes[i].mesh));
+    PLModelLod *lod;
+    for(unsigned int i = 0; (lod = plGetModelLodLevel(model, i)) != NULL; ++i) {
+        for(unsigned int j = 0; j < lod->num_meshes; ++j) {
+            plGenerateMeshNormals(&lod->meshes[j]);
+        }
     }
 }
 
@@ -153,6 +195,7 @@ PLModel *plLoadModel(const char *path) {
                 PLModel *model = model_interfaces[i].LoadFunction(path);
                 if(model != NULL) {
                     model->model_matrix = plMatrix4x4Identity();
+
                     const char *name = plGetFileName(path);
                     if(!plIsEmptyString(name)) {
                         size_t nme_len = strlen(name);
@@ -181,7 +224,7 @@ void plApplyModelLighting(PLModel *model, PLLight *light, PLVector3 position) {
 
 #endif
 
-void plDeleteModel(PLModel *model) {
+void plDestroyModel(PLModel *model) {
     plAssert(model);
 
     for(unsigned int j = 0; j < model->num_meshes; ++j) {
@@ -191,7 +234,7 @@ void plDeleteModel(PLModel *model) {
 
         free(model->meshes[j].bone_weights);
 
-        plDeleteMesh(model->meshes[j].mesh);
+        plDestroyMesh(model->meshes[j].mesh);
     }
 
     free(model->meshes);
@@ -206,25 +249,38 @@ void plDeleteModel(PLModel *model) {
 void plDrawModel(PLModel *model) {
     plAssert(model);
 
-    for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        plSetTexture(model->meshes[i].mesh->texture, 0);
+    /* todo: currently only deals with static... */
+
+    PLModelLod *lod = plGetModelLodLevel(model, model->internal.current_level);
+    if(lod == NULL) {
+        return;
+    }
+
+    for(unsigned int i = 0; i < lod->num_meshes; ++i) {
+        plSetTexture(lod->meshes[i].texture, 0);
 
         plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", model->model_matrix, true);
 
-        plUploadMesh(model->meshes[i].mesh);
-        plDrawMesh(model->meshes[i].mesh);
+        plUploadMesh(&lod->meshes[i]);
+        plDrawMesh(&lod->meshes[i]);
     }
 }
 
-void plDrawModelBounds(PLModel *model) {
+void plDrawModelRadius(PLModel *model) {
     plAssert(model);
     ///plDrawCube(model->bounds)
 }
 
 void plDrawModelSkeleton(PLModel *model) {
-    plAssert(model);
+    FunctionStart();
 
-    if(model->num_bones == 0) {
+    if(model->type != PL_MODELTYPE_SKELETAL) {
+        ReportError(PL_RESULT_FAIL, "invalid model type");
+        return;
+    }
+
+    if(SkeletalModelData(model).num_bones == 0) {
+        /* nothing to draw */
         return;
     }
 

@@ -35,11 +35,13 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_graphics_camera.h>
 #endif
 #include <PL/platform_model.h>
+#include <PL/platform_package.h>
 #include <PL/platform_filesystem.h>
 
 #ifndef COMMAND_ONLY
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
+
 #endif
 
 #include "../shared.h"
@@ -191,7 +193,7 @@ static void ProcessKeyboard(void) {
 static void TempModelLoad(const char *path) {
     PLModel *model = plLoadModel(path);
     if(model != NULL) {
-        plDeleteModel(model);
+        plDestroyModel(model);
     }
 }
 
@@ -456,13 +458,7 @@ int main(int argc, char **argv) {
             } break;
 
             case VIEW_MODE_LIT: {
-                glEnable(GL_LIGHTING);
-                glShadeModel(GL_FLAT);
-
                 plDrawModel(model);
-
-                glShadeModel(GL_SMOOTH);
-                glDisable(GL_LIGHTING);
             } break;
 
             case VIEW_MODE_WEIGHTS:
@@ -475,12 +471,10 @@ int main(int argc, char **argv) {
             } break;
         }
 
-        glPopMatrix();
-
         SDL_GL_SwapWindow(window);
     }
 
-    plDeleteModel(model);
+    plDestroyModel(model);
     plDeleteCamera(main_camera);
 
     DestroyWindow();

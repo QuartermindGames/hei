@@ -134,7 +134,7 @@ PLMesh *plCreateMeshInit(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigne
     if(num_tris > 0) {
         mesh->triangles = (PLTriangle*)pl_calloc(num_tris, sizeof(PLTriangle));
         if(!mesh->triangles) {
-            plDeleteMesh(mesh);
+            plDestroyMesh(mesh);
             return NULL;
         }
         if(vertexData != NULL){
@@ -144,7 +144,7 @@ PLMesh *plCreateMeshInit(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigne
         if(mesh->primitive == PL_MESH_TRIANGLES) {
             mesh->num_indices = num_tris * 3;
             if((mesh->indices = pl_calloc(mesh->num_indices, sizeof(uint16_t))) == NULL) {
-                plDeleteMesh(mesh);
+                plDestroyMesh(mesh);
                 return NULL;
             }
             if(indexData != NULL){
@@ -155,7 +155,7 @@ PLMesh *plCreateMeshInit(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigne
 
     mesh->vertices = (PLVertex*)pl_calloc(num_verts, sizeof(PLVertex));
     if(mesh->vertices == NULL) {
-        plDeleteMesh(mesh);
+        plDestroyMesh(mesh);
         return NULL;
     }
 
@@ -164,7 +164,7 @@ PLMesh *plCreateMeshInit(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigne
     return mesh;
 }
 
-void plDeleteMesh(PLMesh *mesh) {
+void plDestroyMesh(PLMesh *mesh) {
     if(mesh == NULL) {
         return;
     }
@@ -377,7 +377,7 @@ void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, 
     static unsigned int last_num_segments = 0;
     static PLMesh *mesh = NULL;
     if(last_num_segments != segments) {
-        plDeleteMesh(mesh);
+        plDestroyMesh(mesh);
         mesh = NULL;
     }
 
