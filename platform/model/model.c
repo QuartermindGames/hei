@@ -168,8 +168,6 @@ PLModel *plLoadModel(const char *path) {
             if (pl_strncasecmp(extension, model_interfaces[i].ext, sizeof(model_interfaces[i].ext)) == 0) {
                 PLModel *model = model_interfaces[i].LoadFunction(path);
                 if(model != NULL) {
-                    model->model_matrix = plMatrix4x4Identity();
-
                     const char *name = plGetFileName(path);
                     if(!plIsEmptyString(name)) {
                         size_t nme_len = strlen(name);
@@ -212,6 +210,7 @@ PLModel *plCreateModel(PLModelType type, unsigned int num_levels, PLModelLod lev
         return NULL;
     }
 
+    model->model_matrix = plMatrix4x4Identity();
     model->num_levels = num_levels;
     model->type = type;
 

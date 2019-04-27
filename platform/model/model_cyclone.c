@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #include <PL/platform_model.h>
 #include <PL/platform_console.h>
 
@@ -354,25 +355,14 @@ PLModel *LoadStaticRequiemModel(FILE *fp) {
         }
     }
 
-    PLModel *model = pl_calloc(1, sizeof(PLModel));
+    PLModel *model = plCreateModel(PL_MODELTYPE_STATIC, 1, &((PLModelLod){ mesh, 1 }));
     if(model == NULL) {
+        plDestroyMesh(mesh);
         return NULL;
     }
-
-    memset(model, 0, sizeof(PLModel));
-    model->type = PL_MODELTYPE_STATIC;
-
-    PLModelLod *lod = plGetModelLodLevel(model, 0);
-    if(lod == NULL) {
-        plDestroyModel(model);
-        return NULL;
-    }
-    
-    lod->meshes = mesh;
-    lod->num_meshes = 1;
 
     plGenerateModelNormals(model);
-    plGenerateModelAABB(model);
+    plGenerateModelBounds(model);
 
     return model;
 }
