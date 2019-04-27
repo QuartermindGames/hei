@@ -46,61 +46,66 @@ static void WriteSMDVertex(const PLVertex *vertex) {
 }
 
 /* writes given model out to Valve's SMD model format */
-bool _plWriteSMDModel(const char *path, const PLModel *model) {
-    char full_path[PL_SYSTEM_MAX_PATH];
-    snprintf(full_path, sizeof(full_path), "./models/%s.smd", path);
-    fp_out = fopen(full_path, "w");
-    if(fp_out == NULL) {
-        ReportError(PL_RESULT_FILEWRITE, plGetResultString(PL_RESULT_FILEWRITE));
-        return false;
-    }
-
-    /* header */
-    fprintf(fp_out, "version 1\n\n");
-
-    /* write out the nodes block */
-    fprintf(fp_out, "nodes\n");
-    if(model->num_bones == 0) {
-        /* write out a dummy bone! */
-        fprintf(fp_out, "0 \"root\" -1\n");
-    } else {
-        /* todo, revisit this so we're correctly connecting child/parent */
-        for (unsigned int i = 0; i < model->num_bones; ++i) {
-            fprintf(fp_out, "%u %s %d\n", i, model->bones[i].name, (int) i - 1);
+bool plWriteSMDModel(const char *path, PLModel *model) {
+    for(unsigned int i = 0; i < model->num_levels; ++i) {
+        char full_path[PL_SYSTEM_MAX_PATH];
+        if(i > 0) {
+            snprintf(full_path, sizeof(full_path), "%s_%d.smd", path, i);
+        } else {
+            snprintf(full_path, sizeof(full_path), "%s.smd", path);
         }
-    }
-    fprintf(fp_out, "end\n\n");
+        fp_out = fopen(full_path, "w");
+        if (fp_out == NULL) {
+            ReportError(PL_RESULT_FILEWRITE, plGetResultString(PL_RESULT_FILEWRITE));
+            return false;
+        }
 
-    /* skeleton block */
-    fprintf(fp_out, "skeleton\ntime 0\n");
-    if(model->num_bones == 0) {
-        /* write out dummy bone coords! */
-        fprintf(fp_out, "0 0 0 0 0 0 0\n");
-    } else {
-        /* todo, print out default coords for each bone */
-    }
-    fprintf(fp_out, "end\n\n");
+        /* header */
+        fprintf(fp_out, "version 1\n\n");
 
-    /* triangles block */
-    fprintf(fp_out, "triangles\n");
-    for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        for(unsigned int j = 0; j < model->meshes[i].mesh->num_indices; ) {
-            if(model->meshes[i].mesh->texture == NULL) {
-                fprintf(fp_out, "null\n");
-            } else {
-                fprintf(fp_out, "%s\n", model->meshes[i].mesh->texture->name);
+        /* write out the nodes block */
+        fprintf(fp_out, "nodes\n");
+        if (model->type != PL_MODELTYPE_SKELETAL) {
+            /* write out a dummy bone! */
+            fprintf(fp_out, "0 \"root\" -1\n");
+        } else {
+            /* todo, revisit this so we're correctly connecting child/parent */
+            for (unsigned int j = 0; j < model->internal.skeletal_data.num_bones; ++j) {
+                fprintf(fp_out, "%u %s %d\n", j, model->internal.skeletal_data.bones[j].name, (int) j - 1);
             }
-            WriteSMDVertex(&model->meshes[i].mesh->vertices[model->meshes[i].mesh->indices[j++]]);
-            WriteSMDVertex(&model->meshes[i].mesh->vertices[model->meshes[i].mesh->indices[j++]]);
-            WriteSMDVertex(&model->meshes[i].mesh->vertices[model->meshes[i].mesh->indices[j++]]);
         }
+        fprintf(fp_out, "end\n\n");
+
+        /* skeleton block */
+        fprintf(fp_out, "skeleton\ntime 0\n");
+        if (model->type != PL_MODELTYPE_SKELETAL) {
+            /* write out dummy bone coords! */
+            fprintf(fp_out, "0 0 0 0 0 0 0\n");
+        } else {
+            /* todo, print out default coords for each bone */
+        }
+        fprintf(fp_out, "end\n\n");
+
+        /* triangles block */
+        fprintf(fp_out, "triangles\n");
+        PLModelLod *lod = plGetModelLodLevel(model, i);
+        for (unsigned int j = 0; j < lod->num_meshes; ++j) {
+            for (unsigned int k = 0; k < lod->meshes[j].num_indices;) {
+                if (lod->meshes[j].texture == NULL) {
+                    fprintf(fp_out, "null\n");
+                } else {
+                    fprintf(fp_out, "%s\n", lod->meshes[j].texture->name);
+                }
+                WriteSMDVertex(&lod->meshes[j].vertices[lod->meshes[j].indices[k++]]);
+                WriteSMDVertex(&lod->meshes[j].vertices[lod->meshes[j].indices[k++]]);
+                WriteSMDVertex(&lod->meshes[j].vertices[lod->meshes[j].indices[k++]]);
+            }
+        }
+        fprintf(fp_out, "end\n\n");
+        /* and leave a blank line at the end, to keep studiomdl happy */
+        fprintf(fp_out, "\n");
+        fclose(fp_out);
+        fp_out = NULL;
     }
-    fprintf(fp_out, "end\n\n");
-
-    /* and leave a blank line at the end, to keep studiomdl happy */
-    fprintf(fp_out, "\n");
-
-    fclose(fp_out);
-    fp_out = NULL;
     return true;
 }

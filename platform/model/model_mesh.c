@@ -116,7 +116,8 @@ PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned in
     return plCreateMeshInit(primitive, mode, num_tris, num_verts, NULL, NULL);
 }
 
-PLMesh *plCreateMeshInit(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts, void* indexData, void* vertexData) {
+PLMesh *plCreateMeshInit(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts,
+        void* indexData, void* vertexData) {
     plAssert(num_verts);
 
     PLMesh *mesh = (PLMesh*)pl_calloc(1, sizeof(PLMesh));

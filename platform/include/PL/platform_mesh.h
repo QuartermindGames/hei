@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org>
 
 typedef enum PLMeshPrimitive {
     PL_MESH_LINES,
-    PL_MESH_LINE_STIPPLE,
+    PL_MESH_LINE_STIPPLE,       /* todo */
     PL_MESH_LINE_LOOP,
     PL_MESH_LINE_STRIP,
     PL_MESH_POINTS,
@@ -40,7 +40,7 @@ typedef enum PLMeshPrimitive {
     PL_MESH_TRIANGLE_FAN,
     PL_MESH_TRIANGLE_FAN_LINE,
     PL_MESH_QUADS,
-    PL_MESH_QUAD_STRIP,
+    PL_MESH_QUAD_STRIP,         /* todo */
 
     PL_NUM_PRIMITIVES
 } PLMeshPrimitive;
@@ -63,31 +63,23 @@ typedef struct PLVertex {
 } PLVertex;
 
 typedef struct PLTriangle {
-    PLVector3 normal;
-
-    unsigned int indices[3];
+    PLVector3       normal;
+    unsigned int    indices[3];
 } PLTriangle;
 
 typedef struct PLMesh {
-    PLVertex *vertices;
-    PLTriangle *triangles;
-
-    uint16_t *indices;
-    unsigned int num_indices;
-
-    unsigned int num_verts;
-    unsigned int num_triangles;
-
-    PLTexture *texture;
-
+    PLVertex*       vertices;
+    PLTriangle*     triangles;
+    uint16_t*       indices;
+    unsigned int    num_indices;
+    unsigned int    num_verts;
+    unsigned int    num_triangles;
+    PLTexture*      texture;
     PLMeshPrimitive primitive;
-    PLMeshDrawMode mode;
-
-    PLVector3 position, angles;
+    PLMeshDrawMode  mode;
 
     struct {
-        unsigned int buffers[32];
-
+        unsigned int    buffers[32];
         PLMeshPrimitive old_primitive;  /* provided for switching between different primitive modes */
     } internal;
 } PLMesh;

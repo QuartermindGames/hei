@@ -167,22 +167,14 @@ PLModel *plLoadHDVModel(const char *path) {
 
     plUploadMesh(mesh);
 
-    PLModel *model = pl_calloc(1, sizeof(PLModel));
+    PLModel *model = plCreateModel(PL_MODELTYPE_STATIC, 1, &(PLModelLod){ mesh, 1 });
     if(model == NULL) {
         plDestroyMesh(mesh);
-        goto ABORT;
+        return NULL;
     }
-
-    model->num_meshes = 1;
-    if((model->meshes = pl_calloc(1, sizeof(PLModelMesh))) == NULL) {
-        plDestroyMesh(mesh);
-        plDestroyModel(model);
-        goto ABORT;
-    }
-
-    model->meshes[0].mesh = mesh;
 
     plGenerateModelNormals(model);
+    plGenerateModelBounds(model);
 
     return model;
 

@@ -114,27 +114,8 @@ typedef struct PLModel {
 
 PL_EXTERN_C
 
+PLModel *plCreateModel(PLModelType type, unsigned int num_levels, PLModelLod levels[]);
 PLModel *plLoadModel(const char *path);
-
-typedef enum PLModelOutputType {
-    PL_MODEL_OUTPUT_DEFAULT,
-    PL_MODEL_OUTPUT_SMD,
-    PL_MAX_MODEL_OUTPUT_FORMATS
-} PLModelOutputType;
-bool plWriteModel(const char *path, const PLModel *model, PLModelOutputType type);
-
-enum {
-    PL_SERIALIZE_MODEL_BASE,
-    PL_SERIALIZE_MODEL_VERTICES,
-
-    PL_SERIALIZE_MODEL_COMPLETE,
-
-    PL_SERIALIZE_MODEL_END
-};
-
-uint8_t *plSerializeModel(PLModel *model, unsigned int type);
-
-///////////////////////////////////////////////////////////////////
 
 void plDestroyModel(PLModel *model);
 
@@ -148,8 +129,27 @@ void plRegisterStandardModelLoaders(void);
 void plClearModelLoaders(void);
 
 void plGenerateModelNormals(PLModel *model);
-void plGenerateModelAABB(PLModel *model);
+void plGenerateModelBounds(PLModel *model);
 
 PLModelLod *plGetModelLodLevel(PLModel *model, unsigned int level);
+
+typedef enum PLModelOutputType {
+    PL_MODEL_OUTPUT_DEFAULT,
+    PL_MODEL_OUTPUT_SMD,
+
+    PL_MAX_MODEL_OUTPUT_FORMATS
+} PLModelOutputType;
+bool plWriteModel(const char *path, PLModel *model, PLModelOutputType type);
+
+enum {
+    PL_SERIALIZE_MODEL_BASE,
+    PL_SERIALIZE_MODEL_VERTICES,
+
+    PL_SERIALIZE_MODEL_COMPLETE,
+
+    PL_SERIALIZE_MODEL_END
+};
+
+uint8_t *plSerializeModel(PLModel *model, unsigned int type);
 
 PL_EXTERN_C_END

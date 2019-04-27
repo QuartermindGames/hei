@@ -85,10 +85,11 @@ void _plInitPackageSubSystem(void) {
     plClearPackageLoaders();
 }
 
-        { "mad", plLoadMADPackage },
-        { "mtd", plLoadMADPackage },
-        { "lst", plLoadLSTPackage },
-        { "tab", plLoadTABPackage },
+#if 0 /* todo */
+void plQuerySupportedPackages(char **array, unsigned int *size) {
+    static char
+}
+#endif
 
 void plClearPackageLoaders(void) {
     memset(package_loaders, 0, sizeof(PLPackageLoader) * MAX_OBJECT_INTERFACES);

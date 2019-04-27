@@ -38,6 +38,6 @@ PLModel *plLoadU3DModel(const char *path);
 PLModel *plLoadHDVModel(const char *path);
 PLModel *plLoadRequiemModel(const char *path);
 
-bool _plWriteSMDModel(const char *path, const PLModel *model);
+bool plWriteSMDModel(const char *path, PLModel *model);
 
 PL_EXTERN_C_END

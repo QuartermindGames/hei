@@ -61,36 +61,6 @@ PLModelLod *plGetModelLodLevel(PLModel *model, unsigned int level) {
     return NULL;
 }
 
-/**
- *
- * @param model Pointer to model.
- * @param num_levels Levels of detail for model.
- * @return Number of levels if successful, otherwise 0.
- */
-unsigned int plSetModelLodLevels(PLModel *model, unsigned int num_levels) {
-    if(model->num_levels == num_levels) {
-        return num_levels;
-    }
-
-    /* clear all of the lod levels that followed it */
-    for(unsigned int i = num_levels; i < model->num_levels; ++i) {
-        PLModelLod *lod = plGetModelLodLevel(model, i);
-        if(lod == NULL) {
-            break;
-        }
-
-        if(lod->num_meshes == 0) {
-            continue;
-        }
-
-
-    }
-
-    if      (model->type == PL_MODELTYPE_STATIC)    StaticModelData(model).num_levels = num_levels;
-    else if (model->type == PL_MODELTYPE_VERTEX)    VertexModelData(model).num_levels = num_levels;
-    else if (model->type == PL_MODELTYPE_SKELETAL)  SkeletalModelData(model).num_levels = num_levels;
-}
-
 ///////////////////////////////////////
 
 void plGenerateModelNormals(PLModel *model) {
@@ -99,21 +69,25 @@ void plGenerateModelNormals(PLModel *model) {
     PLModelLod *lod;
     for(unsigned int i = 0; (lod = plGetModelLodLevel(model, i)) != NULL; ++i) {
         for(unsigned int j = 0; j < lod->num_meshes; ++j) {
-            plGenerateMeshNormals(&lod->meshes[j]);
+            plGenerateMeshNormals(&(lod->meshes[j]));
         }
     }
 }
 
+void plGenerateModelBounds(PLModel *model) {
+
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
-bool plWriteModel(const char *path, const PLModel *model, PLModelOutputType type) {
+bool plWriteModel(const char *path, PLModel *model, PLModelOutputType type) {
     if(plIsEmptyString(path)) {
         ReportError(PL_RESULT_FILEPATH, plGetResultString(PL_RESULT_FILEPATH));
         return false;
     }
 
     switch(type) {
-        case PL_MODEL_OUTPUT_SMD: return _plWriteSMDModel(path, model);
+        case PL_MODEL_OUTPUT_SMD: return plWriteSMDModel(path, model);
 
         default:{
             ReportError(PL_RESULT_UNSUPPORTED, "unsupported output type for %s (%u)", path, type);
@@ -215,30 +189,69 @@ PLModel *plLoadModel(const char *path) {
 
 #ifdef PL_USE_GRAPHICS
 
+/* todo: move the following into sw pipeline */
 void plApplyMeshLighting(PLMesh *mesh, const PLLight *light, PLVector3 position);
 void plApplyModelLighting(PLModel *model, PLLight *light, PLVector3 position) {
-    for(unsigned int i = 0; i < model->num_meshes; ++i) {
-        plApplyMeshLighting(model->meshes[i].mesh, light, position);
+    for(unsigned int i = 0; i < model->num_levels; ++i) {
+        PLModelLod *lod = plGetModelLodLevel(model, i);
+        if(lod == NULL) {
+            continue;
+        }
+
+        for(unsigned int j = 0; j < lod->num_meshes; ++j) {
+            plApplyMeshLighting(&lod->meshes[j], light, position);
+        }
     }
 }
 
 #endif
 
+PLModel *plCreateModel(PLModelType type, unsigned int num_levels, PLModelLod levels[]) {
+    PLModel *model = pl_malloc(sizeof(PLModel));
+    if(model == NULL) {
+        return NULL;
+    }
+
+    model->num_levels = num_levels;
+    model->type = type;
+
+    if(num_levels > 0) {
+        if (model->type == PL_MODELTYPE_SKELETAL) {
+            memcpy(model->internal.skeletal_data.levels, levels, sizeof(PLModelLod) * num_levels);
+        } else if (model->type == PL_MODELTYPE_STATIC) {
+            memcpy(model->internal.static_data.levels, levels, sizeof(PLModelLod) * num_levels);
+        } else if (model->type == PL_MODELTYPE_VERTEX) {
+            /* todo */
+        } else {
+            plDestroyModel(model);
+            ReportError(PL_RESULT_FAIL, "invalid model type");
+            return NULL;
+        }
+    }
+
+    return model;
+}
+
 void plDestroyModel(PLModel *model) {
     plAssert(model);
 
-    for(unsigned int j = 0; j < model->num_meshes; ++j) {
-        if(&model->meshes[j] == NULL) {
+    for(unsigned int i = 0; i < model->num_levels; ++i) {
+        PLModelLod *lod = plGetModelLodLevel(model, i);
+        if(lod == NULL) {
             continue;
         }
 
-        free(model->meshes[j].bone_weights);
+        for(unsigned int j = 0; j < lod->num_meshes; ++j) {
+            if(&lod->meshes[j] == NULL) {
+                continue;
+            }
 
-        plDestroyMesh(model->meshes[j].mesh);
+            plDestroyMesh(&lod->meshes[j]);
+        }
+
+        free(lod->meshes);
     }
 
-    free(model->meshes);
-    free(model->bones);
     free(model);
 }
 

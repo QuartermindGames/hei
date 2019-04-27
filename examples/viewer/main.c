@@ -324,6 +324,7 @@ int main(int argc, char **argv) {
     light[0].colour     = plCreateColour4f(1.5f, .5f, .5f, 128.f);
     light[0].type       = PL_LIGHT_TYPE_OMNI;
 
+#if 0 /* unused crap */
     PLImage uv_chart;
     memset(&uv_chart, 0, sizeof(PLImage));
     uv_chart.levels         = 1;
@@ -353,6 +354,7 @@ int main(int argc, char **argv) {
             model->meshes[i].mesh->texture = uv_texture;
         }
     }
+#endif
 
     /* compile shaders */
 
