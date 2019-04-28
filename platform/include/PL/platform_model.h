@@ -57,16 +57,13 @@ typedef enum PLModelType {
     PL_NUM_MODELTYPES
 } PLModelType;
 
-typedef struct PLModelLod {
-    PLMesh*         meshes;
-    unsigned int    num_meshes;
-} PLModelLod;
-
 typedef struct PLStaticModelData {
-    PLModelLod      levels[PL_MAX_MODEL_LODS];
+    /* nothing to do? */
 } PLStaticModelData;
 
 typedef struct PLVertexAnimModelData {
+    unsigned int    current_animation;  /* current animation index */
+    unsigned int    current_frame;      /* current animation frame */
 } PLVertexAnimModelData;
 
 /* * * * * * * * * * * * * * * * * */
@@ -84,25 +81,32 @@ typedef struct PLModelBone {
 } PLModelBone;
 
 typedef struct PLSkeletalModelData {
-    PLModelLod      levels[PL_MAX_MODEL_LODS];
-    PLModelBone*    bones;
-    unsigned int    num_bones;
-    unsigned int    root_index;
+    PLModelBone*    bones;                      /* list of bones */
+    unsigned int    num_bones;                  /* number of bones in the array */
+    unsigned int    root_index;                 /* root bone */
+    unsigned int    current_animation;          /* current animation index */
+    unsigned int    current_frame;              /* current animation frame */
 } PLSkeletalModelData;
 
 /* * * * * * * * * * * * * * * * * */
 
+typedef struct PLModelLod {
+    PLMesh*         meshes;
+    unsigned int    num_meshes;
+} PLModelLod;
+
 typedef struct PLModel {
-    char            name[64];       /* todo: what's this for? */
+    char            name[64];
     PLModelType     type;
     unsigned int    flags;
-    float           radius;         /* used for visibility culling */
-    unsigned int    num_levels;     /* levels of detail provided */
+    float           radius;                     /* used for visibility culling */
+    /* transformations */
     PLMatrix4x4     model_matrix;
+    /* model lods */
+    PLModelLod      levels[PL_MAX_MODEL_LODS];  /* different mesh sets for different levels of detail */
+    unsigned int    num_levels;                 /* levels of detail provided */
+    unsigned int    current_level;              /* current lod level, used for rendering */
     struct {
-        unsigned int    current_level;      /* current lod level, used for rendering */
-        unsigned int    current_animation;  /* current animation index */
-        unsigned int    current_frame;      /* current animation frame */
         /* model type data */
         union {
             PLSkeletalModelData     skeletal_data;  /* skeletal animation data */

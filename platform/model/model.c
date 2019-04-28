@@ -54,11 +54,7 @@ PLModelLod *plGetModelLodLevel(PLModel *model, unsigned int level) {
         return NULL;
     }
 
-    if      (model->type == PL_MODELTYPE_SKELETAL)  return &SkeletalModelData(model).levels[level];
-    else if (model->type == PL_MODELTYPE_STATIC)    return &StaticModelData(model).levels[level];
-
-    ReportError(PL_RESULT_FAIL, "unknown model type");
-    return NULL;
+    return &model->levels[level];
 }
 
 ///////////////////////////////////////
@@ -216,9 +212,9 @@ PLModel *plCreateModel(PLModelType type, unsigned int num_levels, PLModelLod lev
 
     if(num_levels > 0) {
         if (model->type == PL_MODELTYPE_SKELETAL) {
-            memcpy(model->internal.skeletal_data.levels, levels, sizeof(PLModelLod) * num_levels);
+            memcpy(model->levels, levels, sizeof(PLModelLod) * num_levels);
         } else if (model->type == PL_MODELTYPE_STATIC) {
-            memcpy(model->internal.static_data.levels, levels, sizeof(PLModelLod) * num_levels);
+            memcpy(model->levels, levels, sizeof(PLModelLod) * num_levels);
         } else if (model->type == PL_MODELTYPE_VERTEX) {
             /* todo */
         } else {
@@ -263,7 +259,7 @@ void plDrawModel(PLModel *model) {
 
     /* todo: currently only deals with static... */
 
-    PLModelLod *lod = plGetModelLodLevel(model, model->internal.current_level);
+    PLModelLod *lod = plGetModelLodLevel(model, model->current_level);
     if(lod == NULL) {
         return;
     }

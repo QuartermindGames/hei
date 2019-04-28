@@ -122,10 +122,6 @@ PLModel *plLoadU3DModel(const char *path) {
     fclose(anim_file);
     fclose(data_file);
 
-    PLModel *model = pl_malloc(sizeof(PLModel));
-
-    return model;
-
 #if 0
     plSetCurrentFunction("plLoadU3DModel");
 
