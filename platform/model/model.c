@@ -228,7 +228,9 @@ PLModel *plCreateModel(PLModelType type, unsigned int num_levels, PLModelLod lev
 }
 
 void plDestroyModel(PLModel *model) {
-    plAssert(model);
+    if(model == NULL) {
+        return;
+    }
 
     for(unsigned int i = 0; i < model->num_levels; ++i) {
         PLModelLod *lod = plGetModelLodLevel(model, i);

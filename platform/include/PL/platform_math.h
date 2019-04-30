@@ -764,7 +764,7 @@ typedef struct PLMatrix3x3 {
 
 #ifdef __cplusplus
 
-    PLMatrix3x3() { }
+    PLMatrix3x3() = default;
 
     PLMatrix3x3(PLVector3 x, PLVector3 y, PLVector3 z) {
         m[0] = x.x; m[3] = y.x; m[6] = z.x;

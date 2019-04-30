@@ -278,7 +278,7 @@ void plDeleteBitmapFont(PLBitmapFont *font) {
     }
 
     if(font->texture != NULL) {
-        plDeleteTexture(font->texture, false);
+        plDestroyTexture(font->texture, false);
     }
 
     free(font);

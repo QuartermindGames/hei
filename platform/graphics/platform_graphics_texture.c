@@ -59,7 +59,7 @@ void plShutdownTextures(void) {
         for(PLTexture **texture = gfx_state.textures;
             texture < gfx_state.textures + gfx_state.num_textures; ++texture) {
             if ((*texture)) {
-                plDeleteTexture((*texture), true);
+                plDestroyTexture((*texture), true);
             }
         }
         free(gfx_state.textures);
@@ -232,8 +232,10 @@ PLTexture *plCreateTexture(void) {
 #endif
 }
 
-void plDeleteTexture(PLTexture *texture, bool force) {
-    plAssert(texture);
+void plDestroyTexture(PLTexture *texture, bool force) {
+    if(texture == NULL) {
+        return;
+    }
 
     CallGfxFunction(DeleteTexture, texture);
 
