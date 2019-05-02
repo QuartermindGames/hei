@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #pragma once
 
 #include "platform.h"
@@ -83,6 +84,9 @@ typedef struct PLPalette {
 } PLPalette;
 
 PL_EXTERN_C
+
+PL_EXTERN PLImage *plNewImage(uint8_t *buf, unsigned int w, unsigned int h, PLColourFormat col, PLImageFormat dat);
+PL_EXTERN void plDestroyImage(PLImage *image);
 
 PL_EXTERN bool plLoadImage(const char *path, PLImage *out);
 PL_EXTERN bool plLoadImageFromMemory(const uint8_t *data, size_t length, const char *type, PLImage *out);

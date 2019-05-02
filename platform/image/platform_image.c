@@ -144,6 +144,47 @@ bool plNewLoadImage(const char *ext, uint8_t *data, size_t length, PLImage *out)
 
 #endif /* PL_NEW_IMAGE_SUBSYSTEM */
 
+PLImage *plNewImage(uint8_t *buf, unsigned int w, unsigned int h, PLColourFormat col, PLImageFormat dat) {
+    PLImage *image = pl_malloc(sizeof(PLImage));
+    if(image == NULL) {
+        return NULL;
+    }
+
+    image->width             = w;
+    image->height            = h;
+    image->colour_format     = col;
+    image->format            = dat;
+    image->size              = plGetImageSize(image->format, image->width, image->height);
+    image->levels            = 1;
+
+    image->data = pl_calloc(image->levels, sizeof(uint8_t*));
+    if(image->data == NULL) {
+        plDestroyImage(image);
+        return NULL;
+    }
+
+    image->data[0] = pl_calloc(image->size, sizeof(uint8_t));
+    if(image->data[0] == NULL) {
+        plDestroyImage(image);
+        return NULL;
+    }
+
+    if(buf != NULL) {
+        memcpy(image->data[0], buf, image->size);
+    }
+
+    return image;
+}
+
+void plDestroyImage(PLImage *image) {
+    if(image == NULL) {
+        return;
+    }
+
+    plFreeImage(image);
+    free(image);
+}
+
 bool plLoadImageFromFile(FILE *fin, const char *path, PLImage *out) {
     if(fin == NULL) {
         ReportError(PL_RESULT_FILEREAD, "invalid file handle");
@@ -469,7 +510,7 @@ void _plAllocateImage(PLImage *image, unsigned int size, unsigned int levels) {
 #endif
 
 void plFreeImage(PLImage *image) {
-    plFunctionStart();
+    FunctionStart();
 
     if (image == NULL || image->data == NULL) {
         return;
