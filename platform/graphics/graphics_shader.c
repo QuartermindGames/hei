@@ -158,7 +158,7 @@ void plPreProcessGLSLShader(char **buf, size_t *length) {
         *length = n_len;
     }
 
-    free(n_buf);
+    pl_free(n_buf);
 #endif
 }
 
@@ -226,7 +226,7 @@ void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) 
 
     CallGfxFunction(CompileShaderStage, stage, n_buf, length);
 
-    free(n_buf);
+    pl_free(n_buf);
 
 #else
 
@@ -348,16 +348,16 @@ void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages) {
         if(program->stages[i] != NULL) {
             CallGfxFunction(DetachShaderStage, program, program->stages[i]);
             if(free_stages) {
-                free(program->stages[i]);
+                pl_free(program->stages[i]);
             }
         }
     }
 
     CallGfxFunction(DeleteShaderProgram, program);
 
-    free(program->uniforms);
-    free(program->attributes);
-    free(program);
+    pl_free(program->uniforms);
+    pl_free(program->attributes);
+    pl_free(program);
 }
 
 void plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {

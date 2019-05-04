@@ -416,7 +416,7 @@ bool plCopyFile(const char *path, const char *dest) {
 
     BAIL:
 
-    free(data);
+    pl_free(data);
 
     if(original != NULL) {
         fclose(original);

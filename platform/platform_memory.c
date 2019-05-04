@@ -43,3 +43,4 @@ static void *MemoryAlloc(size_t size) {
 
 void *(*pl_malloc)(size_t size) = MemoryAlloc;
 void *(*pl_calloc)(size_t num, size_t size) = MemoryCountAlloc;
+void (*pl_free)(void* ptr) = free;

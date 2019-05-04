@@ -281,7 +281,7 @@ void plDeleteBitmapFont(PLBitmapFont *font) {
         plDestroyTexture(font->texture, false);
     }
 
-    free(font);
+    pl_free(font);
 }
 
 void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColour colour, int8_t character) {

@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org>
 #include "platform_graphics.h"
 #include "platform_physics.h"
 
-#define PL_MAX_MODEL_LODS       10
+#define PL_MAX_MODEL_LODS       5
 
 typedef struct PLAnimationFrame {
     PLVector3 transform;
@@ -40,7 +40,7 @@ typedef struct PLAnimationFrame {
 typedef struct PLAnimation {
     char                name[64];
     PLAnimationFrame*   frames;
-    unsigned int        num_frames;
+    uint32_t            num_frames;
     float               framerate;
 } PLAnimation;
 
@@ -62,8 +62,8 @@ typedef struct PLStaticModelData {
 } PLStaticModelData;
 
 typedef struct PLVertexAnimModelData {
-    unsigned int    current_animation;  /* current animation index */
-    unsigned int    current_frame;      /* current animation frame */
+    uint32_t    current_animation;  /* current animation index */
+    uint32_t    current_frame;      /* current animation frame */
 } PLVertexAnimModelData;
 
 /* * * * * * * * * * * * * * * * * */
@@ -75,37 +75,40 @@ typedef struct PLModelBoneWeight {
 
 typedef struct PLModelBone {
     char            name[64];
-    unsigned int    parent;
+    uint32_t        parent;
     PLVector3       position;
     PLQuaternion    orientation;
 } PLModelBone;
 
 typedef struct PLSkeletalModelData {
     PLModelBone*    bones;                      /* list of bones */
-    unsigned int    num_bones;                  /* number of bones in the array */
-    unsigned int    root_index;                 /* root bone */
-    unsigned int    current_animation;          /* current animation index */
-    unsigned int    current_frame;              /* current animation frame */
+    uint32_t        num_bones;                  /* number of bones in the array */
+    uint32_t        root_index;                 /* root bone */
+    uint32_t        current_animation;          /* current animation index */
+    uint32_t        current_frame;              /* current animation frame */
 } PLSkeletalModelData;
 
 /* * * * * * * * * * * * * * * * * */
 
 typedef struct PLModelLod {
-    PLMesh*         meshes;
-    unsigned int    num_meshes;
+    PLMesh**    meshes;
+    uint32_t    num_meshes;
 } PLModelLod;
 
 typedef struct PLModel {
     char            name[64];
     PLModelType     type;
-    unsigned int    flags;
+    uint16_t        flags;
     float           radius;                     /* used for visibility culling */
+
     /* transformations */
-    PLMatrix4x4     model_matrix;
+    PLMatrix4x4 model_matrix;
+
     /* model lods */
-    PLModelLod      levels[PL_MAX_MODEL_LODS];  /* different mesh sets for different levels of detail */
-    unsigned int    num_levels;                 /* levels of detail provided */
-    unsigned int    current_level;              /* current lod level, used for rendering */
+    PLModelLod  levels[PL_MAX_MODEL_LODS];  /* different mesh sets for different levels of detail */
+    uint8_t     num_levels;                 /* levels of detail provided */
+    uint8_t     current_level;              /* current lod level, used for rendering */
+
     struct {
         /* model type data */
         union {
@@ -118,8 +121,13 @@ typedef struct PLModel {
 
 PL_EXTERN_C
 
-PLModel *plCreateModel(PLModelType type, unsigned int num_levels, PLModelLod levels[]);
-PLModel *plLoadModel(const char *path);
+PLModel* plNewStaticModel(PLModelLod* levels, uint8_t num_levels);
+PLModel* plNewBasicStaticModel(PLMesh* mesh);
+PLModel* plNewSkeletalModel(PLModelLod* levels, uint8_t num_levels, PLModelBone* skeleton, uint32_t num_bones,
+        uint32_t root_index);
+PLModel* plNewBasicSkeletalModel(PLMesh* mesh, PLModelBone* skeleton, uint32_t num_bones, uint32_t root_index);
+
+PLModel* plLoadModel(const char *path);
 
 void plDestroyModel(PLModel *model);
 

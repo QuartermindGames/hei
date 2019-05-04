@@ -391,9 +391,9 @@ void plShutdownConsole(void) {
                 continue;
             }
 
-            free((*cmd));
+            pl_free((*cmd));
         }
-        free(_pl_commands);
+        pl_free(_pl_commands);
     }
 
     if(_pl_variables) {
@@ -403,9 +403,9 @@ void plShutdownConsole(void) {
                 continue;
             }
 
-            free((*var));
+            pl_free((*var));
         }
-        free(_pl_variables);
+        pl_free(_pl_variables);
     }
 
     ConsoleOutputCallback = NULL;

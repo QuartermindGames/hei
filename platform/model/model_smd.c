@@ -27,11 +27,9 @@ For more information, please refer to <http://unlicense.org>
 
 #include "model_private.h"
 
-static FILE *fp_out = NULL;
-
-static void WriteSMDVertex(const PLVertex *vertex) {
+static void WriteSMDVertex(FILE* fp, const PLVertex *vertex) {
     /*               P X  Y  Z  NX NY NZ U  V */
-    fprintf(fp_out, "0 %f %f %f %f %f %f %f %f\n",
+    fprintf(fp, "0 %f %f %f %f %f %f %f %f\n",
 
             vertex->position.x,
             vertex->position.y,
@@ -47,6 +45,7 @@ static void WriteSMDVertex(const PLVertex *vertex) {
 
 /* writes given model out to Valve's SMD model format */
 bool plWriteSMDModel(const char *path, PLModel *model) {
+    FILE *fp_out = NULL;
     for(unsigned int i = 0; i < model->num_levels; ++i) {
         char full_path[PL_SYSTEM_MAX_PATH];
         if(i > 0) {
@@ -90,20 +89,19 @@ bool plWriteSMDModel(const char *path, PLModel *model) {
         fprintf(fp_out, "triangles\n");
         PLModelLod *lod = plGetModelLodLevel(model, i);
         for (unsigned int j = 0; j < lod->num_meshes; ++j) {
-            for (unsigned int k = 0; k < lod->meshes[j].num_indices;) {
-                if (lod->meshes[j].texture == NULL) {
+            for (unsigned int k = 0; k < lod->meshes[j]->num_indices;) {
+                if (lod->meshes[j]->texture == NULL) {
                     fprintf(fp_out, "null\n");
                 } else {
-                    fprintf(fp_out, "%s\n", lod->meshes[j].texture->name);
+                    fprintf(fp_out, "%s\n", lod->meshes[j]->texture->name);
                 }
-                WriteSMDVertex(&lod->meshes[j].vertices[lod->meshes[j].indices[k++]]);
-                WriteSMDVertex(&lod->meshes[j].vertices[lod->meshes[j].indices[k++]]);
-                WriteSMDVertex(&lod->meshes[j].vertices[lod->meshes[j].indices[k++]]);
+                WriteSMDVertex(fp_out, &lod->meshes[j]->vertices[lod->meshes[j]->indices[k++]]);
+                WriteSMDVertex(fp_out, &lod->meshes[j]->vertices[lod->meshes[j]->indices[k++]]);
+                WriteSMDVertex(fp_out, &lod->meshes[j]->vertices[lod->meshes[j]->indices[k++]]);
             }
         }
-        fprintf(fp_out, "end\n\n");
         /* and leave a blank line at the end, to keep studiomdl happy */
-        fprintf(fp_out, "\n");
+        fprintf(fp_out, "end\n\n\n");
         fclose(fp_out);
         fp_out = NULL;
     }

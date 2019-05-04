@@ -770,7 +770,7 @@ static void GLCompileShaderStage(PLShaderStage *stage, const char *buf, size_t l
             glGetShaderInfoLog(stage->internal.id, s_length, NULL, log);
             GfxLog(" COMPILE ERROR:\n%s\n",log);
             ReportError(PL_RESULT_SHADER_COMPILE, "%s", log);
-            free(log);
+            pl_free(log);
         }
     } else {
         GfxLog(" COMPLETED SUCCESSFULLY!\n");
@@ -799,7 +799,7 @@ static void GLLinkShaderProgram(PLShaderProgram *program) {
             char *log = pl_calloc((size_t)s_length, sizeof(char));
             glGetProgramInfoLog(program->internal.id, s_length, NULL, log);
             GfxLog(" LINK ERROR:\n%s\n", log);
-            free(log);
+            pl_free(log);
 
             ReportError(PL_RESULT_SHADER_COMPILE, "%s", log);
         } else {

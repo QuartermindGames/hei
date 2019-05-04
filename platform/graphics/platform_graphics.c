@@ -409,7 +409,7 @@ void plScreenshot(PLViewport *viewport, const char *path) {
     uint8_t *buffer = (uint8_t*)pl_calloc(viewport->height * viewport->width * 3, sizeof(uint8_t));
     glReadPixels(viewport->x, viewport->y, viewport->width, viewport->height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
 
-    free(buffer);
+    pl_free(buffer);
 }
 #endif
 

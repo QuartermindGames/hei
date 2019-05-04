@@ -172,10 +172,10 @@ void plDestroyMesh(PLMesh *mesh) {
 
     CallGfxFunction(DeleteMesh, mesh);
 
-    free(mesh->vertices);
-    free(mesh->triangles);
-    free(mesh->indices);
-    free(mesh);
+    pl_free(mesh->vertices);
+    pl_free(mesh->triangles);
+    pl_free(mesh->indices);
+    pl_free(mesh);
 }
 
 void plClearMesh(PLMesh *mesh) {

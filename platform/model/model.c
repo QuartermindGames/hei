@@ -65,7 +65,7 @@ void plGenerateModelNormals(PLModel *model) {
     PLModelLod *lod;
     for(unsigned int i = 0; (lod = plGetModelLodLevel(model, i)) != NULL; ++i) {
         for(unsigned int j = 0; j < lod->num_meshes; ++j) {
-            plGenerateMeshNormals(&(lod->meshes[j]));
+            plGenerateMeshNormals(lod->meshes[j]);
         }
     }
 }
@@ -193,15 +193,15 @@ void plApplyModelLighting(PLModel *model, PLLight *light, PLVector3 position) {
         }
 
         for(unsigned int j = 0; j < lod->num_meshes; ++j) {
-            plApplyMeshLighting(&lod->meshes[j], light, position);
+            plApplyMeshLighting(lod->meshes[j], light, position);
         }
     }
 }
 
 #endif
 
-PLModel *plCreateModel(PLModelType type, unsigned int num_levels, PLModelLod levels[]) {
-    PLModel *model = pl_malloc(sizeof(PLModel));
+static PLModel* NewModel(PLModelType type, PLModelLod* levels, uint8_t num_levels) {
+    PLModel* model = pl_malloc(sizeof(PLModel));
     if(model == NULL) {
         return NULL;
     }
@@ -210,21 +210,54 @@ PLModel *plCreateModel(PLModelType type, unsigned int num_levels, PLModelLod lev
     model->num_levels = num_levels;
     model->type = type;
 
-    if(num_levels > 0) {
-        if (model->type == PL_MODELTYPE_SKELETAL) {
-            memcpy(model->levels, levels, sizeof(PLModelLod) * num_levels);
-        } else if (model->type == PL_MODELTYPE_STATIC) {
-            memcpy(model->levels, levels, sizeof(PLModelLod) * num_levels);
-        } else if (model->type == PL_MODELTYPE_VERTEX) {
-            /* todo */
-        } else {
-            plDestroyModel(model);
-            ReportError(PL_RESULT_FAIL, "invalid model type");
-            return NULL;
-        }
+    if(num_levels > 0 && levels != NULL) {
+        memcpy(model->levels, levels, sizeof(PLModelLod) * num_levels);
     }
 
     return model;
+}
+
+static PLModel* NewBasicModel(PLModelType type, PLMesh* mesh) {
+    PLMesh** meshes = pl_malloc(sizeof(PLMesh*));
+    if(meshes == NULL) return NULL;
+    meshes[0] = mesh;
+    PLModel* model = NewModel(type, &(PLModelLod){ meshes, 1 }, 1);
+    if(model == NULL) {
+        pl_free(meshes);
+    }
+    return model;
+}
+
+PLModel* plNewBasicStaticModel(PLMesh* mesh) {
+    return NewBasicModel(PL_MODELTYPE_STATIC, mesh);
+}
+
+PLModel* plNewStaticModel(PLModelLod* levels, uint8_t num_levels) {
+    return NewModel(PL_MODELTYPE_STATIC, levels, num_levels);
+}
+
+static PLModel* NewSkeletalModel(PLModel* model, PLModelBone* skeleton, uint32_t num_bones, uint32_t root_index) {
+    if(model == NULL) {
+        return NULL;
+    }
+
+    if(skeleton != NULL) {
+        model->internal.skeletal_data.bones = skeleton;
+        model->internal.skeletal_data.num_bones = num_bones;
+    }
+
+    model->internal.skeletal_data.root_index = root_index;
+
+    return model;
+}
+
+PLModel* plNewBasicSkeletalModel(PLMesh* mesh, PLModelBone* skeleton, uint32_t num_bones, uint32_t root_index) {
+    return NewSkeletalModel(NewBasicModel(PL_MODELTYPE_SKELETAL, mesh), skeleton, num_bones, root_index);
+}
+
+PLModel* plNewSkeletalModel(PLModelLod* levels, uint8_t num_levels, PLModelBone* skeleton, uint32_t num_bones,
+                            uint32_t root_index) {
+    return NewSkeletalModel(NewModel(PL_MODELTYPE_SKELETAL, levels, num_levels), skeleton, num_bones, root_index);
 }
 
 void plDestroyModel(PLModel *model) {
@@ -233,23 +266,22 @@ void plDestroyModel(PLModel *model) {
     }
 
     for(unsigned int i = 0; i < model->num_levels; ++i) {
-        PLModelLod *lod = plGetModelLodLevel(model, i);
-        if(lod == NULL) {
-            continue;
-        }
-
-        for(unsigned int j = 0; j < lod->num_meshes; ++j) {
-            if(&lod->meshes[j] == NULL) {
+        for(unsigned int j = 0; j < model->levels[i].num_meshes; ++j) {
+            if(model->levels[i].meshes[j] == NULL) {
                 continue;
             }
 
-            plDestroyMesh(&lod->meshes[j]);
+            plDestroyMesh(model->levels[i].meshes[j]);
         }
 
-        free(lod->meshes);
+        pl_free(model->levels[i].meshes);
     }
 
-    free(model);
+    if(model->type == PL_MODELTYPE_SKELETAL) {
+        pl_free(model->internal.skeletal_data.bones);
+    }
+
+    pl_free(model);
 }
 
 #if defined(PL_USE_GRAPHICS) /* todo: move */
@@ -267,12 +299,12 @@ void plDrawModel(PLModel *model) {
     }
 
     for(unsigned int i = 0; i < lod->num_meshes; ++i) {
-        plSetTexture(lod->meshes[i].texture, 0);
+        plSetTexture(lod->meshes[i]->texture, 0);
 
         plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", model->model_matrix, true);
 
-        plUploadMesh(&lod->meshes[i]);
-        plDrawMesh(&lod->meshes[i]);
+        plUploadMesh(lod->meshes[i]);
+        plDrawMesh(lod->meshes[i]);
     }
 }
 

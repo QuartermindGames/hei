@@ -355,7 +355,7 @@ PLModel *LoadStaticRequiemModel(FILE *fp) {
         }
     }
 
-    PLModel *model = plCreateModel(PL_MODELTYPE_STATIC, 1, &((PLModelLod){ mesh, 1 }));
+    PLModel *model = plNewBasicStaticModel(mesh);
     if(model == NULL) {
         plDestroyMesh(mesh);
         return NULL;

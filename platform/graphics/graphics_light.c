@@ -50,7 +50,7 @@ void plDeleteLight(PLLight *light) {
     }
 
     gfx_state.num_lights--;
-    free(light);
+    pl_free(light);
 }
 
 void plDrawLight(PLLight *light) {

@@ -82,7 +82,7 @@ void plDeleteCamera(PLCamera *camera) {
 
     CallGfxFunction(DeleteCamera, camera);
 
-    free(camera);
+    pl_free(camera);
 }
 
 PLMatrix4x4 plGetCameraViewProjection(PLCamera *camera) {

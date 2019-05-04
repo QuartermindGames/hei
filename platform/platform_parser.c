@@ -43,10 +43,10 @@ struct {
 
 void plResetParser(void) {
     if(parser_block.buffer) {
-        free(parser_block.buffer);
+        pl_free(parser_block.buffer);
     }
     if(parser_block.line_buffer) {
-        free(parser_block.line_buffer);
+        pl_free(parser_block.line_buffer);
     }
     memset(&parser_block, 0, sizeof(parser_block));
 }

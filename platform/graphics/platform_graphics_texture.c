@@ -52,7 +52,7 @@ void _InitTextures(void) {
 
 void plShutdownTextures(void) {
     if(gfx_state.tmu) {
-        free(gfx_state.tmu);
+        pl_free(gfx_state.tmu);
     }
 
     if(gfx_state.textures) {
@@ -62,7 +62,7 @@ void plShutdownTextures(void) {
                 plDestroyTexture((*texture), true);
             }
         }
-        free(gfx_state.textures);
+        pl_free(gfx_state.textures);
     }
 }
 
@@ -248,7 +248,7 @@ void plDestroyTexture(PLTexture *texture, bool force) {
     gfx_state.textures[texture->internal.id] = NULL;
 #endif
 
-    free(texture);
+    pl_free(texture);
 }
 
 /* automatically loads in an image and uploads it as a texture */

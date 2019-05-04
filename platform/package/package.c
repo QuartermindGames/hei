@@ -51,7 +51,7 @@ static void PurgePackageData(PLPackage *package) {
 
     for(unsigned int i = 0; i < package->table_size; ++i) {
         if(package->table[i].file.data != NULL) {
-            free(package->table[i].file.data);
+            pl_free(package->table[i].file.data);
             package->table[i].file.data = NULL;
         }
     }
@@ -63,8 +63,8 @@ void plDeletePackage(PLPackage *package) {
     plAssert(package);
 
     PurgePackageData(package);
-    free(package->table);
-    free(package);
+    pl_free(package->table);
+    pl_free(package);
 }
 #if 0 // todo
 void plWritePackage(PLPackage *package) {

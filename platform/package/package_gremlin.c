@@ -60,7 +60,7 @@ bool LoadMADPackageFile(FILE *fh, PLPackageIndex *pi) {
     }
 
     if(fseek(fh, pi->offset, SEEK_SET) != 0 || fread(pi->file.data, pi->file.size, 1, fh) != 1) {
-        free(pi->file.data);
+        pl_free(pi->file.data);
         pi->file.data = NULL;
         return false;
     }
