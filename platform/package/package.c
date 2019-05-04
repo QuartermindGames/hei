@@ -107,7 +107,7 @@ void plRegisterStandardPackageLoaders(void) {
     plRegisterPackageLoader("mtd", plLoadMADPackage);
     plRegisterPackageLoader("lst", plLoadLSTPackage);
     plRegisterPackageLoader("tab", plLoadTABPackage);
-    plRegisterPackageLoader("vsr", plLoadVSRPackage);
+//    plRegisterPackageLoader("vsr", plLoadVSRPackage);
 }
 
 PLPackage *plLoadPackage(const char *path, bool cache) {
