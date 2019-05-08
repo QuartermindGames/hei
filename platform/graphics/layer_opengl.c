@@ -412,7 +412,7 @@ static int TranslateColourChannel(int channel) {
     }
 }
 
-static void SwizzleTexture(const PLTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+static void GLSwizzleTexture(const PLTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     GLBindTexture(texture);
     if(GLVersion(3, 3)) {
         int swizzle[] = {
@@ -921,6 +921,7 @@ void plInitOpenGL(void) {
     gfx_layer.UploadTexture             = GLUploadTexture;
     gfx_layer.SetTextureAnisotropy      = GLSetTextureAnisotropy;
     gfx_layer.ActiveTexture             = GLActiveTexture;
+    gfx_layer.SwizzleTexture            = GLSwizzleTexture;
 
     gfx_layer.CreateMeshPOST            = GLCreateMeshPOST;
     gfx_layer.DeleteMesh                = GLDeleteMesh;
