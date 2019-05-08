@@ -59,7 +59,7 @@ static void PurgePackageData(PLPackage *package) {
 
 /* Unloads package from memory
  */
-void plDeletePackage(PLPackage *package) {
+void plDestroyPackage(PLPackage *package) {
     plAssert(package);
 
     PurgePackageData(package);
@@ -107,7 +107,7 @@ void plRegisterStandardPackageLoaders(void) {
     plRegisterPackageLoader("mtd", plLoadMADPackage);
     plRegisterPackageLoader("lst", plLoadLSTPackage);
     plRegisterPackageLoader("tab", plLoadTABPackage);
-//    plRegisterPackageLoader("vsr", plLoadVSRPackage);
+    plRegisterPackageLoader("vsr", plLoadVSRPackage);
 }
 
 PLPackage *plLoadPackage(const char *path, bool cache) {

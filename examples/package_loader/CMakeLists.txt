@@ -25,21 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-cmake_minimum_required(VERSION 3.5.1)
+project(package_loader)
 
-option(BUILD_EXAMPLES "Build example applications" ON)
+file(GLOB PACKAGE_LOADER_SOURCE_FILES *.*)
 
-# Set all of our output directories.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
+add_executable(package_loader ${PACKAGE_LOADER_SOURCE_FILES})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
-
-add_subdirectory(platform)
-
-if(BUILD_EXAMPLES)
-    add_subdirectory(examples/viewer)
-    add_subdirectory(examples/package_loader)
-endif(BUILD_EXAMPLES)
+target_link_libraries(package_loader platform)

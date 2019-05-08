@@ -358,7 +358,7 @@ bool plDeleteFile(const char *path) {
     return false;
 }
 
-bool plWriteFile(const char *path, uint8_t *buf, size_t length) {
+bool plWriteFile(const char *path, const uint8_t *buf, size_t length) {
     FILE *fp = fopen(path, "wb");
     if(fp == NULL) {
         ReportError(PL_RESULT_FILEREAD, "failed to open %s", path);

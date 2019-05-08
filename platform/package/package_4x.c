@@ -168,7 +168,7 @@ PLPackage *plLoadLSTPackage(const char *path, bool cache) {
     ABORT:
 
     if(package != NULL) {
-        plDeletePackage(package);
+        plDestroyPackage(package);
     }
 
     fclose(fh);

@@ -69,7 +69,7 @@ PL_EXTERN bool plPathExists(const char *path);
 
 PL_EXTERN bool plLoadFile(const char *path, PLFileBuffer *buffer);
 PL_EXTERN bool plCopyFile(const char *path, const char *dest);
-PL_EXTERN bool plWriteFile(const char *path, uint8_t *buf, size_t length);
+PL_EXTERN bool plWriteFile(const char *path, const uint8_t* buf, size_t length);
 PL_EXTERN bool plDeleteFile(const char *path);
 
 PL_EXTERN bool plIsFileModified(time_t oldtime, const char *path);

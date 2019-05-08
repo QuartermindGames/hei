@@ -123,7 +123,7 @@ PLPackage *plLoadTABPackage(const char *path, bool cache) {
         }
     }
 
-    if(package != NULL) plDeletePackage(package);
+    if(package != NULL) plDestroyPackage(package);
 
     return NULL;
 }

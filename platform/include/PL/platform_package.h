@@ -50,7 +50,7 @@ PL_EXTERN_C
 
 PL_EXTERN PLPackage *plLoadPackage(const char *path, bool cache);
 PL_EXTERN bool plLoadPackageFile(PLPackage *package, const char *file, const uint8_t **data, size_t *size);
-PL_EXTERN void plDeletePackage(PLPackage *package);
+PL_EXTERN void plDestroyPackage(PLPackage *package);
 
 PL_EXTERN void plRegisterPackageLoader(const char *ext, PLPackage *(*LoadFunction)(const char *path, bool cache));
 PL_EXTERN void plRegisterStandardPackageLoaders(void);
