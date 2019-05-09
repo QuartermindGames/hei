@@ -36,7 +36,7 @@ typedef struct VSRChunkHeader {
 } VSRChunkHeader;
 
 typedef struct VSRDirectoryIndex {
-    uint32_t    start_off;      /* start offset for data */
+    uint32_t    offset;         /* start offset for data */
     uint32_t    length;         /* length of the file in bytes */
     uint32_t    unknown0[8];
 } VSRDirectoryIndex;
@@ -47,6 +47,10 @@ typedef struct VSRDirectoryChunk {
     uint32_t            num_indices;    /* number of indices in this chunk */
 } VSRDirectoryChunk;
 static_assert(sizeof(VSRDirectoryChunk) == 12, "needs to be 12 bytes");
+
+typedef struct VSRStringIndex {
+    char string[32];
+} VSRStringIndex;
 
 typedef struct VSRStringChunk {
     VSRChunkHeader  header;         /* STRT */
@@ -93,52 +97,72 @@ PLPackage* plLoadVSRPackage(const char *path, bool cache) {
     VSRStringChunk      chunk_strings;
 
     VSRDirectoryIndex*  directories = NULL;
+    VSRStringIndex*     strings = NULL;
 
     /* load in all the file data first */
 
     fread(&chunk_header, sizeof(VSRHeader), 1, fp);
-    if(strcmp(chunk_header.header.identifier, "1RSV") == 0) {
+    if(strncmp(chunk_header.header.identifier, "1RSV", 4) == 0) {
         fread(&chunk_directory, sizeof(VSRDirectoryChunk), 1, fp);
-        if(strcmp(chunk_directory.header.identifier, "CRID") == 0) {
+        if(strncmp(chunk_directory.header.identifier, "CRID", 4) == 0) {
             if((directories = pl_malloc(sizeof(VSRDirectoryIndex) * chunk_directory.num_indices)) != NULL) {
                 fread(directories, sizeof(VSRDirectoryIndex), chunk_directory.num_indices, fp);
+
+                /* skip VSRN chunk, seems to be unused? */
+                fseek(fp, 12, SEEK_CUR);
+
+                fread(&chunk_strings, sizeof(VSRStringIndex), 1, fp);
+                if(strncmp(chunk_strings.header.identifier, "TRTS", 4) == 0) {
+                    /* read in all the string offsets, which in turn helps us determine
+                     * the length of each string */
+                    unsigned int offsets[chunk_strings.num_indices];
+                    fread(offsets, sizeof(unsigned int), chunk_strings.num_indices, fp);
+                    if((strings = pl_malloc(sizeof(VSRStringIndex) * chunk_strings.num_indices)) != NULL) {
+
+                    }
+                } else {
+                    ReportError(PL_RESULT_FILETYPE, "failed to read STRS header");
+                }
             }
-
-
         } else {
-            ReportBasicError(PL_RESULT_FILETYPE);
+            ReportError(PL_RESULT_FILETYPE, "failed to read DIRC header");
         }
     } else {
-        ReportBasicError(PL_RESULT_FILETYPE);
+        ReportError(PL_RESULT_FILETYPE, "failed to read VSR1 header");
     }
 
     fclose(fp);
 
     if(plGetFunctionResult() != PL_RESULT_SUCCESS) {
-        free(directories);
+        pl_free(directories);
+        pl_free(strings);
         return NULL;
     }
 
-    /* there isn't anything particularly special we can use from the header
-     * besides using it for general validation */
+    /* now create our package handle */
 
     PLPackage* package = pl_malloc(sizeof(PLPackage));
     if(package != NULL) {
         package->internal.LoadFile = LoadVSRPackageFile;
         package->table_size = chunk_directory.num_indices;
+        strncpy(package->path, path, sizeof(package->path));
         if((package->table = pl_calloc(package->table_size, sizeof(struct PLPackageIndex))) != NULL) {
             for(unsigned int i = 0; i < package->table_size; ++i) {
                 PLPackageIndex* index = &package->table[i];
-                //snprintf()
+                index->offset = directories[i].offset;
+                index->file.size = directories[i].length;
+                strncpy(index->file.name, strings[i].string, sizeof(index->file.name));
             }
         }
     }
 
-    free(directories);
+    pl_free(directories);
+    pl_free(strings);
 
-    if(package != NULL) {
+    if(plGetFunctionResult() != PL_RESULT_SUCCESS) {
         plDestroyPackage(package);
+        package = NULL;
     }
 
-    return NULL;
+    return package;
 }
