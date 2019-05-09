@@ -55,8 +55,10 @@ typedef struct PLCamera {
     // Viewport
     PLViewport viewport;
 
-    PLMatrix4x4 perspective;
-    PLMatrix4x4 view;
+    struct {
+        PLMatrix4x4 proj;
+        PLMatrix4x4 view;
+    } internal;
 } PLCamera;
 
 PL_EXTERN_C

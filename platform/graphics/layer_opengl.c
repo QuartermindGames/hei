@@ -35,6 +35,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_mesh.h>
 #include <PL/platform_graphics.h>
+#include <PL/platform_graphics_camera.h>
 
 #define DEBUG_GL
 
@@ -552,10 +553,7 @@ static void GLDeleteCamera(PLCamera *camera) {
 static void GLSetupCamera(PLCamera *camera) {
     plAssert(camera);
 
-    int w, h;
-    w = camera->viewport.w;
-    h = camera->viewport.h;
-    if(camera->viewport.auto_scale){
+    if(camera->viewport.auto_scale) {
         GLint bound_rbo_w, bound_rbo_h;
         glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &bound_rbo_w);
         glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &bound_rbo_h);
@@ -567,37 +565,6 @@ static void GLSetupCamera(PLCamera *camera) {
 
     glViewport(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
     glScissor(camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h);
-
-    switch(camera->mode) {
-        case PL_CAMERA_MODE_PERSPECTIVE: {
-            camera->perspective = plPerspective(
-                    camera->fov,
-                    (float)w / (float)h,
-                    camera->near,
-                    camera->far);
-            break;
-        }
-
-        case PL_CAMERA_MODE_ORTHOGRAPHIC: {
-            camera->perspective = plOrtho(0, w, h, 0, camera->near, camera->far);
-            break;
-        }
-
-        case PL_CAMERA_MODE_ISOMETRIC: {
-            camera->perspective = plOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
-            break;
-        }
-
-        default: break;
-    }
-
-    // keep the gfx_state up-to-date on the situation
-    gfx_state.current_viewport = camera->viewport;
-
-    //Copy camera matrices
-    gfx_state.view_matrix = plMatrix4x4Identity();//TODO: Proper camera movement and per-object transforms    
-    gfx_state.projection_matrix = camera->perspective;
-
 }
 
 /////////////////////////////////////////////////////////////

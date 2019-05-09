@@ -99,6 +99,37 @@ void plSetupCamera(PLCamera *camera) {
     plAssert(camera);
 
     CallGfxFunction(SetupCamera, camera);
+
+    camera->internal.proj = plMatrix4x4Identity();
+    camera->internal.view = plMatrix4x4Identity();
+
+    int w, h;
+    w = camera->viewport.w;
+    h = camera->viewport.h;
+
+    switch(camera->mode) {
+        case PL_CAMERA_MODE_PERSPECTIVE: {
+            camera->internal.proj = plPerspective(camera->fov, (float)w / (float)h, camera->near, camera->far);
+            camera->internal.view = plLookAt(camera->position, PLVector3(0, 0, 0), PLVector3(0, 1.0f, 0));
+        } break;
+
+        case PL_CAMERA_MODE_ORTHOGRAPHIC: {
+            camera->internal.proj = plOrtho(0, w, h, 0, camera->near, camera->far);
+        } break;
+
+        case PL_CAMERA_MODE_ISOMETRIC: {
+            camera->internal.proj = plOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
+        } break;
+
+        default: break;
+    }
+
+    // keep the gfx_state up-to-date on the situation
+    gfx_state.current_viewport = camera->viewport;
+
+    // Copy camera matrices
+    gfx_state.view_matrix = camera->internal.view;
+    gfx_state.projection_matrix = camera->internal.proj;
 }
 
 const PLViewport *plGetCurrentViewport(void) {
