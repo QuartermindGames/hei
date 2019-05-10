@@ -156,7 +156,7 @@ typedef struct PLFrameBuffer {
 
 PL_EXTERN_C
 
-PL_EXTERN PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h, PLFBORenderFlags flags);
+PL_EXTERN PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h, unsigned int flags);
 PL_EXTERN void plDeleteFrameBuffer(PLFrameBuffer *buffer);
 PL_EXTERN void plBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget target_binding);
 PL_EXTERN void plBlitFrameBuffers(PLFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, bool linear );

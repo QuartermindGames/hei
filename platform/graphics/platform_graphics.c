@@ -130,7 +130,7 @@ bool plHWSupportsShaders(void) {
 	FRAMEBUFFERS
 ===========================*/
 
-PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h, PLFBORenderFlags flags) {
+PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h, unsigned int flags) {
     if(flags == 0){
         return NULL;
     }
