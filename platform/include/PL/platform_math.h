@@ -1332,6 +1332,7 @@ PL_INLINE static float plToRadians(float degrees) {
 }
 
 PL_INLINE static PLMatrix4x4 plLookAt(PLVector3 eye, PLVector3 center, PLVector3 up) {
+#if 0
     PLVector3 z = eye;
     plSubtractVector3(&z, center);
     float mag = plVector3Length(z);
@@ -1359,6 +1360,22 @@ PL_INLINE static PLMatrix4x4 plLookAt(PLVector3 eye, PLVector3 center, PLVector3
                                  x.z, y.z, z.z, 0,
                                  0  , 0  , 0  , 1
                          }};
+#else
+    PLVector3 f = plVector3Normalize(plVector3Subtract(center, eye));
+    PLVector3 u = plVector3Normalize(up);
+    PLVector3 s = plVector3Normalize(plVector3CrossProduct(f, u));
+    u = plVector3CrossProduct(s, f);
+
+    PLMatrix4x4 out = plMatrix4x4Identity();
+    out.pl_4x4pos(0, 0) = s.x; out.pl_4x4pos(1, 0) = s.y; out.pl_4x4pos(2, 0) = s.z;
+    out.pl_4x4pos(0, 1) = u.x; out.pl_4x4pos(1, 1) = u.y; out.pl_4x4pos(2, 1) = u.z;
+    out.pl_4x4pos(0, 2) = -f.x; out.pl_4x4pos(1, 2) = -f.y; out.pl_4x4pos(2, 2) = -f.z;
+    out.pl_4x4pos(3, 0) = -(plVector3DotProduct(s, eye));
+    out.pl_4x4pos(3, 1) = -(plVector3DotProduct(u, eye));
+    out.pl_4x4pos(3, 2) = plVector3DotProduct(f, eye);
+
+    return out;
+#endif
 }
 
 PL_INLINE static PLMatrix4x4 plFrustum(float left, float right, float bottom, float top, float near, float far) {

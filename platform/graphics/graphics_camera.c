@@ -110,7 +110,7 @@ void plSetupCamera(PLCamera *camera) {
     switch(camera->mode) {
         case PL_CAMERA_MODE_PERSPECTIVE: {
             camera->internal.proj = plPerspective(camera->fov, (float)w / (float)h, camera->near, camera->far);
-            camera->internal.view = plLookAt(camera->position, PLVector3(0, 0, 0), PLVector3(0, 1.0f, 0));
+            camera->internal.view = plLookAt(camera->position, plVector3Add(camera->position, camera->forward), camera->up);
         } break;
 
         case PL_CAMERA_MODE_ORTHOGRAPHIC: {
