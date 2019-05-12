@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_package.h>
 #include "package_private.h"
 
 /* Loader for Sentient's VSR package format */

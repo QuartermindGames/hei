@@ -101,5 +101,6 @@ PLPackage *plLoadARTPackage(const char *path, bool cache);
 PLPackage *plLoadLSTPackage(const char *path, bool cache);
 PLPackage *plLoadTABPackage(const char *path, bool cache);
 PLPackage *plLoadVSRPackage(const char *path, bool cache);
+PLPackage* plLoadFFPackage(const char* path, bool cache);
 
 PL_EXTERN_C_END
