@@ -25,27 +25,24 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_console.h>
-
 #include "graphics_private.h"
 
-PLLight *plCreateLight(void) {
-    PLLight *light = (PLLight*)pl_malloc(sizeof(PLLight));
-    if(!light) {
-        GfxLog("Failed to create light!\n");
+PLLight* plNewLight(PLLightType type, PLColour colour) {
+    PLLight* light = (PLLight*)pl_malloc(sizeof(PLLight));
+    if(light == NULL) {
         return NULL;
     }
 
     memset(light, 0, sizeof(PLLight));
 
     gfx_state.num_lights++;
-    light->colour   = PLColour(255, 255, 255, 128);
-    light->type     = PL_LIGHT_TYPE_OMNI;
+    light->colour   = colour;
+    light->type     = type;
     return light;
 }
 
-void plDeleteLight(PLLight *light) {
-    if(!light) {
+void plDeleteLight(PLLight* light) {
+    if(light == NULL) {
         return;
     }
 
@@ -53,7 +50,7 @@ void plDeleteLight(PLLight *light) {
     pl_free(light);
 }
 
-void plDrawLight(PLLight *light) {
+void plDrawLight(PLLight* light) {
     if(light->colour.a <= 0) {
         return;
     }

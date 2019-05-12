@@ -103,6 +103,7 @@ typedef struct GfxLayer {
     bool(*HWSupportsShaders)(void);
 
     void(*GetMaxTextureUnits)(unsigned int *num_units);
+    void(*GetMaxTextureSize)(unsigned int* s);
 
     /******************************************/
 
@@ -183,7 +184,7 @@ PL_EXTERN_C
 PL_EXTERN GfxState gfx_state;
 PL_EXTERN GfxLayer gfx_layer;
 
-void BindTexture(const PLTexture *texture);
+void _plBindTexture(const PLTexture *texture);
 
 #if defined(PL_SUPPORT_OPENGL)
 void plInitOpenGL(void);

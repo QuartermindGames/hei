@@ -66,112 +66,19 @@ void plShutdownTextures(void) {
     }
 }
 
-/////////////////////////////////////////////////////
-
 unsigned int plGetMaxTextureSize(void) {
     if (gfx_state.hw_maxtexturesize != 0) {
         return gfx_state.hw_maxtexturesize;
     }
 
-#if defined (PL_MODE_OPENGL) || defined (PL_MODE_OPENGL_CORE)
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, (GLint*)&gfx_state.hw_maxtexturesize);
-#elif defined (PL_MODE_GLIDE)
-    grGet(GR_MAX_TEXTURE_SIZE, sizeof(gfx_state.hw_maxtexturesize), &gfx_state.hw_maxtexturesize);
-#else // Software
-    gfx_state.hw_maxtexturesize = 4096;
-#endif
+    if(gfx_layer.GetMaxTextureSize != NULL) {
+        gfx_layer.GetMaxTextureSize(&gfx_state.hw_maxtexturesize);
+    } else {
+        gfx_state.hw_maxtexturesize = 4096;
+    }
 
     return gfx_state.hw_maxtexturesize;
 }
-
-/////////////////////////////////////////////////////
-
-#if defined(PL_MODE_OPENGL)
-
-unsigned int _plTranslateTextureUnit(unsigned int target) {
-    unsigned int out = GL_TEXTURE0 + target;
-    if (out > (GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS - 1)) {
-        GfxLog("Attempted to select an invalid texture image unit! (%i)\n", target);
-    }
-    return out;
-}
-
-unsigned int _plTranslateTextureTarget(PLTextureTarget target) {
-    switch (target) {
-        default:
-        case PL_TEXTURE_2D: return GL_TEXTURE_2D;
-        case PL_TEXTURE_1D: return GL_TEXTURE_1D;
-        case PL_TEXTURE_3D: return GL_TEXTURE_3D;
-    }
-}
-
-unsigned int _plTranslateColourFormat(PLColourFormat format) {
-    switch(format) {
-#if defined(PL_MODE_OPENGL) || defined(VL_MODE_OPENGL_CORE)
-        default:
-        case PL_COLOURFORMAT_RGB:   return GL_RGB;
-        case PL_COLOURFORMAT_RGBA:  return GL_RGBA;
-        case PL_COLOURFORMAT_BGR:   return GL_BGR;
-        case PL_COLOURFORMAT_BGRA:  return GL_BGRA;
-#elif defined(VL_MODE_GLIDE)
-        default:
-        case PL_COLOURFORMAT_RGBA:  return GR_COLORFORMAT_RGBA;
-        case PL_COLOURFORMAT_BGRA:  return GR_COLORFORMAT_BGRA;
-        case PL_COLOURFORMAT_ARGB:  return GR_COLORFORMAT_ARGB;
-        case PL_COLOURFORMAT_ABGR:  return GR_COLORFORMAT_ABGR;
-#endif
-    }
-}
-
-unsigned int _plTranslateTextureFormat(PLImageFormat format) {
-    switch (format) {
-        default:
-        case PL_IMAGEFORMAT_RGB4:         return GL_RGB4;
-        case PL_IMAGEFORMAT_RGBA4:        return GL_RGBA4;
-        case PL_IMAGEFORMAT_RGB5:         return GL_RGB5;
-        case PL_IMAGEFORMAT_RGB5A1:       return GL_RGB5_A1;
-#if defined(PL_MODE_OPENGL_CORE)
-        case PL_IMAGEFORMAT_RGB565:       return GL_RGB565;
-#endif
-        case PL_IMAGEFORMAT_RGB8:         return GL_RGB;
-        case PL_IMAGEFORMAT_RGBA8:        return GL_RGBA8;
-        case PL_IMAGEFORMAT_RGBA12:       return GL_RGBA12;
-        case PL_IMAGEFORMAT_RGBA16:       return GL_RGBA16;
-#if defined(PL_MODE_OPENGL_CORE)
-        case PL_IMAGEFORMAT_RGBA16F:      return GL_RGBA16F;
-#endif
-        case PL_IMAGEFORMAT_RGBA_DXT1:    return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-        case PL_IMAGEFORMAT_RGB_DXT1:     return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-        case PL_IMAGEFORMAT_RGBA_DXT3:    return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-        case PL_IMAGEFORMAT_RGBA_DXT5:    return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-    }
-}
-
-unsigned int _plTranslateTextureStorageFormat(PLDataFormat format) {
-    switch (format) {
-        default:
-        case PL_UNSIGNED_BYTE:              return GL_UNSIGNED_BYTE;
-        case PL_UNSIGNED_INT_8_8_8_8_REV:   return GL_UNSIGNED_INT_8_8_8_8_REV;
-    }
-}
-
-unsigned int _plTranslateTextureEnvironmentMode(PLTextureEnvironmentMode mode) {
-    switch (mode) {
-        default:
-        case PL_TEXTUREMODE_ADD:        return GL_ADD;
-        case PL_TEXTUREMODE_MODULATE:   return GL_MODULATE;
-        case PL_TEXTUREMODE_DECAL:      return GL_DECAL;
-        case PL_TEXTUREMODE_BLEND:      return GL_BLEND;
-        case PL_TEXTUREMODE_REPLACE:    return GL_REPLACE;
-        case PL_TEXTUREMODE_COMBINE:    return GL_COMBINE;
-    }
-}
-
-
-
-#endif
-
-/////////////////////////////////////////////////////
 
 PLTexture *plCreateTexture(void) {
 #if 0
@@ -352,7 +259,7 @@ void plSetTextureAnisotropy(PLTexture *texture, unsigned int amount) {
     CallGfxFunction(SetTextureAnisotropy, texture, amount);
 }
 
-void BindTexture(const PLTexture *texture) {
+void _plBindTexture(const PLTexture *texture) {
     // allow us to pass null texture instances
     // as it will give us an opportunity to unbind
     // them on the GPU upon request
@@ -418,9 +325,9 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
         strncpy(texture->name, file_name, sizeof(texture->name));
     }
 
-    BindTexture(texture);
+    _plBindTexture(texture);
     CallGfxFunction(UploadTexture, texture, upload);
-    BindTexture(NULL);
+    _plBindTexture(NULL);
 
     return true;
 }

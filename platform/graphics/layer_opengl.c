@@ -103,7 +103,11 @@ static bool GLHWSupportsMultitexture(void) {
 }
 
 static void GLGetMaxTextureUnits(unsigned int *num_units) {
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint *) num_units);
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint*)num_units);
+}
+
+static void GLGetMaxTextureSize(unsigned int* s) {
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, (GLint*)s);
 }
 
 /////////////////////////////////////////////////////////////
@@ -530,7 +534,6 @@ static void GLDrawMesh(PLMesh *mesh) {
     } else {
         glDrawArrays(mode, 0, mesh->num_verts);
     }
-
 }
 
 /////////////////////////////////////////////////////////////
@@ -870,6 +873,7 @@ void plInitOpenGL(void) {
     gfx_layer.HWSupportsShaders         = GLHWSupportsShaders;
     gfx_layer.HWSupportsMultitexture    = GLHWSupportsMultitexture;
     gfx_layer.GetMaxTextureUnits        = GLGetMaxTextureUnits;
+    gfx_layer.GetMaxTextureSize         = GLGetMaxTextureSize;
 
     gfx_layer.SetBlendMode              = GLSetBlendMode;
     gfx_layer.SetCullMode               = GLSetCullMode;
