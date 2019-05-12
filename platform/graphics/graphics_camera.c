@@ -85,31 +85,25 @@ void plDeleteCamera(PLCamera *camera) {
     pl_free(camera);
 }
 
-PLMatrix4x4 plGetCameraViewProjection(PLCamera *camera) {
-    PLMatrix4x4 mat = plLookAt(
-            camera->position,
-            plVector3Add(camera->position, camera->forward),
-            camera->up
-    );
-
-    return mat;
-}
-
 void plSetupCamera(PLCamera *camera) {
     plAssert(camera);
-
-    CallGfxFunction(SetupCamera, camera);
 
     camera->internal.proj = plMatrix4x4Identity();
     camera->internal.view = plMatrix4x4Identity();
 
-    int w, h;
-    w = camera->viewport.w;
-    h = camera->viewport.h;
+    int w = camera->viewport.w;
+    int h = camera->viewport.h;
 
     switch(camera->mode) {
         case PL_CAMERA_MODE_PERSPECTIVE: {
             camera->internal.proj = plPerspective(camera->fov, (float)w / (float)h, camera->near, camera->far);
+
+            PLVector3 forward = PLVector3(
+                    cosf(plToRadians(camera->angles.y)) * cosf(plToRadians(camera->angles.x)),
+                    sinf(plToRadians(camera->angles.x)),
+                    sinf(plToRadians(camera->angles.y)) * cosf(plToRadians(camera->angles.x))
+                    );
+            camera->forward = plVector3Normalize(forward);
             camera->internal.view = plLookAt(camera->position, plVector3Add(camera->position, camera->forward), camera->up);
         } break;
 
@@ -130,6 +124,8 @@ void plSetupCamera(PLCamera *camera) {
     // Copy camera matrices
     gfx_state.view_matrix = camera->internal.view;
     gfx_state.projection_matrix = camera->internal.proj;
+
+    CallGfxFunction(SetupCamera, camera);
 }
 
 const PLViewport *plGetCurrentViewport(void) {
