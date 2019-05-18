@@ -130,6 +130,26 @@ static void GLClearBuffers(unsigned int buffers) {
     glClear(glclear);
 }
 
+static void GLSetDepthBufferMode(unsigned int mode) {
+    switch(mode) {
+        default: {
+            GfxLog("unknown depth buffer mode, %d\n", mode);
+        } break;
+
+        case PL_DEPTHBUFFER_DISABLE: {
+            glDisable(GL_DEPTH_TEST);
+        } break;
+
+        case PL_DEPTHBUFFER_ENABLE: {
+            glEnable(GL_DEPTH_TEST);
+        } break;
+    }
+}
+
+static void GLSetDepthMask(bool enable) {
+    glDepthMask(enable);
+}
+
 /////////////////////////////////////////////////////////////
 
 static unsigned int TranslateBlendFunc(PLBlend blend) {
@@ -483,9 +503,8 @@ static void GLCreateMeshPOST(PLMesh *mesh) {
     //Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
     //Allocate & populate VBO
-    glBufferData(GL_ARRAY_BUFFER, VBOsize, &mesh->vertices[0], GL_DYNAMIC_DRAW); //Todo: Respect draw type
+    glBufferData(GL_ARRAY_BUFFER, VBOsize, &mesh->vertices[0], TranslateDrawMode(mesh->mode));
     //We should now have a VBO in VRAM, containing the vertices at time of mesh creation
-
 }
 
 static void GLUploadMesh(PLMesh *mesh) {
@@ -880,6 +899,9 @@ void plInitOpenGL(void) {
 
     gfx_layer.SetClearColour            = GLSetClearColour;
     gfx_layer.ClearBuffers              = GLClearBuffers;
+
+    gfx_layer.SetDepthBufferMode        = GLSetDepthBufferMode;
+    gfx_layer.SetDepthMask              = GLSetDepthMask;
 
     gfx_layer.CreateFrameBuffer         = GLCreateFrameBuffer;
     gfx_layer.DeleteFrameBuffer         = GLDeleteFrameBuffer;

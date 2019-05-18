@@ -226,7 +226,6 @@ _PLGraphicsCapabilities graphics_capabilities[] =
         { PL_CAPABILITY_TEXTURE_2D, 0, "TEXTURE_2D" },
         { PL_CAPABILITY_TEXTURE_GEN_S, 0, "TEXTURE_GEN_S" },
         { PL_CAPABILITY_TEXTURE_GEN_T, 0, "TEXTURE_GEN_T" },
-        { PL_CAPABILITY_CULL_FACE, 0, "CULL_FACE" },
         { PL_CAPABILITY_STENCILTEST, 0, "STENCIL_TEST" },
         { PL_CAPABILITY_MULTISAMPLE, 0, "MULTISAMPLE" },
 #endif
@@ -329,6 +328,14 @@ void plSetBlendMode(PLBlend a, PLBlend b) {
 
 void plSetCullMode(PLCullMode mode) {
     CallGfxFunction(SetCullMode, mode);
+}
+
+void plSetDepthBufferMode(unsigned int mode) {
+    CallGfxFunction(SetDepthBufferMode, mode);
+}
+
+void plSetDepthMask(bool enable) {
+    CallGfxFunction(SetDepthMask, enable);
 }
 
 /*===========================

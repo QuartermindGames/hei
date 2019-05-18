@@ -104,7 +104,6 @@ typedef enum PLGraphicsCapability {
     PL_CAPABILITY_DEPTHTEST         = (1 << 6),     // Depth-testing.
     PL_CAPABILITY_STENCILTEST       = (1 << 7),     // Stencil-testing.
     PL_CAPABILITY_MULTISAMPLE       = (1 << 8),     // Multisampling.
-    PL_CAPABILITY_CULL_FACE         = (1 << 9),     // Automatically cull faces.
     PL_CAPABILITY_SCISSORTEST       = (1 << 10),    // Scissor test for buffer clear.
 
     // Texture Generation
@@ -341,6 +340,13 @@ PL_EXTERN bool plHWSupportsShaders(void);
 
 PL_EXTERN void plSetCullMode(PLCullMode mode);
 PL_EXTERN void plSetBlendMode(PLBlend a, PLBlend b);
+
+enum {
+    PL_DEPTHBUFFER_DISABLE,
+    PL_DEPTHBUFFER_ENABLE,
+};
+PL_EXTERN void plSetDepthBufferMode(unsigned int mode);
+PL_EXTERN void plSetDepthMask(bool enable);
 
 PL_EXTERN void plProcessGraphics(void);
 

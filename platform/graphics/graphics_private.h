@@ -113,6 +113,9 @@ typedef struct GfxLayer {
     void(*SetClearColour)(PLColour rgba);
     void(*ClearBuffers)(unsigned int buffers);
 
+    void(*SetDepthBufferMode)(unsigned int mode);
+    void(*SetDepthMask)(bool enable);
+
     // Mesh
     void(*CreateMeshPOST)(PLMesh *mesh);
     void(*UploadMesh)(PLMesh *mesh);
