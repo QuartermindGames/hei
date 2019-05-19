@@ -255,9 +255,11 @@ IMPLEMENT_COMMAND(echo, "Prints out string to console.") {
     Print("\n");
 }
 
+#if 0
 IMPLEMENT_COMMAND(clear, "Clears the console buffer.") {
     memset(console_panes[active_console_pane].buffer, 0, 4096);
 }
+#endif
 
 IMPLEMENT_COMMAND(colour, "Changes the colour of the current console.") {
     //console_panes[active_console_pane].
@@ -350,7 +352,7 @@ PLresult plInitConsole(void) {
     }
 
     PLConsoleCommand base_commands[]={
-            clear_var,
+            //clear_var,
             help_var,
             time_var,
             mem_var,
