@@ -196,7 +196,6 @@ void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3 vector)
     mesh->vertices[index].position = vector;
 }
 
-#if 0
 void plSetMeshVertexPosition3fv(PLMesh *mesh, unsigned int index, unsigned int size, const float *v) {
     size += index;
     if(size > mesh->num_verts) {
@@ -209,7 +208,6 @@ void plSetMeshVertexPosition3fv(PLMesh *mesh, unsigned int index, unsigned int s
         mesh->vertices[i].position.z = v[2];
     }
 }
-#endif
 
 void plSetMeshVertexNormal(PLMesh *mesh, unsigned int index, PLVector3 vector) {
     plAssert(index < mesh->num_verts);
@@ -221,7 +219,6 @@ void plSetMeshVertexST(PLMesh *mesh, unsigned int index, float s, float t) {
     mesh->vertices[index].st[0] = PLVector2(s, t);
 }
 
-#if 0
 void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st) {
     size += index;
     if(size > mesh->num_verts) {
@@ -233,7 +230,6 @@ void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index, unsigned
         mesh->vertices[i].st[unit].y = st[1];
     }
 }
-#endif
 
 void plSetMeshVertexColour(PLMesh *mesh, unsigned int index, PLColour colour) {
     plAssert(index < mesh->num_verts);
@@ -408,6 +404,19 @@ void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, 
     plDrawMesh(mesh);
 }
 
+static void DrawRectangle(PLMesh* mesh, int x, int y, unsigned int w, unsigned int h, PLColour colour) {
+    plClearMesh(mesh);
+    plSetMeshVertexPosition(mesh, 0, PLVector3(x, y, 0));
+    plSetMeshVertexPosition(mesh, 1, PLVector3(x, y + h, 0));
+    plSetMeshVertexPosition(mesh, 2, PLVector3(x + w, y, 0));
+    plSetMeshVertexPosition(mesh, 3, PLVector3(x + w, y + h, 0));
+    plSetMeshUniformColour(mesh, colour);
+    plSetMeshVertexST(mesh, 0, 0, 0);
+    plSetMeshVertexST(mesh, 1, 0, 1);
+    plSetMeshVertexST(mesh, 2, 1, 0);
+    plSetMeshVertexST(mesh, 3, 1, 1);
+}
+
 void plDrawTexturedRectangle(int x, int y, int w, int h, PLTexture *texture) {
     static PLMesh *mesh = NULL;
     if(mesh == NULL) {
@@ -420,19 +429,7 @@ void plDrawTexturedRectangle(int x, int y, int w, int h, PLTexture *texture) {
         }
     }
 
-    plClearMesh(mesh);
-
-    plSetMeshVertexPosition(mesh, 0, PLVector3(x, y, 0));
-    plSetMeshVertexPosition(mesh, 1, PLVector3(x, y + h, 0));
-    plSetMeshVertexPosition(mesh, 2, PLVector3(x + w, y, 0));
-    plSetMeshVertexPosition(mesh, 3, PLVector3(x + w, y + h, 0));
-
-    plSetMeshUniformColour(mesh, PLColourRGB(255, 255, 255));
-
-    plSetMeshVertexST(mesh, 0, 0, 0);
-    plSetMeshVertexST(mesh, 1, 0, 1);
-    plSetMeshVertexST(mesh, 2, 1, 0);
-    plSetMeshVertexST(mesh, 3, 1, 1);
+    DrawRectangle(mesh, x, y, w, h, PLColour(255, 255, 255, 255));
 
     plSetTexture(texture, 0);
 
@@ -443,26 +440,26 @@ void plDrawTexturedRectangle(int x, int y, int w, int h, PLTexture *texture) {
     plSetTexture(NULL, 0);
 }
 
+PLMesh* plNewMeshRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colour) {
+    PLMesh* mesh = plCreateMesh(PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 2, 4);
+    if(mesh == NULL) {
+        return NULL;
+    }
+
+    DrawRectangle(mesh, x, y, w, h, colour);
+
+    return mesh;
+}
+
 void plDrawRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colour) {
     static PLMesh *mesh = NULL;
     if(mesh == NULL) {
-        if((mesh = plCreateMesh(
-                PL_MESH_LINE_LOOP,
-                PL_DRAW_DYNAMIC,
-                0, 4
-        )) == NULL) {
+        if((mesh = plCreateMesh(PL_MESH_LINE_LOOP, PL_DRAW_DYNAMIC, 0, 4)) == NULL) {
             return;
         }
     }
 
-    plClearMesh(mesh);
-
-    plSetMeshVertexPosition(mesh, 0, PLVector3(x, y, 0));
-    plSetMeshVertexPosition(mesh, 1, PLVector3(x + w, y, 0));
-    plSetMeshVertexPosition(mesh, 2, PLVector3(x + w, y + h, 0));
-    plSetMeshVertexPosition(mesh, 3, PLVector3(x, y + h, 0));
-
-    plSetMeshUniformColour(mesh, colour);
+    DrawRectangle(mesh, x, y, w, h, colour);
 
     plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
     plUploadMesh(mesh);
@@ -481,13 +478,7 @@ void plDrawFilledRectangle(PLRectangle2D rect) {
         }
     }
 
-    plClearMesh(mesh);
-
-    plSetMeshVertexPosition(mesh, 0, PLVector3(rect.xy.x, rect.xy.y + rect.wh.y, 0));
-    plSetMeshVertexPosition(mesh, 1, PLVector3(rect.xy.x, rect.xy.y, 0));
-    plSetMeshVertexPosition(mesh, 2, PLVector3(rect.xy.x + rect.wh.x, rect.xy.y + rect.wh.y, 0));
-    plSetMeshVertexPosition(mesh, 3, PLVector3(rect.xy.x + rect.wh.x, rect.xy.y, 0));
-
+    DrawRectangle(mesh, rect.xy.x, rect.xy.y, rect.wh.x, rect.wh.y, PLColour(255, 255, 255, 255));
     plSetMeshVertexColour(mesh, 0, rect.ll);
     plSetMeshVertexColour(mesh, 1, rect.ul);
     plSetMeshVertexColour(mesh, 2, rect.lr);
