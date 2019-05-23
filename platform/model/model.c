@@ -298,7 +298,12 @@ void plDrawModel(PLModel *model) {
         return;
     }
 
+    PLShaderProgram* old_program = plGetCurrentShaderProgram();
     for(unsigned int i = 0; i < lod->num_meshes; ++i) {
+        if(lod->meshes[i]->shader_program != NULL) {
+            plSetShaderProgram(lod->meshes[i]->shader_program);
+        }
+
         plSetTexture(lod->meshes[i]->texture, 0);
 
         plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", model->model_matrix, true);
@@ -306,6 +311,9 @@ void plDrawModel(PLModel *model) {
         plUploadMesh(lod->meshes[i]);
         plDrawMesh(lod->meshes[i]);
     }
+
+    plSetShaderProgram(old_program);
+    plSetTexture(NULL, 0);
 }
 
 void plDrawModelRadius(PLModel *model) {

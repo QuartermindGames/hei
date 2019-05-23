@@ -536,6 +536,11 @@ static void GLDrawMesh(PLMesh *mesh) {
         return;
     }
 
+    if(gfx_state.current_program == NULL) {
+        GfxLog("no shader assigned!\n");
+        return;
+    }
+
     //Write camera matrices to shader shared uniforms
     GLuint view_loc = glGetUniformLocation(gfx_state.current_program->internal.id, "pl_view");
     GLuint proj_loc = glGetUniformLocation(gfx_state.current_program->internal.id, "pl_proj");

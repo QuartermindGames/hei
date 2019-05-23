@@ -68,16 +68,16 @@ typedef struct PLTriangle {
 } PLTriangle;
 
 typedef struct PLMesh {
-    PLVertex*       vertices;
-    PLTriangle*     triangles;
-    uint16_t*       indices;
-    unsigned int    num_indices;
-    unsigned int    num_verts;
-    unsigned int    num_triangles;
-    PLTexture*      texture;
-    PLMeshPrimitive primitive;
-    PLMeshDrawMode  mode;
-
+    PLVertex*               vertices;
+    PLTriangle*             triangles;
+    uint16_t*               indices;
+    unsigned int            num_indices;
+    unsigned int            num_verts;
+    unsigned int            num_triangles;
+    struct PLShaderProgram* shader_program;
+    PLTexture*              texture;
+    PLMeshPrimitive         primitive;
+    PLMeshDrawMode          mode;
     struct {
         unsigned int    buffers[32];
         PLMeshPrimitive old_primitive;  /* provided for switching between different primitive modes */
@@ -109,6 +109,7 @@ PL_EXTERN void plSetMeshVertexST(PLMesh *mesh, unsigned int index, float s, floa
 PL_EXTERN void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st);
 PL_EXTERN void plSetMeshVertexColour(PLMesh *mesh, unsigned int index, PLColour colour);
 PL_EXTERN void plSetMeshUniformColour(PLMesh *mesh, PLColour colour);
+PL_EXTERN void plSetMeshShaderProgram(PLMesh* mesh, struct PLShaderProgram* program);
 PL_EXTERN void plUploadMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawMesh(PLMesh *mesh);

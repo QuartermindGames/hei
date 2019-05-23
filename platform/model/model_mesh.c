@@ -242,6 +242,10 @@ void plSetMeshUniformColour(PLMesh *mesh, PLColour colour) {
     }
 }
 
+void plSetMeshShaderProgram(PLMesh* mesh, PLShaderProgram* program) {
+    mesh->shader_program = program;
+}
+
 void plUploadMesh(PLMesh *mesh) {
     CallGfxFunction(UploadMesh, mesh);
 }
