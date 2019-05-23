@@ -51,8 +51,7 @@ For more information, please refer to <http://unlicense.org>
  * @param buf
  * @param length
  */
-void plPreProcessGLSLShader(char **buf, size_t *length) {
-#if defined(PL_SUPPORT_OPENGL)
+static void GLPreProcessGLSLShader(char **buf, size_t *length, PLShaderStageType type) {
     size_t n_len = 1000000; /*(*length) * 2*/;
     char *n_buf = pl_calloc(n_len, sizeof(char));
     if(n_buf == NULL) {
@@ -68,12 +67,16 @@ void plPreProcessGLSLShader(char **buf, size_t *length) {
 #define SkipSpaces()            while(*pos == ' ') { pos++; }
 #define SkipLine()              while(*pos != '\n' && *pos != '\r') { pos++; }
 
-    InsertString(n_pos, "#version 150\n"); //OpenGL 3.2 == GLSL 150
+    InsertString(n_pos, "#version 150 core\n") //OpenGL 3.2 == GLSL 150
 
     /* built-in uniforms */
-    InsertString(n_pos, "uniform mat4 pl_model;")
-    InsertString(n_pos, "uniform mat4 pl_view;");
-    InsertString(n_pos, "uniform mat4 pl_proj;");
+    if(type == PL_SHADER_TYPE_VERTEX) {
+        InsertString(n_pos, "uniform mat4 pl_model;")
+        InsertString(n_pos, "uniform mat4 pl_view;")
+        InsertString(n_pos, "uniform mat4 pl_proj;")
+    } else if(type == PL_SHADER_TYPE_FRAGMENT) {
+        InsertString(n_pos, "out vec4 pl_frag;")
+    }
 
     while(*pos != '\0') {
         if(*pos == '\n' || *pos == '\r' || *pos == '\t') {
@@ -159,7 +162,6 @@ void plPreProcessGLSLShader(char **buf, size_t *length) {
     }
 
     pl_free(n_buf);
-#endif
 }
 
 #endif
@@ -222,7 +224,7 @@ void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) 
 
     char *n_buf = pl_calloc(sizeof(char), length + 1);
     strcpy(n_buf, buf);
-    plPreProcessGLSLShader(&n_buf, &length);
+    GLPreProcessGLSLShader(&n_buf, &length, stage->type);
 
     CallGfxFunction(CompileShaderStage, stage, n_buf, length);
 
@@ -506,6 +508,7 @@ PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
         case GL_FLOAT_VEC3: return PL_UNIFORM_VEC3;
         case GL_FLOAT_VEC4: return PL_UNIFORM_VEC4;
         case GL_FLOAT_MAT3: return PL_UNIFORM_MAT3;
+        case GL_FLOAT_MAT4: return PL_UNIFORM_MAT4;
 
         case GL_DOUBLE: return PL_UNIFORM_DOUBLE;
 

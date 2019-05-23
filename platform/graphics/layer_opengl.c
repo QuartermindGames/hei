@@ -988,11 +988,9 @@ void plInitOpenGL(void) {
         gl_capabilities.direct_state_access = true;
     }
 
-
     // Init vertex attributes
     glGenVertexArrays(1, VAO);
     glBindVertexArray(VAO[0]);
-
 }
 
 void plShutdownOpenGL(void) {
