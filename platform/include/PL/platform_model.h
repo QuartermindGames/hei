@@ -99,15 +99,15 @@ typedef struct PLModel {
     char            name[64];
     PLModelType     type;
     uint16_t        flags;
-    float           radius;                     /* used for visibility culling */
-
+    /* used for visibility culling */
+    float           radius;
+    PLAABB          bounds;
     /* transformations */
-    PLMatrix4x4 model_matrix;
-
+    PLMatrix4x4     model_matrix;
     /* model lods */
-    PLModelLod  levels[PL_MAX_MODEL_LODS];  /* different mesh sets for different levels of detail */
-    uint8_t     num_levels;                 /* levels of detail provided */
-    uint8_t     current_level;              /* current lod level, used for rendering */
+    PLModelLod      levels[PL_MAX_MODEL_LODS];  /* different mesh sets for different levels of detail */
+    uint8_t         num_levels;                 /* levels of detail provided */
+    uint8_t         current_level;              /* current lod level, used for rendering */
 
     struct {
         /* model type data */
@@ -132,6 +132,7 @@ PLModel* plLoadModel(const char *path);
 void plDestroyModel(PLModel *model);
 
 void plDrawModel(PLModel *model);
+void plDrawModelBounds(const PLModel* model);
 void plDrawModelSkeleton(PLModel *model);
 
 void plApplyModelLighting(PLModel *model, PLLight *light, PLVector3 position);

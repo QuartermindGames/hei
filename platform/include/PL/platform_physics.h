@@ -39,36 +39,26 @@ PL_INLINE static void plAddAABB(PLAABB *b, PLAABB b2) {
 }
 
 PL_INLINE static bool plIntersectAABB(PLAABB b, PLAABB b2) {
-    if(
-            b.maxs.x < b2.mins.x ||
-            b.maxs.y < b2.mins.y ||
-            b.maxs.z < b2.mins.z ||
+    return !(b.maxs.x < b2.mins.x ||
+             b.maxs.y < b2.mins.y ||
+             b.maxs.z < b2.mins.z ||
 
-            b.mins.x > b2.maxs.x ||
-            b.mins.y > b2.maxs.y ||
-            b.mins.z > b2.maxs.z
-            ) {
-        return false;
-    }
+             b.mins.x > b2.maxs.x ||
+             b.mins.y > b2.maxs.y ||
+             b.mins.z > b2.maxs.z);
 
-    return true;
 }
 
 PL_INLINE static bool plIntersectPoint(PLAABB b, PLVector3 point) {
-    if(
-            point.x > b.maxs.x ||
-            point.x < b.mins.x ||
+    return !(point.x > b.maxs.x ||
+             point.x < b.mins.x ||
 
-            point.y > b.maxs.y ||
-            point.y < b.mins.y ||
+             point.y > b.maxs.y ||
+             point.y < b.mins.y ||
 
-            point.z > b.maxs.z ||
-            point.z < b.mins.z
-            ) {
-        return false;
-    }
+             point.z > b.maxs.z ||
+             point.z < b.mins.z);
 
-    return true;
 }
 
 PL_INLINE static bool plIsSphereIntersecting(PLVector3 origin, float radius, PLVector3 position_b, float radius_b) {

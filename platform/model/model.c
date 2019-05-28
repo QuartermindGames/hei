@@ -70,8 +70,32 @@ void plGenerateModelNormals(PLModel *model) {
     }
 }
 
-void plGenerateModelBounds(PLModel *model) {
+void plGenerateModelBounds(PLModel* model) {
+    plAssert(model != NULL);
 
+    PLModelLod* lod = plGetModelLodLevel(model, 0);
+    if(lod == NULL) {
+        ReportError(PL_RESULT_FAIL, "failed to get lod level 0, unable to proceed with bound generation");
+        return;
+    }
+
+    PLAABB bounds = {
+            PLVector3(99999, 99999, 99999),     /* max */
+            PLVector3(-99999, -99999, -99999)   /* min */
+    };
+    for(unsigned int i = 0; i < lod->num_meshes; ++i) {
+        PLMesh* mesh = lod->meshes[i];
+        for(unsigned int j = 0; j < mesh->num_verts; ++j) {
+            PLVertex* vertex = &mesh->vertices[j];
+            if(vertex->position.x < bounds.mins.x) bounds.mins.x = vertex->position.x;
+            if(vertex->position.x > bounds.maxs.x) bounds.maxs.x = vertex->position.x;
+            if(vertex->position.y < bounds.mins.y) bounds.mins.y = vertex->position.y;
+            if(vertex->position.y > bounds.maxs.y) bounds.maxs.y = vertex->position.y;
+            if(vertex->position.z < bounds.mins.z) bounds.mins.z = vertex->position.z;
+            if(vertex->position.z > bounds.maxs.z) bounds.maxs.z = vertex->position.z;
+        }
+    }
+    model->bounds = bounds;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -307,7 +331,6 @@ void plDrawModel(PLModel *model) {
         plSetTexture(lod->meshes[i]->texture, 0);
 
         plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", model->model_matrix, true);
-
         plUploadMesh(lod->meshes[i]);
         plDrawMesh(lod->meshes[i]);
     }
