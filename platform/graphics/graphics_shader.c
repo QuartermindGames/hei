@@ -501,7 +501,7 @@ bool plRegisterShaderProgramAttributes(PLShaderProgram *program) {
 #if defined(PL_SUPPORT_OPENGL)
 
 /* todo, move into layer_opengl */
-PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
+static PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
     switch(type) {
         case GL_FLOAT:      return PL_UNIFORM_FLOAT;
         case GL_FLOAT_VEC2: return PL_UNIFORM_VEC2;
@@ -586,11 +586,59 @@ bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
     return true;
 }
 
+static int ValidateShaderUniformSlot(PLShaderProgram* program, int slot) {
+    if(slot == -1) {
+        GfxLog("invalid shader uniform slot, \"%d\"!\n", slot);
+        return -1;
+    } else if((unsigned int)(slot) >= program->num_uniforms) {
+        GfxLog("potential overflow for uniform slot! (%d / %d)\n", slot, program->num_uniforms);
+        return -1;
+    } else if(program->uniforms[slot].type == PL_INVALID_UNIFORM) {
+        GfxLog("unknown uniform type for slot! (%d)\n", slot);
+        return -1;
+    }
+
+    return slot;
+}
+
 void plSetShaderUniformFloat(PLShaderProgram *program, int slot, float value) {
     PLShaderProgram *prg = GetShaderProgram(program);
     if(prg == NULL || prg->uniforms == NULL) {
         return;
     }
+
+    if(ValidateShaderUniformSlot(prg, slot) == -1) {
+        return;
+    }
+
+    PLShaderProgram* old_program = plGetCurrentShaderProgram();
+    plSetShaderProgram(prg);
+
+#if defined(PL_SUPPORT_OPENGL) /* todo, move into layer_opengl */
+    glUniform1f(prg->uniforms[slot].slot, value);
+#endif
+
+    plSetShaderProgram(old_program);
+}
+
+void plSetShaderUniformVector4(PLShaderProgram* program, int slot, PLVector4 value) {
+    PLShaderProgram* prg = GetShaderProgram(program);
+    if(prg == NULL || prg->uniforms == NULL) {
+        return;
+    }
+
+    if(ValidateShaderUniformSlot(prg, slot) == -1) {
+        return;
+    }
+
+    PLShaderProgram* old_program = plGetCurrentShaderProgram();
+    plSetShaderProgram(prg);
+
+#if defined(PL_SUPPORT_OPENGL) /* todo, move into layer_opengl */
+    glUniform4f(prg->uniforms[slot].slot, value.x, value.y, value.z, value.w);
+#endif
+
+    plSetShaderProgram(old_program);
 }
 
 void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value) {
@@ -599,15 +647,7 @@ void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value) {
         return;
     }
 
-    if(slot == -1) {
-        GfxLog("invalid shader uniform slot, \"%d\"!\n", slot);
-        return;
-    } else if((unsigned int)(slot) >= prg->num_uniforms) {
-        GfxLog("potential overflow for uniform slot! (%d / %d)\n", slot, prg->num_uniforms);
-        return;
-    }
-
-    if(prg->uniforms[slot].type == PL_INVALID_UNIFORM) {
+    if(ValidateShaderUniformSlot(prg, slot) == -1) {
         return;
     }
 
@@ -628,9 +668,9 @@ void plSetShaderUniformMatrix4x4(PLShaderProgram *program, int slot, PLMatrix4x4
         return;
     }
 
-    if(slot < 0 || slot >= prg->num_uniforms ) {
-        GfxLog("Invalid shader uniform slot, \"%d\"!\n", slot);
+    if(ValidateShaderUniformSlot(prg, slot) == -1) {
         return;
     }
+
     CallGfxFunction(SetShaderUniformMatrix4x4, prg, slot, value, transpose);
 }

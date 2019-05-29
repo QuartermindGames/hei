@@ -436,6 +436,10 @@ typedef struct PLColour {
 
     }
 
+    PL_INLINE PLVector4 ToVec4() const {
+        return {plByteToFloat(r), plByteToFloat(g), plByteToFloat(b), plByteToFloat(a)};
+    }
+
     PL_INLINE void operator *= (const PLColour &v) {
         r *= v.r; g *= v.g; b *= v.b; a *= v.a;
     }
