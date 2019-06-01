@@ -91,9 +91,7 @@ if(PL_USE_GRAPHICS)
 
     if(PL_SUPPORT_OPENGL)
         add_definitions("-DPL_SUPPORT_OPENGL")
-        if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-            target_link_libraries(platform "-framework OpenGL" glew)
-        elseif(WIN32)
+        if (WIN32 OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
             build_glew()
             target_link_libraries(platform glew_s)
         else()
@@ -116,12 +114,12 @@ if(UNIX)
 elseif(WIN32)
     target_compile_options(platform PRIVATE -static -static-libstdc++ -static-libgcc)
     target_link_libraries(platform Secur32 ws2_32)
-    target_include_directories(platform PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glew-2.2.0/include/)
 endif()
 
 target_include_directories(platform PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/
         ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_include_directories(platform PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(platform PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glew-2.2.0/include/)
 target_link_libraries(platform m)
