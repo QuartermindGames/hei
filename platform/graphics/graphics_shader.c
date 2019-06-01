@@ -478,11 +478,18 @@ int plGetShaderUniformSlot(PLShaderProgram *program, const char *name) {
         return -1;
     }
 
+#if 1
     for(unsigned int i = 0; i < prg->num_uniforms; ++i) {
         if(pl_strncasecmp(prg->uniforms[i].name, name, sizeof(prg->uniforms[i].name)) == 0) {
             return i;
         }
     }
+#else
+    GLint uniform = glGetUniformLocation(prg->internal.id, name);
+    if(uniform != -1) {
+        return uniform;
+    }
+#endif
 
     GfxLog("failed to find uniform slot \"%s\"!\n", name);
     return -1;

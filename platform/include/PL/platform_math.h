@@ -460,6 +460,14 @@ typedef struct PLColour {
         r += plFloatToByte(c); g += plFloatToByte(c); b += plFloatToByte(c); a += plFloatToByte(c);
     }
 
+    PL_INLINE void operator -= (PLColour v) {
+        r -= v.r; g -= v.g; b -= v.b; a -= v.a;
+    }
+
+    PL_INLINE void operator -= (float c) {
+        r -= plFloatToByte(c); g -= plFloatToByte(c); b -= plFloatToByte(c); a -= plFloatToByte(c);
+    }
+
     PL_INLINE void operator /= (PLColour v) {
         r /= v.r; g /= v.g; b /= v.b; a /= v.a;
     }
@@ -901,7 +909,9 @@ PL_INLINE static void plMultiplyMatrix(PLMatrix4x4 *m, PLMatrix4x4 m2) {
 }
 
 PL_INLINE static void plScaleMatrix(PLMatrix4x4 *m, PLVector3 scale) {
-
+    m->pl_4x4pos(0, 0) *= scale.x;
+    m->pl_4x4pos(1, 1) *= scale.y;
+    m->pl_4x4pos(2, 2) *= scale.z;
 }
 
 PL_INLINE static void plRotateMatrix(PLMatrix4x4 *m, float angle, PLVector3 axis) {
