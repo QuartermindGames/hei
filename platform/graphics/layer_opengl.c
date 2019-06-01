@@ -519,11 +519,12 @@ static void GLUploadMesh(PLMesh *mesh) {
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
     glEnableVertexAttribArray(3);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex), (const GLvoid *)0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,  sizeof(PLVertex), (const GLvoid *)12);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(PLVertex), (const GLvoid *)24);
-    glVertexAttribPointer(3, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PLVertex), (const GLvoid *)32);
 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex), (const GLvoid *)pl_offsetof(PLVertex, position));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,  sizeof(PLVertex), (const GLvoid *)pl_offsetof(PLVertex, normal));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(PLVertex), (const GLvoid *)pl_offsetof(PLVertex, st));
+    glVertexAttribPointer(3, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PLVertex),
+            (const GLvoid *)pl_offsetof(PLVertex, colour));
 }
 
 static void GLDeleteMesh(PLMesh *mesh) {

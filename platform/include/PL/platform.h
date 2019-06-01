@@ -121,6 +121,12 @@ support.
 #define plIsEmptyString(a)  (((a)[0] == '\0') || ((a)[0] == ' '))
 #define plStringify(num)    #num
 
+#ifndef offsetof
+#   define pl_offsetof(a, b)    ((size_t)&(((a*)0)->b))
+#else
+#   define pl_offsetof(a, b)    offsetof(a, b)
+#endif
+
 //////////////////////////////////////////////////////////////////
 
 // Error return values
