@@ -224,7 +224,7 @@ void plApplyModelLighting(PLModel *model, PLLight *light, PLVector3 position) {
 
 #endif
 
-static PLModel* NewModel(PLModelType type, PLModelLod* levels, uint8_t num_levels) {
+static PLModel* CreateModel(PLModelType type, PLModelLod *levels, uint8_t num_levels) {
     PLModel* model = pl_malloc(sizeof(PLModel));
     if(model == NULL) {
         return NULL;
@@ -241,26 +241,26 @@ static PLModel* NewModel(PLModelType type, PLModelLod* levels, uint8_t num_level
     return model;
 }
 
-static PLModel* NewBasicModel(PLModelType type, PLMesh* mesh) {
+static PLModel* CreateBasicModel(PLModelType type, PLMesh *mesh) {
     PLMesh** meshes = pl_malloc(sizeof(PLMesh*));
     if(meshes == NULL) return NULL;
     meshes[0] = mesh;
-    PLModel* model = NewModel(type, &(PLModelLod){ meshes, 1 }, 1);
+    PLModel* model = CreateModel(type, &(PLModelLod) {meshes, 1}, 1);
     if(model == NULL) {
         pl_free(meshes);
     }
     return model;
 }
 
-PLModel* plNewBasicStaticModel(PLMesh* mesh) {
-    return NewBasicModel(PL_MODELTYPE_STATIC, mesh);
+PLModel* plCreateBasicStaticModel(PLMesh *mesh) {
+    return CreateBasicModel(PL_MODELTYPE_STATIC, mesh);
 }
 
-PLModel* plNewStaticModel(PLModelLod* levels, uint8_t num_levels) {
-    return NewModel(PL_MODELTYPE_STATIC, levels, num_levels);
+PLModel* plCreateStaticModel(PLModelLod *levels, uint8_t num_levels) {
+    return CreateModel(PL_MODELTYPE_STATIC, levels, num_levels);
 }
 
-static PLModel* NewSkeletalModel(PLModel* model, PLModelBone* skeleton, uint32_t num_bones, uint32_t root_index) {
+static PLModel* CreateSkeletalModel(PLModel *model, PLModelBone *skeleton, uint32_t num_bones, uint32_t root_index) {
     if(model == NULL) {
         return NULL;
     }
@@ -275,13 +275,13 @@ static PLModel* NewSkeletalModel(PLModel* model, PLModelBone* skeleton, uint32_t
     return model;
 }
 
-PLModel* plNewBasicSkeletalModel(PLMesh* mesh, PLModelBone* skeleton, uint32_t num_bones, uint32_t root_index) {
-    return NewSkeletalModel(NewBasicModel(PL_MODELTYPE_SKELETAL, mesh), skeleton, num_bones, root_index);
+PLModel* plCreateBasicSkeletalModel(PLMesh *mesh, PLModelBone *skeleton, uint32_t num_bones, uint32_t root_index) {
+    return CreateSkeletalModel(CreateBasicModel(PL_MODELTYPE_SKELETAL, mesh), skeleton, num_bones, root_index);
 }
 
-PLModel* plNewSkeletalModel(PLModelLod* levels, uint8_t num_levels, PLModelBone* skeleton, uint32_t num_bones,
-                            uint32_t root_index) {
-    return NewSkeletalModel(NewModel(PL_MODELTYPE_SKELETAL, levels, num_levels), skeleton, num_bones, root_index);
+PLModel* plCreateSkeletalModel(PLModelLod *levels, uint8_t num_levels, PLModelBone *skeleton, uint32_t num_bones,
+                               uint32_t root_index) {
+    return CreateSkeletalModel(CreateModel(PL_MODELTYPE_SKELETAL, levels, num_levels), skeleton, num_bones, root_index);
 }
 
 void plDestroyModel(PLModel *model) {

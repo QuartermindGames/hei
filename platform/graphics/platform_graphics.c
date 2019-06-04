@@ -149,7 +149,7 @@ PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h, unsigned int 
     return buffer;
 }
 
-void plDeleteFrameBuffer(PLFrameBuffer *buffer) {
+void plDestroyFrameBuffer(PLFrameBuffer *buffer) {
     if(!buffer) {
         return;
     }

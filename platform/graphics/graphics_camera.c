@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #include <PL/platform_console.h>
 
 #include "graphics_private.h"
@@ -75,12 +76,12 @@ PLCamera *plCreateCamera(void) {
     return camera;
 }
 
-void plDeleteCamera(PLCamera *camera) {
+void plDestroyCamera(PLCamera *camera) {
     if(camera == NULL) {
         return;
     }
 
-    CallGfxFunction(DeleteCamera, camera);
+    CallGfxFunction(DestroyCamera, camera);
 
     pl_free(camera);
 }

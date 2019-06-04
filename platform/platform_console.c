@@ -53,6 +53,8 @@ static size_t _pl_commands_size = 512;
 
 void plRegisterConsoleCommand(const char *name, void(*CallbackFunction)(unsigned int argc, char *argv[]),
                               const char *description) {
+    FunctionStart();
+
     if(name == NULL || name[0] == '\0') {
         ReportError(PL_RESULT_COMMAND_NAME, plGetResultString(PL_RESULT_COMMAND_NAME));
         return;
@@ -117,6 +119,8 @@ static size_t _pl_variables_size = 512;
 PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, PLVariableType type,
                                              void(*CallbackFunction)(const PLConsoleVariable *variable),
                                              const char *desc) {
+    FunctionStart();
+
     plAssert(_pl_variables);
 
     if(name == NULL || name[0] == '\0') {
@@ -380,7 +384,7 @@ void plShutdownConsole(void) {
     console_visible = false;
 
 #if defined(PL_USE_GRAPHICS)
-    plDeleteBitmapFont(console_font);
+    plDestroyBitmapFont(console_font);
 #endif
 
     memset(&console_panes, 0, sizeof(PLConsolePane) * CONSOLE_MAX_INSTANCES);

@@ -144,7 +144,7 @@ bool plNewLoadImage(const char *ext, uint8_t *data, size_t length, PLImage *out)
 
 #endif /* PL_NEW_IMAGE_SUBSYSTEM */
 
-PLImage *plNewImage(uint8_t *buf, unsigned int w, unsigned int h, PLColourFormat col, PLImageFormat dat) {
+PLImage *plCreateImage(uint8_t *buf, unsigned int w, unsigned int h, PLColourFormat col, PLImageFormat dat) {
     PLImage *image = pl_malloc(sizeof(PLImage));
     if(image == NULL) {
         return NULL;

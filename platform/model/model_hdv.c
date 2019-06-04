@@ -167,7 +167,7 @@ PLModel *plLoadHDVModel(const char *path) {
 
     plUploadMesh(mesh);
 
-    PLModel *model = plNewBasicStaticModel(mesh);
+    PLModel *model = plCreateBasicStaticModel(mesh);
     if(model == NULL) {
         plDestroyMesh(mesh);
         return NULL;

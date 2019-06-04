@@ -197,12 +197,12 @@ static PLShaderStage *CreateShaderStage(PLShaderStageType type) {
  *
  * @param stage stage we're deleting.
  */
-void plDeleteShaderStage(PLShaderStage *stage) {
+void plDestroyShaderStage(PLShaderStage *stage) {
     if(stage == NULL) {
         return;
     }
 
-    CallGfxFunction(DeleteShaderStage, stage);
+    CallGfxFunction(DestroyShaderStage, stage);
 }
 
 /**
@@ -245,7 +245,7 @@ PLShaderStage *plParseShaderStage(PLShaderStageType type, const char *buf, size_
 
     plCompileShaderStage(stage, buf, length);
     if(plGetFunctionResult() == PL_RESULT_SHADER_COMPILE) {
-        plDeleteShaderStage(stage);
+        plDestroyShaderStage(stage);
         return NULL;
     }
 
@@ -328,7 +328,7 @@ bool test_create_shader_program(void) {
 
     printf(" %d\n", my_program2->internal.id);
 
-    plDeleteShaderProgram(my_program2, false);
+    plDestroyShaderProgram(my_program2, false);
 
     return true;
 }
@@ -341,7 +341,7 @@ bool test_create_shader_program(void) {
  * @param program the program being deleted.
  * @param free_stages if true, automatically frees any linked shader stages.
  */
-void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages) {
+void plDestroyShaderProgram(PLShaderProgram *program, bool free_stages) {
     if(program == NULL) {
         return;
     }
@@ -355,7 +355,7 @@ void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages) {
         }
     }
 
-    CallGfxFunction(DeleteShaderProgram, program);
+    CallGfxFunction(DestroyShaderProgram, program);
 
     pl_free(program->uniforms);
     pl_free(program->attributes);

@@ -90,7 +90,7 @@ PL_EXTERN_C
 
 PL_EXTERN PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts);
 PL_EXTERN PLMesh *plCreateMeshInit(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts, void* indexData, void* vertexData);
-PL_EXTERN PLMesh* plNewMeshRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colour);
+PL_EXTERN PLMesh* plCreateMeshRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colour);
 PL_EXTERN void plDestroyMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h);

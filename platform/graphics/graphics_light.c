@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include "graphics_private.h"
 
-PLLight* plNewLight(PLLightType type, PLColour colour) {
+PLLight* plCreateLight(PLLightType type, PLColour colour) {
     PLLight* light = (PLLight*)pl_malloc(sizeof(PLLight));
     if(light == NULL) {
         return NULL;
@@ -41,7 +41,7 @@ PLLight* plNewLight(PLLightType type, PLColour colour) {
     return light;
 }
 
-void plDeleteLight(PLLight* light) {
+void plDestroyLight(PLLight *light) {
     if(light == NULL) {
         return;
     }

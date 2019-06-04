@@ -64,7 +64,7 @@ typedef struct PLCamera {
 PL_EXTERN_C
 
 PL_EXTERN PLCamera *plCreateCamera(void);
-PL_EXTERN void plDeleteCamera(PLCamera *camera);
+PL_EXTERN void plDestroyCamera(PLCamera *camera);
 
 PL_EXTERN void plSetupCamera(PLCamera *camera);
 

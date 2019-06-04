@@ -196,7 +196,7 @@ PLBitmapFont *plParseBitmapFont(const char *name, char *buf, size_t length) {
 
         if((image.data = pl_calloc(image.levels, sizeof(uint8_t*))) == NULL ||
                 (image.data[0] = pl_calloc(image.size, sizeof(uint8_t))) == NULL) {
-            plDeleteBitmapFont(font);
+            plDestroyBitmapFont(font);
             return NULL;
         }
         memcpy(image.data[0], f_zx_image, sizeof(f_zx_image));
@@ -204,7 +204,7 @@ PLBitmapFont *plParseBitmapFont(const char *name, char *buf, size_t length) {
         plReplaceImageColour(&image, PL_COLOUR_BLACK, PLColour(0, 0, 0, 0));
     } else {
         if(!plLoadImage(texture_path, &image)) {
-            plDeleteBitmapFont(font);
+            plDestroyBitmapFont(font);
 
             ReportError(PL_RESULT_FILEPATH, "failed to find texture at %s, for %s", texture_path, name);
             return NULL;
@@ -213,7 +213,7 @@ PLBitmapFont *plParseBitmapFont(const char *name, char *buf, size_t length) {
 
     if((font->texture = plCreateTexture()) == NULL) {
         plFreeImage(&image);
-        plDeleteBitmapFont(font);
+        plDestroyBitmapFont(font);
         return false;
     }
 
@@ -272,7 +272,7 @@ PLBitmapFont *plCreateBitmapFont(const char *path) {
     return font;
 }
 
-void plDeleteBitmapFont(PLBitmapFont *font) {
+void plDestroyBitmapFont(PLBitmapFont *font) {
     if(font == NULL) {
         return;
     }

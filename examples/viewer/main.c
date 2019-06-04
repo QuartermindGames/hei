@@ -477,7 +477,7 @@ int main(int argc, char **argv) {
     }
 
     plDestroyModel(model);
-    plDeleteCamera(main_camera);
+    plDestroyCamera(main_camera);
 
     DestroyWindow();
 #endif

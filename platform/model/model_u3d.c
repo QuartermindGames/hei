@@ -212,7 +212,7 @@ PLModel *plLoadU3DModel(const char *path) {
         if (std::fread(&utriangles[i], sizeof(U3DTriangle), 1, pl_u3d_dataf) != 1) {
             _plSetErrorMessage("Failed to process triangles! (%i)\n", i);
 
-            plDeleteAnimatedModel(model);
+            plDestroyAnimatedModel(model);
 
             _plUnloadU3DModel();
             return nullptr;
@@ -230,7 +230,7 @@ PLModel *plLoadU3DModel(const char *path) {
         if (std::fread(&uvertices[i], sizeof(U3DVertex), 1, pl_u3d_animf) != 1) {
             _plSetErrorMessage("Failed to process vertex! (%i)\n", i);
 
-            plDeleteAnimatedModel(model);
+            plDestroyAnimatedModel(model);
 
             _plUnloadU3DModel();
             return nullptr;

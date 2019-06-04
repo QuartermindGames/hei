@@ -574,7 +574,7 @@ static void GLCreateCamera(PLCamera *camera) {
     plAssert(camera);
 }
 
-static void GLDeleteCamera(PLCamera *camera) {
+static void GLDestroyCamera(PLCamera *camera) {
     plAssert(camera);
 }
 
@@ -683,7 +683,7 @@ static void GLCreateShaderProgram(PLShaderProgram *program) {
     }
 }
 
-static void GLDeleteShaderProgram(PLShaderProgram *program) {
+static void GLDestroyShaderProgram(PLShaderProgram *program) {
     if(program->internal.id == 0) {
         return;
     }
@@ -724,7 +724,7 @@ static void GLCreateShaderStage(PLShaderStage *stage) {
     }
 }
 
-static void GLDeleteShaderStage(PLShaderStage *stage) {
+static void GLDestroyShaderStage(PLShaderStage *stage) {
     if(!GLVersion(2,0)) {
         return;
     }
@@ -928,15 +928,15 @@ void plInitOpenGL(void) {
     gfx_layer.UploadMesh                = GLUploadMesh;
 
     gfx_layer.CreateCamera              = GLCreateCamera;
-    gfx_layer.DeleteCamera              = GLDeleteCamera;
+    gfx_layer.DestroyCamera             = GLDestroyCamera;
     gfx_layer.SetupCamera               = GLSetupCamera;
 
     gfx_layer.CreateShaderProgram       = GLCreateShaderProgram;
-    gfx_layer.DeleteShaderProgram       = GLDeleteShaderProgram;
+    gfx_layer.DestroyShaderProgram      = GLDestroyShaderProgram;
     gfx_layer.SetShaderProgram          = GLSetShaderProgram;
     gfx_layer.LinkShaderProgram         = GLLinkShaderProgram;
     gfx_layer.CreateShaderStage         = GLCreateShaderStage;
-    gfx_layer.DeleteShaderStage         = GLDeleteShaderStage;
+    gfx_layer.DestroyShaderStage        = GLDestroyShaderStage;
     gfx_layer.AttachShaderStage         = GLAttachShaderStage;
     gfx_layer.CompileShaderStage        = GLCompileShaderStage;
 

@@ -121,11 +121,11 @@ typedef struct PLModel {
 
 PL_EXTERN_C
 
-PLModel* plNewStaticModel(PLModelLod* levels, uint8_t num_levels);
-PLModel* plNewBasicStaticModel(PLMesh* mesh);
-PLModel* plNewSkeletalModel(PLModelLod* levels, uint8_t num_levels, PLModelBone* skeleton, uint32_t num_bones,
-        uint32_t root_index);
-PLModel* plNewBasicSkeletalModel(PLMesh* mesh, PLModelBone* skeleton, uint32_t num_bones, uint32_t root_index);
+PLModel* plCreateStaticModel(PLModelLod *levels, uint8_t num_levels);
+PLModel* plCreateBasicStaticModel(PLMesh *mesh);
+PLModel* plCreateSkeletalModel(PLModelLod *levels, uint8_t num_levels, PLModelBone *skeleton, uint32_t num_bones,
+                               uint32_t root_index);
+PLModel* plCreateBasicSkeletalModel(PLMesh *mesh, PLModelBone *skeleton, uint32_t num_bones, uint32_t root_index);
 
 PLModel* plLoadModel(const char *path);
 

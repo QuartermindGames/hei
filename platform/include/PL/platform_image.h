@@ -85,7 +85,7 @@ typedef struct PLPalette {
 
 PL_EXTERN_C
 
-PL_EXTERN PLImage *plNewImage(uint8_t *buf, unsigned int w, unsigned int h, PLColourFormat col, PLImageFormat dat);
+PL_EXTERN PLImage *plCreateImage(uint8_t *buf, unsigned int w, unsigned int h, PLColourFormat col, PLImageFormat dat);
 PL_EXTERN void plDestroyImage(PLImage *image);
 
 PL_EXTERN bool plLoadImage(const char *path, PLImage *out);

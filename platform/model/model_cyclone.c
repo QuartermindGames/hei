@@ -306,7 +306,7 @@ PLModel *LoadStaticRequiemModel(FILE *fp) {
     mesh->num_indices = num_indices;
     mesh->indices = pl_calloc(mesh->num_indices, sizeof(uint16_t));
     if(mesh->indices == NULL) {
-        plDeleteMesh(mesh);
+        plDestroyMesh(mesh);
         return NULL;
     }
 #endif
@@ -355,7 +355,7 @@ PLModel *LoadStaticRequiemModel(FILE *fp) {
         }
     }
 
-    PLModel *model = plNewBasicStaticModel(mesh);
+    PLModel *model = plCreateBasicStaticModel(mesh);
     if(model == NULL) {
         plDestroyMesh(mesh);
         return NULL;
