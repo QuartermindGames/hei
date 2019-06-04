@@ -429,9 +429,13 @@ bool plIsShaderProgramEnabled(PLShaderProgram *program) {
     return false;
 }
 
+static void RegisterShaderProgramUniforms(PLShaderProgram *program);
 bool plLinkShaderProgram(PLShaderProgram *program) {
     _plResetError();
     CallGfxFunction(LinkShaderProgram, program);
+
+    RegisterShaderProgramUniforms(program);
+
     return program->is_linked;
 }
 
@@ -538,12 +542,12 @@ static PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
 
 #endif
 
-bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
+static void RegisterShaderProgramUniforms(PLShaderProgram *program) {
     /* todo, move into layer_opengl */
 
     if(program->uniforms != NULL) {
-        GfxLog("uniforms has already been initialised!\n");
-        return true;
+        GfxLog("Uniforms have already been initialised!\n");
+        return;
     }
 
 #if defined(PL_SUPPORT_OPENGL)
@@ -551,16 +555,16 @@ bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
     glGetProgramiv(program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms);
     if(num_uniforms <= 0) {
         /* true, because technically this isn't a fault - there just aren't any */
-        GfxLog("no uniforms found in shader program...\n");
-        return true;
+        GfxLog("No uniforms found in shader program...\n");
+        return;
     }
     program->num_uniforms = (unsigned int) num_uniforms;
 
-    GfxLog("found %u uniforms in shader\n", program->num_uniforms);
+    GfxLog("Found %u uniforms in shader\n", program->num_uniforms);
 
     program->uniforms = pl_calloc((size_t)program->num_uniforms, sizeof(*program->uniforms));
     if(program->uniforms == NULL) {
-        return false;
+        return;
     }
 
     unsigned int registered = 0;
@@ -571,7 +575,7 @@ bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
 
         glGetActiveUniform(program->internal.id, (GLuint) i, 16, NULL, &name_length, &type, name);
         if(name_length <= 0) {
-            GfxLog("invalid name for uniform, ignoring!\n");
+            GfxLog("Invalid name for uniform, ignoring!\n");
             continue;
         }
 
@@ -585,12 +589,9 @@ bool plRegisterShaderProgramUniforms(PLShaderProgram *program) {
     }
 
     if(registered == 0) {
-        GfxLog("failed to validate any uniforms!\n");
-        return false;
+        GfxLog("Failed to validate any shader program uniforms!\n");
     }
 #endif
-
-    return true;
 }
 
 static int ValidateShaderUniformSlot(PLShaderProgram* program, int slot) {

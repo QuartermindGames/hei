@@ -316,9 +316,6 @@ PL_EXTERN void plDeleteShaderProgram(PLShaderProgram *program, bool free_stages)
 
 PL_EXTERN PLShaderProgram *plGetCurrentShaderProgram(void);
 
-PL_EXTERN bool plRegisterShaderProgramUniforms(PLShaderProgram *program);
-PL_EXTERN bool plRegisterShaderProgramAttributes(PLShaderProgram *program); /* todo */
-
 PL_EXTERN void plSetShaderProgram(PLShaderProgram *program);
 PL_EXTERN bool plIsShaderProgramEnabled(PLShaderProgram *program);
 
