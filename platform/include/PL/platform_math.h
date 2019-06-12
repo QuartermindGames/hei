@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #pragma once
 
 #include "platform.h"
@@ -33,10 +34,10 @@ For more information, please refer to <http://unlicense.org>
 #define PL_PI           3.14159265358979323846264338327950288f
 #define PL_PI_DIV_180   (PL_PI / 180.f)
 
-#define PL_TAU      6.28318530717958647692528676655900576f
-#define PL_EPSILON  1.19209290e-7f
+#define PL_TAU          6.28318530717958647692528676655900576f
+#define PL_EPSILON      1.19209290e-7f
 
-#define PL_MAX_UINT    (unsigned int)(-1)
+#define PL_MAX_UINT     (unsigned int)(-1)
 
 enum {
     // Colours
@@ -48,6 +49,8 @@ enum {
 
 #define plFloatToByte(a)    (uint8_t)(roundf((a) * 255.f))
 #define plByteToFloat(a)    ((a) / (float)255)
+
+#define plClamp(min, val, max) (val) < (min) ? (min) : ((val) > (max) ? (max) : (val))
 
 PL_INLINE static bool plIsPowerOfTwo(unsigned int num) {
     return (bool)((num != 0) && ((num & (~num + 1)) == num));
@@ -287,11 +290,11 @@ typedef struct PLVector3 {
 
 #endif
 
-PL_INLINE static void plAddVector3(PLVector3 *v, PLVector3 v2) {
+PL_INLINE static void plAddVector3(PLVector3 *v, const PLVector3 &v2) {
     v->x += v2.x; v->y += v2.y; v->z += v2.z;
 }
 
-PL_INLINE static PLVector3 plVector3Add(PLVector3 v, PLVector3 v2) {
+PL_INLINE static PLVector3 plVector3Add(const PLVector3 &v, const PLVector3 &v2) {
     return PLVector3(v.x + v2.x, v.y + v2.y, v.z + v2.z);
 }
 
@@ -764,169 +767,6 @@ PL_INLINE static const char *plPrintColour(PLColour c) {
 #define PL_COLOUR_DARK_SLATE_GRAY           PLColourRGB(47 , 79 , 79 )
 #define PL_COLOUR_BLACK                     PLColourRGB(0  , 0  , 0  )
 
-/////////////////////////////////////////////////////////////////////////////////////
-// Matrices
-
-typedef struct PLMatrix3x3 {
-    float m[9];
-    /* 0 0 0
-     * 0 0 0
-     * 0 0 0
-     */
-
-#ifdef __cplusplus
-
-    PLMatrix3x3() = default;
-
-    PLMatrix3x3(PLVector3 x, PLVector3 y, PLVector3 z) {
-        m[0] = x.x; m[3] = y.x; m[6] = z.x;
-        m[1] = x.y; m[4] = y.y; m[7] = z.y;
-        m[2] = x.z; m[5] = y.z; m[8] = z.z;
-    }
-
-#endif
-} PLMatrix3x3;
-
-typedef struct PLMatrix3x4 {
-    float m[12];
-    /* 0 0 0 0
-     * 0 0 0 0
-     * 0 0 0 0
-     */
-} PLMatrix3x4;
-
-typedef struct PLMatrix4x4 {
-    float m[16];
-    /* 0 0 0 0
-     * 0 0 0 0
-     * 0 0 0 0
-     * 0 0 0 0
-     */
-} PLMatrix4x4;
-
-/* I know, this is disgusting... */
-#define pl_3x3pos(col, row) m[(col) * 3 + (row)]
-#define pl_4x4pos(col, row) m[(col) * 4 + (row)]
-
-#define plSetMatrix3x3(mat, col, row, val) (mat).pl_3x3pos(col, row) = (val)
-#define plSetMatrix4x4(mat, col, row, val) (mat).pl_4x4pos(col, row) = (val)
-
-/* ClearMatrix */
-
-PL_INLINE static void plClearMatrix3x3(PLMatrix3x3 *m) {
-    for(unsigned int i = 0; i < 9; ++i) { m->m[i] = 0; }
-}
-
-PL_INLINE static void plClearMatrix4x4(PLMatrix4x4 *m) {
-    for(unsigned int i = 0; i < 16; ++i) { m->m[i] = 0; }
-}
-
-/* Identity */
-
-PL_INLINE static PLMatrix3x3 plMatrix3x3Identity(void) {
-    PLMatrix3x3 out;
-    out.m[0] = 1; out.m[1] = 0; out.m[2] = 0;
-    out.m[3] = 0; out.m[4] = 1; out.m[5] = 0;
-    out.m[6] = 0; out.m[7] = 0; out.m[8] = 1;
-    return out;
-}
-
-PL_INLINE static PLMatrix4x4 plMatrix4x4Identity(void) {
-    PLMatrix4x4 out;
-    out.m[0 ] = 1; out.m[1 ] = 0; out.m[2 ] = 0; out.m[3 ] = 0;
-    out.m[4 ] = 0; out.m[5 ] = 1; out.m[6 ] = 0; out.m[7 ] = 0;
-    out.m[8 ] = 0; out.m[9 ] = 0; out.m[10] = 1; out.m[11] = 0;
-    out.m[12] = 0; out.m[13] = 0; out.m[14] = 0; out.m[15] = 1;
-    return out;
-}
-
-/* Transpose */
-
-PL_INLINE static void plTransposeMatrix3x3(PLMatrix3x3 *m, PLMatrix3x3 m2) {
-    for(unsigned int j = 0; j < 3; ++j) {
-        for(unsigned int i = 0; i < 3; ++i) {
-            m->pl_3x3pos(i, j) = m2.pl_3x3pos(j, i);
-        }
-    }
-}
-
-PL_INLINE static void plTransposeMatrix4x4(PLMatrix4x4 *m, PLMatrix4x4 m2) {
-    for(unsigned int j = 0; j < 4; ++j) {
-        for(unsigned int i = 0; i < 4; ++i) {
-            m->pl_4x4pos(i, j) = m2.pl_4x4pos(j, i);
-        }
-    }
-}
-
-/* Add */
-
-PL_INLINE static PLMatrix3x3 plAddMatrix3x3(PLMatrix3x3 m, PLMatrix3x3 m2) {
-    PLMatrix3x3 out;
-    for(unsigned int i = 0; i < 3; ++i) {
-        for(unsigned int j = 0; j < 3; ++j) {
-            out.pl_3x3pos(i, j) = m.pl_3x3pos(i, j) + m2.pl_3x3pos(i, j);
-        }
-    }
-    return out;
-}
-
-PL_INLINE static PLMatrix4x4 plAddMatrix4x4(PLMatrix4x4 m, PLMatrix4x4 m2) {
-    PLMatrix4x4 out;
-    for(unsigned int i = 0; i < 4; ++i) {
-        for(unsigned int j = 0; j < 4; ++j) {
-            out.pl_4x4pos(i, j) = m.pl_4x4pos(i, j) + m2.pl_4x4pos(i, j);
-        }
-    }
-    return out;
-}
-
-/* Subtract */
-
-PL_INLINE static PLMatrix3x3 plSubtractMatrix3x3(PLMatrix3x3 m, PLMatrix3x3 m2) {
-    PLMatrix3x3 out;
-    for(unsigned int i = 0; i < 3; ++i) {
-        for(unsigned int j = 0; j < 3; ++j) {
-            out.pl_3x3pos(i, j) = m.pl_3x3pos(i, j) - m2.pl_3x3pos(i, j);
-        }
-    }
-    return out;
-}
-
-PL_INLINE static PLMatrix4x4 plSubtractMatrix4x4(PLMatrix4x4 m, PLMatrix4x4 m2) {
-    PLMatrix4x4 out;
-    for(unsigned int i = 0; i < 4; ++i) {
-        for(unsigned int j = 0; j < 4; ++j) {
-            out.pl_4x4pos(i, j) = m.pl_4x4pos(i, j) - m2.pl_4x4pos(i, j);
-        }
-    }
-    return out;
-}
-
-/* */
-
-PL_INLINE static void plMultiplyMatrix(PLMatrix4x4 *m, PLMatrix4x4 m2) {
-
-}
-
-PL_INLINE static void plScaleMatrix(PLMatrix4x4 *m, PLVector3 scale) {
-    m->pl_4x4pos(0, 0) *= scale.x;
-    m->pl_4x4pos(1, 1) *= scale.y;
-    m->pl_4x4pos(2, 2) *= scale.z;
-}
-
-PL_INLINE static void plRotateMatrix(PLMatrix4x4 *m, float angle, PLVector3 axis) {
-
-}
-
-PL_INLINE static PLMatrix4x4 plTranslateMatrix(PLVector3 vec) {
-    return (PLMatrix4x4) {{
-                                  1, 0, 0, vec.x,
-                                  0 ,1, 0, vec.y,
-                                  0, 0, 1, vec.z,
-                                  0, 0, 0, 1
-                          }};
-}
-
 // Quaternion
 
 typedef struct PLQuaternion {
@@ -1345,54 +1185,6 @@ PL_INLINE static float plToRadians(float degrees) {
     return degrees * (PL_PI / 180.f);
 }
 
-PL_INLINE static PLMatrix4x4 plLookAt(PLVector3 eye, PLVector3 center, PLVector3 up) {
-    PLVector3 f = plVector3Normalize(plVector3Subtract(center, eye));
-    PLVector3 u = plVector3Normalize(up);
-    PLVector3 s = plVector3Normalize(plVector3CrossProduct(f, u));
-    u = plVector3CrossProduct(s, f);
-
-    PLMatrix4x4 out = plMatrix4x4Identity();
-    out.pl_4x4pos(0, 0) = s.x; out.pl_4x4pos(1, 0) = s.y; out.pl_4x4pos(2, 0) = s.z;
-    out.pl_4x4pos(0, 1) = u.x; out.pl_4x4pos(1, 1) = u.y; out.pl_4x4pos(2, 1) = u.z;
-    out.pl_4x4pos(0, 2) = -f.x; out.pl_4x4pos(1, 2) = -f.y; out.pl_4x4pos(2, 2) = -f.z;
-    out.pl_4x4pos(3, 0) = -(plVector3DotProduct(s, eye));
-    out.pl_4x4pos(3, 1) = -(plVector3DotProduct(u, eye));
-    out.pl_4x4pos(3, 2) = plVector3DotProduct(f, eye);
-
-    return out;
-}
-
-PL_INLINE static PLMatrix4x4 plFrustum(float left, float right, float bottom, float top, float near, float far) {
-    float m0 = 2.f * near;
-    float m1 = right - left;
-    float m2 = top - bottom;
-    float m3 = far - near;
-    return (PLMatrix4x4){{
-                                 m0 / m1, 0, 0, 0,
-                                 0, m0 / m2, 0, 0,
-                                 (right + left) / m1, (top + bottom) / m2, (-far - near) / m3, -1.f,
-                                 0, 0, 0, 1
-                         }};
-}
-
-PL_INLINE static PLMatrix4x4 plOrtho(float left, float right, float bottom, float top, float near, float far) {
-    float tx = - (right + left) / (right - left);
-    float ty = - (top + bottom) / (top - bottom);
-    float tz = - (far + near) / (far - near);
-    return (PLMatrix4x4) {{
-                                  2 / (right - left), 0, 0, 0,
-                                  0, 2 / (top - bottom), 0, 0,
-                                  0, 0, -2 / (far - near), 0,
-                                  tx, ty, tz, 1
-                          }};
-}
-
-PL_INLINE static PLMatrix4x4 plPerspective(float fov, float aspect, float near, float far) {
-    float y_max = near * tanf(fov * PL_PI / 360);
-    float x_max = y_max * aspect;
-    return plFrustum(-x_max, x_max, -y_max, y_max, near, far);
-}
-
 /* http://www.songho.ca/opengl/gl_anglestoaxes.html */
 PL_INLINE static void plAnglesAxes(PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *forward) {
     /* pitch */
@@ -1423,13 +1215,5 @@ PL_INLINE static void plAnglesAxes(PLVector3 angles, PLVector3 *left, PLVector3 
     forward->z = cx * cy;
 }
 
-#define plClamp(min, val, max) (val) < (min) ? (min) : ((val) > (max) ? (max) : (val))
+#include "pl_math_matrix.h"
 
-//////////////////////////////////////////////////////////////////////
-// DEBUG FUNCTIONS
-
-#if defined(PL_INTERNAL)
-
-void _plDebugMath(void);
-
-#endif
