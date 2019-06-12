@@ -69,347 +69,7 @@ PL_INLINE static int plRoundUp(int num, int multiple) {
     return (num + multiple - 1) & -multiple;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
-// Vectors
-
-// 2D
-
-typedef struct PLVector2 {
-    float x, y;
-
-#ifdef __cplusplus
-    PLVector2(float a, float b) : x(a), y(b) {}
-    PLVector2() : x(0), y(0) {}
-
-    PLVector2 &operator=(float a) { x = a; y = a; return *this; }
-
-    void operator*=(PLVector2 a) { x *= a.x; y *= a.y; }
-    void operator*=(float a) { x *= a; y *= a; }
-
-    void operator/=(PLVector2 a) { x /= a.x; y /= a.y; }
-    void operator/=(float a) { x /= a; y /= a; }
-
-    void operator+=(PLVector2 a) { x += a.x; y += a.y; }
-    void operator+=(float a) { x += a; y += a; }
-
-    bool operator==(PLVector2 a) const { return ((x == a.x) && (y == a.y)); }
-    bool operator==(float a) const { return ((x == a) && (y == a)); }
-
-    PLVector2 operator*(PLVector2 a) const { return PLVector2(x * a.x, y * a.y); }
-    PLVector2 operator*(float a) const { return PLVector2(x * a, y * a); }
-
-    PLVector2 operator/(PLVector2 a) const { return PLVector2(x / a.x, y / a.y); }
-    PLVector2 operator/(float a) const { return PLVector2(x / a, y / a); }
-
-    PLVector2 operator+(PLVector2 a) const { return PLVector2(x + a.x, y + a.y); }
-    PLVector2 operator+(float a) const { return PLVector2(x + a, y + a); }
-
-    PLVector2 operator-(PLVector2 a) const { return PLVector2(x - a.x, y - a.y); }
-    PLVector2 operator-(float a) const { return PLVector2(x - a, y - a); }
-
-    float Length() { return std::sqrt(x * x + y * y); }
-
-    PLVector2 Normalize() {
-        PLVector2 out;
-        float length = Length();
-        if (length != 0) {
-            out.Set(x / length, y / length);
-        }
-        return out;
-    }
-
-    void Set(float a, float b) { x = a; y = b; }
-    void Clear() { x = 0; y = 0; }
-#endif
-} PLVector2;
-
-#ifndef __cplusplus
-
-#   define PLVector2(x, y)      (PLVector2){x, y}
-
-#endif
-
-PL_INLINE static void plClearVector2(PLVector2 *v) {
-    v->x = v->y = 0;
-}
-
-PL_INLINE static void plAddVector2(PLVector2 *v, PLVector2 v2) {
-    v->x = v2.x; v->y = v2.y;
-}
-
-PL_INLINE static void plDivideVector2(PLVector2 *v, PLVector2 v2) {
-    v->x /= v2.x; v->y /= v2.y;
-}
-
-PL_INLINE static bool plCompareVector2(PLVector2 v, PLVector2 v2) {
-    return ((v.x == v2.x) && (v.y == v2.y));
-}
-
-// 3D
-
-typedef struct PLVector3 {
-    float x, y, z;
-
-#ifdef __cplusplus
-    PL_INLINE PLVector3() : x(0), y(0), z(0) {}
-    PL_INLINE PLVector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
-    PL_INLINE explicit PLVector3(const float *v) {
-        x = v[0]; y = v[1]; z = v[2];
-    }
-
-    PL_INLINE PLVector3 &operator = (PLVector2 v) {
-        x = v.x;
-        y = v.y;
-        return *this;
-    }
-
-    PL_INLINE PLVector3 &operator = (float a) {
-        x = a;
-        y = a;
-        z = a;
-        return *this;
-    }
-
-    PL_INLINE void operator *= (const PLVector3 &v) {
-        x *= v.x; y *= v.y; z *= v.z;
-    }
-
-    PL_INLINE void operator *= (float a) {
-        x *= a; y *= a; z *= a;
-    }
-
-    PL_INLINE void operator += (PLVector3 a) {
-        x += a.x; y += a.y; z += a.z;
-    }
-
-    PL_INLINE void operator += (float a) {
-        x += a; y += a; z += a;
-    }
-
-    PL_INLINE bool operator == (const PLVector3 &a) const {
-        return ((x == a.x) && (y == a.y) && (z == a.z));
-    }
-
-    PL_INLINE bool operator == (float f) const {
-        return ((x == f) && (y == f) && (z == f));
-    }
-
-    PL_INLINE bool operator != (const PLVector3 &a) const {
-        return !(a == *this);
-    }
-
-    PL_INLINE bool operator != (float f) const {
-        return ((x != f) && (y != f) && (z != f));
-    }
-
-    PL_INLINE PLVector3 operator * (PLVector3 a) const {
-        return {x * a.x, y * a.y, z * a.z};
-    }
-
-    PL_INLINE PLVector3 operator * (float a) const {
-        return {x * a, y * a, z * a};
-    }
-
-    PL_INLINE PLVector3 operator - (PLVector3 a) const {
-        return {x - a.x, y - a.y, z - a.z};
-    }
-
-    PL_INLINE PLVector3 operator - (float a) const {
-        return {x - a, y - a, z - a};
-    }
-
-    PLVector3 PL_INLINE operator - () const {
-        return {-x, -y, -z};
-    }
-
-    PLVector3 PL_INLINE operator + (PLVector3 a) const {
-        return {x + a.x, y + a.y, z + a.z};
-    }
-
-    PLVector3 PL_INLINE operator + (float a) const {
-        return {x + a, y + a, z + a};
-    }
-
-    PLVector3 PL_INLINE operator / (const PLVector3 &a) const {
-        return {x / a.x, y / a.y, z / a.z};
-    }
-
-    PLVector3 PL_INLINE operator / (float a) const {
-        return {x / a, y / a, z / a};
-    }
-
-    PL_INLINE float& operator [] (const unsigned int i) {
-        return *((&x) + i);
-    }
-
-    PL_INLINE bool operator > (const PLVector3 &v) const {
-        return ((x > v.x) && (y > v.y) && (z > v.z));
-    }
-
-    PL_INLINE bool operator < (const PLVector3 &v) const {
-        return ((x < v.x) && (y < v.y) && (z < v.z));
-    }
-
-    PL_INLINE bool operator >= (const PLVector3 &v) const {
-        return ((x >= v.x) && (y >= v.y) && (z >= v.z));
-    }
-
-    PL_INLINE bool operator <= (const PLVector3 &v) const {
-        return ((x <= v.x) && (y <= v.y) && (z <= v.z));
-    }
-
-    PL_INLINE float Length() const {
-        return std::sqrt(x * x + y * y + z * z);
-    }
-
-    PL_INLINE float DotProduct(PLVector3 a) const {
-        return (x * a.x + y * a.y + z * a.z);
-    }
-
-    PL_INLINE PLVector3 CrossProduct(PLVector3 a) const {
-        return {y * a.z - z * a.y, z * a.x - x * a.z, x * a.y - y * a.x};
-    }
-
-    PL_INLINE PLVector3 Normalize() const {
-        return (*this) / Length();
-    }
-
-    PL_INLINE float Difference(PLVector3 v) const {
-        return ((*this) - v).Length();
-    }
-
-    void PL_INLINE Set(float _x, float _y, float _z) {
-        x = _x; y = _y; z = _z;
-    }
-#endif
-} PLVector3;
-
-#ifndef __cplusplus
-
-#   define PLVector3(x, y, z)   (PLVector3){x, y, z}
-
-#endif
-
-PL_INLINE static void plAddVector3(PLVector3 *v, const PLVector3 &v2) {
-    v->x += v2.x; v->y += v2.y; v->z += v2.z;
-}
-
-PL_INLINE static PLVector3 plVector3Add(const PLVector3 &v, const PLVector3 &v2) {
-    return PLVector3(v.x + v2.x, v.y + v2.y, v.z + v2.z);
-}
-
-PL_INLINE static void plSubtractVector3(PLVector3 *v, PLVector3 v2) {
-    v->x -= v2.x; v->y -= v2.y; v->z -= v2.z;
-}
-
-PL_INLINE static PLVector3 plVector3Subtract(PLVector3 v, PLVector3 v2) {
-    return PLVector3(v.x - v2.x, v.y - v2.y, v.z - v2.z);
-}
-
-PL_INLINE static void plScaleVector3(PLVector3 *v, PLVector3 v2) {
-    v->x *= v2.x; v->y *= v2.y; v->z *= v2.z;
-}
-
-PL_INLINE static PLVector3 plVector3Scale(PLVector3 v, PLVector3 v2) {
-    return PLVector3(v.x * v2.x, v.y * v2.y, v.z * v2.z);
-}
-
-PL_INLINE static void plScaleVector3f(PLVector3 *v, float f) {
-    v->x *= f; v->y *= f; v->z *= f;
-}
-
-PL_INLINE static void plDivideVector3(PLVector3 *v, PLVector3 v2) {
-    v->x /= v2.x; v->y /= v2.y; v->z /= v2.z;
-}
-
-PL_INLINE static PLVector3 plVector3Divide(PLVector3 v, PLVector3 v2) {
-    return PLVector3(v.x / v2.x, v.y / v2.y, v.z / v2.z);
-}
-
-PL_INLINE static void plDivideVector3f(PLVector3 *v, float v2) {
-    v->x /= v2;
-    v->y /= v2;
-    v->z /= v2;
-}
-
-PL_INLINE static void plInverseVector3(PLVector3 *v) {
-    v->x = -v->x; v->y = -v->y; v->z = -v->z;
-}
-
-PL_INLINE static PLVector3 plVector3Inverse(PLVector3 v) {
-    return PLVector3(-v.x, -v.y, -v.z);
-}
-
-PL_INLINE static void plClearVector3(PLVector3 *v) {
-    v->x = v->y = v->z = 0;
-}
-
-PL_INLINE static bool plCompareVector3(PLVector3 v, PLVector3 v2) {
-    return ((v.x == v2.x) && (v.y == v2.y) && (v.z == v2.z));
-}
-
-PL_INLINE static PLVector3 plVector3CrossProduct(PLVector3 v, PLVector3 v2) {
-    return PLVector3(
-            v.y * v2.z - v.z * v2.y,
-            v.z * v2.x - v.x * v2.z,
-            v.x * v2.y - v.y * v2.x
-    );
-}
-
-PL_INLINE static PLVector3 plVector3Max(PLVector3 v, PLVector3 v2) {
-    return PLVector3(
-            v.x > v2.x ? v.x : v2.x,
-            v.y > v2.y ? v.y : v2.y,
-            v.z > v2.z ? v.z : v2.z
-    );
-}
-
-PL_INLINE static PLVector3 plVector3Min(PLVector3 v, PLVector3 v2) {
-    return PLVector3(
-            v.x < v2.x ? v.x : v2.x,
-            v.y < v2.y ? v.y : v2.y,
-            v.z < v2.z ? v.z : v2.z
-    );
-}
-
-PL_INLINE static float plVector3DotProduct(PLVector3 v, PLVector3 v2) {
-    return (v.x * v2.x + v.y * v2.y + v.z * v2.z);
-}
-
-PL_INLINE static float plVector3Length(PLVector3 v) {
-    return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
-}
-
-PL_INLINE static PLVector3 plVector3Normalize(PLVector3 v) {
-    float length = plVector3Length(v);
-    if(length != 0) {
-        v.x /= length;
-        v.y /= length;
-        v.z /= length;
-    }
-    return v;
-}
-
-PL_INLINE static const char *plPrintVector3(PLVector3 v) {
-    static char s[32] = { 0 };
-    snprintf(s, 32, "%i %i %i", (int)v.x, (int)v.y, (int)v.z);
-    return s;
-}
-
-/******************************************************************/
-
-typedef struct PLVector4 {
-    float x, y, z, w;
-} PLVector4;
-
-PL_INLINE static PLVector4 plVector4Add(PLVector4 v, PLVector4 v2) {
-    return (PLVector4){
-        v.x + v2.x,
-        v.y + v2.y,
-        v.z + v2.z,
-        v.w + v2.w
-    };
-}
+#include "pl_math_vector.h"
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Colour
@@ -455,7 +115,7 @@ typedef struct PLColour {
         r *= c; g *= c; g *= c; a *= c;
     }
 
-    PL_INLINE void operator += (PLColour v) {
+    PL_INLINE void operator += (const PLColour &v) {
         r += v.r; g += v.g; b += v.b; a += v.a;
     }
 
@@ -463,7 +123,7 @@ typedef struct PLColour {
         r += plFloatToByte(c); g += plFloatToByte(c); b += plFloatToByte(c); a += plFloatToByte(c);
     }
 
-    PL_INLINE void operator -= (PLColour v) {
+    PL_INLINE void operator -= (const PLColour &v) {
         r -= v.r; g -= v.g; b -= v.b; a -= v.a;
     }
 
@@ -471,7 +131,7 @@ typedef struct PLColour {
         r -= plFloatToByte(c); g -= plFloatToByte(c); b -= plFloatToByte(c); a -= plFloatToByte(c);
     }
 
-    PL_INLINE void operator /= (PLColour v) {
+    PL_INLINE void operator /= (const PLColour &v) {
         r /= v.r; g /= v.g; b /= v.b; a /= v.a;
     }
 
@@ -479,7 +139,7 @@ typedef struct PLColour {
         r /= c; g /= c; b /= c; a /= c;
     }
 
-    PL_INLINE PLColour operator - (PLColour c) const {
+    PL_INLINE PLColour operator - (const PLColour &c) const {
         return {r - c.r, g - c.g, b - c.b, a - c.a};
     }
 
@@ -495,11 +155,11 @@ typedef struct PLColour {
         return PLColour(-r, -g, -b, -a);
     }
 
-    PL_INLINE PLColour operator * (PLColour v) const {
+    PL_INLINE PLColour operator * (const PLColour &v) const {
         return PLColour(r * v.r, g * v.g, b * v.b, a * v.a);
     }
 
-    PL_INLINE PLColour operator + (PLColour v) const {
+    PL_INLINE PLColour operator + (const PLColour &v) const {
         return PLColour(r + v.r, g + v.g, b + v.b, a + v.a);
     }
 
@@ -571,15 +231,15 @@ PL_INLINE static void plClearColour(PLColour *c) {
     plSetColour4b(c, 0, 0, 0, 0);
 }
 
-PL_INLINE static bool plCompareColour(PLColour c, PLColour c2) {
+PL_INLINE static bool plCompareColour(const PLColour &c, const PLColour &c2) {
     return ((c.r == c2.r) && (c.g == c2.g) && (c.b == c2.b) && (c.a == c2.a));
 }
 
-PL_INLINE static void plCopyColour(PLColour *c, PLColour c2) {
+PL_INLINE static void plCopyColour(PLColour *c, const PLColour &c2) {
     c->r = c2.r; c->g = c2.g; c->b = c2.b; c->a = c2.a;
 }
 
-PL_INLINE static void plMultiplyColour(PLColour *c, PLColour c2) {
+PL_INLINE static void plMultiplyColour(PLColour *c, const PLColour &c2) {
     c->r *= c2.r; c->g *= c2.g; c->b *= c2.b; c->a *= c2.a;
 }
 
@@ -588,7 +248,7 @@ PL_INLINE static void plMultiplyColourf(PLColour *c, float a) {
     c->r *= a2; c->g *= a2; c->b *= a2; c->a *= a2;
 }
 
-PL_INLINE static void plDivideColour(PLColour *c, PLColour c2) {
+PL_INLINE static void plDivideColour(PLColour *c, const PLColour &c2) {
     c->r /= c2.r; c->g /= c2.g; c->b /= c2.b; c->a /= c2.a;
 }
 
@@ -597,7 +257,7 @@ PL_INLINE static void plDivideColourf(PLColour *c, float a) {
     c->r /= a2; c->g /= a2; c->b /= a2; c->a /= a2;
 }
 
-PL_INLINE static const char *plPrintColour(PLColour c) {
+PL_INLINE static const char *plPrintColour(const PLColour &c) {
     static char s[16] = { '\0' };
     snprintf(s, 16, "%i %i %i %i", c.r, c.g, c.b, c.a);
     return s;
@@ -844,7 +504,7 @@ PL_INLINE static void plClearQuaternion(PLQuaternion *q) {
     q->x = q->y = q->z = q->w = 0;
 }
 
-PL_INLINE static void plMultiplyQuaternion(PLQuaternion *q, PLQuaternion q2) {
+PL_INLINE static void plMultiplyQuaternion(PLQuaternion *q, const PLQuaternion &q2) {
     q->x *= q2.x;
     q->y *= q2.y;
     q->z *= q2.z;
@@ -858,7 +518,7 @@ PL_INLINE static void plScaleQuaternion(PLQuaternion *q, float a) {
     q->w *= a;
 }
 
-PL_INLINE static void plAddQuaternion(PLQuaternion *q, PLQuaternion q2) {
+PL_INLINE static void plAddQuaternion(PLQuaternion *q, const PLQuaternion &q2) {
     q->x += q2.x;
     q->y += q2.y;
     q->z += q2.z;
@@ -879,7 +539,7 @@ PL_INLINE static void plInverseQuaternion(PLQuaternion *q) {
     q->w = -q->w;
 }
 
-PL_INLINE static void plQuaternionFromMatrix(PLQuaternion *q, PLMatrix4x4 mat) {
+PL_INLINE static void plQuaternionFromMatrix(PLQuaternion *q, const PLMatrix4x4 &mat) {
     // todo
 }
 

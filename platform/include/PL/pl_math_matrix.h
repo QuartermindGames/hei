@@ -223,7 +223,8 @@ PL_INLINE static PLMatrix4x4 plMatrix4x4Rotate(float angle, const PLVector3 &axi
     return m;
 }
 
-/* */
+/******************************************************************/
+/* Utility Functions */
 
 PL_INLINE static bool plCompareMatrix(const PLMatrix4x4 &m, const PLMatrix4x4 &m2) {
     for(unsigned int i = 0; i < 4; ++i) {
@@ -243,6 +244,10 @@ PL_INLINE static void plScaleMatrix(PLMatrix4x4 *m, const PLVector3 &scale) {
     m->pl_4x4pos(2, 2) *= scale.z;
 }
 
+PL_INLINE static void plMultiplyMatrix(PLMatrix4x4 *m, const PLMatrix4x4 &m2) {
+    m = plMatrix4x4Multiply(m, m2);
+}
+
 PL_INLINE static void plRotateMatrix(PLMatrix4x4 *m, float angle, const PLVector3 &axis) {
     plMultiplyMatrix(m, plMatrix4x4Rotate(angle, axis));
 }
@@ -252,9 +257,6 @@ PL_INLINE static void plTranslateMatrix(PLMatrix4x4 *m, const PLVector3 &v) {
     m->pl_4x4pos(3, 1) = v.y;
     m->pl_4x4pos(3, 2) = v.z;
 }
-
-/******************************************************************/
-/* Utility Functions */
 
 PL_INLINE static PLMatrix4x4 plLookAt(PLVector3 eye, PLVector3 center, PLVector3 up) {
     PLVector3 f = plVector3Normalize(plVector3Subtract(center, eye));
