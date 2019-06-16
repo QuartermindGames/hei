@@ -188,6 +188,7 @@ typedef struct PLLight {
 typedef int PLSampler1D, PLSampler2D, PLSampler3D;
 typedef int PLSamplerCube;
 typedef int PLSampler1DShadow, PLSampler2DShadow;
+typedef int PLShaderAttribute;
 
 typedef enum PLShaderType {
     PL_SHADER_TYPE_VERTEX,
@@ -264,6 +265,11 @@ typedef struct PLShaderProgram {
 
     struct {
         unsigned int id;
+
+        PLShaderAttribute   v_position;
+        PLShaderAttribute   v_normal;
+        PLShaderAttribute   v_uv;
+        PLShaderAttribute   v_colour;
     } internal;
 } PLShaderProgram;
 

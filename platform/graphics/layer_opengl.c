@@ -508,6 +508,11 @@ static void GLCreateMeshPOST(PLMesh *mesh) {
 }
 
 static void GLUploadMesh(PLMesh *mesh) {
+    PLShaderProgram *program = gfx_state.current_program;
+    if(program == NULL) {
+        return;
+    }
+
     //Write the current CPU vertex data into the VBO
     unsigned int mode = TranslateDrawMode(mesh->mode);
     GLsizeiptr VBOsize = sizeof(PLVertex) * mesh->num_verts;
@@ -515,15 +520,18 @@ static void GLUploadMesh(PLMesh *mesh) {
 
     //Point to the different substreams of the interleaved BVO
     //Args: Index, Size, Type, (Normalized), Stride, StartPtr
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glEnableVertexAttribArray(3);
+    glEnableVertexAttribArray(program->internal.v_position);
+    glEnableVertexAttribArray(program->internal.v_normal);
+    glEnableVertexAttribArray(program->internal.v_uv);
+    glEnableVertexAttribArray(program->internal.v_colour);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex), (const GLvoid *)pl_offsetof(PLVertex, position));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,  sizeof(PLVertex), (const GLvoid *)pl_offsetof(PLVertex, normal));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(PLVertex), (const GLvoid *)pl_offsetof(PLVertex, st));
-    glVertexAttribPointer(3, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PLVertex),
+    glVertexAttribPointer(program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex),
+            (const GLvoid *)pl_offsetof(PLVertex, position));
+    glVertexAttribPointer(program->internal.v_normal, 3, GL_FLOAT, GL_FALSE,  sizeof(PLVertex),
+            (const GLvoid *)pl_offsetof(PLVertex, normal));
+    glVertexAttribPointer(program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof(PLVertex),
+            (const GLvoid *)pl_offsetof(PLVertex, st));
+    glVertexAttribPointer(program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PLVertex),
             (const GLvoid *)pl_offsetof(PLVertex, colour));
 }
 
@@ -800,10 +808,12 @@ static void GLLinkShaderProgram(PLShaderProgram *program) {
         } else {
             GfxLog(" UNKNOWN LINK ERROR!\n");
         }
-    } else {
-        GfxLog(" LINKED SUCCESSFULLY!\n");
-        program->is_linked = true;
+
+        return;
     }
+
+    GfxLog(" LINKED SUCCESSFULLY!\n");
+    program->is_linked = true;
 }
 
 static void GLSetShaderProgram(PLShaderProgram *program) {
