@@ -155,10 +155,13 @@ PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, 
         out->description = desc;
         out->default_value = def;
         out->type = type;
+
+        plSetConsoleVariable(out, out->default_value);
+
+        // Ensure the callback is only called afterwards
         if(CallbackFunction != NULL) {
             out->CallbackFunction = CallbackFunction;
         }
-        plSetConsoleVariable(out, out->default_value);
 
         _pl_num_variables++;
     }
