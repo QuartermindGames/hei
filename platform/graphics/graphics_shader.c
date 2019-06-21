@@ -277,7 +277,7 @@ PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
         return NULL;
     }
 
-    FILE *fp = fopen(path, "r");
+    FILE *fp = fopen(path, "rb");
     if(fp == NULL) {
         ReportError(PL_RESULT_FILEREAD, "failed to open %s", path);
         free(buf);
