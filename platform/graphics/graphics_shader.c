@@ -501,7 +501,6 @@ int plGetShaderUniformSlot(PLShaderProgram *program, const char *name) {
     }
 #endif
 
-    GfxLog("failed to find uniform slot \"%s\"!\n", name);
     return -1;
 }
 
