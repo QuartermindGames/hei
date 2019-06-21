@@ -280,7 +280,7 @@ PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
     size_t length = plGetFileSize(path);
     char buf[length];
     if(fread(buf, sizeof(char), length, fp) != length) {
-        GfxLog("failed to read in entirety of %s, continuing anyway but expect issues");
+        GfxLog("Failed to read in entirety of %s, continuing anyway but expect issues", path);
     }
     buf[length] = '\0';
 
