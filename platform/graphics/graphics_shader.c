@@ -442,13 +442,13 @@ bool plIsShaderProgramEnabled(PLShaderProgram *program) {
     return false;
 }
 
-static void RegisterShaderProgramUniforms(PLShaderProgram *program);
+static void RegisterShaderProgramData(PLShaderProgram *program);
 bool plLinkShaderProgram(PLShaderProgram *program) {
     FunctionStart();
 
     CallGfxFunction(LinkShaderProgram, program);
 
-    RegisterShaderProgramUniforms(program);
+    RegisterShaderProgramData(program);
 
     return program->is_linked;
 }
@@ -513,13 +513,6 @@ int plGetShaderUniformSlot(PLShaderProgram *program, const char *name) {
 }
 
 /*****************************************************/
-/** shader attribute **/
-
-bool plRegisterShaderProgramAttributes(PLShaderProgram *program) {
-    return false;
-}
-
-/*****************************************************/
 /** shader uniform **/
 
 #if defined(PL_SUPPORT_OPENGL)
@@ -555,7 +548,7 @@ static PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
 
 #endif
 
-static void RegisterShaderProgramUniforms(PLShaderProgram *program) {
+static void RegisterShaderProgramData(PLShaderProgram *program) {
     /* todo, move into layer_opengl */
 
     if(program->uniforms != NULL) {
@@ -564,6 +557,11 @@ static void RegisterShaderProgramUniforms(PLShaderProgram *program) {
     }
 
 #if defined(PL_SUPPORT_OPENGL)
+    program->internal.v_position = glGetAttribLocation(program->internal.id, "pl_vposition");
+    program->internal.v_normal = glGetAttribLocation(program->internal.id, "pl_vnormal");
+    program->internal.v_uv = glGetAttribLocation(program->internal.id, "pl_vuv");
+    program->internal.v_colour = glGetAttribLocation(program->internal.id, "pl_vcolour");
+
     int num_uniforms = 0;
     glGetProgramiv(program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms);
     if(num_uniforms <= 0) {
@@ -579,11 +577,6 @@ static void RegisterShaderProgramUniforms(PLShaderProgram *program) {
     if(program->uniforms == NULL) {
         return;
     }
-
-    program->internal.v_position = glGetAttribLocation(program->internal.id, "pl_vposition");
-    program->internal.v_normal = glGetAttribLocation(program->internal.id, "pl_vnormal");
-    program->internal.v_uv = glGetAttribLocation(program->internal.id, "pl_vuv");
-    program->internal.v_colour = glGetAttribLocation(program->internal.id, "pl_vcolour");
 
     unsigned int registered = 0;
     for(unsigned int i = 0; i < program->num_uniforms; ++i) {
