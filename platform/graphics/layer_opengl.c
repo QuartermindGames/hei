@@ -340,8 +340,10 @@ static void GLBindTexture(const PLTexture *texture) {
 }
 
 static void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    /* was originally GL_CLAMP; deprecated in GL3+, though some drivers
+     * still seem to accept it anyway except for newer Intel GPUs apparently */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     unsigned int min, mag;
     switch(texture->filter) {
