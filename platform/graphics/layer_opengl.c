@@ -522,19 +522,30 @@ static void GLUploadMesh(PLMesh *mesh) {
 
     //Point to the different substreams of the interleaved BVO
     //Args: Index, Size, Type, (Normalized), Stride, StartPtr
-    glEnableVertexAttribArray(program->internal.v_position);
-    glEnableVertexAttribArray(program->internal.v_normal);
-    glEnableVertexAttribArray(program->internal.v_uv);
-    glEnableVertexAttribArray(program->internal.v_colour);
 
-    glVertexAttribPointer(program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex),
-            (const GLvoid *)pl_offsetof(PLVertex, position));
-    glVertexAttribPointer(program->internal.v_normal, 3, GL_FLOAT, GL_FALSE,  sizeof(PLVertex),
-            (const GLvoid *)pl_offsetof(PLVertex, normal));
-    glVertexAttribPointer(program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof(PLVertex),
-            (const GLvoid *)pl_offsetof(PLVertex, st));
-    glVertexAttribPointer(program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PLVertex),
-            (const GLvoid *)pl_offsetof(PLVertex, colour));
+    if(program->internal.v_position != -1) {
+        glEnableVertexAttribArray(program->internal.v_position);
+        glVertexAttribPointer(program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex),
+                              (const GLvoid *) pl_offsetof(PLVertex, position));
+    }
+
+    if(program->internal.v_normal != -1) {
+        glEnableVertexAttribArray(program->internal.v_normal);
+        glVertexAttribPointer(program->internal.v_normal, 3, GL_FLOAT, GL_FALSE,  sizeof(PLVertex),
+                              (const GLvoid *)pl_offsetof(PLVertex, normal));
+    }
+
+    if(program->internal.v_uv != -1) {
+        glEnableVertexAttribArray(program->internal.v_uv);
+        glVertexAttribPointer(program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof(PLVertex),
+                              (const GLvoid *)pl_offsetof(PLVertex, st));
+    }
+
+    if(program->internal.v_colour != -1) {
+        glEnableVertexAttribArray(program->internal.v_colour);
+        glVertexAttribPointer(program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PLVertex),
+                              (const GLvoid *) pl_offsetof(PLVertex, colour));
+    }
 }
 
 static void GLDeleteMesh(PLMesh *mesh) {
