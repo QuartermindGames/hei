@@ -166,6 +166,7 @@ void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *
 void plRegisterStandardModelLoaders(void) {
     plRegisterModelLoader("hdv", plLoadHDVModel);
     plRegisterModelLoader("mdl", plLoadRequiemModel);
+    plRegisterModelLoader("obj", plLoadObjModel);
 }
 
 void plClearModelLoaders(void) {

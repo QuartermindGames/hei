@@ -135,6 +135,11 @@ typedef enum {
     PL_RESULT_FAIL,
     PL_RESULT_UNSUPPORTED,
 
+    PL_RESULT_INVALID_PARM1,    // Invalid function parameter 1
+    PL_RESULT_INVALID_PARM2,    // Invalid function parameter 2
+    PL_RESULT_INVALID_PARM3,    // Invalid function parameter 3
+    PL_RESULT_INVALID_PARM4,    // Invalid function parameter 4
+
     // FILE I/O
     PL_RESULT_FILEREAD,     // Failed to read file!
     PL_RESULT_FILEWRITE,    // Failed to write file!
