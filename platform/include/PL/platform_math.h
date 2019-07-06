@@ -387,9 +387,17 @@ PL_INLINE static PLVector3 plVector3Normalize(PLVector3 v) {
     return v;
 }
 
-PL_INLINE static const char *plPrintVector3(PLVector3 v) {
-    static char s[32] = { 0 };
-    snprintf(s, 32, "%i %i %i", (int)v.x, (int)v.y, (int)v.z);
+PL_INLINE static const char *plPrintVector3(PLVector3 v, PLVariableType format) {
+    static char s[64];
+    if(format == pl_int_var) snprintf(s, 32, "%i %i %i", (int)v.x, (int)v.y, (int)v.z);
+    else snprintf(s, 64, "%f %f %f", v.x, v.y, v.z);
+    return s;
+}
+
+PL_INLINE static const char *plPrintVector2(PLVector2 v, PLVariableType format) {
+    static char s[64];
+    if(format == pl_int_var) snprintf(s, 32, "%i %i", (int) v.x, (int) v.y);
+    else snprintf(s, 64, "%f %f", v.x, v.y);
     return s;
 }
 

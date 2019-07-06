@@ -127,6 +127,13 @@ support.
 #   define pl_offsetof(a, b)    offsetof(a, b)
 #endif
 
+typedef enum PLVariableType {
+    pl_float_var,
+    pl_int_var,
+    pl_string_var,
+    pl_bool_var,    // 0,1 true,false
+} PLVariableType;
+
 //////////////////////////////////////////////////////////////////
 
 // Error return values
@@ -249,13 +256,6 @@ PL_EXTERN const char *plGetResultString(PLresult result);
 // todo, kill start
 PL_EXTERN const char * plGetError(void);        // Returns the last recorded error.
 // kill end
-
-/* TODO: Should this be private? */
-#ifdef _WIN32
-
-#else
-
-#endif
 
 // CL Arguments
 PL_EXTERN const char *plGetCommandLineArgumentValue(const char *arg);

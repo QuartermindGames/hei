@@ -29,13 +29,6 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform.h>
 #include <PL/platform_math.h>
 
-typedef enum PLVariableType {
-    pl_float_var,
-    pl_int_var,
-    pl_string_var,
-    pl_bool_var,    // 0,1 true,false
-} PLVariableType;
-
 typedef struct PLConsoleVariable {
     char var[32];
     char description[256];

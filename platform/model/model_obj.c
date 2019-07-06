@@ -25,106 +25,83 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#include "filesystem_private.h"
 #include "model_private.h"
 
 /* Obj Static Model Format
- * This is and shall probably remain super duper basic;
- * curves, materials and other features of the Obj format
- * are unsupported.
  * */
 
-typedef struct ObjHandle {
-    struct {
-        PLVector3       *vn_list;
-        unsigned int    vn_size;
-        PLVector3       *v_list;
-        unsigned int    v_size;
-        PLVector2       *vt_list;
-        unsigned int    vt_size;
-        unsigned int    num_vertices;
-    } vertex_data;
+typedef struct ObjVectorLst {
+    PLVector3 v;
+    struct ObjVectorLst *next;
+} ObjVectorLst;
 
-    unsigned int num_faces;
+typedef struct ObjHandle {
+    ObjVectorLst *vertex_normals;
+    ObjVectorLst *vertex_positions;
+    ObjVectorLst *vertex_tex_coords;
+    char mtllib_path[PL_SYSTEM_MAX_PATH];
 } ObjHandle;
 
-static void ReadGeomVertex(ObjHandle *obj, const char *str) {
-
-}
-
-static PLMesh *LoadMesh(ObjHandle *obj, FILE *fp) {
-    /* add support for obj they said,
-     * it'd be easy they said... */
-
-    obj->vertex_data.num_vertices = 0;
-    obj->vertex_data.vt_list = pl_calloc(1, sizeof(PLVector2));
-    obj->vertex_data.vt_size = 1;
-    obj->vertex_data.vn_list = pl_calloc(1, sizeof(PLVector3));
-    obj->vertex_data.vn_size = 1;
-    obj->vertex_data.v_list = pl_calloc(1, sizeof(PLVector3));
-    obj->vertex_data.v_size = 1;
-
-    char tk[256];
-    while(fgets(tk, sizeof(tk), fp) != NULL) {
-        if(tk[0] == '#') { /* comment */
-            continue;
-        } else if(tk[0] == 'v') { /* vertex */
-            obj->vertex_data.num_vertices++;
-            PLVertex *vertex = &vertices[num_vertices];
-            unsigned int n = sscanf(&tk[2], "%f %f %f", &vpositions[.x, &vertex->position.y, &vertex->position.z);
-            if(n < 3) {
-                ModelLog("Invalid vertex position, less than 3 coords!\n\"%s\"\n", tk);
-            } else if(n > 3) {
-                ModelLog("Ignoring fourth position parameter, unsupported!\n\"%s\"\n", tk);
-            }
-            continue;
-        } else if(tk[0] == 'v' && tk[1] == 'n') { /* vertex normal */
-            PLVertex *vertex = &vertices[num_vertices];
-            if(sscanf(&tk[2], "%f %f %f", &vertex->normal.x, &vertex->normal.y, &vertex->normal.z) < 3) {
-                ModelLog("Invalid vertex normal, less than 3 coords!\n\"%s\"\n", tk);
-            }
-            continue;
-        } else if(tk[0] == 'v' && tk[1] == 't') { /* uv coord */
-            PLVertex *vertex = &vertices[num_vertices];
-            unsigned int n = sscanf(&tk[2], "%f %f", &vertex->st[0].x, &vertex->st[0].y);
-            if(n < 2) {
-                ModelLog("Invalid vertex uv, less than 2 coords!\n\"%s\"\n", tk);
-            } else if(n > 2) {
-                ModelLog("Ignoring third uv parameter, unsupported!\n\"%s\"\n", tk);
-            }
-            continue;
-        }
-    }
-
-    PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_STATIC, num_triangles, num_vertices);
-    if(mesh == NULL) {
-        free(vertices);
-        return NULL;
-    }
-
-    memcpy(mesh->vertices, vertices, sizeof(PLVertex) * num_vertices);
-    free(vertices);
-}
-
 static void FreeObjHandle(ObjHandle *obj) {
-    free(obj->vertex_data.v_list);
-    free(obj->vertex_data.vn_list);
-    free(obj->vertex_data.vt_list);
     free(obj);
 }
 
 PLModel *plLoadObjModel(const char *path) {
     FILE *fp = fopen(path, "rb");
-    if(fp == NULL) {
+    if (fp == NULL) {
         ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
         return NULL;
     }
 
     ObjHandle *obj = pl_malloc(sizeof(ObjHandle));
+    ObjVectorLst **cur_v = &(obj->vertex_positions);
+    ObjVectorLst **cur_vn = &(obj->vertex_normals);
+    ObjVectorLst **cur_vt = &(obj->vertex_tex_coords);
+    *cur_v = *cur_vn = *cur_vt = NULL;
 
     char tk[256];
-    while(fgets(tk, sizeof(tk), fp) != NULL) {
-        if(tk[0] == '\0' || tk[0] == '#' || tk[0] == 'o') {
+    while (fgets(tk, sizeof(tk), fp) != NULL) {
+        if (tk[0] == '\0' || tk[0] == '#' || tk[0] == 'o' || tk[0] == 'g' || tk[0] == 's') {
             continue;
+        } else if(tk[0] == 'v' && tk[1] == ' ') {
+            ObjVectorLst *this_v = pl_malloc(sizeof(ObjVectorLst));
+            unsigned int n = sscanf(&tk[2], "%f %f %f", &this_v->v.x, &this_v->v.y, &this_v->v.z);
+            if (n < 3) {
+                ModelLog("Invalid vertex position, less than 3 coords!\n\"%s\"\n", tk);
+            } else if (n > 3) {
+                ModelLog("Ignoring fourth position parameter, unsupported!\n\"%s\"\n", tk);
+            }
+
+            *cur_v = this_v;
+            this_v->next = NULL;
+            cur_v = &(this_v->next);
+            continue;
+        } else if(tk[0] == 'v' && tk[1] == 't') {
+            ObjVectorLst *this_vt = pl_malloc(sizeof(ObjVectorLst));
+            unsigned int n = sscanf(&tk[2], "%f %f", &this_vt->v.x, &this_vt->v.y);
+            if (n < 2) {
+                ModelLog("Invalid vertex uv, less than 2 coords!\n\"%s\"\n", tk);
+            } else if (n > 2) {
+                ModelLog("Ignoring third uv parameter, unsupported!\n\"%s\"\n", tk);
+            }
+
+            *cur_vt = this_vt;
+            this_vt->next = NULL;
+            cur_vt = &(this_vt->next);
+            continue;
+        } else if(tk[0] == 'v' && tk[1] == 'n') {
+            ObjVectorLst *this_vn = pl_malloc(sizeof(ObjVectorLst));
+            if (sscanf(&tk[2], "%f %f %f", &this_vn->v.x, &this_vn->v.y, &this_vn->v.z) < 3) {
+                ModelLog("Invalid vertex normal, less than 3 coords!\n\"%s\"\n", tk);
+            }
+
+            *cur_vn = this_vn;
+            this_vn->next = NULL;
+            cur_vn = &(this_vn->next);
+            continue;
+        } else if(tk[0] == 'f' && tk[1] == ' ') {
+
         }
 
         ModelLog("Unknown/unsupported parameter '%s', ignoring!\n", tk[0]);
@@ -134,30 +111,68 @@ PLModel *plLoadObjModel(const char *path) {
 
     /* right we're finally done, time to see what we hauled... */
 
-    if(obj->vertex_data.num_vertices == 0) {
-        ReportError(PL_RESULT_FAIL, "0 vertices");
-        FreeObjHandle(obj);
-        return NULL;
-    }
-
     return NULL;
 }
 
 bool plWriteObjModel(PLModel *model, const char *path) {
-    if(model == NULL) {
+    if (model == NULL) {
         ReportBasicError(PL_RESULT_INVALID_PARM1);
         return false;
     }
 
+    PLModelLod *lod = plGetModelLodLevel(model, 0);
+    if (lod == NULL) {
+        ModelLog("No LOD for model, aborting!\n");
+        return false;
+    }
+
     FILE *fp = fopen(path, "w");
-    if(fp == NULL) {
+    if (fp == NULL) {
         ReportBasicError(PL_RESULT_FILEWRITE);
         return false;
     }
 
-    fprintf(fp, "# generated by 'platform' lib (https://github.com/TalonBraveInfo/platform)\n\n");
-    if(model->type == PL_MODELTYPE_SKELETAL) {
+    fprintf(fp, "# generated by 'platform' lib (https://github.com/TalonBraveInfo/platform)\n");
+    if (model->type == PL_MODELTYPE_SKELETAL) {
         ModelLog("Model is of type skeletal; Obj only supports static models so skeleton will be discarded...\n");
+    }
+
+    const char *filename = plGetFileName(path);
+    size_t len = strlen(filename);
+    char mtl_name[len];
+    snprintf(mtl_name, len - 4, "%s", plGetFileName(path));
+    fprintf(fp, "mtllib ./%s.mtl\n", mtl_name);
+
+    /* todo: kill duplicated data */
+    for (unsigned int i = 0; i < lod->num_meshes; ++i) {
+        PLMesh *mesh = lod->meshes[i];
+        if (mesh->primitive == PL_MESH_TRIANGLES) {
+            fprintf(fp, "o mesh.%00d\n", i);
+            /* print out vertices */
+            for (unsigned int vi = 0; vi < mesh->num_verts; ++i) {
+                fprintf(fp, "v %s\n", plPrintVector3(mesh->vertices[vi].position, pl_float_var));
+            }
+            /* print out texture coords */
+            for (unsigned int vi = 0; vi < mesh->num_verts; ++i) {
+                fprintf(fp, "vt %s\n", plPrintVector2(mesh->vertices[vi].st[0], pl_float_var));
+            }
+            /* print out vertex normals */
+            for (unsigned int vi = 0; vi < mesh->num_verts; ++i) {
+                fprintf(fp, "vn %s\n", plPrintVector3(mesh->vertices[vi].normal, pl_float_var));
+            }
+            fprintf(fp, "# %d vertices\n", mesh->num_verts);
+
+            if (mesh->texture != NULL && !plIsEmptyString(mesh->texture->name)) {
+                fprintf(fp, "usemtl %s\n", mesh->texture->name);
+            }
+
+            for (unsigned int fi = 0; fi < mesh->num_triangles; ++i) {
+                fprintf(fp, "f %d/%d/%d\n",
+                        mesh->indices[fi],
+                        mesh->indices[fi],
+                        mesh->indices[fi]);
+            }
+        }
     }
 
     // todo...
