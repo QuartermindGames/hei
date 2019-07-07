@@ -251,6 +251,8 @@ bool plLoadImageFromMemory(const uint8_t *data, size_t length, const char *type,
 }
 
 bool plLoadImage(const char *path, PLImage *out) {
+    memset(out, 0, sizeof(PLImage));
+
     if (plIsEmptyString(path)) {
         ReportError(PL_RESULT_FILEPATH, "invalid path (%s) passed for image", path);
         return false;

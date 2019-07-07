@@ -135,12 +135,13 @@ PLMesh *plCreateMeshInit(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigne
     if(num_tris > 0) {
         if(mesh->primitive == PL_MESH_TRIANGLES) {
             mesh->num_indices = num_tris * 3;
-            if((mesh->indices = pl_calloc(mesh->num_indices, sizeof(uint16_t))) == NULL) {
+            if((mesh->indices = pl_calloc(mesh->num_indices, sizeof(unsigned int))) == NULL) {
                 plDestroyMesh(mesh);
                 return NULL;
             }
+
             if(indexData != NULL){
-                memcpy(mesh->indices, indexData, mesh->num_indices * sizeof(uint16_t));
+                memcpy(mesh->indices, indexData, mesh->num_indices * sizeof(unsigned int));
             }
         }
     }
@@ -173,7 +174,13 @@ void plClearMesh(PLMesh *mesh) {
     memset(mesh->vertices, 0, sizeof(PLVertex) * mesh->num_verts);
 }
 
-void plSetMeshTrianglePosition(PLMesh *mesh, unsigned int *index, uint16_t x, uint16_t y, uint16_t z) {
+void plScaleMesh(PLMesh *mesh, PLVector3 scale) {
+    for(unsigned int i = 0; i < mesh->num_verts; ++i) {
+        mesh->vertices[i].position = plVector3Scale(mesh->vertices[i].position, scale);
+    }
+}
+
+void plSetMeshTrianglePosition(PLMesh *mesh, unsigned int *index, unsigned int x, unsigned int y, unsigned int z) {
     plAssert(*index < mesh->num_indices);
     mesh->indices[(*index)++] = x;
     mesh->indices[(*index)++] = y;
