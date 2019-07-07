@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_filesystem.h>
 #include <PL/platform_model.h>
+#include <PL/platform_mesh.h>
 
 /* PLATFORM MODEL LOADER */
 
@@ -107,7 +108,7 @@ bool plWriteModel(const char *path, PLModel *model, PLModelOutputType type) {
     }
 
     switch(type) {
-        case PL_MODEL_OUTPUT_SMD: return plWriteSMDModel(path, model);
+        case PL_MODEL_OUTPUT_SMD: return plWriteSmdModel(model, path);
 
         default:{
             ReportError(PL_RESULT_UNSUPPORTED, "unsupported output type for %s (%u)", path, type);
@@ -165,6 +166,7 @@ void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *
 void plRegisterStandardModelLoaders(void) {
     plRegisterModelLoader("hdv", plLoadHDVModel);
     plRegisterModelLoader("mdl", plLoadRequiemModel);
+    plRegisterModelLoader("obj", plLoadObjModel);
 }
 
 void plClearModelLoaders(void) {

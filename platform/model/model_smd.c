@@ -44,7 +44,7 @@ static void WriteSMDVertex(FILE* fp, const PLVertex *vertex) {
 }
 
 /* writes given model out to Valve's SMD model format */
-bool plWriteSMDModel(const char *path, PLModel *model) {
+bool plWriteSmdModel(PLModel *model, const char *path) {
     FILE *fp_out = NULL;
     for(unsigned int i = 0; i < model->num_levels; ++i) {
         char full_path[PL_SYSTEM_MAX_PATH];

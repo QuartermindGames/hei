@@ -28,6 +28,8 @@ For more information, please refer to <http://unlicense.org>
 #pragma once
 
 #include "platform_private.h"
+
+#include <PL/platform_console.h>
 #include <PL/platform_model.h>
 
 #define ModelLog(...) plLogMessage(LOG_LEVEL_MODEL, __VA_ARGS__)
@@ -37,7 +39,9 @@ PL_EXTERN_C
 PLModel *plLoadU3DModel(const char *path);
 PLModel *plLoadHDVModel(const char *path);
 PLModel *plLoadRequiemModel(const char *path);
+PLModel *plLoadObjModel(const char *path);
 
-bool plWriteSMDModel(const char *path, PLModel *model);
+bool plWriteSmdModel(PLModel *model, const char *path);
+bool plWriteObjModel(PLModel *model, const char *path);
 
 PL_EXTERN_C_END

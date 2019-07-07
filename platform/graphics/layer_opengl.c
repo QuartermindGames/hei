@@ -516,9 +516,8 @@ static void GLUploadMesh(PLMesh *mesh) {
     }
 
     //Write the current CPU vertex data into the VBO
-    unsigned int mode = TranslateDrawMode(mesh->mode);
     GLsizeiptr VBOsize = sizeof(PLVertex) * mesh->num_verts;
-    glBufferData(GL_ARRAY_BUFFER, VBOsize, &mesh->vertices[0], mode);
+    glBufferData(GL_ARRAY_BUFFER, VBOsize, &mesh->vertices[0], TranslateDrawMode(mesh->mode));
 
     //Point to the different substreams of the interleaved BVO
     //Args: Index, Size, Type, (Normalized), Stride, StartPtr
@@ -576,7 +575,7 @@ static void GLDrawMesh(PLMesh *mesh) {
     //draw
     GLuint mode = TranslatePrimitiveMode(mesh->primitive);
     if(mesh->num_indices > 0) {
-        glDrawElements(mode, mesh->num_indices, GL_UNSIGNED_SHORT, mesh->indices);
+        glDrawElements(mode, mesh->num_indices, GL_UNSIGNED_INT, mesh->indices);
     } else {
         glDrawArrays(mode, 0, mesh->num_verts);
     }
