@@ -43,7 +43,7 @@ For more information, please refer to <http://unlicense.org>
 #   include "stb_image.h"
 
 static bool LoadSTBImage(uint8_t *data, int x, int y, int component, PLImage *out) {
-    memset(out, 0, sizeof(PLImage));
+    //memset(out, 0, sizeof(PLImage));
     out->colour_format  = PL_COLOURFORMAT_RGBA;
     out->format         = PL_IMAGEFORMAT_RGBA8;
     out->width          = (unsigned int)x;
