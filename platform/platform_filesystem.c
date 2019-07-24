@@ -223,7 +223,7 @@ char *plGetApplicationDataDirectory(const char *app_name, char *out, size_t n) {
     snprintf(out, n, "%s/.%s", home, app_name);
 #else
     char home[MAX_PATH];
-    if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, home))) {
+    if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, home))) {
         snprintf(out, n, "%s/.%s", home, app_name);
         return out;
     }
