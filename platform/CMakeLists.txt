@@ -73,11 +73,13 @@ add_library(platform STATIC
         ${PLATFORM_MODEL_FILES}
         ${PLATFORM_PACKAGE_FILES})
 
+#[[
 set_target_properties(platform PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/
         C_STANDARD 11
         CXX_STANDARD 14
         )
+]]
 
 target_compile_options(platform PUBLIC -fPIC -DPL_INTERNAL)
 
