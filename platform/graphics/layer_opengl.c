@@ -792,7 +792,7 @@ static void GLCompileShaderStage(PLShaderStage *stage, const char *buf, size_t l
     }
 }
 
-static void GLSetShaderUniformMatrix4x4(PLShaderProgram *program, int slot, PLMatrix4x4 value, bool transpose) {
+static void GLSetShaderUniformMatrix4(PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose) {
     GLuint loc = (GLuint)slot;
     glUniformMatrix4fv( loc, 1, transpose ? GL_TRUE : GL_FALSE, value.m);
 }
@@ -962,7 +962,7 @@ void plInitOpenGL(void) {
     gfx_layer.AttachShaderStage         = GLAttachShaderStage;
     gfx_layer.CompileShaderStage        = GLCompileShaderStage;
 
-    gfx_layer.SetShaderUniformMatrix4x4   = GLSetShaderUniformMatrix4x4;
+    gfx_layer.SetShaderUniformMatrix4   = GLSetShaderUniformMatrix4;
 
     /////////////////////////////////////////////////////////////
 

@@ -30,43 +30,43 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_math.h>
 
 typedef struct PLAABB {
-    PLVector3 mins, maxs;
+  PLVector3 mins, maxs;
 } PLAABB;
 
 PL_INLINE static void plAddAABB(PLAABB *b, PLAABB b2) {
-    plAddVector3(&b->maxs, b2.maxs);
-    plAddVector3(&b->mins, b2.mins);
+  b->maxs = plAddVector3(b->maxs, b2.maxs);
+  b->mins = plAddVector3(b->mins, b2.mins);
 }
 
 PL_INLINE static bool plIntersectAABB(PLAABB b, PLAABB b2) {
-    return !(b.maxs.x < b2.mins.x ||
-             b.maxs.y < b2.mins.y ||
-             b.maxs.z < b2.mins.z ||
+  return !(b.maxs.x < b2.mins.x ||
+      b.maxs.y < b2.mins.y ||
+      b.maxs.z < b2.mins.z ||
 
-             b.mins.x > b2.maxs.x ||
-             b.mins.y > b2.maxs.y ||
-             b.mins.z > b2.maxs.z);
+      b.mins.x > b2.maxs.x ||
+      b.mins.y > b2.maxs.y ||
+      b.mins.z > b2.maxs.z);
 
 }
 
 PL_INLINE static bool plIntersectPoint(PLAABB b, PLVector3 point) {
-    return !(point.x > b.maxs.x ||
-             point.x < b.mins.x ||
+  return !(point.x > b.maxs.x ||
+      point.x < b.mins.x ||
 
-             point.y > b.maxs.y ||
-             point.y < b.mins.y ||
+      point.y > b.maxs.y ||
+      point.y < b.mins.y ||
 
-             point.z > b.maxs.z ||
-             point.z < b.mins.z);
+      point.z > b.maxs.z ||
+      point.z < b.mins.z);
 
 }
 
 PL_INLINE static bool plIsSphereIntersecting(PLVector3 origin, float radius, PLVector3 position_b, float radius_b) {
-    PLVector3 difference = origin;
-    plSubtractVector3(&difference, position_b);
-    float distance = plVector3Length(difference);
-    float sum_radius = radius + radius_b;
-    return distance < sum_radius;
+  PLVector3 difference = origin;
+  difference = plSubtractVector3(difference, position_b);
+  float distance = plVector3Length(&difference);
+  float sum_radius = radius + radius_b;
+  return distance < sum_radius;
 }
 
 /************************************************************/

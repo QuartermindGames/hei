@@ -232,7 +232,7 @@ static PLModel* CreateModel(PLModelType type, PLModelLod *levels, uint8_t num_le
         return NULL;
     }
 
-    model->model_matrix = plMatrix4x4Identity();
+    model->model_matrix = plMatrix4Identity();
     model->num_levels = num_levels;
     model->type = type;
 
@@ -332,7 +332,7 @@ void plDrawModel(PLModel *model) {
 
         plSetTexture(lod->meshes[i]->texture, 0);
 
-        plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", model->model_matrix, true);
+        plSetNamedShaderUniformMatrix4(NULL, "pl_model", model->model_matrix, true);
         plUploadMesh(lod->meshes[i]);
         plDrawMesh(lod->meshes[i]);
     }

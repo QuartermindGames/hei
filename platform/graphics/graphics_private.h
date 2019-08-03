@@ -79,8 +79,8 @@ typedef struct PLGraphicsState {
     unsigned int num_cameras;
     unsigned int max_cameras;
 
-    PLMatrix4x4 projection_matrix;
-    PLMatrix4x4 view_matrix;
+    PLMatrix4 projection_matrix;
+    PLMatrix4 view_matrix;
 
     ////////////////////////////////////////
 
@@ -155,7 +155,7 @@ typedef struct GfxLayer {
     void(*CompileShaderStage)(PLShaderStage *stage, const char *buf, size_t length);
 
     //Shader uniforms
-    void(*SetShaderUniformMatrix4x4)(PLShaderProgram *program, int slot, PLMatrix4x4 value, bool transpose);
+    void(*SetShaderUniformMatrix4)(PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose);
 
 } GfxLayer;
 

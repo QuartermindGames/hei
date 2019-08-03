@@ -103,7 +103,7 @@ typedef struct PLModel {
     float           radius;
     PLAABB          bounds;
     /* transformations */
-    PLMatrix4x4     model_matrix;
+    PLMatrix4       model_matrix;
     /* model lods */
     PLModelLod      levels[PL_MAX_MODEL_LODS];  /* different mesh sets for different levels of detail */
     uint8_t         num_levels;                 /* levels of detail provided */

@@ -201,15 +201,15 @@ bool plWriteObjModel(PLModel *model, const char *path) {
             fprintf(fp, "o mesh.%0d\n", i);
             /* print out vertices */
             for (unsigned int vi = 0; vi < mesh->num_verts; ++i) {
-                fprintf(fp, "v %s\n", plPrintVector3(mesh->vertices[vi].position, pl_float_var));
+                fprintf(fp, "v %s\n", plPrintVector3(&mesh->vertices[vi].position, pl_float_var));
             }
             /* print out texture coords */
             for (unsigned int vi = 0; vi < mesh->num_verts; ++i) {
-                fprintf(fp, "vt %s\n", plPrintVector2(mesh->vertices[vi].st[0], pl_float_var));
+                fprintf(fp, "vt %s\n", plPrintVector2(&mesh->vertices[vi].st[0], pl_float_var));
             }
             /* print out vertex normals */
             for (unsigned int vi = 0; vi < mesh->num_verts; ++i) {
-                fprintf(fp, "vn %s\n", plPrintVector3(mesh->vertices[vi].normal, pl_float_var));
+                fprintf(fp, "vn %s\n", plPrintVector3(&mesh->vertices[vi].normal, pl_float_var));
             }
             fprintf(fp, "# %d vertices\n", mesh->num_verts);
 

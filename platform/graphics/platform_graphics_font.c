@@ -327,7 +327,7 @@ void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColo
     plSetMeshVertexST(mesh, 2, tx + tw, ty);
     plSetMeshVertexST(mesh, 3, tx + tw, ty + th);
 
-    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
+    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plUploadMesh(mesh);
     plDrawMesh(mesh);
 }

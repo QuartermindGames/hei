@@ -681,7 +681,7 @@ void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value) {
     plSetShaderProgram(old_program);
 }
 
-void plSetShaderUniformMatrix4x4(PLShaderProgram *program, int slot, PLMatrix4x4 value, bool transpose){
+void plSetShaderUniformMatrix4(PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose){
     PLShaderProgram *prg = GetShaderProgram(program);
     if(prg == NULL || prg->uniforms == NULL) {
         return;
@@ -691,5 +691,5 @@ void plSetShaderUniformMatrix4x4(PLShaderProgram *program, int slot, PLMatrix4x4
         return;
     }
 
-    CallGfxFunction(SetShaderUniformMatrix4x4, prg, slot, value, transpose);
+    CallGfxFunction(SetShaderUniformMatrix4, prg, slot, value, transpose);
 }

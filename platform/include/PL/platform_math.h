@@ -539,10 +539,6 @@ PL_INLINE static void plInverseQuaternion(PLQuaternion *q) {
     q->w = -q->w;
 }
 
-PL_INLINE static void plQuaternionFromMatrix(PLQuaternion *q, PLMatrix4x4 mat) {
-    // todo
-}
-
 PL_INLINE static float plQuaternionLength(const PLQuaternion *q) {
     return sqrtf(q->x * q->x + q->y * q->y + q->z * q->z + q->w * q->w);
 }
@@ -876,4 +872,3 @@ PL_INLINE static void plAnglesAxes(PLVector3 angles, PLVector3 *left, PLVector3 
 }
 
 #include "pl_math_matrix.h"
-

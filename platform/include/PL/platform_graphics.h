@@ -296,7 +296,7 @@ PL_EXTERN void plSetShaderUniformUInt(PLShaderProgram *program, int slot, unsign
 PL_EXTERN void plSetShaderUniformVector4(PLShaderProgram* program, int slot, PLVector4 value);
 PL_EXTERN void plSetShaderUniformVector3(PLShaderProgram *program, int slot, PLVector3 value); /* todo */
 PL_EXTERN void plSetShaderUniformVector2(PLShaderProgram *program, int slot, PLVector2 value); /* todo */
-PL_EXTERN void plSetShaderUniformMatrix4x4(PLShaderProgram *program, int slot, PLMatrix4x4 value, bool transpose);
+PL_EXTERN void plSetShaderUniformMatrix4(PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose);
 
 #define plSetNamedShaderUniformFloat(program, name, value)  \
     plSetShaderUniformFloat((program), plGetShaderUniformSlot((program), (name)), (value))
@@ -314,8 +314,8 @@ PL_EXTERN void plSetShaderUniformMatrix4x4(PLShaderProgram *program, int slot, P
     plSetShaderUniformVector3((program), plGetShaderUniformSlot((program), (name)), (value))
 #define plSetNamedShaderUniformVector2(program, name, value) \
     plSetShaderUniformVector2((program), plGetShaderUniformSlot((program), (name)), (value))
-#define plSetNamedShaderUniformMatrix4x4(program, name, value, transpose) \
-    plSetShaderUniformMatrix4x4((program), plGetShaderUniformSlot((program), (name)), (value), (transpose))
+#define plSetNamedShaderUniformMatrix4(program, name, value, transpose) \
+    plSetShaderUniformMatrix4((program), plGetShaderUniformSlot((program), (name)), (value), (transpose))
 
 PL_EXTERN PLShaderProgram *plCreateShaderProgram(void);
 PL_EXTERN void plDestroyShaderProgram(PLShaderProgram *program, bool free_stages);

@@ -58,7 +58,7 @@ PLVector3 plGenerateVertexNormal(PLVector3 a, PLVector3 b, PLVector3 c) {
     PLVector3D y = a - b;
     return x.CrossProduct(y).Normalize();
 #else
-    return plVector3Normalize(
+    return plNormalizeVector3(
             plVector3CrossProduct(
                     PLVector3(
                             c.x - b.x, c.y - b.y, c.z - b.z
@@ -73,9 +73,8 @@ PLVector3 plGenerateVertexNormal(PLVector3 a, PLVector3 b, PLVector3 c) {
 
 /* software implementation of gouraud shading */
 void plApplyMeshLighting(PLMesh *mesh, const PLLight *light, PLVector3 position) {
-    PLVector3 distvec = position;
-    plSubtractVector3(&distvec, light->position);
-    float distance = (light->colour.a - plVector3Length(distvec)) / 100.f;
+    PLVector3 distvec = plSubtractVector3(position, light->position);
+    float distance = (plByteToFloat(light->colour.a) - plVector3Length(&distvec)) / 100.f;
     for(unsigned int i = 0; i < mesh->num_verts; i++) {
         PLVector3 normal = mesh->vertices[i].normal;
         float angle = (distance * ((normal.x * distvec.x) + (normal.y * distvec.y) + (normal.z * distvec.z)));
@@ -176,7 +175,7 @@ void plClearMesh(PLMesh *mesh) {
 
 void plScaleMesh(PLMesh *mesh, PLVector3 scale) {
     for(unsigned int i = 0; i < mesh->num_verts; ++i) {
-        mesh->vertices[i].position = plVector3Scale(mesh->vertices[i].position, scale);
+        mesh->vertices[i].position = plScaleVector3(mesh->vertices[i].position, scale);
     }
 }
 
@@ -346,7 +345,7 @@ void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h) {
     plSetMeshVertexColour(mesh, 14, PLColourRGB(63, 63, 63));
     plSetMeshVertexColour(mesh, 15, PLColourRGB(63, 63, 63));
 
-    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
+    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plUploadMesh(mesh);
     plDrawMesh(mesh);
 }
@@ -386,7 +385,7 @@ void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, 
                 (position.y + h) + sinf(plDegreesToRadians(i)) * h, 0));
     }
 
-    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
+    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plUploadMesh(mesh);
     plDrawMesh(mesh);
 }
@@ -420,7 +419,7 @@ void plDrawTexturedRectangle(int x, int y, int w, int h, PLTexture *texture) {
 
     plSetTexture(texture, 0);
 
-    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
+    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plUploadMesh(mesh);
     plDrawMesh(mesh);
 
@@ -448,7 +447,7 @@ void plDrawRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colo
 
     DrawRectangle(mesh, x, y, w, h, colour);
 
-    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
+    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plUploadMesh(mesh);
     plDrawMesh(mesh);
 }
@@ -471,7 +470,7 @@ void plDrawFilledRectangle(PLRectangle2D rect) {
     plSetMeshVertexColour(mesh, 2, rect.lr);
     plSetMeshVertexColour(mesh, 3, rect.ur);
 
-    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
+    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plUploadMesh(mesh);
     plDrawMesh(mesh);
 }
@@ -500,7 +499,7 @@ void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
 
     //plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
 
-    plSetNamedShaderUniformMatrix4x4(NULL, "pl_model", plMatrix4x4Identity(), false);
+    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plUploadMesh(mesh);
     plDrawMesh(mesh);
 }

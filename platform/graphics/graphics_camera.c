@@ -36,7 +36,7 @@ For more information, please refer to <http://unlicense.org>
 #define CAMERA_DEFAULT_NEAR       0.1f
 #define CAMERA_DEFAULT_FAR        1000.f
 
-PLMatrix4x4 plLookAtTargetVector(PLVector3 eye, PLVector3 target) {
+PLMatrix4 plLookAtTargetVector(PLVector3 eye, PLVector3 target) {
     return plLookAt(eye, target, PLVector3(0, 1, 0));
 }
 
@@ -89,8 +89,8 @@ void plDestroyCamera(PLCamera *camera) {
 void plSetupCamera(PLCamera *camera) {
     plAssert(camera);
 
-    camera->internal.proj = plMatrix4x4Identity();
-    camera->internal.view = plMatrix4x4Identity();
+    camera->internal.proj = plMatrix4Identity();
+    camera->internal.view = plMatrix4Identity();
 
     int w = camera->viewport.w;
     int h = camera->viewport.h;
@@ -104,8 +104,8 @@ void plSetupCamera(PLCamera *camera) {
                     sinf(plToRadians(camera->angles.x)),
                     sinf(plToRadians(camera->angles.y)) * cosf(plToRadians(camera->angles.x))
                     );
-            camera->forward = plVector3Normalize(forward);
-            camera->internal.view = plLookAt(camera->position, plVector3Add(camera->position, camera->forward), camera->up);
+            camera->forward = plNormalizeVector3(forward);
+            camera->internal.view = plLookAt(camera->position, plAddVector3(camera->position, camera->forward), camera->up);
         } break;
 
         case PL_CAMERA_MODE_ORTHOGRAPHIC: {
