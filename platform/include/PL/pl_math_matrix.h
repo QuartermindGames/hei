@@ -30,6 +30,10 @@ For more information, please refer to <http://unlicense.org>
 /******************************************************************/
 /* Matrices */
 
+/* I know, this is disgusting... */
+#define pl_m3pos(row, col) m[(row) * 3 + (col)]
+#define pl_m4pos(row, col) m[(row) * 4 + (col)]
+
 typedef struct PLMatrix3 {
   float m[9];
   /* 0 0 0
@@ -65,14 +69,55 @@ typedef struct PLMatrix4 {
    * 0 0 0 0
    * 0 0 0 0
    */
+
+#ifdef __cplusplus
+  PL_INLINE void Identity() {
+    m[0] = 1;
+    m[1] = 0;
+    m[2] = 0;
+    m[3] = 0;
+    m[4] = 0;
+
+    m[5] = 1;
+    m[6] = 0;
+    m[7] = 0;
+    m[8] = 0;
+    m[9] = 0;
+
+    m[10] = 1;
+    m[11] = 0;
+    m[12] = 0;
+    m[13] = 0;
+    m[14] = 0;
+
+    m[15] = 1;
+  }
+
+  PL_INLINE void Clear() {
+    for (float & i : m) { i = 0; }
+  }
+
+  PL_INLINE PLMatrix4 operator + (PLMatrix4 m2) const {
+    PLMatrix4 o = *this;
+    for(unsigned int i = 0; i < 4; ++i) {
+      for(unsigned int j = 0; j < 4; ++j) {
+        o.pl_m4pos(i, j) += m2.pl_m4pos(i, j);
+      }
+    }
+    return o;
+  }
+
+  PL_INLINE PLMatrix4 operator - (PLMatrix4 m2) const {
+    PLMatrix4 o = *this;
+    for(unsigned int i = 0; i < 4; ++i) {
+      for(unsigned int j = 0; j < 4; ++j) {
+        o.pl_m4pos(i, j) -= m2.pl_m4pos(i, j);
+      }
+    }
+    return o;
+  }
+#endif
 } PLMatrix4;
-
-/* I know, this is disgusting... */
-#define pl_m3pos(col, row) m[(col) * 3 + (row)]
-#define pl_m4pos(col, row) m[(col) * 4 + (row)]
-
-#define plSetMatrix3(mat, col, row, val) (mat).pl_m3pos(col, row) = (val)
-#define plSetMatrix4(mat, col, row, val) (mat).pl_m4pos(col, row) = (val)
 
 /* ClearMatrix */
 
@@ -107,16 +152,19 @@ PL_INLINE static PLMatrix4 plMatrix4Identity(void) {
   out.m[2] = 0;
   out.m[3] = 0;
   out.m[4] = 0;
+
   out.m[5] = 1;
   out.m[6] = 0;
   out.m[7] = 0;
   out.m[8] = 0;
   out.m[9] = 0;
+
   out.m[10] = 1;
   out.m[11] = 0;
   out.m[12] = 0;
   out.m[13] = 0;
   out.m[14] = 0;
+
   out.m[15] = 1;
   return out;
 }
@@ -247,6 +295,25 @@ PL_INLINE static PLMatrix4 plRotateMatrix4(float angle, PLVector3 axis) {
 /******************************************************************/
 /* Utility Functions */
 
+PL_INLINE static PLVector3 plGetMatrix4Angle(const PLMatrix4 *m) {
+  PLVector3 out = PLVector3(0, 0, 0);
+  out.y = plRadiansToDegrees(asinf(m->m[8]));
+  if(m->m[10] < 0) {
+    if(out.y >= 0) {
+      out.y = 180.f - out.y;
+    } else {
+      out.y = -180.f - out.y;
+    }
+  }
+  if(m->m[0] > -PL_EPSILON && m->m[0] < PL_EPSILON) {
+    out.x = plRadiansToDegrees(atan2f(m->m[1], m->m[5]));
+  } else {
+    out.z = plRadiansToDegrees(atan2f(-m->m[4], m->m[0]));
+    out.x = plRadiansToDegrees(atan2f(-m->m[9], m->m[10]));
+  }
+  return out;
+}
+
 PL_INLINE static bool plCompareMatrix(const PLMatrix4 *m, const PLMatrix4 *m2) {
   for (unsigned int i = 0; i < 4; ++i) {
     for (unsigned int j = 0; j < 4; ++j) {
@@ -270,10 +337,11 @@ PL_INLINE static PLMatrix4 plScaleMatrix4(PLMatrix4 m, PLVector3 scale) {
 //  return plMultiplyMatrix4(m, plRotateMatrix4(angle, axis));
 //}
 
-PL_INLINE static PLMatrix4 plTranslateMatrix4(PLMatrix4 m, PLVector3 v) {
-  m.pl_m4pos(3, 0) = v.x;
-  m.pl_m4pos(3, 1) = v.y;
-  m.pl_m4pos(3, 2) = v.z;
+PL_INLINE static PLMatrix4 plTranslateMatrix4(PLVector3 v) {
+  PLMatrix4 m = plMatrix4Identity();
+  m.pl_m4pos(0, 3) = v.x;
+  m.pl_m4pos(1, 3) = v.y;
+  m.pl_m4pos(2, 3) = v.z;
   return m;
 }
 

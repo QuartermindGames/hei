@@ -32,6 +32,7 @@ For more information, please refer to <http://unlicense.org>
 // Base Defines
 
 #define PL_PI           3.14159265358979323846264338327950288f
+#define PL_180_DIV_PI   (180.0f / PL_PI)
 #define PL_PI_DIV_180   (PL_PI / 180.f)
 
 #define PL_TAU          6.28318530717958647692528676655900576f
@@ -57,11 +58,11 @@ PL_INLINE static bool plIsPowerOfTwo(unsigned int num) {
 }
 
 PL_INLINE static float plDegreesToRadians(float degrees) {
-    return degrees * (PL_PI / 180);
+    return degrees * PL_PI_DIV_180;
 }
 
 PL_INLINE static float plRadiansToDegrees(float radians) {
-    return radians * (180 / PL_PI);
+    return radians * PL_180_DIV_PI;
 }
 
 /* https://stackoverflow.com/a/9194117 */

@@ -122,6 +122,7 @@ PL_EXTERN_C_END
 //-----------------
 // Textures
 
+// todo: rename to pl_graphics_texture.h
 #include "platform_graphics_texture.h"
 
 //-----------------
@@ -131,6 +132,7 @@ PL_EXTERN_C_END
 
 //-----------------
 // Framebuffers
+// todo: move all of this into pl_graphics_framebuffer.h
 
 typedef enum PLFBOTarget {
     PL_FRAMEBUFFER_DEFAULT,
@@ -184,6 +186,7 @@ typedef struct PLLight {
 
 //-----------------
 // Shaders
+// todo: move all of this into pl_graphics_shader.h
 
 typedef int PLSampler1D, PLSampler2D, PLSampler3D;
 typedef int PLSamplerCube;
