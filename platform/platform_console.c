@@ -151,14 +151,17 @@ PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, 
 
         out = _pl_variables[_pl_num_variables];
         memset(out, 0, sizeof(PLConsoleVariable));
-        out->var = name;
-        out->description = desc;
-        out->default_value = def;
         out->type = type;
+        snprintf(out->var, sizeof(out->var), "%s", name);
+        snprintf(out->default_value, sizeof(out->default_value), "%s", def);
+        snprintf(out->description, sizeof(out->description), "%s", desc);
+
+        plSetConsoleVariable(out, out->default_value);
+
+        // Ensure the callback is only called afterwards
         if(CallbackFunction != NULL) {
             out->CallbackFunction = CallbackFunction;
         }
-        plSetConsoleVariable(out, out->default_value);
 
         _pl_num_variables++;
     }
@@ -369,13 +372,6 @@ PLresult plInitConsole(void) {
     for(unsigned int i = 0; i < plArrayElements(base_commands); ++i) {
         plRegisterConsoleCommand(base_commands[i].cmd, base_commands[i].Callback, base_commands[i].description);
     }
-
-    // todo, temporary
-    //cmds_func(0, NULL);
-    //vars_func(0, NULL);
-    //time_func(0, NULL);
-
-    // todo, parse config
 
     return PL_RESULT_SUCCESS;
 }
@@ -774,10 +770,9 @@ void plDrawConsole(void) {
 
 typedef struct LogLevel {
     int id;
-    bool is_enabled;
-
     char prefix[64];    // e.g. 'warning, 'error'
     PLColour colour;
+    PLConsoleVariable *var;
 } LogLevel;
 
 static LogLevel levels[MAX_LOG_LEVELS];
@@ -789,12 +784,12 @@ static LogLevel *GetLogLevel(int level) {
 
         // todo, eventually some of these should be disabled by default - unless enabled via console command
         plSetupLogLevel(LOG_LEVEL_LOW, "pl", (PLColour){255, 255, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_MEDIUM, "pl-warn", (PLColour){255, 255, 0, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_HIGH, "pl-error", (PLColour){255, 0, 0, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_DEBUG, "pl-debug", (PLColour){255, 255, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_GRAPHICS, "pl-gfx", (PLColour){0, 255, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_FILESYSTEM, "pl-fs", (PLColour){0, 255, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_MODEL, "pl-model", (PLColour){0, 255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_MEDIUM, "plwarn", (PLColour){255, 255, 0, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_HIGH, "plerror", (PLColour){255, 0, 0, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_DEBUG, "pldebug", (PLColour){255, 255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_GRAPHICS, "plgfx", (PLColour){0, 255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_FILESYSTEM, "plfs", (PLColour){0, 255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_MODEL, "plmodel", (PLColour){0, 255, 255, 255}, true);
     }
 
     // the following ensures there's no conflict
@@ -814,7 +809,6 @@ static LogLevel *GetLogLevel(int level) {
     if(l->id == 0) {
         // register it as a new level
         l->id = level;
-        l->is_enabled = false;
         l->colour = PLColour(255, 255, 255, 255);
     }
 
@@ -848,7 +842,10 @@ void plSetupLogLevel(int level, const char *prefix, PLColour colour, bool status
     }
 
     l->colour = colour;
-    l->is_enabled = status;
+
+    char var[32];
+    snprintf(var, sizeof(var), "log_level_%s", prefix);
+    l->var = plRegisterConsoleVariable(var, status ? "1" : "0", pl_bool_var, NULL, "Console output level.");
 }
 
 void plSetLogLevelStatus(int level, bool status) {
@@ -857,7 +854,7 @@ void plSetLogLevelStatus(int level, bool status) {
         return;
     }
 
-    l->is_enabled = status;
+    plSetConsoleVariable(l->var, status ? "1" : "0");
 }
 
 void plLogMessage(int level, const char *msg, ...) {
@@ -866,7 +863,7 @@ void plLogMessage(int level, const char *msg, ...) {
         return;
     }
 
-    if(!l->is_enabled) {
+    if(!l->var->b_value) {
         return;
     }
 

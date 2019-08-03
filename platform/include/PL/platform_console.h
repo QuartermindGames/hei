@@ -29,23 +29,17 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform.h>
 #include <PL/platform_math.h>
 
-typedef enum PLVariableType {
-    pl_float_var,
-    pl_int_var,
-    pl_string_var,
-    pl_bool_var,    // 0,1 true,false
-} PLVariableType;
-
 typedef struct PLConsoleVariable {
-    const char *var, *default_value;
+    char var[32];
+    char description[256];
 
     PLVariableType type;
 
     void(*CallbackFunction)(const struct PLConsoleVariable *variable);
 
-    const char *description;
-
     /////////////////////////////
+
+#define PL_VAR_VALUE_LENGTH  512
 
     union {
         float f_value;
@@ -53,8 +47,8 @@ typedef struct PLConsoleVariable {
         const char *s_value;
         bool b_value;
     };
-
-    char value[1024];
+    char value[PL_VAR_VALUE_LENGTH];
+    char default_value[PL_VAR_VALUE_LENGTH];
 
     /////////////////////////////
 

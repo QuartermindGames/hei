@@ -133,23 +133,15 @@ PLMesh *plCreateMeshInit(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigne
     mesh->internal.old_primitive = mesh->primitive;
 
     if(num_tris > 0) {
-        mesh->triangles = (PLTriangle*)pl_calloc(num_tris, sizeof(PLTriangle));
-        if(!mesh->triangles) {
-            plDestroyMesh(mesh);
-            return NULL;
-        }
-        if(vertexData != NULL){
-            memcpy(mesh->triangles, vertexData, num_tris * sizeof(PLTriangle));
-        }
-
         if(mesh->primitive == PL_MESH_TRIANGLES) {
             mesh->num_indices = num_tris * 3;
-            if((mesh->indices = pl_calloc(mesh->num_indices, sizeof(uint16_t))) == NULL) {
+            if((mesh->indices = pl_calloc(mesh->num_indices, sizeof(unsigned int))) == NULL) {
                 plDestroyMesh(mesh);
                 return NULL;
             }
+
             if(indexData != NULL){
-                memcpy(mesh->indices, indexData, mesh->num_indices * sizeof(uint16_t));
+                memcpy(mesh->indices, indexData, mesh->num_indices * sizeof(unsigned int));
             }
         }
     }
@@ -173,7 +165,6 @@ void plDestroyMesh(PLMesh *mesh) {
     CallGfxFunction(DeleteMesh, mesh);
 
     pl_free(mesh->vertices);
-    pl_free(mesh->triangles);
     pl_free(mesh->indices);
     pl_free(mesh);
 }
@@ -181,10 +172,15 @@ void plDestroyMesh(PLMesh *mesh) {
 void plClearMesh(PLMesh *mesh) {
     // Reset the data contained by the mesh, if we're going to begin a new draw.
     memset(mesh->vertices, 0, sizeof(PLVertex) * mesh->num_verts);
-    memset(mesh->triangles, 0, sizeof(PLTriangle) * mesh->num_triangles);
 }
 
-void plSetMeshTrianglePosition(PLMesh *mesh, unsigned int *index, uint16_t x, uint16_t y, uint16_t z) {
+void plScaleMesh(PLMesh *mesh, PLVector3 scale) {
+    for(unsigned int i = 0; i < mesh->num_verts; ++i) {
+        mesh->vertices[i].position = plVector3Scale(mesh->vertices[i].position, scale);
+    }
+}
+
+void plSetMeshTrianglePosition(PLMesh *mesh, unsigned int *index, unsigned int x, unsigned int y, unsigned int z) {
     plAssert(*index < mesh->num_indices);
     mesh->indices[(*index)++] = x;
     mesh->indices[(*index)++] = y;
@@ -194,19 +190,6 @@ void plSetMeshTrianglePosition(PLMesh *mesh, unsigned int *index, uint16_t x, ui
 void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3 vector) {
     plAssert(index < mesh->num_verts);
     mesh->vertices[index].position = vector;
-}
-
-void plSetMeshVertexPosition3fv(PLMesh *mesh, unsigned int index, unsigned int size, const float *v) {
-    size += index;
-    if(size > mesh->num_verts) {
-        size -= (size - mesh->num_verts);
-    }
-
-    for(unsigned int i = index; i < size; i++) {
-        mesh->vertices[i].position.x = v[0];
-        mesh->vertices[i].position.y = v[1];
-        mesh->vertices[i].position.z = v[2];
-    }
 }
 
 void plSetMeshVertexNormal(PLMesh *mesh, unsigned int index, PLVector3 vector) {

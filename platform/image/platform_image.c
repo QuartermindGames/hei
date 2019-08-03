@@ -185,39 +185,46 @@ void plDestroyImage(PLImage *image) {
     free(image);
 }
 
+static bool LoadImageFromFile(FILE *fin, const char *path, PLImage *out) {
+#if defined(STB_IMAGE_IMPLEMENTATION)
+  if(LoadSTBImageFromFile(fin, out)) {
+    return true;
+  }
+#endif
+
+  if(plDDSFormatCheck(fin) && plLoadDDSImage(fin, out)) {
+    return true;
+  } else if(plSWLFormatCheck(fin) && plLoadSWLImage(fin, out)) {
+    return true;
+  } else if(plTIMFormatCheck(fin) && plLoadTIMImage(fin, out)) {
+    return true;
+  } else if(plVTFFormatCheck(fin) && plLoadVTFImage(fin, out)) {
+    return true;
+  } else if(plDTXFormatCheck(fin) && plLoadDTXImage(fin, out)) {
+    return true;
+  } else {
+    const char *extension = plGetFileExtension(path);
+    if(extension && extension[0] != '\0') {
+      if (!strncmp(extension, "ftx", 3) && LoadFTXImage(fin, out)) {
+        return true;
+      } else if (!strncmp(extension, "ppm", 3) && LoadPPMImage(fin, out)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 bool plLoadImageFromFile(FILE *fin, const char *path, PLImage *out) {
     if(fin == NULL) {
         ReportError(PL_RESULT_FILEREAD, "invalid file handle");
         return false;
     }
 
-    strncpy(out->path, path, sizeof(out->path));
-
-#if defined(STB_IMAGE_IMPLEMENTATION)
-    if(LoadSTBImageFromFile(fin, out)) {
-        return true;
-    }
-#endif
-
-    if(plDDSFormatCheck(fin) && plLoadDDSImage(fin, out)) {
-        return true;
-    } else if(plSWLFormatCheck(fin) && plLoadSWLImage(fin, out)) {
-        return true;
-    } else if(plTIMFormatCheck(fin) && plLoadTIMImage(fin, out)) {
-        return true;
-    } else if(plVTFFormatCheck(fin) && plLoadVTFImage(fin, out)) {
-        return true;
-    } else if(plDTXFormatCheck(fin) && plLoadDTXImage(fin, out)) {
-        return true;
-    } else {
-        const char *extension = plGetFileExtension(path);
-        if(extension && extension[0] != '\0') {
-            if (!strncmp(extension, "ftx", 3) && LoadFTXImage(fin, out)) {
-                return true;
-            } else if (!strncmp(extension, "ppm", 3) && LoadPPMImage(fin, out)) {
-                return true;
-            }
-        }
+    if(LoadImageFromFile(fin, path, out)) {
+      strncpy(out->path, path, sizeof(out->path));
+      return true;
     }
 
     /* if we reached here, and our status is still successful, that's clearly
@@ -251,6 +258,8 @@ bool plLoadImageFromMemory(const uint8_t *data, size_t length, const char *type,
 }
 
 bool plLoadImage(const char *path, PLImage *out) {
+    memset(out, 0, sizeof(PLImage));
+
     if (plIsEmptyString(path)) {
         ReportError(PL_RESULT_FILEPATH, "invalid path (%s) passed for image", path);
         return false;

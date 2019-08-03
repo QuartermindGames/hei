@@ -69,8 +69,7 @@ typedef struct PLTriangle {
 
 typedef struct PLMesh {
     PLVertex*               vertices;
-    PLTriangle*             triangles;
-    uint16_t*               indices;
+    unsigned int            *indices;
     unsigned int            num_indices;
     unsigned int            num_verts;
     unsigned int            num_triangles;
@@ -101,9 +100,10 @@ PL_EXTERN void plDrawFilledRectangle(PLRectangle2D rect);
 PL_EXTERN void plDrawTriangle(int x, int y, unsigned int w, unsigned int h);
 
 PL_EXTERN void plClearMesh(PLMesh *mesh);
-PL_EXTERN void plSetMeshTrianglePosition(PLMesh *mesh, unsigned int *index, uint16_t x, uint16_t y, uint16_t z);
+PL_EXTERN void plScaleMesh(PLMesh *mesh, PLVector3 scale);
+PL_EXTERN void plSetMeshTrianglePosition(PLMesh *mesh, unsigned int *index,
+        unsigned int x, unsigned int y, unsigned int z);
 PL_EXTERN void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3 vector);
-PL_EXTERN void plSetMeshVertexPosition3fv(PLMesh *mesh, unsigned int index, unsigned int size, const float *v);
 PL_EXTERN void plSetMeshVertexNormal(PLMesh *mesh, unsigned int index, PLVector3 vector);
 PL_EXTERN void plSetMeshVertexST(PLMesh *mesh, unsigned int index, float s, float t);
 PL_EXTERN void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st);

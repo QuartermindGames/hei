@@ -329,31 +329,36 @@ PLresult plGetFunctionResult(void) {
 
 const char *plGetResultString(PLresult result) {
     switch (result) {
-        case PL_RESULT_SUCCESS: return "Success";
+        case PL_RESULT_SUCCESS:     return "success";
+        case PL_RESULT_UNSUPPORTED: return "unsupported";
+        case PL_RESULT_SYSERR:      return "system error";
+
+        case PL_RESULT_INVALID_PARM1:   return "invalid function parameter 1";
+        case PL_RESULT_INVALID_PARM2:   return "invalid function parameter 2";
+        case PL_RESULT_INVALID_PARM3:   return "invalid function parameter 3";
+        case PL_RESULT_INVALID_PARM4:   return "invalid function parameter 4";
 
         // FILE I/O
-        case PL_RESULT_FILEREAD:    return "Failed to read complete file!";
-        case PL_RESULT_FILESIZE:    return "Failed to get valid file size!";
-        case PL_RESULT_FILETYPE:    return "Invalid file type!";
-        case PL_RESULT_FILEVERSION: return "Unsupported file version!";
-        case PL_RESULT_FILEPATH:    return "Invalid file path!";
-        case PL_RESULT_FILEERR:     return "Filesystem error";
+        case PL_RESULT_FILEREAD:    return "failed to read complete file!";
+        case PL_RESULT_FILESIZE:    return "failed to get valid file size!";
+        case PL_RESULT_FILETYPE:    return "invalid file type!";
+        case PL_RESULT_FILEVERSION: return "unsupported file version!";
+        case PL_RESULT_FILEPATH:    return "invalid file path!";
+        case PL_RESULT_FILEERR:     return "filesystem error";
 
         // GRAPHICS
-        case PL_RESULT_GRAPHICSINIT:    return "Failed to initialize graphics!";
-        case PL_RESULT_INVALID_SHADER_TYPE:      return "Unsupported shader type!";
-        case PL_RESULT_SHADER_COMPILE:   return "Failed to compile shader!";
+        case PL_RESULT_GRAPHICSINIT:    return "failed to initialize graphics!";
+        case PL_RESULT_INVALID_SHADER_TYPE:      return "unsupported shader type!";
+        case PL_RESULT_SHADER_COMPILE:   return "failed to compile shader!";
 
         // IMAGE
-        case PL_RESULT_IMAGERESOLUTION: return "Invalid image resolution!";
-        case PL_RESULT_IMAGEFORMAT:     return "Unsupported image format!";
+        case PL_RESULT_IMAGERESOLUTION: return "invalid image resolution!";
+        case PL_RESULT_IMAGEFORMAT:     return "unsupported image format!";
 
         // MEMORY
-        case PL_RESULT_MEMORY_ALLOCATION: return "Failed to allocate memory!";
+        case PL_RESULT_MEMORY_ALLOCATION: return "failed to allocate memory!";
 
-        case PL_RESULT_SYSERR: return "System error";
-
-        default:    return "An unknown error occurred!";
+        default:    return "an unknown error occurred";
     }
 }
 

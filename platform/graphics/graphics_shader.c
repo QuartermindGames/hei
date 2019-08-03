@@ -71,6 +71,11 @@ static void GLPreProcessGLSLShader(char **buf, size_t *length, PLShaderStageType
 
     /* built-in uniforms */
     if(type == PL_SHADER_TYPE_VERTEX) {
+        InsertString(n_pos, "in vec3 pl_vposition;")
+        InsertString(n_pos, "in vec3 pl_vnormal;")
+        InsertString(n_pos, "in vec2 pl_vuv;")
+        InsertString(n_pos, "in vec4 pl_vcolour;")
+
         InsertString(n_pos, "uniform mat4 pl_model;")
         InsertString(n_pos, "uniform mat4 pl_view;")
         InsertString(n_pos, "uniform mat4 pl_proj;")
@@ -266,22 +271,30 @@ PLShaderStage *plParseShaderStage(PLShaderStageType type, const char *buf, size_
  * @return the new shader stage.
  */
 PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
-    FILE *fp = fopen(path, "r");
-    if(fp == NULL) {
-        ReportError(PL_RESULT_FILEREAD, "failed to open %s", path);
+    size_t length = plGetFileSize(path);
+    char *buf = pl_malloc(length + 1);
+    if(buf == NULL) {
         return NULL;
     }
 
-    size_t length = plGetFileSize(path);
-    char buf[length];
-    if(fread(buf, sizeof(char), length, fp) != length) {
-        GfxLog("failed to read in entirety of %s, continuing anyway but expect issues");
+    FILE *fp = fopen(path, "rb");
+    if(fp == NULL) {
+        ReportError(PL_RESULT_FILEREAD, "failed to open %s", path);
+        free(buf);
+        return NULL;
+    }
+
+    size_t rlen = fread(buf, length, 1, fp);
+    if(rlen != 1) {
+        GfxLog("Failed to read in entirety of %s (%d)!\n"
+               "Continuing anyway but expect issues...", path, rlen);
     }
     buf[length] = '\0';
 
     fclose(fp);
-
-    return plParseShaderStage(type, buf, length);
+    PLShaderStage *stage = plParseShaderStage(type, buf, length);
+    free(buf);
+    return stage;
 }
 
 /**********************************************************/
@@ -429,12 +442,13 @@ bool plIsShaderProgramEnabled(PLShaderProgram *program) {
     return false;
 }
 
-static void RegisterShaderProgramUniforms(PLShaderProgram *program);
+static void RegisterShaderProgramData(PLShaderProgram *program);
 bool plLinkShaderProgram(PLShaderProgram *program) {
-    _plResetError();
+    FunctionStart();
+
     CallGfxFunction(LinkShaderProgram, program);
 
-    RegisterShaderProgramUniforms(program);
+    RegisterShaderProgramData(program);
 
     return program->is_linked;
 }
@@ -495,15 +509,7 @@ int plGetShaderUniformSlot(PLShaderProgram *program, const char *name) {
     }
 #endif
 
-    GfxLog("failed to find uniform slot \"%s\"!\n", name);
     return -1;
-}
-
-/*****************************************************/
-/** shader attribute **/
-
-bool plRegisterShaderProgramAttributes(PLShaderProgram *program) {
-    return false;
 }
 
 /*****************************************************/
@@ -542,7 +548,7 @@ static PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
 
 #endif
 
-static void RegisterShaderProgramUniforms(PLShaderProgram *program) {
+static void RegisterShaderProgramData(PLShaderProgram *program) {
     /* todo, move into layer_opengl */
 
     if(program->uniforms != NULL) {
@@ -551,6 +557,11 @@ static void RegisterShaderProgramUniforms(PLShaderProgram *program) {
     }
 
 #if defined(PL_SUPPORT_OPENGL)
+    program->internal.v_position = glGetAttribLocation(program->internal.id, "pl_vposition");
+    program->internal.v_normal = glGetAttribLocation(program->internal.id, "pl_vnormal");
+    program->internal.v_uv = glGetAttribLocation(program->internal.id, "pl_vuv");
+    program->internal.v_colour = glGetAttribLocation(program->internal.id, "pl_vcolour");
+
     int num_uniforms = 0;
     glGetProgramiv(program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms);
     if(num_uniforms <= 0) {

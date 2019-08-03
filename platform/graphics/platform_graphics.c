@@ -156,7 +156,7 @@ void plDestroyFrameBuffer(PLFrameBuffer *buffer) {
 
     CallGfxFunction(DeleteFrameBuffer, buffer);
 
-    //TODO: Dealloc object here
+    pl_free(buffer);
 }
 
 void plBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget target_binding) {

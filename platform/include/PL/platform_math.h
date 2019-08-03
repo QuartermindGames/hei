@@ -231,15 +231,15 @@ PL_INLINE static void plClearColour(PLColour *c) {
     plSetColour4b(c, 0, 0, 0, 0);
 }
 
-PL_INLINE static bool plCompareColour(const PLColour &c, const PLColour &c2) {
+PL_INLINE static bool plCompareColour(PLColour c, PLColour c2) {
     return ((c.r == c2.r) && (c.g == c2.g) && (c.b == c2.b) && (c.a == c2.a));
 }
 
-PL_INLINE static void plCopyColour(PLColour *c, const PLColour &c2) {
+PL_INLINE static void plCopyColour(PLColour *c, PLColour c2) {
     c->r = c2.r; c->g = c2.g; c->b = c2.b; c->a = c2.a;
 }
 
-PL_INLINE static void plMultiplyColour(PLColour *c, const PLColour &c2) {
+PL_INLINE static void plMultiplyColour(PLColour *c, PLColour c2) {
     c->r *= c2.r; c->g *= c2.g; c->b *= c2.b; c->a *= c2.a;
 }
 
@@ -248,7 +248,7 @@ PL_INLINE static void plMultiplyColourf(PLColour *c, float a) {
     c->r *= a2; c->g *= a2; c->b *= a2; c->a *= a2;
 }
 
-PL_INLINE static void plDivideColour(PLColour *c, const PLColour &c2) {
+PL_INLINE static void plDivideColour(PLColour *c, PLColour c2) {
     c->r /= c2.r; c->g /= c2.g; c->b /= c2.b; c->a /= c2.a;
 }
 
@@ -257,7 +257,7 @@ PL_INLINE static void plDivideColourf(PLColour *c, float a) {
     c->r /= a2; c->g /= a2; c->b /= a2; c->a /= a2;
 }
 
-PL_INLINE static const char *plPrintColour(const PLColour &c) {
+PL_INLINE static const char *plPrintColour(PLColour c) {
     static char s[16] = { '\0' };
     snprintf(s, 16, "%i %i %i %i", c.r, c.g, c.b, c.a);
     return s;
@@ -504,7 +504,7 @@ PL_INLINE static void plClearQuaternion(PLQuaternion *q) {
     q->x = q->y = q->z = q->w = 0;
 }
 
-PL_INLINE static void plMultiplyQuaternion(PLQuaternion *q, const PLQuaternion &q2) {
+PL_INLINE static void plMultiplyQuaternion(PLQuaternion *q, PLQuaternion q2) {
     q->x *= q2.x;
     q->y *= q2.y;
     q->z *= q2.z;
@@ -518,7 +518,7 @@ PL_INLINE static void plScaleQuaternion(PLQuaternion *q, float a) {
     q->w *= a;
 }
 
-PL_INLINE static void plAddQuaternion(PLQuaternion *q, const PLQuaternion &q2) {
+PL_INLINE static void plAddQuaternion(PLQuaternion *q, PLQuaternion q2) {
     q->x += q2.x;
     q->y += q2.y;
     q->z += q2.z;
@@ -539,7 +539,7 @@ PL_INLINE static void plInverseQuaternion(PLQuaternion *q) {
     q->w = -q->w;
 }
 
-PL_INLINE static void plQuaternionFromMatrix(PLQuaternion *q, const PLMatrix4x4 &mat) {
+PL_INLINE static void plQuaternionFromMatrix(PLQuaternion *q, PLMatrix4x4 mat) {
     // todo
 }
 

@@ -340,8 +340,10 @@ static void GLBindTexture(const PLTexture *texture) {
 }
 
 static void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    /* was originally GL_CLAMP; deprecated in GL3+, though some drivers
+     * still seem to accept it anyway except for newer Intel GPUs apparently */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     unsigned int min, mag;
     switch(texture->filter) {
@@ -508,23 +510,41 @@ static void GLCreateMeshPOST(PLMesh *mesh) {
 }
 
 static void GLUploadMesh(PLMesh *mesh) {
+    PLShaderProgram *program = gfx_state.current_program;
+    if(program == NULL) {
+        return;
+    }
+
     //Write the current CPU vertex data into the VBO
-    unsigned int mode = TranslateDrawMode(mesh->mode);
     GLsizeiptr VBOsize = sizeof(PLVertex) * mesh->num_verts;
-    glBufferData(GL_ARRAY_BUFFER, VBOsize, &mesh->vertices[0], mode);
+    glBufferData(GL_ARRAY_BUFFER, VBOsize, &mesh->vertices[0], TranslateDrawMode(mesh->mode));
 
     //Point to the different substreams of the interleaved BVO
     //Args: Index, Size, Type, (Normalized), Stride, StartPtr
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glEnableVertexAttribArray(3);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex), (const GLvoid *)pl_offsetof(PLVertex, position));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,  sizeof(PLVertex), (const GLvoid *)pl_offsetof(PLVertex, normal));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(PLVertex), (const GLvoid *)pl_offsetof(PLVertex, st));
-    glVertexAttribPointer(3, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PLVertex),
-            (const GLvoid *)pl_offsetof(PLVertex, colour));
+    if(program->internal.v_position != -1) {
+        glEnableVertexAttribArray(program->internal.v_position);
+        glVertexAttribPointer(program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex),
+                              (const GLvoid *) pl_offsetof(PLVertex, position));
+    }
+
+    if(program->internal.v_normal != -1) {
+        glEnableVertexAttribArray(program->internal.v_normal);
+        glVertexAttribPointer(program->internal.v_normal, 3, GL_FLOAT, GL_FALSE,  sizeof(PLVertex),
+                              (const GLvoid *)pl_offsetof(PLVertex, normal));
+    }
+
+    if(program->internal.v_uv != -1) {
+        glEnableVertexAttribArray(program->internal.v_uv);
+        glVertexAttribPointer(program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof(PLVertex),
+                              (const GLvoid *)pl_offsetof(PLVertex, st));
+    }
+
+    if(program->internal.v_colour != -1) {
+        glEnableVertexAttribArray(program->internal.v_colour);
+        glVertexAttribPointer(program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PLVertex),
+                              (const GLvoid *) pl_offsetof(PLVertex, colour));
+    }
 }
 
 static void GLDeleteMesh(PLMesh *mesh) {
@@ -555,7 +575,7 @@ static void GLDrawMesh(PLMesh *mesh) {
     //draw
     GLuint mode = TranslatePrimitiveMode(mesh->primitive);
     if(mesh->num_indices > 0) {
-        glDrawElements(mode, mesh->num_indices, GL_UNSIGNED_SHORT, mesh->indices);
+        glDrawElements(mode, mesh->num_indices, GL_UNSIGNED_INT, mesh->indices);
     } else {
         glDrawArrays(mode, 0, mesh->num_verts);
     }
@@ -800,10 +820,12 @@ static void GLLinkShaderProgram(PLShaderProgram *program) {
         } else {
             GfxLog(" UNKNOWN LINK ERROR!\n");
         }
-    } else {
-        GfxLog(" LINKED SUCCESSFULLY!\n");
-        program->is_linked = true;
+
+        return;
     }
+
+    GfxLog(" LINKED SUCCESSFULLY!\n");
+    program->is_linked = true;
 }
 
 static void GLSetShaderProgram(PLShaderProgram *program) {
