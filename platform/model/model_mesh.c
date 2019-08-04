@@ -35,37 +35,37 @@ void plGenerateMeshNormals(PLMesh *mesh) {
 
 #if 0 // per face...
     for (unsigned int i = 0, idx = 0; i < mesh->num_triangles; ++i, idx += 3) {
-      unsigned int x = mesh->indices[idx];
-      unsigned int y = mesh->indices[idx + 1];
-      unsigned int z = mesh->indices[idx + 2];
+      unsigned int a = mesh->indices[idx];
+      unsigned int b = mesh->indices[idx + 1];
+      unsigned int c = mesh->indices[idx + 2];
 
       PLVector3 normal =
           plNormalizeVector3(
             plGenerateVertexNormal(
-              mesh->vertices[x].position,
-              mesh->vertices[y].position,
-              mesh->vertices[z].position
+              mesh->vertices[a].position,
+              mesh->vertices[b].position,
+              mesh->vertices[c].position
           ));
 
-      mesh->vertices[x].normal = normal;
-      mesh->vertices[y].normal = normal;
-      mesh->vertices[z].normal = normal;
+      mesh->vertices[a].normal = normal;
+      mesh->vertices[b].normal = normal;
+      mesh->vertices[c].normal = normal;
     }
 #else // per vertex... todo
   for (unsigned int i = 0, idx = 0; i < mesh->num_triangles; ++i, idx += 3) {
-    unsigned int x = mesh->indices[idx];
-    unsigned int y = mesh->indices[idx + 1];
-    unsigned int z = mesh->indices[idx + 2];
+    unsigned int a = mesh->indices[idx];
+    unsigned int b = mesh->indices[idx + 1];
+    unsigned int c = mesh->indices[idx + 2];
 
     PLVector3 normal = plGenerateVertexNormal(
-        mesh->vertices[x].position,
-        mesh->vertices[y].position,
-        mesh->vertices[z].position
+        mesh->vertices[a].position,
+        mesh->vertices[b].position,
+        mesh->vertices[c].position
     );
 
-    mesh->vertices[x].normal = plAddVector3(mesh->vertices[x].normal, normal);
-    mesh->vertices[y].normal = plAddVector3(mesh->vertices[y].normal, normal);
-    mesh->vertices[z].normal = plAddVector3(mesh->vertices[z].normal, normal);
+    mesh->vertices[a].normal = plAddVector3(mesh->vertices[a].normal, normal);
+    mesh->vertices[b].normal = plAddVector3(mesh->vertices[b].normal, normal);
+    mesh->vertices[c].normal = plAddVector3(mesh->vertices[c].normal, normal);
   }
 
   for(unsigned int i = 0; i < mesh->num_verts; ++i) {
