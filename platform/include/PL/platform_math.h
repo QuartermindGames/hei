@@ -838,10 +838,6 @@ PL_INLINE static float plInOutPow(float x, float p) {
 //////////////////////////////////////////////////////////////////////
 // UTILITY FUNCTIONS
 
-PL_INLINE static float plToRadians(float degrees) {
-    return degrees * (PL_PI / 180.f);
-}
-
 /* http://www.songho.ca/opengl/gl_anglestoaxes.html */
 PL_INLINE static void plAnglesAxes(PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *forward) {
     /* pitch */

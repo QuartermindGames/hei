@@ -100,9 +100,9 @@ void plSetupCamera(PLCamera *camera) {
             camera->internal.proj = plPerspective(camera->fov, (float)w / (float)h, camera->near, camera->far);
 
             PLVector3 forward = PLVector3(
-                    cosf(plToRadians(camera->angles.y)) * cosf(plToRadians(camera->angles.x)),
-                    sinf(plToRadians(camera->angles.x)),
-                    sinf(plToRadians(camera->angles.y)) * cosf(plToRadians(camera->angles.x))
+                    cosf(plDegreesToRadians(camera->angles.y)) * cosf(plDegreesToRadians(camera->angles.x)),
+                    sinf(plDegreesToRadians(camera->angles.x)),
+                    sinf(plDegreesToRadians(camera->angles.y)) * cosf(plDegreesToRadians(camera->angles.x))
                     );
             camera->forward = plNormalizeVector3(forward);
             camera->internal.view = plLookAt(camera->position, plAddVector3(camera->position, camera->forward), camera->up);
