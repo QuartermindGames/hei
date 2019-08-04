@@ -33,22 +33,44 @@ For more information, please refer to <http://unlicense.org>
 void plGenerateMeshNormals(PLMesh *mesh) {
     plAssert(mesh);
 
-#if 0
 #if 0 // per face...
-    for (unsigned int j = 0; j < mesh->num_triangles; j++) {
-        mesh->triangles[j].normal = plGenerateVertexNormal(
-                mesh->vertices[mesh->triangles[j].indices[0]].position,
-                mesh->vertices[mesh->triangles[j].indices[1]].position,
-                mesh->vertices[mesh->triangles[j].indices[2]].position
-        );
+    for (unsigned int i = 0, idx = 0; i < mesh->num_triangles; ++i, idx += 3) {
+      unsigned int x = mesh->indices[idx];
+      unsigned int y = mesh->indices[idx + 1];
+      unsigned int z = mesh->indices[idx + 2];
+
+      PLVector3 normal =
+          plNormalizeVector3(
+            plGenerateVertexNormal(
+              mesh->vertices[x].position,
+              mesh->vertices[y].position,
+              mesh->vertices[z].position
+          ));
+
+      mesh->vertices[x].normal = normal;
+      mesh->vertices[y].normal = normal;
+      mesh->vertices[z].normal = normal;
     }
 #else // per vertex... todo
-    for (PLVertex *vertex = &mesh->vertices[0]; vertex; ++vertex) {
-            for (PLTriangle *triangle = &mesh->triangles[0]; triangle; ++triangle) {
+  for (unsigned int i = 0, idx = 0; i < mesh->num_triangles; ++i, idx += 3) {
+    unsigned int x = mesh->indices[idx];
+    unsigned int y = mesh->indices[idx + 1];
+    unsigned int z = mesh->indices[idx + 2];
 
-            }
-        }
-#endif
+    PLVector3 normal = plGenerateVertexNormal(
+        mesh->vertices[x].position,
+        mesh->vertices[y].position,
+        mesh->vertices[z].position
+    );
+
+    mesh->vertices[x].normal = plAddVector3(mesh->vertices[x].normal, normal);
+    mesh->vertices[y].normal = plAddVector3(mesh->vertices[y].normal, normal);
+    mesh->vertices[z].normal = plAddVector3(mesh->vertices[z].normal, normal);
+  }
+
+  for(unsigned int i = 0; i < mesh->num_verts; ++i) {
+    mesh->vertices[i].normal = plNormalizeVector3(mesh->vertices[i].normal);
+  }
 #endif
 }
 
@@ -58,16 +80,11 @@ PLVector3 plGenerateVertexNormal(PLVector3 a, PLVector3 b, PLVector3 c) {
     PLVector3D y = a - b;
     return x.CrossProduct(y).Normalize();
 #else
-    return plNormalizeVector3(
-            plVector3CrossProduct(
-                    PLVector3(
-                            c.x - b.x, c.y - b.y, c.z - b.z
-                    ),
-                    PLVector3(
-                            a.x - b.x, a.y - b.y, a.z - b.z
-                    )
-            )
-    );
+  return plVector3CrossProduct(
+          PLVector3(
+              c.x - b.x, c.y - b.y, c.z - b.z),
+          PLVector3(
+              a.x - b.x, a.y - b.y, a.z - b.z));
 #endif
 }
 
