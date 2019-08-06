@@ -213,11 +213,11 @@ typedef struct PLVector3 {
   }
 
   PL_INLINE bool operator >= (const PLVector3 &v) const {
-      return x > y || x == y;
+      return *this > v || *this == v;
   }
 
   PL_INLINE bool operator <= (const PLVector3 &v) const {
-      return x < y || x == y;
+      return *this < v || *this == v;
   }
 
   PL_INLINE float Length() const {
