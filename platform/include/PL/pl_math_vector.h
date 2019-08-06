@@ -201,19 +201,23 @@ typedef struct PLVector3 {
   }
 
   PL_INLINE bool operator > (const PLVector3 &v) const {
-      return ((x > v.x) && (y > v.y) && (z > v.z));
+      return (x > v.x)
+        || (x == v.x && y > v.y)
+        || (x == v.x && y == v.y && z > v.z);
   }
 
   PL_INLINE bool operator < (const PLVector3 &v) const {
-      return ((x < v.x) && (y < v.y) && (z < v.z));
+      return (x < v.x)
+        || (x == v.x && y < v.y)
+        || (x == v.x && y == v.y && z < v.z);
   }
 
   PL_INLINE bool operator >= (const PLVector3 &v) const {
-      return ((x >= v.x) && (y >= v.y) && (z >= v.z));
+      return x > y || x == y;
   }
 
   PL_INLINE bool operator <= (const PLVector3 &v) const {
-      return ((x <= v.x) && (y <= v.y) && (z <= v.z));
+      return x < y || x == y;
   }
 
   PL_INLINE float Length() const {
