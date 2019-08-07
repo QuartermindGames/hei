@@ -640,6 +640,26 @@ void plSetShaderUniformFloat(PLShaderProgram *program, int slot, float value) {
     plSetShaderProgram(old_program);
 }
 
+void plSetShaderUniformVector3(PLShaderProgram* program, int slot, PLVector3 value) {
+  PLShaderProgram* prg = GetShaderProgram(program);
+  if(prg == NULL || prg->uniforms == NULL) {
+    return;
+  }
+
+  if(ValidateShaderUniformSlot(prg, slot) == -1) {
+    return;
+  }
+
+  PLShaderProgram* old_program = plGetCurrentShaderProgram();
+  plSetShaderProgram(prg);
+
+#if defined(PL_SUPPORT_OPENGL) /* todo, move into layer_opengl */
+  glUniform3f(prg->uniforms[slot].slot, value.x, value.y, value.z);
+#endif
+
+  plSetShaderProgram(old_program);
+}
+
 void plSetShaderUniformVector4(PLShaderProgram* program, int slot, PLVector4 value) {
     PLShaderProgram* prg = GetShaderProgram(program);
     if(prg == NULL || prg->uniforms == NULL) {
