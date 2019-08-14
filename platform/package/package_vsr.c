@@ -48,7 +48,7 @@ typedef struct VSRDirectoryChunk {
 _Static_assert(sizeof(VSRDirectoryChunk) == 12, "needs to be 12 bytes");
 
 typedef struct VSRStringIndex {
-  char string[32];
+  char file_name[256];
 } VSRStringIndex;
 
 typedef struct VSRStringChunk {
@@ -114,10 +114,17 @@ PLPackage *plLoadVSRPackage(const char *path, bool cache) {
       if (strncmp(chunk_strings.header.identifier, "TRTS", 4) == 0) {
         /* read in all the string offsets, which in turn helps us determine
          * the length of each string */
-        unsigned int offsets[chunk_strings.num_indices];
-        fread(offsets, sizeof(unsigned int), chunk_strings.num_indices, fp);
-        if ((strings = pl_malloc(sizeof(VSRStringIndex) * chunk_strings.num_indices)) != NULL) {
 
+        /* fuck this, let's do this the lazy way */
+        fseek(fp, sizeof(uint32_t) * chunk_strings.num_indices, SEEK_CUR);
+        strings = pl_calloc(sizeof(VSRStringIndex), chunk_strings.num_indices);
+        for(unsigned int i = 0; i < chunk_strings.num_indices; ++i) {
+          for(unsigned int j = 0; j < 256; ++j) {
+            strings[i].file_name[j] = fgetc(fp);
+            if(strings[i].file_name[j] == '\0') {
+              break;
+            }
+          }
         }
       } else {
         ReportError(PL_RESULT_FILETYPE, "failed to read STRS header");
@@ -149,7 +156,7 @@ PLPackage *plLoadVSRPackage(const char *path, bool cache) {
         PLPackageIndex *index = &package->table[i];
         index->offset = directories[i].offset;
         index->file.size = directories[i].length;
-        strncpy(index->file.name, strings[i].string, sizeof(index->file.name));
+        strncpy(index->file.name, strings[i].file_name, sizeof(index->file.name));
       }
     }
   }
