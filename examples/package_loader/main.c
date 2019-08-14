@@ -47,7 +47,6 @@ int main(int argc, char **argv) {
         return EXIT_SUCCESS;
     }
 
-
     enum {
         MODE_VIEW,
         MODE_EXTRACT,
@@ -83,10 +82,12 @@ int main(int argc, char **argv) {
                 "id:   %d\n"
                 "name: %s\n"
                 "size: %lu\n"
+                "offset: %lu\n"
                 "----------------\n",
                 i,
                 package->table[i].file.name,
-                package->table[i].file.size
+                package->table[i].file.size,
+                package->table[i].offset
                 );
 
         if(mode == MODE_EXTRACT) {
@@ -99,6 +100,7 @@ int main(int argc, char **argv) {
 
             char out[PL_SYSTEM_MAX_PATH];
             snprintf(out, sizeof(out), "./extract/%s", desc);
+            plCreateDirectory("./extract/");
             plWriteFile(out, data, data_length);
         }
     }
