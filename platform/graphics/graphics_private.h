@@ -120,6 +120,7 @@ typedef struct GfxLayer {
     void(*CreateMeshPOST)(PLMesh *mesh);
     void(*UploadMesh)(PLMesh *mesh);
     void(*DrawMesh)(PLMesh *mesh);
+    void(*DrawInstancedMesh)(PLMesh *mesh, PLMatrix4 *matrices, unsigned int count);
     void(*DeleteMesh)(PLMesh *mesh);
 
     // Framebuffer

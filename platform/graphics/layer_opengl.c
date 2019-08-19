@@ -551,6 +551,18 @@ static void GLDeleteMesh(PLMesh *mesh) {
     glDeleteBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA]);
 }
 
+static void GLDrawInstancedMesh(PLMesh *mesh, PLMatrix4 *matrices, unsigned int count) {
+  if(mesh->internal.buffers[BUFFER_VERTEX_DATA] == 0) {
+    GfxLog("Invalid buffer provided, skipping draw!\n");
+    return;
+  }
+
+  if(gfx_state.current_program == NULL) {
+    GfxLog("No shader assigned!\n");
+    return;
+  }
+}
+
 static void GLDrawMesh(PLMesh *mesh) {
     if(mesh->internal.buffers[BUFFER_VERTEX_DATA] == 0) {
         GfxLog("invalid buffer provided, skipping draw!\n");

@@ -253,6 +253,10 @@ void plDrawMesh(PLMesh *mesh) {
     CallGfxFunction(DrawMesh, mesh);
 }
 
+void plDrawInstancedMesh(PLMesh *mesh, PLMatrix4 *matrices, unsigned int count) {
+  CallGfxFunction(DrawInstancedMesh, mesh, matrices, count);
+}
+
 PLAABB plCalculateMeshAABB(PLMesh *mesh) {
     static PLAABB bounds;
     memset(&bounds, 0, sizeof(PLAABB));
