@@ -249,8 +249,8 @@ void plUploadMesh(PLMesh *mesh) {
     CallGfxFunction(UploadMesh, mesh);
 }
 
-void plDrawMesh(PLMesh *mesh) {
-    CallGfxFunction(DrawMesh, mesh);
+void plDrawMesh(PLMesh *mesh, PLMatrix4 matrix) {
+    CallGfxFunction(DrawMesh, mesh, matrix);
 }
 
 void plDrawInstancedMesh(PLMesh *mesh, PLMatrix4 *matrices, unsigned int count) {
@@ -366,9 +366,8 @@ void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h) {
     plSetMeshVertexColour(mesh, 14, PLColourRGB(63, 63, 63));
     plSetMeshVertexColour(mesh, 15, PLColourRGB(63, 63, 63));
 
-    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plUploadMesh(mesh);
-    plDrawMesh(mesh);
+    plDrawMesh(mesh, plMatrix4Identity());
 }
 
 void plDrawCube(PLVector3 position, float size) {
@@ -406,9 +405,8 @@ void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, 
                 (position.y + h) + sinf(plDegreesToRadians(i)) * h, 0));
     }
 
-    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plUploadMesh(mesh);
-    plDrawMesh(mesh);
+    plDrawMesh(mesh, plMatrix4Identity());
 }
 
 static void DrawRectangle(PLMesh* mesh, int x, int y, unsigned int w, unsigned int h, PLColour colour) {
@@ -440,9 +438,8 @@ void plDrawTexturedRectangle(int x, int y, int w, int h, PLTexture *texture) {
 
     plSetTexture(texture, 0);
 
-    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plUploadMesh(mesh);
-    plDrawMesh(mesh);
+    plDrawMesh(mesh, plMatrix4Identity());
 
     plSetTexture(NULL, 0);
 }
@@ -468,9 +465,8 @@ void plDrawRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colo
 
     DrawRectangle(mesh, x, y, w, h, colour);
 
-    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plUploadMesh(mesh);
-    plDrawMesh(mesh);
+    plDrawMesh(mesh, plMatrix4Identity());
 }
 
 void plDrawFilledRectangle(PLRectangle2D rect) {
@@ -491,9 +487,8 @@ void plDrawFilledRectangle(PLRectangle2D rect) {
     plSetMeshVertexColour(mesh, 2, rect.lr);
     plSetMeshVertexColour(mesh, 3, rect.ur);
 
-    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plUploadMesh(mesh);
-    plDrawMesh(mesh);
+    plDrawMesh(mesh, plMatrix4Identity());
 }
 
 void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
@@ -520,9 +515,8 @@ void plDrawTriangle(int x, int y, unsigned int w, unsigned int h) {
 
     //plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
 
-    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
     plUploadMesh(mesh);
-    plDrawMesh(mesh);
+    plDrawMesh(mesh, plMatrix4Identity());
 }
 
 #endif

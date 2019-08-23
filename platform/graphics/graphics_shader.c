@@ -75,8 +75,8 @@ static void GLPreProcessGLSLShader(char **buf, size_t *length, PLShaderStageType
         InsertString(n_pos, "in vec3 pl_vnormal;")
         InsertString(n_pos, "in vec2 pl_vuv;")
         InsertString(n_pos, "in vec4 pl_vcolour;")
+        InsertString(n_pos, "in mat4 pl_model;")
 
-        InsertString(n_pos, "uniform mat4 pl_model;")
         InsertString(n_pos, "uniform mat4 pl_view;")
         InsertString(n_pos, "uniform mat4 pl_proj;")
     } else if(type == PL_SHADER_TYPE_FRAGMENT) {
@@ -561,6 +561,7 @@ static void RegisterShaderProgramData(PLShaderProgram *program) {
     program->internal.v_normal = glGetAttribLocation(program->internal.id, "pl_vnormal");
     program->internal.v_uv = glGetAttribLocation(program->internal.id, "pl_vuv");
     program->internal.v_colour = glGetAttribLocation(program->internal.id, "pl_vcolour");
+    program->internal.v_model = glGetAttribLocation(program->internal.id, "pl_model");
 
     int num_uniforms = 0;
     glGetProgramiv(program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms);

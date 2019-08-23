@@ -332,9 +332,8 @@ void plDrawModel(PLModel *model) {
 
         plSetTexture(lod->meshes[i]->texture, 0);
 
-        plSetNamedShaderUniformMatrix4(NULL, "pl_model", model->model_matrix, true);
         plUploadMesh(lod->meshes[i]);
-        plDrawMesh(lod->meshes[i]);
+        plDrawMesh(lod->meshes[i], model->model_matrix);
     }
 
     plSetShaderProgram(old_program);

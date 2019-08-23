@@ -61,7 +61,7 @@ static int gl_version_minor = 0;
 
 unsigned int gl_num_extensions = 0;
 
-static GLuint VAO[1];
+static GLuint gl_vao_list[1];
 
 ///////////////////////////////////////////
 // Debug
@@ -77,7 +77,6 @@ static void GLPushDebugGroupMarker(const char *msg) {
 static void GLPopDebugGroupMarker() {
     glPopDebugGroup();
 }
-
 
 static void ClearBoundTextures(void) {
     for(unsigned int i = 0; i < gfx_state.hw_maxtextureunits; ++i) {
@@ -475,7 +474,7 @@ static MeshTranslatePrimitive primitives[] = {
 };
 
 static unsigned int TranslatePrimitiveMode(PLMeshPrimitive mode) {
-    for (unsigned int i = 0; i < plArrayElements(primitives); i++) {
+    for (unsigned long i = 0; i < plArrayElements(primitives); i++) {
         if (mode == primitives[i].mode)
             return primitives[i].target;
     }
@@ -495,102 +494,158 @@ static unsigned int TranslateDrawMode(PLMeshDrawMode mode) {
 
 enum {
     BUFFER_VERTEX_DATA,
-    BUFFER_TRIANGLE_DATA,
+    BUFFER_MATRIX_DATA,
+
+    MAX_VBOS
 };
 
 static void GLCreateMeshPOST(PLMesh *mesh) {
-    GLsizeiptr VBOsize = sizeof(PLVertex) * mesh->num_verts;
-    //Create VBO
-    glGenBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA]);
-    //Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
-    //Allocate & populate VBO
-    glBufferData(GL_ARRAY_BUFFER, VBOsize, &mesh->vertices[0], TranslateDrawMode(mesh->mode));
-    //We should now have a VBO in VRAM, containing the vertices at time of mesh creation
+  (void)(mesh);
+  /* do nothing */
 }
 
 static void GLUploadMesh(PLMesh *mesh) {
-    PLShaderProgram *program = gfx_state.current_program;
-    if(program == NULL) {
-        return;
-    }
+  if(mesh->internal.buffers[BUFFER_VERTEX_DATA].id == 0) {
+    glGenBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA].id);
+  }
 
-    //Write the current CPU vertex data into the VBO
-    GLsizeiptr VBOsize = sizeof(PLVertex) * mesh->num_verts;
-    glBufferData(GL_ARRAY_BUFFER, VBOsize, &mesh->vertices[0], TranslateDrawMode(mesh->mode));
+  if(mesh->internal.buffers[BUFFER_MATRIX_DATA].id == 0) {
+    glGenBuffers(1, &mesh->internal.buffers[BUFFER_MATRIX_DATA].id);
+  }
 
-    //Point to the different substreams of the interleaved BVO
-    //Args: Index, Size, Type, (Normalized), Stride, StartPtr
-
-    if(program->internal.v_position != -1) {
-        glEnableVertexAttribArray(program->internal.v_position);
-        glVertexAttribPointer(program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex),
-                              (const GLvoid *) pl_offsetof(PLVertex, position));
-    }
-
-    if(program->internal.v_normal != -1) {
-        glEnableVertexAttribArray(program->internal.v_normal);
-        glVertexAttribPointer(program->internal.v_normal, 3, GL_FLOAT, GL_FALSE,  sizeof(PLVertex),
-                              (const GLvoid *)pl_offsetof(PLVertex, normal));
-    }
-
-    if(program->internal.v_uv != -1) {
-        glEnableVertexAttribArray(program->internal.v_uv);
-        glVertexAttribPointer(program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof(PLVertex),
-                              (const GLvoid *)pl_offsetof(PLVertex, st));
-    }
-
-    if(program->internal.v_colour != -1) {
-        glEnableVertexAttribArray(program->internal.v_colour);
-        glVertexAttribPointer(program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PLVertex),
-                              (const GLvoid *) pl_offsetof(PLVertex, colour));
-    }
+  glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA].id);
+  mesh->internal.buffers[BUFFER_VERTEX_DATA].size = sizeof(PLVertex) * mesh->num_verts;
+  glBufferData(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA].size, &mesh->vertices[0],
+               TranslateDrawMode(mesh->mode));
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 static void GLDeleteMesh(PLMesh *mesh) {
-    glDeleteBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA]);
+  glDeleteBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA].id);
+  glDeleteBuffers(1, &mesh->internal.buffers[BUFFER_MATRIX_DATA].id);
+}
+
+static void SetupMeshDraw(const PLMesh *mesh) {
+  //Write camera matrices to shader shared uniforms
+  GLuint view_loc = glGetUniformLocation(gfx_state.current_program->internal.id, "pl_view");
+  GLuint proj_loc = glGetUniformLocation(gfx_state.current_program->internal.id, "pl_proj");
+  glUniformMatrix4fv( view_loc, 1, GL_FALSE, gfx_state.view_matrix.m);
+  glUniformMatrix4fv( proj_loc, 1, GL_FALSE, gfx_state.projection_matrix.m);
+
+  //Ensure VAO/VBO are bound
+  glBindVertexArray(gl_vao_list[0]);
+  glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA].id);
+
+  //Point to the different substreams of the interleaved VBO
+  //Args: Index, Size, Type, (Normalized), Stride, StartPtr
+  if(gfx_state.current_program->internal.v_position != -1) {
+    glEnableVertexAttribArray(gfx_state.current_program->internal.v_position);
+    glVertexAttribPointer(gfx_state.current_program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof(PLVertex),
+                          (const GLvoid *) pl_offsetof(PLVertex, position));
+  }
+  if(gfx_state.current_program->internal.v_normal != -1) {
+    glEnableVertexAttribArray(gfx_state.current_program->internal.v_normal);
+    glVertexAttribPointer(gfx_state.current_program->internal.v_normal, 3, GL_FLOAT, GL_FALSE,  sizeof(PLVertex),
+                          (const GLvoid *)pl_offsetof(PLVertex, normal));
+  }
+  if(gfx_state.current_program->internal.v_uv != -1) {
+    glEnableVertexAttribArray(gfx_state.current_program->internal.v_uv);
+    glVertexAttribPointer(gfx_state.current_program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof(PLVertex),
+                          (const GLvoid *)pl_offsetof(PLVertex, st));
+  }
+  if(gfx_state.current_program->internal.v_colour != -1) {
+    glEnableVertexAttribArray(gfx_state.current_program->internal.v_colour);
+    glVertexAttribPointer(gfx_state.current_program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PLVertex),
+                          (const GLvoid *) pl_offsetof(PLVertex, colour));
+  }
 }
 
 static void GLDrawInstancedMesh(PLMesh *mesh, PLMatrix4 *matrices, unsigned int count) {
-  if(mesh->internal.buffers[BUFFER_VERTEX_DATA] == 0) {
-    GfxLog("Invalid buffer provided, skipping draw!\n");
-    return;
-  }
-
   if(gfx_state.current_program == NULL) {
     GfxLog("No shader assigned!\n");
     return;
   }
+
+  if(mesh->internal.buffers[BUFFER_VERTEX_DATA].id == 0) {
+    GfxLog("Invalid buffer provided, skipping draw!\n");
+    return;
+  }
+
+  mesh->internal.buffers[BUFFER_MATRIX_DATA].size = sizeof(PLMatrix4) * count;
+  glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_MATRIX_DATA].id);
+  glBufferData(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_MATRIX_DATA].size, &matrices[0], GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  SetupMeshDraw(mesh);
+
+  if(gfx_state.current_program->internal.v_model != -1) {
+    int pos = gfx_state.current_program->internal.v_model;
+    for(unsigned int i = 0; i < 4; ++i) {
+      glEnableVertexAttribArray(pos + i);
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_MATRIX_DATA].id);
+
+    for(unsigned int i = 0; i < 4; ++i) {
+      glVertexAttribPointer(pos + i, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 4, (void*)(sizeof(float) * 4 * i));
+    }
+
+    for(unsigned int i = 0; i < 4; ++i) {
+      glVertexAttribDivisor(pos + i, 1);
+    }
+  }
+
+  //draw
+  GLuint mode = TranslatePrimitiveMode(mesh->primitive);
+  if(mesh->num_indices > 0) {
+    glDrawElementsInstanced(mode, mesh->num_indices, GL_UNSIGNED_INT, mesh->indices, count);
+  } else {
+    glDrawArraysInstanced(mode, 0, mesh->num_verts, count);
+  }
 }
 
-static void GLDrawMesh(PLMesh *mesh) {
-    if(mesh->internal.buffers[BUFFER_VERTEX_DATA] == 0) {
-        GfxLog("invalid buffer provided, skipping draw!\n");
-        return;
+static void GLDrawMesh(PLMesh *mesh, PLMatrix4 matrix) {
+  if(gfx_state.current_program == NULL) {
+    GfxLog("No shader assigned!\n");
+    return;
+  }
+
+  if(mesh->internal.buffers[BUFFER_VERTEX_DATA].id == 0) {
+    GfxLog("Invalid buffer provided, skipping draw!\n");
+    return;
+  }
+
+  mesh->internal.buffers[BUFFER_MATRIX_DATA].size = sizeof(PLMatrix4) * 1;
+  glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_MATRIX_DATA].id);
+  glBufferData(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_MATRIX_DATA].size, &matrix.m[0], GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  SetupMeshDraw(mesh);
+
+  if(gfx_state.current_program->internal.v_model != -1) {
+    int pos = gfx_state.current_program->internal.v_model;
+    for (unsigned int i = 0; i < 4; ++i) {
+      glEnableVertexAttribArray(pos + i);
     }
 
-    if(gfx_state.current_program == NULL) {
-        GfxLog("no shader assigned!\n");
-        return;
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_MATRIX_DATA].id);
+
+    for (unsigned int i = 0; i < 4; ++i) {
+      glVertexAttribPointer(pos + i, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 4, (void *) (sizeof(float) * 4 * i));
     }
 
-    //Write camera matrices to shader shared uniforms
-    GLuint view_loc = glGetUniformLocation(gfx_state.current_program->internal.id, "pl_view");
-    GLuint proj_loc = glGetUniformLocation(gfx_state.current_program->internal.id, "pl_proj");
-    glUniformMatrix4fv( view_loc, 1, GL_FALSE, gfx_state.view_matrix.m);
-    glUniformMatrix4fv( proj_loc, 1, GL_FALSE, gfx_state.projection_matrix.m);
-
-    //Ensure VAO/VBO are bound
-    glBindVertexArray(VAO[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
-
-    //draw
-    GLuint mode = TranslatePrimitiveMode(mesh->primitive);
-    if(mesh->num_indices > 0) {
-        glDrawElements(mode, mesh->num_indices, GL_UNSIGNED_INT, mesh->indices);
-    } else {
-        glDrawArrays(mode, 0, mesh->num_verts);
+    for (unsigned int i = 0; i < 4; ++i) {
+      glVertexAttribDivisor(pos + i, 1);
     }
+  }
+
+  //draw
+  GLuint mode = TranslatePrimitiveMode(mesh->primitive);
+  if(mesh->num_indices > 0) {
+    glDrawElements(mode, mesh->num_indices, GL_UNSIGNED_INT, mesh->indices);
+  } else {
+    glDrawArrays(mode, 0, mesh->num_verts);
+  }
 }
 
 /////////////////////////////////////////////////////////////
@@ -959,6 +1014,7 @@ void plInitOpenGL(void) {
     gfx_layer.CreateMeshPOST            = GLCreateMeshPOST;
     gfx_layer.DeleteMesh                = GLDeleteMesh;
     gfx_layer.DrawMesh                  = GLDrawMesh;
+    gfx_layer.DrawInstancedMesh         = GLDrawInstancedMesh;
     gfx_layer.UploadMesh                = GLUploadMesh;
 
     gfx_layer.CreateCamera              = GLCreateCamera;
@@ -1029,8 +1085,8 @@ void plInitOpenGL(void) {
     }
 
     // Init vertex attributes
-    glGenVertexArrays(1, VAO);
-    glBindVertexArray(VAO[0]);
+    glGenVertexArrays(1, gl_vao_list);
+    glBindVertexArray(gl_vao_list[0]);
 }
 
 void plShutdownOpenGL(void) {

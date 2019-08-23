@@ -91,7 +91,7 @@ typedef struct PLSkeletalModelData {
 /* * * * * * * * * * * * * * * * * */
 
 typedef struct PLModelLod {
-    PLMesh**    meshes;
+    PLMesh**    meshes; /* todo: submeshes should all be under PLMesh */
     uint32_t    num_meshes;
 } PLModelLod;
 
@@ -103,7 +103,7 @@ typedef struct PLModel {
     float           radius;
     PLAABB          bounds;
     /* transformations */
-    PLMatrix4       model_matrix;
+    PLMatrix4       model_matrix; /* todo: should be moved under PLMesh once submeshes are there too! */
     /* model lods */
     PLModelLod      levels[PL_MAX_MODEL_LODS];  /* different mesh sets for different levels of detail */
     uint8_t         num_levels;                 /* levels of detail provided */
