@@ -62,6 +62,15 @@ typedef struct PLMatrix3x4 {
    */
 } PLMatrix3x4;
 
+typedef struct PLMatrix4 PLMatrix4;
+
+PL_INLINE static PLMatrix4 plAddMatrix4(PLMatrix4 m, PLMatrix4 m2);
+PL_INLINE static PLMatrix4 plSubtractMatrix4(PLMatrix4 m, PLMatrix4 m2);
+PL_INLINE static PLMatrix4 plScaleMatrix4(PLMatrix4 m, PLVector3 scale);
+PL_INLINE static PLMatrix4 plMultiplyMatrix4(PLMatrix4 m, PLMatrix4 m2);
+PL_INLINE static PLMatrix4 plRotateMatrix4(float angle, PLVector3 axis);
+PL_INLINE static PLVector3 plGetMatrix4Angle(const PLMatrix4 *m);
+
 typedef struct PLMatrix4 {
   float m[16];
   /* 0 0 0 0
@@ -93,28 +102,36 @@ typedef struct PLMatrix4 {
     m[15] = 1;
   }
 
+  PL_INLINE void Transpose(PLMatrix4 m2) {
+    for (unsigned int j = 0; j < 4; ++j) {
+      for (unsigned int i = 0; i < 4; ++i) {
+        pl_m4pos(i, j) = m2.pl_m4pos(j, i);
+      }
+    }
+  }
+
   PL_INLINE void Clear() {
     for (float & i : m) { i = 0; }
   }
 
+  PL_INLINE PLVector3 GetMatrixAngle() {
+    return plGetMatrix4Angle(this);
+  }
+
   PL_INLINE PLMatrix4 operator + (PLMatrix4 m2) const {
-    PLMatrix4 o = *this;
-    for(unsigned int i = 0; i < 4; ++i) {
-      for(unsigned int j = 0; j < 4; ++j) {
-        o.pl_m4pos(i, j) += m2.pl_m4pos(i, j);
-      }
-    }
-    return o;
+    return plAddMatrix4(*this, m2);
   }
 
   PL_INLINE PLMatrix4 operator - (PLMatrix4 m2) const {
-    PLMatrix4 o = *this;
-    for(unsigned int i = 0; i < 4; ++i) {
-      for(unsigned int j = 0; j < 4; ++j) {
-        o.pl_m4pos(i, j) -= m2.pl_m4pos(i, j);
-      }
-    }
-    return o;
+    return plSubtractMatrix4(*this, m2);
+  }
+
+  PL_INLINE PLMatrix4 operator * (PLVector3 v) const {
+    return plScaleMatrix4(*this, v);
+  }
+
+  PL_INLINE PLMatrix4 operator * (PLMatrix4 m2) const {
+    return plMultiplyMatrix4(*this, m2);
   }
 #endif
 } PLMatrix4;
