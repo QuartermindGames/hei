@@ -382,7 +382,7 @@ bool plCopyFile(const char *path, const char *dest) {
         return false;
     }
 
-    uint8_t *data = pl_calloc(file_size, 1);
+    uint8_t *data = pl_malloc(file_size);
     if(data == NULL) {
         return false;
     }
@@ -411,6 +411,8 @@ bool plCopyFile(const char *path, const char *dest) {
         goto BAIL;
     }
     fclose(copy);
+
+    pl_free(data);
 
     return true;
 
