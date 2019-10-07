@@ -498,15 +498,9 @@ enum {
     BUFFER_TRIANGLE_DATA,
 };
 
-static void GLCreateMeshPOST(PLMesh *mesh) {
-    GLsizeiptr VBOsize = sizeof(PLVertex) * mesh->num_verts;
-    //Create VBO
+static void GLCreateMesh(PLMesh *mesh) {
+    // Create VBO
     glGenBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA]);
-    //Bind VBO
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
-    //Allocate & populate VBO
-    glBufferData(GL_ARRAY_BUFFER, VBOsize, &mesh->vertices[0], TranslateDrawMode(mesh->mode));
-    //We should now have a VBO in VRAM, containing the vertices at time of mesh creation
 }
 
 static void GLUploadMesh(PLMesh *mesh) {
@@ -514,6 +508,9 @@ static void GLUploadMesh(PLMesh *mesh) {
     if(program == NULL) {
         return;
     }
+
+    //Bind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
 
     //Write the current CPU vertex data into the VBO
     GLsizeiptr VBOsize = sizeof(PLVertex) * mesh->num_verts;
@@ -944,7 +941,7 @@ void plInitOpenGL(void) {
     gfx_layer.ActiveTexture             = GLActiveTexture;
     gfx_layer.SwizzleTexture            = GLSwizzleTexture;
 
-    gfx_layer.CreateMeshPOST            = GLCreateMeshPOST;
+    gfx_layer.CreateMesh                = GLCreateMesh;
     gfx_layer.DeleteMesh                = GLDeleteMesh;
     gfx_layer.DrawMesh                  = GLDrawMesh;
     gfx_layer.UploadMesh                = GLUploadMesh;

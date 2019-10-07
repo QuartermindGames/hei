@@ -168,7 +168,7 @@ PLMesh *plCreateMeshInit(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigne
         return NULL;
     }
 
-    CallGfxFunction(CreateMeshPOST, mesh);
+    CallGfxFunction(CreateMesh, mesh);
 
     return mesh;
 }

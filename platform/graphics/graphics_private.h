@@ -117,7 +117,7 @@ typedef struct GfxLayer {
     void(*SetDepthMask)(bool enable);
 
     // Mesh
-    void(*CreateMeshPOST)(PLMesh *mesh);
+    void(*CreateMesh)(PLMesh *mesh);
     void(*UploadMesh)(PLMesh *mesh);
     void(*DrawMesh)(PLMesh *mesh);
     void(*DeleteMesh)(PLMesh *mesh);
