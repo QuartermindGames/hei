@@ -495,12 +495,17 @@ static unsigned int TranslateDrawMode(PLMeshDrawMode mode) {
 
 enum {
     BUFFER_VERTEX_DATA,
-    BUFFER_TRIANGLE_DATA,
+    BUFFER_ELEMENT_DATA,
 };
 
 static void GLCreateMesh(PLMesh *mesh) {
     // Create VBO
     glGenBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA]);
+
+    // Create the EBO
+    if(mesh->num_indices > 0) {
+      glGenBuffers(1, &mesh->internal.buffers[BUFFER_ELEMENT_DATA]);
+    }
 }
 
 static void GLUploadMesh(PLMesh *mesh) {
@@ -513,8 +518,8 @@ static void GLUploadMesh(PLMesh *mesh) {
     glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
 
     //Write the current CPU vertex data into the VBO
-    GLsizeiptr VBOsize = sizeof(PLVertex) * mesh->num_verts;
-    glBufferData(GL_ARRAY_BUFFER, VBOsize, &mesh->vertices[0], TranslateDrawMode(mesh->mode));
+    glBufferData(GL_ARRAY_BUFFER, sizeof(PLVertex) * mesh->num_verts, &mesh->vertices[0],
+        TranslateDrawMode(mesh->mode));
 
     //Point to the different substreams of the interleaved BVO
     //Args: Index, Size, Type, (Normalized), Stride, StartPtr
@@ -542,6 +547,14 @@ static void GLUploadMesh(PLMesh *mesh) {
         glVertexAttribPointer(program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PLVertex),
                               (const GLvoid *) pl_offsetof(PLVertex, colour));
     }
+
+    if(mesh->internal.buffers[BUFFER_ELEMENT_DATA] != 0) {
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_ELEMENT_DATA]);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                   sizeof(unsigned int) * mesh->num_indices,
+                   &mesh->indices[0],
+                   GL_STATIC_DRAW);
+    }
 }
 
 static void GLDeleteMesh(PLMesh *mesh) {
@@ -565,14 +578,15 @@ static void GLDrawMesh(PLMesh *mesh) {
     glUniformMatrix4fv( view_loc, 1, GL_FALSE, gfx_state.view_matrix.m);
     glUniformMatrix4fv( proj_loc, 1, GL_FALSE, gfx_state.projection_matrix.m);
 
-    //Ensure VAO/VBO are bound
+    //Ensure VAO/VBO/EBO are bound
     glBindVertexArray(VAO[0]);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_VERTEX_DATA]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->internal.buffers[BUFFER_ELEMENT_DATA]);
 
     //draw
     GLuint mode = TranslatePrimitiveMode(mesh->primitive);
     if(mesh->num_indices > 0) {
-        glDrawElements(mode, mesh->num_indices, GL_UNSIGNED_INT, mesh->indices);
+        glDrawElements(mode, mesh->num_indices, GL_UNSIGNED_INT, 0);
     } else {
         glDrawArrays(mode, 0, mesh->num_verts);
     }
