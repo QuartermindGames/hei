@@ -559,6 +559,7 @@ static void GLUploadMesh(PLMesh *mesh) {
 
 static void GLDeleteMesh(PLMesh *mesh) {
     glDeleteBuffers(1, &mesh->internal.buffers[BUFFER_VERTEX_DATA]);
+    glDeleteBuffers(1, &mesh->internal.buffers[BUFFER_ELEMENT_DATA]);
 }
 
 static void GLDrawMesh(PLMesh *mesh) {
