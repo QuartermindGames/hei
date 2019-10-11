@@ -164,7 +164,7 @@ PLModel *LoadStaticRequiemModel(FILE *fp) {
     rewind(fp);
 
     // check which flags have been set for this particular mesh
-    int flags = fgetc(fp);
+    unsigned int flags = fgetc(fp);
     if(flags & MDL_FLAG_FLAT) {} // flat
     if(flags & MDL_FLAG_UNLIT) {} // unlit
     if(!(flags & MDL_FLAG_FLAT) && !(flags & MDL_FLAG_UNLIT)) {} // shaded
@@ -311,14 +311,9 @@ PLModel *LoadStaticRequiemModel(FILE *fp) {
     }
 #endif
 
-    srand(num_vertices);
     for(unsigned int i = 0; i < num_vertices; ++i) {
-        uint8_t r = (uint8_t)(rand() % 255);
-        uint8_t g = (uint8_t)(rand() % 255);
-        uint8_t b = (uint8_t)(rand() % 255);
-
         plSetMeshVertexPosition(mesh, i, PLVector3(vertices[i].x, vertices[i].y, vertices[i].z));
-        plSetMeshVertexColour(mesh, i, PLColour(r, g, b, 255));
+        plSetMeshVertexColour(mesh, i, PLColour(255, 255, 255, 255));
     }
 
     unsigned int cur_index = 0;
