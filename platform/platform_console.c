@@ -28,12 +28,14 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_console.h>
 #include <PL/platform_graphics_font.h>
 #include <PL/platform_filesystem.h>
+
+#include "platform_private.h"
+#include "graphics/graphics_private.h"
+
 #include <errno.h>
 #if defined(_WIN32)
 #   include <io.h>
 #endif
-#include "platform_private.h"
-#include "graphics/graphics_private.h"
 
 #define CONSOLE_MAX_ARGUMENTS 8
 

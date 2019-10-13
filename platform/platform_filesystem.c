@@ -380,7 +380,7 @@ bool plWriteFile(const char *path, const uint8_t *buf, size_t length) {
         result = false;
     }
 
-    fclose(fp);
+    pl_fclose(fp);
 
     return result;
 }
@@ -408,7 +408,7 @@ bool plCopyFile(const char *path, const char *dest) {
         ReportError(PL_RESULT_FILEREAD, "failed to read in %d bytes for %s", file_size, path);
         goto BAIL;
     }
-    fclose(original); original = NULL;
+    pl_fclose(original);
 
     // write out the copy
     if((copy = fopen(dest, "wb")) == NULL) {
@@ -419,7 +419,7 @@ bool plCopyFile(const char *path, const char *dest) {
         ReportError(PL_RESULT_FILEWRITE, "failed to write out %d bytes for %s", file_size, path);
         goto BAIL;
     }
-    fclose(copy);
+    pl_fclose(copy);
 
     pl_free(data);
 
@@ -430,11 +430,11 @@ bool plCopyFile(const char *path, const char *dest) {
     pl_free(data);
 
     if(original != NULL) {
-        fclose(original);
+      pl_fclose(original);
     }
 
     if(copy != NULL) {
-        fclose(copy);
+      pl_fclose(copy);
     }
 
     return false;

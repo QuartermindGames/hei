@@ -43,6 +43,8 @@ typedef struct PLFileBuffer {
 #define plBytesToMebibytes(a)   (plBytesToKibibytes(a) / 1024)
 #define plBytesToGibibytes(a)   (plBytesToMebibytes(a) / 1024)
 
+#define pl_fclose(a)  fclose((a)); (a) = NULL
+
 PL_EXTERN_C
 
 PL_EXTERN char *plGetUserName(char *out, size_t n);

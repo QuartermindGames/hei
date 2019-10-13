@@ -37,8 +37,14 @@ For more information, please refer to <http://unlicense.org>
 
 // OS Specific Headers
 #if defined(_WIN32)
-#include <Windows.h>
+#define WIN32_LEAN_AND_MEAN 1
+#include <windows.h>
+#include <afxres.h>
+#define STRSAFE_NO_DEPRECATE 1
 #include <strsafe.h>
+
+#undef far
+#undef near
 #endif
 
 /* Hard Limits */

@@ -34,7 +34,7 @@ For more information, please refer to <http://unlicense.org>
 
 static PLModel *LoadEMsh(const char *path, FILE *fp) {
     ReportError(PL_RESULT_UNSUPPORTED, "EMsh is not supported");
-    fclose(fp);
+    pl_fclose(fp);
     return NULL;
 }
 

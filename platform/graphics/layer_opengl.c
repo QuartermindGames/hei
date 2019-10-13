@@ -1007,7 +1007,7 @@ void plInitOpenGL(void) {
         glGetIntegerv(GL_NUM_EXTENSIONS, (GLint *) (&gl_num_extensions));
         for (unsigned int i = 0; i < gl_num_extensions; ++i) {
             const uint8_t *extension = glGetStringi(GL_EXTENSIONS, i);
-            sprintf(gl_extensions[i], "%s", extension);
+            snprintf(gl_extensions[i], sizeof(gl_extensions[i]), "%s", extension);
             GfxLog("    %s\n", extension);
         }
     } else {

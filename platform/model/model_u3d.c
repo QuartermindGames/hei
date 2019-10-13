@@ -119,8 +119,8 @@ PLModel *plLoadU3DModel(const char *path) {
         return NULL;
     }
 
-    fclose(anim_file);
-    fclose(data_file);
+    pl_fclose(anim_file);
+    pl_fclose(data_file);
 
 #if 0
     plSetCurrentFunction("plLoadU3DModel");

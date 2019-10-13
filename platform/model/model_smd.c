@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include "model_private.h"
+#include "filesystem_private.h"
 
 static void WriteSMDVertex(FILE* fp, const PLVertex *vertex) {
     /*               P X  Y  Z  NX NY NZ U  V */
@@ -102,8 +103,7 @@ bool plWriteSmdModel(PLModel *model, const char *path) {
         }
         /* and leave a blank line at the end, to keep studiomdl happy */
         fprintf(fp_out, "end\n\n\n");
-        fclose(fp_out);
-        fp_out = NULL;
+        pl_fclose(fp_out);
     }
     return true;
 }

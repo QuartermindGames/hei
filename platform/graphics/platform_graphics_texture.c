@@ -320,7 +320,7 @@ bool plUploadTextureImage(PLTexture *texture, const PLImage *upload) {
 
     const char *file_name = plGetFileName(upload->path);
     if(file_name == NULL || file_name[0] == '\0') {
-        strcpy(texture->name, "null");
+        strncpy(texture->name, "null", sizeof(texture->name));
     } else {
         strncpy(texture->name, file_name, sizeof(texture->name));
     }

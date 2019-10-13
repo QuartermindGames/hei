@@ -35,12 +35,6 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform_private.h"
 
-#ifdef _WIN32
-
-#include <afxres.h>
-
-#endif
-
 /*	Generic functions for platform, such as	error handling.	*/
 
 typedef struct PLSubSystem {
@@ -292,7 +286,7 @@ void plSetCurrentFunction(const char *function, ...) {
     va_list args;
 
     va_start(args, function);
-    vsprintf(out, function, args);
+    vsnprintf(out, sizeof(out), function, args);
     va_end(args);
 
     strncpy(loc_function, out, sizeof(function));

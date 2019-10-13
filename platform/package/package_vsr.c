@@ -136,7 +136,7 @@ PLPackage *plLoadVSRPackage(const char *path, bool cache) {
     ReportError(PL_RESULT_FILETYPE, "failed to read VSR1 header");
   }
 
-  fclose(fp);
+  pl_fclose(fp);
 
   if (plGetFunctionResult() != PL_RESULT_SUCCESS) {
     pl_free(directories);
