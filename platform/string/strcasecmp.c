@@ -32,7 +32,9 @@
  * SUCH DAMAGE.
  */
 
+#if !defined(_MSC_VER)
 #include <strings.h>
+#endif
 #include <ctype.h>
 
 int pl_strcasecmp(const char *s1, const char *s2) {

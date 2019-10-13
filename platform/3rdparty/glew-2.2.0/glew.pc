@@ -1,6 +1,6 @@
-prefix=C:/Program Files (x86)/Project
+prefix=C:/Users/hogsy/Documents/Projects/platform/out/install/x64-Debug
 exec_prefix=${prefix}
-libdir=C:/Program Files (x86)/Project/lib
+libdir=C:/Users/hogsy/Documents/Projects/platform/out/install/x64-Debug/lib
 includedir=${prefix}/include
 
 Name: glew

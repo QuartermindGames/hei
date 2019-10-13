@@ -27,9 +27,11 @@ For more information, please refer to <http://unlicense.org>
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <errno.h>
+#if !defined(_MSC_VER)
+#include <unistd.h>
 #include <dirent.h>
+#endif
 
 #include <PL/platform_console.h>
 
@@ -336,11 +338,18 @@ bool plFileExists(const char *path) {
 }
 
 bool plPathExists(const char *path) {
+#if defined(_MSC_VER)
+	DWORD fa = GetFileAttributes(path);
+	if (fa & FILE_ATTRIBUTE_DIRECTORY) {
+		return true;
+	}
+#else
     DIR *dir = opendir(path);
     if(dir) {
         closedir(dir);
         return true;
     }
+#endif
     return false;
 }
 

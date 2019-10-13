@@ -28,7 +28,9 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics.h>
 
+#if !defined(_MSC_VER)
 #include <sys/time.h>
+#endif
 #include <errno.h>
 
 #include "platform_private.h"

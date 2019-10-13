@@ -29,6 +29,18 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform.h>
 
+#if defined(_MSC_VER)
+#pragma warning ( disable : 4204 )
+#pragma warning ( disable : 4820 )
+#pragma warning ( disable : 4668 )
+#endif
+
+// OS Specific Headers
+#if defined(_WIN32)
+#include <Windows.h>
+#include <strsafe.h>
+#endif
+
 /* Hard Limits */
 
 #define MAX_OBJECT_INTERFACES   512

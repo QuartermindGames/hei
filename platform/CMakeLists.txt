@@ -73,15 +73,12 @@ add_library(platform STATIC
         ${PLATFORM_MODEL_FILES}
         ${PLATFORM_PACKAGE_FILES})
 
-#[[
-set_target_properties(platform PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/platform/lib/
-        C_STANDARD 11
-        CXX_STANDARD 14
-        )
-]]
-
-target_compile_options(platform PUBLIC -fPIC -DPL_INTERNAL)
+target_compile_options(platform PUBLIC -DPL_INTERNAL)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	target_compile_options(platform PUBLIC -fPIC)
+elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
+	target_compile_options(platform PUBLIC -D_CRT_SECURE_NO_WARNINGS)
+endif()
 
 function(build_glew)
     set(BUILD_UTILS OFF CACHE BOOL "utilities")
@@ -114,9 +111,13 @@ endif()
 if(UNIX)
     target_link_libraries(platform dl)
 elseif(WIN32)
-    target_compile_options(platform PRIVATE -static -static-libstdc++ -static-libgcc)
+	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+		target_compile_options(platform PRIVATE -static -static-libstdc++ -static-libgcc)
+	endif()
     target_link_libraries(platform Secur32 ws2_32)
 endif()
+
+set_property(TARGET platform PROPERTY C_STANDARD_REQUIRED 11)
 
 target_include_directories(platform PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/

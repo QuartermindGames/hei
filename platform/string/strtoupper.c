@@ -25,7 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#if !defined(_MSC_VER)
 #include <strings.h>
+#endif
 #include <ctype.h>
 
 char *pl_strtoupper(char *s) {
