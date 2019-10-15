@@ -29,6 +29,8 @@ For more information, please refer to <http://unlicense.org>
 
 #include "nomad.h"
 
+#include "../platform_private.h"
+
 /* Private API */
 
 typedef char Od3String[20];
@@ -45,8 +47,27 @@ typedef struct Od3Header {
     unsigned int    offset_cameras;
     unsigned int    offset_lights;
     char            u0[180];
-    
+
 } Od3Header;
+
+/************************************/
+/* 3DO Vertex */
+
+typedef struct Od3Vertex {
+    PLVector3       position;
+    PLVector3       normals;
+    float           alpha;
+    /* 4 unknown bytes */
+    PLColour        colour;
+} Od3Vertex;
+
+/************************************/
+/* 3DO Quad */
+
+typedef struct Od3Quad {
+    unsigned short  vertices[4];
+
+} Od3Quad;
 
 /************************************/
 /* 3DO Mesh */
@@ -69,6 +90,23 @@ typedef struct Od3Mesh {
 } Od3Mesh;
 
 /************************************/
+/* 3DO Material */
+
+typedef struct Od3Material {
+    Od3String       name;
+    Od3String       bmp_name;
+    Od3String       tga_name;
+    unsigned int    size;
+    unsigned int    u0[2];
+    unsigned int    bpp;
+    unsigned short  width;
+    unsigned short  height;
+} Od3Material;
+
+Od3Material* Od3_CreateMaterial(void);
+void Od3_DestroyMaterial(Od3Material* ptr);
+
+/************************************/
 /* 3DO Light */
 
 typedef struct Od3Light {
@@ -87,7 +125,7 @@ typedef struct Od3Light {
 Od3Light* Od3_CreateLight(void);
 void Od3_DestroyLight(Od3Light* ptr);
 
-void Od3_SerializeLight(Od3Light* ptr, FILE* fp);
+void Od3_SerializeLight(const Od3Light* ptr, FILE* fp);
 void Od3_DeserializeLight(Od3Light* ptr, FILE* fp);
 
 inline static void Od3_SetLightName(Od3Light* ptr, const char* name) { strncpy(ptr->name, name, sizeof(ptr->name)); }
@@ -113,7 +151,7 @@ Od3Camera* Od3_CreateCamera(
     float fov);
 void Od3_DestroyCamera(Od3Camera* ptr);
 
-void Od3_SerializeCamera(Od3Camera* ptr, FILE* fp);
+void Od3_SerializeCamera(const Od3Camera* ptr, FILE* fp);
 void Od3_DeserializeCamera(Od3Camera* ptr, FILE* fp);
 
 inline static void Od3_SetCameraName(Od3Camera* ptr, const char* name) { strncpy(ptr->name, name, sizeof(ptr->name)); }
@@ -132,3 +170,22 @@ typedef struct Od3Door {
 
 Od3Door* Od3_CreateDoor(unsigned int u0, unsigned int u1);
 void Od3_DestroyDoor(Od3Door* ptr);
+
+/************************************/
+
+typedef struct Od3Handle {
+    Od3Material*    materials;
+    unsigned int    num_materials;
+    Od3Mesh*        meshes;
+    unsigned int    num_meshes;
+    Od3Camera*      cameras;
+    unsigned int    num_cameras;
+    Od3Door*        doors;
+    unsigned int    num_doors;
+    Od3Light*       lights;
+    unsigned int    num_lights;
+} Od3Handle;
+
+Od3Handle* Od3_LoadFile(const char* path);
+void Od3_WriteFile(const Od3Handle* ptr, const char* path);
+void Od3_DestroyHandle(Od3Handle* ptr);

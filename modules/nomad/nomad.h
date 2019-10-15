@@ -36,3 +36,7 @@ For more information, please refer to <http://unlicense.org>
  */
 
 // Public API
+
+PL_EXTERN_C
+
+PL_EXTERN_C_END

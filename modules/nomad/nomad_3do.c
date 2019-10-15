@@ -26,3 +26,19 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include "nomad_private.h"
+
+Od3Handle* Od3_LoadFile(const char* path) {
+    FILE* fp = fopen(path, "rb");
+    if(fp == NULL) {
+        ReportBasicError(PL_RESULT_FILEREAD);
+        return NULL;
+    }
+
+    Od3Header header;
+    if(fread(&header, sizeof(Od3Header), 1, fp) != 1) {
+        ReportBasicError(PL_RESULT_FILEREAD);
+        return NULL;
+    }
+
+    Od3Handle* handle = pl_malloc(sizeof(Od3Handle));
+}
