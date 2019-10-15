@@ -29,4 +29,10 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_model.h>
 
+/* The Nomad Soul
+ * Thanks to Eric Morin (AKA: Abjab) for
+ * releasing his 3DO importer, this has been 
+ * an incredibly useful source of information.
+ */
+
 // Public API
