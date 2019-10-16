@@ -39,14 +39,14 @@ For more information, please refer to <http://unlicense.org>
 
 typedef struct U3DAnimationHeader {
     uint16_t frames;    // Number of frames.
-    uint16_t size;    // Size of each frame.
+    uint16_t size;      // Size of each frame.
 } U3DAnimationHeader;
 
 typedef struct U3DDataHeader {
     uint16_t numpolys;    // Number of polygons.
     uint16_t numverts;    // Number of vertices.
     uint16_t rotation;    // Mesh rotation?
-    uint16_t frame;        // Initial frame.
+    uint16_t frame;       // Initial frame.
 
     uint32_t norm_x;
     uint32_t norm_y;
@@ -87,6 +87,10 @@ typedef struct U3DTriangle {
     uint8_t flags;      // Triangle flags
 } U3DTriangle;
 
+static int CompareTriangles(const void* a, const void* b) {
+    return ((U3DTriangle*)a)->texturenum - ((U3DTriangle*)b)->texturenum;
+}
+
 static PLModel* ReadU3DModelData(PLFile* data_ptr, PLFile* anim_ptr) {
     U3DAnimationHeader anim_hdr;
     plReadFile(anim_ptr, &anim_hdr, sizeof(U3DAnimationHeader), 1);
@@ -123,18 +127,26 @@ static PLModel* ReadU3DModelData(PLFile* data_ptr, PLFile* anim_ptr) {
     /* read all the triangle data from the data file */
     U3DTriangle* triangles = pl_malloc(sizeof(U3DTriangle) * data_hdr.numpolys);
     plReadFile(data_ptr, triangles, sizeof(U3DTriangle), data_hdr.numpolys);
+    plCloseFile(data_ptr);
 
-    /* generate meshes per frame */
-    PLMesh* meshes[anim_hdr.frames];
+    /* sort triangles by texture id */
+    qsort(triangles, data_hdr.numpolys, sizeof(U3DTriangle), CompareTriangles);
+
+    /* read in all of the animation data from the anim file */
+    U3DVertex* vertices = pl_malloc(sizeof(U3DVertex) * data_hdr.numverts * anim_hdr.frames);
+    plReadFile(anim_ptr, vertices, sizeof(U3DVertex), data_hdr.numverts * anim_hdr.frames);
+    plCloseFile(anim_ptr);
+
+    PLModel* model_ptr = pl_calloc(1, sizeof(PLModel));
+    model_ptr->type = PL_MODELTYPE_VERTEX;
+    model_ptr->internal.vertex_data.animations = pl_calloc(anim_hdr.frames, sizeof(PLVertexAnimationFrame));
+
     for(unsigned int i = 0; i < anim_hdr.frames; ++i) {
-
-        plGenerateMeshNormals(meshes[i]);
+        PLVertexAnimationFrame* frame = &model_ptr->internal.vertex_data.animations[i];
     }
 
-    /* and now create the model container, a lot of this will change in the longer term */
-    PLModel* model_ptr = pl_malloc(sizeof(PLModel));
-    model_ptr->type = PL_MODELTYPE_VERTEX;
-    model_ptr->current_level = data_hdr.frame;
+    pl_free(triangles);
+    pl_free(vertices);
 
     plGenerateModelBounds(model_ptr);
 
@@ -175,40 +187,33 @@ PLModel* plLoadU3DModel(const char *path) {
     plCloseFile(anim_ptr);
 
     return model_ptr;
-
-#if 0
-    // Allocate the triangle/vertex arrays.
-    model->frames = new PLModelFrame[model->num_frames];
-    for (unsigned int i = 0; i < model->num_frames; i++) {
-        model->frames[i].vertices = new PLVertex[model->num_vertices];
-        model->frames[i].triangles = new PLTriangle[model->num_triangles];
-    }
-
-
-    // Go through each vertex.
-    std::vector<U3DVertex> uvertices;
-    for (unsigned int i = 0; i < model->num_frames; i++) {
-        if (std::fread(&uvertices[i], sizeof(U3DVertex), 1, pl_u3d_animf) != 1) {
-            _plSetErrorMessage("Failed to process vertex! (%i)\n", i);
-
-            plDestroyAnimatedModel(model);
-
-            _plUnloadU3DModel();
-            return nullptr;
-        }
-
-        for (unsigned int j = 0; j < model->num_triangles; j++) {
-
-        }
-    }
-
-    // Calculate normals.
-    _plGenerateAnimatedModelNormals(model);
-
-    _plUnloadU3DModel();
-
-    return model;
-#else
-    return NULL;
-#endif
 }
+
+bool plWriteU3DModel(PLModel* ptr, const char* path) {
+
+}
+
+/* Example UC file, this is what we _should_ be loading from.
+
+#exec MESH IMPORT MESH=wafr1 ANIVFILE=MODELS\wafr1_a.3D DATAFILE=MODELS\wafr1_d.3D X=0 Y=0 Z=0
+#exec MESH ORIGIN MESH=wafr1 X=0 Y=0 Z=0 YAW=64 ROLL=64
+#exec MESH SEQUENCE MESH=wafr1 SEQ=All  STARTFRAME=0  NUMFRAMES=1
+#exec MESH SEQUENCE MESH=wafr1 SEQ=Still  STARTFRAME=0   NUMFRAMES=1
+#exec MESHMAP SCALE MESHMAP=wafr1 X=0.1 Y=0.1 Z=0.2
+#exec MESHMAP SETTEXTURE MESHMAP=wafr1 NUM=0 TEXTURE=DefaultTexture
+
+#exec MESH IMPORT MESH=wafr2 ANIVFILE=MODELS\wafr2_a.3D DATAFILE=MODELS\wafr2_d.3D X=0 Y=0 Z=0
+#exec MESH ORIGIN MESH=wafr2 X=0 Y=0 Z=0 YAW=64 ROLL=64
+#exec MESH SEQUENCE MESH=wafr2 SEQ=All  STARTFRAME=0  NUMFRAMES=1
+#exec MESH SEQUENCE MESH=wafr2 SEQ=Still  STARTFRAME=0   NUMFRAMES=1
+#exec MESHMAP SCALE MESHMAP=wafr2 X=0.1 Y=0.1 Z=0.2
+#exec MESHMAP SETTEXTURE MESHMAP=wafr2 NUM=0 TEXTURE=DefaultTexture
+
+#exec MESH IMPORT MESH=wafr4 ANIVFILE=MODELS\wafr4_a.3D DATAFILE=MODELS\wafr4_d.3D X=0 Y=0 Z=0
+#exec MESH ORIGIN MESH=wafr4 X=0 Y=0 Z=0 YAW=64 ROLL=64
+#exec MESH SEQUENCE MESH=wafr4 SEQ=All  STARTFRAME=0  NUMFRAMES=1
+#exec MESH SEQUENCE MESH=wafr4 SEQ=Still  STARTFRAME=0   NUMFRAMES=1
+#exec MESHMAP SCALE MESHMAP=wafr4 X=0.1 Y=0.1 Z=0.2
+#exec MESHMAP SETTEXTURE MESHMAP=wafr4 NUM=0 TEXTURE=DefaultTexture
+
+*/
