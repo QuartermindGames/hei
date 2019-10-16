@@ -61,6 +61,9 @@ PL_EXTERN void plStripExtension(char *dest, size_t length, const char *in);
 PL_EXTERN const char *plGetFileExtension(const char *in);
 PL_EXTERN const char *plGetFileName(const char *path);
 
+PL_EXTERN bool plFileExists(const char *path);
+PL_EXTERN bool plPathExists(const char *path);
+
 PL_EXTERN void plScanDirectory(const char *path, const char *extension, void (*Function)(const char *), bool recursive);
 
 PL_EXTERN bool plCreateDirectory(const char *path);
@@ -70,9 +73,6 @@ PL_EXTERN bool plCreatePath(const char *path);
 
 PL_EXTERN PLFile* plOpenFile(const char* path, bool cache);
 PL_EXTERN void plCloseFile(PLFile* ptr);
-
-PL_EXTERN bool plFileExists(const char *path);
-PL_EXTERN bool plPathExists(const char *path);
 
 PL_EXTERN bool plCopyFile(const char *path, const char *dest);
 PL_EXTERN bool plWriteFile(const char *path, const uint8_t* buf, size_t length);

@@ -56,9 +56,7 @@ PLresult plInitFileSystem(void) {
     return PL_RESULT_SUCCESS;
 }
 
-void plShutdownFileSystem(void) {
-
-}
+void plShutdownFileSystem(void) {}
 
 // Checks whether a file has been modified or not.
 bool plIsFileModified(time_t oldtime, const char *path) {
@@ -101,11 +99,7 @@ bool plCreateDirectory(const char *path) {
         return true;
     }
 
-#ifdef _WIN32
-    if(_mkdir(path) == 0) {
-#else
-    if(mkdir(path, 0777) == 0) {
-#endif
+    if(_pl_mkdir(path) == 0) {
         return true;
     }
 
@@ -134,10 +128,6 @@ bool plCreatePath(const char *path) {
 
 // Returns the extension for the file.
 const char *plGetFileExtension(const char *in) {
-    if (plIsEmptyString(in)) {
-        return "";
-    }
-
     const char *s = strrchr(in, '.');
     if(!s || s == in) {
         return "";
@@ -288,7 +278,6 @@ const char *plGetWorkingDirectory(void) {
 void plSetWorkingDirectory(const char *path) {
     if(chdir(path) != 0) {
         ReportError(PL_RESULT_SYSERR, "%s", strerror(errno));
-        /* TODO: Return error condition */
     }
 }
 
@@ -497,6 +486,59 @@ size_t plReadFile(PLFile* ptr, void* dest, size_t size, size_t count) {
     memcpy(dest, ptr->pos, length);
     ptr->pos += length;
     return length / size;
+}
+
+char plReadInt8(PLFile* ptr) {
+  if(ptr->fptr != NULL) {
+    return (char)(fgetc(ptr->fptr));
+  }
+
+  return (char)(ptr->pos++);
+}
+
+int16_t plReadInt16(PLFile* ptr, bool big_endian) {
+  int16_t n;
+  if(ptr->fptr != NULL) {
+    fread(&n, sizeof(int16_t), 1, ptr->fptr);
+  } else {
+    memcpy(&n, ptr->pos, sizeof(int16_t));
+  }
+
+  if(big_endian) {
+    return be16toh(n);
+  }
+
+  return n;
+}
+
+int32_t plReadInt32(PLFile* ptr, bool big_endian) {
+  int32_t n;
+  if(ptr->fptr != NULL) {
+    fread(&n, sizeof(int32_t), 1, ptr->fptr);
+  } else {
+    memcpy(&n, ptr->pos, sizeof(int32_t));
+  }
+
+  if(big_endian) {
+    return be16toh(n);
+  }
+
+  return n;
+}
+
+int64_t plReadInt64(PLFile* ptr, bool big_endian) {
+  int64_t n;
+  if(ptr->fptr != NULL) {
+    fread(&n, sizeof(int64_t), 1, ptr->fptr);
+  } else {
+    memcpy(&n, ptr->pos, sizeof(int64_t));
+  }
+
+  if(big_endian) {
+    return be16toh(n);
+  }
+
+  return n;
 }
 
 bool plFileSeek(PLFile* ptr, long int pos, PLFileSeek seek) {

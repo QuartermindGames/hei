@@ -88,12 +88,20 @@ typedef struct U3DTriangle {
 } U3DTriangle;
 
 static int CompareTriangles(const void* a, const void* b) {
-    return ((U3DTriangle*)a)->texturenum - ((U3DTriangle*)b)->texturenum;
+    if(((U3DTriangle*)a)->texturenum > ((U3DTriangle*)b)->texturenum) {
+        return -1;
+    } else if(((U3DTriangle*)a)->texturenum < ((U3DTriangle*)b)->texturenum) {
+        return 1;
+    }
+
+    return 0;
 }
 
 static PLModel* ReadU3DModelData(PLFile* data_ptr, PLFile* anim_ptr) {
     U3DAnimationHeader anim_hdr;
-    plReadFile(anim_ptr, &anim_hdr, sizeof(U3DAnimationHeader), 1);
+    if(plReadFile(anim_ptr, &anim_hdr, sizeof(U3DAnimationHeader), 1) != 1) {
+      return NULL;
+    }
 
     /* validate animation header */
 
@@ -106,7 +114,9 @@ static PLModel* ReadU3DModelData(PLFile* data_ptr, PLFile* anim_ptr) {
     }
 
     U3DDataHeader data_hdr;
-    plReadFile(data_ptr, &data_hdr, sizeof(U3DDataHeader), 1);
+    if(plReadFile(data_ptr, &data_hdr, sizeof(U3DDataHeader), 1) != 1) {
+      return NULL;
+    }
 
     /* validate data header */
 
