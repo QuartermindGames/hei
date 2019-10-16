@@ -488,57 +488,66 @@ size_t plReadFile(PLFile* ptr, void* dest, size_t size, size_t count) {
     return length / size;
 }
 
-char plReadInt8(PLFile* ptr) {
+char plReadInt8(PLFile* ptr, bool* status) {
+  if(plGetFileOffset(ptr) >= ptr->size) {
+    *status = false;
+    return 0;
+  }
+
+  *status = true;
+
   if(ptr->fptr != NULL) {
     return (char)(fgetc(ptr->fptr));
   }
 
-  return (char)(ptr->pos++);
+  return (char)*(ptr->pos);
 }
 
-int16_t plReadInt16(PLFile* ptr, bool big_endian) {
-  int16_t n;
-  if(ptr->fptr != NULL) {
-    fread(&n, sizeof(int16_t), 1, ptr->fptr);
-  } else {
-    memcpy(&n, ptr->pos, sizeof(int16_t));
+static int64_t ReadSizedInteger(PLFile* ptr, size_t size, bool big_endian, bool* status) {
+  if(plGetFileOffset(ptr) + size > ptr->size) {
+    *status = false;
+    return 0;
   }
 
-  if(big_endian) {
-    return be16toh(n);
-  }
-
-  return n;
-}
-
-int32_t plReadInt32(PLFile* ptr, bool big_endian) {
-  int32_t n;
-  if(ptr->fptr != NULL) {
-    fread(&n, sizeof(int32_t), 1, ptr->fptr);
-  } else {
-    memcpy(&n, ptr->pos, sizeof(int32_t));
-  }
-
-  if(big_endian) {
-    return be16toh(n);
-  }
-
-  return n;
-}
-
-int64_t plReadInt64(PLFile* ptr, bool big_endian) {
   int64_t n;
   if(ptr->fptr != NULL) {
-    fread(&n, sizeof(int64_t), 1, ptr->fptr);
+    if(fread(&n, size, 1, ptr->fptr) != 1) {
+      *status = false;
+      return 0;
+    }
   } else {
-    memcpy(&n, ptr->pos, sizeof(int64_t));
+    memcpy(&n, ptr->pos, size);
+    ptr->pos += size;
   }
 
+  *status = true;
+
   if(big_endian) {
-    return be16toh(n);
+    if(size == sizeof(int16_t)) {
+      return be16toh(n);
+    } else if(size == sizeof(int32_t)) {
+      return be32toh(n);
+    } else if(size == sizeof(int64_t)) {
+      return be64toh(n);
+    } else {
+      *status = false;
+      return 0;
+    }
   }
 
   return n;
+}
+
+int16_t plReadInt16(PLFile* ptr, bool big_endian, bool* status) {
+  return ReadSizedInteger(ptr, sizeof(int16_t), big_endian, status);
+}
+
+int32_t plReadInt32(PLFile* ptr, bool big_endian, bool* status) {
+  return ReadSizedInteger(ptr, sizeof(int32_t), big_endian, status);
+}
+
+int64_t plReadInt64(PLFile* ptr, bool big_endian, bool* status) {
+  return ReadSizedInteger(ptr, sizeof(int64_t), big_endian, status);
 }
 
 bool plFileSeek(PLFile* ptr, long int pos, PLFileSeek seek) {

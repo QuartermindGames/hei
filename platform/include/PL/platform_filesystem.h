@@ -86,10 +86,11 @@ PL_EXTERN size_t plGetFileSize(const char *path);
 PL_EXTERN size_t plGetFileOffset(const PLFile* ptr);
 
 PL_EXTERN size_t plReadFile(PLFile* ptr, void* dest, size_t size, size_t count);
-PL_EXTERN char plReadInt8(PLFile* ptr);
-PL_EXTERN int16_t plReadInt16(PLFile* ptr, bool big_endian);
-PL_EXTERN int32_t plReadInt32(PLFile* ptr, bool big_endian);
-PL_EXTERN int64_t plReadInt64(PLFile* ptr, bool big_endian);
+
+PL_EXTERN char plReadInt8(PLFile* ptr, bool* status);
+PL_EXTERN int16_t plReadInt16(PLFile* ptr, bool big_endian, bool* status);
+PL_EXTERN int32_t plReadInt32(PLFile* ptr, bool big_endian, bool* status);
+PL_EXTERN int64_t plReadInt64(PLFile* ptr, bool big_endian, bool* status);
 
 typedef enum PLFileSeek {
     PL_SEEK_SET = SEEK_SET,
