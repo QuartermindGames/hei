@@ -45,7 +45,7 @@ typedef struct PLFileBuffer {
     uint8_t     *data;
 } PLFileBuffer;
 
-typedef void* PLFile; // this will replace the above...
+typedef struct PLFile PLFile; // this will replace the above...
 
 PL_EXTERN_C
 
@@ -97,7 +97,7 @@ typedef enum PLFileSeek {
     PL_SEEK_END = SEEK_END
 } PLFileSeek;
 
-PL_EXTERN size_t plFileSeek(PLFile* ptr, long int pos, PLFileSeek seek);
+PL_EXTERN bool plFileSeek(PLFile* ptr, long int pos, PLFileSeek seek);
 PL_EXTERN void plFileRewind(PLFile* ptr);
 
 PL_EXTERN_C_END
