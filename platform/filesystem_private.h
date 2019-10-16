@@ -34,3 +34,11 @@ For more information, please refer to <http://unlicense.org>
 #else
 #   define FSLog(...)
 #endif
+
+typedef struct _PLFile {
+    char        path[PL_SYSTEM_MAX_PATH];
+    uint8_t*    data;
+    uint8_t*    pos;
+    size_t      size;
+    void*       fptr;
+} _PLFile;

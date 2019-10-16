@@ -295,36 +295,6 @@ void plSetWorkingDirectory(const char *path) {
 /////////////////////////////////////////////////////////////////////////////////////
 // FILE I/O
 
-/* loads an entire file into the PLIOBuffer struct */
-bool plLoadFile(const char *path, PLFileBuffer *buffer) {
-    if(plIsEmptyString(path)) {
-        ReportError(PL_RESULT_FILEPATH, "invalid path");
-        return false;
-    }
-
-    memset(buffer, 0, sizeof(PLFileBuffer));
-
-    FILE *fp = fopen(path, "rb");
-    if(fp == NULL) {
-        ReportError(PL_RESULT_FILEREAD, strerror(errno));
-        return false;
-    }
-
-    strncpy(buffer->name, path, sizeof(buffer->name));
-
-    buffer->size = plGetFileSize(path);
-    buffer->data = pl_calloc(buffer->size, sizeof(uint8_t));
-    if(buffer->data != NULL) {
-        if(fread(buffer->data, sizeof(uint8_t), buffer->size, fp) != buffer->size) {
-            FSLog("failed to read complete file (%s)\n", path);
-        }
-    }
-
-    fclose(fp);
-    
-    return true;
-}
-
 /**
  * checks whether or not the given file is accessible
  * or exists.
@@ -452,19 +422,127 @@ size_t plGetFileSize(const char *path) {
 
 ///////////////////////////////////////////
 
-void plFileIOPush(PLFileBuffer *file) {}
-void plFileIOPop(void) {}
+#define FileHandle(a) ((_PLFile*)(ptr))
 
-int16_t plGetLittleShort(FILE *fin) {
-    int b1 = fgetc(fin);
-    int b2 = fgetc(fin);
-    return (int16_t) (b1 + b2 * 256);
+PLFile* plOpenFile(const char *path, bool cache) {
+    if(plIsEmptyString(path)) {
+        ReportBasicError(PL_RESULT_FILEPATH);
+        return NULL;
+    }
+
+    FILE *fp = fopen(path, "rb");
+    if(fp == NULL) {
+        ReportError(PL_RESULT_FILEREAD, strerror(errno));
+        return NULL;
+    }
+
+    _PLFile* ptr = pl_calloc(1, sizeof(_PLFile));
+
+    strncpy(ptr->path, path, sizeof(ptr->path));
+
+    ptr->size = plGetFileSize(path);
+
+    if(cache) {
+        ptr->data = pl_malloc(ptr->size * sizeof(uint8_t));
+        if(fread(ptr->data, sizeof(uint8_t), ptr->size, fp) != ptr->size) {
+            FSLog("Failed to read complete file (%s)!\n", path);
+        }
+        pl_fclose(fp);
+    } else {
+        ptr->fptr = fp;
+    }
+    
+    return (PLFile*)ptr;
 }
 
-int32_t plGetLittleLong(FILE *fin) {
-    int b1 = fgetc(fin);
-    int b2 = fgetc(fin);
-    int b3 = fgetc(fin);
-    int b4 = fgetc(fin);
-    return b1 + (b2 << 8) + (b3 << 16) + (b4 << 24);
+void plCloseFile(PLFile* ptr) {
+    if(ptr == NULL) {
+        return;
+    }
+
+    if(FileHandle(ptr)->fptr != NULL) {
+        pl_fclose(FileHandle(ptr)->fptr);
+    }
+
+    pl_free(FileHandle(ptr)->data);
+    pl_free(FileHandle(ptr));
+}
+
+const char* plGetFilePath(const PLFile* ptr) {
+    return FileHandle(ptr)->path;
+}
+
+size_t plGetFileOffset(const PLFile* ptr) {
+    if(FileHandle(ptr)->fptr != NULL) {
+        return ftell(FileHandle(ptr)->fptr);
+    }
+
+    return FileHandle(ptr)->pos - FileHandle(ptr)->data + FileHandle(ptr)->size;
+}
+
+size_t plReadFile(PLFile* ptr, void* dest, size_t size, size_t count) {
+    if(FileHandle(ptr)->fptr != NULL) {
+        return fread(dest, size, count, FileHandle(ptr)->fptr);
+    }
+
+    /* ensure that the read is valid */
+    size_t length = size * count;
+    size_t posn = plGetFileOffset(ptr);
+    if(posn + length >= FileHandle(ptr)->size) {
+        /* out of bounds, truncate it */
+        length = FileHandle(ptr)->size - posn;
+    }
+
+    memcpy(dest, FileHandle(ptr)->pos, length);
+    FileHandle(ptr)->pos += length;
+    return length / count;
+}
+
+size_t plFileSeek(PLFile* ptr, long int pos, PLFileSeek seek) {
+    if(FileHandle(ptr)->fptr != NULL) {
+        fseek(FileHandle(ptr)->fptr, pos, seek);
+        return plGetFileOffset(ptr);
+    }
+
+    size_t posn = plGetFileOffset(ptr);
+
+    switch(seek) {
+        case PL_SEEK_CUR:
+            if(posn + pos >= FileHandle(ptr)->size) {
+                ReportBasicError(PL_RESULT_FILEREAD);
+                pos = FileHandle(ptr)->size - posn;
+            }
+
+            FileHandle(ptr)->pos += pos;
+            break;
+
+        case PL_SEEK_SET:
+            if(pos >= FileHandle(ptr)->size) {
+                ReportBasicError(PL_RESULT_FILEREAD);
+                pos = FileHandle(ptr)->size;
+            }
+
+            FileHandle(ptr)->pos = &FileHandle(ptr)->data[pos];
+            break;
+
+        case PL_SEEK_END:
+            if(pos <= -FileHandle(ptr)->size) {
+                ReportBasicError(PL_RESULT_FILEREAD);
+                pos = -FileHandle(ptr)->size;
+            }
+
+            FileHandle(ptr)->pos = &FileHandle(ptr)->data[FileHandle(ptr)->size - pos];
+            break;
+    }
+
+    return plGetFileOffset(ptr);
+}
+
+void plFileRewind(PLFile* ptr) {
+    if(FileHandle(ptr)->fptr != NULL) {
+        rewind(FileHandle(ptr)->fptr);
+        return;
+    }
+
+    FileHandle(ptr)->pos = FileHandle(ptr)->data;
 }
