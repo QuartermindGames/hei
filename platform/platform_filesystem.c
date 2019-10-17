@@ -504,20 +504,10 @@ char plReadInt8(PLFile* ptr, bool* status) {
 }
 
 static int64_t ReadSizedInteger(PLFile* ptr, size_t size, bool big_endian, bool* status) {
-  if(plGetFileOffset(ptr) + size > ptr->size) {
+  int64_t n;
+  if(plReadFile(ptr, &n, size, 1) != 1) {
     *status = false;
     return 0;
-  }
-
-  int64_t n;
-  if(ptr->fptr != NULL) {
-    if(fread(&n, size, 1, ptr->fptr) != 1) {
-      *status = false;
-      return 0;
-    }
-  } else {
-    memcpy(&n, ptr->pos, size);
-    ptr->pos += size;
   }
 
   *status = true;
