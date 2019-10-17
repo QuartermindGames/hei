@@ -60,7 +60,9 @@ static void PurgePackageData(PLPackage *package) {
 /* Unloads package from memory
  */
 void plDestroyPackage(PLPackage *package) {
-    plAssert(package);
+    if(package == NULL) {
+      return;
+    }
 
     PurgePackageData(package);
     pl_free(package->table);
@@ -150,13 +152,13 @@ bool plLoadPackageFile(PLPackage *package, const char *file, const uint8_t **dat
     for(unsigned int i = 0; i < package->table_size; ++i) {
         if(strcmp(file, package->table[i].file.name) == 0) {
             if(package->table[i].file.data == NULL) {
-                FILE *fh = fopen(package->path, "rb");
+                PLFile *fh = plOpenFile(package->path, true);
                 if (fh == NULL) {
                     return false;
                 }
 
                 if (!package->internal.LoadFile(fh, &(package->table[i]))) {
-                    fclose(fh);
+                    plCloseFile(fh);
                     return false;
                 }
             }

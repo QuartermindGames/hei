@@ -85,7 +85,7 @@ PLModel *plLoadHDVModel(const char *path) {
         goto ABORT;
     }
 
-    size_t size = plGetFileSize(path);
+    size_t size = plGetLocalFileSize(path);
     if(header.file_size[0] != size) {
         ReportError(PL_RESULT_FILETYPE, "invalid file size in HDV header");
         goto ABORT;

@@ -66,18 +66,18 @@ enum TIMType {
 
 #define TIM_IDENT   16
 
-bool plTIMFormatCheck(FILE *fin) {
-    rewind(fin);
+bool plTIMFormatCheck(PLFile *fin) {
+  plRewindFile(fin);
 
     uint32_t ident;
-    if(fread(&ident, sizeof(uint32_t), 1, fin) != 1) {
+    if(plReadFile(fin, &ident, sizeof(uint32_t), 1) != 1) {
         return false;
     }
 
     return (bool)(ident == TIM_IDENT);
 }
 
-PLresult WriteTIMImage(const PLImage *image, const char *path) {
+PLresult plWriteTIMImage(const PLImage *image, const char *path) {
     if(plIsEmptyString(path)) {
         return PL_RESULT_FILEPATH;
     }
@@ -121,14 +121,14 @@ static uint16_t _tim16toRGB51A(uint16_t colour_in) {
     return colour_out;
 }
 
-bool plLoadTIMImage(FILE *fin, PLImage *out) {
+bool plLoadTIMImage(PLFile *fin, PLImage *out) {
     memset(out, 0, sizeof(PLImage));
 
     uint16_t *palette = NULL;
     void *image_data  = NULL;
 
     TIMHeader header;
-    if (fread(&header, sizeof(TIMHeader), 1, fin) != 1) {
+    if (plReadFile(fin, &header, sizeof(TIMHeader), 1) != 1) {
         goto UNEXPECTED_EOF;
     }
 
@@ -138,7 +138,7 @@ bool plLoadTIMImage(FILE *fin, PLImage *out) {
         /* File has a palette (CLUT), read it it in */
 
         TIMPaletteInfo palette_info;
-        if(fread(&palette_info, sizeof(TIMPaletteInfo), 1, fin) != 1) {
+        if(plReadFile(fin, &palette_info, sizeof(TIMPaletteInfo), 1) != 1) {
             goto UNEXPECTED_EOF;
         }
 
@@ -158,13 +158,13 @@ bool plLoadTIMImage(FILE *fin, PLImage *out) {
             goto ERR_CLEANUP;
         }
 
-        if(fread(palette, sizeof(uint16_t), palette_size, fin) != palette_size) {
+        if(plReadFile(fin, palette, sizeof(uint16_t), palette_size) != palette_size) {
             goto UNEXPECTED_EOF;
         }
     }
 
     TIMImageInfo image_info;
-    if(fread(&image_info, sizeof(TIMImageInfo), 1, fin) != 1) {
+    if(plReadFile(fin, &image_info, sizeof(TIMImageInfo), 1) != 1) {
         goto UNEXPECTED_EOF;
     }
 
@@ -186,7 +186,7 @@ bool plLoadTIMImage(FILE *fin, PLImage *out) {
         goto ERR_CLEANUP;
     }
 
-    if(fread(image_data, image_data_len, 1, fin) != 1) {
+    if(plReadFile(fin, image_data, image_data_len, 1) != 1) {
         goto UNEXPECTED_EOF;
     }
 
@@ -298,8 +298,8 @@ bool plLoadTIMImage(FILE *fin, PLImage *out) {
 
     out->colour_format = PL_COLOURFORMAT_ABGR;
 
-    free(image_data);
-    free(palette);
+    pl_free(image_data);
+    pl_free(palette);
 
     return true;
 
@@ -309,12 +309,12 @@ bool plLoadTIMImage(FILE *fin, PLImage *out) {
     ERR_CLEANUP:
 
     if(out->data != NULL) {
-        free(out->data[0]);
-        free(out->data);
+        pl_free(out->data[0]);
+        pl_free(out->data);
     }
 
-    free(image_data);
-    free(palette);
+    pl_free(image_data);
+    pl_free(palette);
 
     return false;
 }

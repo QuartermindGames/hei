@@ -42,7 +42,7 @@ typedef struct PLPackage {
     PLPackageIndex  *table;
 
     struct {
-        bool(*LoadFile)(FILE *fh, PLPackageIndex *pi);
+        bool(*LoadFile)(PLFile *fh, PLPackageIndex *pi);
     } internal;
 } PLPackage;
 

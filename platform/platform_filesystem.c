@@ -78,11 +78,14 @@ bool plIsFileModified(time_t oldtime, const char *path) {
     return false;
 }
 
+bool plIsEndOfFile(const PLFile* ptr) {
+  return (plGetFileOffset(ptr) == plGetFileSize(ptr));
+}
+
 /**
- * returns the modified time of the given file.
- *
+ * Returns the modified time of the given file.
  * @param path
- * @return modification time in seconds. returns 0 upon fail.
+ * @return Modification time in seconds. returns 0 upon fail.
  */
 time_t plGetFileModifiedTime(const char *path) {
     struct stat attributes;
@@ -285,11 +288,9 @@ void plSetWorkingDirectory(const char *path) {
 // FILE I/O
 
 /**
- * checks whether or not the given file is accessible
- * or exists.
- *
+ * Checks whether or not the given file is accessible or exists.
  * @param path
- * @return false if the file wasn't accessible.
+ * @return False if the file wasn't accessible.
  */
 bool plFileExists(const char *path) {
     struct stat buffer;
@@ -345,7 +346,7 @@ bool plWriteFile(const char *path, const uint8_t *buf, size_t length) {
 }
 
 bool plCopyFile(const char *path, const char *dest) {
-    size_t file_size = plGetFileSize(path);
+    size_t file_size = plGetLocalFileSize(path);
     if(file_size == 0) {
         return false;
     }
@@ -399,7 +400,7 @@ bool plCopyFile(const char *path, const char *dest) {
     return false;
 }
 
-size_t plGetFileSize(const char *path) {
+size_t plGetLocalFileSize(const char *path) {
     struct stat buf;
     if(stat(path, &buf) != 0) {
         ReportError(PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror(errno));
@@ -425,7 +426,7 @@ PLFile* plOpenFile(const char *path, bool cache) {
 
     PLFile* ptr = pl_calloc(1, sizeof(PLFile));
     snprintf(ptr->path, sizeof(ptr->path), "%s", path);
-    ptr->size = plGetFileSize(path);
+    ptr->size = plGetLocalFileSize(path);
 
     if(cache) {
         ptr->data = pl_malloc(ptr->size * sizeof(uint8_t));
@@ -453,10 +454,33 @@ void plCloseFile(PLFile* ptr) {
     pl_free(ptr);
 }
 
+/**
+ * Returns the path of the current open file.
+ * @param ptr Pointer to file handle.
+ * @return Full path to the current file.
+ */
 const char* plGetFilePath(const PLFile* ptr) {
     return ptr->path;
 }
 
+/**
+ * Returns file size in bytes.
+ * @param ptr Pointer to file handle.
+ * @return Number of bytes within file.
+ */
+size_t plGetFileSize(const PLFile* ptr) {
+  if(ptr->fptr != NULL) {
+    return plGetLocalFileSize(ptr->path);
+  }
+
+  return ptr->size;
+}
+
+/**
+ * Returns the current position within the file handle (ftell).
+ * @param ptr Pointer to the file handle.
+ * @return Number of bytes into the file.
+ */
 size_t plGetFileOffset(const PLFile* ptr) {
     if(ptr->fptr != NULL) {
         return ftell(ptr->fptr);
@@ -490,11 +514,15 @@ size_t plReadFile(PLFile* ptr, void* dest, size_t size, size_t count) {
 
 char plReadInt8(PLFile* ptr, bool* status) {
   if(plGetFileOffset(ptr) >= ptr->size) {
-    *status = false;
+    if(status != NULL) {
+      *status = false;
+    }
     return 0;
   }
 
-  *status = true;
+  if(status != NULL) {
+    *status = true;
+  }
 
   if(ptr->fptr != NULL) {
     return (char)(fgetc(ptr->fptr));
@@ -506,11 +534,15 @@ char plReadInt8(PLFile* ptr, bool* status) {
 static int64_t ReadSizedInteger(PLFile* ptr, size_t size, bool big_endian, bool* status) {
   int64_t n;
   if(plReadFile(ptr, &n, size, 1) != 1) {
-    *status = false;
+    if(status != NULL) {
+      *status = false;
+    }
     return 0;
   }
 
-  *status = true;
+  if(status != NULL) {
+    *status = true;
+  }
 
   if(big_endian) {
     if(size == sizeof(int16_t)) {
@@ -520,7 +552,9 @@ static int64_t ReadSizedInteger(PLFile* ptr, size_t size, bool big_endian, bool*
     } else if(size == sizeof(int64_t)) {
       return be64toh(n);
     } else {
-      *status = false;
+      if(status != NULL) {
+        *status = false;
+      }
       return 0;
     }
   }
@@ -538,6 +572,23 @@ int32_t plReadInt32(PLFile* ptr, bool big_endian, bool* status) {
 
 int64_t plReadInt64(PLFile* ptr, bool big_endian, bool* status) {
   return ReadSizedInteger(ptr, sizeof(int64_t), big_endian, status);
+}
+
+char* plReadString(PLFile* ptr, char* str, size_t size) {
+  char* pos = str;
+  while(!plIsEndOfFile(ptr)) {
+    if(pos - str >= size) {
+      return NULL;
+    }
+
+    bool status;
+    *pos = plReadInt8(ptr, &status);
+    if(!status) {
+      return NULL;
+    }
+    pos++;
+  } *pos = '\0';
+  return str;
 }
 
 bool plFileSeek(PLFile* ptr, long int pos, PLFileSeek seek) {
@@ -579,7 +630,7 @@ bool plFileSeek(PLFile* ptr, long int pos, PLFileSeek seek) {
     return true;
 }
 
-void plFileRewind(PLFile* ptr) {
+void plRewindFile(PLFile* ptr) {
     if(ptr->fptr != NULL) {
         rewind(ptr->fptr);
         return;

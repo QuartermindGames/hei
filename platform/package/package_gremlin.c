@@ -25,8 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_package.h>
-
 #include "package_private.h"
 
 /*  MAD/MTD Format Specification    */
@@ -47,137 +45,131 @@ For more information, please refer to <http://unlicense.org>
  */
 
 typedef struct __attribute__((packed)) MADIndex {
-    char file[16];
+  char file[16];
 
-    uint32_t offset;
-    uint32_t length;
+  uint32_t offset;
+  uint32_t length;
 } MADIndex;
 
-bool LoadMADPackageFile(FILE *fh, PLPackageIndex *pi) {
-    pi->file.data = pl_malloc(pi->file.size);
-    if(pi->file.data == NULL) {
-        return false;
-    }
+bool LoadMADPackageFile(PLFile* fh, PLPackageIndex* pi) {
+  pi->file.data = pl_malloc(pi->file.size);
+  if (pi->file.data == NULL) {
+    return false;
+  }
 
-    if(fseek(fh, pi->offset, SEEK_SET) != 0 || fread(pi->file.data, pi->file.size, 1, fh) != 1) {
-        pl_free(pi->file.data);
-        pi->file.data = NULL;
-        return false;
-    }
+  if (plFileSeek(fh, pi->offset, PL_SEEK_SET) != 0 || plReadFile(fh, pi->file.data, pi->file.size, 1) != 1) {
+    pl_free(pi->file.data);
+    pi->file.data = NULL;
+    return false;
+  }
 
-    return true;
+  return true;
 }
 
-PLPackage *plLoadMADPackage(const char *path, bool cache) {
-    FILE *fh = fopen(path, "rb");
-    if(fh == NULL) {
-        return NULL;
+PLPackage* plLoadMADPackage(const char* path, bool cache) {
+  PLFile* fh = plOpenFile(path, false);
+  if (fh == NULL) {
+    return NULL;
+  }
+
+  PLPackage* package = NULL;
+
+  size_t file_size = plGetLocalFileSize(path);
+  if (plGetFunctionResult() != PL_RESULT_SUCCESS) {
+    goto FAILED;
+  }
+
+  /* Figure out the number of headers in the MAD file by reading them in until we cross into the data region of one
+   * we've previously loaded. Checks each header is valid.
+   */
+
+  size_t data_begin = file_size;
+  unsigned int num_indices = 0;
+
+  while ((num_indices + 1) * sizeof(MADIndex) <= data_begin) {
+    MADIndex index;
+    if (plReadFile(fh, &index, sizeof(MADIndex), 1) != 1) {
+      /* EOF, or read error */
+      goto FAILED;
     }
 
-    PLPackage *package = NULL;
-
-    size_t file_size = plGetFileSize(path);
-    if(plGetFunctionResult() != PL_RESULT_SUCCESS) {
+    // ensure the file name is valid...
+    for (unsigned int i = 0; i < 16; ++i) {
+      if (isprint(index.file[i]) == 0 && index.file[i] != '\0') {
         goto FAILED;
+      }
     }
 
-    /* Figure out the number of headers in the MAD file by reading them in until we cross into the data region of one
-     * we've previously loaded. Checks each header is valid.
-     */
-
-    size_t data_begin = file_size;
-    unsigned int num_indices = 0;
-
-    while((num_indices + 1) * sizeof(MADIndex) <= data_begin) {
-        MADIndex index;
-        if(fread(&index, sizeof(MADIndex), 1, fh) != 1) {
-            /* EOF, or read error */
-            goto FAILED;
-        }
-
-        // ensure the file name is valid...
-        for(unsigned int i = 0; i < 16; ++i) {
-            if(isprint(index.file[i]) == 0 && index.file[i] != '\0') {
-                goto FAILED;
-            }
-        }
-
-        if(index.offset >= file_size || (uint64_t)(index.offset) + (uint64_t)(index.length) > file_size) {
-            /* File offset/length falls beyond end of file */
-            goto FAILED;
-        }
-
-        if(index.offset < data_begin)
-        {
-            data_begin = index.offset;
-        }
-
-        ++num_indices;
+    if (index.offset >= file_size || (uint64_t) (index.offset) + (uint64_t) (index.length) > file_size) {
+      /* File offset/length falls beyond end of file */
+      goto FAILED;
     }
 
-    /* Allocate the basic package structure now we know how many files are in the archive. */
-
-    package = pl_malloc(sizeof(PLPackage));
-    if(package == NULL) {
-        goto FAILED;
+    if (index.offset < data_begin) {
+      data_begin = index.offset;
     }
 
-    memset(package, 0, sizeof(PLPackage));
+    ++num_indices;
+  }
+
+  /* Allocate the basic package structure now we know how many files are in the archive. */
+
+  package = pl_malloc(sizeof(PLPackage));
+  if (package == NULL) {
+    goto FAILED;
+  }
+
+  memset(package, 0, sizeof(PLPackage));
 
 #if 0 // done after package load now
-    package->path = pl_malloc(strlen(filename) + 1);
-    if(package->path == NULL) {
-        goto FAILED;
-    }
+  package->path = pl_malloc(strlen(filename) + 1);
+  if(package->path == NULL) {
+      goto FAILED;
+  }
 
-    strcpy(package->path, filename);
+  strcpy(package->path, filename);
 #endif
-    package->internal.LoadFile  = LoadMADPackageFile;
-    package->table_size         = num_indices;
-    package->table              = pl_calloc(num_indices, sizeof(struct PLPackageIndex));
-    if(package->table == NULL) {
-        goto FAILED;
+  package->internal.LoadFile = LoadMADPackageFile;
+  package->table_size = num_indices;
+  package->table = pl_calloc(num_indices, sizeof(struct PLPackageIndex));
+  if (package->table == NULL) {
+    goto FAILED;
+  }
+
+  /* Rewind the file handle and populate package->table with the metadata from the headers. */
+
+  plRewindFile(fh);
+
+  for (unsigned int i = 0; i < num_indices; ++i) {
+    MADIndex index;
+    if (plReadFile(fh, &index, sizeof(MADIndex), 1) != 1) {
+      /* EOF, or read error */
+      goto FAILED;
     }
 
-    /* Rewind the file handle and populate package->table with the metadata from the headers. */
+    strncpy(package->table[i].file.name, index.file, sizeof(package->table[i].file.name));
+    package->table[i].file.name[sizeof(index.file) - 1] = '\0';
+    package->table[i].file.size = index.length;
+    package->table[i].offset = index.offset;
+  }
 
-    rewind(fh);
+  /* Read in each file's data */
 
-    for(unsigned int i = 0; i < num_indices; ++i) {
-        MADIndex index;
-        if(fread(&index, sizeof(MADIndex), 1, fh) != 1) {
-            /* EOF, or read error */
-            goto FAILED;
-        }
-
-        strncpy(package->table[i].file.name, index.file, sizeof(package->table[i].file.name));
-        package->table[i].file.name[sizeof(index.file) - 1] = '\0';
-        package->table[i].file.size = index.length;
-
-        package->table[i].offset = index.offset;
+  if (cache) {
+    for (unsigned int i = 0; i < num_indices; ++i) {
+      LoadMADPackageFile(fh, &(package->table[i]));
     }
+  }
 
-    /* Read in each file's data */
+  plCloseFile(fh);
 
-    if(cache) {
-        for (unsigned int i = 0; i < num_indices; ++i) {
-            LoadMADPackageFile(fh, &(package->table[i]));
-        }
-    }
+  return package;
 
-    fclose(fh);
+  FAILED:
 
-    return package;
+  plDestroyPackage(package);
 
-    FAILED:
+  plCloseFile(fh);
 
-    if(package != NULL) {
-        plDestroyPackage(package);
-    }
-
-    if(fh != NULL) {
-        fclose(fh);
-    }
-
-    return NULL;
+  return NULL;
 }

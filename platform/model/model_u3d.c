@@ -185,8 +185,8 @@ PLModel* plLoadU3DModel(const char *path) {
         return NULL;
     }
 
-    PLFile* anim_ptr = plOpenFile(anim_path, true);
-    PLFile* data_ptr = plOpenFile(path, true);
+    PLFile* anim_ptr = plOpenFile(anim_path, false);
+    PLFile* data_ptr = plOpenFile(path, false);
 
     PLModel* model_ptr = NULL;
     if(anim_ptr != NULL && data_ptr != NULL) {

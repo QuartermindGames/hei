@@ -57,7 +57,7 @@ typedef struct ObjHandle {
 } ObjHandle;
 
 static void FreeObjHandle(ObjHandle *obj) {
-    free(obj);
+    pl_free(obj);
 }
 
 static ObjVectorLst *GetVectorIndex(ObjVectorLst *start, unsigned int idx) {
@@ -75,9 +75,8 @@ static ObjVectorLst *GetVectorIndex(ObjVectorLst *start, unsigned int idx) {
 }
 
 PLModel *plLoadObjModel(const char *path) {
-    FILE *fp = fopen(path, "rb");
+    PLFile *fp = plOpenFile(path, false);
     if (fp == NULL) {
-        ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
         return NULL;
     }
 
@@ -92,7 +91,7 @@ PLModel *plLoadObjModel(const char *path) {
     *cur_face = NULL;
 
     char tk[256];
-    while (fgets(tk, sizeof(tk), fp) != NULL) {
+    while (plReadString(fp, tk, sizeof(tk)) != NULL) {
         if (tk[0] == '\0' || tk[0] == '#' || tk[0] == 'o' || tk[0] == 'g' || tk[0] == 's') {
             continue;
         } else if(tk[0] == 'v' && tk[1] == ' ') { /* vertex position */
@@ -157,7 +156,7 @@ PLModel *plLoadObjModel(const char *path) {
         ModelLog("Unknown/unsupported parameter '%s', ignoring!\n", tk[0]);
     }
 
-    fclose(fp);
+    plCloseFile(fp);
 
     /* right we're finally done, time to see what we hauled... */
 

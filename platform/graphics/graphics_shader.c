@@ -271,7 +271,7 @@ PLShaderStage *plParseShaderStage(PLShaderStageType type, const char *buf, size_
  * @return the new shader stage.
  */
 PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
-    size_t length = plGetFileSize(path);
+    size_t length = plGetLocalFileSize(path);
     char *buf = pl_malloc(length + 1);
     if(buf == NULL) {
         return NULL;

@@ -30,18 +30,17 @@ For more information, please refer to <http://unlicense.org>
 
 /*	Ritual's FTX Format	*/
 
-typedef struct FTXHeader {
+typedef struct FtxHeader {
     uint32_t width;
     uint32_t height;
     uint32_t alpha;
-} FTXHeader;
+} FtxHeader;
 
-bool LoadFTXImage(FILE *fin, PLImage *out) {
-    FTXHeader header;
-    memset(&header, 0, sizeof(FTXHeader));
-    header.width = (unsigned int)plGetLittleLong(fin);
-    header.height = (unsigned int)plGetLittleLong(fin);
-    header.alpha = (unsigned int)plGetLittleLong(fin);
+bool plLoadFtxImage(PLFile *fin, PLImage *out) {
+    FtxHeader header;
+    if(plReadFile(fin, &header, sizeof(FtxHeader), 1) != 1) {
+      return false;
+    }
 
     memset(out, 0, sizeof(PLImage));
     out->size = (unsigned int)(header.width * header.height * 4);
@@ -59,7 +58,7 @@ bool LoadFTXImage(FILE *fin, PLImage *out) {
         return false;
     }
 
-    if (fread(out->data[0], sizeof(uint8_t), out->size, fin) != out->size) {
+    if (plReadFile(fin, out->data[0], sizeof(uint8_t), out->size) != out->size) {
         ReportError(PL_RESULT_FILEREAD, "failed to read image data");
         return false;
     }

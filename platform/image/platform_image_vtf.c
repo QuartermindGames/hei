@@ -30,29 +30,18 @@ For more information, please refer to <http://unlicense.org>
 /*  Valve's VTF Format (https://developer.valvesoftware.com/wiki/Valve_Texture_Format)  */
 
 typedef struct __attribute__((packed)) VTFHeader {
-    unsigned int version[2];      // Minor followed by major.
-
-    unsigned int headersize;      // I guess this is used to support header alterations?
-
-    unsigned short width, height; // Width and height of the texture.
-
+    unsigned int version[2];        // Minor followed by major.
+    unsigned int header_size;       // I guess this is used to support header alterations?
+    unsigned short width, height;   // Width and height of the texture.
     unsigned int flags;
-
-    unsigned short frames;        // For animated texture sets.
-    unsigned short firstframe;    // Initial frame to start from.
-
+    unsigned short frames;          // For animated texture sets.
+    unsigned short firstframe;      // Initial frame to start from.
     unsigned char padding0[4];
-
     float reflectivity[3];
-
     unsigned char padding1[4];
-
     float bumpmapscale;
-
     unsigned int highresimageformat;
-
     unsigned char mipmaps;
-
     unsigned int lowresimageformat;
     unsigned char lowresimagewidth;
     unsigned char lowresimageheight;
@@ -144,7 +133,7 @@ enum VTFFormat {
     VTF_FORMAT_UVLX8888
 } VTFFormat;
 
-void _plConvertVTFFormat(PLImage *image, unsigned int in) {
+static void ConvertVTFFormat(PLImage *image, unsigned int in) {
     switch(in) {
         case VTF_FORMAT_A8:
             image->format = PL_IMAGEFORMAT_RGB4;
@@ -225,23 +214,24 @@ void _plConvertVTFFormat(PLImage *image, unsigned int in) {
     }
 }
 
-bool plVTFFormatCheck(FILE *fin) {
-    rewind(fin);
+bool plVTFFormatCheck(PLFile *fin) {
+  plRewindFile(fin);
 
     char ident[4];
-    fread(ident, sizeof(char), 4, fin);
+    if(plReadFile(fin, ident, sizeof(char), 4) != 4) {
+      return false;
+    }
 
     return (bool)(strncmp(ident, "VTF", 3) == 0);
 }
 
-bool plLoadVTFImage(FILE *fin, PLImage *out) {
+bool plLoadVTFImage(PLFile *fin, PLImage *out) {
     VTFHeader header;
-    memset(&header, 0, sizeof(VTFHeader));
 #define VTF_VERSION(maj, min)   ((((maj)) == header.version[1] && (min) <= header.version[0]) || (maj) < header.version[0])
 
-    if (fread(&header, sizeof(VTFHeader), 1, fin) != 1) {
-        ReportError(PL_RESULT_FILEREAD, "failed to read header");
-        return false;
+    if(plReadFile(fin, &header, sizeof(VTFHeader), 1) != 1) {
+      ReportError(PL_RESULT_FILEREAD, "failed to read header");
+      return false;
     }
 
     if (VTF_VERSION(7, 5)) {
@@ -269,30 +259,18 @@ bool plLoadVTFImage(FILE *fin, PLImage *out) {
 
     VTFHeader72 header2;
     if (header.version[1] >= 2) {
-        memset(&header2, 0, sizeof(VTFHeader72));
-        if (fread(&header2, sizeof(VTFHeader72), 1, fin) != 1) {
+        if (plReadFile(fin, &header2, sizeof(VTFHeader72), 1) != 1) {
             ReportError(PL_RESULT_FILEREAD, "failed to read header");
             return false;
         }
     }
     VTFHeader73 header3;
     if (header.version[1] >= 3) {
-        memset(&header3, 0, sizeof(VTFHeader73));
-        if (fread(&header3, sizeof(VTFHeader73), 1, fin) != 1) {
+        if (plReadFile(fin, &header3, sizeof(VTFHeader73), 1) != 1) {
             ReportError(PL_RESULT_FILEREAD, "failed to read header");
             return false;
         }
     }
-
-    memset(out, 0, sizeof(PLImage));
-
-    out->width = header.width;
-    out->height = header.height;
-
-    _plConvertVTFFormat(out, header.highresimageformat);
-
-    out->levels = 1;
-    out->data = (uint8_t**)pl_calloc(1, sizeof(uint8_t*));
 
     /*
     if (header.version[1] >= 3) {
@@ -306,7 +284,19 @@ bool plLoadVTFImage(FILE *fin, PLImage *out) {
         }
 
         // VTF's typically include a tiny thumbnail image at the start, which we'll skip.
-        fseek(fin, header.lowresimagewidth * header.lowresimageheight / 2, SEEK_CUR);
+        if(!plFileSeek(fin, header.lowresimagewidth * header.lowresimageheight / 2, PL_SEEK_CUR)) {
+          return false;
+        }
+
+        memset(out, 0, sizeof(PLImage));
+
+        out->width = header.width;
+        out->height = header.height;
+
+        ConvertVTFFormat(out, header.highresimageformat);
+
+        out->levels = 1;
+        out->data = (uint8_t**)pl_calloc(1, sizeof(uint8_t*));
 
         for (int mipmap = 0; mipmap < header.mipmaps; ++mipmap) {
             for(unsigned int frame = 0; frame < header.frames; ++frame) {
@@ -317,16 +307,18 @@ bool plLoadVTFImage(FILE *fin, PLImage *out) {
                     unsigned int mipsize = plGetImageSize(out->format, mipw, miph);
                     if(mipmap == (header.mipmaps - 1)) {
                         out->data[0] = (uint8_t*)pl_calloc(mipsize, sizeof(uint8_t));
-                        if (fread(out->data[0], sizeof(uint8_t), mipsize, fin) != mipsize) {
+                        if (plReadFile(fin, out->data[0], sizeof(uint8_t), mipsize) != mipsize) {
                             plFreeImage(out);
-                            ReportError(PL_RESULT_FILEREAD, "failed to head header");
                             return false;
                         }
                     } else {
-                        fseek(fin, mipsize, SEEK_CUR);
+                      if(!plFileSeek(fin, mipsize, SEEK_CUR)) {
+                        plFreeImage(out);
+                        return false;
+                      }
                     }
 
-                    if(feof(fin)) {
+                    if(plIsEndOfFile(fin)) {
                         perror(PL_FUNCTION);
                         break;
                     }
