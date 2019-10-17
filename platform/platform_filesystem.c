@@ -575,6 +575,10 @@ int64_t plReadInt64(PLFile* ptr, bool big_endian, bool* status) {
 }
 
 char* plReadString(PLFile* ptr, char* str, size_t size) {
+  if(ptr->fptr != NULL) {
+    return fgets(str, size, ptr->fptr);
+  }
+
   char* pos = str;
   while(!plIsEndOfFile(ptr)) {
     if(pos - str >= size) {
