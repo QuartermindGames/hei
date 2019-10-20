@@ -81,7 +81,7 @@ bool plLoadSWLImage(PLFile* fin, PLImage* out) {
 
   /* according to sources, this is a collection of misc data that's
    * specific to SiN itself, so we'll skip it. */
-  if (plFileSeek(fin, 0x4D4, PL_SEEK_SET) != 0) {
+  if (!plFileSeek(fin, 0x4D4, PL_SEEK_SET)) {
     SetResult(PL_RESULT_FILEREAD);
     return false;
   }

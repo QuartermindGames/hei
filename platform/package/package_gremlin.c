@@ -57,7 +57,7 @@ bool LoadMADPackageFile(PLFile* fh, PLPackageIndex* pi) {
     return false;
   }
 
-  if (plFileSeek(fh, pi->offset, PL_SEEK_SET) != 0 || plReadFile(fh, pi->file.data, pi->file.size, 1) != 1) {
+  if (!plFileSeek(fh, pi->offset, PL_SEEK_SET) || plReadFile(fh, pi->file.data, pi->file.size, 1) != 1) {
     pl_free(pi->file.data);
     pi->file.data = NULL;
     return false;

@@ -492,7 +492,8 @@ size_t plGetFileOffset(const PLFile* ptr) {
 size_t plReadFile(PLFile* ptr, void* dest, size_t size, size_t count) {
     /* bail early if size is 0 to avoid division by 0 */
     if(size == 0) {
-        return 0;
+      ReportBasicError(PL_RESULT_FILESIZE);
+      return 0;
     }
 
     if(ptr->fptr != NULL) {
@@ -591,7 +592,9 @@ char* plReadString(PLFile* ptr, char* str, size_t size) {
       return NULL;
     }
     pos++;
-  } *pos = '\0';
+  }
+
+  *pos = '\0';
   return str;
 }
 

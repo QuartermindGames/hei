@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
             const uint8_t* data;
             size_t data_length;
             if(!plLoadPackageFile(package, package->table[i].file.name, &data, &data_length)) {
-                PRINT("Failed to load \"%s\" from package, skipping!\n", desc);
+                PRINT("Failed to load \"%s\" from package, skipping!\nERR: %s\n", desc, plGetError());
                 continue;
             }
 
