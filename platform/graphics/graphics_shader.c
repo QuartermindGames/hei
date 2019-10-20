@@ -271,29 +271,28 @@ PLShaderStage *plParseShaderStage(PLShaderStageType type, const char *buf, size_
  * @return the new shader stage.
  */
 PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
-    size_t length = plGetFileSize(path);
-    char *buf = pl_malloc(length + 1);
-    if(buf == NULL) {
-        return NULL;
-    }
-
-    FILE *fp = fopen(path, "rb");
+    PLFile *fp = plOpenFile(path, false);
     if(fp == NULL) {
         ReportError(PL_RESULT_FILEREAD, "failed to open %s", path);
-        free(buf);
         return NULL;
     }
 
-    size_t rlen = fread(buf, length, 1, fp);
+    size_t length = plGetFileSize(fp);
+    char *buf = pl_malloc(length + 1);
+    if(buf == NULL) {
+      return NULL;
+    }
+
+    size_t rlen = plReadFile(fp, buf, length, 1);
     if(rlen != 1) {
         GfxLog("Failed to read in entirety of %s (%d)!\n"
                "Continuing anyway but expect issues...", path, rlen);
     }
     buf[length] = '\0';
+    plCloseFile(fp);
 
-    fclose(fp);
     PLShaderStage *stage = plParseShaderStage(type, buf, length);
-    free(buf);
+    pl_free(buf);
     return stage;
 }
 

@@ -26,6 +26,7 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include "platform_private.h"
+
 #include <PL/platform_filesystem.h>
 #include <PL/platform_model.h>
 
@@ -38,14 +39,14 @@ For more information, please refer to <http://unlicense.org>
 
 typedef struct U3DAnimationHeader {
     uint16_t frames;    // Number of frames.
-    uint16_t size;    // Size of each frame.
+    uint16_t size;      // Size of each frame.
 } U3DAnimationHeader;
 
 typedef struct U3DDataHeader {
     uint16_t numpolys;    // Number of polygons.
     uint16_t numverts;    // Number of vertices.
     uint16_t rotation;    // Mesh rotation?
-    uint16_t frame;        // Initial frame.
+    uint16_t frame;       // Initial frame.
 
     uint32_t norm_x;
     uint32_t norm_y;
@@ -86,20 +87,97 @@ typedef struct U3DTriangle {
     uint8_t flags;      // Triangle flags
 } U3DTriangle;
 
-PLModel *plLoadU3DModel(const char *path) {
+static int CompareTriangles(const void* a, const void* b) {
+    if(((U3DTriangle*)a)->texturenum > ((U3DTriangle*)b)->texturenum) {
+        return -1;
+    } else if(((U3DTriangle*)a)->texturenum < ((U3DTriangle*)b)->texturenum) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static PLModel* ReadU3DModelData(PLFile* data_ptr, PLFile* anim_ptr) {
+    U3DAnimationHeader anim_hdr;
+    if(plReadFile(anim_ptr, &anim_hdr, sizeof(U3DAnimationHeader), 1) != 1) {
+      return NULL;
+    }
+
+    /* validate animation header */
+
+    if(anim_hdr.size == 0) {
+        ReportError(PL_RESULT_FILEREAD, "incorrect animation hdr size for \"%s\"", plGetFilePath(anim_ptr));
+        return NULL;
+    } else if(anim_hdr.frames == 0) {
+        ReportError(PL_RESULT_FILEREAD, "invalid number of frames for \"%s\"", plGetFilePath(anim_ptr));
+        return NULL;
+    }
+
+    U3DDataHeader data_hdr;
+    if(plReadFile(data_ptr, &data_hdr, sizeof(U3DDataHeader), 1) != 1) {
+      return NULL;
+    }
+
+    /* validate data header */
+
+    if(data_hdr.numverts == 0) {
+        ReportError(PL_RESULT_FILEREAD, "no vertices in model, \"%s\"", plGetFilePath(data_ptr));
+        return NULL;
+    } else if(data_hdr.numpolys == 0) {
+        ReportError(PL_RESULT_FILEREAD, "no polygons in model, \"%s\"", plGetFilePath(data_ptr));
+        return NULL;
+    } else if(data_hdr.frame > anim_hdr.frames) {
+        ReportError(PL_RESULT_FILEREAD, "invalid frame specified in model, \"%s\"", plGetFilePath(data_ptr));
+        return NULL;
+    }
+
+    /* skip unused header data */
+    plFileSeek(data_ptr, 12, PL_SEEK_CUR);
+
+    /* read all the triangle data from the data file */
+    U3DTriangle* triangles = pl_calloc(data_hdr.numpolys, sizeof(U3DTriangle));
+    plReadFile(data_ptr, triangles, sizeof(U3DTriangle), data_hdr.numpolys);
+    plCloseFile(data_ptr);
+
+    /* sort triangles by texture id */
+    qsort(triangles, data_hdr.numpolys, sizeof(U3DTriangle), CompareTriangles);
+
+    /* read in all of the animation data from the anim file */
+    U3DVertex* vertices = pl_calloc(data_hdr.numverts * anim_hdr.frames, sizeof(U3DVertex));
+    plReadFile(anim_ptr, vertices, sizeof(U3DVertex), data_hdr.numverts * anim_hdr.frames);
+    plCloseFile(anim_ptr);
+
+    PLModel* model_ptr = pl_calloc(1, sizeof(PLModel));
+    model_ptr->type = PL_MODELTYPE_VERTEX;
+    model_ptr->internal.vertex_data.animations = pl_calloc(anim_hdr.frames, sizeof(PLVertexAnimationFrame));
+
+    for(unsigned int i = 0; i < anim_hdr.frames; ++i) {
+        PLVertexAnimationFrame* frame = &model_ptr->internal.vertex_data.animations[i];
+    }
+
+    pl_free(triangles);
+    pl_free(vertices);
+
+    plGenerateModelBounds(model_ptr);
+
+    return NULL;
+}
+
+/**
+ * Load U3D model from local path.
+ * @param path Path to the U3D Data file.
+ */
+PLModel* plLoadU3DModel(const char *path) {
     char anim_path[PL_SYSTEM_MAX_PATH];
-    strncpy(anim_path, path, sizeof(anim_path));
-    char *p_ext = strstr(anim_path, "DATA");
+    snprintf(anim_path, sizeof(anim_path), "%s", path);
+    char* p_ext = strstr(anim_path, "Data");
     if(p_ext != NULL) {
-        strcpy(p_ext, "ANIM");
+        strcpy(p_ext, "Anim");
     } else {
         p_ext = strstr(anim_path, "D.");
-        if(p_ext == NULL) {
-            ReportError(PL_RESULT_FILEPATH, "invalid file name for U3D model, \"%s\", expected \"DATA\" / \"D.\"",
-                        path);
-            return NULL;
+        if(p_ext != NULL) {
+            p_ext[0] = 'A';
         }
-        strcpy(p_ext, "A");
     }
 
     if(!plFileExists(anim_path)) {
@@ -107,147 +185,45 @@ PLModel *plLoadU3DModel(const char *path) {
         return NULL;
     }
 
-    FILE *data_file = fopen(path, "rb");
-    if(data_file == NULL) {
-        ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
-        return NULL;
+    PLFile* anim_ptr = plOpenFile(anim_path, false);
+    PLFile* data_ptr = plOpenFile(path, false);
+
+    PLModel* model_ptr = NULL;
+    if(anim_ptr != NULL && data_ptr != NULL) {
+        model_ptr = ReadU3DModelData(data_ptr, anim_ptr);
     }
 
-    FILE *anim_file = fopen(anim_path, "rb");
-    if(anim_file == NULL) {
-        ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
-        return NULL;
-    }
+    plCloseFile(data_ptr);
+    plCloseFile(anim_ptr);
 
-    pl_fclose(anim_file);
-    pl_fclose(data_file);
-
-#if 0
-    plSetCurrentFunction("plLoadU3DModel");
-
-    pl_u3d_dataf = std::fopen(path, "rb");
-    if (!pl_u3d_dataf) {
-        _plSetErrorMessage("Failed to load data file! (%s)\n", path);
-        return NULL;
-    }
-
-    // Try to figure out the data string we used
-    // then erase it.
-    std::string newpath(path);
-    size_t strpos = newpath.find("_d.3d");
-    if (strpos == std::string::npos)
-        // Some legacy models use _Data...
-        strpos = newpath.find("_Data.3d");
-
-    if (strpos != std::string::npos)
-        newpath.erase(strpos);
-    else {
-        _plSetErrorMessage("Invalid file name! (%s)\n", newpath.c_str());
-
-        _plUnloadU3DModel();
-        return nullptr;
-    }
-    newpath.append("_a.3d");
-
-    // Attempt to load the animation file.
-    pl_u3d_animf = fopen(newpath.c_str(), "rb");
-    if (!pl_u3d_animf) {
-        // Some legacy models use _Anim...
-        newpath.erase(newpath.length() - 5);
-        newpath.append("_Anim.3d");
-
-        pl_u3d_animf = fopen(newpath.c_str(), "r");
-        if (!pl_u3d_animf) {
-            _plSetErrorMessage("Failed to load U3D animation data! (%s)\n", newpath.c_str());
-
-            _plUnloadU3DModel();
-            return nullptr;
-        }
-    }
-
-    // Attempt to read the animation header.
-    U3DAnimationHeader animheader;
-    if (fread(&animheader, sizeof(U3DAnimationHeader), 1, pl_u3d_animf) != 1) {
-        _plSetErrorMessage("Failed to read animation file!\n");
-
-        _plUnloadU3DModel();
-        return nullptr;
-    }
-
-    // Attempt to read the data header.
-    U3DDataHeader dataheader;
-    if (fread(&dataheader, sizeof(U3DDataHeader), 1, pl_u3d_dataf) != 1) {
-        _plSetErrorMessage("Failed to read data file!\n");
-
-        _plUnloadU3DModel();
-        return nullptr;
-    }
-
-    PLAnimatedModel *model = (PLAnimatedModel*)pl_malloc(sizeof(PLAnimatedModel));
-    if (model == nullptr) {
-        _plSetErrorMessage("Failed to allocate animated model!\n");
-
-        _plUnloadU3DModel();
-        return NULL;
-    }
-
-    // Store the information we've gathered.
-    model->num_frames = animheader.frames;
-    model->num_triangles = dataheader.numpolys;
-    model->num_vertices = dataheader.numverts;
-
-    // Allocate the triangle/vertex arrays.
-    model->frames = new PLModelFrame[model->num_frames];
-    for (unsigned int i = 0; i < model->num_frames; i++) {
-        model->frames[i].vertices = new PLVertex[model->num_vertices];
-        model->frames[i].triangles = new PLTriangle[model->num_triangles];
-    }
-
-    // Skip unused header data.
-    std::fseek(pl_u3d_dataf, 12, SEEK_CUR);
-
-    // Go through each triangle.
-    std::vector<U3DTriangle> utriangles;
-    for (unsigned int i = 0; i < model->num_triangles; i++) {
-        if (std::fread(&utriangles[i], sizeof(U3DTriangle), 1, pl_u3d_dataf) != 1) {
-            _plSetErrorMessage("Failed to process triangles! (%i)\n", i);
-
-            plDestroyAnimatedModel(model);
-
-            _plUnloadU3DModel();
-            return nullptr;
-        }
-
-        // Copy the indices over.
-        model->frames[0].triangles[i].indices[0] = utriangles[i].vertex[0];
-        model->frames[0].triangles[i].indices[1] = utriangles[i].vertex[1];
-        model->frames[0].triangles[i].indices[2] = utriangles[i].vertex[2];
-    }
-
-    // Go through each vertex.
-    std::vector<U3DVertex> uvertices;
-    for (unsigned int i = 0; i < model->num_frames; i++) {
-        if (std::fread(&uvertices[i], sizeof(U3DVertex), 1, pl_u3d_animf) != 1) {
-            _plSetErrorMessage("Failed to process vertex! (%i)\n", i);
-
-            plDestroyAnimatedModel(model);
-
-            _plUnloadU3DModel();
-            return nullptr;
-        }
-
-        for (unsigned int j = 0; j < model->num_triangles; j++) {
-
-        }
-    }
-
-    // Calculate normals.
-    _plGenerateAnimatedModelNormals(model);
-
-    _plUnloadU3DModel();
-
-    return model;
-#else
-    return NULL;
-#endif
+    return model_ptr;
 }
+
+bool plWriteU3DModel(PLModel* ptr, const char* path) {
+
+}
+
+/* Example UC file, this is what we _should_ be loading from.
+
+#exec MESH IMPORT MESH=wafr1 ANIVFILE=MODELS\wafr1_a.3D DATAFILE=MODELS\wafr1_d.3D X=0 Y=0 Z=0
+#exec MESH ORIGIN MESH=wafr1 X=0 Y=0 Z=0 YAW=64 ROLL=64
+#exec MESH SEQUENCE MESH=wafr1 SEQ=All  STARTFRAME=0  NUMFRAMES=1
+#exec MESH SEQUENCE MESH=wafr1 SEQ=Still  STARTFRAME=0   NUMFRAMES=1
+#exec MESHMAP SCALE MESHMAP=wafr1 X=0.1 Y=0.1 Z=0.2
+#exec MESHMAP SETTEXTURE MESHMAP=wafr1 NUM=0 TEXTURE=DefaultTexture
+
+#exec MESH IMPORT MESH=wafr2 ANIVFILE=MODELS\wafr2_a.3D DATAFILE=MODELS\wafr2_d.3D X=0 Y=0 Z=0
+#exec MESH ORIGIN MESH=wafr2 X=0 Y=0 Z=0 YAW=64 ROLL=64
+#exec MESH SEQUENCE MESH=wafr2 SEQ=All  STARTFRAME=0  NUMFRAMES=1
+#exec MESH SEQUENCE MESH=wafr2 SEQ=Still  STARTFRAME=0   NUMFRAMES=1
+#exec MESHMAP SCALE MESHMAP=wafr2 X=0.1 Y=0.1 Z=0.2
+#exec MESHMAP SETTEXTURE MESHMAP=wafr2 NUM=0 TEXTURE=DefaultTexture
+
+#exec MESH IMPORT MESH=wafr4 ANIVFILE=MODELS\wafr4_a.3D DATAFILE=MODELS\wafr4_d.3D X=0 Y=0 Z=0
+#exec MESH ORIGIN MESH=wafr4 X=0 Y=0 Z=0 YAW=64 ROLL=64
+#exec MESH SEQUENCE MESH=wafr4 SEQ=All  STARTFRAME=0  NUMFRAMES=1
+#exec MESH SEQUENCE MESH=wafr4 SEQ=Still  STARTFRAME=0   NUMFRAMES=1
+#exec MESHMAP SCALE MESHMAP=wafr4 X=0.1 Y=0.1 Z=0.2
+#exec MESHMAP SETTEXTURE MESHMAP=wafr4 NUM=0 TEXTURE=DefaultTexture
+
+*/

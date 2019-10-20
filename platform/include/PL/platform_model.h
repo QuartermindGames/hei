@@ -61,9 +61,16 @@ typedef struct PLStaticModelData {
     /* nothing to do? */
 } PLStaticModelData;
 
+typedef struct PLVertexAnimationFrame {
+    /* todo: store submeshes into PLMesh struct */
+    PLMesh**    meshes;
+    uint32_t    num_meshes;
+} PLVertexAnimationFrame;
+
 typedef struct PLVertexAnimModelData {
-    uint32_t    current_animation;  /* current animation index */
-    uint32_t    current_frame;      /* current animation frame */
+    uint32_t                current_animation;  /* current animation index */
+    uint32_t                current_frame;      /* current animation frame */
+    PLVertexAnimationFrame* animations;
 } PLVertexAnimModelData;
 
 /* * * * * * * * * * * * * * * * * */
@@ -104,7 +111,7 @@ typedef struct PLModel {
     PLAABB          bounds;
     /* transformations */
     PLMatrix4       model_matrix;
-    /* model lods */
+    /* model lods (todo: kill...) */
     PLModelLod      levels[PL_MAX_MODEL_LODS];  /* different mesh sets for different levels of detail */
     uint8_t         num_levels;                 /* levels of detail provided */
     uint8_t         current_level;              /* current lod level, used for rendering */

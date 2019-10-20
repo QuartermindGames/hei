@@ -109,11 +109,9 @@ bool plWriteModel(const char *path, PLModel *model, PLModelOutputType type) {
 
     switch(type) {
         case PL_MODEL_OUTPUT_SMD: return plWriteSmdModel(model, path);
-
-        default:{
+        default:
             ReportError(PL_RESULT_UNSUPPORTED, "unsupported output type for %s (%u)", path, type);
             return false;
-        }
     }
 }
 
@@ -150,7 +148,7 @@ uint8_t *plSerializeModel(PLModel *model, unsigned int type) {
 
 void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path)) {
     if(num_model_loaders == (unsigned int)(-1)) {
-        for(unsigned int i = 0; i < plArrayElements(model_interfaces); ++i, ++num_model_loaders) {
+        for(size_t i = 0; i < plArrayElements(model_interfaces); ++i, ++num_model_loaders) {
             if(model_interfaces[i].ext == NULL && model_interfaces[i].LoadFunction == NULL) {
                 num_model_loaders++;
                 break;

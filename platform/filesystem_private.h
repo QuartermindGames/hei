@@ -34,3 +34,17 @@ For more information, please refer to <http://unlicense.org>
 #else
 #   define FSLog(...)
 #endif
+
+#if defined(_WIN32)
+#   define _pl_mkdir(a) _mkdir((a))
+#else
+#   define _pl_mkdir(a) mkdir((a), 0777)
+#endif
+
+typedef struct PLFile {
+    char        path[PL_SYSTEM_MAX_PATH];
+    uint8_t*    data;
+    uint8_t*    pos;
+    size_t      size;
+    void*       fptr;
+} PLFile;

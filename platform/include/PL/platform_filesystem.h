@@ -29,12 +29,6 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform.h"
 
-typedef struct PLFileBuffer {
-    char        name[PL_SYSTEM_MAX_PATH];
-    size_t      size;
-    uint8_t     *data;
-} PLFileBuffer;
-
 #define plBytesToKilobytes(a)   ((double)((a)) / 1000)
 #define plBytesToMegabytes(a)   (plBytesToKilobytes(a) / 1000)
 #define plBytesToGigabytes(a)   (plBytesToMegabytes(a) / 1000)
@@ -44,6 +38,14 @@ typedef struct PLFileBuffer {
 #define plBytesToGibibytes(a)   (plBytesToMebibytes(a) / 1024)
 
 #define pl_fclose(a)  fclose((a)); (a) = NULL
+
+typedef struct PLFileBuffer {
+    char        name[PL_SYSTEM_MAX_PATH];
+    size_t      size;
+    uint8_t     *data;
+} PLFileBuffer;
+
+typedef struct PLFile PLFile; // this will replace the above...
 
 PL_EXTERN_C
 
@@ -59,6 +61,9 @@ PL_EXTERN void plStripExtension(char *dest, size_t length, const char *in);
 PL_EXTERN const char *plGetFileExtension(const char *in);
 PL_EXTERN const char *plGetFileName(const char *path);
 
+PL_EXTERN bool plFileExists(const char *path);
+PL_EXTERN bool plPathExists(const char *path);
+
 PL_EXTERN void plScanDirectory(const char *path, const char *extension, void (*Function)(const char *), bool recursive);
 
 PL_EXTERN bool plCreateDirectory(const char *path);
@@ -66,21 +71,38 @@ PL_EXTERN bool plCreatePath(const char *path);
 
 // File I/O ...
 
-PL_EXTERN bool plFileExists(const char *path);
-PL_EXTERN bool plPathExists(const char *path);
+PL_EXTERN PLFile* plOpenFile(const char* path, bool cache);
+PL_EXTERN void plCloseFile(PLFile* ptr);
 
-PL_EXTERN bool plLoadFile(const char *path, PLFileBuffer *buffer);
 PL_EXTERN bool plCopyFile(const char *path, const char *dest);
 PL_EXTERN bool plWriteFile(const char *path, const uint8_t* buf, size_t length);
 PL_EXTERN bool plDeleteFile(const char *path);
 
 PL_EXTERN bool plIsFileModified(time_t oldtime, const char *path);
+PL_EXTERN bool plIsEndOfFile(const PLFile* ptr);
 
+PL_EXTERN const char* plGetFilePath(const PLFile* ptr);
 PL_EXTERN time_t plGetFileModifiedTime(const char *path);
+PL_EXTERN size_t plGetLocalFileSize(const char *path);
+PL_EXTERN size_t plGetFileSize(const PLFile* ptr);
+PL_EXTERN size_t plGetFileOffset(const PLFile* ptr);
 
-PL_EXTERN size_t plGetFileSize(const char *path);
+PL_EXTERN size_t plReadFile(PLFile* ptr, void* dest, size_t size, size_t count);
 
-PL_EXTERN int16_t plGetLittleShort(FILE *fin);
-PL_EXTERN int32_t plGetLittleLong(FILE *fin);
+PL_EXTERN char plReadInt8(PLFile* ptr, bool* status);
+PL_EXTERN int16_t plReadInt16(PLFile* ptr, bool big_endian, bool* status);
+PL_EXTERN int32_t plReadInt32(PLFile* ptr, bool big_endian, bool* status);
+PL_EXTERN int64_t plReadInt64(PLFile* ptr, bool big_endian, bool* status);
+
+PL_EXTERN char* plReadString(PLFile* ptr, char* str, size_t size);
+
+typedef enum PLFileSeek {
+    PL_SEEK_SET = SEEK_SET,
+    PL_SEEK_CUR = SEEK_CUR,
+    PL_SEEK_END = SEEK_END
+} PLFileSeek;
+
+PL_EXTERN bool plFileSeek(PLFile* ptr, long int pos, PLFileSeek seek);
+PL_EXTERN void plRewindFile(PLFile* ptr);
 
 PL_EXTERN_C_END

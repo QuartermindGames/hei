@@ -56,9 +56,7 @@ PLresult plInitFileSystem(void) {
     return PL_RESULT_SUCCESS;
 }
 
-void plShutdownFileSystem(void) {
-
-}
+void plShutdownFileSystem(void) {}
 
 // Checks whether a file has been modified or not.
 bool plIsFileModified(time_t oldtime, const char *path) {
@@ -80,11 +78,14 @@ bool plIsFileModified(time_t oldtime, const char *path) {
     return false;
 }
 
+bool plIsEndOfFile(const PLFile* ptr) {
+  return (plGetFileOffset(ptr) == plGetFileSize(ptr));
+}
+
 /**
- * returns the modified time of the given file.
- *
+ * Returns the modified time of the given file.
  * @param path
- * @return modification time in seconds. returns 0 upon fail.
+ * @return Modification time in seconds. returns 0 upon fail.
  */
 time_t plGetFileModifiedTime(const char *path) {
     struct stat attributes;
@@ -101,11 +102,7 @@ bool plCreateDirectory(const char *path) {
         return true;
     }
 
-#ifdef _WIN32
-    if(_mkdir(path) == 0) {
-#else
-    if(mkdir(path, 0777) == 0) {
-#endif
+    if(_pl_mkdir(path) == 0) {
         return true;
     }
 
@@ -134,10 +131,6 @@ bool plCreatePath(const char *path) {
 
 // Returns the extension for the file.
 const char *plGetFileExtension(const char *in) {
-    if (plIsEmptyString(in)) {
-        return "";
-    }
-
     const char *s = strrchr(in, '.');
     if(!s || s == in) {
         return "";
@@ -288,49 +281,16 @@ const char *plGetWorkingDirectory(void) {
 void plSetWorkingDirectory(const char *path) {
     if(chdir(path) != 0) {
         ReportError(PL_RESULT_SYSERR, "%s", strerror(errno));
-        /* TODO: Return error condition */
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 // FILE I/O
 
-/* loads an entire file into the PLIOBuffer struct */
-bool plLoadFile(const char *path, PLFileBuffer *buffer) {
-    if(plIsEmptyString(path)) {
-        ReportError(PL_RESULT_FILEPATH, "invalid path");
-        return false;
-    }
-
-    memset(buffer, 0, sizeof(PLFileBuffer));
-
-    FILE *fp = fopen(path, "rb");
-    if(fp == NULL) {
-        ReportError(PL_RESULT_FILEREAD, strerror(errno));
-        return false;
-    }
-
-    strncpy(buffer->name, path, sizeof(buffer->name));
-
-    buffer->size = plGetFileSize(path);
-    buffer->data = pl_calloc(buffer->size, sizeof(uint8_t));
-    if(buffer->data != NULL) {
-        if(fread(buffer->data, sizeof(uint8_t), buffer->size, fp) != buffer->size) {
-            FSLog("failed to read complete file (%s)\n", path);
-        }
-    }
-
-    fclose(fp);
-    
-    return true;
-}
-
 /**
- * checks whether or not the given file is accessible
- * or exists.
- *
+ * Checks whether or not the given file is accessible or exists.
  * @param path
- * @return false if the file wasn't accessible.
+ * @return False if the file wasn't accessible.
  */
 bool plFileExists(const char *path) {
     struct stat buffer;
@@ -386,61 +346,41 @@ bool plWriteFile(const char *path, const uint8_t *buf, size_t length) {
 }
 
 bool plCopyFile(const char *path, const char *dest) {
-    size_t file_size = plGetFileSize(path);
-    if(file_size == 0) {
-        return false;
-    }
-
-    uint8_t *data = pl_malloc(file_size);
-    if(data == NULL) {
-        return false;
-    }
-
-    FILE *original = NULL;
-    FILE *copy = NULL;
-
     // read in the original
-    if((original = fopen(path, "rb")) == NULL) {
+    PLFile *original = plOpenFile(path, true);
+    if(original == NULL) {
         ReportError(PL_RESULT_FILEREAD, "failed to open %s", path);
-        goto BAIL;
+        return false;
     }
-    if(fread(data, 1, file_size, original) != file_size) {
-        ReportError(PL_RESULT_FILEREAD, "failed to read in %d bytes for %s", file_size, path);
-        goto BAIL;
-    }
-    pl_fclose(original);
 
     // write out the copy
-    if((copy = fopen(dest, "wb")) == NULL) {
+    FILE* copy = fopen(dest, "wb");
+    if(copy == NULL) {
         ReportError(PL_RESULT_FILEWRITE, "failed to open %s for write", dest);
         goto BAIL;
     }
-    if(fwrite(data, 1, file_size, copy) != file_size) {
-        ReportError(PL_RESULT_FILEWRITE, "failed to write out %d bytes for %s", file_size, path);
+
+    if(fwrite(original->data, 1, original->size, copy) != original->size) {
+        ReportError(PL_RESULT_FILEWRITE, "failed to write out %d bytes for %s", original->size, path);
         goto BAIL;
     }
+
     pl_fclose(copy);
 
-    pl_free(data);
-
+    plCloseFile(original);
     return true;
 
     BAIL:
-
-    pl_free(data);
-
-    if(original != NULL) {
-      pl_fclose(original);
-    }
 
     if(copy != NULL) {
       pl_fclose(copy);
     }
 
+    plCloseFile(original);
     return false;
 }
 
-size_t plGetFileSize(const char *path) {
+size_t plGetLocalFileSize(const char *path) {
     struct stat buf;
     if(stat(path, &buf) != 0) {
         ReportError(PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror(errno));
@@ -452,19 +392,245 @@ size_t plGetFileSize(const char *path) {
 
 ///////////////////////////////////////////
 
-void plFileIOPush(PLFileBuffer *file) {}
-void plFileIOPop(void) {}
+PLFile* plOpenFile(const char *path, bool cache) {
+    if(plIsEmptyString(path)) {
+        ReportBasicError(PL_RESULT_FILEPATH);
+        return NULL;
+    }
 
-int16_t plGetLittleShort(FILE *fin) {
-    int b1 = fgetc(fin);
-    int b2 = fgetc(fin);
-    return (int16_t) (b1 + b2 * 256);
+    FILE *fp = fopen(path, "rb");
+    if(fp == NULL) {
+        ReportError(PL_RESULT_FILEREAD, strerror(errno));
+        return NULL;
+    }
+
+    PLFile* ptr = pl_calloc(1, sizeof(PLFile));
+    snprintf(ptr->path, sizeof(ptr->path), "%s", path);
+    ptr->size = plGetLocalFileSize(path);
+
+    if(cache) {
+        ptr->data = pl_malloc(ptr->size * sizeof(uint8_t));
+        if(fread(ptr->data, sizeof(uint8_t), ptr->size, fp) != ptr->size) {
+            FSLog("Failed to read complete file (%s)!\n", path);
+        }
+        pl_fclose(fp);
+    } else {
+        ptr->fptr = fp;
+    }
+
+    return (PLFile*)ptr;
 }
 
-int32_t plGetLittleLong(FILE *fin) {
-    int b1 = fgetc(fin);
-    int b2 = fgetc(fin);
-    int b3 = fgetc(fin);
-    int b4 = fgetc(fin);
-    return b1 + (b2 << 8) + (b3 << 16) + (b4 << 24);
+void plCloseFile(PLFile* ptr) {
+    if(ptr == NULL) {
+        return;
+    }
+
+    if(ptr->fptr != NULL) {
+        pl_fclose(ptr->fptr);
+    }
+
+    pl_free(ptr->data);
+    pl_free(ptr);
+}
+
+/**
+ * Returns the path of the current open file.
+ * @param ptr Pointer to file handle.
+ * @return Full path to the current file.
+ */
+const char* plGetFilePath(const PLFile* ptr) {
+    return ptr->path;
+}
+
+/**
+ * Returns file size in bytes.
+ * @param ptr Pointer to file handle.
+ * @return Number of bytes within file.
+ */
+size_t plGetFileSize(const PLFile* ptr) {
+  if(ptr->fptr != NULL) {
+    return plGetLocalFileSize(ptr->path);
+  }
+
+  return ptr->size;
+}
+
+/**
+ * Returns the current position within the file handle (ftell).
+ * @param ptr Pointer to the file handle.
+ * @return Number of bytes into the file.
+ */
+size_t plGetFileOffset(const PLFile* ptr) {
+    if(ptr->fptr != NULL) {
+        return ftell(ptr->fptr);
+    }
+
+    return ptr->pos - ptr->data;
+}
+
+size_t plReadFile(PLFile* ptr, void* dest, size_t size, size_t count) {
+    /* bail early if size is 0 to avoid division by 0 */
+    if(size == 0) {
+      ReportBasicError(PL_RESULT_FILESIZE);
+      return 0;
+    }
+
+    if(ptr->fptr != NULL) {
+        return fread(dest, size, count, ptr->fptr);
+    }
+
+    /* ensure that the read is valid */
+    size_t length = size * count;
+    size_t posn = plGetFileOffset(ptr);
+    if(posn + length >= ptr->size) {
+        /* out of bounds, truncate it */
+        length = ptr->size - posn;
+    }
+
+    memcpy(dest, ptr->pos, length);
+    ptr->pos += length;
+    return length / size;
+}
+
+char plReadInt8(PLFile* ptr, bool* status) {
+  if(plGetFileOffset(ptr) >= ptr->size) {
+    if(status != NULL) {
+      *status = false;
+    }
+    return 0;
+  }
+
+  if(status != NULL) {
+    *status = true;
+  }
+
+  if(ptr->fptr != NULL) {
+    return (char)(fgetc(ptr->fptr));
+  }
+
+  return (char)*(ptr->pos);
+}
+
+static int64_t ReadSizedInteger(PLFile* ptr, size_t size, bool big_endian, bool* status) {
+  int64_t n;
+  if(plReadFile(ptr, &n, size, 1) != 1) {
+    if(status != NULL) {
+      *status = false;
+    }
+    return 0;
+  }
+
+  if(status != NULL) {
+    *status = true;
+  }
+
+  if(big_endian) {
+    if(size == sizeof(int16_t)) {
+      return be16toh(n);
+    } else if(size == sizeof(int32_t)) {
+      return be32toh(n);
+    } else if(size == sizeof(int64_t)) {
+      return be64toh(n);
+    } else {
+      if(status != NULL) {
+        *status = false;
+      }
+      return 0;
+    }
+  }
+
+  return n;
+}
+
+int16_t plReadInt16(PLFile* ptr, bool big_endian, bool* status) {
+  return ReadSizedInteger(ptr, sizeof(int16_t), big_endian, status);
+}
+
+int32_t plReadInt32(PLFile* ptr, bool big_endian, bool* status) {
+  return ReadSizedInteger(ptr, sizeof(int32_t), big_endian, status);
+}
+
+int64_t plReadInt64(PLFile* ptr, bool big_endian, bool* status) {
+  return ReadSizedInteger(ptr, sizeof(int64_t), big_endian, status);
+}
+
+char* plReadString(PLFile* ptr, char* str, size_t size) {
+  if(size == 0) {
+    ReportBasicError(PL_RESULT_INVALID_PARM3);
+    return NULL;
+  }
+
+  if(ptr->fptr != NULL) {
+    return fgets(str, size, ptr->fptr);
+  }
+
+  if(ptr->pos >= ptr->data + ptr->size) {
+    ReportBasicError(PL_RESULT_FILEREAD);
+    return NULL;
+  }
+
+  char *nl = memchr(ptr->pos, '\n', ptr->size - (ptr->pos - ptr->data));
+  if(nl == NULL) {
+    nl = (char*)(ptr->data + ptr->size - 1);
+  }
+
+  if((nl - (char*)ptr->pos) + 1 >= size) {
+    nl = (char*)(ptr->pos + size);
+  }
+
+  memcpy(str, ptr->pos, (nl - (char*)ptr->pos) + 1);
+  str[(nl - (char*)ptr->pos) + 1] = '\0';
+
+  ptr->pos = (uint8_t*)(nl + 1);
+
+  return str;
+}
+
+bool plFileSeek(PLFile* ptr, long int pos, PLFileSeek seek) {
+    if(ptr->fptr != NULL) {
+        return !fseek(ptr->fptr, pos, seek);
+    }
+
+    size_t posn = plGetFileOffset(ptr);
+    switch(seek) {
+        case PL_SEEK_CUR:
+            if(posn + pos > ptr->size || pos < -posn) {
+                ReportBasicError(PL_RESULT_INVALID_PARM2);
+                return false;
+            }
+            ptr->pos += pos;
+            break;
+
+        case PL_SEEK_SET:
+            if(pos > ptr->size || pos < 0) {
+                ReportBasicError(PL_RESULT_INVALID_PARM2);
+                return false;
+            }
+            ptr->pos = &ptr->data[pos];
+            break;
+
+        case PL_SEEK_END:
+            if(pos <= -ptr->size) {
+                ReportBasicError(PL_RESULT_INVALID_PARM2);
+                return false;
+            }
+            ptr->pos = &ptr->data[ptr->size - pos];
+            break;
+
+        default:
+          ReportBasicError(PL_RESULT_INVALID_PARM3);
+          return false;
+    }
+
+    return true;
+}
+
+void plRewindFile(PLFile* ptr) {
+    if(ptr->fptr != NULL) {
+        rewind(ptr->fptr);
+        return;
+    }
+
+    ptr->pos = ptr->data;
 }

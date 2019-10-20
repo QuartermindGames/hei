@@ -32,10 +32,9 @@ For more information, please refer to <http://unlicense.org>
 
 /* new formats */
 
-static PLModel *LoadEMsh(const char *path, FILE *fp) {
-    ReportError(PL_RESULT_UNSUPPORTED, "EMsh is not supported");
-    pl_fclose(fp);
-    return NULL;
+static PLModel* LoadEMsh(PLFile* fp) {
+  ReportError(PL_RESULT_UNSUPPORTED, "EMsh is not supported");
+  return NULL;
 }
 
 /* old formats */
@@ -43,62 +42,57 @@ static PLModel *LoadEMsh(const char *path, FILE *fp) {
 #define VERSION_WEI 3
 
 typedef struct WEIHeader {
-    char    identity[4];    /* last byte is the version */
+  char identity[4];    /* last byte is the version */
 } WEIHeader;
 
-static PLModel *LoadMESH(const char *path, FILE *fp) {
-    uint32_t u0;
-    if(fread(&u0, sizeof(uint32_t), 1, fp) != 1) {
-        ReportBasicError(PL_RESULT_FILEREAD);
-        goto ABORT;
-    }
-
-    char list_identifier[4];
-    if(fread(list_identifier, sizeof(char), 4, fp) != 4) {
-        ReportBasicError(PL_RESULT_FILEREAD);
-        goto ABORT;
-    }
-
-    if(strncmp(list_identifier, "OLST", 4) != 0) {
-        ReportError(PL_RESULT_FILETYPE, "invalid identifier, expected OLST but found %s", list_identifier);
-        goto ABORT;
-    }
-
-    char filename[64];
-    strncpy(filename, plGetFileName(path), sizeof(filename));
-    filename[strlen(filename) - 3] = '\0';
-
-    ABORT:
-
-    fclose(fp);
+static PLModel* LoadMESH(PLFile* fp) {
+  bool status;
+  plReadInt32(fp, false, &status);
+  if (!status) {
     return NULL;
+  }
+
+  char list_identifier[4];
+  if (plReadFile(fp, list_identifier, sizeof(char), 4) != 4) {
+    return NULL;
+  }
+
+  if (strncmp(list_identifier, "OLST", 4) != 0) {
+    ReportError(PL_RESULT_FILETYPE, "invalid identifier, expected OLST but found %s", list_identifier);
+    return NULL;
+  }
+
+  char filename[64];
+  strncpy(filename, plGetFileName(plGetFilePath(fp)), sizeof(filename));
+  filename[strlen(filename) - 3] = '\0';
+
+  return NULL;
 }
 
 /* */
 
-PLModel *plLoadMSHModel(const char *path) {
-    FILE *fp = fopen(path, "rb");
-    if(fp == NULL) {
-        ReportBasicError(PL_RESULT_FILEREAD);
-        return NULL;
-    }
-
-    char identifier[4];
-    if(fread(identifier, sizeof(char), 4, fp) != 4) {
-        ReportBasicError(PL_RESULT_FILEREAD);
-        goto ABORT;
-    }
-
-    if(strncmp(identifier, "EMsh", 4) == 0) {
-        return LoadEMsh(path, fp);
-    } else if(strncmp(identifier, "MESH", 4) == 0) {
-        return LoadMESH(path, fp);
-    }
-
-    ReportError(PL_RESULT_FILETYPE, "unrecognised identifier");
-
-    ABORT:
-
-    fclose(fp);
+PLModel* plLoadMSHModel(const char* path) {
+  PLFile* fp = plOpenFile(path, false);
+  if (fp == NULL) {
     return NULL;
+  }
+
+  char identifier[4];
+  if (plReadFile(fp, identifier, sizeof(char), 4) != 4) {
+    plCloseFile(fp);
+    return NULL;
+  }
+
+  PLModel* model_ptr = NULL;
+  if (strncmp(identifier, "EMsh", 4) == 0) {
+    model_ptr = LoadEMsh(fp);
+  } else if (strncmp(identifier, "MESH", 4) == 0) {
+    model_ptr = LoadMESH(fp);
+  } else {
+    ReportError(PL_RESULT_FILETYPE, "unrecognised identifier");
+  }
+
+  plCloseFile(fp);
+
+  return model_ptr;
 }

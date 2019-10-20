@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include "platform.h"
+#include <PL/platform_filesystem.h>
 #include <PL/platform_math.h>
 
 typedef enum PLImageFormat {
@@ -90,7 +90,7 @@ PL_EXTERN void plDestroyImage(PLImage *image);
 
 PL_EXTERN bool plLoadImage(const char *path, PLImage *out);
 PL_EXTERN bool plLoadImageFromMemory(const uint8_t *data, size_t length, const char *type, PLImage *out);
-PL_EXTERN bool plLoadImageFromFile(FILE *fin, const char *path, PLImage *out);
+PL_EXTERN bool plLoadImageFromFile(PLFile *fin, const char *path, PLImage *out);
 PL_EXTERN bool plWriteImage(const PLImage *image, const char *path);
 
 PL_EXTERN unsigned int plGetSamplesPerPixel(PLColourFormat format);

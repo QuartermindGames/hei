@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_math.h>
 
 #include <errno.h>
+#include <filesystem_private.h>
 
 #include "image_private.h"
 
@@ -65,14 +66,14 @@ static bool LoadSTBImage(uint8_t *data, int x, int y, int component, PLImage *ou
     return false;
 }
 
-static bool LoadSTBImageFromFile(FILE *fp, PLImage *out) {
-    rewind(fp);
+static bool LoadSTBImageFromFile(PLFile *fp, PLImage *out) {
+    plRewindFile(fp);
 
     int x, y, component;
-    uint8_t *data = stbi_load_from_file(fp, &x, &y, &component, 4);
+    unsigned char *data = stbi_load_from_memory(fp->pos, (int) fp->size, &x, &y, &component, 4);
     if(data == NULL) {
-        ReportError(PL_RESULT_FILEREAD, "failed to read in image (%s)", stbi_failure_reason());
-        return false;
+      ReportError(PL_RESULT_FILEREAD, "failed to read in image (%s)", stbi_failure_reason());
+      return false;
     }
 
     return LoadSTBImage(data, x, y, component, out);
@@ -185,7 +186,7 @@ void plDestroyImage(PLImage *image) {
     free(image);
 }
 
-static bool LoadImageFromFile(FILE *fin, const char *path, PLImage *out) {
+static bool LoadImageFromFile(PLFile *fin, const char *path, PLImage *out) {
 #if defined(STB_IMAGE_IMPLEMENTATION)
   if(LoadSTBImageFromFile(fin, out)) {
     return true;
@@ -205,9 +206,7 @@ static bool LoadImageFromFile(FILE *fin, const char *path, PLImage *out) {
   } else {
     const char *extension = plGetFileExtension(path);
     if(extension && extension[0] != '\0') {
-      if (!strncmp(extension, "ftx", 3) && LoadFTXImage(fin, out)) {
-        return true;
-      } else if (!strncmp(extension, "ppm", 3) && LoadPPMImage(fin, out)) {
+      if (!strncmp(extension, "ftx", 3) && plLoadFtxImage(fin, out)) {
         return true;
       }
     }
@@ -216,7 +215,7 @@ static bool LoadImageFromFile(FILE *fin, const char *path, PLImage *out) {
   return false;
 }
 
-bool plLoadImageFromFile(FILE *fin, const char *path, PLImage *out) {
+bool plLoadImageFromFile(PLFile *fin, const char *path, PLImage *out) {
     if(fin == NULL) {
         ReportError(PL_RESULT_FILEREAD, "invalid file handle");
         return false;
@@ -273,20 +272,15 @@ bool plLoadImage(const char *path, PLImage *out) {
 
     plLoadFromMemory(buffer.data, buffer.size, ext, out);
 #else
-    FILE *fin = fopen(path, "rb");
+    PLFile* fin = plOpenFile(path, true);
     if(fin == NULL) {
         ReportError(PL_RESULT_FILEREAD, "failed to load image (%s) (%s)", path, strerror(errno));
         return false;
     }
 
-    if(strrchr(path, ':')) {
-        // Very likely a packaged image.
-        // example/package.wad:myimage
-    }
-
     bool result = plLoadImageFromFile(fin, path, out);
 
-    fclose(fin);
+    plCloseFile(fin);
 #endif /* PL_NEW_IMAGE_SUBSYSTEM */
 
     return result;
@@ -443,7 +437,7 @@ void plInvertImageColour(PLImage *image) {
     switch(image->format) {
         case PL_IMAGEFORMAT_RGB8:
         case PL_IMAGEFORMAT_RGBA8: {
-            for(unsigned int i = 0; i < image->size; i += num_colours) {
+            for(size_t i = 0; i < image->size; i += num_colours) {
                 uint8_t *pixel = &image->data[0][i];
                 pixel[0] = ~pixel[0];
                 pixel[1] = ~pixel[1];
@@ -530,12 +524,10 @@ void plFreeImage(PLImage *image) {
             continue;
         }
 
-        free(image->data[levels]);
-        image->data[levels] = NULL;
+        pl_free(image->data[levels]);
     }
 
-    free(image->data);
-    image->data = NULL;
+    pl_free(image->data);
 }
 
 bool plImageIsPowerOfTwo(unsigned int width, unsigned int height) {

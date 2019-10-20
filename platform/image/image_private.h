@@ -27,29 +27,20 @@ For more information, please refer to <http://unlicense.org>
 #pragma once
 
 #include "platform_private.h"
+
 #include <PL/platform_image.h>
 
 //#define PL_NEW_IMAGE_SUBSYSTEM
 
-#ifndef PL_NEW_IMAGE_SUBSYSTEM
-bool plDDSFormatCheck(FILE *fin);
-bool plDTXFormatCheck(FILE *fin);
-bool plVTFFormatCheck(FILE *fin);
-bool plTIMFormatCheck(FILE *fin);
-bool BMPFormatCheck(FILE *fin);
-bool plSWLFormatCheck(FILE *fin);
+bool plDDSFormatCheck(PLFile *fin);
+bool plDTXFormatCheck(PLFile *fin);
+bool plVTFFormatCheck(PLFile *fin);
+bool plTIMFormatCheck(PLFile *fin);
+bool plSWLFormatCheck(PLFile *fin);
 
-bool LoadFTXImage(FILE *fin, PLImage *out);         // Ritual's FTX image format.
-bool LoadPPMImage(FILE *fin, PLImage *out);         // Portable Pixel Map format.
-bool plLoadDTXImage(FILE *fin, PLImage *out);         // Lithtech's DTX image format.
-bool plLoadVTFImage(FILE *fin, PLImage *out);         // Valve's VTF image format.
-bool plLoadDDSImage(FILE *fin, PLImage *out);
-bool plLoadTIMImage(FILE *fin, PLImage *out);         // Sony's TIM image format.
-bool LoadBMPImage(FILE *fin, PLImage *out);
-bool plLoadSWLImage(FILE *fin, PLImage *out);       // Ritual's SWL image format.
-#else
-bool plLoadSWLImage(uint8_t *data, size_t length, PLImage *out);
-bool plSWLFormatCheck(uint8_t *data, size_t length);
-
-bool plLoadFTXImage(uint8_t *data, size_t length, PLImage *out);
-#endif
+bool plLoadFtxImage(PLFile *fin, PLImage *out);         // Ritual's FTX image format.
+bool plLoadDTXImage(PLFile *fin, PLImage *out);         // Lithtech's DTX image format.
+bool plLoadVTFImage(PLFile *fin, PLImage *out);         // Valve's VTF image format.
+bool plLoadDDSImage(PLFile *fin, PLImage *out);
+bool plLoadTIMImage(PLFile *fin, PLImage *out);         // Sony's TIM image format.
+bool plLoadSWLImage(PLFile *fin, PLImage *out);       // Ritual's SWL image format.

@@ -30,115 +30,117 @@ For more information, please refer to <http://unlicense.org>
 /* Ritual Entertainment's SWL Format, used by SiN */
 
 typedef struct SWLHeader {
-    char        path[64];   /* file path, kinda useless for us */
-    uint32_t    width;
-    uint32_t    height;
+  char path[64];   /* file path, kinda useless for us */
+  uint32_t width;
+  uint32_t height;
 } SWLHeader;
 
-bool plSWLFormatCheck(FILE *fin) {
-    rewind(fin);
+bool plSWLFormatCheck(PLFile* fin) {
+  plRewindFile(fin);
 
-    SWLHeader header;
-    if(fread(&header, sizeof(header), 1, fin) != 1) {
-        SetResult(PL_RESULT_FILEREAD);
-        return false;
-    }
+  SWLHeader header;
+  if (plReadFile(fin, &header, sizeof(header), 1) != 1) {
+    return false;
+  }
 
-    rewind(fin);
+  plRewindFile(fin);
 
-    if(header.width > 512 || header.width == 0 ||
-       header.height > 512 || header.height == 0) {
-        SetResult(PL_RESULT_IMAGERESOLUTION);
-        return false;
-    }
+  if (header.width > 512 || header.width == 0 ||
+      header.height > 512 || header.height == 0) {
+    SetResult(PL_RESULT_IMAGERESOLUTION);
+    return false;
+  }
 
 #if 0 /* sadly, isn't always true... */
-    if(!plImageIsPowerOfTwo(header.width, header.height)) {
-        SetResult(PL_RESULT_IMAGERESOLUTION);
-        return false;
-    }
+  if(!plImageIsPowerOfTwo(header.width, header.height)) {
+      SetResult(PL_RESULT_IMAGERESOLUTION);
+      return false;
+  }
 #endif
 
-    return true;
+  return true;
 }
 
-bool plLoadSWLImage(FILE *fin, PLImage *out) {
-    SWLHeader header;
-    if(fread(&header, sizeof(header), 1, fin) != 1) {
-        SetResult(PL_RESULT_FILEREAD);
-        return false;
+bool plLoadSWLImage(PLFile* fin, PLImage* out) {
+  SWLHeader header;
+  if (plReadFile(fin, &header, sizeof(header), 1) != 1) {
+    return false;
+  }
+
+  memset(out, 0, sizeof(PLImage));
+  out->width = header.width;
+  out->height = header.height;
+
+  struct {
+    uint8_t r, g, b, a;
+  } palette[256];
+  if (plReadFile(fin, palette, 4, 256) != 256) {
+    SetResult(PL_RESULT_FILEREAD);
+    return false;
+  }
+
+  /* according to sources, this is a collection of misc data that's
+   * specific to SiN itself, so we'll skip it. */
+  if (!plFileSeek(fin, 0x4D4, PL_SEEK_SET)) {
+    SetResult(PL_RESULT_FILEREAD);
+    return false;
+  }
+
+  out->levels = 4;
+  out->data = pl_calloc(out->levels, sizeof(uint8_t*));
+  if (out->data == NULL) {
+    plFreeImage(out);
+    return false;
+  }
+
+  out->colour_format = PL_COLOURFORMAT_RGBA;
+  out->format = PL_IMAGEFORMAT_RGBA8;
+  out->size = plGetImageSize(out->format, out->width, out->height);
+
+  unsigned int mip_w = out->width;
+  unsigned int mip_h = out->height;
+  for (unsigned int i = 0; i < out->levels; ++i) {
+    if (i > 0) {
+      mip_w = out->width >> (i + 1);
+      mip_h = out->height >> (i + 1);
     }
 
-    memset(out, 0, sizeof(PLImage));
-    out->width  = header.width;
-    out->height = header.height;
-
-    struct {
-        uint8_t r, g, b, a;
-    } palette[256];
-    if(fread(palette, 4, 256, fin) != 256) {
-        SetResult(PL_RESULT_FILEREAD);
-        return false;
+    size_t buf_size = mip_w * mip_h;
+    uint8_t buf[buf_size];
+    if (plReadFile(fin, buf, 1, sizeof(buf)) != buf_size) {
+      plFreeImage(out);
+      return false;
     }
 
-    /* according to sources, this is a collection of misc data that's
-     * specific to SiN itself, so we'll skip it. */
-    if(fseek(fin, 0x4D4, SEEK_SET) != 0) {
-        SetResult(PL_RESULT_FILEREAD);
-        return false;
+    size_t level_size = plGetImageSize(out->format, mip_w, mip_h);
+    out->data[i] = pl_calloc(level_size, sizeof(uint8_t));
+    if (out->data[i] == NULL) {
+      plFreeImage(out);
+      return false;
     }
 
-    out->levels = 4;
-    out->data = pl_calloc(out->levels, sizeof(uint8_t*));
-    if(out->data == NULL) {
-        plFreeImage(out);
-        return false;
+    /* now we fill in the buf we just allocated,
+     * by using the palette */
+    for (size_t j = 0, k = 0; j < buf_size; ++j, k += 4) {
+      out->data[i][k] = palette[buf[j]].r;
+      out->data[i][k + 1] = palette[buf[j]].g;
+      out->data[i][k + 2] = palette[buf[j]].b;
+
+      /* the alpha channel appears to be used more like
+       * a flag to say "yes this texture will be transparent",
+       * rather than actual levels of alpha for this pixel.
+       *
+       * because of that we'll just ignore it */
+      out->data[i][k + 3] = 255; /*(uint8_t) (255 - palette[buf[j]].a);*/
     }
+  }
 
-    out->colour_format  = PL_COLOURFORMAT_RGBA;
-    out->format         = PL_IMAGEFORMAT_RGBA8;
-    out->size           = plGetImageSize(out->format, out->width, out->height);
-
-    unsigned int mip_w = out->width;
-    unsigned int mip_h = out->height;
-    for(unsigned int i = 0; i < out->levels; ++i) {
-        if(i > 0) {
-            mip_w = out->width >> (i + 1);
-            mip_h = out->height >> (i + 1);
-        }
-
-        size_t buf_size = mip_w * mip_h;
-        uint8_t buf[buf_size];
-        if(fread(buf, 1, sizeof(buf), fin) != buf_size) {
-            plFreeImage(out);
-            SetResult(PL_RESULT_FILEREAD);
-            return false;
-        }
-
-        size_t level_size = plGetImageSize(out->format, mip_w, mip_h);
-        out->data[i] = pl_calloc(level_size, sizeof(uint8_t));
-        if(out->data[i] == NULL) {
-            plFreeImage(out);
-            return false;
-        }
-
-        /* now we fill in the buf we just allocated,
-         * by using the palette */
-        for(unsigned int j = 0, k = 0; j < buf_size; ++j, k += 4) {
-            out->data[i][k]     = palette[buf[j]].r;
-            out->data[i][k + 1] = palette[buf[j]].g;
-            out->data[i][k + 2] = palette[buf[j]].b;
-
-            /* the alpha channel appears to be used more like
-             * a flag to say "yes this texture will be transparent",
-             * rather than actual levels of alpha for this pixel.
-             *
-             * because of that we'll just ignore it */
-            out->data[i][k + 3] = 255; /*(uint8_t) (255 - palette[buf[j]].a);*/
-        }
-    }
-
-    return true;
+  return true;
 }
 
-bool plWriteSWLImage(const PLImage *image, const char *path) { /* todo */ return false; }
+bool plWriteSWLImage(const PLImage* image, const char* path) {
+  /* todo */
+  (void)(image);
+  (void)(path);
+  return false;
+}

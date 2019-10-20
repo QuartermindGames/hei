@@ -96,22 +96,21 @@ uint8_t GetDTXFormat(DTXHeader *dtx) {
     return dtx->extra[2];
 }
 
-bool plDTXFormatCheck(FILE *fin) {
-    rewind(fin);
+bool plDTXFormatCheck(PLFile *fin) {
+  plRewindFile(fin);
 
     // Try reading in the type first, as Lithtech has "resource types" rather than idents.
     int type;
-    if(fread(&type, sizeof(int), 1, fin) != 1) {
+    if(plReadFile(fin, &type, sizeof(int), 1) != 1) {
         return false;
     }
 
     return (type == 0);
 }
 
-bool plLoadDTXImage(FILE *fin, PLImage *out) {
+bool plLoadDTXImage(PLFile *fin, PLImage *out) {
     DTXHeader header;
-    memset(&header, 0, sizeof(header));
-    if (fread(&header, sizeof(DTXHeader), 1, fin) != 1) {
+    if (plReadFile(fin, &header, sizeof(DTXHeader), 1) != 1) {
         ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
         return false;
     } else if ((header.version < DTX_VERSION_MAX) || (header.version > DTX_VERSION_MIN)) {
@@ -187,7 +186,7 @@ bool plLoadDTXImage(FILE *fin, PLImage *out) {
         return false;
     }
 
-    fread(out->data[0], sizeof(uint8_t), out->size, fin);
+    plReadFile(fin, out->data[0], sizeof(uint8_t), out->size);
 
     /*	for (unsigned int i = 0; i < (unsigned int)size; i += 4)
     {
