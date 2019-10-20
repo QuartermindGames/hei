@@ -346,57 +346,37 @@ bool plWriteFile(const char *path, const uint8_t *buf, size_t length) {
 }
 
 bool plCopyFile(const char *path, const char *dest) {
-    size_t file_size = plGetLocalFileSize(path);
-    if(file_size == 0) {
-        return false;
-    }
-
-    uint8_t *data = pl_malloc(file_size);
-    if(data == NULL) {
-        return false;
-    }
-
-    FILE *original = NULL;
-    FILE *copy = NULL;
-
     // read in the original
-    if((original = fopen(path, "rb")) == NULL) {
+    PLFile *original = plOpenFile(path, true);
+    if(original == NULL) {
         ReportError(PL_RESULT_FILEREAD, "failed to open %s", path);
-        goto BAIL;
+        return false;
     }
-    if(fread(data, 1, file_size, original) != file_size) {
-        ReportError(PL_RESULT_FILEREAD, "failed to read in %d bytes for %s", file_size, path);
-        goto BAIL;
-    }
-    pl_fclose(original);
 
     // write out the copy
-    if((copy = fopen(dest, "wb")) == NULL) {
+    FILE* copy = fopen(dest, "wb");
+    if(copy == NULL) {
         ReportError(PL_RESULT_FILEWRITE, "failed to open %s for write", dest);
         goto BAIL;
     }
-    if(fwrite(data, 1, file_size, copy) != file_size) {
-        ReportError(PL_RESULT_FILEWRITE, "failed to write out %d bytes for %s", file_size, path);
+
+    if(fwrite(original->data, 1, original->size, copy) != original->size) {
+        ReportError(PL_RESULT_FILEWRITE, "failed to write out %d bytes for %s", original->size, path);
         goto BAIL;
     }
+
     pl_fclose(copy);
 
-    pl_free(data);
-
+    plCloseFile(original);
     return true;
 
     BAIL:
-
-    pl_free(data);
-
-    if(original != NULL) {
-      pl_fclose(original);
-    }
 
     if(copy != NULL) {
       pl_fclose(copy);
     }
 
+    plCloseFile(original);
     return false;
 }
 
