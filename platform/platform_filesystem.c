@@ -556,25 +556,34 @@ int64_t plReadInt64(PLFile* ptr, bool big_endian, bool* status) {
 }
 
 char* plReadString(PLFile* ptr, char* str, size_t size) {
+  if(size == 0) {
+    ReportBasicError(PL_RESULT_INVALID_PARM3);
+    return NULL;
+  }
+
   if(ptr->fptr != NULL) {
     return fgets(str, size, ptr->fptr);
   }
 
-  char* pos = str;
-  while(!plIsEndOfFile(ptr)) {
-    if(pos - str >= size) {
-      return NULL;
-    }
-
-    bool status;
-    *pos = plReadInt8(ptr, &status);
-    if(!status) {
-      return NULL;
-    }
-    pos++;
+  if(ptr->pos >= ptr->data + ptr->size) {
+    ReportBasicError(PL_RESULT_FILEREAD);
+    return NULL;
   }
 
-  *pos = '\0';
+  char *nl = memchr(ptr->pos, '\n', ptr->size - (ptr->pos - ptr->data));
+  if(nl == NULL) {
+    nl = (char*)(ptr->data + ptr->size - 1);
+  }
+
+  if((nl - (char*)ptr->pos) + 1 >= size) {
+    nl = (char*)(ptr->pos + size);
+  }
+
+  memcpy(str, ptr->pos, (nl - (char*)ptr->pos) + 1);
+  str[(nl - (char*)ptr->pos) + 1] = '\0';
+
+  ptr->pos = (uint8_t*)(nl + 1);
+
   return str;
 }
 
