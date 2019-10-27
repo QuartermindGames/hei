@@ -67,7 +67,7 @@ static bool LoadSTBImage(uint8_t *data, int x, int y, int component, PLImage *ou
 }
 
 static bool LoadSTBImageFromFile(PLFile *fp, PLImage *out) {
-  plRewindFile(fp);
+    plRewindFile(fp);
 
     int x, y, component;
     unsigned char *data = stbi_load_from_memory(fp->pos, (int) fp->size, &x, &y, &component, 4);
@@ -285,7 +285,7 @@ bool plLoadImage(const char *path, PLImage *out) {
 
     plLoadFromMemory(buffer.data, buffer.size, ext, out);
 #else
-    PLFile* fin = plOpenFile(path, false);
+    PLFile* fin = plOpenFile(path, true);
     if(fin == NULL) {
         ReportError(PL_RESULT_FILEREAD, "failed to load image (%s) (%s)", path, strerror(errno));
         return false;

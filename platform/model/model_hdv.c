@@ -24,11 +24,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #include <PL/platform_filesystem.h>
 #include <PL/platform_model.h>
 #include <PL/platform_console.h>
-
-#include <platform_private.h>
 
 #include "model_private.h"
 
@@ -68,14 +67,14 @@ typedef struct __attribute__((packed)) HDVVertex {
 } HDVVertex;
 
 PLModel *plLoadHDVModel(const char *path) {
-    FILE *file = fopen(path, "rb");
+    PLFile *file = plOpenFile(path, false);
     if(file == NULL) {
         ReportError(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
         return NULL;
     }
 
     HDVHeader header;
-    if(fread(&header, sizeof(HDVHeader), 1, file) != 1) {
+    if(plReadFile(file, &header, sizeof(HDVHeader), 1) != 1) {
         ReportError(PL_RESULT_FILEREAD, "failed to read in header");
         goto ABORT;
     }
@@ -106,23 +105,23 @@ PLModel *plLoadHDVModel(const char *path) {
         goto ABORT;
     }
 
-    fseek(file, header.face_offset, SEEK_SET);
+    plFileSeek(file, header.face_offset, PL_SEEK_SET);
 
     HDVFace faces[2048];
-    if(fread(faces, sizeof(HDVFace), header.num_faces, file) != header.num_faces) {
+    if(plReadFile(file, faces, sizeof(HDVFace), header.num_faces) != header.num_faces) {
         ReportError(PL_RESULT_FILEREAD, "failed to read in all faces");
         goto ABORT;
     }
 
-    fseek(file, header.vert_offset, SEEK_SET);
+    plFileSeek(file, header.vert_offset, PL_SEEK_SET);
 
     HDVVertex vertices[2048];
-    if(fread(vertices, sizeof(HDVVertex), header.num_vertices, file) != header.num_vertices) {
+    if(plReadFile(file, vertices, sizeof(HDVVertex), header.num_vertices) != header.num_vertices) {
         ReportError(PL_RESULT_FILEREAD, "failed to read in all vertices");
         goto ABORT;
     }
 
-    pl_fclose(file);
+    plCloseFile(file);
 
     PLMesh *mesh = plCreateMesh(PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC,
                                 (header.num_faces - 2U) * 2, header.num_vertices);
@@ -178,8 +177,6 @@ PLModel *plLoadHDVModel(const char *path) {
     return model;
 
     ABORT:
-    if(file != NULL) {
-      pl_fclose(file);
-    }
+    plCloseFile(file);
     return NULL;
 }
