@@ -245,15 +245,28 @@ bool plLoadImageFromMemory(const uint8_t *data, size_t length, const char *type,
         return true;
     }
 
-    /* todo: need to overhaul loaders for this to work everywhere else... */
+    PLFile ptr;
+    memset(&ptr, 0, sizeof(PLFile));
+    ptr.size = length;
+    ptr.data = pl_malloc(length);
+    memcpy(ptr.data, data, length);
 
-    /* if we reached here, and our status is still successful, that's clearly
-     * not correct... because we're here! we haven't loaded anything! */
-    if(plGetFunctionResult() == PL_RESULT_SUCCESS) {
-        ReportError(PL_RESULT_IMAGEFORMAT, "unrecognised image type");
+    bool is_loaded = false;
+    if(plDDSFormatCheck(&ptr) && plLoadDDSImage(&ptr, out)) {
+      is_loaded = true;
+    } else if(plSWLFormatCheck(&ptr) && plLoadSWLImage(&ptr, out)) {
+      is_loaded = true;
+    } else if(plTIMFormatCheck(&ptr) && plLoadTIMImage(&ptr, out)) {
+      is_loaded = true;
+    } else if(plVTFFormatCheck(&ptr) && plLoadVTFImage(&ptr, out)) {
+      is_loaded = true;
+    } else if(plDTXFormatCheck(&ptr) && plLoadDTXImage(&ptr, out)) {
+      is_loaded = true;
+    } else if(plSentientTxtrFormatCheck(&ptr) && plLoadSentientTxtrImage(&ptr, out)) {
+      is_loaded = true;
     }
 
-    return false;
+    return is_loaded;
 }
 
 bool plLoadImage(const char *path, PLImage *out) {
@@ -342,12 +355,45 @@ unsigned int plGetSamplesPerPixel(PLColourFormat format) {
     return 0;
 }
 
+static bool RGB8toRGBA8(PLImage* image) {
+  size_t size = plGetImageSize(PL_IMAGEFORMAT_RGBA8, image->width, image->height);
+  if(size == 0) {
+    return false;
+  }
+
+  typedef struct RGB8 { uint8_t r, g, b; } RGB8;
+  typedef struct RGBA8 { uint8_t r, g, b, a; } RGBA8;
+  size_t num_pixels = image->size / 3;
+
+  RGB8* src = (RGB8*)image->data[0];
+  RGBA8* dst = pl_malloc(size);
+  for(size_t i = 0; i < num_pixels; ++i) {
+    dst->r = src->r;
+    dst->g = src->g;
+    dst->b = src->b;
+    dst->a = 255;
+    dst++;
+    src++;
+  }
+
+  pl_free(image->data[0]);
+
+  image->data[0] = (uint8_t*)(&dst[0]);
+  image->size = size;
+  image->format = PL_IMAGEFORMAT_RGBA8;
+  image->colour_format = PL_COLOURFORMAT_RGBA;
+}
+
 bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
     if(image->format == new_format) {
         return true;
     }
 
     switch(image->format) {
+      case PL_IMAGEFORMAT_RGB8: {
+        if(new_format == PL_IMAGEFORMAT_RGBA8) { return RGB8toRGBA8(image); }
+      }
+
         case PL_IMAGEFORMAT_RGB5A1: {
             if(new_format == PL_IMAGEFORMAT_RGBA8) {
                 uint8_t *levels[image->levels];
