@@ -78,7 +78,6 @@ static void GLPopDebugGroupMarker() {
     glPopDebugGroup();
 }
 
-
 static void ClearBoundTextures(void) {
     for(unsigned int i = 0; i < gfx_state.hw_maxtextureunits; ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
@@ -854,6 +853,61 @@ static void GLSetShaderProgram(PLShaderProgram *program) {
 }
 
 /////////////////////////////////////////////////////////////
+// Generic State Management
+
+unsigned int TranslateGraphicsState(PLGraphicsState state) {
+  switch(state) {
+    default:return 0;
+    case PL_GFX_STATE_FOG:
+      if(GLVersion(3, 0)) {
+        return 0;
+      }
+      return GL_FOG;
+    case PL_GFX_STATE_ALPHATEST:
+      if(GLVersion(3, 0)) {
+        return 0;
+      }
+      return GL_ALPHA_TEST;
+    case PL_GFX_STATE_BLEND:
+      return GL_BLEND;
+    case PL_GFX_STATE_DEPTHTEST:
+      return GL_DEPTH_TEST;
+    case PL_GFX_STATE_STENCILTEST:
+      return GL_STENCIL_TEST;
+    case PL_GFX_STATE_MULTISAMPLE:
+      return GL_MULTISAMPLE;
+    case PL_GFX_STATE_SCISSORTEST:
+      return GL_SCISSOR_TEST;
+    case PL_GFX_STATE_ALPHATOCOVERAGE:
+      return GL_SAMPLE_ALPHA_TO_COVERAGE;
+  }
+}
+
+void GLEnableState(PLGraphicsState state) {
+  unsigned int gl_state = TranslateGraphicsState(state);
+  if(!gl_state) {
+    /* probably unsupported */
+    return;
+  }
+
+  glEnable(gl_state);
+
+  gfx_state.current_capabilities[state] = true;
+}
+
+void GLDisableState(PLGraphicsState state) {
+  unsigned int gl_state = TranslateGraphicsState(state);
+  if(!gl_state) {
+    /* probably unsupported */
+    return;
+  }
+
+  glDisable(gl_state);
+
+  gfx_state.current_capabilities[state] = false;
+}
+
+/////////////////////////////////////////////////////////////
 
 static char gl_extensions[4096][4096] = { { '\0' } };
 
@@ -976,6 +1030,9 @@ void plInitOpenGL(void) {
 
     gfx_layer.SetShaderUniformMatrix4   = GLSetShaderUniformMatrix4;
 
+    gfx_layer.EnableState               = GLEnableState;
+    gfx_layer.DisableState              = GLDisableState;
+
     /////////////////////////////////////////////////////////////
 
     // Get any information that will be presented later.
@@ -1031,6 +1088,9 @@ void plInitOpenGL(void) {
     // Init vertex attributes
     glGenVertexArrays(1, VAO);
     glBindVertexArray(VAO[0]);
+
+    /* in OpenGL, multisample is automatically enabled per spec */
+    gfx_state.current_capabilities[PL_GFX_STATE_MULTISAMPLE] = true;
 }
 
 void plShutdownOpenGL(void) {
