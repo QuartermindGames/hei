@@ -105,4 +105,11 @@ typedef enum PLFileSeek {
 PL_EXTERN bool plFileSeek(PLFile* ptr, long int pos, PLFileSeek seek);
 PL_EXTERN void plRewindFile(PLFile* ptr);
 
+PL_EXTERN void plClearMountedLocations(void);
+
+typedef int PLFSLocation;
+
+PL_EXTERN PLFSLocation plMountLocation(const char* path);
+PL_EXTERN void plUnmountLocation(PLFSLocation id);
+
 PL_EXTERN_C_END

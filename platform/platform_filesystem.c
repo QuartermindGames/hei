@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org>
 #endif
 
 #include <PL/platform_console.h>
+#include <PL/platform_package.h>
 
 #include "filesystem_private.h"
 #include "platform_private.h"
@@ -52,11 +53,90 @@ For more information, please refer to <http://unlicense.org>
 
 /*	File System	*/
 
+#define FS_MAX_MOUNT_LOCATIONS  64  /* todo: consider using a linked list instead? */
+
+typedef enum FSMountType {
+    FS_MOUNT_FREE,
+    FS_MOUNT_DIR,
+    FS_MOUNT_PACKAGE,
+} FSMountType;
+
+typedef struct FSMount {
+    FSMountType type;
+    union {
+        PLPackage*  pkg;                        /* FS_MOUNT_PACKAGE */
+        char        path[PL_SYSTEM_MAX_PATH];   /* FS_MOUNT_DIR */
+    };
+} FSMount;
+static FSMount fs_paths[FS_MAX_MOUNT_LOCATIONS];
+unsigned int fs_mount_ceiling = 0;
+
+void plClearMountedLocation(PLFSLocation index) {
+    plAssert(index < FS_MAX_MOUNT_LOCATIONS);
+
+    FSMount* ptr = &fs_paths[index];
+    if(ptr->type == FS_MOUNT_FREE) {
+        /* slot is already free */
+        return;
+    } else if(ptr->type == FS_MOUNT_DIR) {
+        ptr->path[0] = '\0';
+    } else if(ptr->type == FS_MOUNT_PACKAGE) {
+        plDestroyPackage(ptr->pkg);
+        ptr->pkg = NULL;
+    }
+
+    ptr->type = FS_MOUNT_FREE;
+}
+
+/**
+ * Clear all of the mounted locations
+ */
+void plClearMountedLocations(void) {
+    for(unsigned int i = 0; i < fs_mount_ceiling; ++i) {
+        plClearMountedLocation(i);
+    }
+
+    fs_mount_ceiling = 0;
+}
+
+/**
+ * Mount the given location. On failure returns -1.
+ */
+PLFSLocation plMountLocation(const char* path) {
+    for(unsigned int i = 0; i < FS_MAX_MOUNT_LOCATIONS; ++i) {
+        FSMount* ptr = &fs_paths[i];
+        if(ptr->type == FS_MOUNT_FREE) {
+            if(plPathExists(path)) { /* attempt to mount it as a path */
+                ptr->type = FS_MOUNT_DIR;
+                snprintf(ptr->path, sizeof(ptr->path), "%s", path);
+                fs_mount_ceiling = i;
+                return i;
+            } else { /* attempt to mount it as a package */
+                PLPackage* pkg = plLoadPackage(path);
+                if(pkg != NULL) {
+                    ptr->type = FS_MOUNT_PACKAGE;
+                    ptr->pkg = pkg;
+                    fs_mount_ceiling = i;
+                    return i;
+                }
+            }
+            break;
+        }
+    }
+
+    ReportError(0, "failed to mount location, %s", path);
+    return -1;
+}
+
 PLresult plInitFileSystem(void) {
+    plClearMountedLocations();
+    plMountLocation(plGetWorkingDirectory()); /* todo: keep? maybe some people don't want this behaviour... */
     return PL_RESULT_SUCCESS;
 }
 
-void plShutdownFileSystem(void) {}
+void plShutdownFileSystem(void) {
+    plClearMountedLocations();
+}
 
 // Checks whether a file has been modified or not.
 bool plIsFileModified(time_t oldtime, const char *path) {
@@ -396,6 +476,14 @@ PLFile* plOpenFile(const char *path, bool cache) {
     if(plIsEmptyString(path)) {
         ReportBasicError(PL_RESULT_FILEPATH);
         return NULL;
+    }
+
+    char buf[PL_SYSTEM_MAX_PATH];
+    for(unsigned int i = 0; i < FS_MAX_MOUNT_LOCATIONS; ++i) {
+        FSMount* mount = &fs_paths[i];
+        if(mount->type == FS_MOUNT_FREE) {
+            continue;
+        }
     }
 
     FILE *fp = fopen(path, "rb");

@@ -40,6 +40,10 @@ support.
  is intended only for internal usage!
 */
 
+#define PL_VERSION_MAJOR    19
+#define PL_VERSION_MINOR    10
+#define PL_VERSION_PATCH    18
+
 // PL_IGNORE_SHARED_HEADERS
 // PL_IGNORE_PLATFORM_HEADERS
 // PL_IGNORE_STD_HEADERS
