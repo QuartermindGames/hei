@@ -75,13 +75,13 @@ static void GLPreProcessGLSLShader(char **buf, size_t *length, PLShaderStageType
         InsertString(n_pos, "in vec3 pl_vnormal;")
         InsertString(n_pos, "in vec2 pl_vuv;")
         InsertString(n_pos, "in vec4 pl_vcolour;")
-
-        InsertString(n_pos, "uniform mat4 pl_model;")
-        InsertString(n_pos, "uniform mat4 pl_view;")
-        InsertString(n_pos, "uniform mat4 pl_proj;")
     } else if(type == PL_SHADER_TYPE_FRAGMENT) {
         InsertString(n_pos, "out vec4 pl_frag;")
     }
+
+    InsertString(n_pos, "uniform mat4 pl_model;")
+    InsertString(n_pos, "uniform mat4 pl_view;")
+    InsertString(n_pos, "uniform mat4 pl_proj;")
 
     while(*pos != '\0') {
         if(*pos == '\n' || *pos == '\r' || *pos == '\t') {

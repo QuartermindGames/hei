@@ -59,9 +59,9 @@ static bool LoadSTBImage(uint8_t *data, int x, int y, int component, PLImage *ou
             out->data[0] = data;
             return true;
         }
-        free(out->data);
+        pl_free(out->data);
     }
-    free(data);
+    pl_free(data);
 
     return false;
 }
