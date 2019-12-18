@@ -110,14 +110,18 @@ PLFSLocation plMountLocation(const char* path) {
             if(plPathExists(path)) { /* attempt to mount it as a path */
                 ptr->type = FS_MOUNT_DIR;
                 snprintf(ptr->path, sizeof(ptr->path), "%s", path);
-                fs_mount_ceiling = i;
+                if( i > fs_mount_ceiling) {
+					fs_mount_ceiling = i;
+				}
                 return i;
             } else { /* attempt to mount it as a package */
-                PLPackage* pkg = plLoadPackage(path);
+                PLPackage* pkg = plLoadPackage(path, false);
                 if(pkg != NULL) {
                     ptr->type = FS_MOUNT_PACKAGE;
                     ptr->pkg = pkg;
-                    fs_mount_ceiling = i;
+                    if(i > fs_mount_ceiling) {
+						fs_mount_ceiling = i;
+					}
                     return i;
                 }
             }
