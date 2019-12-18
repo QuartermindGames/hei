@@ -94,28 +94,25 @@ typedef enum PLBlend {
  * plEnableBlend(bool active)
  */
 
-typedef enum PLGraphicsCapability {
-    PL_CAPABILITY_FOG               = (1 << 0),     // Fog.
-    PL_CAPABILITY_ALPHA_TEST        = (1 << 1),     // Alpha-testing.
-    PL_CAPABILITY_BLEND             = (1 << 2),     // Blending.
-    PL_CAPABILITY_TEXTURE_2D        = (1 << 3),     // Enables/disables textures.
-    PL_CAPABILITY_TEXTURE_GEN_S     = (1 << 4),     // Generate S coordinate.
-    PL_CAPABILITY_TEXTURE_GEN_T     = (1 << 5),     // Generate T coordinate.
-    PL_CAPABILITY_DEPTHTEST         = (1 << 6),     // Depth-testing.
-    PL_CAPABILITY_STENCILTEST       = (1 << 7),     // Stencil-testing.
-    PL_CAPABILITY_MULTISAMPLE       = (1 << 8),     // Multisampling.
-    PL_CAPABILITY_SCISSORTEST       = (1 << 10),    // Scissor test for buffer clear.
+typedef enum PLGraphicsState {
+    PL_GFX_STATE_FOG,             // Fog.
+    PL_GFX_STATE_ALPHATEST,       // Alpha-testing.
+    PL_GFX_STATE_BLEND,           // Blending.
+    PL_GFX_STATE_DEPTHTEST,       // Depth-testing.
+    PL_GFX_STATE_STENCILTEST,     // Stencil-testing.
+    PL_GFX_STATE_MULTISAMPLE,     // Multisampling.
+    PL_GFX_STATE_SCISSORTEST,     // Scissor test for buffer clear.
+    PL_GFX_STATE_ALPHATOCOVERAGE, // Alpha to Coverage
 
-    // Texture Generation
-    PL_CAPABILITY_GENERATEMIPMAP    = (1 << 20),
-} PLGraphicsCapability;
+    PL_GFX_MAX_STATES
+} PLGraphicsState;
 
 PL_EXTERN_C
 
-PL_EXTERN bool plIsGraphicsStateEnabled(unsigned int flags);
+PL_EXTERN bool plIsGraphicsStateEnabled(PLGraphicsState state);
 
-PL_EXTERN void plEnableGraphicsStates(unsigned int flags);
-PL_EXTERN void plDisableGraphicsStates(unsigned int flags);
+PL_EXTERN void plEnableGraphicsState(PLGraphicsState state);
+PL_EXTERN void plDisableGraphicsState(PLGraphicsState state);
 
 PL_EXTERN_C_END
 

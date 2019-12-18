@@ -190,132 +190,24 @@ void plClearBuffers(unsigned int buffers) {
 	CAPABILITIES
 ===========================*/
 
-typedef struct _PLGraphicsCapabilities {
-    unsigned int pl_parm, to_parm;
-    const char *ident;
-} _PLGraphicsCapabilities;
-
-_PLGraphicsCapabilities graphics_capabilities[] =
-        {
-#if defined (PL_MODE_OPENGL)
-#if defined (PL_MODE_OPENGL_CORE)
-                {PL_CAPABILITY_ALPHA_TEST, 0, "ALPHA_TEST"},
-#else
-                {PL_CAPABILITY_ALPHA_TEST, GL_ALPHA_TEST, "ALPHA_TEST"},
-#endif
-                {PL_CAPABILITY_BLEND, GL_BLEND, "BLEND"},
-                {PL_CAPABILITY_DEPTHTEST, GL_DEPTH_TEST, "DEPTH_TEST"},
-                {PL_CAPABILITY_TEXTURE_2D, GL_TEXTURE_2D, "TEXTURE_2D"},
-#if defined (PL_MODE_OPENGL_CORE)
-                {PL_CAPABILITY_TEXTURE_GEN_S, 0, "TEXTURE_GEN_S"},
-                {PL_CAPABILITY_TEXTURE_GEN_T, 0, "TEXTURE_GEN_T"},
-#else
-                {PL_CAPABILITY_TEXTURE_GEN_S, GL_TEXTURE_GEN_S, "TEXTURE_GEN_S"},
-                {PL_CAPABILITY_TEXTURE_GEN_T, GL_TEXTURE_GEN_T, "TEXTURE_GEN_T"},
-#endif
-                {PL_CAPABILITY_CULL_FACE, GL_CULL_FACE, "CULL_FACE"},
-                {PL_CAPABILITY_STENCILTEST, GL_STENCIL_TEST, "STENCIL_TEST"},
-                {PL_CAPABILITY_MULTISAMPLE, GL_MULTISAMPLE, "MULTISAMPLE"},
-                {PL_CAPABILITY_SCISSORTEST, GL_SCISSOR_TEST, "SCISSOR_TEST"},
-
-                {PL_CAPABILITY_GENERATEMIPMAP, 0, "GENERATE_MIPMAP"},
-#else
-        { PL_CAPABILITY_ALPHA_TEST, 0, "ALPHA_TEST" },
-        { PL_CAPABILITY_BLEND, 0, "BLEND" },
-        { PL_CAPABILITY_DEPTHTEST, 0, "DEPTH_TEST" },
-        { PL_CAPABILITY_TEXTURE_2D, 0, "TEXTURE_2D" },
-        { PL_CAPABILITY_TEXTURE_GEN_S, 0, "TEXTURE_GEN_S" },
-        { PL_CAPABILITY_TEXTURE_GEN_T, 0, "TEXTURE_GEN_T" },
-        { PL_CAPABILITY_STENCILTEST, 0, "STENCIL_TEST" },
-        { PL_CAPABILITY_MULTISAMPLE, 0, "MULTISAMPLE" },
-#endif
-
-                {0}
-        };
-
-bool plIsGraphicsStateEnabled(unsigned int flags) {
-    GRAPHICS_TRACK();
-
-    return (bool)(flags & gfx_state.current_capabilities);
+bool plIsGraphicsStateEnabled(PLGraphicsState state) {
+  return gfx_state.current_capabilities[state];
 }
 
-void plEnableGraphicsStates(unsigned int flags) {
-    GRAPHICS_TRACK();
-
-    if (plIsGraphicsStateEnabled(flags)) {
+void plEnableGraphicsState(PLGraphicsState state) {
+    if (plIsGraphicsStateEnabled(state)) {
         return;
     }
 
-    for (unsigned int i = 0; i < sizeof(graphics_capabilities); i++) {
-        if (graphics_capabilities[i].pl_parm == 0) {
-            break;
-        }
-
-        if (gfx_state.mode_debug) {
-            GfxLog("Enabling %s\n", graphics_capabilities[i].ident);
-        }
-
-        if (flags & PL_CAPABILITY_TEXTURE_2D) {
-            gfx_state.tmu[gfx_state.current_textureunit].active = true;
-        }
-#if defined (VL_MODE_GLIDE)
-        if (flags & PL_CAPABILITY_FOG)
-            // TODO: need to check this is supported...
-            grFogMode(GR_FOG_WITH_TABLE_ON_FOGCOORD_EXT);
-        if (flags & PL_CAPABILITY_DEPTHTEST)
-            grDepthBufferMode(GR_DEPTHBUFFER_ZBUFFER);
-        if (flags & PL_CAPABILITY_CULL_FACE)
-            grCullMode(graphics_state.current_cullmode);
-#endif
-
-        if ((flags & graphics_capabilities[i].pl_parm) && (graphics_capabilities[i].to_parm != 0)) {
-#if defined (PL_MODE_OPENGL)
-            glEnable(graphics_capabilities[i].to_parm);
-#elif defined (VL_MODE_GLIDE)
-            grEnable(graphics_capabilities[i].to_parm);
-#endif
-        }
-
-        gfx_state.current_capabilities |= graphics_capabilities[i].pl_parm;
-    }
+    CallGfxFunction(EnableState, state);
 }
 
-void plDisableGraphicsStates(unsigned int flags) {
-    GRAPHICS_TRACK();
-
-    if (!plIsGraphicsStateEnabled(flags)) {
+void plDisableGraphicsState(PLGraphicsState state) {
+    if (!plIsGraphicsStateEnabled(state)) {
         return;
     }
 
-    for (unsigned int i = 0; i < sizeof(graphics_capabilities); i++) {
-        if (graphics_capabilities[i].pl_parm == 0) break;
-
-        if (gfx_state.mode_debug) {
-            GfxLog("Disabling %s\n", graphics_capabilities[i].ident);
-        }
-
-        if (flags & PL_CAPABILITY_TEXTURE_2D) {
-            gfx_state.tmu[gfx_state.current_textureunit].active = false;
-        }
-#if defined (VL_MODE_GLIDE)
-        if (flags & PL_CAPABILITY_FOG)
-            grFogMode(GR_FOG_DISABLE);
-        if (flags & PL_CAPABILITY_DEPTHTEST)
-            grDepthBufferMode(GR_DEPTHBUFFER_DISABLE);
-        if (flags & PL_CAPABILITY_CULL_FACE)
-            grCullMode(graphics_state.current_cullmode);
-#endif
-
-        if ((flags & graphics_capabilities[i].pl_parm) && (graphics_capabilities[i].to_parm != 0)) {
-#if defined (PL_MODE_OPENGL)
-            glDisable(graphics_capabilities[i].to_parm);
-#elif defined (VL_MODE_GLIDE)
-            grDisable(graphics_capabilities[i].to_parm);
-#endif
-        }
-
-        gfx_state.current_capabilities &= ~graphics_capabilities[i].pl_parm;
-    }
+    CallGfxFunction(DisableState, state);
 }
 
 /*===========================

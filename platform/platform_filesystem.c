@@ -47,6 +47,7 @@ For more information, please refer to <http://unlicense.org>
 #   include <security.h>
 #   include <direct.h>
 #   include <shlobj.h>
+#   include "3rdparty/portable_endian.h"
 #else
 #   include <pwd.h>
 #endif

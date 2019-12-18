@@ -59,6 +59,13 @@
 #include <winsock2.h>
 #include <sys/param.h>
 
+#ifdef __GNUC__
+#ifdef __MINGW32__
+// https://github.com/eclipse/paho.mqtt.c/issues/577#issuecomment-484401691
+#define ntohll(x) ((1==ntohl(1)) ? (x) : (((uint64_t)ntohl((x) & 0xFFFFFFFFUL)) << 32) | ntohl((uint32_t)((x) >> 32)))
+#endif
+#endif
+
 #if BYTE_ORDER == LITTLE_ENDIAN
 #define htobe16(x) htons(x)
 #define htole16(x) (x)

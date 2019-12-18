@@ -25,6 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#pragma once
+
 #include "platform_private.h"
 
 #include <PL/platform_graphics.h>
@@ -36,13 +38,13 @@ For more information, please refer to <http://unlicense.org>
 #   define GfxLog(...)
 #endif
 
-typedef struct PLGraphicsState {
+typedef struct GfxState {
     PLCullMode current_cullmode;
 
     PLColour current_clearcolour;
     PLColour current_colour;        // Current global colour.
 
-    unsigned int current_capabilities;    // Enabled capabilities.
+    bool current_capabilities[PL_GFX_MAX_STATES];    // Enabled capabilities.
     unsigned int current_textureunit;
 
     // Textures
@@ -106,6 +108,10 @@ typedef struct GfxLayer {
     void(*GetMaxTextureSize)(unsigned int* s);
 
     /******************************************/
+
+    /* generic state management */
+    void(*EnableState)(PLGraphicsState state);
+    void(*DisableState)(PLGraphicsState state);
 
     void(*SetBlendMode)(PLBlend a, PLBlend b);
     void(*SetCullMode)(PLCullMode mode);
