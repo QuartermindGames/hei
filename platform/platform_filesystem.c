@@ -131,7 +131,7 @@ PLFSLocation plMountLocation(const char* path) {
 
 PLresult plInitFileSystem(void) {
     plClearMountedLocations();
-    plMountLocation(plGetWorkingDirectory()); /* todo: keep? maybe some people don't want this behaviour... */
+
     return PL_RESULT_SUCCESS;
 }
 
