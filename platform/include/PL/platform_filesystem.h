@@ -97,19 +97,23 @@ PL_EXTERN int64_t plReadInt64(PLFile* ptr, bool big_endian, bool* status);
 PL_EXTERN char* plReadString(PLFile* ptr, char* str, size_t size);
 
 typedef enum PLFileSeek {
-    PL_SEEK_SET = SEEK_SET,
-    PL_SEEK_CUR = SEEK_CUR,
-    PL_SEEK_END = SEEK_END
+	PL_SEEK_SET = SEEK_SET,
+	PL_SEEK_CUR = SEEK_CUR,
+	PL_SEEK_END = SEEK_END
 } PLFileSeek;
 
-PL_EXTERN bool plFileSeek(PLFile* ptr, long int pos, PLFileSeek seek);
-PL_EXTERN void plRewindFile(PLFile* ptr);
+PL_EXTERN bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek );
+PL_EXTERN void plRewindFile( PLFile* ptr );
 
-PL_EXTERN void plClearMountedLocations(void);
+/** FS Mounting **/
 
-typedef int PLFSLocation;
+PL_EXTERN void plClearMountedLocations( void );
 
-PL_EXTERN PLFSLocation plMountLocation(const char* path);
-PL_EXTERN void plUnmountLocation(PLFSLocation id);
+typedef struct PLFileSystemMount PLFileSystemMount;
+
+PL_EXTERN PLFileSystemMount* plMountLocation( const char* path );
+PL_EXTERN void plUnmountLocation( PLFileSystemMount id );
+
+/****/
 
 PL_EXTERN_C_END
