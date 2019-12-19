@@ -31,102 +31,84 @@ For more information, please refer to <http://unlicense.org>
 
 /* Loader for SFA TAB/BIN format */
 
-static bool LoadTABPackageFile(PLFile* fh, PLPackageIndex* pi) {
-  pi->file.data = pl_malloc(pi->file.size);
-  if (pi->file.data == NULL) {
-    return false;
-  }
+static uint8_t* LoadTABPackageFile( PLFile* fh, PLPackageIndex* pi ) {
+	uint8_t* dataPtr = pl_malloc( pi->fileSize );
+	if ( !plFileSeek( fh, pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, pi->fileSize, 1 ) != 1 ) {
+		pl_free( dataPtr );
+		return NULL;
+	}
 
-  if (!plFileSeek(fh, pi->offset, PL_SEEK_SET) || plReadFile(fh, pi->file.data, pi->file.size, 1) != 1) {
-    pl_free(pi->file.data);
-    pi->file.data = NULL;
-    return false;
-  }
-
-  return true;
+	return dataPtr;
 }
 
-PLPackage* plLoadTABPackage(const char* path, bool cache) {
-  char bin_path[PL_SYSTEM_MAX_PATH + 1];
-  strncpy(bin_path, path, strlen(path) - 3);
-  strncat(bin_path, "bin", PL_SYSTEM_MAX_PATH);
-  if (!plFileExists(bin_path)) {
-    ReportError(PL_RESULT_FILEPATH, "failed to open bin package at \"%s\", aborting", bin_path);
-    return NULL;
-  }
+PLPackage* plLoadTABPackage( const char* path ) {
+	char bin_path[PL_SYSTEM_MAX_PATH + 1];
+	strncpy( bin_path, path, strlen( path ) - 3 );
+	strncat( bin_path, "bin", PL_SYSTEM_MAX_PATH );
+	if ( !plFileExists( bin_path ) ) {
+		ReportError( PL_RESULT_FILEPATH, "failed to open bin package at \"%s\", aborting", bin_path );
+		return NULL;
+	}
 
-  size_t tab_size = plGetLocalFileSize(path);
-  if (tab_size == 0) {
-    ReportError(PL_RESULT_FILESIZE, plGetResultString(PL_RESULT_FILESIZE));
-    return NULL;
-  }
+	size_t tab_size = plGetLocalFileSize( path );
+	if ( tab_size == 0 ) {
+		ReportError( PL_RESULT_FILESIZE, plGetResultString( PL_RESULT_FILESIZE ) );
+		return NULL;
+	}
 
-  PLFile* fp = plOpenFile(path, false);
-  if (fp == NULL) {
-    return NULL;
-  }
+	PLFile* fp = plOpenFile( path, false );
+	if ( fp == NULL ) {
+		return NULL;
+	}
 
-  typedef struct TabIndex {
-    uint32_t start;
-    uint32_t end;
-  } TabIndex;
+	typedef struct TabIndex {
+		uint32_t start;
+		uint32_t end;
+	} TabIndex;
 
-  unsigned int num_indices = (unsigned int) (tab_size / sizeof(TabIndex));
+	unsigned int num_indices = ( unsigned int ) ( tab_size / sizeof( TabIndex ) );
 
-  TabIndex indices[num_indices];
-  int ret = plReadFile(fp, indices, sizeof(TabIndex), num_indices);
-  plCloseFile(fp);
-  fp = NULL;
+	TabIndex indices[num_indices];
+	int ret = plReadFile( fp, indices, sizeof( TabIndex ), num_indices );
+	plCloseFile( fp );
 
-  if(ret != num_indices) {
-    return NULL;
-  }
+	if ( ret != num_indices ) {
+		return NULL;
+	}
 
-  /* swap be to le */
-  for (unsigned int i = 0; i < num_indices; ++i) {
-    if (indices[i].start > tab_size || indices[i].end > tab_size) {
-      ReportError(PL_RESULT_FILESIZE, "offset outside of file bounds");
-      return NULL;
-    }
+	/* swap be to le */
+	for ( unsigned int i = 0; i < num_indices; ++i ) {
+		if ( indices[ i ].start > tab_size || indices[ i ].end > tab_size ) {
+			ReportError( PL_RESULT_FILESIZE, "offset outside of file bounds" );
+			return NULL;
+		}
 
-    indices[i].start = be32toh(indices[i].start);
-    indices[i].end = be32toh(indices[i].end);
-  }
+		indices[ i ].start = be32toh( indices[ i ].start );
+		indices[ i ].end = be32toh( indices[ i ].end );
+	}
 
-  PLPackage* package = pl_malloc(sizeof(PLPackage));
-  if (package != NULL) {
-    memset(package, 0, sizeof(PLPackage));
+	PLPackage* package = pl_malloc( sizeof( PLPackage ) );
+	if ( package != NULL ) {
+		memset( package, 0, sizeof( PLPackage ) );
 
-    strncpy(package->path, bin_path, sizeof(package->path));
+		strncpy( package->path, bin_path, sizeof( package->path ) );
 
-    package->internal.LoadFile = LoadTABPackageFile;
-    package->table_size = num_indices;
-    package->table = pl_calloc(package->table_size, sizeof(struct PLPackageIndex));
-    if (package->table != NULL) {
-      if (cache) {
-        fp = plOpenFile(package->path, false);
-        if (fp == NULL) {
-          ReportError(PL_RESULT_FILEERR, "failed to open bin \"%s\", aborting", package->path);
-        }
-      }
+		package->internal.LoadFile = LoadTABPackageFile;
+		package->table_size = num_indices;
+		package->table = pl_calloc( package->table_size, sizeof( struct PLPackageIndex ) );
+		if ( package->table != NULL ) {
+			for ( unsigned int i = 0; i < num_indices; ++i ) {
+				PLPackageIndex* index = &package->table[ i ];
+				snprintf( index->fileName, sizeof( index->fileName ), "%u", i );
+				index->fileSize = indices[ i ].end - indices[ i ].start;
+				index->offset = indices[ i ].start;
+			}
 
-      for (unsigned int i = 0; i < num_indices; ++i) {
-        PLPackageIndex* index = &package->table[i];
-        snprintf(index->file.name, sizeof(index->file.name), "%u", i);
-        index->file.size = indices[i].end - indices[i].start;
-        index->offset = indices[i].start;
+			return package;
+		}
+	}
 
-        if (fp != NULL) {
-          LoadTABPackageFile(fp, index);
-        }
-      }
+	plDestroyPackage( package );
 
-      plCloseFile(fp);
-      return package;
-    }
-  }
-
-  plDestroyPackage(package);
-
-  return NULL;
+	return NULL;
 }

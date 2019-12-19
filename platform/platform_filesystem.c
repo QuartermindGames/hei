@@ -120,7 +120,7 @@ PLFileSystemMount* plMountLocation( const char* path ) {
 		snprintf( location->path, sizeof( location->path ), "%s", path );
 		return location;
 	} else { /* attempt to mount it as a package */
-		PLPackage* pkg = plLoadPackage( path, false );
+		PLPackage* pkg = plLoadPackage( path );
 		if ( pkg != NULL ) {
 			_plInsertMountLocation( location );
 			location->type = FS_MOUNT_PACKAGE;
@@ -520,26 +520,25 @@ PLFile* plOpenFile( const char* path, bool cache ) {
 	char buf[PL_SYSTEM_MAX_PATH];
 	PLFileSystemMount* location = fs_mount_root;
 	while ( location != NULL ) {
+		PLFile* fp;
 		if ( location->type == FS_MOUNT_DIR ) {
 			/* todo: don't allow path to search outside of mounted path */
 			snprintf( buf, sizeof( buf ), "%s/%s", location->path, path );
-			PLFile* fp = _plOpenLocalFile( buf, cache );
-			if ( fp == NULL ) {
-				continue;
-			}
-
-			return fp;
+			fp = _plOpenLocalFile( buf, cache );
 		} else {
-			PLFile* fp = pl_calloc( 1, sizeof( PLFile ) );
-			snprintf( fp->path, sizeof( fp->path ), "%s", path );
-			if ( !plLoadPackageFile( location->pkg, path, fp->data, &fp->size ) ) {
-				pl_free( fp );
-				continue;
-			}
-
-			return fp;
+			fp = plLoadPackageFile( location->pkg, path );
 		}
+
+		if ( fp == NULL ) {
+			continue;
+		}
+
+		return fp;
 	}
+
+	/* the above will have reported an error */
+
+	return NULL;
 }
 
 void plCloseFile( PLFile* ptr ) {

@@ -29,78 +29,73 @@ For more information, please refer to <http://unlicense.org>
 
 /* Outwars FF package format */
 
-static bool LoadFFPackageFile(PLFile* fh, PLPackageIndex* pi) {
-  FunctionStart();
+static uint8_t* LoadFFPackageFile( PLFile* fh, PLPackageIndex* pi ) {
+	FunctionStart();
 
-  pi->file.data = pl_malloc(pi->file.size);
-  if (pi->file.data == NULL) {
-    return false;
-  }
+	uint8_t* dataPtr = pl_malloc( pi->fileSize );
+	if ( !plFileSeek( fh, pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, pi->fileSize, 1 ) != 1 ) {
+		pl_free( dataPtr );
+		return NULL;
+	}
 
-  if (!plFileSeek(fh, pi->offset, PL_SEEK_SET) || plReadFile(fh, pi->file.data, pi->file.size, 1) != 1) {
-    pl_free(pi->file.data);
-    pi->file.data = NULL;
-    return false;
-  }
-
-  return true;
+	return dataPtr;
 }
 
-PLPackage* plLoadFFPackage(const char* path, bool cache) {
-  FunctionStart();
+PLPackage* plLoadFFPackage( const char* path ) {
+	FunctionStart();
 
-  PLFile* fp = plOpenFile(path, false);
-  if (fp == NULL) {
-    return NULL;
-  }
+	PLFile* fp = plOpenFile( path, false );
+	if ( fp == NULL ) {
+		return NULL;
+	}
 
-  uint32_t num_indices;
-  if(plReadFile(fp, &num_indices, sizeof(uint32_t), 1) != 1) {
-    plCloseFile(fp);
-    return NULL;
-  }
+	uint32_t num_indices;
+	if ( plReadFile( fp, &num_indices, sizeof( uint32_t ), 1 ) != 1 ) {
+		plCloseFile( fp );
+		return NULL;
+	}
 
-  typedef struct OW_FFIndex {
-    uint32_t offset;
-    char name[40];
-  } OW_FFIndex;
-  OW_FFIndex indices[num_indices];
-  unsigned int sizes[num_indices]; /* aren't stored in index data, so we'll calc these */
-  if (num_indices > 0) {
-    if (plReadFile(fp, indices, sizeof(OW_FFIndex), num_indices) == num_indices) {
-      for (unsigned int i = 0; i < (num_indices - 1); ++i) {
-        sizes[i] = indices[i + 1].offset - indices[i].offset;
-      }
-    } else {
-      ReportError(PL_RESULT_FILEREAD, "failed to read indices");
-    }
-  } else {
-    ReportError(PL_RESULT_FILEREAD, "invalid number of indices in package");
-  }
+	typedef struct OW_FFIndex {
+		uint32_t offset;
+		char name[40];
+	} OW_FFIndex;
+	OW_FFIndex indices[num_indices];
+	unsigned int sizes[num_indices]; /* aren't stored in index data, so we'll calc these */
+	if ( num_indices > 0 ) {
+		if ( plReadFile( fp, indices, sizeof( OW_FFIndex ), num_indices ) == num_indices ) {
+			for ( unsigned int i = 0; i < ( num_indices - 1 ); ++i ) {
+				sizes[ i ] = indices[ i + 1 ].offset - indices[ i ].offset;
+			}
+		} else {
+			ReportError( PL_RESULT_FILEREAD, "failed to read indices" );
+		}
+	} else {
+		ReportError( PL_RESULT_FILEREAD, "invalid number of indices in package" );
+	}
 
-  plCloseFile(fp);
+	plCloseFile( fp );
 
-  if (plGetFunctionResult() != PL_RESULT_SUCCESS) {
-    return NULL;
-  }
+	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
+		return NULL;
+	}
 
-  PLPackage* package = pl_malloc(sizeof(PLPackage));
-  if (package != NULL) {
-    package->internal.LoadFile = LoadFFPackageFile;
-    package->table_size = (num_indices - 1);
-    strncpy(package->path, path, sizeof(package->path));
-    if ((package->table = pl_calloc(package->table_size, sizeof(struct PLPackageIndex))) != NULL) {
-      for (unsigned int i = 0; i < package->table_size; ++i) {
-        PLPackageIndex* index = &package->table[i];
-        index->offset = indices[i].offset;
-        index->file.size = sizes[i];
-        strncpy(index->file.name, indices[i].name, sizeof(index->file.name));
-      }
-    } else {
-      plDestroyPackage(package);
-      package = NULL;
-    }
-  }
+	PLPackage* package = pl_malloc( sizeof( PLPackage ) );
+	if ( package != NULL ) {
+		package->internal.LoadFile = LoadFFPackageFile;
+		package->table_size = ( num_indices - 1 );
+		strncpy( package->path, path, sizeof( package->path ) );
+		if ( ( package->table = pl_calloc( package->table_size, sizeof( struct PLPackageIndex ) ) ) != NULL ) {
+			for ( unsigned int i = 0; i < package->table_size; ++i ) {
+				PLPackageIndex* index = &package->table[ i ];
+				index->offset = indices[ i ].offset;
+				index->fileSize = sizes[ i ];
+				strncpy( index->fileName, indices[ i ].name, sizeof( index->fileName ) );
+			}
+		} else {
+			plDestroyPackage( package );
+			package = NULL;
+		}
+	}
 
-  return package;
+	return package;
 }

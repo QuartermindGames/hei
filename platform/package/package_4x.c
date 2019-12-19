@@ -35,143 +35,126 @@ For more information, please refer to <http://unlicense.org>
  * There doesn't appear to be any form of
  * compression used on these packages. */
 
-static bool LoadLSTPackageFile(PLFile* fh, PLPackageIndex* pi) {
-  pi->file.data = pl_malloc(pi->file.size);
-  if (pi->file.data == NULL) {
-    return false;
-  }
+static uint8_t* LoadLSTPackageFile( PLFile* fh, PLPackageIndex* pi ) {
+	uint8_t* dataPtr = pl_malloc( pi->fileSize );
+	if ( !plFileSeek( fh, pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, pi->fileSize, 1 ) != 1 ) {
+		pl_free( dataPtr );
+		return NULL;
+	}
 
-  if (!plFileSeek(fh, pi->offset, PL_SEEK_SET) || plReadFile(fh, pi->file.data, pi->file.size, 1) != 1) {
-    pl_free(pi->file.data);
-    pi->file.data = NULL;
-    return false;
-  }
-
-  return true;
+	return dataPtr;
 }
 
-PLPackage* plLoadLSTPackage(const char* path, bool cache) {
-  PLFile* fh = plOpenFile(path, false);
-  if (fh == NULL) {
-    return NULL;
-  }
+PLPackage* plLoadLSTPackage( const char* path ) {
+	PLFile* fh = plOpenFile( path, false );
+	if ( fh == NULL ) {
+		return NULL;
+	}
 
-  PLPackage* package = NULL;
+	PLPackage* package = NULL;
 
-  /* any files we're going to load will be from the IBF, not the LST */
-  char ibf_path[PL_SYSTEM_MAX_PATH + 1];
-  strncpy(ibf_path, path, strlen(path) - 3);
-  strncat(ibf_path, "ibf", PL_SYSTEM_MAX_PATH);
-  if (!plFileExists(ibf_path)) {
-    ReportError(PL_RESULT_FILEPATH, "failed to open ibf package at \"%s\", aborting", ibf_path);
-    goto ABORT;
-  }
+	/* any files we're going to load will be from the IBF, not the LST */
+	char ibf_path[PL_SYSTEM_MAX_PATH + 1];
+	strncpy( ibf_path, path, strlen( path ) - 3 );
+	strncat( ibf_path, "ibf", PL_SYSTEM_MAX_PATH );
+	if ( !plFileExists( ibf_path ) ) {
+		ReportError( PL_RESULT_FILEPATH, "failed to open ibf package at \"%s\", aborting", ibf_path );
+		goto ABORT;
+	}
 
-  //DebugPrint("LST %s\n", path);
-  //DebugPrint("IBF %s\n", ibf_path);
+	//DebugPrint("LST %s\n", path);
+	//DebugPrint("IBF %s\n", ibf_path);
 
-  /* grab the IBF size so we can do some sanity checking later */
-  size_t ibf_size = plGetLocalFileSize(ibf_path);
-  if (ibf_size == 0) {
-    ReportError(PL_RESULT_FILESIZE, "invalid ibf \"%s\" size of 0, aborting", ibf_path);
-    goto ABORT;
-  }
+	/* grab the IBF size so we can do some sanity checking later */
+	size_t ibf_size = plGetLocalFileSize( ibf_path );
+	if ( ibf_size == 0 ) {
+		ReportError( PL_RESULT_FILESIZE, "invalid ibf \"%s\" size of 0, aborting", ibf_path );
+		goto ABORT;
+	}
 
-  /* read in the ident */
-  char ident[8];
-  if (plReadFile(fh, ident, sizeof(char), 8) != 8) {
-    ReportError(PL_RESULT_FILETYPE, "failed to read identification, aborting");
-    goto ABORT;
-  }
+	/* read in the ident */
+	char ident[8];
+	if ( plReadFile( fh, ident, sizeof( char ), 8 ) != 8 ) {
+		ReportError( PL_RESULT_FILETYPE, "failed to read identification, aborting" );
+		goto ABORT;
+	}
 
-  if (strncmp(ident, "_TSL1.0V", 8) != 0) {
-    ReportError(PL_RESULT_FILETYPE, "invalid file ident, \"%s\", aborting", ident);
-    goto ABORT;
-  }
+	if ( strncmp( ident, "_TSL1.0V", 8 ) != 0 ) {
+		ReportError( PL_RESULT_FILETYPE, "invalid file ident, \"%s\", aborting", ident );
+		goto ABORT;
+	}
 
-  /* sanity checking */
-  uint32_t num_indices;
-  if (plReadFile(fh, &num_indices, sizeof(unsigned int), 1) != 1) {
-    ReportError(PL_RESULT_FILEREAD, "failed to read in indices count from lst, aborting");
-    goto ABORT;
-  }
+	/* sanity checking */
+	uint32_t num_indices;
+	if ( plReadFile( fh, &num_indices, sizeof( unsigned int ), 1 ) != 1 ) {
+		ReportError( PL_RESULT_FILEREAD, "failed to read in indices count from lst, aborting" );
+		goto ABORT;
+	}
 
-  if (num_indices > 4096) {
-    ReportError(PL_RESULT_FILESIZE, "larger than expected package, aborting");
-    goto ABORT;
-  }
+	if ( num_indices > 4096 ) {
+		ReportError( PL_RESULT_FILESIZE, "larger than expected package, aborting" );
+		goto ABORT;
+	}
 
-  //DebugPrint("LST INDICES %u\n", num_indices);
+	//DebugPrint("LST INDICES %u\n", num_indices);
 
-  package = pl_malloc(sizeof(PLPackage));
-  if (package == NULL) {
-    goto ABORT;
-  }
+	package = pl_malloc( sizeof( PLPackage ) );
+	if ( package == NULL ) {
+		goto ABORT;
+	}
 
-  memset(package, 0, sizeof(PLPackage));
-  package->internal.LoadFile = LoadLSTPackageFile;
-  package->table_size = num_indices;
-  package->table = pl_calloc(num_indices, sizeof(struct PLPackageIndex));
-  if (package->table == NULL) {
-    goto ABORT;
-  }
+	memset( package, 0, sizeof( PLPackage ) );
+	package->internal.LoadFile = LoadLSTPackageFile;
+	package->table_size = num_indices;
+	package->table = pl_calloc( num_indices, sizeof( struct PLPackageIndex ) );
+	if ( package->table == NULL ) {
+		goto ABORT;
+	}
 
-  strncpy(package->path, ibf_path, sizeof(package->path));
+	strncpy( package->path, ibf_path, sizeof( package->path ) );
 
-  struct {
-    char name[64];
-    uint32_t data_offset;
-    uint32_t data_length;
-  } index;
+	struct {
+		char name[64];
+		uint32_t data_offset;
+		uint32_t data_length;
+	} index;
 
-  for (unsigned int i = 0; i < num_indices; ++i) {
-    if (plIsEndOfFile(fh) != 0) {
-      printf("Unexpected end of package in %s, ignoring!\n", path);
-      break;
-    }
+	for ( unsigned int i = 0; i < num_indices; ++i ) {
+		if ( plIsEndOfFile( fh ) != 0 ) {
+			printf( "Unexpected end of package in %s, ignoring!\n", path );
+			break;
+		}
 
-    if (plReadFile(fh, &index, sizeof(index), 1) != 1) {
-      ReportError(PL_RESULT_FILEREAD, "failed to read index at %d, aborting", plGetFileOffset(fh));
-      goto ABORT;
-    }
+		if ( plReadFile( fh, &index, sizeof( index ), 1 ) != 1 ) {
+			ReportError( PL_RESULT_FILEREAD, "failed to read index at %d, aborting", plGetFileOffset( fh ) );
+			goto ABORT;
+		}
 
-    //DebugPrint("LST INDEX %s\n", index.name);
+		//DebugPrint("LST INDEX %s\n", index.name);
 
-    if (index.data_offset >= ibf_size || (uint64_t) (index.data_offset) + (uint64_t) (index.data_length) > ibf_size) {
-      ReportError(PL_RESULT_FILESIZE, "offset/length falls beyond IBF size, aborting");
-      goto ABORT;
-    }
+		if ( index.data_offset >= ibf_size
+			|| ( uint64_t ) ( index.data_offset ) + ( uint64_t ) ( index.data_length ) > ibf_size ) {
+			ReportError( PL_RESULT_FILESIZE, "offset/length falls beyond IBF size, aborting" );
+			goto ABORT;
+		}
 
-    strncpy(package->table[i].file.name, index.name, sizeof(package->table[i].file.name));
-    package->table[i].file.name[sizeof(package->table[i].file.name) - 1] = '\0';
-    package->table[i].file.size = index.data_length;
-    package->table[i].offset = index.data_offset;
-  }
+		strncpy( package->table[ i ].fileName, index.name, sizeof( package->table[ i ].fileName ) );
+		package->table[ i ].fileName[ sizeof( package->table[ i ].fileName ) - 1 ] = '\0';
+		package->table[ i ].fileSize = index.data_length;
+		package->table[ i ].offset = index.data_offset;
+	}
 
-  plCloseFile(fh);
+	plCloseFile( fh );
 
-  if (cache) {
-    fh = plOpenFile(package->path, cache);
-    if (fh == NULL) {
-      ReportError(PL_RESULT_FILEERR, "failed to open ibf \"%s\", aborting", package->path);
-      goto ABORT;
-    }
+	return package;
 
-    for (unsigned int i = 0; i < package->table_size; ++i) {
-      LoadLSTPackageFile(fh, &(package->table[i]));
-    }
-    plCloseFile(fh);
-  }
+	ABORT:
 
-  return package;
+	if ( package != NULL ) {
+		plDestroyPackage( package );
+	}
 
-  ABORT:
+	plCloseFile( fh );
 
-  if (package != NULL) {
-    plDestroyPackage(package);
-  }
-
-  plCloseFile(fh);
-
-  return NULL;
+	return NULL;
 }

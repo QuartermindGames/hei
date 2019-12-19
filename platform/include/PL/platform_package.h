@@ -31,31 +31,31 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_filesystem.h>
 
 typedef struct PLPackageIndex {
-    size_t          offset;
-    PLFileBuffer    file;
+	size_t offset;
+	char fileName[PL_SYSTEM_MAX_PATH];
+	size_t fileSize;
+	//uint8_t* dataPtr;
 } PLPackageIndex;
 
 typedef struct PLPackage {
-    char path[PL_SYSTEM_MAX_PATH];
-
-    unsigned int    table_size;
-    PLPackageIndex  *table;
-
-    struct {
-        bool(*LoadFile)(PLFile *fh, PLPackageIndex *pi);
-    } internal;
+	char path[PL_SYSTEM_MAX_PATH];
+	unsigned int table_size;
+	PLPackageIndex* table;
+	struct {
+		uint8_t* (* LoadFile)( PLFile* package, PLPackageIndex* index );
+	} internal;
 } PLPackage;
 
 PL_EXTERN_C
 
-PL_EXTERN PLPackage *plLoadPackage(const char *path, bool cache);
-PL_EXTERN bool plLoadPackageFile(PLPackage *package, const char *file, const uint8_t **data, size_t *size);
-PL_EXTERN void plDestroyPackage(PLPackage *package);
+PL_EXTERN PLPackage* plLoadPackage( const char* path );
+PL_EXTERN PLFile* plLoadPackageFile( PLPackage* package, const char* path );
+PL_EXTERN void plDestroyPackage( PLPackage* package );
 
-PL_EXTERN void plRegisterPackageLoader(const char *ext, PLPackage *(*LoadFunction)(const char *path, bool cache));
-PL_EXTERN void plRegisterStandardPackageLoaders(void);
-PL_EXTERN void plClearPackageLoaders(void);
+PL_EXTERN void plRegisterPackageLoader( const char* ext, PLPackage* (* LoadFunction)( const char* path ) );
+PL_EXTERN void plRegisterStandardPackageLoaders( void );
+PL_EXTERN void plClearPackageLoaders( void );
 
-PL_EXTERN PLPackage *plCreatePackage(const char *dest);
+PL_EXTERN PLPackage* plCreatePackage( const char* dest );
 
 PL_EXTERN_C_END

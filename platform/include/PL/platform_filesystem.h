@@ -39,13 +39,7 @@ For more information, please refer to <http://unlicense.org>
 
 #define pl_fclose(a)  fclose((a)); (a) = NULL
 
-typedef struct PLFileBuffer {
-    char        name[PL_SYSTEM_MAX_PATH];
-    size_t      size;
-    uint8_t     *data;
-} PLFileBuffer;
-
-typedef struct PLFile PLFile; // this will replace the above...
+typedef struct PLFile PLFile;
 
 PL_EXTERN_C
 
