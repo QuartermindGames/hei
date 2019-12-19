@@ -107,12 +107,12 @@ PL_EXTERN void plRewindFile( PLFile* ptr );
 
 /** FS Mounting **/
 
-PL_EXTERN void plClearMountedLocations( void );
-
 typedef struct PLFileSystemMount PLFileSystemMount;
 
 PL_EXTERN PLFileSystemMount* plMountLocation( const char* path );
-PL_EXTERN void plUnmountLocation( PLFileSystemMount id );
+
+PL_EXTERN void plClearMountedLocation( PLFileSystemMount* location );
+PL_EXTERN void plClearMountedLocations( void );
 
 /****/
 
