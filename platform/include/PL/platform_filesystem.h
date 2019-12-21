@@ -55,25 +55,29 @@ PL_EXTERN void plStripExtension(char *dest, size_t length, const char *in);
 PL_EXTERN const char *plGetFileExtension(const char *in);
 PL_EXTERN const char *plGetFileName(const char *path);
 
-PL_EXTERN bool plFileExists(const char *path);
-PL_EXTERN bool plPathExists(const char *path);
+PL_EXTERN bool plFileExists( const char* path );
+PL_EXTERN bool plPathExists( const char* path );
 
-PL_EXTERN void plScanDirectory(const char *path, const char *extension, void (*Function)(const char *), bool recursive);
+PL_EXTERN void plScanDirectory( const char* path,
+								const char* extension,
+								void (* Function)( const char* ),
+								bool recursive );
 
-PL_EXTERN bool plCreateDirectory(const char *path);
-PL_EXTERN bool plCreatePath(const char *path);
+PL_EXTERN bool plCreateDirectory( const char* path );
+PL_EXTERN bool plCreatePath( const char* path );
 
 // File I/O ...
 
-PL_EXTERN PLFile* plOpenFile(const char* path, bool cache);
-PL_EXTERN void plCloseFile(PLFile* ptr);
+PL_EXTERN PLFile* plOpenLocalFile( const char* path, bool cache );
+PL_EXTERN PLFile* plOpenFile( const char* path, bool cache );
+PL_EXTERN void plCloseFile( PLFile* ptr );
 
-PL_EXTERN bool plCopyFile(const char *path, const char *dest);
-PL_EXTERN bool plWriteFile(const char *path, const uint8_t* buf, size_t length);
-PL_EXTERN bool plDeleteFile(const char *path);
+PL_EXTERN bool plCopyFile( const char* path, const char* dest );
+PL_EXTERN bool plWriteFile( const char* path, const uint8_t* buf, size_t length );
+PL_EXTERN bool plDeleteFile( const char* path );
 
-PL_EXTERN bool plIsFileModified(time_t oldtime, const char *path);
-PL_EXTERN bool plIsEndOfFile(const PLFile* ptr);
+PL_EXTERN bool plIsFileModified( time_t oldtime, const char* path );
+PL_EXTERN bool plIsEndOfFile( const PLFile* ptr );
 
 PL_EXTERN const char* plGetFilePath(const PLFile* ptr);
 PL_EXTERN time_t plGetFileModifiedTime(const char *path);

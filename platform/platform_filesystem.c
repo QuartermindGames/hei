@@ -489,7 +489,7 @@ size_t plGetLocalFileSize( const char* path ) {
 
 ///////////////////////////////////////////
 
-static PLFile* _plOpenLocalFile( const char* path, bool cache ) {
+PLFile* plOpenLocalFile( const char* path, bool cache ) {
 	FILE* fp = fopen( path, "rb" );
 	if ( fp == NULL ) {
 		ReportError( PL_RESULT_FILEREAD, strerror( errno ) );
@@ -521,7 +521,7 @@ PLFile* plOpenFile( const char* path, bool cache ) {
 
 	if ( fs_mount_root == NULL ) {
 		/* nothing mounted, so just load locally */
-		return _plOpenLocalFile( path, cache );
+		return plOpenLocalFile( path, cache );
 	}
 
 	char buf[PL_SYSTEM_MAX_PATH];
@@ -531,7 +531,7 @@ PLFile* plOpenFile( const char* path, bool cache ) {
 		if ( location->type == FS_MOUNT_DIR ) {
 			/* todo: don't allow path to search outside of mounted path */
 			snprintf( buf, sizeof( buf ), "%s/%s", location->path, path );
-			fp = _plOpenLocalFile( buf, cache );
+			fp = plOpenLocalFile( buf, cache );
 		} else {
 			fp = plLoadPackageFile( location->pkg, path );
 		}
