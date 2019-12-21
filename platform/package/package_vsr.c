@@ -30,145 +30,140 @@ For more information, please refer to <http://unlicense.org>
 /* Loader for Sentient's VSR package format */
 
 typedef struct VSRChunkHeader {
-  char identifier[4];
-  uint32_t length;
+	char identifier[4];
+	uint32_t length;
 } VSRChunkHeader;
 
 typedef struct VSRDirectoryIndex {
-  uint32_t offset;         /* start offset for data */
-  uint32_t length;         /* length of the file in bytes */
-  uint32_t unknown0[8];
+	uint32_t offset;         /* start offset for data */
+	uint32_t length;         /* length of the file in bytes */
+	uint32_t unknown0[8];
 } VSRDirectoryIndex;
-_Static_assert(sizeof(VSRDirectoryIndex) == 40, "needs to be 40 bytes");
+_Static_assert( sizeof( VSRDirectoryIndex ) == 40, "needs to be 40 bytes" );
 
 typedef struct VSRDirectoryChunk {
-  VSRChunkHeader header;         /* DIRC */
-  uint32_t num_indices;    /* number of indices in this chunk */
+	VSRChunkHeader header;         /* DIRC */
+	uint32_t num_indices;    /* number of indices in this chunk */
 } VSRDirectoryChunk;
-_Static_assert(sizeof(VSRDirectoryChunk) == 12, "needs to be 12 bytes");
+_Static_assert( sizeof( VSRDirectoryChunk ) == 12, "needs to be 12 bytes" );
 
 typedef struct VSRStringIndex {
-  char file_name[256];
+	char file_name[256];
 } VSRStringIndex;
 
 typedef struct VSRStringChunk {
-  VSRChunkHeader header;         /* STRT */
-  uint32_t num_indices;
+	VSRChunkHeader header;         /* STRT */
+	uint32_t num_indices;
 } VSRStringChunk;
 
 typedef struct VSRHeader {
-  VSRChunkHeader header;         /* VSR1 */
-  uint32_t unknown0;
-  uint32_t unknown1;       /* always 4 */
-  uint32_t unknown2;
-  uint32_t length_data;    /* length of file, minus header */
-  uint32_t num_indices;    /* number of files in the package */
-  uint32_t num_indices2;   /* ditto to the above? */
+	VSRChunkHeader header;         /* VSR1 */
+	uint32_t unknown0;
+	uint32_t unknown1;       /* always 4 */
+	uint32_t unknown2;
+	uint32_t length_data;    /* length of file, minus header */
+	uint32_t num_indices;    /* number of files in the package */
+	uint32_t num_indices2;   /* ditto to the above? */
 } VSRHeader;
-_Static_assert(sizeof(VSRHeader) == 32, "needs to be 32 bytes");
+_Static_assert( sizeof( VSRHeader ) == 32, "needs to be 32 bytes" );
 
-static bool LoadVSRPackageFile(PLFile* fh, PLPackageIndex* pi) {
-  FunctionStart();
+static uint8_t* LoadVSRPackageFile( PLFile* fh, PLPackageIndex* pi ) {
+	FunctionStart();
 
-  pi->file.data = pl_malloc(pi->file.size);
-  if (pi->file.data == NULL) {
-    return false;
-  }
+	uint8_t* dataPtr = pl_malloc( pi->fileSize );
+	if ( !plFileSeek( fh, pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, 1, pi->fileSize ) != pi->fileSize ) {
+		pl_free( dataPtr );
+		return NULL;
+	}
 
-  if (!plFileSeek(fh, pi->offset, PL_SEEK_SET) || plReadFile(fh, pi->file.data, 1, pi->file.size) != pi->file.size) {
-    pl_free(pi->file.data);
-    pi->file.data = NULL;
-    return false;
-  }
-
-  return true;
+	return dataPtr;
 }
 
-PLPackage* plLoadVSRPackage(const char* path, bool cache) {
-  FunctionStart();
+PLPackage* plLoadVSRPackage( const char* path ) {
+	FunctionStart();
 
-  PLFile* fp = plOpenFile(path, false);
-  if (fp == NULL) {
-    return NULL;
-  }
+	PLFile* fp = plOpenFile( path, false );
+	if ( fp == NULL ) {
+		return NULL;
+	}
 
-  VSRHeader chunk_header;
-  VSRDirectoryChunk chunk_directory;
-  VSRStringChunk chunk_strings;
+	VSRHeader chunk_header;
+	VSRDirectoryChunk chunk_directory;
+	VSRStringChunk chunk_strings;
 
-  VSRDirectoryIndex* directories = NULL;
-  VSRStringIndex* strings = NULL;
+	VSRDirectoryIndex* directories = NULL;
+	VSRStringIndex* strings = NULL;
 
-  /* load in all the file data first */
+	/* load in all the file data first */
 
-  plReadFile(fp, &chunk_header, sizeof(VSRHeader), 1);
-  if (strncmp(chunk_header.header.identifier, "1RSV", 4) == 0) {
-    plReadFile(fp, &chunk_directory, sizeof(VSRDirectoryChunk), 1);
-    if (strncmp(chunk_directory.header.identifier, "CRID", 4) == 0) {
-      directories = pl_malloc(sizeof(VSRDirectoryIndex) * chunk_directory.num_indices);
-      plReadFile(fp, directories, sizeof(VSRDirectoryIndex), chunk_directory.num_indices);
+	plReadFile( fp, &chunk_header, sizeof( VSRHeader ), 1 );
+	if ( strncmp( chunk_header.header.identifier, "1RSV", 4 ) == 0 ) {
+		plReadFile( fp, &chunk_directory, sizeof( VSRDirectoryChunk ), 1 );
+		if ( strncmp( chunk_directory.header.identifier, "CRID", 4 ) == 0 ) {
+			directories = pl_malloc( sizeof( VSRDirectoryIndex ) * chunk_directory.num_indices );
+			plReadFile( fp, directories, sizeof( VSRDirectoryIndex ), chunk_directory.num_indices );
 
-      /* skip VSRN chunk, seems to be unused? */
-      plFileSeek(fp, 12, PL_SEEK_CUR);
+			/* skip VSRN chunk, seems to be unused? */
+			plFileSeek( fp, 12, PL_SEEK_CUR );
 
-      plReadFile(fp, &chunk_strings, sizeof(VSRStringChunk), 1);
-      if (strncmp(chunk_strings.header.identifier, "TRTS", 4) == 0) {
-        /* read in all the string offsets, which in turn helps us determine
-         * the length of each string */
+			plReadFile( fp, &chunk_strings, sizeof( VSRStringChunk ), 1 );
+			if ( strncmp( chunk_strings.header.identifier, "TRTS", 4 ) == 0 ) {
+				/* read in all the string offsets, which in turn helps us determine
+				 * the length of each string */
 
-        /* fuck this, let's do this the lazy way */
-        plFileSeek(fp, sizeof(uint32_t) * chunk_strings.num_indices, PL_SEEK_CUR);
-        strings = pl_calloc(sizeof(VSRStringIndex), chunk_strings.num_indices);
-        for (unsigned int i = 0; i < chunk_strings.num_indices; ++i) {
-          for (unsigned int j = 0; j < 256; ++j) {
-            strings[i].file_name[j] = plReadInt8(fp, NULL);
-            if (strings[i].file_name[j] == '\0') {
-              break;
-            }
-          }
-        }
-      } else {
-        ReportError(PL_RESULT_FILETYPE, "failed to read STRS header");
-      }
-    } else {
-      ReportError(PL_RESULT_FILETYPE, "failed to read DIRC header");
-    }
-  } else {
-    ReportError(PL_RESULT_FILETYPE, "failed to read VSR1 header");
-  }
+				/* fuck this, let's do this the lazy way */
+				plFileSeek( fp, sizeof( uint32_t ) * chunk_strings.num_indices, PL_SEEK_CUR );
+				strings = pl_calloc( sizeof( VSRStringIndex ), chunk_strings.num_indices );
+				for ( unsigned int i = 0; i < chunk_strings.num_indices; ++i ) {
+					for ( unsigned int j = 0; j < 256; ++j ) {
+						strings[ i ].file_name[ j ] = plReadInt8( fp, NULL );
+						if ( strings[ i ].file_name[ j ] == '\0' ) {
+							break;
+						}
+					}
+				}
+			} else {
+				ReportError( PL_RESULT_FILETYPE, "failed to read STRS header" );
+			}
+		} else {
+			ReportError( PL_RESULT_FILETYPE, "failed to read DIRC header" );
+		}
+	} else {
+		ReportError( PL_RESULT_FILETYPE, "failed to read VSR1 header" );
+	}
 
-  plCloseFile(fp);
+	plCloseFile( fp );
 
-  if (plGetFunctionResult() != PL_RESULT_SUCCESS) {
-    pl_free(directories);
-    pl_free(strings);
-    return NULL;
-  }
+	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
+		pl_free( directories );
+		pl_free( strings );
+		return NULL;
+	}
 
-  /* now create our package handle */
+	/* now create our package handle */
 
-  PLPackage* package = pl_malloc(sizeof(PLPackage));
-  if (package != NULL) {
-    package->internal.LoadFile = LoadVSRPackageFile;
-    package->table_size = chunk_directory.num_indices;
-    strncpy(package->path, path, sizeof(package->path));
-    if ((package->table = pl_calloc(package->table_size, sizeof(struct PLPackageIndex))) != NULL) {
-      for (unsigned int i = 0; i < package->table_size; ++i) {
-        PLPackageIndex* index = &package->table[i];
-        index->offset = directories[i].offset;
-        index->file.size = directories[i].length;
-        strncpy(index->file.name, strings[i].file_name, sizeof(index->file.name));
-      }
-    }
-  }
+	PLPackage* package = pl_malloc( sizeof( PLPackage ) );
+	if ( package != NULL ) {
+		package->internal.LoadFile = LoadVSRPackageFile;
+		package->table_size = chunk_directory.num_indices;
+		strncpy( package->path, path, sizeof( package->path ) );
+		if ( ( package->table = pl_calloc( package->table_size, sizeof( struct PLPackageIndex ) ) ) != NULL ) {
+			for ( unsigned int i = 0; i < package->table_size; ++i ) {
+				PLPackageIndex* index = &package->table[ i ];
+				index->offset = directories[ i ].offset;
+				index->fileSize = directories[ i ].length;
+				strncpy( index->fileName, strings[ i ].file_name, sizeof( index->fileName ) );
+			}
+		}
+	}
 
-  pl_free(directories);
-  pl_free(strings);
+	pl_free( directories );
+	pl_free( strings );
 
-  if (plGetFunctionResult() != PL_RESULT_SUCCESS) {
-    plDestroyPackage(package);
-    package = NULL;
-  }
+	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
+		plDestroyPackage( package );
+		package = NULL;
+	}
 
-  return package;
+	return package;
 }

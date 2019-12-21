@@ -35,72 +35,73 @@ For more information, please refer to <http://unlicense.org>
 #define PLPACKAGE_VERSION_MINOR     0
 
 enum {
-    PLPACKAGE_LEVEL_INDEX,
-    PLPACKAGE_MODEL_INDEX,
-    PLPACKAGE_TEXTURE_INDEX,
-    PLPACKAGE_MATERIAL_INDEX,
+	PLPACKAGE_LEVEL_INDEX,
+	PLPACKAGE_MODEL_INDEX,
+	PLPACKAGE_TEXTURE_INDEX,
+	PLPACKAGE_MATERIAL_INDEX,
 
-    PLPACKAGE_VERTICES_INDEX,
-    PLPACKAGE_TRIANGLES_INDEX,
+	PLPACKAGE_VERTICES_INDEX,
+	PLPACKAGE_TRIANGLES_INDEX,
 
-    // Level
-    PLPACKAGE_LEVEL_SECTORS_INDEX, // aka 'rooms', links in with triangles?
-    PLPACKAGE_LEVEL_PORTALS_INDEX, // aka 'doors', links in with triangles and sectors?
-    PLPACKAGE_LEVEL_OBJECTS_INDEX, // list of objects within the level
+	// Level
 
-    // Model
+	PLPACKAGE_LEVEL_SECTORS_INDEX, // aka 'rooms', links in with triangles?
+	PLPACKAGE_LEVEL_PORTALS_INDEX, // aka 'doors', links in with triangles and sectors?
+	PLPACKAGE_LEVEL_OBJECTS_INDEX, // list of objects within the level
 
-    // Texture
+	// Model
 
-    PLPACKAGE_UNKNOWN_INDEX,
+	// Texture
 
-    PLPACKAGE_LAST_INDEX
+	PLPACKAGE_UNKNOWN_INDEX,
+
+	PLPACKAGE_LAST_INDEX
 };
 
 typedef struct PLPackageHeader { // (PACKAGE)
-    uint8_t     identity[4];    // Descriptor/name of the data type. "PACK"
-    uint8_t     version[2];     // Version of this type.
+	uint8_t identity[4];    // Descriptor/name of the data type. "PACK"
+	uint8_t version[2];     // Version of this type.
 
-    uint32_t    num_indexes;    // Number of data indexes (each _should_ be a fixed size?)
+	uint32_t num_indexes;    // Number of data indexes (each _should_ be a fixed size?)
 
-    // followed by num_indexes + length
-    // then followed by rest of data
+	// followed by num_indexes + length
+	// then followed by rest of data
 } PLPackageHeader;
 
 typedef struct PLPackageIndexHeader {
-    uint16_t type;
-    uint32_t length;
+	uint16_t type;
+	uint32_t length;
 
-    // followed by type-specific index information
+	// followed by type-specific index information
 } PLPackageIndexHeader;
 
 PL_EXTERN_C
 
-PL_INLINE static void WritePackageHeader(FILE *handle, uint32_t num_indexes) {
-    plAssert(handle);
-    uint8_t identity [4]= { 'P', 'A', 'C', 'K' };
-    fwrite(identity, sizeof(char), sizeof(identity), handle);
-    uint8_t version [2]= {
-            PLPACKAGE_VERSION_MAJOR,
-            PLPACKAGE_VERSION_MINOR
-    };
-    fwrite(version, sizeof(uint8_t), sizeof(version), handle);
-    fwrite(&num_indexes, sizeof(uint32_t), 1, handle);
+PL_INLINE static void WritePackageHeader( FILE* handle, uint32_t num_indexes ) {
+	plAssert( handle );
+	uint8_t identity[4] = { 'P', 'A', 'C', 'K' };
+	fwrite( identity, sizeof( char ), sizeof( identity ), handle );
+	uint8_t version[2] = {
+		PLPACKAGE_VERSION_MAJOR,
+		PLPACKAGE_VERSION_MINOR
+	};
+	fwrite( version, sizeof( uint8_t ), sizeof( version ), handle );
+	fwrite( &num_indexes, sizeof( uint32_t ), 1, handle );
 }
 
-PL_INLINE static void WritePackageIndexHeader(FILE *handle, uint16_t type, uint32_t length) {
-    plAssert(handle);
-    fwrite(&type, sizeof(uint16_t), 1, handle);
-    fwrite(&length, sizeof(uint32_t), 1, handle);
+PL_INLINE static void WritePackageIndexHeader( FILE* handle, uint16_t type, uint32_t length ) {
+	plAssert( handle );
+	fwrite( &type, sizeof( uint16_t ), 1, handle );
+	fwrite( &length, sizeof( uint32_t ), 1, handle );
 }
 
 /////////////////////////////////////////////////////////////////
 
-PLPackage *plLoadMADPackage(const char *path, bool cache);
-PLPackage *plLoadARTPackage(const char *path, bool cache);
-PLPackage *plLoadLSTPackage(const char *path, bool cache);
-PLPackage *plLoadTABPackage(const char *path, bool cache);
-PLPackage *plLoadVSRPackage(const char *path, bool cache);
-PLPackage* plLoadFFPackage(const char* path, bool cache);
+PLPackage* plLoadMADPackage( const char* path );
+PLPackage* plLoadARTPackage( const char* path );
+PLPackage* plLoadLSTPackage( const char* path );
+PLPackage* plLoadTABPackage( const char* path );
+PLPackage* plLoadVSRPackage( const char* path );
+PLPackage* plLoadFFPackage( const char* path );
 
 PL_EXTERN_C_END

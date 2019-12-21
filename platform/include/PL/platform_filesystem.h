@@ -39,13 +39,7 @@ For more information, please refer to <http://unlicense.org>
 
 #define pl_fclose(a)  fclose((a)); (a) = NULL
 
-typedef struct PLFileBuffer {
-    char        name[PL_SYSTEM_MAX_PATH];
-    size_t      size;
-    uint8_t     *data;
-} PLFileBuffer;
-
-typedef struct PLFile PLFile; // this will replace the above...
+typedef struct PLFile PLFile;
 
 PL_EXTERN_C
 
@@ -97,12 +91,23 @@ PL_EXTERN int64_t plReadInt64(PLFile* ptr, bool big_endian, bool* status);
 PL_EXTERN char* plReadString(PLFile* ptr, char* str, size_t size);
 
 typedef enum PLFileSeek {
-    PL_SEEK_SET = SEEK_SET,
-    PL_SEEK_CUR = SEEK_CUR,
-    PL_SEEK_END = SEEK_END
+	PL_SEEK_SET = SEEK_SET,
+	PL_SEEK_CUR = SEEK_CUR,
+	PL_SEEK_END = SEEK_END
 } PLFileSeek;
 
-PL_EXTERN bool plFileSeek(PLFile* ptr, long int pos, PLFileSeek seek);
-PL_EXTERN void plRewindFile(PLFile* ptr);
+PL_EXTERN bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek );
+PL_EXTERN void plRewindFile( PLFile* ptr );
+
+/** FS Mounting **/
+
+typedef struct PLFileSystemMount PLFileSystemMount;
+
+PL_EXTERN PLFileSystemMount* plMountLocation( const char* path );
+
+PL_EXTERN void plClearMountedLocation( PLFileSystemMount* location );
+PL_EXTERN void plClearMountedLocations( void );
+
+/****/
 
 PL_EXTERN_C_END
