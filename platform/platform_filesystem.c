@@ -78,8 +78,12 @@ void plClearMountedLocation( PLFileSystemMount* location ) {
 		location->pkg = NULL;
 	}
 
-	location->prev->next = location->next;
-	location->next->prev = location->prev;
+	if ( location->prev != NULL ) {
+		location->prev->next = location->next;
+	}
+	if ( location->next != NULL ) {
+		location->next->prev = location->prev;
+	}
 
 	/* ensure root and ceiling are always pointing to a valid location */
 	if ( location == fs_mount_root ) {
@@ -105,8 +109,11 @@ static void _plInsertMountLocation( PLFileSystemMount* location ) {
 	}
 
 	location->prev = fs_mount_ceiling;
-	fs_mount_ceiling->next = location;
+	if ( fs_mount_ceiling != NULL ) {
+		fs_mount_ceiling->next = location;
+	}
 	fs_mount_ceiling = location;
+	location->next = NULL;
 }
 
 /**
@@ -530,6 +537,7 @@ PLFile* plOpenFile( const char* path, bool cache ) {
 		}
 
 		if ( fp == NULL ) {
+			location = location->next;
 			continue;
 		}
 
