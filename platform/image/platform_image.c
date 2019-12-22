@@ -382,6 +382,8 @@ static bool RGB8toRGBA8(PLImage* image) {
   image->size = size;
   image->format = PL_IMAGEFORMAT_RGBA8;
   image->colour_format = PL_COLOURFORMAT_RGBA;
+
+  return true;
 }
 
 bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
