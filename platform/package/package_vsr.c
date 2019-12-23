@@ -39,13 +39,13 @@ typedef struct VSRDirectoryIndex {
 	uint32_t length;         /* length of the file in bytes */
 	uint32_t unknown0[8];
 } VSRDirectoryIndex;
-_Static_assert( sizeof( VSRDirectoryIndex ) == 40, "needs to be 40 bytes" );
+PL_STATIC_ASSERT( sizeof( VSRDirectoryIndex ) == 40, "needs to be 40 bytes" );
 
 typedef struct VSRDirectoryChunk {
 	VSRChunkHeader header;         /* DIRC */
 	uint32_t num_indices;    /* number of indices in this chunk */
 } VSRDirectoryChunk;
-_Static_assert( sizeof( VSRDirectoryChunk ) == 12, "needs to be 12 bytes" );
+PL_STATIC_ASSERT( sizeof( VSRDirectoryChunk ) == 12, "needs to be 12 bytes" );
 
 typedef struct VSRStringIndex {
 	char file_name[256];
@@ -65,7 +65,7 @@ typedef struct VSRHeader {
 	uint32_t num_indices;    /* number of files in the package */
 	uint32_t num_indices2;   /* ditto to the above? */
 } VSRHeader;
-_Static_assert( sizeof( VSRHeader ) == 32, "needs to be 32 bytes" );
+PL_STATIC_ASSERT( sizeof( VSRHeader ) == 32, "needs to be 32 bytes" );
 
 static uint8_t* LoadVSRPackageFile( PLFile* fh, PLPackageIndex* pi ) {
 	FunctionStart();

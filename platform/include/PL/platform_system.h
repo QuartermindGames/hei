@@ -148,6 +148,8 @@ For more information, please refer to <http://unlicense.org>
 
 #   define PL_EXPORT    __declspec(dllexport)
 #   define PL_IMPORT    __declspec(dllimport)
+
+#	define PL_STATIC_ASSERT(a, b)	static_assert((a), b)
 #else
 #   define PL_INSTANCE  void*
 #   define PL_FARPROC   void*
@@ -165,4 +167,6 @@ For more information, please refer to <http://unlicense.org>
 
 #   define PL_EXPORT    __attribute__((visibility("default")))
 #   define PL_IMPORT    __attribute__((visibility("hidden")))
+
+#	define PL_STATIC_ASSERT(a)	_Static_assert((a), b)
 #endif
