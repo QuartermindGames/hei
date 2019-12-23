@@ -121,6 +121,8 @@ support.
 #   define plAssert(a) (a)
 #endif
 
+#define plUnused(a)	(void)(a)
+
 #define plArrayElements(a)  (sizeof(a) / sizeof(*(a)))          // Returns the number of elements within an array.
 #define plIsEmptyString(a)  (((a)[0] == '\0') || ((a)[0] == ' '))
 #define plStringify(num)    #num

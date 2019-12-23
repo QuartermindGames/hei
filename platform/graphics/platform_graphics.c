@@ -97,7 +97,7 @@ void plPushDebugGroupMarker(const char *msg) {
     CallGfxFunction(PushDebugGroupMarker, msg);
 }
 
-void plPopDebugGroupMarker() {
+void plPopDebugGroupMarker(void) {
     CallGfxFunction(PopDebugGroupMarker);
 }
 

@@ -38,12 +38,18 @@ For more information, please refer to <http://unlicense.org>
 #   define PL_SYSTEM_NAME               "WINDOWS"
 #   define PL_SYSTEM_LIBRARY_EXTENSION  ".dll"
 
+#if 0
 #   define PL_SYSTEM_MAX_PATH           259
+#else
+#	define PL_SYSTEM_MAX_PATH			256
+#endif
 #   define PL_SYSTEM_MAX_USERNAME       128
 
 #	ifdef _MSC_VER
 #		pragma warning(disable : 4152)
 #		pragma warning(disable : 4800)	// 'type' : forcing value to bool 'true' or 'false' (performance warning)
+#		pragma warning(disable : 4204)	// nonstandard extension used: non-constant aggregate initializer
+#		pragma warning(disable : 4201)	// nonstandard extension used: nameless struct/union
 
 #		ifndef itoa
 #			define	itoa		_itoa

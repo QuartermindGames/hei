@@ -41,10 +41,6 @@ typedef struct {
     char commandstring[128];
 } DTXHeader;
 
-typedef struct {
-    // no idea.
-} DTXSection;
-
 #define DTX_VERSION_2   -2 // Lithtech 1.0 (Shogo)
 // Lithtech 1.5
 // Lithtech 2.0

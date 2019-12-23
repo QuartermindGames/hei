@@ -25,11 +25,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#ifdef PL_SUPPORT_GLIDE
-
 #include <PL/platform_console.h>
 
 #include "graphics_private.h"
+
+#ifdef PL_SUPPORT_GLIDE
 
 /////////////////////////////////////////////////////////////
 
