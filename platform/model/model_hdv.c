@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include "model_private.h"
 
-typedef struct __attribute__((packed)) HDVHeader {
+PL_PACKED_STRUCT_START(HDVHeader)
     char identity[32]; /* includes start indicator before text string */
 
     uint32_t face_offset;
@@ -46,9 +46,9 @@ typedef struct __attribute__((packed)) HDVHeader {
     uint16_t num_faces;     /* -2, due to some left-over data */
 
     /* the rest of this is unknown - skip to the face offsets once done here! */
-} HDVHeader;
+PL_PACKED_STRUCT_END(HDVHeader)
 
-typedef struct __attribute__((packed)) HDVFace {
+PL_PACKED_STRUCT_START(HDVFace)
     uint8_t u0[2];
     uint8_t c_flag;
 
@@ -58,13 +58,13 @@ typedef struct __attribute__((packed)) HDVFace {
     uint16_t vertex_offsets[4];
 
     int8_t unknown1[16];
-} HDVFace;
+PL_PACKED_STRUCT_END(HDVFace)
 
-typedef struct __attribute__((packed)) HDVVertex {
+PL_PACKED_STRUCT_START(HDVVertex)
     int32_t x;
     int32_t y;
     int32_t z;
-} HDVVertex;
+PL_PACKED_STRUCT_END(HDVVertex)
 
 PLModel *plLoadHDVModel(const char *path) {
     PLFile *file = plOpenFile(path, false);

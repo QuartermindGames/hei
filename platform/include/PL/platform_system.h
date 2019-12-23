@@ -156,9 +156,17 @@ For more information, please refer to <http://unlicense.org>
 #   define PL_IMPORT    __declspec(dllimport)
 
 #	define PL_STATIC_ASSERT(a, b)	static_assert((a), b)
+
+#	define PL_PACKED_STRUCT_START(a) \
+		__pragma(pack(push,1)) \
+		typedef struct a {
+#	define PL_PACKED_STRUCT_END(a) \
+		} a; \
+		__pragma(pack(pop))
 #else
 #   define PL_INSTANCE  void*
 #   define PL_FARPROC   void*
+
 #	define PL_EXTERN    extern
 #	define PL_CALL
 #	define PL_INLINE    inline
@@ -175,4 +183,7 @@ For more information, please refer to <http://unlicense.org>
 #   define PL_IMPORT    __attribute__((visibility("hidden")))
 
 #	define PL_STATIC_ASSERT(a)	_Static_assert((a), b)
+
+#	define PL_PACKED_STRUCT_START(a)	typedef struct __attribute__((packed)) a {
+#	define PL_PACKED_STRUCT_END(a)		} a;
 #endif

@@ -189,7 +189,7 @@ bool plWriteObjModel(PLModel *model, const char *path) {
     /* for now, use the same name as the model for the material */
     const char *filename = plGetFileName(path);
     size_t len = strlen(filename);
-    char mtl_name[len];
+	char* mtl_name = pl_malloc( len );
     snprintf(mtl_name, len - 4, "%s", plGetFileName(path));
     fprintf(fp, "mtllib ./%s.mtl\n", mtl_name);
 
@@ -224,6 +224,8 @@ bool plWriteObjModel(PLModel *model, const char *path) {
             }
         }
     }
+
+	pl_free( mtl_name );
 
     fclose(fp);
 
