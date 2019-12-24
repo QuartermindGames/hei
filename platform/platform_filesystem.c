@@ -391,7 +391,32 @@ void plSetWorkingDirectory( const char* path ) {
  */
 bool plFileExists( const char* path ) {
 	struct stat buffer;
-	return ( bool ) ( stat( path, &buffer ) == 0 );
+	if ( fs_mount_root == NULL ) {
+		return ( bool ) ( stat( path, &buffer ) == 0 );
+	}
+
+	bool status = false;
+	PLFileSystemMount* location = fs_mount_root;
+	while ( location != NULL ) {
+		if ( location->type == FS_MOUNT_DIR ) {
+			/* todo: don't allow path to search outside of mounted path */
+			char buf[PL_SYSTEM_MAX_PATH];
+			snprintf( buf, sizeof( buf ), "%s/%s", location->path, path );
+			status = ( bool ) ( stat( path, &buffer ) == 0 );
+		} else {
+			PLFile* fp = plLoadPackageFile( location->pkg, path );
+			if ( fp != NULL ) {
+				plCloseFile( fp );
+				status = true;
+			}
+		}
+
+		if ( status ) {
+			break;
+		}
+	}
+
+	return status;
 }
 
 bool plPathExists( const char* path ) {
