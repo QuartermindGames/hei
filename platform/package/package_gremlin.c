@@ -44,12 +44,12 @@ For more information, please refer to <http://unlicense.org>
  * Thanks to solemnwarning for his help on this one!
  */
 
-typedef struct __attribute__((packed)) MADIndex {
+PL_PACKED_STRUCT_START(MADIndex)
 	char file[16];
 
 	uint32_t offset;
 	uint32_t length;
-} MADIndex;
+PL_PACKED_STRUCT_END(MADIndex)
 
 static uint8_t* LoadMADPackageFile( PLFile* fh, PLPackageIndex* pi ) {
 	uint8_t* dataPtr = pl_malloc( pi->fileSize );

@@ -237,12 +237,11 @@ PLBitmapFont *plCreateDefaultBitmapFont(void) {
     static PLBitmapFont *font = NULL;
     if(font == NULL) {
         size_t length = sizeof(f_zx_script);
-        char buf[length];
+        char* buf = pl_malloc(length);
         memcpy(buf, f_zx_script, length);
-        if((font = plParseBitmapFont("default", buf, length)) == NULL) {
-            /* ParseBitmapFont takes care of error reporting */
-            return NULL;
-        }
+		font = plParseBitmapFont("default", buf, length);
+        /* ParseBitmapFont takes care of error reporting */
+		pl_free(buf);
     }
     return font;
 }
@@ -304,8 +303,8 @@ void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColo
         }
     }
 
-    float w = font->chars[character].w;/* * scale; */
-    float h = font->chars[character].h;/* * scale; */
+    float w = (float)font->chars[character].w;/* * scale; */
+    float h = (float)font->chars[character].h;/* * scale; */
 
     plClearMesh(mesh);
 
@@ -318,10 +317,10 @@ void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColo
     plSetMeshVertexPosition(mesh, 2, PLVector3(x + w, y, 0));
     plSetMeshVertexPosition(mesh, 3, PLVector3(x + w, y + h, 0));
 
-    float tw = font->chars[character].w / font->texture->w;
-    float th = font->chars[character].h / font->texture->h;
-    float tx = font->chars[character].x / font->texture->w;
-    float ty = font->chars[character].y / font->texture->h;
+    float tw = (float)font->chars[character].w / font->texture->w;
+    float th = (float)font->chars[character].h / font->texture->h;
+    float tx = (float)font->chars[character].x / font->texture->w;
+    float ty = (float)font->chars[character].y / font->texture->h;
     plSetMeshVertexST(mesh, 0, tx, ty);
     plSetMeshVertexST(mesh, 1, tx, ty + th);
     plSetMeshVertexST(mesh, 2, tx + tw, ty);

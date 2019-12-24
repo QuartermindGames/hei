@@ -92,12 +92,12 @@ void plSetupCamera(PLCamera *camera) {
     camera->internal.proj = plMatrix4Identity();
     camera->internal.view = plMatrix4Identity();
 
-    int w = camera->viewport.w;
-    int h = camera->viewport.h;
+    float w = (float)camera->viewport.w;
+    float h = (float)camera->viewport.h;
 
     switch(camera->mode) {
         case PL_CAMERA_MODE_PERSPECTIVE: {
-            camera->internal.proj = plPerspective(camera->fov, (float)w / (float)h, camera->near, camera->far);
+            camera->internal.proj = plPerspective(camera->fov, w / h, camera->near, camera->far);
 
             PLVector3 forward = PLVector3(
                     cosf(plDegreesToRadians(camera->angles.y)) * cosf(plDegreesToRadians(camera->angles.x)),

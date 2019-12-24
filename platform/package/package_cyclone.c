@@ -37,10 +37,6 @@ For more information, please refer to <http://unlicense.org>
  * the other, DAT, contains indexes?
  */
 
-typedef struct DATIndex {
-
-} DATIndex;
-
 /* First two bytes are different depending upon
  * the type of ART package it is, followed by two
  * blank bytes. Can be assumed this

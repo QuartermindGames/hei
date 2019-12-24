@@ -78,11 +78,11 @@ enum {
  *  7E71413F 4C1E0DBC 9F3CA83F
  */
 
-typedef struct __attribute__((packed)) MDLVertex {
+PL_PACKED_STRUCT_START(MDLVertex)
   float x;
   float y;
   float z;
-} MDLVertex;
+PL_PACKED_STRUCT_END(MDLVertex)
 
 // 04:00:00:00:B4:BC:79:00:00:00:00:00:00:00:00:00:
 // BC:BC:79:00:1C:00:1F:00:1B:00:19:00:57:D0:76:00:
@@ -182,7 +182,7 @@ PLModel* LoadStaticRequiemModel(PLFile* fp) {
     return NULL;
   }
 
-  char texture_name[texture_name_length];
+  char texture_name[MAX_TEXTURE_NAME];
   if (plReadFile(fp, texture_name, sizeof(char), texture_name_length) != texture_name_length) {
     ReportError(PL_RESULT_FILEREAD, "invalid file length, failed to get texture name");
     return NULL;

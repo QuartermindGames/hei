@@ -140,6 +140,8 @@ PLTexture *plCreateTexture(void) {
 }
 
 void plDestroyTexture(PLTexture *texture, bool force) {
+	plUnused(force);
+
     if(texture == NULL) {
         return;
     }

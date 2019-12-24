@@ -68,8 +68,6 @@ bool plLoadSWLImage(PLFile* fin, PLImage* out) {
   }
 
   memset(out, 0, sizeof(PLImage));
-  out->width = header.width;
-  out->height = header.height;
 
   struct {
     uint8_t r, g, b, a;
@@ -86,13 +84,9 @@ bool plLoadSWLImage(PLFile* fin, PLImage* out) {
     return false;
   }
 
+  out->width = header.width;
+  out->height = header.height;
   out->levels = 4;
-  out->data = pl_calloc(out->levels, sizeof(uint8_t*));
-  if (out->data == NULL) {
-    plFreeImage(out);
-    return false;
-  }
-
   out->colour_format = PL_COLOURFORMAT_RGBA;
   out->format = PL_IMAGEFORMAT_RGBA8;
   out->size = plGetImageSize(out->format, out->width, out->height);
@@ -106,15 +100,23 @@ bool plLoadSWLImage(PLFile* fin, PLImage* out) {
     }
 
     size_t buf_size = mip_w * mip_h;
-    uint8_t buf[buf_size];
-    if (plReadFile(fin, buf, 1, sizeof(buf)) != buf_size) {
-      plFreeImage(out);
+    uint8_t *buf = pl_malloc(buf_size);
+    if (plReadFile(fin, buf, 1, buf_size) != buf_size) {
+		pl_free(buf);
       return false;
     }
+
+	out->data = pl_calloc(out->levels, sizeof(uint8_t*));
+	if (out->data == NULL) {
+		pl_free(buf);
+		plFreeImage(out);
+		return false;
+	}
 
     size_t level_size = plGetImageSize(out->format, mip_w, mip_h);
     out->data[i] = pl_calloc(level_size, sizeof(uint8_t));
     if (out->data[i] == NULL) {
+		pl_free(buf);
       plFreeImage(out);
       return false;
     }
@@ -133,6 +135,8 @@ bool plLoadSWLImage(PLFile* fin, PLImage* out) {
        * because of that we'll just ignore it */
       out->data[i][k + 3] = 255; /*(uint8_t) (255 - palette[buf[j]].a);*/
     }
+
+	pl_free(buf);
   }
 
   return true;

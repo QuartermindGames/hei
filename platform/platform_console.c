@@ -98,7 +98,7 @@ void plRegisterConsoleCommand(const char *name, void(*CallbackFunction)(unsigned
     }
 }
 
-void plGetConsoleCommands(PLConsoleCommand *** const cmds, size_t * const num_cmds) {
+void plGetConsoleCommands(const PLConsoleCommand *** cmds, size_t *num_cmds) {
     *cmds = _pl_commands;
     *num_cmds = _pl_num_commands;
 }
@@ -171,7 +171,7 @@ PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, 
     return out;
 }
 
-void plGetConsoleVariables(PLConsoleVariable *** const vars, size_t * const num_vars) {
+void plGetConsoleVariables(const PLConsoleVariable *** vars, size_t * num_vars) {
     *vars = _pl_variables;
     *num_vars = _pl_num_variables;
 }
@@ -254,6 +254,8 @@ static bool console_visible = false;
 // PRIVATE
 
 IMPLEMENT_COMMAND(pwd, "Print current working directory.") {
+	plUnused(argv);
+	plUnused(argc);
     Print("%s\n", plGetWorkingDirectory());
 }
 
@@ -271,18 +273,25 @@ IMPLEMENT_COMMAND(clear, "Clears the console buffer.") {
 #endif
 
 IMPLEMENT_COMMAND(colour, "Changes the colour of the current console.") {
+	plUnused(argv);
+	plUnused(argc);
     //console_panes[active_console_pane].
 }
 
 IMPLEMENT_COMMAND(time, "Prints out the current time.") {
+	plUnused(argv);
+	plUnused(argc);
     Print("%s\n", plGetFormattedTime());
 }
 
 IMPLEMENT_COMMAND(mem, "Prints out current memory usage.") {
-
+	plUnused(argv);
+	plUnused(argc);
 }
 
 IMPLEMENT_COMMAND(cmds, "Produces list of existing commands.") {
+	plUnused(argv);
+	plUnused(argc);
     for(PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd) {
         Print(" %-20s : %-20s\n", (*cmd)->cmd, (*cmd)->description);
     }
@@ -290,6 +299,8 @@ IMPLEMENT_COMMAND(cmds, "Produces list of existing commands.") {
 }
 
 IMPLEMENT_COMMAND(vars, "Produces list of existing variables.") {
+	plUnused(argv);
+	plUnused(argc);
     for(PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var) {
         Print(" %-20s : %-5s / %-15s : %-20s\n",
                (*var)->var, (*var)->value, (*var)->default_value, (*var)->description);
@@ -515,10 +526,10 @@ static void ResizeConsoles(void) {
             }
         }
 
-        console_panes[i].display.wh.x = width;
-        console_panes[i].display.wh.y = height;
-        console_panes[i].display.xy.x = position_x;
-        console_panes[i].display.xy.x = position_y;
+        console_panes[i].display.wh.x = (float)width;
+        console_panes[i].display.wh.y = (float)height;
+        console_panes[i].display.xy.x = (float)position_x;
+        console_panes[i].display.xy.x = (float)position_y;
     }
 #endif
 }

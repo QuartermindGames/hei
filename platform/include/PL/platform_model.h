@@ -57,9 +57,11 @@ typedef enum PLModelType {
     PL_NUM_MODELTYPES
 } PLModelType;
 
+#if 0
 typedef struct PLStaticModelData {
     /* nothing to do? */
 } PLStaticModelData;
+#endif
 
 typedef struct PLVertexAnimationFrame {
     /* todo: store submeshes into PLMesh struct */
@@ -120,7 +122,7 @@ typedef struct PLModel {
         /* model type data */
         union {
             PLSkeletalModelData     skeletal_data;  /* skeletal animation data */
-            PLStaticModelData       static_data;    /* static model data */
+            //PLStaticModelData       static_data;    /* static model data */
             PLVertexAnimModelData   vertex_data;    /* per-vertex animation data */
         };
     } internal;

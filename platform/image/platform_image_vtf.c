@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org>
 
 /*  Valve's VTF Format (https://developer.valvesoftware.com/wiki/Valve_Texture_Format)  */
 
-typedef struct __attribute__((packed)) VTFHeader {
+PL_PACKED_STRUCT_START(VTFHeader)
     unsigned int version[2];        // Minor followed by major.
     unsigned int header_size;       // I guess this is used to support header alterations?
     unsigned short width, height;   // Width and height of the texture.
@@ -45,7 +45,7 @@ typedef struct __attribute__((packed)) VTFHeader {
     unsigned int lowresimageformat;
     unsigned char lowresimagewidth;
     unsigned char lowresimageheight;
-} VTFHeader;
+PL_PACKED_STRUCT_END(VTFHeader)
 
 typedef struct VTFHeader72 {
     unsigned short depth;

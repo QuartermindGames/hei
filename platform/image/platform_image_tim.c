@@ -125,7 +125,7 @@ bool plLoadTIMImage(PLFile *fin, PLImage *out) {
     memset(out, 0, sizeof(PLImage));
 
     uint16_t *palette = NULL;
-    void *image_data  = NULL;
+    uint8_t *image_data  = NULL;
 
     TIMHeader header;
     if (plReadFile(fin, &header, sizeof(TIMHeader), 1) != 1) {

@@ -334,7 +334,7 @@ PL_EXTERN_C
 // Debugging
 PL_EXTERN void plInsertDebugMarker(const char *msg);
 PL_EXTERN void plPushDebugGroupMarker(const char *msg);
-PL_EXTERN void plPopDebugGroupMarker();
+PL_EXTERN void plPopDebugGroupMarker(void);
 
 // Hardware Information
 PL_EXTERN const char *plGetHWExtensions(void);

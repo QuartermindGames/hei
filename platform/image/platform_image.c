@@ -382,6 +382,8 @@ static bool RGB8toRGBA8(PLImage* image) {
   image->size = size;
   image->format = PL_IMAGEFORMAT_RGBA8;
   image->colour_format = PL_COLOURFORMAT_RGBA;
+
+  return true;
 }
 
 bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
@@ -409,7 +411,7 @@ bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
                     if(levels[l] == NULL) {
                         /* Memory allocation failed, ditch any buffers we've created so far. */
                         for(unsigned int m = 0; m < image->levels; ++m) {
-                            free(levels[m]);
+                            pl_free(levels[m]);
                         }
 
                         ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate memory for image data");
@@ -423,7 +425,7 @@ bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
                 /* Now that all levels have been converted, free and replace the old buffers. */
 
                 for(unsigned int l = 0; l < image->levels; ++l) {
-                    free(image->data[l]);
+					pl_free(image->data[l]);
                     image->data[l] = levels[l];
                 }
 
@@ -447,16 +449,11 @@ unsigned int plGetImageSize(PLImageFormat format, unsigned int width, unsigned i
         case PL_IMAGEFORMAT_RGBA_DXT1:  return width * height * 4;
         case PL_IMAGEFORMAT_RGBA_DXT3:
         case PL_IMAGEFORMAT_RGBA_DXT5:  return width * height;
-
-        case PL_IMAGEFORMAT_RGB5A1:     return width * height * 2;
-        case PL_IMAGEFORMAT_RGB8:
-        case PL_IMAGEFORMAT_RGB565:     return width * height * 3;
-        case PL_IMAGEFORMAT_RGBA4:
-        case PL_IMAGEFORMAT_RGBA8:      return width * height * 4;
-        case PL_IMAGEFORMAT_RGBA16F:
-        case PL_IMAGEFORMAT_RGBA16:     return width * height * 8;
-
-        default:    return 0;
+        default:
+		{
+			unsigned int bytes = plImageBytesPerPixel(format);
+			return width * height * bytes;
+		}
     }
 }
 

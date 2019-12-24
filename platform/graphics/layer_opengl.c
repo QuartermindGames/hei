@@ -74,7 +74,7 @@ static void GLPushDebugGroupMarker(const char *msg) {
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, msg);
 }
 
-static void GLPopDebugGroupMarker() {
+static void GLPopDebugGroupMarker(void) {
     glPopDebugGroup();
 }
 
@@ -777,6 +777,8 @@ static void GLAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) 
 }
 
 static void GLCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) {
+	plUnused(length);
+
     if(!GLVersion(2,0)) {
         return;
     }
@@ -804,6 +806,8 @@ static void GLCompileShaderStage(PLShaderStage *stage, const char *buf, size_t l
 }
 
 static void GLSetShaderUniformMatrix4(PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose) {
+	plUnused(program);
+
     GLuint loc = (GLuint)slot;
     glUniformMatrix4fv( loc, 1, transpose ? GL_TRUE : GL_FALSE, value.m);
 }
@@ -920,6 +924,11 @@ static void MessageCallback(
         GLsizei length,
         const GLchar *message,
         void *param) {
+	plUnused(source);
+	plUnused(id);
+	plUnused(length);
+	plUnused(param);
+
     const char *s_severity;
     switch(severity) {
         case GL_DEBUG_SEVERITY_HIGH: {

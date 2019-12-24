@@ -38,12 +38,18 @@ For more information, please refer to <http://unlicense.org>
 #   define PL_SYSTEM_NAME               "WINDOWS"
 #   define PL_SYSTEM_LIBRARY_EXTENSION  ".dll"
 
+#if 0
 #   define PL_SYSTEM_MAX_PATH           259
+#else
+#	define PL_SYSTEM_MAX_PATH			256
+#endif
 #   define PL_SYSTEM_MAX_USERNAME       128
 
 #	ifdef _MSC_VER
 #		pragma warning(disable : 4152)
 #		pragma warning(disable : 4800)	// 'type' : forcing value to bool 'true' or 'false' (performance warning)
+#		pragma warning(disable : 4204)	// nonstandard extension used: non-constant aggregate initializer
+#		pragma warning(disable : 4201)	// nonstandard extension used: nameless struct/union
 
 #		ifndef itoa
 #			define	itoa		_itoa
@@ -148,9 +154,19 @@ For more information, please refer to <http://unlicense.org>
 
 #   define PL_EXPORT    __declspec(dllexport)
 #   define PL_IMPORT    __declspec(dllimport)
+
+#	define PL_STATIC_ASSERT(a, b)	static_assert((a), b)
+
+#	define PL_PACKED_STRUCT_START(a) \
+		__pragma(pack(push,1)) \
+		typedef struct a {
+#	define PL_PACKED_STRUCT_END(a) \
+		} a; \
+		__pragma(pack(pop))
 #else
 #   define PL_INSTANCE  void*
 #   define PL_FARPROC   void*
+
 #	define PL_EXTERN    extern
 #	define PL_CALL
 #	define PL_INLINE    inline
@@ -165,4 +181,9 @@ For more information, please refer to <http://unlicense.org>
 
 #   define PL_EXPORT    __attribute__((visibility("default")))
 #   define PL_IMPORT    __attribute__((visibility("hidden")))
+
+#	define PL_STATIC_ASSERT(a)	_Static_assert((a), b)
+
+#	define PL_PACKED_STRUCT_START(a)	typedef struct __attribute__((packed)) a {
+#	define PL_PACKED_STRUCT_END(a)		} a;
 #endif
