@@ -384,15 +384,19 @@ void plSetWorkingDirectory( const char* path ) {
 /////////////////////////////////////////////////////////////////////////////////////
 // FILE I/O
 
+bool plLocalFileExists( const char* path ) {
+	struct stat buffer;
+	return ( bool ) ( stat( path, &buffer ) == 0 );
+}
+
 /**
  * Checks whether or not the given file is accessible or exists.
  * @param path
  * @return False if the file wasn't accessible.
  */
 bool plFileExists( const char* path ) {
-	struct stat buffer;
 	if ( fs_mount_root == NULL ) {
-		return ( bool ) ( stat( path, &buffer ) == 0 );
+		return plLocalFileExists( path );
 	}
 
 	bool status = false;
@@ -402,7 +406,7 @@ bool plFileExists( const char* path ) {
 			/* todo: don't allow path to search outside of mounted path */
 			char buf[PL_SYSTEM_MAX_PATH];
 			snprintf( buf, sizeof( buf ), "%s/%s", location->path, path );
-			status = ( bool ) ( stat( path, &buffer ) == 0 );
+			status = plLocalFileExists( buf );
 		} else {
 			PLFile* fp = plLoadPackageFile( location->pkg, path );
 			if ( fp != NULL ) {
@@ -414,6 +418,8 @@ bool plFileExists( const char* path ) {
 		if ( status ) {
 			break;
 		}
+
+		location = location->next;
 	}
 
 	return status;
