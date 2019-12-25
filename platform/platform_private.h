@@ -54,18 +54,19 @@ For more information, please refer to <http://unlicense.org>
 /*********************************/
 
 enum {
-    LOG_LEVEL_HIGH          = -1,
-    LOG_LEVEL_MEDIUM        = -2,
-    LOG_LEVEL_LOW           = -3,
-    LOG_LEVEL_DEBUG         = -4,
-    LOG_LEVEL_GRAPHICS      = -5,
-    LOG_LEVEL_FILESYSTEM    = -6,
-    LOG_LEVEL_MODEL         = -7,
-    LOG_LEVEL_END           = 10
+	LOG_LEVEL_HIGH = -1,    // Error
+	LOG_LEVEL_MEDIUM = -2,    // Warning
+	LOG_LEVEL_LOW = -3,    // Info
+	LOG_LEVEL_DEBUG = -4,
+	LOG_LEVEL_GRAPHICS = -5,
+	LOG_LEVEL_FILESYSTEM = -6,
+	LOG_LEVEL_MODEL = -7,
+	LOG_LEVEL_END = 10
 };
 
 #define Print(...)          plLogMessage(LOG_LEVEL_LOW, __VA_ARGS__)
-#define PrintWarning(...)   plLogMessage(LOG_LEVEL_MEDIUM, __VA_ARGS__)
+#define PrintWarning( ... )   plLogMessage(LOG_LEVEL_MEDIUM, __VA_ARGS__)
+#define PrintError( ... )        plLogMessage(LOG_LEVEL_HIGH, __VA_ARGS__)
 #ifdef _DEBUG
 #   define debug_printf(...)    printf(__VA_ARGS__)
 #   define DebugPrint(...)      plLogMessage(LOG_LEVEL_DEBUG, __VA_ARGS__)
@@ -79,11 +80,12 @@ void plSetFunctionResult(PLresult result);
 #define FunctionStart() \
     _plResetError()
 
-#define ReportError(type, ...) \
+#define ReportError( type, ... ) \
+    PrintWarning( __VA_ARGS__ ); \
     plSetCurrentFunction(PL_FUNCTION); \
     plSetFunctionResult(type); \
     SetErrorMessage(__VA_ARGS__)
-#define ReportBasicError(type) \
+#define ReportBasicError( type ) \
     ReportError((type), plGetResultString((type)))
 
 #define SetResult(r)    ReportError(r, plGetResultString((r)))
