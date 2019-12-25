@@ -125,6 +125,9 @@ PLFileSystemMount* plMountLocation( const char* path ) {
 		_plInsertMountLocation( location );
 		location->type = FS_MOUNT_DIR;
 		snprintf( location->path, sizeof( location->path ), "%s", path );
+
+		Print( "Mounted directory %s successfully!\n", path );
+
 		return location;
 	} else { /* attempt to mount it as a package */
 		PLPackage* pkg = plLoadPackage( path );
@@ -132,6 +135,9 @@ PLFileSystemMount* plMountLocation( const char* path ) {
 			_plInsertMountLocation( location );
 			location->type = FS_MOUNT_PACKAGE;
 			location->pkg = pkg;
+
+			Print( "Mounted package %s successfully!\n", path );
+
 			return location;
 		}
 	}
