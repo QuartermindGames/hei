@@ -45,17 +45,19 @@ PL_EXTERN_C
 
 PL_EXTERN char *plGetUserName(char *out, size_t n);
 
-PL_EXTERN const char *plGetWorkingDirectory(void);
-PL_EXTERN void plSetWorkingDirectory(const char *path);
+PL_EXTERN const char* plGetWorkingDirectory( void );
+PL_EXTERN void plSetWorkingDirectory( const char* path );
 
-PL_EXTERN char *plGetApplicationDataDirectory(const char *app_name, char *out, size_t n);
+PL_EXTERN char* plGetApplicationDataDirectory( const char* app_name, char* out, size_t n );
 
-PL_EXTERN void plStripExtension(char *dest, size_t length, const char *in);
+PL_EXTERN void plStripExtension( char* dest, size_t length, const char* in );
 
-PL_EXTERN const char *plGetFileExtension(const char *in);
-PL_EXTERN const char *plGetFileName(const char *path);
+PL_EXTERN const char* plGetFileExtension( const char* in );
+PL_EXTERN const char* plGetFileName( const char* path );
 
+PL_EXTERN bool plLocalFileExists( const char* path );
 PL_EXTERN bool plFileExists( const char* path );
+PL_EXTERN bool plLocalPathExists( const char* path );
 PL_EXTERN bool plPathExists( const char* path );
 
 PL_EXTERN void plScanDirectory( const char* path,

@@ -399,33 +399,30 @@ bool plFileExists( const char* path ) {
 		return plLocalFileExists( path );
 	}
 
-	bool status = false;
 	PLFileSystemMount* location = fs_mount_root;
 	while ( location != NULL ) {
 		if ( location->type == FS_MOUNT_DIR ) {
 			/* todo: don't allow path to search outside of mounted path */
 			char buf[PL_SYSTEM_MAX_PATH];
 			snprintf( buf, sizeof( buf ), "%s/%s", location->path, path );
-			status = plLocalFileExists( buf );
+			if ( plLocalFileExists( buf ) ) {
+				return true;
+			}
 		} else {
 			PLFile* fp = plLoadPackageFile( location->pkg, path );
 			if ( fp != NULL ) {
 				plCloseFile( fp );
-				status = true;
+				return true;
 			}
-		}
-
-		if ( status ) {
-			break;
 		}
 
 		location = location->next;
 	}
 
-	return status;
+	return false;
 }
 
-bool plPathExists( const char* path ) {
+bool plLocalPathExists( const char* path ) {
 #if defined(_MSC_VER)
 	DWORD fa = GetFileAttributes(path);
 	if (fa & FILE_ATTRIBUTE_DIRECTORY) {
@@ -438,6 +435,32 @@ bool plPathExists( const char* path ) {
 		return true;
 	}
 #endif
+
+	return false;
+}
+
+bool plPathExists( const char* path ) {
+	PLFileSystemMount* location = fs_mount_root;
+	while ( location != NULL ) {
+		if ( location->type == FS_MOUNT_DIR ) {
+			/* todo: don't allow path to search outside of mounted path */
+			char buf[PL_SYSTEM_MAX_PATH];
+			snprintf( buf, sizeof( buf ), "%s/%s", location->path, path );
+			if ( plLocalPathExists( buf ) ) {
+				return true;
+			}
+		} else {
+			for ( unsigned int i = 0; i < location->pkg->table_size; ++i ) {
+				char* p = strstr( location->pkg->path, path );
+				if ( p != NULL && p == location->pkg->path ) {
+					return true;
+				}
+			}
+		}
+
+		location = location->next;
+	}
+
 	return false;
 }
 
