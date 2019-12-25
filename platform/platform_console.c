@@ -253,15 +253,30 @@ static bool console_visible = false;
 /////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE
 
-IMPLEMENT_COMMAND(pwd, "Print current working directory.") {
-	plUnused(argv);
-	plUnused(argc);
-    Print("%s\n", plGetWorkingDirectory());
+IMPLEMENT_COMMAND( mount, "Mount the specified directory." ) {
+	if ( argc == 1 ) {
+		Print( "%s", mount_var.description );
+		return;
+	}
+
+	const char* path = argv[ 1 ];
+	if ( path == NULL ) {
+		Print( "Invalid path specified!\n" );
+		return;
+	}
+
+	plMountLocation( path );
 }
 
-IMPLEMENT_COMMAND(echo, "Prints out string to console.") {
-    for(unsigned int i = 0; i < (argc - 1); ++i) {
-        Print("%s ", argv[i]);
+IMPLEMENT_COMMAND( pwd, "Print current working directory." ) {
+	plUnused( argv );
+	plUnused( argc );
+	Print( "%s\n", plGetWorkingDirectory() );
+}
+
+IMPLEMENT_COMMAND( echo, "Prints out string to console." ) {
+	for ( unsigned int i = 0; i < ( argc - 1 ); ++i ) {
+		Print( "%s ", argv[ i ] );
     }
     Print("\n");
 }
