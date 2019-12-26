@@ -71,7 +71,7 @@ static uint8_t* LoadVSRPackageFile( PLFile* fh, PLPackageIndex* pi ) {
 	FunctionStart();
 
 	uint8_t* dataPtr = pl_malloc( pi->fileSize );
-	if ( !plFileSeek( fh, pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, 1, pi->fileSize ) != pi->fileSize ) {
+	if ( !plFileSeek( fh, (signed)pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, 1, pi->fileSize ) != pi->fileSize ) {
 		pl_free( dataPtr );
 		return NULL;
 	}

@@ -27,6 +27,8 @@ For more information, please refer to <http://unlicense.org>
 
 #include "graphics_private.h"
 
+#if 0
+
 /* immediate graphics UI implementation */
 
 typedef int PLWidgetID;
@@ -39,3 +41,5 @@ bool plButton(PLWidgetID id, const char *label, int x, int y, unsigned int w, un
 
     return false;
 }
+
+#endif

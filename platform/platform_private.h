@@ -37,12 +37,11 @@ For more information, please refer to <http://unlicense.org>
 
 // OS Specific Headers
 #if defined(_WIN32)
-#define WIN32_LEAN_AND_MEAN 1
-#include <windows.h>
-#include <afxres.h>
-#define STRSAFE_NO_DEPRECATE 1
-#include <strsafe.h>
-
+//#define WIN32_LEAN_AND_MEAN 1
+//#include <windows.h>
+//#include <afxres.h>
+//#define STRSAFE_NO_DEPRECATE 1
+//#include <strsafe.h>
 #undef far
 #undef near
 #endif
@@ -64,9 +63,11 @@ enum {
 	LOG_LEVEL_END = 10
 };
 
-#define Print(...)          plLogMessage(LOG_LEVEL_LOW, __VA_ARGS__)
-#define PrintWarning( ... )   plLogMessage(LOG_LEVEL_MEDIUM, __VA_ARGS__)
-#define PrintError( ... )        plLogMessage(LOG_LEVEL_HIGH, __VA_ARGS__)
+void plLogMessage( int level, const char* msg, ... );
+
+#define Print(...)				plLogMessage(LOG_LEVEL_LOW, __VA_ARGS__)
+#define PrintWarning( ... )		plLogMessage(LOG_LEVEL_MEDIUM, __VA_ARGS__)
+#define PrintError( ... )		plLogMessage(LOG_LEVEL_HIGH, __VA_ARGS__)
 #ifdef _DEBUG
 #   define debug_printf(...)    printf(__VA_ARGS__)
 #   define DebugPrint(...)      plLogMessage(LOG_LEVEL_DEBUG, __VA_ARGS__)

@@ -37,7 +37,7 @@ For more information, please refer to <http://unlicense.org>
 
 static uint8_t* LoadLSTPackageFile( PLFile* fh, PLPackageIndex* pi ) {
 	uint8_t* dataPtr = pl_malloc( pi->fileSize );
-	if ( !plFileSeek( fh, pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, pi->fileSize, 1 ) != 1 ) {
+	if ( !plFileSeek( fh, (signed)pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, pi->fileSize, 1 ) != 1 ) {
 		pl_free( dataPtr );
 		return NULL;
 	}

@@ -50,6 +50,7 @@ For more information, please refer to <http://unlicense.org>
 #		pragma warning(disable : 4800)	// 'type' : forcing value to bool 'true' or 'false' (performance warning)
 #		pragma warning(disable : 4204)	// nonstandard extension used: non-constant aggregate initializer
 #		pragma warning(disable : 4201)	// nonstandard extension used: nameless struct/union
+#       pragma warning(disable : 4996)	// The POSIX name for this item is deprecated.
 
 #		ifndef itoa
 #			define	itoa		_itoa

@@ -248,7 +248,7 @@ typedef struct PLVector3 {
 
 #ifndef __cplusplus
 
-#   define PLVector3(x, y, z)   (PLVector3){x, y, z}
+#   define PLVector3(x, y, z)   (PLVector3){ (float)x, (float)y, (float)z }
 
 #endif
 

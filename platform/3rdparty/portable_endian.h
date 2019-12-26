@@ -57,7 +57,6 @@
 #define le64toh(x) letoh64(x)
 #elif defined(__WINDOWS__)
 #include <winsock2.h>
-#include <sys/param.h>
 
 #ifdef __GNUC__
 #ifdef __MINGW32__

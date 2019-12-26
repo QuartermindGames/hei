@@ -45,7 +45,12 @@ add_definitions("-D_DEBUG")
 
 file(
         GLOB PLATFORM_SOURCE_FILES
-        *.cpp *.c *.h
+        
+		platform.c
+		platform_console.c
+		platform_filesystem.c 
+		platform_memory.c 
+		platform_parser.c 
 
         string/*.*
         memory/*.*
@@ -77,7 +82,7 @@ target_compile_options(platform PUBLIC -DPL_INTERNAL)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	target_compile_options(platform PUBLIC -fPIC)
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
-	target_compile_options(platform PUBLIC -D_CRT_SECURE_NO_WARNINGS)
+	target_compile_options(platform PUBLIC -D_CRT_SECURE_NO_WARNINGS /W3)
 endif()
 
 function(build_glew)

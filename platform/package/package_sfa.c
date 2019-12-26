@@ -33,7 +33,7 @@ For more information, please refer to <http://unlicense.org>
 
 static uint8_t* LoadTABPackageFile( PLFile* fh, PLPackageIndex* pi ) {
 	uint8_t* dataPtr = pl_malloc( pi->fileSize );
-	if ( !plFileSeek( fh, pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, pi->fileSize, 1 ) != 1 ) {
+	if ( !plFileSeek( fh, (signed)pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, pi->fileSize, 1 ) != 1 ) {
 		pl_free( dataPtr );
 		return NULL;
 	}
@@ -68,17 +68,19 @@ PLPackage* plLoadTABPackage( const char* path ) {
 
 	unsigned int num_indices = ( unsigned int ) ( tab_size / sizeof( TabIndex ) );
 
-	TabIndex indices[num_indices];
+	TabIndex* indices = pl_malloc( num_indices * sizeof( TabIndex ) );
 	int ret = plReadFile( fp, indices, sizeof( TabIndex ), num_indices );
 	plCloseFile( fp );
 
 	if ( ret != num_indices ) {
+		pl_free( indices );
 		return NULL;
 	}
 
 	/* swap be to le */
 	for ( unsigned int i = 0; i < num_indices; ++i ) {
 		if ( indices[ i ].start > tab_size || indices[ i ].end > tab_size ) {
+			pl_free( indices );
 			ReportError( PL_RESULT_FILESIZE, "offset outside of file bounds" );
 			return NULL;
 		}
@@ -103,12 +105,13 @@ PLPackage* plLoadTABPackage( const char* path ) {
 				index->fileSize = indices[ i ].end - indices[ i ].start;
 				index->offset = indices[ i ].start;
 			}
-
-			return package;
+		} else {
+			plDestroyPackage( package );
+			package = NULL;
 		}
 	}
 
-	plDestroyPackage( package );
+	pl_free( indices );
 
-	return NULL;
+	return package;
 }

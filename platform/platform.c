@@ -29,7 +29,9 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_graphics.h>
 
 #if !defined(_MSC_VER)
-#include <sys/time.h>
+#	include <sys/time.h>
+#else
+#	include <windows.h>
 #endif
 #include <errno.h>
 
@@ -367,11 +369,6 @@ void _plResetError(void) {
 // Time
 
 #if defined( _MSC_VER )
-
-typedef struct timeval {
-	long tv_sec;
-	long tv_usec;
-} timeval;
 
 // https://stackoverflow.com/a/26085827
 int gettimeofday( struct timeval* tp, struct timezone* tzp ) {

@@ -63,6 +63,9 @@ extern "C" {
 #  endif
 #endif
 
+// Not 100% but at least as of 2019+ Microsoft finally pulled their
+// finger out and provided stdint, so that's nice
+#if (_MSC_VER < 1920)	
 
 // 7.18.1 Integer types
 
@@ -245,5 +248,6 @@ typedef uint64_t uintmax_t;
 
 #endif // __STDC_CONSTANT_MACROS ]
 
+#endif
 
 #endif // _MSC_STDINT_H_ ]

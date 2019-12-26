@@ -39,15 +39,14 @@ For more information, please refer to <http://unlicense.org>
 #include "filesystem_private.h"
 #include "platform_private.h"
 
-#ifdef _WIN32
+#if defined( _WIN32 )
+#   include "3rdparty/portable_endian.h"
+
 /*  this is required by secext.h */
 #   define SECURITY_WIN32
-
-#   include <afxres.h>
 #   include <security.h>
-#   include <direct.h>
 #   include <shlobj.h>
-#   include "3rdparty/portable_endian.h"
+#	include <direct.h>
 #else
 #   include <pwd.h>
 #endif
@@ -215,7 +214,12 @@ bool plCreateDirectory( const char* path ) {
 
 bool plCreatePath( const char* path ) {
 	size_t length = strlen( path );
-	char dir_path[length + 1];
+	if( length >= PL_SYSTEM_MAX_PATH ) {
+		ReportError( PL_RESULT_INVALID_PARM1, "path is greater that maximum supported path length, %d vs %d", length, PL_SYSTEM_MAX_PATH );
+		return false;
+	}
+
+	char dir_path[PL_SYSTEM_MAX_PATH];
 	memset( dir_path, 0, sizeof( dir_path ) );
 	for ( size_t i = 0; i < length; ++i ) {
 		dir_path[ i ] = path[ i ];
@@ -340,6 +344,12 @@ char* plGetApplicationDataDirectory( const char* app_name, char* out, size_t n )
  * @param recursive if true, also scans the contents of each sub-directory.
  */
 void plScanDirectory( const char* path, const char* extension, void (* Function)( const char* ), bool recursive ) {
+#if defined( _MSC_VER )
+
+
+
+#else
+
 	DIR* directory = opendir( path );
 	if ( directory ) {
 		struct dirent* entry;
@@ -367,6 +377,8 @@ void plScanDirectory( const char* path, const char* extension, void (* Function)
 	} else {
 		ReportError( PL_RESULT_FILEPATH, "opendir failed!" );
 	}
+
+#endif
 }
 
 const char* plGetWorkingDirectory( void ) {

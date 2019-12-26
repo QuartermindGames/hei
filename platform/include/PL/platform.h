@@ -64,16 +64,8 @@ support.
 #		include <stdbool.h>
 
 #	endif
-#	ifdef _MSC_VER    // MSVC doesn't support stdint...
-#		ifndef __cplusplus
-#			include "platform_inttypes.h"
-#		endif
-#	else
 
-#		include <stdint.h>
-
-#	endif
-
+#	include <stdint.h>
 #	include <string.h>
 #	include <ctype.h>
 #	include <math.h>
