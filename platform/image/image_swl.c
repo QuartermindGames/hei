@@ -107,19 +107,9 @@ bool plLoadSWLImage(PLFile* fin, PLImage* out) {
     }
 
 	out->data = pl_calloc(out->levels, sizeof(uint8_t*));
-	if (out->data == NULL) {
-		pl_free(buf);
-		plFreeImage(out);
-		return false;
-	}
 
     size_t level_size = plGetImageSize(out->format, mip_w, mip_h);
     out->data[i] = pl_calloc(level_size, sizeof(uint8_t));
-    if (out->data[i] == NULL) {
-		pl_free(buf);
-      plFreeImage(out);
-      return false;
-    }
 
     /* now we fill in the buf we just allocated,
      * by using the palette */
@@ -144,7 +134,7 @@ bool plLoadSWLImage(PLFile* fin, PLImage* out) {
 
 bool plWriteSWLImage(const PLImage* image, const char* path) {
   /* todo */
-  (void)(image);
-  (void)(path);
+  plUnused( path );
+  plUnused( image );
   return false;
 }

@@ -59,8 +59,8 @@ PLPackage* plLoadFFPackage( const char* path ) {
 		uint32_t offset;
 		char name[40];
 	} OW_FFIndex;
-	OW_FFIndex indices[num_indices];
-	unsigned int sizes[num_indices]; /* aren't stored in index data, so we'll calc these */
+	OW_FFIndex* indices = pl_malloc( sizeof( OW_FFIndex ) * num_indices );
+	unsigned int* sizes = pl_malloc( sizeof( unsigned int ) * num_indices ); /* aren't stored in index data, so we'll calc these */
 	if ( num_indices > 0 ) {
 		if ( plReadFile( fp, indices, sizeof( OW_FFIndex ), num_indices ) == num_indices ) {
 			for ( unsigned int i = 0; i < ( num_indices - 1 ); ++i ) {
@@ -76,6 +76,8 @@ PLPackage* plLoadFFPackage( const char* path ) {
 	plCloseFile( fp );
 
 	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
+		pl_free( indices );
+		pl_free( sizes );
 		return NULL;
 	}
 
@@ -96,6 +98,9 @@ PLPackage* plLoadFFPackage( const char* path ) {
 			package = NULL;
 		}
 	}
+
+	pl_free( indices );
+	pl_free( sizes );
 
 	return package;
 }

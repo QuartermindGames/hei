@@ -398,8 +398,7 @@ bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
 
         case PL_IMAGEFORMAT_RGB5A1: {
             if(new_format == PL_IMAGEFORMAT_RGBA8) {
-                uint8_t *levels[image->levels];
-                memset(levels, 0, image->levels * sizeof(uint8_t*));
+                uint8_t **levels = pl_calloc( image->levels, sizeof( uint8_t* ) );
 
                 /* Make a new copy of each detail level in the new format. */
 
@@ -410,9 +409,11 @@ bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
                     levels[l] = plImageDataRGB5A1toRGBA8(image->data[l], lw * lh);
                     if(levels[l] == NULL) {
                         /* Memory allocation failed, ditch any buffers we've created so far. */
-                        for(unsigned int m = 0; m < image->levels; ++m) {
+                        for(unsigned int m = 0; m < l; ++m) {
                             pl_free(levels[m]);
                         }
+
+						pl_free( levels );
 
                         ReportError(PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate memory for image data");
                         return false;
@@ -426,8 +427,10 @@ bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format) {
 
                 for(unsigned int l = 0; l < image->levels; ++l) {
 					pl_free(image->data[l]);
-                    image->data[l] = levels[l];
                 }
+
+				pl_free( image->data );
+				image->data = levels;
 
                 image->format = new_format;
                 /* TODO: Update colour_format */
