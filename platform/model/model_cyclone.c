@@ -44,6 +44,9 @@ enum {
 
 #define MAX_UV_COORDS_PER_FACE  36
 
+#define MAX_VERTICES	4096
+#define MAX_POLYGONS	8192
+
 /* There seem to be two seperate model formats
  * used within the game, those that are static
  * and then a completely different type of header
@@ -194,7 +197,7 @@ PLModel* LoadStaticRequiemModel(PLFile* fp) {
     return NULL;
   }
 
-  if (num_vertices == 0) {
+  if (num_vertices == 0 || num_vertices >= MAX_VERTICES) {
     ReportError(PL_RESULT_FILEREAD, "invalid number of vertices, %d", num_vertices);
     return NULL;
   }
@@ -205,12 +208,12 @@ PLModel* LoadStaticRequiemModel(PLFile* fp) {
     return NULL;
   }
 
-  if (num_polygons == 0) {
+  if ( num_polygons == 0 || num_polygons >= MAX_POLYGONS ) {
     ReportError(PL_RESULT_FILEREAD, "invalid number of faces, %d", num_polygons);
     return NULL;
   }
 
-  MDLVertex vertices[num_vertices];
+  MDLVertex vertices[MAX_VERTICES];
   if (plReadFile(fp, vertices, sizeof(MDLVertex), num_vertices) != num_vertices) {
     ReportError(PL_RESULT_FILEREAD, "invalid file length, failed to load vertices");
     return NULL;
@@ -218,7 +221,7 @@ PLModel* LoadStaticRequiemModel(PLFile* fp) {
 
   unsigned int num_triangles = 0;
   unsigned int num_indices = 0;
-  MDLPolygon polygons[num_polygons];
+  MDLPolygon polygons[MAX_POLYGONS];
   memset(polygons, 0, sizeof(MDLPolygon) * num_polygons);
   for (unsigned int i = 0; i < num_polygons; ++i) {
     /* 0000:00D0 |                           04 00 00 00  F4 9C 79 00 |         ....ô.y.
