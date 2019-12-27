@@ -183,7 +183,7 @@ For more information, please refer to <http://unlicense.org>
 #   define PL_EXPORT    __attribute__((visibility("default")))
 #   define PL_IMPORT    __attribute__((visibility("hidden")))
 
-#	define PL_STATIC_ASSERT(a)	_Static_assert((a), b)
+#	define PL_STATIC_ASSERT(a, b)	_Static_assert((a), b)
 
 #	define PL_PACKED_STRUCT_START(a)	typedef struct __attribute__((packed)) a {
 #	define PL_PACKED_STRUCT_END(a)		} a;
