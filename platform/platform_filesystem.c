@@ -48,6 +48,9 @@ For more information, please refer to <http://unlicense.org>
 #   include <shlobj.h>
 #	include <direct.h>
 #else
+#   if defined( __APPLE__ )
+#       include "3rdparty/portable_endian.h"
+#   endif
 #   include <pwd.h>
 #endif
 
