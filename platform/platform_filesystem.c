@@ -74,6 +74,51 @@ typedef struct PLFileSystemMount {
 static PLFileSystemMount* fs_mount_root = NULL;
 static PLFileSystemMount* fs_mount_ceiling = NULL;
 
+IMPLEMENT_COMMAND( fsListMounted, "Lists all of the mounted directories." ) {
+	plUnused( argv );
+	plUnused( argc );
+
+	if ( fs_mount_root == NULL ) {
+		Print( "No locations mounted\n" );
+		return;
+	}
+
+	unsigned int numLocations = 0;
+	PLFileSystemMount* location = fs_mount_root;
+	while ( location != NULL ) {
+		numLocations++;
+		Print( " (%d) %s : %s\n", numLocations, location->path,
+			   location->type == FS_MOUNT_DIR ? "DIRECTORY" : "PACKAGE" );
+		location = location->next;
+	}
+	Print( "%d locations mounted\n", numLocations );
+}
+
+IMPLEMENT_COMMAND( fsMount, "Mount the specified directory." ) {
+	if ( argc == 1 ) {
+		Print( "%s", fsMount_var.description );
+		return;
+	}
+
+	const char* path = argv[ 1 ];
+	if ( path == NULL ) {
+		Print( "Invalid path specified!\n" );
+		return;
+	}
+
+	plMountLocation( path );
+}
+
+static void _plRegisterFSCommands() {
+	PLConsoleCommand fsCommands[] = {
+		fsListMounted_var,
+		fsMount_var
+	};
+	for ( unsigned int i = 0; i < plArrayElements( fsCommands ); ++i ) {
+		plRegisterConsoleCommand( fsCommands[ i ].cmd, fsCommands[ i ].Callback, fsCommands[ i ].description );
+	}
+}
+
 void plClearMountedLocation( PLFileSystemMount* location ) {
 	if ( location->type == FS_MOUNT_PACKAGE ) {
 		plDestroyPackage( location->pkg );
@@ -153,8 +198,9 @@ PLFileSystemMount* plMountLocation( const char* path ) {
 /****/
 
 PLresult plInitFileSystem( void ) {
-	plClearMountedLocations();
+	_plRegisterFSCommands();
 
+	plClearMountedLocations();
 	return PL_RESULT_SUCCESS;
 }
 

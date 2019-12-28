@@ -114,10 +114,18 @@ const char *GetLastError_strerror(uint32_t errnum);
 
 #else
 
-int GetLastError(void);
-const char *GetLastError_strerror(int errnum);
+int GetLastError( void );
+const char* GetLastError_strerror( int errnum );
 
 #define WSAGetLastError() GetLastError()
-#define WSAGetLastError_strerror(errnum) GetLastError_strerror(errnum)
+#define WSAGetLastError_strerror( errnum ) GetLastError_strerror(errnum)
 
 #endif
+
+/* * * * * * * * * * * * * * * * * * * */
+/* Console Utilities                   */
+
+#define IMPLEMENT_COMMAND( NAME, DESC ) \
+    static void NAME ## _func(unsigned int argc, char *argv[]); \
+    static PLConsoleCommand NAME ## _var = {#NAME, NAME ## _func, DESC}; \
+    static void NAME ## _func(unsigned int argc, char *argv[])

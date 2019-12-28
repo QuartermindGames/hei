@@ -48,11 +48,6 @@ static PLConsoleCommand **_pl_commands = NULL;
 static size_t _pl_num_commands = 0;
 static size_t _pl_commands_size = 512;
 
-#define IMPLEMENT_COMMAND(NAME, DESC) \
-    static void NAME ## _func(unsigned int argc, char *argv[]); \
-    static PLConsoleCommand NAME ## _var = {#NAME, NAME ## _func, DESC}; \
-    static void NAME ## _func(unsigned int argc, char *argv[])
-
 void plRegisterConsoleCommand(const char *name, void(*CallbackFunction)(unsigned int argc, char *argv[]),
                               const char *description) {
     FunctionStart();
@@ -252,21 +247,6 @@ static bool console_visible = false;
 
 /////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE
-
-IMPLEMENT_COMMAND( mount, "Mount the specified directory." ) {
-	if ( argc == 1 ) {
-		Print( "%s", mount_var.description );
-		return;
-	}
-
-	const char* path = argv[ 1 ];
-	if ( path == NULL ) {
-		Print( "Invalid path specified!\n" );
-		return;
-	}
-
-	plMountLocation( path );
-}
 
 IMPLEMENT_COMMAND( pwd, "Print current working directory." ) {
 	plUnused( argv );
