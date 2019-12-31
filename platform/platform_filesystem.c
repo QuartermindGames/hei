@@ -288,7 +288,8 @@ bool plCreateDirectory( const char* path ) {
 bool plCreatePath( const char* path ) {
 	size_t length = strlen( path );
 	if( length >= PL_SYSTEM_MAX_PATH ) {
-		ReportError( PL_RESULT_INVALID_PARM1, "path is greater that maximum supported path length, %d vs %d", length, PL_SYSTEM_MAX_PATH );
+		ReportError( PL_RESULT_INVALID_PARM1, "path is greater that maximum supported path length, %d vs %d",
+					 length, PL_SYSTEM_MAX_PATH );
 		return false;
 	}
 
@@ -531,6 +532,10 @@ bool plLocalPathExists( const char* path ) {
 }
 
 bool plPathExists( const char* path ) {
+	if ( fs_mount_root == NULL ) {
+		return plLocalPathExists( path );
+	}
+
 	PLFileSystemMount* location = fs_mount_root;
 	while ( location != NULL ) {
 		if ( location->type == FS_MOUNT_DIR ) {
