@@ -94,6 +94,29 @@ IMPLEMENT_COMMAND( fsListMounted, "Lists all of the mounted directories." ) {
 	Print( "%d locations mounted\n", numLocations );
 }
 
+IMPLEMENT_COMMAND( fsUnmount, "Unmount the specified directory." ) {
+	if ( argc == 1 ) {
+		Print( "%s", fsUnmount_var.description );
+		return;
+	}
+
+	if ( fs_mount_root == NULL ) {
+		Print( "No locations mounted\n" );
+		return;
+	}
+
+	PLFileSystemMount* location = fs_mount_root;
+	while ( location != NULL ) {
+		if ( strcasecmp( argv[ 1 ], location->path ) == 0 ) {
+			plClearMountedLocation( location );
+			Print( "Done!\n" );
+			return;
+		}
+	}
+
+	Print( "Failed to find location: \"%s\"!\n", argv[ 1 ] );
+}
+
 IMPLEMENT_COMMAND( fsMount, "Mount the specified directory." ) {
 	if ( argc == 1 ) {
 		Print( "%s", fsMount_var.description );
@@ -112,7 +135,8 @@ IMPLEMENT_COMMAND( fsMount, "Mount the specified directory." ) {
 static void _plRegisterFSCommands() {
 	PLConsoleCommand fsCommands[] = {
 		fsListMounted_var,
-		fsMount_var
+		fsUnmount_var,
+		fsMount_var,
 	};
 	for ( unsigned int i = 0; i < plArrayElements( fsCommands ); ++i ) {
 		plRegisterConsoleCommand( fsCommands[ i ].cmd, fsCommands[ i ].Callback, fsCommands[ i ].description );
