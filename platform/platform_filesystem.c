@@ -192,7 +192,7 @@ static void _plInsertMountLocation( PLFileSystemMount* location ) {
  */
 PLFileSystemMount* plMountLocation( const char* path ) {
 	PLFileSystemMount* location = pl_malloc( sizeof( PLFileSystemMount ) );
-	if ( plPathExists( path ) ) { /* attempt to mount it as a path */
+	if ( plLocalPathExists( path ) ) { /* attempt to mount it as a path */
 		_plInsertMountLocation( location );
 		location->type = FS_MOUNT_DIR;
 		snprintf( location->path, sizeof( location->path ), "%s", path );
