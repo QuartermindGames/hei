@@ -166,9 +166,9 @@ PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, 
     return out;
 }
 
-void plGetConsoleVariables(const PLConsoleVariable *** vars, size_t * num_vars) {
-    *vars = _pl_variables;
-    *num_vars = _pl_num_variables;
+void plGetConsoleVariables( PLConsoleVariable*** vars, size_t* num_vars ) {
+	*vars = _pl_variables;
+	*num_vars = _pl_num_variables;
 }
 
 PLConsoleVariable *plGetConsoleVariable(const char *name) {

@@ -60,7 +60,7 @@ typedef struct PLConsoleVariable {
 
 PL_EXTERN_C
 
-void plGetConsoleVariables(const PLConsoleVariable ***vars, size_t *num_vars);
+void plGetConsoleVariables( PLConsoleVariable*** vars, size_t* num_vars );
 
 PLConsoleVariable *plGetConsoleVariable(const char *name);
 void plSetConsoleVariable(PLConsoleVariable *var, const char *value);
