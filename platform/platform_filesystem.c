@@ -201,6 +201,13 @@ PLFileSystemMount* plMountLocation( const char* path ) {
 
 		return location;
 	} else { /* attempt to mount it as a package */
+		/* todo:
+		 * 	This currently runs through the VFS
+		 * 	so you can load a package under	a mounted
+		 * 	directory but you won't be able to
+		 * 	load one "locally". This obviously needs to change
+		 * 	but I'm not sure on the best solution right now :(
+		 */
 		PLPackage* pkg = plLoadPackage( path );
 		if ( pkg != NULL ) {
 			_plInsertMountLocation( location );
