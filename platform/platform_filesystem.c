@@ -272,7 +272,7 @@ time_t plGetFileModifiedTime( const char* path ) {
 
 // Creates a folder at the given path.
 bool plCreateDirectory( const char* path ) {
-	if ( plPathExists( path ) ) {
+	if ( plLocalPathExists( path ) ) {
 		return true;
 	}
 
