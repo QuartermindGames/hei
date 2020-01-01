@@ -82,7 +82,6 @@ void plSetFunctionResult(PLresult result);
     _plResetError()
 
 #define ReportError( type, ... ) \
-    PrintWarning( __VA_ARGS__ ); \
     plSetCurrentFunction(PL_FUNCTION); \
     plSetFunctionResult(type); \
     SetErrorMessage(__VA_ARGS__)
