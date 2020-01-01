@@ -57,6 +57,9 @@ For more information, please refer to <http://unlicense.org>
 /*	File System	*/
 
 /** FS Mounting **/
+/** Future
+ * 		- Descriptor for locations; then can use <location>:// to mount from a specific location
+ */
 
 typedef enum FSMountType {
 	FS_MOUNT_DIR,
@@ -73,6 +76,8 @@ typedef struct PLFileSystemMount {
 } PLFileSystemMount;
 static PLFileSystemMount* fs_mount_root = NULL;
 static PLFileSystemMount* fs_mount_ceiling = NULL;
+
+#define FS_LOCAL_HINT    "local://"
 
 IMPLEMENT_COMMAND( fsListMounted, "Lists all of the mounted directories." ) {
 	plUnused( argv );
@@ -187,10 +192,7 @@ static void _plInsertMountLocation( PLFileSystemMount* location ) {
 	location->next = NULL;
 }
 
-/**
- * Mount the given location. On failure returns -1.
- */
-PLFileSystemMount* plMountLocation( const char* path ) {
+PLFileSystemMount* plMountLocalLocation( const char* path ) {
 	PLFileSystemMount* location = pl_malloc( sizeof( PLFileSystemMount ) );
 	if ( plLocalPathExists( path ) ) { /* attempt to mount it as a path */
 		_plInsertMountLocation( location );
@@ -201,13 +203,53 @@ PLFileSystemMount* plMountLocation( const char* path ) {
 
 		return location;
 	} else { /* attempt to mount it as a package */
-		/* todo:
-		 * 	This currently runs through the VFS
-		 * 	so you can load a package under	a mounted
-		 * 	directory but you won't be able to
-		 * 	load one "locally". This obviously needs to change
-		 * 	but I'm not sure on the best solution right now :(
-		 */
+		// LoadPackage operates via the VFS, but we want to enforce a local
+		// path here, so the only reasonable solution right now is to prefix
+		// it with the local dir hint
+		char localPath[PL_SYSTEM_MAX_PATH];
+		if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) != 0 ) {
+			snprintf( localPath, sizeof( localPath ), FS_LOCAL_HINT "%s", path );
+		} else {
+			snprintf( localPath, sizeof( localPath ), "%s", path );
+		}
+
+		PLPackage* pkg = plLoadPackage( localPath );
+		if ( pkg != NULL ) {
+			_plInsertMountLocation( location );
+			location->type = FS_MOUNT_PACKAGE;
+			location->pkg = pkg;
+
+			Print( "Mounted package %s successfully!\n", path );
+
+			return location;
+		}
+	}
+
+	pl_free( location );
+
+	ReportError( 0, "failed to mount location, %s", path );
+	return NULL;
+}
+
+/**
+ * Mount the given location. On failure returns -1.
+ */
+PLFileSystemMount* plMountLocation( const char* path ) {
+	if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
+		path += sizeof( FS_LOCAL_HINT );
+		return plMountLocalLocation( path );
+	}
+
+	PLFileSystemMount* location = pl_malloc( sizeof( PLFileSystemMount ) );
+	if ( plPathExists( path ) ) { /* attempt to mount it as a path */
+		_plInsertMountLocation( location );
+		location->type = FS_MOUNT_DIR;
+		snprintf( location->path, sizeof( location->path ), "%s", path );
+
+		Print( "Mounted directory %s successfully!\n", path );
+
+		return location;
+	} else { /* attempt to mount it as a package */
 		PLPackage* pkg = plLoadPackage( path );
 		if ( pkg != NULL ) {
 			_plInsertMountLocation( location );
@@ -494,7 +536,8 @@ bool plLocalFileExists( const char* path ) {
  * @return False if the file wasn't accessible.
  */
 bool plFileExists( const char* path ) {
-	if ( fs_mount_root == NULL ) {
+	if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
+		path += sizeof( FS_LOCAL_HINT );
 		return plLocalFileExists( path );
 	}
 
@@ -539,7 +582,8 @@ bool plLocalPathExists( const char* path ) {
 }
 
 bool plPathExists( const char* path ) {
-	if ( fs_mount_root == NULL ) {
+	if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
+		path += sizeof( FS_LOCAL_HINT );
 		return plLocalPathExists( path );
 	}
 
@@ -567,8 +611,13 @@ bool plPathExists( const char* path ) {
 	return false;
 }
 
+/**
+ * Deletes the specified file. Not VFS compatible.
+ * @param path Path to the file you want to delete.
+ * @return True on success and false on fail.
+ */
 bool plDeleteFile( const char* path ) {
-	if ( !plFileExists( path ) ) {
+	if ( !plLocalFileExists( path ) ) {
 		return true;
 	}
 
@@ -581,6 +630,13 @@ bool plDeleteFile( const char* path ) {
 	return false;
 }
 
+/**
+ * Write the data to the specified location. Not VFS compatible.
+ * @param path Path to the destination.
+ * @param buf Data buffer for whatever you're writing.
+ * @param length Length of the data buffer.
+ * @return True on success and false on fail.
+ */
 bool plWriteFile( const char* path, const uint8_t* buf, size_t length ) {
 	FILE* fp = fopen( path, "wb" );
 	if ( fp == NULL ) {
@@ -670,14 +726,20 @@ PLFile* plOpenLocalFile( const char* path, bool cache ) {
 	return ptr;
 }
 
+/**
+ * Opens the specified file via the VFS.
+ * @param path Path to the file you want to open.
+ * @param cache Whether or not to cache the entire file into memory.
+ * @return Returns handle to the file instance.
+ */
 PLFile* plOpenFile( const char* path, bool cache ) {
 	if ( plIsEmptyString( path ) ) {
 		ReportBasicError( PL_RESULT_FILEPATH );
 		return NULL;
 	}
 
-	if ( fs_mount_root == NULL ) {
-		/* nothing mounted, so just load locally */
+	if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
+		path += sizeof( FS_LOCAL_HINT );
 		return plOpenLocalFile( path, cache );
 	}
 
@@ -860,7 +922,7 @@ char* plReadString( PLFile* ptr, char* str, size_t size ) {
 		nl = ( char* ) ( ptr->data + ptr->size - 1 );
 	}
 
-	if ( ( nl - ( char* ) ptr->pos ) + 1 >= size ) {
+	if ( ( nl - ( char* ) ptr->pos ) + 1 >= ( signed long ) size ) {
 		nl = ( char* ) ( ptr->pos + size );
 	}
 
@@ -880,7 +942,7 @@ bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek ) {
 	size_t posn = plGetFileOffset( ptr );
 	switch ( seek ) {
 		case PL_SEEK_CUR:
-			if ( posn + pos > ptr->size || pos < -posn ) {
+			if ( posn + pos > ptr->size || pos < ( signed long ) -posn ) {
 				ReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
@@ -888,7 +950,7 @@ bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek ) {
 			break;
 
 		case PL_SEEK_SET:
-			if ( pos > ptr->size || pos < 0 ) {
+			if ( pos > ( signed long ) ptr->size || pos < 0 ) {
 				ReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
@@ -896,7 +958,7 @@ bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek ) {
 			break;
 
 		case PL_SEEK_END:
-			if ( pos <= -ptr->size ) {
+			if ( pos <= ( signed long ) -ptr->size ) {
 				ReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}

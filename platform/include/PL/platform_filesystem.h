@@ -109,6 +109,7 @@ PL_EXTERN void plRewindFile( PLFile* ptr );
 
 typedef struct PLFileSystemMount PLFileSystemMount;
 
+PL_EXTERN PLFileSystemMount* plMountLocalLocation( const char* path );
 PL_EXTERN PLFileSystemMount* plMountLocation( const char* path );
 
 PL_EXTERN void plClearMountedLocation( PLFileSystemMount* location );
