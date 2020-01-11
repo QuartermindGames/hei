@@ -386,7 +386,7 @@ void plStripExtension( char* dest, size_t length, const char* in ) {
 }
 
 /**
- * returns pointer to the last component in the given filename.
+ * Returns pointer to the last component in the given filename.
  *
  * @param path
  * @return
@@ -458,21 +458,13 @@ char* plGetApplicationDataDirectory( const char* app_name, char* out, size_t n )
 	return out;
 }
 
-/** Scans the given directory.
- * on each file that's found, it calls the given function to handle the file.
- *
- * @param path path to directory.
- * @param extension the extension to scan for (exclude '.').
- * @param Function callback function to deal with the file.
- * @param recursive if true, also scans the contents of each sub-directory.
- */
-void plScanDirectory( const char* path, const char* extension, void (* Function)( const char* ), bool recursive ) {
-#if defined( _MSC_VER )
+typedef struct FSScanInstance {
+	char path[PL_SYSTEM_MAX_PATH];
+	struct FSScanInstance* next;
+} FSScanInstance;
 
-
-
-#else
-
+static void _plScanLocalDirectory( const PLFileSystemMount* mount, FSScanInstance** fileList, const char* path,
+								   const char* extension, void (* Function)( const char* ), bool recursive ) {
 	DIR* directory = opendir( path );
 	if ( directory ) {
 		struct dirent* entry;
@@ -488,10 +480,44 @@ void plScanDirectory( const char* path, const char* extension, void (* Function)
 			if ( stat( filestring, &st ) == 0 ) {
 				if ( S_ISREG( st.st_mode ) ) {
 					if ( extension == NULL || pl_strcasecmp( plGetFileExtension( entry->d_name ), extension ) == 0 ) {
-						Function( filestring );
+						if ( mount == NULL ) {
+							Function( filestring );
+							continue;
+						}
+
+						size_t pos = strlen( mount->path );
+						if ( pos >= sizeof( filestring ) ) {
+							PrintWarning( "pos >= %d!\n", pos );
+							continue;
+						}
+						const char* filePath = &filestring[ pos ];
+
+						// Ensure it's not already in the list
+						FSScanInstance* cur = *fileList;
+						while ( cur != NULL ) {
+							if ( strcmp( filePath, cur->path ) == 0 ) {
+								// File was already passed back
+								break;
+							}
+
+							cur = cur->next;
+						}
+
+						// Jumped the list early, so abort here
+						if ( cur != NULL ) {
+							continue;
+						}
+
+						Function( filePath );
+
+						// Tack it onto the list
+						cur = pl_calloc( 1, sizeof( FSScanInstance ) );
+						strncpy( cur->path, filePath, sizeof( cur->path ) );
+						cur->next = *fileList;
+						*fileList = cur;
 					}
 				} else if ( S_ISDIR( st.st_mode ) && recursive ) {
-					plScanDirectory( filestring, extension, Function, recursive );
+					_plScanLocalDirectory( mount, fileList, filestring, extension, Function, recursive );
 				}
 			}
 		}
@@ -500,8 +526,49 @@ void plScanDirectory( const char* path, const char* extension, void (* Function)
 	} else {
 		ReportError( PL_RESULT_FILEPATH, "opendir failed!" );
 	}
+}
 
-#endif
+/**
+ * Scans the given directory.
+ *
+ * @param path path to directory.
+ * @param extension the extension to scan for (exclude '.').
+ * @param Function callback function to deal with the file.
+ * @param recursive if true, also scans the contents of each sub-directory.
+ */
+void plScanDirectory( const char* path, const char* extension, void (* Function)( const char* ), bool recursive ) {
+	if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
+		_plScanLocalDirectory( NULL, NULL, path + sizeof( FS_LOCAL_HINT ), extension, Function, recursive );
+		return;
+	}
+
+	// If no mounted locations, assume local scan
+	if ( fs_mount_root == NULL ) {
+		_plScanLocalDirectory( NULL, NULL, path, extension, Function, recursive );
+		return;
+	}
+
+	FSScanInstance* fileList = NULL;
+	PLFileSystemMount* location = fs_mount_root;
+	while ( location != NULL ) {
+		if ( location->type == FS_MOUNT_PACKAGE ) {
+			// Only works for directories for now
+		} else if ( location->type == FS_MOUNT_DIR ) {
+			char mounted_path[PL_SYSTEM_MAX_PATH];
+			snprintf( mounted_path, sizeof( mounted_path ), "%s/%s", location->path, path );
+			_plScanLocalDirectory( location, &fileList, mounted_path, extension, Function, recursive );
+		}
+
+		location = location->next;
+	}
+
+	// Clean up the list
+	FSScanInstance* current = fileList;
+	while ( current != NULL ) {
+		FSScanInstance* prev = current;
+		current = current->next;
+		pl_free( prev );
+	}
 }
 
 const char* plGetWorkingDirectory( void ) {
