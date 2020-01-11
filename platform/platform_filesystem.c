@@ -857,6 +857,10 @@ const char* plGetFilePath( const PLFile* ptr ) {
 	return ptr->path;
 }
 
+const uint8_t* plGetFileData( const PLFile* ptr ) {
+	return ptr->data;
+}
+
 /**
  * Returns file size in bytes.
  * @param ptr Pointer to file handle.

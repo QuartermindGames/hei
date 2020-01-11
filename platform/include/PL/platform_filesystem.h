@@ -81,17 +81,18 @@ PL_EXTERN bool plDeleteFile( const char* path );
 PL_EXTERN bool plIsFileModified( time_t oldtime, const char* path );
 PL_EXTERN bool plIsEndOfFile( const PLFile* ptr );
 
-PL_EXTERN const char* plGetFilePath(const PLFile* ptr);
-PL_EXTERN time_t plGetFileModifiedTime(const char *path);
-PL_EXTERN size_t plGetLocalFileSize(const char *path);
-PL_EXTERN size_t plGetFileSize(const PLFile* ptr);
-PL_EXTERN size_t plGetFileOffset(const PLFile* ptr);
+PL_EXTERN const char* plGetFilePath( const PLFile* ptr );
+PL_EXTERN const uint8_t* plGetFileData( const PLFile* ptr );
+PL_EXTERN time_t plGetFileModifiedTime( const char* path );
+PL_EXTERN size_t plGetLocalFileSize( const char* path );
+PL_EXTERN size_t plGetFileSize( const PLFile* ptr );
+PL_EXTERN size_t plGetFileOffset( const PLFile* ptr );
 
-PL_EXTERN size_t plReadFile(PLFile* ptr, void* dest, size_t size, size_t count);
+PL_EXTERN size_t plReadFile( PLFile* ptr, void* dest, size_t size, size_t count );
 
-PL_EXTERN char plReadInt8(PLFile* ptr, bool* status);
-PL_EXTERN int16_t plReadInt16(PLFile* ptr, bool big_endian, bool* status);
-PL_EXTERN int32_t plReadInt32(PLFile* ptr, bool big_endian, bool* status);
+PL_EXTERN char plReadInt8( PLFile* ptr, bool* status );
+PL_EXTERN int16_t plReadInt16( PLFile* ptr, bool big_endian, bool* status );
+PL_EXTERN int32_t plReadInt32( PLFile* ptr, bool big_endian, bool* status );
 PL_EXTERN int64_t plReadInt64(PLFile* ptr, bool big_endian, bool* status);
 
 PL_EXTERN char* plReadString(PLFile* ptr, char* str, size_t size);
