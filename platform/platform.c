@@ -28,10 +28,11 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_filesystem.h>
 #include <PL/platform_graphics.h>
 
-#if !defined(_MSC_VER)
+#if defined( _WIN32 )
+#	include <Windows.h>
+#endif
+#if !defined( _MSC_VER )
 #	include <sys/time.h>
-#else
-#	include <windows.h>
 #endif
 #include <errno.h>
 
@@ -231,7 +232,7 @@ void plShutdown(void) {
  * ERROR HANDLING
  *-----------------------------------------------------------------*/
 
-#ifdef _WIN32
+#if defined( _WIN32 )
 
 const char *GetLastError_strerror(uint32_t errnum) {
     /* TODO: Make this buffer per-thread */
