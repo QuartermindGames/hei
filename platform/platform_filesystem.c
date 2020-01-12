@@ -47,6 +47,12 @@ For more information, please refer to <http://unlicense.org>
 #   include <security.h>
 #   include <shlobj.h>
 #	include <direct.h>
+
+#	if defined( _MSC_VER )
+#		if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
+#			define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#		endif
+#	endif
 #else
 #   if defined( __APPLE__ )
 #       include "3rdparty/portable_endian.h"
