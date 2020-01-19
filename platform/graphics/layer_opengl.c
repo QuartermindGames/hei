@@ -362,16 +362,24 @@ static void GLUploadTexture(PLTexture *texture, const PLImage *upload) {
             mag = GL_LINEAR;
         } break;
 
-        case PL_TEXTURE_FILTER_MIPMAP_LINEAR_NEAREST: {
-            min = GL_LINEAR_MIPMAP_NEAREST;
-            mag = GL_NEAREST;
-        } break;
+		case PL_TEXTURE_FILTER_MIPMAP_LINEAR_NEAREST: {
+			min = GL_LINEAR_MIPMAP_NEAREST;
+			mag = GL_LINEAR;
+		}
+			break;
 
-        case PL_TEXTURE_FILTER_MIPMAP_NEAREST: {
-            min = GL_NEAREST_MIPMAP_NEAREST;
-            mag = GL_NEAREST;
-        } break;
-    }
+		case PL_TEXTURE_FILTER_MIPMAP_NEAREST: {
+			min = GL_NEAREST_MIPMAP_NEAREST;
+			mag = GL_NEAREST;
+		}
+			break;
+
+		case PL_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR: {
+			min = GL_NEAREST_MIPMAP_LINEAR;
+			mag = GL_NEAREST;
+		}
+			break;
+	}
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
