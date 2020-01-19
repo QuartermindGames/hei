@@ -163,27 +163,15 @@ PL_INLINE static PLMatrix3 plMatrix3Identity(void) {
 }
 
 PL_INLINE static PLMatrix4 plMatrix4Identity(void) {
-  PLMatrix4 out;
-  out.m[0] = 1;
-  out.m[1] = 0;
-  out.m[2] = 0;
-  out.m[3] = 0;
-  out.m[4] = 0;
-
-  out.m[5] = 1;
-  out.m[6] = 0;
-  out.m[7] = 0;
-  out.m[8] = 0;
-  out.m[9] = 0;
-
-  out.m[10] = 1;
-  out.m[11] = 0;
-  out.m[12] = 0;
-  out.m[13] = 0;
-  out.m[14] = 0;
-
-  out.m[15] = 1;
-  return out;
+	PLMatrix4 out = {
+		{
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1,
+		}
+	};
+	return out;
 }
 
 /* Transpose */
