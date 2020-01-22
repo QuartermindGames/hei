@@ -609,7 +609,9 @@ bool plLocalFileExists( const char* path ) {
  * @return False if the file wasn't accessible.
  */
 bool plFileExists( const char* path ) {
-	if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
+    if ( fs_mount_root == NULL ) {
+        return plLocalFileExists( path );
+    } else if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
 		path += sizeof( FS_LOCAL_HINT );
 		return plLocalFileExists( path );
 	}
@@ -655,7 +657,9 @@ bool plLocalPathExists( const char* path ) {
 }
 
 bool plPathExists( const char* path ) {
-	if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
+    if ( fs_mount_root == NULL ) {
+        return plLocalPathExists( path );
+    } else if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
 		path += sizeof( FS_LOCAL_HINT );
 		return plLocalPathExists( path );
 	}
@@ -811,7 +815,9 @@ PLFile* plOpenFile( const char* path, bool cache ) {
 		return NULL;
 	}
 
-	if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
+	if ( fs_mount_root == NULL ) {
+	    return plOpenLocalFile( path, cache );
+	} else if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
 		path += sizeof( FS_LOCAL_HINT );
 		return plOpenLocalFile( path, cache );
 	}
