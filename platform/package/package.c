@@ -118,12 +118,14 @@ PLPackage* plLoadPackage( const char* path ) {
 			if ( pl_strncasecmp( ext, package_loaders[ i ].ext, sizeof( package_loaders[ i ].ext ) ) == 0 ) {
 				PLPackage* package = package_loaders[ i ].LoadFunction( path );
 				if ( package != NULL ) {
+					strncpy( package->path, path, sizeof( package->path ) );
 					return package;
 				}
 			}
 		} else if ( plIsEmptyString( ext ) && plIsEmptyString( package_loaders[ i ].ext ) ) {
 			PLPackage* package = package_loaders[ i ].LoadFunction( path );
 			if ( package != NULL ) {
+				strncpy( package->path, path, sizeof( package->path ) );
 				return package;
 			}
 		}
