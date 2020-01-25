@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org>
 // Base Defines
 
 #ifdef M_PI
-#	define PL_PI M_PI
+#	define PL_PI (float)M_PI
 #else
 #	define PL_PI 3.14159265359f
 #endif
