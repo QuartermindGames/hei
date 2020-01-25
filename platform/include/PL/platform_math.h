@@ -31,17 +31,21 @@ For more information, please refer to <http://unlicense.org>
 
 // Base Defines
 
-#define PL_PI           3.14159265358979323846264338327950288f
+#ifdef M_PI
+#	define PL_PI M_PI
+#else
+#	define PL_PI 3.14159265359f
+#endif
 #define PL_180_DIV_PI   (180.0f / PL_PI)
 #define PL_PI_DIV_180   (PL_PI / 180.f)
 
-#define PL_TAU          6.28318530717958647692528676655900576f
+#define PL_TAU          6.28318530717f
 #define PL_EPSILON      1.19209290e-7f
 
 #define PL_MAX_UINT     (unsigned int)(-1)
 
 enum {
-    // Colours
+	// Colours
     PL_RED = 0,
     PL_GREEN,
     PL_BLUE,
