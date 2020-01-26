@@ -36,10 +36,12 @@ enum {
 };
 
 typedef struct PLViewport {
-    bool auto_scale; //If true, viewport will update to match height/width of currently bound FBO when SetupCamera() is called
-    int x, y;
-    int h;
-    int w;
+    bool         auto_scale; //If true, viewport will update to match height/width of currently bound FBO when SetupCamera() is called
+    int          x, y;
+    int          w, h;
+    int          oldW, oldH;
+    uint8_t*     buffer;
+    unsigned int bufferSize;
 } PLViewport;
 
 typedef struct PLCamera {

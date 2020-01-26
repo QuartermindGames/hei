@@ -83,7 +83,8 @@ void plDestroyCamera(PLCamera *camera) {
 
     CallGfxFunction(DestroyCamera, camera);
 
-    pl_free(camera);
+    pl_free( camera->viewport.buffer );
+    pl_free( camera );
 }
 
 void plSetupCamera(PLCamera *camera) {
@@ -120,7 +121,7 @@ void plSetupCamera(PLCamera *camera) {
     }
 
     // keep the gfx_state up-to-date on the situation
-    gfx_state.current_viewport = camera->viewport;
+    gfx_state.current_viewport = &camera->viewport;
 
     // Copy camera matrices
     gfx_state.view_matrix = camera->internal.view;
@@ -130,5 +131,5 @@ void plSetupCamera(PLCamera *camera) {
 }
 
 const PLViewport *plGetCurrentViewport(void) {
-    return &gfx_state.current_viewport;
+    return gfx_state.current_viewport;
 }

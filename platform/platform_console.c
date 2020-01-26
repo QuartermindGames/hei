@@ -492,8 +492,8 @@ void plParseConsoleString(const char *string) {
 // todo, correctly handle rows and columns.
 static void ResizeConsoles(void) {
 #if defined(PL_USE_GRAPHICS)
-    unsigned int screen_w = gfx_state.current_viewport.w;
-    unsigned int screen_h = gfx_state.current_viewport.h;
+    unsigned int screen_w = gfx_state.current_viewport->w;
+    unsigned int screen_h = gfx_state.current_viewport->h;
     if(screen_w == 0 || screen_h == 0) {
         screen_w = 640;
         screen_h = 480;

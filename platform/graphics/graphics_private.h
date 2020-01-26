@@ -86,7 +86,7 @@ typedef struct GfxState {
 
     ////////////////////////////////////////
 
-    PLViewport current_viewport;
+    PLViewport* current_viewport;
 
     bool mode_debug;
 } GfxState;
@@ -118,6 +118,8 @@ typedef struct GfxLayer {
 
     void(*SetClearColour)(PLColour rgba);
     void(*ClearBuffers)(unsigned int buffers);
+
+    void(*DrawPixel)(int x, int y, PLColour colour);
 
     void(*SetDepthBufferMode)(unsigned int mode);
     void(*SetDepthMask)(bool enable);

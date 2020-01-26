@@ -338,7 +338,9 @@ void plDrawBitmapString(PLBitmapFont *font, int x, int y, float scale, PLColour 
         return;
     }
 
-    if(scale <= 0 || x < 0 || y > (int)gfx_state.current_viewport.w || y < 0 || y > (int)gfx_state.current_viewport.h) {
+    if(scale <= 0 || x < 0 ||
+       y > (int)gfx_state.current_viewport->w || y < 0 ||
+       y > (int)gfx_state.current_viewport->h) {
         return;
     }
 
