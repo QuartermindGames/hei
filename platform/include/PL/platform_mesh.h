@@ -118,6 +118,6 @@ PL_EXTERN PLAABB plCalculateMeshAABB(PLMesh *mesh);
 
 PL_EXTERN PLVector3 plGenerateVertexNormal(PLVector3 a, PLVector3 b, PLVector3 c);
 
-PL_EXTERN void plGenerateMeshNormals(PLMesh *mesh);
+PL_EXTERN void plGenerateMeshNormals(PLMesh *mesh, bool perFace);
 
 PL_EXTERN_C_END

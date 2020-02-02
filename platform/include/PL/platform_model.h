@@ -150,7 +150,7 @@ void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *
 void plRegisterStandardModelLoaders(void);
 void plClearModelLoaders(void);
 
-void plGenerateModelNormals(PLModel *model);
+void plGenerateModelNormals(PLModel *model, bool perFace);
 void plGenerateModelBounds(PLModel *model);
 
 PLModelLod *plGetModelLodLevel(PLModel *model, unsigned int level);

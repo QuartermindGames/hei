@@ -60,13 +60,13 @@ PLModelLod *plGetModelLodLevel(PLModel *model, unsigned int level) {
 
 ///////////////////////////////////////
 
-void plGenerateModelNormals(PLModel *model) {
+void plGenerateModelNormals(PLModel *model, bool perFace) {
     plAssert(model);
 
     PLModelLod *lod;
     for(unsigned int i = 0; (lod = plGetModelLodLevel(model, i)) != NULL; ++i) {
         for(unsigned int j = 0; j < lod->num_meshes; ++j) {
-            plGenerateMeshNormals(lod->meshes[j]);
+            plGenerateMeshNormals(lod->meshes[j], perFace);
         }
     }
 }

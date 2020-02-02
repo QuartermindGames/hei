@@ -171,7 +171,7 @@ PLModel *plLoadHDVModel(const char *path) {
         return NULL;
     }
 
-    plGenerateModelNormals(model);
+    plGenerateModelNormals(model, false);
     plGenerateModelBounds(model);
 
     return model;

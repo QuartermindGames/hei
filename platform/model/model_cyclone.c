@@ -359,7 +359,7 @@ PLModel* LoadStaticRequiemModel(PLFile* fp) {
     return NULL;
   }
 
-  plGenerateModelNormals(model);
+  plGenerateModelNormals(model, false);
   plGenerateModelBounds(model);
 
   return model;
