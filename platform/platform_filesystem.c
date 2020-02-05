@@ -471,6 +471,7 @@ typedef struct FSScanInstance {
 
 static void _plScanLocalDirectory( const PLFileSystemMount* mount, FSScanInstance** fileList, const char* path,
 								   const char* extension, void (* Function)( const char* ), bool recursive ) {
+#if !defined( _MSC_VER )
 	DIR* directory = opendir( path );
 	if ( directory ) {
 		struct dirent* entry;
@@ -532,6 +533,9 @@ static void _plScanLocalDirectory( const PLFileSystemMount* mount, FSScanInstanc
 	} else {
 		ReportError( PL_RESULT_FILEPATH, "opendir failed!" );
 	}
+#else
+	// TODO: Win32 implementation
+#endif
 }
 
 /**

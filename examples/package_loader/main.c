@@ -65,15 +65,15 @@ int main(int argc, char **argv) {
         PRINT_ERROR("Invalid path for package, aborting!\n");
     }
 
-    PLPackage* package = plLoadPackage(package_path, false);
+    PLPackage* package = plLoadPackage(package_path);
     if(package == NULL) {
         PRINT_ERROR("Failed to load package \"%s\" (%s)!\n", package_path, plGetError());
     }
 
     for(unsigned int i = 0; i < package->table_size; ++i) {
         char desc[PL_SYSTEM_MAX_PATH];
-        if(package->table[i].file.name[0] != '\0') {
-            strcpy(desc, package->table[i].file.name);
+        if(package->table[i].fileName[0] != '\0') {
+            strcpy(desc, package->table[i].fileName);
         } else {
             sprintf(desc, "%d", i);
         }
@@ -85,23 +85,22 @@ int main(int argc, char **argv) {
                 "offset: %lu\n"
                 "----------------\n",
                 i,
-                package->table[i].file.name,
-                package->table[i].file.size,
-                package->table[i].offset
+                package->table[i].fileName,
+                (unsigned long) package->table[i].fileSize,
+                (unsigned long) package->table[i].offset
                 );
 
         if(mode == MODE_EXTRACT) {
-            const uint8_t* data;
-            size_t data_length;
-            if(!plLoadPackageFile(package, package->table[i].file.name, &data, &data_length)) {
-                PRINT("Failed to load \"%s\" from package, skipping!\nERR: %s\n", desc, plGetError());
+            PLFile* filePtr = plLoadPackageFile( package, package->table[ i ].fileName );
+            if( filePtr == NULL ) {
+                PRINT( "Failed to load \"%s\" from package, skipping!\nERR: %s\n", desc, plGetError() );
                 continue;
             }
 
             char out[PL_SYSTEM_MAX_PATH];
             snprintf(out, sizeof(out), "./extract/%s", desc);
             plCreateDirectory("./extract/");
-            plWriteFile(out, data, data_length);
+            plWriteFile(out, plGetFileData( filePtr ), plGetFileSize( filePtr ) );
         }
     }
 

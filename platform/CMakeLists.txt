@@ -114,7 +114,7 @@ endif()
 
 # Platform specific libraries should be provided here
 if(UNIX)
-    target_link_libraries(platform dl)
+    target_link_libraries(platform dl m)
 elseif(WIN32)
 	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 		target_compile_options(platform PRIVATE -static -static-libstdc++ -static-libgcc)
@@ -130,4 +130,3 @@ target_include_directories(platform PUBLIC
 target_include_directories(platform PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glew-2.2.0/include/)
-target_link_libraries(platform m)
