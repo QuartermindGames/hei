@@ -240,6 +240,7 @@ static void GLCreateFrameBuffer( PLFrameBuffer *buffer ) {
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->rbo_colour );
 		GfxLog( "Created colour renderbuffer %dx%d", buffer->width, buffer->height );
 	}
+
 	if ( buffer->flags & PL_BUFFER_DEPTH ) {
 		glGenRenderbuffers( 1, &buffer->rbo_depth );
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->rbo_depth );
@@ -247,6 +248,7 @@ static void GLCreateFrameBuffer( PLFrameBuffer *buffer ) {
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->rbo_depth );
 		GfxLog( "Created depth renderbuffer %dx%d", buffer->width, buffer->height );
 	}
+
 	if ( buffer->flags & PL_BUFFER_STENCIL ) {
 		GfxLog( "Stencil renderbuffer not supported yet!" );
 	}
@@ -314,6 +316,8 @@ static PLTexture *GLGetFrameBufferTextureAttachment( PLFrameBuffer *buffer ) {
 	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->internal.id, 0 );
 
 	_plBindTexture( NULL );
+
+	return texture;
 }
 
 /////////////////////////////////////////////////////////////
