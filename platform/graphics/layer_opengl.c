@@ -236,7 +236,7 @@ static void GLCreateFrameBuffer( PLFrameBuffer *buffer ) {
 	if ( buffer->flags & PL_BUFFER_COLOUR ) {
 		glGenRenderbuffers( 1, &buffer->rbo_colour );
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->rbo_colour );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_RGB, buffer->width, buffer->height );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_RGBA, buffer->width, buffer->height );
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->rbo_colour );
 		GfxLog( "Created colour renderbuffer %dx%d", buffer->width, buffer->height );
 	}
@@ -308,7 +308,7 @@ static PLTexture *GLGetFrameBufferTextureAttachment( PLFrameBuffer *buffer ) {
 
 	_plBindTexture( texture );
 
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, buffer->width, buffer->height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, buffer->width, buffer->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
