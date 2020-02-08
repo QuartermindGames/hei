@@ -106,6 +106,7 @@ typedef struct PLModelLod {
 
 typedef struct PLModel {
     char            name[64];
+    char            path[PL_SYSTEM_MAX_PATH];
     PLModelType     type;
     uint16_t        flags;
     /* used for visibility culling */

@@ -196,6 +196,8 @@ PLModel *plLoadModel(const char *path) {
                     } else {
                         snprintf(model->name, sizeof(model->name), "null");
                     }
+
+                    strncpy( model->path, path, sizeof( model->path ) );
                     return model;
                 }
             }
