@@ -101,8 +101,8 @@ typedef struct PLTexture {
 PL_EXTERN_C
 
 PL_EXTERN PLTexture *plCreateTexture(void);
-PL_EXTERN PLTexture *plLoadTextureImage(const char *path, PLTextureFilter filter_mode);
-PL_EXTERN void plDestroyTexture(PLTexture *texture, bool force);
+PL_EXTERN PLTexture *plLoadTextureFromImage(const char *path, PLTextureFilter filter_mode);
+PL_EXTERN void plDestroyTexture(PLTexture *texture);
 
 //PL_EXTERN PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload);
 PL_EXTERN bool plUploadTextureImage(PLTexture *texture, const PLImage *upload);

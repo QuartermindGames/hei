@@ -41,4 +41,9 @@ static void GlideClearBuffers(unsigned int buffers) {
             1, 1);
 }
 
+unsigned int Glide_GetMaxTextureUnits( unsigned int *numUnits ) {
+	grGet(GR_NUM_TMU, sizeof(param), (FxI32*) numUnits);
+	return numUnits;
+}
+
 #endif

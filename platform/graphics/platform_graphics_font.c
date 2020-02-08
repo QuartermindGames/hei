@@ -277,7 +277,7 @@ void plDestroyBitmapFont(PLBitmapFont *font) {
     }
 
     if(font->texture != NULL) {
-        plDestroyTexture(font->texture, false);
+        plDestroyTexture(font->texture);
     }
 
     pl_free(font);

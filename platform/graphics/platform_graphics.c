@@ -149,14 +149,28 @@ PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h, unsigned int 
     return buffer;
 }
 
+
 void plDestroyFrameBuffer(PLFrameBuffer *buffer) {
-    if(!buffer) {
-        return;
-    }
+	if(!buffer) {
+		return;
+	}
 
-    CallGfxFunction(DeleteFrameBuffer, buffer);
+	CallGfxFunction(DeleteFrameBuffer, buffer);
 
-    pl_free(buffer);
+	pl_free(buffer);
+}
+
+PLTexture *plGetFrameBufferTextureAttachment( PLFrameBuffer *buffer ) {
+	if ( gfx_layer.GetFrameBufferTextureAttachment == NULL ) {
+		return NULL;
+	}
+
+	return gfx_layer.GetFrameBufferTextureAttachment( buffer );
+}
+
+void plGetFrameBufferResolution( const PLFrameBuffer *buffer, unsigned int *width, unsigned int *height ) {
+	*width = buffer->width;
+	*height = buffer->height;
 }
 
 void plBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget target_binding) {
@@ -177,13 +191,11 @@ void plSetClearColour(PLColour rgba) {
 
     CallGfxFunction(SetClearColour, rgba);
 
-    plCopyColour(&gfx_state.current_clearcolour, rgba);
+    gfx_state.current_clearcolour = rgba;
 }
 
 void plClearBuffers(unsigned int buffers) {
-    if(gfx_layer.ClearBuffers) {
-        gfx_layer.ClearBuffers(buffers);
-    }
+    CallGfxFunction( ClearBuffers, buffers );
 }
 
 /*===========================
