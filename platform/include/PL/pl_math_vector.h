@@ -52,6 +52,7 @@ typedef struct PLVector2 {
 
   bool operator==(PLVector2 a) const { return ((x == a.x) && (y == a.y)); }
   bool operator==(float a) const { return ((x == a) && (y == a)); }
+  bool operator != ( float a ) const { return ( ( x != a ) && ( y != a ) ); }
 
   PLVector2 operator*(PLVector2 a) const { return PLVector2(x * a.x, y * a.y); }
   PLVector2 operator*(float a) const { return PLVector2(x * a, y * a); }
