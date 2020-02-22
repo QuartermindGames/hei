@@ -231,14 +231,14 @@ static unsigned int TranslateFrameBufferBinding( PLFBOTarget targetBinding ) {
 static void GLCreateFrameBuffer( PLFrameBuffer *buffer ) {
 	glGenFramebuffers( 1, &buffer->fbo );
 	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, buffer->fbo );
-	GfxLog( "Created framebuffer %dx%d", buffer->width, buffer->height );
+	//GfxLog( "Created framebuffer %dx%d", buffer->width, buffer->height );
 
 	if ( buffer->flags & PL_BUFFER_COLOUR ) {
 		glGenRenderbuffers( 1, &buffer->rbo_colour );
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->rbo_colour );
 		glRenderbufferStorage( GL_RENDERBUFFER, GL_RGBA, buffer->width, buffer->height );
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->rbo_colour );
-		GfxLog( "Created colour renderbuffer %dx%d", buffer->width, buffer->height );
+		//GfxLog( "Created colour renderbuffer %dx%d", buffer->width, buffer->height );
 	}
 
 	if ( buffer->flags & PL_BUFFER_DEPTH ) {
@@ -246,7 +246,7 @@ static void GLCreateFrameBuffer( PLFrameBuffer *buffer ) {
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->rbo_depth );
 		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, buffer->width, buffer->height );
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->rbo_depth );
-		GfxLog( "Created depth renderbuffer %dx%d", buffer->width, buffer->height );
+		//GfxLog( "Created depth renderbuffer %dx%d", buffer->width, buffer->height );
 	}
 
 	if ( buffer->flags & PL_BUFFER_STENCIL ) {
