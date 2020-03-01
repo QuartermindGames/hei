@@ -62,6 +62,8 @@ static uint8_t* LoadMADPackageFile( PLFile* fh, PLPackageIndex* pi ) {
 }
 
 PLPackage* plLoadMADPackage( const char* path ) {
+	FunctionStart();
+
 	PLFile* fh = plOpenFile( path, false );
 	if ( fh == NULL ) {
 		return NULL;
@@ -91,12 +93,14 @@ PLPackage* plLoadMADPackage( const char* path ) {
 		// ensure the file name is valid...
 		for ( unsigned int i = 0; i < 16; ++i ) {
 			if ( isprint( index.file[ i ] ) == 0 && index.file[ i ] != '\0' ) {
+				ReportError( PL_RESULT_FILEREAD, "received invalid filename for index" );
 				goto FAILED;
 			}
 		}
 
 		if ( index.offset >= file_size || ( uint64_t ) ( index.offset ) + ( uint64_t ) ( index.length ) > file_size ) {
 			/* File offset/length falls beyond end of file */
+			ReportError( PL_RESULT_FILEREAD, "file offset/length falls beyond end of file" );
 			goto FAILED;
 		}
 
@@ -110,26 +114,12 @@ PLPackage* plLoadMADPackage( const char* path ) {
 	/* Allocate the basic package structure now we know how many files are in the archive. */
 
 	package = pl_malloc( sizeof( PLPackage ) );
-	if ( package == NULL ) {
-		goto FAILED;
-	}
 
 	memset( package, 0, sizeof( PLPackage ) );
 
-#if 0 // done after package load now
-	package->path = pl_malloc(strlen(filename) + 1);
-	if(package->path == NULL) {
-		goto FAILED;
-	}
-
-	strcpy(package->path, filename);
-#endif
 	package->internal.LoadFile = LoadMADPackageFile;
 	package->table_size = num_indices;
 	package->table = pl_calloc( num_indices, sizeof( struct PLPackageIndex ) );
-	if ( package->table == NULL ) {
-		goto FAILED;
-	}
 
 	/* Rewind the file handle and populate package->table with the metadata from the headers. */
 
@@ -139,6 +129,7 @@ PLPackage* plLoadMADPackage( const char* path ) {
 		MADIndex index;
 		if ( plReadFile( fh, &index, sizeof( MADIndex ), 1 ) != 1 ) {
 			/* EOF, or read error */
+			ReportError( PL_RESULT_FILEREAD, "failed to read MAD index %d", i );
 			goto FAILED;
 		}
 
