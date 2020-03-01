@@ -103,8 +103,10 @@ void plRegisterStandardPackageLoaders( void ) {
 }
 
 PLPackage* plLoadPackage( const char* path ) {
+	FunctionStart();
+
 	if ( !plFileExists( path ) ) {
-		ReportError( PL_RESULT_FILEREAD, "failed to load package, %s", path );
+		ReportError( PL_RESULT_FILEREAD, "failed to load package, \"%s\"", path );
 		return NULL;
 	}
 
