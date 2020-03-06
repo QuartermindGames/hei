@@ -961,9 +961,9 @@ static int64_t ReadSizedInteger( PLFile* ptr, size_t size, bool big_endian, bool
 
 	if ( big_endian ) {
 		if ( size == sizeof( int16_t ) ) {
-			return be16toh( n );
+			return be16toh( (int16_t)n );
 		} else if ( size == sizeof( int32_t ) ) {
-			return be32toh( n );
+			return be32toh( (int32_t)n );
 		} else if ( size == sizeof( int64_t ) ) {
 			return be64toh( n );
 		} else {
@@ -978,11 +978,11 @@ static int64_t ReadSizedInteger( PLFile* ptr, size_t size, bool big_endian, bool
 }
 
 int16_t plReadInt16( PLFile* ptr, bool big_endian, bool* status ) {
-	return ReadSizedInteger( ptr, sizeof( int16_t ), big_endian, status );
+	return (int16_t)ReadSizedInteger( ptr, sizeof( int16_t ), big_endian, status );
 }
 
 int32_t plReadInt32( PLFile* ptr, bool big_endian, bool* status ) {
-	return ReadSizedInteger( ptr, sizeof( int32_t ), big_endian, status );
+	return (int32_t)ReadSizedInteger( ptr, sizeof( int32_t ), big_endian, status );
 }
 
 int64_t plReadInt64( PLFile* ptr, bool big_endian, bool* status ) {
@@ -996,7 +996,7 @@ char* plReadString( PLFile* ptr, char* str, size_t size ) {
 	}
 
 	if ( ptr->fptr != NULL ) {
-		return fgets( str, size, ptr->fptr );
+		return fgets( str, (int)size, ptr->fptr );
 	}
 
 	if ( ptr->pos >= ptr->data + ptr->size ) {
@@ -1029,7 +1029,7 @@ bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek ) {
 	size_t posn = plGetFileOffset( ptr );
 	switch ( seek ) {
 		case PL_SEEK_CUR:
-			if ( posn + pos > ptr->size || pos < ( signed long ) -posn ) {
+			if ( posn + pos > ptr->size || pos < -( ( signed long ) posn ) ) {
 				ReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
@@ -1045,7 +1045,7 @@ bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek ) {
 			break;
 
 		case PL_SEEK_END:
-			if ( pos <= ( signed long ) -ptr->size ) {
+			if ( pos <= -( ( signed long ) ptr->size ) ) {
 				ReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
