@@ -92,12 +92,15 @@ PL_EXTERN PLMesh *plCreateMeshInit(PLMeshPrimitive primitive, PLMeshDrawMode mod
 PL_EXTERN PLMesh* plCreateMeshRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colour);
 PL_EXTERN void plDestroyMesh(PLMesh *mesh);
 
-PL_EXTERN void plDrawBevelledBorder(int x, int y, unsigned int w, unsigned int h);
-PL_EXTERN void plDrawEllipse(unsigned int segments, PLVector2 position, float w, float h, PLColour colour);
-PL_EXTERN void plDrawRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colour);
-PL_EXTERN void plDrawTexturedRectangle(int x, int y, int w, int h, PLTexture *texture);
-PL_EXTERN void plDrawFilledRectangle(PLRectangle2D rect);
-PL_EXTERN void plDrawTriangle(int x, int y, unsigned int w, unsigned int h);
+PL_EXTERN void plDrawBevelledBorder( int x, int y, unsigned int w, unsigned int h );
+PL_EXTERN void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h, PLColour colour );
+PL_EXTERN void plDrawRectangle( int x, int y, unsigned int w, unsigned int h, PLColour colour );
+PL_EXTERN void plDrawTexturedRectangle( int x, int y, int w, int h, PLTexture *texture );
+PL_EXTERN void plDrawFilledRectangle( PLRectangle2D rect );
+PL_EXTERN void plDrawTriangle( int x, int y, unsigned int w, unsigned int h );
+PL_EXTERN void plDrawLine( const PLVector3 *startPos, const PLColour *startColour, const PLVector3 *endPos, const PLColour *endColour );
+PL_EXTERN void plDrawSimpleLine( const PLVector3 *startPos, const PLVector3 *endPos, const PLColour *colour );
+PL_EXTERN void plDrawGrid( int x, int y, int w, int h, unsigned int gridSize );
 
 PL_EXTERN void plClearMesh(PLMesh *mesh);
 PL_EXTERN void plScaleMesh(PLMesh *mesh, PLVector3 scale);

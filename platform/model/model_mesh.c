@@ -495,4 +495,40 @@ void plDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 	plDrawMesh( mesh );
 }
 
+void plDrawLine( const PLVector3 *startPos, const PLColour *startColour, const PLVector3 *endPos, const PLColour *endColour ) {
+	static PLMesh *mesh = NULL;
+	if( mesh == NULL ) {
+		mesh = plCreateMesh( PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 2 );
+		if( mesh == NULL ) {
+			return;
+		}
+	}
+
+	plClearMesh( mesh );
+
+	plSetMeshVertexPosition( mesh, 0, *startPos );
+	plSetMeshVertexColour( mesh, 0, *startColour );
+	plSetMeshVertexPosition( mesh, 1, *endPos );
+	plSetMeshVertexColour( mesh, 1, *endColour );
+
+	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
+
+	plUploadMesh( mesh );
+	plDrawMesh( mesh );
+}
+
+void plDrawSimpleLine( const PLVector3 *startPos, const PLVector3 *endPos, const PLColour *colour ) {
+	plDrawLine( startPos, colour, endPos, colour );
+}
+
+void plDrawGrid( int x, int y, int w, int h, unsigned int gridSize ) {
+	for( ; y < 256; y += gridSize ) {
+		for( ; x < 256; x += gridSize ) {
+			plDrawSimpleLine( &PLVector3( x - w, y, 0 ), &PLVector3( x + w, y, 0 ), &PLColour( 255, 255, 255, 255 ) );
+		}
+
+		plDrawSimpleLine( &PLVector3( x, y - h, 0 ), &PLVector3( x, y + h, 0 ), &PLColour( 255, 255, 255, 255 ) );
+	}
+}
+
 #endif

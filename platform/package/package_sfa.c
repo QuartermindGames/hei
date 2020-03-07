@@ -69,7 +69,7 @@ PLPackage* plLoadTABPackage( const char* path ) {
 	unsigned int num_indices = ( unsigned int ) ( tab_size / sizeof( TabIndex ) );
 
 	TabIndex* indices = pl_malloc( num_indices * sizeof( TabIndex ) );
-	int ret = plReadFile( fp, indices, sizeof( TabIndex ), num_indices );
+	size_t ret = plReadFile( fp, indices, sizeof( TabIndex ), num_indices );
 	plCloseFile( fp );
 
 	if ( ret != num_indices ) {
