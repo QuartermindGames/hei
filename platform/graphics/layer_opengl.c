@@ -1085,8 +1085,8 @@ void plInitOpenGL( void ) {
 
 	if ( GLVersion( 3, 0 ) ) {
 		int minor, major;
-		glGetIntegerv( GL_MINOR_VERSION, &major );
-		glGetIntegerv( GL_MAJOR_VERSION, &minor );
+		glGetIntegerv( GL_MAJOR_VERSION, &major );
+		glGetIntegerv( GL_MINOR_VERSION, &minor );
 		if ( major > 0 ) {
 			gl_version_major = major;
 			gl_version_minor = minor;
