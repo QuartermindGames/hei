@@ -1105,9 +1105,10 @@ void plInitOpenGL( void ) {
 	 * otherwise there's no other way we can do it on newer
 	 * hardware...
 	 */
-	if ( GLVersion( 1, 0 ) && gfx_layer.mode == PL_GFX_MODE_OPENGL_1_0 ) {
+	if ( GLVersion( 1, 1 ) && gfx_layer.mode == PL_GFX_MODE_OPENGL_1_0 ) {
 		gl_version_major = 1;
 		gl_version_minor = 0;
+		GfxLog( " Simulating OpenGL 1.0\n" );
 	}
 
 	if ( GLVersion( 3, 0 ) ) {
