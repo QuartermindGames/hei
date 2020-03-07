@@ -206,6 +206,13 @@ typedef struct PLFrameBuffer {
 	PLFrameBufferRenderFlags flags;
 } PLFrameBuffer;
 
+#define PL_POLYGON_MAX_SIDES 32
+
+typedef struct PLPolygon {
+	PLVertex vertices[ PL_POLYGON_MAX_SIDES ];
+	unsigned int numVertices;
+} PLPolygon;
+
 PL_EXTERN_C
 
 PL_EXTERN GfxState gfx_state;
