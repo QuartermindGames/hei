@@ -255,6 +255,8 @@ PL_EXTERN const char *plGetResultString(PLresult result);
 PL_EXTERN const char * plGetError(void);        // Returns the last recorded error.
 // kill end
 
+PL_EXTERN const char *plGenerateUniqueIdentifier( char *dest, size_t destLength );
+
 // CL Arguments
 PL_EXTERN const char *plGetCommandLineArgumentValue(const char *arg);
 PL_EXTERN bool plHasCommandLineArgument(const char *arg);

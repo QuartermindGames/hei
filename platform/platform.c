@@ -229,6 +229,30 @@ void plShutdown(void) {
 }
 
 /*-------------------------------------------------------------------
+ * UNIQUE ID GENERATION
+ *-----------------------------------------------------------------*/
+
+ /**
+  * Generate a simple unique identifier (!!DO NOT USE FOR ANYTHING THAT NEEDS TO BE SECURE!!)
+  */
+const char *plGenerateUniqueIdentifier( char *dest, size_t destLength ) {
+	// Specific char set we will set, so we can preview it after
+	static char dataPool[] = {
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+		'k', 'l', 'm', 'n', 'o', 'p', 'w', 'x', 'y', 'z',
+		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+		'K', 'L', 'M', 'N', 'O', 'P', 'W', 'X', 'Y', 'Z',
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	};
+
+	for( unsigned int i = 0; i < destLength; ++i ) {
+		dest[ i ] = dataPool[ rand() % plArrayLength( dataPool ) ];
+	}
+
+	return dest;
+}
+
+/*-------------------------------------------------------------------
  * ERROR HANDLING
  *-----------------------------------------------------------------*/
 
