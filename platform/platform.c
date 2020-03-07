@@ -246,7 +246,7 @@ const char *plGenerateUniqueIdentifier( char *dest, size_t destLength ) {
 	};
 
 	for( unsigned int i = 0; i < destLength; ++i ) {
-		dest[ i ] = dataPool[ rand() % plArrayLength( dataPool ) ];
+		dest[ i ] = dataPool[ rand() % plArrayElements( dataPool ) ];
 	}
 
 	return dest;
