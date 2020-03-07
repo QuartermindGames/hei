@@ -172,3 +172,20 @@ PLFile* plLoadPackageFile( PLPackage* package, const char* path ) {
 	ReportError( PL_RESULT_INVALID_PARM2, "failed to find file in package" );
 	return NULL;
 }
+
+const char *plGetPackagePath( const PLPackage *package ) {
+	return package->path;
+}
+
+unsigned int plGetPackageTableSize( const PLPackage *package ) {
+	return package->table_size;
+}
+
+const PLPackageIndex *plGetPackageTableIndex( const PLPackage *package, unsigned int index ) {
+	if ( index >= package->table_size ) {
+		ReportError( PL_RESULT_INVALID_PARM2, "invalid package index" );
+		return NULL;
+	}
+
+	return &package->table[ index ];
+}

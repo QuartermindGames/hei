@@ -58,4 +58,8 @@ PL_EXTERN void plClearPackageLoaders( void );
 
 PL_EXTERN PLPackage* plCreatePackage( const char* dest );
 
+PL_EXTERN const char *plGetPackagePath( const PLPackage *package );
+PL_EXTERN unsigned int plGetPackageTableSize( const PLPackage *package );
+PL_EXTERN const PLPackageIndex *plGetPackageTableIndex( const PLPackage *package, unsigned int index );
+
 PL_EXTERN_C_END
