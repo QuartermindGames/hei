@@ -29,18 +29,6 @@ For more information, please refer to <http://unlicense.org>
 
 /* Outwars FF package format */
 
-static uint8_t* LoadFFPackageFile( PLFile* fh, PLPackageIndex* pi ) {
-	FunctionStart();
-
-	uint8_t* dataPtr = pl_malloc( pi->fileSize );
-	if ( !plFileSeek( fh, (signed)pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, pi->fileSize, 1 ) != 1 ) {
-		pl_free( dataPtr );
-		return NULL;
-	}
-
-	return dataPtr;
-}
-
 PLPackage* plLoadFFPackage( const char* path ) {
 	FunctionStart();
 
@@ -82,23 +70,22 @@ PLPackage* plLoadFFPackage( const char* path ) {
 	}
 
 	PLPackage* package = pl_malloc( sizeof( PLPackage ) );
-	if ( package != NULL ) {
-		package->internal.LoadFile = LoadFFPackageFile;
-		package->table_size = ( num_indices - 1 );
-		strncpy( package->path, path, sizeof( package->path ) );
-		if ( ( package->table = pl_calloc( package->table_size, sizeof( struct PLPackageIndex ) ) ) != NULL ) {
-			for ( unsigned int i = 0; i < package->table_size; ++i ) {
-				PLPackageIndex* index = &package->table[ i ];
-				index->offset = indices[ i ].offset;
-				index->fileSize = sizes[ i ];
-				strncpy( index->fileName, indices[ i ].name, sizeof( index->fileName ) );
-			}
-		} else {
-			plDestroyPackage( package );
-			package = NULL;
+	package->internal.LoadFile = _plLoadGenericPackageFile;
+	package->table_size = ( num_indices - 1 );
+	strncpy( package->path, path, sizeof( package->path ) );
+	if( ( package->table = pl_calloc( package->table_size, sizeof( struct PLPackageIndex ) ) ) != NULL ) {
+		for( unsigned int i = 0; i < package->table_size; ++i ) {
+			PLPackageIndex *index = &package->table[ i ];
+			index->offset = indices[ i ].offset;
+			index->fileSize = sizes[ i ];
+			strncpy( index->fileName, indices[ i ].name, sizeof( index->fileName ) );
 		}
 	}
-
+	else {
+		plDestroyPackage( package );
+		package = NULL;
+	}
+	
 	pl_free( indices );
 	pl_free( sizes );
 
