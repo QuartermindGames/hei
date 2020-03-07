@@ -40,6 +40,9 @@ typedef enum PLGfxMode {
     PL_GFX_MODE_OPENGL_CORE,
     PL_GFX_MODE_OPENGL_ES,
 
+    /* enforced compatibility modes */
+	PL_GFX_MODE_OPENGL_1_0,
+
     PL_GFX_MODE_VULKAN,
 
     PL_GFX_MODE_GLIDE,
@@ -229,7 +232,7 @@ typedef struct PLShaderStage {
     PLShaderStageType type;
 
     /* software implementation of the shader stage */
-    void(*SWFallback)(PLShaderProgram *program, PLShaderStageType type);
+	void(*SWFallback)(PLShaderProgram *program, PLShaderStageType type);
 
     PLShaderProgram *program;
 

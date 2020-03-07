@@ -179,7 +179,7 @@ typedef struct GfxLayer {
     if(gfx_layer.FUNCTION != NULL) { \
         gfx_layer.FUNCTION(__VA_ARGS__); \
     } else { \
-        GfxLog("unbound layer function %s was called\n", #FUNCTION); \
+        GfxLog("Unbound layer function %s was called\n", #FUNCTION); \
     }
 #else
 #   define CallGfxFunction(FUNCTION, ...)
