@@ -78,6 +78,8 @@ PLPackage *plLoadDoomWadPackage( const char *path ) {
 
 	/* and now read in the file table */
 
+	plFileSeek( filePtr, tableOffset, PL_SEEK_SET );
+
 	typedef struct WadIndex {
 		uint32_t offset;
 		uint32_t size;
@@ -85,11 +87,23 @@ PLPackage *plLoadDoomWadPackage( const char *path ) {
 	} WadIndex;
 	WadIndex *indices = pl_malloc( sizeof( WadIndex ) * numLumps );
 	for( unsigned int i = 0; i < numLumps; ++i ) {
+#define cleanup() pl_free( indices ); plCloseFile( filePtr )
 		indices[ i ].offset = plReadInt32( filePtr, false, &status );
+		if( indices[ i ].offset >= tableOffset ) {
+			ReportError( PL_RESULT_INVALID_PARM1, "invalid file offset for index %d", i );
+			cleanup();
+			return NULL;
+		}
+
 		indices[ i ].size = plReadInt32( filePtr, false, &status );
-		if( plReadString( filePtr, indices[ i ].name, sizeof( indices[ i ].name ) ) == NULL ) {
-			pl_free( indices );
-			plCloseFile( filePtr );
+		if( indices[ i ].size >= plGetFileSize( filePtr ) ) {
+			ReportError( PL_RESULT_INVALID_PARM1, "invalid file size for index %d", i );
+			cleanup();
+			return NULL;
+		}
+
+		if( plReadFile( filePtr, indices[ i ].name, 1, 8 ) == 8 ) {
+			cleanup();
 			return NULL;
 		}
 	}
@@ -111,9 +125,9 @@ PLPackage *plLoadDoomWadPackage( const char *path ) {
 	package->table = pl_malloc( sizeof( PLPackageIndex ) * package->table_size );
 	for( unsigned int i = 0; i < package->table_size; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
-		index->offset = indices->offset;
-		index->fileSize = indices->size;
-		strncpy( index->fileName, indices->name, sizeof( index->fileName ) );
+		index->offset = indices[ i ].offset;
+		index->fileSize = indices[ i ].size;
+		strncpy( index->fileName, indices[ i ].name, sizeof( index->fileName ) );
 	}
 
 	pl_free( indices );
