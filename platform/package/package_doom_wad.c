@@ -83,7 +83,7 @@ PLPackage *plLoadDoomWadPackage( const char *path ) {
 	typedef struct WadIndex {
 		uint32_t offset;
 		uint32_t size;
-		char     name[ 8 ];
+		char     name[ 9 ];
 	} WadIndex;
 	WadIndex *indices = pl_malloc( sizeof( WadIndex ) * numLumps );
 	for( unsigned int i = 0; i < numLumps; ++i ) {
@@ -102,10 +102,11 @@ PLPackage *plLoadDoomWadPackage( const char *path ) {
 			return NULL;
 		}
 
-		if( plReadFile( filePtr, indices[ i ].name, 1, 8 ) == 8 ) {
+		if( plReadFile( filePtr, indices[ i ].name, 1, 8 ) != 8 ) {
 			cleanup();
 			return NULL;
 		}
+		indices[ i ].name[ 8 ] = '\0';
 	}
 
 	plCloseFile( filePtr );
