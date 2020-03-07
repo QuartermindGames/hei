@@ -32,14 +32,13 @@ For more information, please refer to <http://unlicense.org>
 
 typedef struct PLPackageIndex {
 	size_t offset;
-	char fileName[PL_SYSTEM_MAX_PATH];
+	char   fileName[PL_SYSTEM_MAX_PATH];
 	size_t fileSize;
-	//uint8_t* dataPtr;
 } PLPackageIndex;
 
 typedef struct PLPackage {
 	char path[PL_SYSTEM_MAX_PATH];
-	unsigned int table_size;
+	unsigned int    table_size;
 	PLPackageIndex* table;
 	struct {
 		uint8_t* (* LoadFile)( PLFile* package, PLPackageIndex* index );
