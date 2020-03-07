@@ -522,12 +522,13 @@ void plDrawSimpleLine( const PLVector3 *startPos, const PLVector3 *endPos, const
 }
 
 void plDrawGrid( int x, int y, int w, int h, unsigned int gridSize ) {
-	for( ; y < 256; y += gridSize ) {
-		for( ; x < 256; x += gridSize ) {
-			plDrawSimpleLine( &PLVector3( x - w, y, 0 ), &PLVector3( x + w, y, 0 ), &PLColour( 255, 255, 255, 255 ) );
-		}
+	int c = 0, r = 0;
+	for( ; r < h + 1; r += gridSize ) {
+		plDrawSimpleLine( &PLVector3( x, r + y, 0 ), &PLVector3( x + w, r + y, 0 ), &PLColour( 255, 0, 0, 255 ) );
 
-		plDrawSimpleLine( &PLVector3( x, y - h, 0 ), &PLVector3( x, y + h, 0 ), &PLColour( 255, 255, 255, 255 ) );
+		for( ; c < w + 1; c += gridSize ) {
+			plDrawSimpleLine( &PLVector3( c + x, y, 0 ), &PLVector3( c + x, y + h, 0 ), &PLColour( 0, 255, 0, 255 ) );
+		}
 	}
 }
 
