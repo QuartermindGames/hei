@@ -162,6 +162,7 @@ PLFile* plLoadPackageFile( PLPackage* package, const char* path ) {
 			snprintf( file->path, sizeof( file->path ), "%s", package->table[ i ].fileName );
 			file->size = package->table[ i ].fileSize;
 			file->data = dataPtr;
+			file->pos = file->data;
 		}
 
 		plCloseFile( packageFile );

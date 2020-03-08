@@ -636,6 +636,25 @@ static void GLDrawMesh( PLMesh *mesh ) {
 			}
 
 			stage->SWFallback( gfx_state.current_program, stage->type );
+
+			GLuint mode = TranslatePrimitiveMode( mesh->primitive );
+			glBegin( mode );
+			if ( mode == GL_TRIANGLES ) {
+				for ( unsigned int j = 0; j < mesh->num_indices; ++j ) {
+					PLVertex *vertex = &mesh->vertices[ mesh->indices[ j ] ];
+					glVertex3f( vertex->position.x, vertex->position.y, vertex->position.z );
+					glNormal3f( vertex->normal.x, vertex->normal.y, vertex->normal.z );
+					glColor4b( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a );
+				}
+			} else {
+				for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
+					PLVertex *vertex = &mesh->vertices[ j ];
+					glVertex3f( vertex->position.x, vertex->position.y, vertex->position.z );
+					glNormal3f( vertex->normal.x, vertex->normal.y, vertex->normal.z );
+					glColor4b( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a );
+				}
+			}
+			glEnd();
 		}
 		return;
 	}

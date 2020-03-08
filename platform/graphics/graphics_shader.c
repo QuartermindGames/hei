@@ -318,34 +318,6 @@ PLShaderProgram *plCreateShaderProgram(void) {
     return program;
 }
 
-#if 0 /* sark proto */
-PLShaderProgram srCreateShaderProgram(void) {
-    static PLShaderProgram program;
-    memset(&program, 0, sizeof(PLShaderProgram));
-    CallGfxFunction(CreateShaderProgram, &program);
-    return program;
-}
-
-bool test_create_shader_program(void) {
-    printf("%s\n", __FUNCTION__);
-
-    PLShaderProgram my_program = srCreateShaderProgram();
-    printf(" %d\n", my_program.internal.id);
-
-    PLShaderProgram *my_program2 = plCreateShaderProgram();
-    if(my_program2 == NULL) {
-        printf("FAILED\n");
-        return false;
-    }
-
-    printf(" %d\n", my_program2->internal.id);
-
-    plDestroyShaderProgram(my_program2, false);
-
-    return true;
-}
-#endif
-
 /**
  * deletes the given shader program and also clears it on the GPU,
  * if applicable.
