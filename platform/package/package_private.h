@@ -97,11 +97,28 @@ PL_INLINE static void WritePackageIndexHeader( FILE* handle, uint16_t type, uint
 
 /////////////////////////////////////////////////////////////////
 
-PLPackage* plLoadMADPackage( const char* path );
-PLPackage* plLoadARTPackage( const char* path );
-PLPackage* plLoadLSTPackage( const char* path );
-PLPackage* plLoadTABPackage( const char* path );
-PLPackage* plLoadVSRPackage( const char* path );
-PLPackage* plLoadFFPackage( const char* path );
+PLPackage *plLoadMADPackage( const char *path );
+PLPackage *plLoadARTPackage( const char *path );
+PLPackage *plLoadLSTPackage( const char *path );
+PLPackage *plLoadTABPackage( const char *path );
+PLPackage *plLoadVSRPackage( const char *path );
+PLPackage *plLoadFFPackage( const char *path );
+PLPackage *plLoadDoomWadPackage( const char *path );
+
+/**
+ * Generic loader for package files, since this is unlikely to change
+ * in most cases.
+ */
+PL_INLINE static uint8_t *_plLoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
+	FunctionStart();
+
+	uint8_t *dataPtr = pl_malloc( pi->fileSize );
+	if( !plFileSeek( fh, (signed)pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, pi->fileSize, 1 ) != 1 ) {
+		pl_free( dataPtr );
+		return NULL;
+	}
+
+	return dataPtr;
+}
 
 PL_EXTERN_C_END

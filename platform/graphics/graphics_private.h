@@ -179,7 +179,7 @@ typedef struct GfxLayer {
     if(gfx_layer.FUNCTION != NULL) { \
         gfx_layer.FUNCTION(__VA_ARGS__); \
     } else { \
-        GfxLog("unbound layer function %s was called\n", #FUNCTION); \
+        GfxLog("Unbound layer function %s was called\n", #FUNCTION); \
     }
 #else
 #   define CallGfxFunction(FUNCTION, ...)
@@ -205,6 +205,13 @@ typedef struct PLFrameBuffer {
 	unsigned int height;
 	PLFrameBufferRenderFlags flags;
 } PLFrameBuffer;
+
+#define PL_POLYGON_MAX_SIDES 32
+
+typedef struct PLPolygon {
+	PLVertex vertices[ PL_POLYGON_MAX_SIDES ];
+	unsigned int numVertices;
+} PLPolygon;
 
 PL_EXTERN_C
 

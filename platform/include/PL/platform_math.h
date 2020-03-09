@@ -720,17 +720,23 @@ PL_INLINE static void plAnglesAxes(PLVector3 angles, PLVector3 *left, PLVector3 
     float sz = sinf(theta);
     float cz = cosf(theta);
 
-    left->x = cy * cz;
-    left->y = sx * sy * cz + cx * sz;
-    left->z = -cx * sy * cz + sx * sz;
+    if ( left != NULL ) {
+        left->x = cy * cz;
+        left->y = sx * sy * cz + cx * sz;
+        left->z = -cx * sy * cz + sx * sz;
+    }
 
-    up->x = -cy * sz;
-    up->y = -sx * sy * sz + cx * cz;
-    up->z = cx * sy * sz + sx * cz;
+    if ( up != NULL ) {
+        up->x = -cy * sz;
+        up->y = -sx * sy * sz + cx * cz;
+        up->z = cx * sy * sz + sx * cz;
+    }
 
-    forward->x = sy;
-    forward->y = -sx * cy;
-    forward->z = cx * cy;
+    if ( forward != NULL ) {
+        forward->x = sy;
+        forward->y = -sx * cy;
+        forward->z = cx * cy;
+    }
 }
 
 #include "pl_math_matrix.h"

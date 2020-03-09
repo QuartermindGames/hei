@@ -128,7 +128,7 @@ static void GLPreProcessGLSLShader(char **buf, size_t *length, PLShaderStageType
 #if 0
                     FILE *s = fopen(path, "r");
                     if(s == NULL) {
-                        GfxLog("failed to load shader \"%s\"!\n", path);
+                        GfxLog("Failed to load shader \"%s\"!\n", path);
                         continue;
                     }
 #else
@@ -317,34 +317,6 @@ PLShaderProgram *plCreateShaderProgram(void) {
 
     return program;
 }
-
-#if 0 /* sark proto */
-PLShaderProgram srCreateShaderProgram(void) {
-    static PLShaderProgram program;
-    memset(&program, 0, sizeof(PLShaderProgram));
-    CallGfxFunction(CreateShaderProgram, &program);
-    return program;
-}
-
-bool test_create_shader_program(void) {
-    printf("%s\n", __FUNCTION__);
-
-    PLShaderProgram my_program = srCreateShaderProgram();
-    printf(" %d\n", my_program.internal.id);
-
-    PLShaderProgram *my_program2 = plCreateShaderProgram();
-    if(my_program2 == NULL) {
-        printf("FAILED\n");
-        return false;
-    }
-
-    printf(" %d\n", my_program2->internal.id);
-
-    plDestroyShaderProgram(my_program2, false);
-
-    return true;
-}
-#endif
 
 /**
  * deletes the given shader program and also clears it on the GPU,
@@ -539,7 +511,7 @@ static PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
         case GL_SAMPLER_2D_SHADOW:  return PL_UNIFORM_SAMPLER2DSHADOW;
 
         default: {
-            GfxLog("unhandled GLSL data type, \"%u\"!\n", type);
+            GfxLog("Unhandled GLSL data type, \"%u\"!\n", type);
             return PL_INVALID_UNIFORM;
         }
     }
@@ -606,13 +578,13 @@ static void RegisterShaderProgramData(PLShaderProgram *program) {
 
 static int ValidateShaderUniformSlot(PLShaderProgram* program, int slot) {
     if(slot == -1) {
-        GfxLog("invalid shader uniform slot, \"%d\"!\n", slot);
+        GfxLog("Invalid shader uniform slot, \"%d\"!\n", slot);
         return -1;
     } else if((unsigned int)(slot) >= program->num_uniforms) {
-        GfxLog("potential overflow for uniform slot! (%d / %d)\n", slot, program->num_uniforms);
+        GfxLog("Potential overflow for uniform slot! (%d / %d)\n", slot, program->num_uniforms);
         return -1;
     } else if(program->uniforms[slot].type == PL_INVALID_UNIFORM) {
-        GfxLog("unknown uniform type for slot! (%d)\n", slot);
+        GfxLog("Unknown uniform type for slot! (%d)\n", slot);
         return -1;
     }
 

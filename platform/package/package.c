@@ -94,12 +94,13 @@ void plRegisterPackageLoader( const char* ext, PLPackage* (* LoadFunction)( cons
 }
 
 void plRegisterStandardPackageLoaders( void ) {
+	plRegisterPackageLoader( "ff", plLoadFFPackage );
 	plRegisterPackageLoader( "mad", plLoadMADPackage );
 	plRegisterPackageLoader( "mtd", plLoadMADPackage );
 	plRegisterPackageLoader( "lst", plLoadLSTPackage );
 	plRegisterPackageLoader( "tab", plLoadTABPackage );
 	plRegisterPackageLoader( "vsr", plLoadVSRPackage );
-	plRegisterPackageLoader( "ff", plLoadFFPackage );
+	plRegisterPackageLoader( "wad", plLoadDoomWadPackage );
 }
 
 PLPackage* plLoadPackage( const char* path ) {
@@ -161,6 +162,7 @@ PLFile* plLoadPackageFile( PLPackage* package, const char* path ) {
 			snprintf( file->path, sizeof( file->path ), "%s", package->table[ i ].fileName );
 			file->size = package->table[ i ].fileSize;
 			file->data = dataPtr;
+			file->pos = file->data;
 		}
 
 		plCloseFile( packageFile );
@@ -170,4 +172,21 @@ PLFile* plLoadPackageFile( PLPackage* package, const char* path ) {
 
 	ReportError( PL_RESULT_INVALID_PARM2, "failed to find file in package" );
 	return NULL;
+}
+
+const char *plGetPackagePath( const PLPackage *package ) {
+	return package->path;
+}
+
+unsigned int plGetPackageTableSize( const PLPackage *package ) {
+	return package->table_size;
+}
+
+const PLPackageIndex *plGetPackageTableIndex( const PLPackage *package, unsigned int index ) {
+	if ( index >= package->table_size ) {
+		ReportError( PL_RESULT_INVALID_PARM2, "invalid package index" );
+		return NULL;
+	}
+
+	return &package->table[ index ];
 }

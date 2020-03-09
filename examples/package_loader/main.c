@@ -41,9 +41,8 @@ int main(int argc, char **argv) {
     plRegisterStandardModelLoaders();
 
     if(argc < 2) {
-        PRINT(" package_loader <model path> -<optional mode>\n");
-        PRINT("  -smd    : write model out to an SMD\n");
-        PRINT("  -scan   : scans through a directory, must provide extension as follow-up argument to model path\n");
+        PRINT(" package_loader <path> -<optional mode>\n");
+        PRINT("  -extract : extract all files from the package\n");
         return EXIT_SUCCESS;
     }
 

@@ -349,9 +349,10 @@ void plSetGraphicsMode(PLGfxMode mode) {
 #if defined(PL_SUPPORT_OPENGL)
         case PL_GFX_MODE_OPENGL_CORE:
         case PL_GFX_MODE_OPENGL_ES:
-        case PL_GFX_MODE_OPENGL: {
+        case PL_GFX_MODE_OPENGL_1_0:
+        case PL_GFX_MODE_OPENGL:
             plInitOpenGL();
-        } break;
+            break;
 #endif
 
         default: {

@@ -564,7 +564,7 @@ void plScanDirectory( const char* path, const char* extension, void (* Function)
 		if ( location->type == FS_MOUNT_PACKAGE ) {
 			// Only works for directories for now
 		} else if ( location->type == FS_MOUNT_DIR ) {
-			char mounted_path[PL_SYSTEM_MAX_PATH];
+			char mounted_path[PL_SYSTEM_MAX_PATH + 1];
 			snprintf( mounted_path, sizeof( mounted_path ), "%s/%s", location->path, path );
 			_plScanLocalDirectory( location, &fileList, mounted_path, extension, Function, recursive );
 		}
@@ -624,7 +624,7 @@ bool plFileExists( const char* path ) {
 	while ( location != NULL ) {
 		if ( location->type == FS_MOUNT_DIR ) {
 			/* todo: don't allow path to search outside of mounted path */
-			char buf[PL_SYSTEM_MAX_PATH];
+			char buf[PL_SYSTEM_MAX_PATH + 1];
 			snprintf( buf, sizeof( buf ), "%s/%s", location->path, path );
 			if ( plLocalFileExists( buf ) ) {
 				return true;
@@ -672,7 +672,7 @@ bool plPathExists( const char* path ) {
 	while ( location != NULL ) {
 		if ( location->type == FS_MOUNT_DIR ) {
 			/* todo: don't allow path to search outside of mounted path */
-			char buf[PL_SYSTEM_MAX_PATH];
+			char buf[PL_SYSTEM_MAX_PATH + 1];
 			snprintf( buf, sizeof( buf ), "%s/%s", location->path, path );
 			if ( plLocalPathExists( buf ) ) {
 				return true;
@@ -826,7 +826,7 @@ PLFile* plOpenFile( const char* path, bool cache ) {
 		return plOpenLocalFile( path, cache );
 	}
 
-	char buf[PL_SYSTEM_MAX_PATH];
+	char buf[PL_SYSTEM_MAX_PATH + 1];
 	PLFileSystemMount* location = fs_mount_root;
 	while ( location != NULL ) {
 		PLFile* fp;

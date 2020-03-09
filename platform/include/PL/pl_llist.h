@@ -27,38 +27,24 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include <PL/platform.h>
-#include <PL/platform_filesystem.h>
-
-typedef struct PLPackageIndex {
-	size_t offset;
-	char   fileName[PL_SYSTEM_MAX_PATH];
-	size_t fileSize;
-} PLPackageIndex;
-
-typedef struct PLPackage {
-	char path[PL_SYSTEM_MAX_PATH];
-	unsigned int    table_size;
-	PLPackageIndex* table;
-	struct {
-		uint8_t* (* LoadFile)( PLFile* package, PLPackageIndex* index );
-	} internal;
-} PLPackage;
+#include "platform.h"
 
 PL_EXTERN_C
 
-PL_EXTERN PLPackage* plLoadPackage( const char* path );
-PL_EXTERN PLFile* plLoadPackageFile( PLPackage* package, const char* path );
-PL_EXTERN void plDestroyPackage( PLPackage* package );
+typedef struct PLLinkedList PLLinkedList;
+typedef struct PLLinkedListNode PLLinkedListNode;
 
-PL_EXTERN void plRegisterPackageLoader( const char* ext, PLPackage* (* LoadFunction)( const char* path ) );
-PL_EXTERN void plRegisterStandardPackageLoaders( void );
-PL_EXTERN void plClearPackageLoaders( void );
+PLLinkedList *plCreateLinkedList( void );
 
-PL_EXTERN PLPackage* plCreatePackage( const char* dest );
+PLLinkedListNode *plInsertLinkedListNode( PLLinkedList *list, void *userPtr );
 
-PL_EXTERN const char *plGetPackagePath( const PLPackage *package );
-PL_EXTERN unsigned int plGetPackageTableSize( const PLPackage *package );
-PL_EXTERN const PLPackageIndex *plGetPackageTableIndex( const PLPackage *package, unsigned int index );
+void plDestroyLinkedList( PLLinkedList *list );
+void plDestroyLinkedListNode( PLLinkedList *list, PLLinkedListNode *node );
+void plDestroyLinkedListNodes( PLLinkedList *list );
+
+PLLinkedListNode *plGetNextLinkedListNode( PLLinkedListNode *node );
+PLLinkedListNode *plGetPrevLinkedListNode( PLLinkedListNode *node );
+PLLinkedListNode *plGetRootNode( PLLinkedList *list );
+void *plGetLinkedListNodeUserData( PLLinkedListNode *node );
 
 PL_EXTERN_C_END

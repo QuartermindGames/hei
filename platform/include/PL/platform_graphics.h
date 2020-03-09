@@ -40,6 +40,9 @@ typedef enum PLGfxMode {
     PL_GFX_MODE_OPENGL_CORE,
     PL_GFX_MODE_OPENGL_ES,
 
+    /* enforced compatibility modes */
+	PL_GFX_MODE_OPENGL_1_0,
+
     PL_GFX_MODE_VULKAN,
 
     PL_GFX_MODE_GLIDE,
@@ -229,7 +232,7 @@ typedef struct PLShaderStage {
     PLShaderStageType type;
 
     /* software implementation of the shader stage */
-    void(*SWFallback)(PLShaderProgram *program, PLShaderStageType type);
+	void(*SWFallback)(PLShaderProgram *program, PLShaderStageType type);
 
     PLShaderProgram *program;
 
@@ -355,5 +358,17 @@ PL_EXTERN void plSetDepthMask(bool enable);
 PL_EXTERN void plProcessGraphics(void);
 
 PL_EXTERN void plSetGraphicsMode(PLGfxMode mode);
+
+/* polygons */
+
+typedef struct PLPolygon PLPolygon;
+typedef struct PLVertex PLVertex;
+
+PL_EXTERN PLPolygon *plCreatePolygon( void );
+PL_EXTERN void plDestroyPolygon( PLPolygon *polygon );
+PL_EXTERN void plAddPolygonVertex( PLPolygon *polygon, PLVertex vertex );
+PL_EXTERN void plRemovePolygonVertex( PLPolygon *polygon, unsigned int vertIndex );
+PL_EXTERN unsigned int plGetNumOfPolygonVertices( const PLPolygon *polygon );
+PL_EXTERN PLVertex *plGetPolygonVertex( PLPolygon *polygon, unsigned int vertIndex );
 
 PL_EXTERN_C_END

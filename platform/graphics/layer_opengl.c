@@ -68,6 +68,10 @@ static GLuint VAO[1];
 // Debug
 
 static void GLInsertDebugMarker( const char *msg ) {
+	if ( !GLVersion( 4, 3 ) ) {
+		return;
+	}
+
 	glDebugMessageInsert( GL_DEBUG_SOURCE_APPLICATION,
 						  GL_DEBUG_TYPE_MARKER,
 						  0,
@@ -77,10 +81,18 @@ static void GLInsertDebugMarker( const char *msg ) {
 }
 
 static void GLPushDebugGroupMarker( const char *msg ) {
+	if ( !GLVersion( 4, 3 ) ) {
+		return;
+	}
+
 	glPushDebugGroup( GL_DEBUG_SOURCE_APPLICATION, 0, -1, msg );
 }
 
 static void GLPopDebugGroupMarker( void ) {
+	if ( !GLVersion( 4, 3 ) ) {
+		return;
+	}
+
 	glPopDebugGroup();
 }
 
@@ -137,19 +149,16 @@ static void GLClearBuffers( unsigned int buffers ) {
 
 static void GLSetDepthBufferMode( unsigned int mode ) {
 	switch ( mode ) {
-		default: {
-			GfxLog( "unknown depth buffer mode, %d\n", mode );
-		}
+		default:
+			GfxLog( "Unknown depth buffer mode, %d\n", mode );
 			break;
 
-		case PL_DEPTHBUFFER_DISABLE: {
+		case PL_DEPTHBUFFER_DISABLE:
 			glDisable( GL_DEPTH_TEST );
-		}
 			break;
 
-		case PL_DEPTHBUFFER_ENABLE: {
+		case PL_DEPTHBUFFER_ENABLE:
 			glEnable( GL_DEPTH_TEST );
-		}
 			break;
 	}
 }
@@ -199,14 +208,12 @@ static void GLSetCullMode( PLCullMode mode ) {
 		glCullFace( GL_BACK );
 		switch ( mode ) {
 			default:
-			case PL_CULL_NEGATIVE: {
+			case PL_CULL_NEGATIVE:
 				glFrontFace( GL_CW );
-			}
 				break;
 
-			case PL_CULL_POSTIVE: {
+			case PL_CULL_POSTIVE:
 				glFrontFace( GL_CCW );
-			}
 				break;
 		}
 	}
@@ -538,6 +545,10 @@ enum {
 };
 
 static void GLCreateMesh( PLMesh *mesh ) {
+	if ( !GLVersion( 2, 0 ) ) {
+		return;
+	}
+
 	// Create VBO
 	glGenBuffers( 1, &mesh->internal.buffers[ BUFFER_VERTEX_DATA ] );
 
@@ -548,6 +559,10 @@ static void GLCreateMesh( PLMesh *mesh ) {
 }
 
 static void GLUploadMesh( PLMesh *mesh ) {
+	if ( !GLVersion( 2, 0 ) ) {
+		return;
+	}
+
 	PLShaderProgram *program = gfx_state.current_program;
 	if ( program == NULL ) {
 		return;
@@ -597,18 +612,55 @@ static void GLUploadMesh( PLMesh *mesh ) {
 }
 
 static void GLDeleteMesh( PLMesh *mesh ) {
+	if ( !GLVersion( 2, 0 ) ) {
+		return;
+	}
+
 	glDeleteBuffers( 1, &mesh->internal.buffers[ BUFFER_VERTEX_DATA ] );
 	glDeleteBuffers( 1, &mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] );
 }
 
 static void GLDrawMesh( PLMesh *mesh ) {
-	if ( mesh->internal.buffers[ BUFFER_VERTEX_DATA ] == 0 ) {
-		GfxLog( "invalid buffer provided, skipping draw!\n" );
+	if ( gfx_state.current_program == NULL ) {
+		GfxLog( "no shader assigned!\n" );
 		return;
 	}
 
-	if ( gfx_state.current_program == NULL ) {
-		GfxLog( "no shader assigned!\n" );
+	/* anything less and we'll just fallback to immediate */
+	if ( !GLVersion( 2, 0 ) ) {
+		/* todo... */
+		for ( unsigned int i = 0; i < gfx_state.current_program->num_stages; ++i ) {
+			PLShaderStage *stage = gfx_state.current_program->stages[ i ];
+			if ( stage->SWFallback == NULL ) {
+				continue;
+			}
+
+			stage->SWFallback( gfx_state.current_program, stage->type );
+
+			GLuint mode = TranslatePrimitiveMode( mesh->primitive );
+			glBegin( mode );
+			if ( mode == GL_TRIANGLES ) {
+				for ( unsigned int j = 0; j < mesh->num_indices; ++j ) {
+					PLVertex *vertex = &mesh->vertices[ mesh->indices[ j ] ];
+					glVertex3f( vertex->position.x, vertex->position.y, vertex->position.z );
+					glNormal3f( vertex->normal.x, vertex->normal.y, vertex->normal.z );
+					glColor4b( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a );
+				}
+			} else {
+				for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
+					PLVertex *vertex = &mesh->vertices[ j ];
+					glVertex3f( vertex->position.x, vertex->position.y, vertex->position.z );
+					glNormal3f( vertex->normal.x, vertex->normal.y, vertex->normal.z );
+					glColor4b( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a );
+				}
+			}
+			glEnd();
+		}
+		return;
+	}
+
+	if ( mesh->internal.buffers[ BUFFER_VERTEX_DATA ] == 0 ) {
+		GfxLog( "invalid buffer provided, skipping draw!\n" );
 		return;
 	}
 
@@ -619,7 +671,11 @@ static void GLDrawMesh( PLMesh *mesh ) {
 	glUniformMatrix4fv( proj_loc, 1, GL_FALSE, gfx_state.projection_matrix.m );
 
 	//Ensure VAO/VBO/EBO are bound
-	glBindVertexArray( VAO[ 0 ] );
+	if ( GLVersion( 3, 0 ) ) {
+		glBindVertexArray( VAO[ 0 ] );
+		/* todo: fallback for legacy... */
+	}
+
 	glBindBuffer( GL_ARRAY_BUFFER, mesh->internal.buffers[ BUFFER_VERTEX_DATA ] );
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] );
 
@@ -652,7 +708,7 @@ static void GLDestroyCamera( PLCamera *camera ) {
 static void GLSetupCamera( PLCamera *camera ) {
 	plAssert( camera );
 
-	if ( camera->viewport.auto_scale ) {
+	if ( camera->viewport.auto_scale && GLVersion( 3, 0 ) ) {
 		GLint bound_rbo_w, bound_rbo_h;
 		glGetRenderbufferParameteriv( GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &bound_rbo_w );
 		glGetRenderbufferParameteriv( GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &bound_rbo_h );
@@ -804,6 +860,7 @@ static void GLDestroyShaderStage( PLShaderStage *stage ) {
 		glDetachShader( stage->program->internal.id, stage->internal.id );
 		stage->program = NULL;
 	}
+
 	glDeleteShader( stage->internal.id );
 	stage->internal.id = 0;
 }
@@ -847,6 +904,10 @@ static void GLCompileShaderStage( PLShaderStage *stage, const char *buf, size_t 
 
 static void GLSetShaderUniformMatrix4( PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose ) {
 	plUnused( program );
+
+	if ( !GLVersion( 2, 0 ) ) {
+		return;
+	}
 
 	GLuint loc = ( GLuint ) slot;
 	glUniformMatrix4fv( loc, 1, transpose ? GL_TRUE : GL_FALSE, value.m );
@@ -1030,6 +1091,79 @@ void plInitOpenGL( void ) {
 		return;
 	}
 
+	// Get any information that will be presented later.
+	gfx_state.hw_extensions = ( const char * ) glGetString( GL_EXTENSIONS );
+	gfx_state.hw_renderer = ( const char * ) glGetString( GL_RENDERER );
+	gfx_state.hw_vendor = ( const char * ) glGetString( GL_VENDOR );
+	gfx_state.hw_version = ( const char * ) glGetString( GL_VERSION );
+
+	memset( &gl_capabilities, 0, sizeof( gl_capabilities ) );
+
+	gl_version_major = ( gfx_state.hw_version[ 0 ] - '0' );
+	gl_version_minor = ( gfx_state.hw_version[ 2 ] - '0' );
+
+	if ( GLVersion( 3, 0 ) ) {
+		int minor, major;
+		glGetIntegerv( GL_MAJOR_VERSION, &major );
+		glGetIntegerv( GL_MINOR_VERSION, &minor );
+		if ( major > 0 ) {
+			gl_version_major = major;
+			gl_version_minor = minor;
+		} else {
+			GfxLog( "failed to get OpenGL version, expect some functionality not to work!\n" );
+		}
+	}
+
+	GfxLog( " OpenGL %d.%d\n", gl_version_major, gl_version_minor );
+	GfxLog( "  renderer:   %s\n", gfx_state.hw_renderer );
+	GfxLog( "  vendor:     %s\n", gfx_state.hw_vendor );
+	GfxLog( "  version:    %s\n", gfx_state.hw_version );
+	GfxLog( "  extensions:\n" );
+
+	/* this is kind of gross, but manually change the version,
+	 * otherwise there's no other way we can do it on newer
+	 * hardware...
+	 */
+	if ( GLVersion( 1, 1 ) && gfx_layer.mode == PL_GFX_MODE_OPENGL_1_0 ) {
+		gl_version_major = 1;
+		gl_version_minor = 0;
+		GfxLog( " Simulating OpenGL 1.0\n" );
+	}
+
+	if ( GLVersion( 3, 0 ) ) {
+		glGetIntegerv( GL_NUM_EXTENSIONS, ( GLint * ) ( &gl_num_extensions ) );
+		for ( unsigned int i = 0; i < gl_num_extensions; ++i ) {
+			const uint8_t *extension = glGetStringi( GL_EXTENSIONS, i );
+			snprintf( gl_extensions[ i ], sizeof( gl_extensions[ i ] ), "%s", extension );
+			GfxLog( "    %s\n", extension );
+		}
+	} else {
+		// todo
+	}
+
+#if defined(DEBUG_GL)
+	if ( GLVersion( 4, 3 ) ) {
+		glEnable( GL_DEBUG_OUTPUT );
+		glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
+
+		glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE );
+		glDebugMessageCallback( ( GLDEBUGPROC ) MessageCallback, NULL );
+	}
+#endif
+
+	if ( GLEW_ARB_direct_state_access || GLVersion( 4, 5 ) ) {
+		gl_capabilities.direct_state_access = true;
+	}
+
+	// Init vertex attributes
+	if ( GLVersion( 3, 0 ) ) {
+		glGenVertexArrays( 1, VAO );
+		glBindVertexArray( VAO[ 0 ] );
+	}
+
+	/* in OpenGL, multisample is automatically enabled per spec */
+	gfx_state.current_capabilities[ PL_GFX_STATE_MULTISAMPLE ] = true;
+
 	// setup the gfx layer
 	gfx_layer.InsertDebugMarker = GLInsertDebugMarker;
 	gfx_layer.PushDebugGroupMarker = GLPushDebugGroupMarker;
@@ -1085,66 +1219,6 @@ void plInitOpenGL( void ) {
 
 	gfx_layer.EnableState = GLEnableState;
 	gfx_layer.DisableState = GLDisableState;
-
-	/////////////////////////////////////////////////////////////
-
-	// Get any information that will be presented later.
-	gfx_state.hw_extensions = ( const char * ) glGetString( GL_EXTENSIONS );
-	gfx_state.hw_renderer = ( const char * ) glGetString( GL_RENDERER );
-	gfx_state.hw_vendor = ( const char * ) glGetString( GL_VENDOR );
-	gfx_state.hw_version = ( const char * ) glGetString( GL_VERSION );
-
-	memset( &gl_capabilities, 0, sizeof( gl_capabilities ) );
-
-	glGetIntegerv( GL_MINOR_VERSION, &gl_version_minor );
-	glGetIntegerv( GL_MAJOR_VERSION, &gl_version_major );
-	if ( gl_version_major <= 0 && gl_version_minor <= 0 ) {
-		if ( gfx_state.hw_version != NULL
-			&& ( gfx_state.hw_version[ 0 ] != '\0' && gfx_state.hw_version[ 2 ] != '\0' ) ) {
-			gl_version_major = ( gfx_state.hw_version[ 0 ] - '0' );
-			gl_version_minor = ( gfx_state.hw_version[ 2 ] - '0' );
-		} else {
-			GfxLog( "failed to get OpenGL version, expect some functionality not to work!\n" );
-		}
-	}
-
-	GfxLog( " OpenGL %d.%d\n", gl_version_major, gl_version_minor );
-	GfxLog( "  renderer:   %s\n", gfx_state.hw_renderer );
-	GfxLog( "  vendor:     %s\n", gfx_state.hw_vendor );
-	GfxLog( "  version:    %s\n", gfx_state.hw_version );
-	GfxLog( "  extensions:\n" );
-
-	if ( GLVersion( 3, 0 ) ) {
-		glGetIntegerv( GL_NUM_EXTENSIONS, ( GLint * ) ( &gl_num_extensions ) );
-		for ( unsigned int i = 0; i < gl_num_extensions; ++i ) {
-			const uint8_t *extension = glGetStringi( GL_EXTENSIONS, i );
-			snprintf( gl_extensions[ i ], sizeof( gl_extensions[ i ] ), "%s", extension );
-			GfxLog( "    %s\n", extension );
-		}
-	} else {
-		// todo
-	}
-
-#if defined(DEBUG_GL)
-	if ( GLVersion( 4, 3 ) ) {
-		glEnable( GL_DEBUG_OUTPUT );
-		glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
-
-		glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE );
-		glDebugMessageCallback( ( GLDEBUGPROC ) MessageCallback, NULL );
-	}
-#endif
-
-	if ( GLEW_ARB_direct_state_access || GLVersion( 4, 5 ) ) {
-		gl_capabilities.direct_state_access = true;
-	}
-
-	// Init vertex attributes
-	glGenVertexArrays( 1, VAO );
-	glBindVertexArray( VAO[ 0 ] );
-
-	/* in OpenGL, multisample is automatically enabled per spec */
-	gfx_state.current_capabilities[ PL_GFX_STATE_MULTISAMPLE ] = true;
 }
 
 void plShutdownOpenGL( void ) {
