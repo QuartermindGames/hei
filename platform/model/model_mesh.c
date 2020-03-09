@@ -466,6 +466,42 @@ void plDrawFilledRectangle( PLRectangle2D rect ) {
 	plDrawMesh( mesh );
 }
 
+void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
+	PLTexture *texture ) {
+	static PLMesh *mesh = NULL;
+	if( mesh == NULL ) {
+		mesh = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 2, 4 );
+		if( mesh == NULL ) {
+			return;
+		}
+	}
+
+	plClearMesh( mesh );
+
+	plSetMeshVertexPosition( mesh, 0, *ul );
+	plSetMeshVertexPosition( mesh, 1, *ur );
+	plSetMeshVertexPosition( mesh, 2, *ll );
+	plSetMeshVertexPosition( mesh, 3, *lr );
+
+	plSetMeshVertexST( mesh, 0, 0.0f, 0.0f );
+	plSetMeshVertexST( mesh, 1, 0.0f, 1.0f );
+	plSetMeshVertexST( mesh, 2, 1.0f, 0.0f );
+	plSetMeshVertexST( mesh, 3, 1.0f, 1.0f );
+
+	unsigned int pos = 0;
+	plSetMeshTrianglePosition( mesh, &pos, 0, 1, 2 );
+	plSetMeshTrianglePosition( mesh, &pos, 2, 1, 3 );
+
+	plSetMeshUniformColour( mesh, PLColour( 255, 255, 255, 255 ) );
+
+	plSetTexture( texture, 0 );
+
+	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), true );
+
+	plUploadMesh( mesh );
+	plDrawMesh( mesh );
+}
+
 void plDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 	static PLMesh *mesh = NULL;
 	if ( mesh == NULL ) {

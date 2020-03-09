@@ -97,6 +97,8 @@ PL_EXTERN void plDrawEllipse(unsigned int segments, PLVector2 position, float w,
 PL_EXTERN void plDrawRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colour);
 PL_EXTERN void plDrawTexturedRectangle(int x, int y, int w, int h, PLTexture *texture);
 PL_EXTERN void plDrawFilledRectangle(PLRectangle2D rect);
+PL_EXTERN void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
+								   PLTexture *texture );
 PL_EXTERN void plDrawTriangle(int x, int y, unsigned int w, unsigned int h);
 
 PL_EXTERN void plClearMesh(PLMesh *mesh);
