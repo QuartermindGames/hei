@@ -50,7 +50,8 @@ file(
 		platform_console.c
 		platform_filesystem.c 
 		platform_memory.c 
-		platform_parser.c 
+		platform_parser.c
+        llist.c
 
         string/*.*
         memory/*.*
