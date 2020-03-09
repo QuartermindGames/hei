@@ -66,6 +66,10 @@ PLLinkedListNode *plGetPrevLinkedListNode( PLLinkedListNode *node ) {
 	return node->prev;
 }
 
+PLLinkedListNode *plGetRootNode( PLLinkedList *list ) {
+	return list->root;
+}
+
 void *plGetLinkedListNodeUserData( PLLinkedListNode *node ) {
 	return node->userPtr;
 }

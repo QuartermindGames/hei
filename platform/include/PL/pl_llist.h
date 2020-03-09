@@ -44,6 +44,7 @@ void plDestroyLinkedListNodes( PLLinkedList *list );
 
 PLLinkedListNode *plGetNextLinkedListNode( PLLinkedListNode *node );
 PLLinkedListNode *plGetPrevLinkedListNode( PLLinkedListNode *node );
+PLLinkedListNode *plGetRootNode( PLLinkedList *list );
 void *plGetLinkedListNodeUserData( PLLinkedListNode *node );
 
 PL_EXTERN_C_END
