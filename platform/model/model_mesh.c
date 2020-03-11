@@ -40,9 +40,9 @@ void plGenerateMeshNormals( PLMesh *mesh, bool perFace ) {
 			unsigned int c = mesh->indices[ idx + 2 ];
 
 			PLVector3 normal = plGenerateVertexNormal(
-				mesh->vertices[ a ].position,
-				mesh->vertices[ b ].position,
-				mesh->vertices[ c ].position
+					mesh->vertices[ a ].position,
+					mesh->vertices[ b ].position,
+					mesh->vertices[ c ].position
 			);
 
 			mesh->vertices[ a ].normal = plAddVector3( mesh->vertices[ a ].normal, normal );
@@ -59,16 +59,16 @@ void plGenerateMeshNormals( PLMesh *mesh, bool perFace ) {
 PLVector3 plGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3 c ) {
 	PLVector3 x = PLVector3( c.x - b.x, c.y - b.y, c.z - b.z );
 	PLVector3 y = PLVector3( a.x - b.x, a.y - b.y, a.z - b.z );
-	return plNormalizeVector3( plVector3CrossProduct( x, y ) );
+	return plNormalizeVector3( plVector3CrossProduct( x, y ));
 }
 
 /* software implementation of gouraud shading */
 void plApplyMeshLighting( PLMesh *mesh, const PLLight *light, PLVector3 position ) {
 	PLVector3 distvec = plSubtractVector3( position, light->position );
-	float distance = ( plByteToFloat( light->colour.a ) - plVector3Length( &distvec ) ) / 100.f;
+	float distance = (plByteToFloat( light->colour.a ) - plVector3Length( &distvec )) / 100.f;
 	for ( unsigned int i = 0; i < mesh->num_verts; i++ ) {
 		PLVector3 normal = mesh->vertices[ i ].normal;
-		float angle = ( distance * ( ( normal.x * distvec.x ) + ( normal.y * distvec.y ) + ( normal.z * distvec.z ) ) );
+		float angle = ( distance * (( normal.x * distvec.x ) + ( normal.y * distvec.y ) + ( normal.z * distvec.z )));
 		if ( angle < 0 ) {
 			plClearColour( &mesh->vertices[ i ].colour );
 		} else {
@@ -103,15 +103,15 @@ void plApplyMeshLighting( PLMesh *mesh, const PLLight *light, PLVector3 position
 }
 
 PLMesh *plCreateMesh( PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts ) {
-	return plCreateMeshInit( primitive, mode, num_tris, num_verts, NULL, NULL );
+	return plCreateMeshInit( primitive, mode, num_tris, num_verts, NULL, NULL);
 }
 
 PLMesh *plCreateMeshInit( PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts,
 						  void *indexData, void *vertexData ) {
 	plAssert( num_verts );
 
-	PLMesh *mesh = ( PLMesh * ) pl_calloc( 1, sizeof( PLMesh ) );
-	if ( mesh == NULL ) {
+	PLMesh *mesh = ( PLMesh * ) pl_calloc( 1, sizeof( PLMesh ));
+	if ( mesh == NULL) {
 		return NULL;
 	}
 
@@ -125,19 +125,19 @@ PLMesh *plCreateMeshInit( PLMeshPrimitive primitive, PLMeshDrawMode mode, unsign
 	if ( num_tris > 0 ) {
 		if ( mesh->primitive == PL_MESH_TRIANGLES ) {
 			mesh->num_indices = num_tris * 3;
-			if ( ( mesh->indices = pl_calloc( mesh->num_indices, sizeof( unsigned int ) ) ) == NULL ) {
+			if (( mesh->indices = pl_calloc( mesh->num_indices, sizeof( unsigned int ))) == NULL) {
 				plDestroyMesh( mesh );
 				return NULL;
 			}
 
-			if ( indexData != NULL ) {
-				memcpy( mesh->indices, indexData, mesh->num_indices * sizeof( unsigned int ) );
+			if ( indexData != NULL) {
+				memcpy( mesh->indices, indexData, mesh->num_indices * sizeof( unsigned int ));
 			}
 		}
 	}
 
-	mesh->vertices = ( PLVertex * ) pl_calloc( num_verts, sizeof( PLVertex ) );
-	if ( mesh->vertices == NULL ) {
+	mesh->vertices = ( PLVertex * ) pl_calloc( num_verts, sizeof( PLVertex ));
+	if ( mesh->vertices == NULL) {
 		plDestroyMesh( mesh );
 		return NULL;
 	}
@@ -148,7 +148,7 @@ PLMesh *plCreateMeshInit( PLMeshPrimitive primitive, PLMeshDrawMode mode, unsign
 }
 
 void plDestroyMesh( PLMesh *mesh ) {
-	if ( mesh == NULL ) {
+	if ( mesh == NULL) {
 		return;
 	}
 
@@ -229,7 +229,7 @@ void plDrawMesh( PLMesh *mesh ) {
 
 PLAABB plCalculateMeshAABB( PLMesh *mesh ) {
 	static PLAABB bounds;
-	memset( &bounds, 0, sizeof( PLAABB ) );
+	memset( &bounds, 0, sizeof( PLAABB ));
 	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
 		if ( bounds.maxs.x < mesh->vertices[ i ].position.x ) {
 			bounds.maxs.x = mesh->vertices[ i ].position.x;
@@ -265,12 +265,12 @@ PLAABB plCalculateMeshAABB( PLMesh *mesh ) {
 
 void plDrawRaisedBox( int x, int y, unsigned int w, unsigned int h ) {
 	static PLMesh *mesh = NULL;
-	if ( mesh == NULL ) {
-		if ( ( mesh = plCreateMesh(
-			PL_MESH_LINES,
-			PL_DRAW_DYNAMIC,
-			0, 4
-		) ) == NULL ) {
+	if ( mesh == NULL) {
+		if (( mesh = plCreateMesh(
+				PL_MESH_LINES,
+				PL_DRAW_DYNAMIC,
+				0, 4
+		)) == NULL) {
 			return;
 		}
 	}
@@ -278,12 +278,12 @@ void plDrawRaisedBox( int x, int y, unsigned int w, unsigned int h ) {
 
 void plDrawBevelledBorder( int x, int y, unsigned int w, unsigned int h ) {
 	static PLMesh *mesh = NULL;
-	if ( mesh == NULL ) {
-		if ( ( mesh = plCreateMesh(
-			PL_MESH_LINES,
-			PL_DRAW_DYNAMIC,
-			0, 16
-		) ) == NULL ) {
+	if ( mesh == NULL) {
+		if (( mesh = plCreateMesh(
+				PL_MESH_LINES,
+				PL_DRAW_DYNAMIC,
+				0, 16
+		)) == NULL) {
 			return;
 		}
 	}
@@ -355,25 +355,25 @@ void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h,
 		mesh = NULL;
 	}
 
-	if ( mesh == NULL ) {
-		if ( ( mesh = plCreateMesh(
-			PL_MESH_TRIANGLE_FAN,
-			PL_DRAW_DYNAMIC,
-			0, segments
-		) ) == NULL ) {
+	if ( mesh == NULL) {
+		if (( mesh = plCreateMesh(
+				PL_MESH_TRIANGLE_FAN,
+				PL_DRAW_DYNAMIC,
+				0, segments
+		)) == NULL) {
 			return;
 		}
 	}
 
 	plSetMeshUniformColour( mesh, colour );
-	for ( unsigned int i = 0, pos = 0; i < 360; i += ( 360 / segments ) ) {
+	for ( unsigned int i = 0, pos = 0; i < 360; i += ( 360 / segments )) {
 		if ( pos >= segments ) {
 			break;
 		}
 
 		plSetMeshVertexPosition( mesh, pos++, PLVector3(
-			( position.x + w ) + cosf( plDegreesToRadians( i ) ) * w,
-			( position.y + h ) + sinf( plDegreesToRadians( i ) ) * h, 0 ) );
+				( position.x + w ) + cosf( plDegreesToRadians( i )) * w,
+				( position.y + h ) + sinf( plDegreesToRadians( i )) * h, 0 ) );
 	}
 
 	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
@@ -396,12 +396,12 @@ static void SetupRectangleMesh( PLMesh *mesh, int x, int y, unsigned int w, unsi
 
 void plDrawTexturedRectangle( int x, int y, int w, int h, PLTexture *texture ) {
 	static PLMesh *mesh = NULL;
-	if ( mesh == NULL ) {
-		if ( ( mesh = plCreateMesh(
-			PL_MESH_TRIANGLE_STRIP,
-			PL_DRAW_DYNAMIC,
-			2, 4
-		) ) == NULL ) {
+	if ( mesh == NULL) {
+		if (( mesh = plCreateMesh(
+				PL_MESH_TRIANGLE_STRIP,
+				PL_DRAW_DYNAMIC,
+				2, 4
+		)) == NULL) {
 			return;
 		}
 	}
@@ -414,12 +414,12 @@ void plDrawTexturedRectangle( int x, int y, int w, int h, PLTexture *texture ) {
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
 
-	plSetTexture( NULL, 0 );
+	plSetTexture(NULL, 0 );
 }
 
 PLMesh *plCreateMeshRectangle( int x, int y, unsigned int w, unsigned int h, PLColour colour ) {
 	PLMesh *mesh = plCreateMesh( PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 2, 4 );
-	if ( mesh == NULL ) {
+	if ( mesh == NULL) {
 		return NULL;
 	}
 
@@ -430,8 +430,8 @@ PLMesh *plCreateMeshRectangle( int x, int y, unsigned int w, unsigned int h, PLC
 
 void plDrawRectangle( int x, int y, unsigned int w, unsigned int h, PLColour colour ) {
 	static PLMesh *mesh = NULL;
-	if ( mesh == NULL ) {
-		if ( ( mesh = plCreateMesh( PL_MESH_LINE_LOOP, PL_DRAW_DYNAMIC, 0, 4 ) ) == NULL ) {
+	if ( mesh == NULL) {
+		if (( mesh = plCreateMesh( PL_MESH_LINE_LOOP, PL_DRAW_DYNAMIC, 0, 4 )) == NULL) {
 			return;
 		}
 	}
@@ -445,12 +445,12 @@ void plDrawRectangle( int x, int y, unsigned int w, unsigned int h, PLColour col
 
 void plDrawFilledRectangle( PLRectangle2D rect ) {
 	static PLMesh *mesh = NULL;
-	if ( mesh == NULL ) {
-		if ( ( mesh = plCreateMesh(
-			PL_MESH_TRIANGLE_STRIP,
-			PL_DRAW_DYNAMIC,
-			2, 4
-		) ) == NULL ) {
+	if ( mesh == NULL) {
+		if (( mesh = plCreateMesh(
+				PL_MESH_TRIANGLE_STRIP,
+				PL_DRAW_DYNAMIC,
+				2, 4
+		)) == NULL) {
 			return;
 		}
 	}
@@ -466,12 +466,14 @@ void plDrawFilledRectangle( PLRectangle2D rect ) {
 	plDrawMesh( mesh );
 }
 
-void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
-	PLTexture *texture ) {
+void plDrawTexturedQuad(
+		const PLVector3 *ul, const PLVector3 *ur,
+		const PLVector3 *ll, const PLVector3 *lr,
+		PLTexture *texture ) {
 	static PLMesh *mesh = NULL;
-	if( mesh == NULL ) {
+	if ( mesh == NULL) {
 		mesh = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 2, 4 );
-		if( mesh == NULL ) {
+		if ( mesh == NULL) {
 			return;
 		}
 	}
@@ -483,10 +485,22 @@ void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVecto
 	plSetMeshVertexPosition( mesh, 2, *ll );
 	plSetMeshVertexPosition( mesh, 3, *lr );
 
+	PLVector3 upperDist = plSubtractVector3( *ul, *ur );
+	float quadWidth = plVector3Length( &upperDist ) / 10.0f;
+
 	plSetMeshVertexST( mesh, 0, 0.0f, 0.0f );
-	plSetMeshVertexST( mesh, 1, 0.0f, 1.0f );
+	plSetMeshVertexST( mesh, 1, 0.0f, quadWidth / texture->w );
+	plSetMeshVertexST( mesh, 3, 1.0f, quadWidth / texture->w );
 	plSetMeshVertexST( mesh, 2, 1.0f, 0.0f );
-	plSetMeshVertexST( mesh, 3, 1.0f, 1.0f );
+
+#if 0
+	plSetMeshVertexNormal( mesh, 0, PLVector3( 1.0f, 1.0f, 1.0f ) );
+	plSetMeshVertexNormal( mesh, 1, PLVector3( 1.0f, 1.0f, 1.0f ) );
+	plSetMeshVertexNormal( mesh, 2, PLVector3( 1.0f, 1.0f, 1.0f ) );
+	plSetMeshVertexNormal( mesh, 3, PLVector3( 1.0f, 1.0f, 1.0f ) );
+#endif
+
+	plGenerateMeshNormals( mesh, true );
 
 	unsigned int pos = 0;
 	plSetMeshTrianglePosition( mesh, &pos, 0, 1, 2 );
@@ -504,12 +518,12 @@ void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVecto
 
 void plDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 	static PLMesh *mesh = NULL;
-	if ( mesh == NULL ) {
-		if ( ( mesh = plCreateMesh(
-			PL_MESH_TRIANGLE_FAN,
-			PL_DRAW_DYNAMIC,
-			1, 3
-		) ) == NULL ) {
+	if ( mesh == NULL) {
+		if (( mesh = plCreateMesh(
+				PL_MESH_TRIANGLE_FAN,
+				PL_DRAW_DYNAMIC,
+				1, 3
+		)) == NULL) {
 			return;
 		}
 	}
@@ -531,11 +545,13 @@ void plDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 	plDrawMesh( mesh );
 }
 
-void plDrawLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLColour *startColour, const PLVector3 *endPos, const PLColour *endColour ) {
+void
+plDrawLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLColour *startColour, const PLVector3 *endPos,
+			const PLColour *endColour ) {
 	static PLMesh *mesh = NULL;
-	if( mesh == NULL ) {
+	if ( mesh == NULL) {
 		mesh = plCreateMesh( PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 2 );
-		if( mesh == NULL ) {
+		if ( mesh == NULL) {
 			return;
 		}
 	}
@@ -553,19 +569,20 @@ void plDrawLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PL
 	plDrawMesh( mesh );
 }
 
-void plDrawSimpleLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLVector3 *endPos, const PLColour *colour ) {
+void plDrawSimpleLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLVector3 *endPos,
+					   const PLColour *colour ) {
 	plDrawLine( transform, startPos, colour, endPos, colour );
 }
 
 void plDrawGrid( const PLMatrix4 *transform, int x, int y, int w, int h, unsigned int gridSize ) {
 	int c = 0, r = 0;
-	for( ; r < h + 1; r += gridSize ) {
+	for ( ; r < h + 1; r += gridSize ) {
 		plDrawSimpleLine( transform, &PLVector3( x, r + y, 0 ), &PLVector3( x + w, r + y, 0 ),
-			&PLColour( 255, 255, 255, 255 ) );
+						  &PLColour( 255, 255, 255, 255 ) );
 
-		for( ; c < w + 1; c += gridSize ) {
+		for ( ; c < w + 1; c += gridSize ) {
 			plDrawSimpleLine( transform, &PLVector3( c + x, y, 0 ), &PLVector3( c + x, y + h, 0 ),
-				&PLColour( 255, 255, 255, 255 ) );
+							  &PLColour( 255, 255, 255, 255 ) );
 		}
 	}
 }

@@ -411,8 +411,9 @@ static void GL_TranslateTextureFilterFormat( PLTextureFilter filterMode, unsigne
 static void GLUploadTexture( PLTexture *texture, const PLImage *upload ) {
 	/* was originally GL_CLAMP; deprecated in GL3+, though some drivers
 	 * still seem to accept it anyway except for newer Intel GPUs apparently */
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	/* todo: make this configurable */
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 
 	unsigned int min, mag;
 	GL_TranslateTextureFilterFormat( texture->filter, &min, &mag );
