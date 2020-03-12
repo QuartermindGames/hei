@@ -49,6 +49,7 @@ PL_EXTERN_C
 
 PL_EXTERN PLPackage* plLoadPackage( const char* path );
 PL_EXTERN PLFile* plLoadPackageFile( PLPackage* package, const char* path );
+PL_EXTERN PLFile *plLoadPackageFileByIndex( PLPackage *package, unsigned int index );
 PL_EXTERN void plDestroyPackage( PLPackage* package );
 
 PL_EXTERN void plRegisterPackageLoader( const char* ext, PLPackage* (* LoadFunction)( const char* path ) );
@@ -59,6 +60,6 @@ PL_EXTERN PLPackage* plCreatePackage( const char* dest );
 
 PL_EXTERN const char *plGetPackagePath( const PLPackage *package );
 PL_EXTERN unsigned int plGetPackageTableSize( const PLPackage *package );
-PL_EXTERN const PLPackageIndex *plGetPackageTableIndex( const PLPackage *package, unsigned int index );
+PL_EXTERN unsigned int plGetPackageTableIndex( const PLPackage *package, const char *indexName );
 
 PL_EXTERN_C_END
