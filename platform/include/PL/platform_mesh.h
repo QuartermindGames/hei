@@ -98,7 +98,7 @@ PL_EXTERN void plDrawRectangle( int x, int y, unsigned int w, unsigned int h, PL
 PL_EXTERN void plDrawTexturedRectangle( int x, int y, int w, int h, PLTexture *texture );
 PL_EXTERN void plDrawFilledRectangle( PLRectangle2D rect );
 PL_EXTERN void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
-								   float vScale, float hScale, PLTexture *texture );
+								   float hScale, float vScale, PLTexture *texture );
 PL_EXTERN void plDrawTriangle( int x, int y, unsigned int w, unsigned int h );
 PL_EXTERN void plDrawLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLColour *startColour, const PLVector3 *endPos, const PLColour *endColour );
 PL_EXTERN void plDrawSimpleLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLVector3 *endPos, const PLColour *colour );
