@@ -469,6 +469,7 @@ void plDrawFilledRectangle( PLRectangle2D rect ) {
 void plDrawTexturedQuad(
 		const PLVector3 *ul, const PLVector3 *ur,
 		const PLVector3 *ll, const PLVector3 *lr,
+		float hScale, float vScale,
 		PLTexture *texture ) {
 	static PLMesh *mesh = NULL;
 	if ( mesh == NULL) {
@@ -486,19 +487,14 @@ void plDrawTexturedQuad(
 	plSetMeshVertexPosition( mesh, 3, *lr );
 
 	PLVector3 upperDist = plSubtractVector3( *ul, *ur );
-	float quadWidth = plVector3Length( &upperDist ) / 10.0f;
+	float quadWidth = plVector3Length( &upperDist ) / hScale;
+	PLVector3 lowerDist = plSubtractVector3( *ll, *ul );
+	float quadHeight = plVector3Length( &lowerDist ) / vScale;
 
-	plSetMeshVertexST( mesh, 0, 0.0f, 0.0f );
-	plSetMeshVertexST( mesh, 1, 0.0f, quadWidth / texture->w );
-	plSetMeshVertexST( mesh, 3, 1.0f, quadWidth / texture->w );
-	plSetMeshVertexST( mesh, 2, 1.0f, 0.0f );
-
-#if 0
-	plSetMeshVertexNormal( mesh, 0, PLVector3( 1.0f, 1.0f, 1.0f ) );
-	plSetMeshVertexNormal( mesh, 1, PLVector3( 1.0f, 1.0f, 1.0f ) );
-	plSetMeshVertexNormal( mesh, 2, PLVector3( 1.0f, 1.0f, 1.0f ) );
-	plSetMeshVertexNormal( mesh, 3, PLVector3( 1.0f, 1.0f, 1.0f ) );
-#endif
+	plSetMeshVertexST( mesh, 3, 0.0f, quadHeight / texture->h );
+	plSetMeshVertexST( mesh, 2, quadWidth / texture->w, quadHeight / texture->h );
+	plSetMeshVertexST( mesh, 1, 0.0f, 0.0f  );
+	plSetMeshVertexST( mesh, 0, quadWidth / texture->w, 0.0f );
 
 	plGenerateMeshNormals( mesh, true );
 

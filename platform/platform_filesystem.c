@@ -943,7 +943,7 @@ char plReadInt8( PLFile* ptr, bool* status ) {
 		return ( char ) ( fgetc( ptr->fptr ) );
 	}
 
-	return ( char ) *( ptr->pos );
+	return ( char ) *( ptr->pos++ );
 }
 
 static int64_t ReadSizedInteger( PLFile* ptr, size_t size, bool big_endian, bool* status ) {
