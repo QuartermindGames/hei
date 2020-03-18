@@ -253,6 +253,14 @@ typedef struct PLVector3 {
 
 #endif
 
+PL_INLINE static PLVector3 plClampVector3( const PLVector3* v, float min, float max ) {
+    return PLVector3(
+        plClamp( min, v->x, max ),
+        plClamp( min, v->y, max ),
+        plClamp( min, v->z, max )
+    );
+}
+
 PL_INLINE static PLVector3 plAddVector3(PLVector3 v, PLVector3 v2) {
   v.x += v2.x;
   v.y += v2.y;
