@@ -706,17 +706,17 @@ PL_INLINE static float plInOutPow(float x, float p) {
 /* http://www.songho.ca/opengl/gl_anglestoaxes.html */
 PL_INLINE static void plAnglesAxes(PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *forward) {
     /* pitch */
-    float theta = angles.x * PL_PI_DIV_180;
+    float theta = plDegreesToRadians( angles.x );
     float sx = sinf(theta);
     float cx = cosf(theta);
 
     /* yaw */
-    theta = angles.y * PL_PI_DIV_180;
+    theta = plDegreesToRadians( angles.y );
     float sy = sinf(theta);
     float cy = cosf(theta);
 
     /* roll */
-    theta = angles.z * PL_PI_DIV_180;
+    theta = plDegreesToRadians( angles.z );
     float sz = sinf(theta);
     float cz = cosf(theta);
 
