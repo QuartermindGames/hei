@@ -88,20 +88,33 @@ typedef struct PLVector2 {
 
 #endif
 
-PL_INLINE static PLVector2 plAddVector2(PLVector2 v, PLVector2 v2) {
-  v.x += v2.x;
-  v.y += v2.y;
-  return v;
+PL_INLINE static PLVector2 plAddVector2( PLVector2 v, PLVector2 v2 ) {
+    v.x += v2.x;
+    v.y += v2.y;
+    return v;
 }
 
-PL_INLINE static PLVector2 plDivideVector2(PLVector2 v, PLVector2 v2) {
-  v.x /= v2.x;
-  v.y /= v2.y;
-  return v;
+PL_INLINE static PLVector2 plDivideVector2( PLVector2 v, PLVector2 v2 ) {
+    v.x /= v2.x;
+    v.y /= v2.y;
+    return v;
 }
 
-PL_INLINE static bool plCompareVector2(const PLVector2 *v, PLVector2 *v2) {
-  return ((v->x == v2->x) && (v->y == v2->y));
+PL_INLINE static bool plCompareVector2( const PLVector2 *v, const PLVector2 *v2 ) {
+    return ( ( v->x == v2->x ) && ( v->y == v2->y ) );
+}
+
+PL_INLINE static float plGetVector2Length( const PLVector2 *v ) {
+    return sqrtf( v->x * v->x + v->y * v->y );
+}
+
+PL_INLINE static PLVector2 plNormalizeVector2( const PLVector2 *v ) {
+    float length = plGetVector2Length( v );
+    return PLVector2( v->x / length, v->y / length );
+}
+
+PL_INLINE static PLVector2 plComputeLineNormal( const PLVector2 *x, const PLVector2 *y ) {
+    return plNormalizeVector2( &PLVector2( x->y - y->y, y->x - x->x ) );
 }
 
 // 3D

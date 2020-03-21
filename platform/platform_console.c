@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <errno.h>
 #if defined(_WIN32)
+#   include <Windows.h>
 #   include <io.h>
 #endif
 
@@ -895,6 +896,10 @@ void plLogMessage(int level, const char *msg, ...) {
     }
 
     printf("%s", buf);
+
+#if defined( _WIN32 )
+    OutputDebugString( buf );
+#endif
 
     // todo, decide how we're going to pass it to the console/log
 
