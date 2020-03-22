@@ -394,14 +394,11 @@ static void SetupRectangleMesh( PLMesh *mesh, int x, int y, unsigned int w, unsi
 	plSetMeshVertexST( mesh, 3, 1, 1 );
 }
 
-void plDrawTexturedRectangle( int x, int y, int w, int h, PLTexture *texture ) {
+void plDrawTexturedRectangle( const PLMatrix4 *transform, int x, int y, int w, int h, PLTexture *texture ) {
 	static PLMesh *mesh = NULL;
 	if ( mesh == NULL) {
-		if (( mesh = plCreateMesh(
-				PL_MESH_TRIANGLE_STRIP,
-				PL_DRAW_DYNAMIC,
-				2, 4
-		)) == NULL) {
+		mesh = plCreateMesh( PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 2, 4 );
+		if ( mesh == NULL) {
 			return;
 		}
 	}
@@ -410,11 +407,11 @@ void plDrawTexturedRectangle( int x, int y, int w, int h, PLTexture *texture ) {
 
 	plSetTexture( texture, 0 );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
+	plSetNamedShaderUniformMatrix4( NULL, "pl_model", *transform, true );
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
 
-	plSetTexture(NULL, 0 );
+	plSetTexture( NULL, 0 );
 }
 
 PLMesh *plCreateMeshRectangle( int x, int y, unsigned int w, unsigned int h, PLColour colour ) {

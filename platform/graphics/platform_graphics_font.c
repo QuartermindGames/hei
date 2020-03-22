@@ -332,7 +332,8 @@ void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColo
 }
 
 void plDrawBitmapString(PLBitmapFont *font, int x, int y, float scale, PLColour colour, const char *msg) {
-    plDrawTexturedRectangle(0, 0, font->texture->w, font->texture->h, font->texture);
+    PLMatrix4 mat = plMatrix4Identity();
+	plDrawTexturedRectangle( &mat, 0, 0, font->texture->w, font->texture->h, font->texture);
 
     if(colour.a == 0) {
         return;
