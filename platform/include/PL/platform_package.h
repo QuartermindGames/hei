@@ -62,4 +62,6 @@ PL_EXTERN const char *plGetPackagePath( const PLPackage *package );
 PL_EXTERN unsigned int plGetPackageTableSize( const PLPackage *package );
 PL_EXTERN unsigned int plGetPackageTableIndex( const PLPackage *package, const char *indexName );
 
+const char *plGetPackageFileName( const PLPackage *package, unsigned int index );
+
 PL_EXTERN_C_END

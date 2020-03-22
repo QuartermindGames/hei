@@ -187,6 +187,15 @@ const char *plGetPackagePath( const PLPackage *package ) {
 	return package->path;
 }
 
+const char *plGetPackageFileName( const PLPackage *package, unsigned int index ) {
+	if ( index >= package->table_size ) {
+		ReportBasicError( PL_RESULT_INVALID_PARM2 );
+		return NULL;
+	}
+
+	return package->table[ index ].fileName;
+}
+
 unsigned int plGetPackageTableSize( const PLPackage *package ) {
 	return package->table_size;
 }
