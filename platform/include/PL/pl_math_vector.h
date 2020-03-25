@@ -94,10 +94,22 @@ PL_INLINE static PLVector2 plAddVector2( PLVector2 v, PLVector2 v2 ) {
     return v;
 }
 
+PL_INLINE static PLVector2 plScaleVector2( const PLVector2 *v, const PLVector2 *scale ) {
+    return PLVector2( v->x * scale->x, v->y * scale->y );
+}
+
+PL_INLINE static PLVector2 plScaleVector2f( const PLVector2 *v, float scale ) {
+    return PLVector2( v->x * scale, v->y * scale );
+}
+
 PL_INLINE static PLVector2 plDivideVector2( PLVector2 v, PLVector2 v2 ) {
     v.x /= v2.x;
     v.y /= v2.y;
     return v;
+}
+
+PL_INLINE static PLVector2 plDivideVector2f( const PLVector2 *v, float f ) {
+    return PLVector2( v->x / f, v->y / f );
 }
 
 PL_INLINE static bool plCompareVector2( const PLVector2 *v, const PLVector2 *v2 ) {
