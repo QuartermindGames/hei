@@ -24,50 +24,87 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #pragma once
 
 #include <PL/platform.h>
 #include <PL/platform_math.h>
 
-typedef struct PLAABB {
-  PLVector3 mins, maxs;
-} PLAABB;
+PL_EXTERN_C
 
-PL_INLINE static void plAddAABB(PLAABB *b, PLAABB b2) {
-  b->maxs = plAddVector3(b->maxs, b2.maxs);
-  b->mins = plAddVector3(b->mins, b2.mins);
+typedef struct PLCollisionRay { PLVector3 origin, direction; } PLCollisionRay;
+typedef struct PLCollisionAABB { PLVector3 origin, mins, maxs; } PLCollisionAABB;
+typedef struct PLCollisionSphere { PLVector3 origin; float radius; } PLCollisionSphere;
+
+#define PLAABB PLCollisionAABB /* for legacy crap, until everything is updated */
+
+#ifndef __cplusplus
+#	define PLCollisionRay( ORIGIN, DIRECTION ) ( PLCollisionRay ){ ( ORIGIN ), ( DIRECTION ) }
+#	define PLCollisionAABB( MINS, MAXS )       ( PLCollisionAABB ){ ( MINS ), ( MAXS ) }
+#	define PLCollisionSphere( ORIGIN, RADIUS ) ( PLCollisionSphere ){ ( ORIGIN ), ( RADIUS ) }
+#endif
+
+PL_INLINE static bool plIntersectAABB( const PLVector3 *aPosition, const PLCollisionAABB *aBounds, const PLVector3 *bPosition, const PLCollisionAABB *bBounds ) {
+	PLVector3 aMax = plAddVector3( aBounds->maxs, *aPosition );
+	PLVector3 aMin = plAddVector3( aBounds->mins, *aPosition );
+	PLVector3 bMax = plAddVector3( bBounds->maxs, *bPosition );
+	PLVector3 bMin = plAddVector3( bBounds->mins, *bPosition );
+
+	return !(
+		aMax.x < bMin.x ||
+		aMax.y < bMin.y ||
+		aMax.z < bMin.z ||
+		aMin.x > bMax.x ||
+		aMin.y > bMax.y ||
+		aMin.z > bMax.z
+		);
 }
 
-PL_INLINE static bool plIntersectAABB(PLAABB b, PLAABB b2) {
-  return !(b.maxs.x < b2.mins.x ||
-      b.maxs.y < b2.mins.y ||
-      b.maxs.z < b2.mins.z ||
+PL_INLINE static bool plIntersectPoint( const PLCollisionAABB *bounds, PLVector3 point ) {
+	PLVector3 max = plAddVector3( bounds->maxs, bounds->origin );
+	PLVector3 min = plAddVector3( bounds->mins, bounds->origin );
 
-      b.mins.x > b2.maxs.x ||
-      b.mins.y > b2.maxs.y ||
-      b.mins.z > b2.maxs.z);
+	return !(
+		point.x > max.x ||
+		point.x < min.x ||
+		point.y > max.y ||
+		point.y < min.y ||
+		point.z > max.z ||
+		point.z < min.z
+		);
+}
+
+/**
+ * Checks whether or not AABB is intersecting with the given line.
+ */
+PL_INLINE static bool plIsAABBIntersectingLine( const PLCollisionAABB *aBounds, const PLVector3 *lineStart, const PLVector3 *lineEnd, PLVector3 *intersection ) {
 
 }
 
-PL_INLINE static bool plIntersectPoint(PLAABB b, PLVector3 point) {
-  return !(point.x > b.maxs.x ||
-      point.x < b.mins.x ||
-
-      point.y > b.maxs.y ||
-      point.y < b.mins.y ||
-
-      point.z > b.maxs.z ||
-      point.z < b.mins.z);
-
+PL_INLINE static bool plIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere ) {
+	PLVector3 difference = plSubtractVector3( aSphere->origin, bSphere->origin );
+	float distance = plVector3Length( &difference );
+	float sum_radius = aSphere->radius + bSphere->radius;
+	return distance < sum_radius;
 }
 
-PL_INLINE static bool plIsSphereIntersecting(PLVector3 origin, float radius, PLVector3 position_b, float radius_b) {
-  PLVector3 difference = origin;
-  difference = plSubtractVector3(difference, position_b);
-  float distance = plVector3Length(&difference);
-  float sum_radius = radius + radius_b;
-  return distance < sum_radius;
+/* https://github.com/erich666/GraphicsGems/blob/master/gemsii/intersect/intsph.c */
+PL_INLINE static bool plIsRayIntersectingSphere( const PLCollisionSphere *sphere, const PLCollisionRay *ray, float *enterDistance, float *leaveDistance ) {
+	PLVector3 d = plSubtractVector3( ray->origin, sphere->origin );
+	float u = plVector3DotProduct( d, d ) - sphere->radius * sphere->radius;
+	float bsq = plVector3DotProduct( d, ray->direction );
+	float disc = bsq * bsq - u;
+
+	if( disc >= 0.0f ) {
+		float root = sqrtf( disc );
+		*enterDistance = -bsq - root;
+		*leaveDistance = -bsq + root;
+		return true;
+	}
+
+	return false;
 }
+
+PL_EXTERN_C_END
 
 /************************************************************/
-

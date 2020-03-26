@@ -83,7 +83,7 @@ typedef struct PLMesh {
     } internal;
 } PLMesh;
 
-typedef struct PLAABB PLAABB;
+typedef struct PLCollisionAABB PLCollisionAABB;
 
 PL_EXTERN_C
 
@@ -119,7 +119,7 @@ PL_EXTERN void plUploadMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawMesh(PLMesh *mesh);
 
-PL_EXTERN PLAABB plCalculateMeshAABB(PLMesh *mesh);
+PL_EXTERN PLCollisionAABB plCalculateMeshAABB( const PLMesh *mesh );
 
 PL_EXTERN PLVector3 plGenerateVertexNormal(PLVector3 a, PLVector3 b, PLVector3 c);
 

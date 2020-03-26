@@ -227,9 +227,9 @@ void plDrawMesh( PLMesh *mesh ) {
 	CallGfxFunction( DrawMesh, mesh );
 }
 
-PLAABB plCalculateMeshAABB( PLMesh *mesh ) {
-	static PLAABB bounds;
-	memset( &bounds, 0, sizeof( PLAABB ));
+PLCollisionAABB plCalculateMeshAABB( const PLMesh *mesh ) {
+	static PLCollisionAABB bounds;
+	memset( &bounds, 0, sizeof( PLCollisionAABB ));
 	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
 		if ( bounds.maxs.x < mesh->vertices[ i ].position.x ) {
 			bounds.maxs.x = mesh->vertices[ i ].position.x;
