@@ -44,11 +44,11 @@ typedef struct PLCollisionSphere { PLVector3 origin; float radius; } PLCollision
 #	define PLCollisionSphere( ORIGIN, RADIUS ) ( PLCollisionSphere ){ ( ORIGIN ), ( RADIUS ) }
 #endif
 
-PL_INLINE static bool plIntersectAABB( const PLVector3 *aPosition, const PLCollisionAABB *aBounds, const PLVector3 *bPosition, const PLCollisionAABB *bBounds ) {
-	PLVector3 aMax = plAddVector3( aBounds->maxs, *aPosition );
-	PLVector3 aMin = plAddVector3( aBounds->mins, *aPosition );
-	PLVector3 bMax = plAddVector3( bBounds->maxs, *bPosition );
-	PLVector3 bMin = plAddVector3( bBounds->mins, *bPosition );
+PL_INLINE static bool plIsAABBIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB *bBounds ) {
+	PLVector3 aMax = plAddVector3( aBounds->maxs, aBounds->origin );
+	PLVector3 aMin = plAddVector3( aBounds->mins, aBounds->origin );
+	PLVector3 bMax = plAddVector3( bBounds->maxs, bBounds->origin );
+	PLVector3 bMin = plAddVector3( bBounds->mins, bBounds->origin );
 
 	return !(
 		aMax.x < bMin.x ||
@@ -60,7 +60,7 @@ PL_INLINE static bool plIntersectAABB( const PLVector3 *aPosition, const PLColli
 		);
 }
 
-PL_INLINE static bool plIntersectPoint( const PLCollisionAABB *bounds, PLVector3 point ) {
+PL_INLINE static bool plIsPointIntersectingAABB( const PLCollisionAABB *bounds, PLVector3 point ) {
 	PLVector3 max = plAddVector3( bounds->maxs, bounds->origin );
 	PLVector3 min = plAddVector3( bounds->mins, bounds->origin );
 
@@ -74,11 +74,36 @@ PL_INLINE static bool plIntersectPoint( const PLCollisionAABB *bounds, PLVector3
 		);
 }
 
+PL_INLINE static float plTestPointLinePosition( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd ) {
+	return ( lineEnd->x - lineStart->x ) * ( position->y - lineStart->y ) - ( lineEnd->y - lineStart->y ) * ( position->x - lineStart->x );
+}
+
+PL_INLINE static bool plIsPointIntersectingLine( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal ) {
+	/* first figure out which side of the line we're on */
+	float d = plTestPointLinePosition( position, lineStart, lineEnd );
+	/* now factor in the normal of the line, figure out if we're inside or outside */
+
+
+	return ( d < 0 );
+}
+
 /**
  * Checks whether or not AABB is intersecting with the given line.
+ * Currently only works in 2D space (X & Z).
  */
-PL_INLINE static bool plIsAABBIntersectingLine( const PLCollisionAABB *aBounds, const PLVector3 *lineStart, const PLVector3 *lineEnd, PLVector3 *intersection ) {
+PL_INLINE static bool plIsAABBIntersectingLine( const PLCollisionAABB *bounds, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal ) {
+	PLVector2 origin = PLVector2( bounds->origin.x, bounds->origin.z );
 
+	PLVector2 a = plAddVector2( PLVector2( bounds->maxs.x, bounds->maxs.z ), origin );
+	PLVector2 b = plAddVector2( PLVector2( bounds->mins.x, bounds->mins.z ), origin );
+
+	float x = plTestPointLinePosition( &a, lineStart, lineEnd );
+	float y = plTestPointLinePosition( &b, lineStart, lineEnd );
+	if( x < 0 && y > 0 || y < 0 && x > 0 ) {
+		return true;
+	}
+
+	return false;
 }
 
 PL_INLINE static bool plIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere ) {
