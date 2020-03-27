@@ -149,12 +149,10 @@ void plDestroyTexture( PLTexture *texture ) {
 	pl_free( texture );
 }
 
-/* automatically loads in an image and uploads it as a texture */
+/**
+ * Automatically loads in an image and uploads it as a texture.
+ */
 PLTexture *plLoadTextureFromImage( const char *path, PLTextureFilter filter_mode ) {
-	if ( path[ 0 ] == ' ' || path[ 0 ] == '\0' ) {
-		return NULL;
-	}
-
 	PLImage image;
 	if ( !plLoadImage( path, &image ) ) {
 		return NULL;
@@ -162,7 +160,11 @@ PLTexture *plLoadTextureFromImage( const char *path, PLTextureFilter filter_mode
 
 	PLTexture *texture = plCreateTexture();
 	if ( texture != NULL ) {
+		/* store the path, so we can easily reload the image if we need to */
+		strncpy( texture->path, image.path, sizeof( texture->path ) );
+	
 		texture->filter = filter_mode;
+
 		plUploadTextureImage( texture, &image );
 	}
 
@@ -174,8 +176,7 @@ PLTexture *plLoadTextureFromImage( const char *path, PLTextureFilter filter_mode
 /////////////////////////////////////////////////////
 
 PLTexture *plGetCurrentTexture( unsigned int tmu ) {
-	for ( PLTexture **texture = gfx_state.textures;
-		  texture < gfx_state.textures + gfx_state.num_textures; ++texture ) {
+	for ( PLTexture **texture = gfx_state.textures; texture < gfx_state.textures + gfx_state.num_textures; ++texture ) {
 		if ( gfx_state.tmu[ tmu ].current_texture == ( *texture )->internal.id ) {
 			return ( *texture );
 		}
@@ -298,9 +299,12 @@ bool plUploadTextureImage( PLTexture *texture, const PLImage *upload ) {
 	texture->size = upload->size;
 	texture->levels = upload->levels;
 
+	/* store the path, so we can easily reload the image if we need to */
+	strncpy( texture->path, upload->path, sizeof( texture->path ) );
+
 	if ( texture->flags & PL_TEXTURE_FLAG_NOMIPS &&
 		( texture->filter != PL_TEXTURE_FILTER_LINEAR && texture->filter != PL_TEXTURE_FILTER_NEAREST ) ) {
-		GfxLog( "invalid filter mode for texture - if specifying nomips, use either linear or nearest!" );
+		GfxLog( "Invalid filter mode for texture - if specifying nomips, use either linear or nearest!" );
 		texture->filter = PL_TEXTURE_FILTER_NEAREST;
 	}
 

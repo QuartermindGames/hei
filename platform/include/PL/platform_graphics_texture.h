@@ -90,6 +90,7 @@ typedef struct PLTexture {
     unsigned int crc;
 
     char name[64];
+	char path[ PL_SYSTEM_MAX_PATH ];
 
     PLTextureFilter filter;
 
