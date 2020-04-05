@@ -109,7 +109,7 @@ static void SWDrawPixel(int x, int y, PLColour colour) {
         return;
     }
 
-    int pos = y * viewport->w + x;
+    unsigned int pos = y * viewport->w + x;
     if (pos >= (int) SWGetDisplayBufferSize(viewport)) {
         return;
     }

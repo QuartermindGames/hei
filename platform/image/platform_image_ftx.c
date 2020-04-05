@@ -47,16 +47,7 @@ bool plLoadFtxImage(PLFile *fin, PLImage *out) {
     out->levels = 1;
 
     out->data = pl_calloc(out->levels, sizeof(uint8_t*));
-    if(out->data == NULL) {
-        plFreeImage(out);
-        return false;
-    }
-
     out->data[0] = pl_calloc(out->size, sizeof(uint8_t));
-    if(out->data[0] == NULL) {
-        plFreeImage(out);
-        return false;
-    }
 
     if (plReadFile(fin, out->data[0], sizeof(uint8_t), out->size) != out->size) {
         ReportError(PL_RESULT_FILEREAD, "failed to read image data");

@@ -24,50 +24,112 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #pragma once
 
 #include <PL/platform.h>
 #include <PL/platform_math.h>
 
-typedef struct PLAABB {
-  PLVector3 mins, maxs;
-} PLAABB;
+PL_EXTERN_C
 
-PL_INLINE static void plAddAABB(PLAABB *b, PLAABB b2) {
-  b->maxs = plAddVector3(b->maxs, b2.maxs);
-  b->mins = plAddVector3(b->mins, b2.mins);
+typedef struct PLCollisionRay { PLVector3 origin, direction; } PLCollisionRay;
+typedef struct PLCollisionAABB { PLVector3 origin, mins, maxs; } PLCollisionAABB;
+typedef struct PLCollisionSphere { PLVector3 origin; float radius; } PLCollisionSphere;
+
+#define PLAABB PLCollisionAABB /* for legacy crap, until everything is updated */
+
+#ifndef __cplusplus
+#	define PLCollisionRay( ORIGIN, DIRECTION ) ( PLCollisionRay ){ ( ORIGIN ), ( DIRECTION ) }
+#	define PLCollisionAABB( MINS, MAXS )       ( PLCollisionAABB ){ ( MINS ), ( MAXS ) }
+#	define PLCollisionSphere( ORIGIN, RADIUS ) ( PLCollisionSphere ){ ( ORIGIN ), ( RADIUS ) }
+#endif
+
+PL_INLINE static bool plIsAABBIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB *bBounds ) {
+	PLVector3 aMax = plAddVector3( aBounds->maxs, aBounds->origin );
+	PLVector3 aMin = plAddVector3( aBounds->mins, aBounds->origin );
+	PLVector3 bMax = plAddVector3( bBounds->maxs, bBounds->origin );
+	PLVector3 bMin = plAddVector3( bBounds->mins, bBounds->origin );
+
+	return !(
+		aMax.x < bMin.x ||
+		aMax.y < bMin.y ||
+		aMax.z < bMin.z ||
+		aMin.x > bMax.x ||
+		aMin.y > bMax.y ||
+		aMin.z > bMax.z
+		);
 }
 
-PL_INLINE static bool plIntersectAABB(PLAABB b, PLAABB b2) {
-  return !(b.maxs.x < b2.mins.x ||
-      b.maxs.y < b2.mins.y ||
-      b.maxs.z < b2.mins.z ||
+PL_INLINE static bool plIsPointIntersectingAABB( const PLCollisionAABB *bounds, PLVector3 point ) {
+	PLVector3 max = plAddVector3( bounds->maxs, bounds->origin );
+	PLVector3 min = plAddVector3( bounds->mins, bounds->origin );
 
-      b.mins.x > b2.maxs.x ||
-      b.mins.y > b2.maxs.y ||
-      b.mins.z > b2.maxs.z);
-
+	return !(
+		point.x > max.x ||
+		point.x < min.x ||
+		point.y > max.y ||
+		point.y < min.y ||
+		point.z > max.z ||
+		point.z < min.z
+		);
 }
 
-PL_INLINE static bool plIntersectPoint(PLAABB b, PLVector3 point) {
-  return !(point.x > b.maxs.x ||
-      point.x < b.mins.x ||
-
-      point.y > b.maxs.y ||
-      point.y < b.mins.y ||
-
-      point.z > b.maxs.z ||
-      point.z < b.mins.z);
-
+PL_INLINE static float plTestPointLinePosition( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd ) {
+	return ( lineEnd->x - lineStart->x ) * ( position->y - lineStart->y ) - ( lineEnd->y - lineStart->y ) * ( position->x - lineStart->x );
 }
 
-PL_INLINE static bool plIsSphereIntersecting(PLVector3 origin, float radius, PLVector3 position_b, float radius_b) {
-  PLVector3 difference = origin;
-  difference = plSubtractVector3(difference, position_b);
-  float distance = plVector3Length(&difference);
-  float sum_radius = radius + radius_b;
-  return distance < sum_radius;
+PL_INLINE static bool plIsPointIntersectingLine( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal ) {
+	/* first figure out which side of the line we're on */
+	float d = plTestPointLinePosition( position, lineStart, lineEnd );
+	/* now factor in the normal of the line, figure out if we're inside or outside */
+
+
+	return ( d < 0 );
 }
+
+/**
+ * Checks whether or not AABB is intersecting with the given line.
+ * Currently only works in 2D space (X & Z).
+ */
+PL_INLINE static bool plIsAABBIntersectingLine( const PLCollisionAABB *bounds, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal ) {
+	PLVector2 origin = PLVector2( bounds->origin.x, bounds->origin.z );
+
+	PLVector2 a = plAddVector2( PLVector2( bounds->maxs.x, bounds->maxs.z ), origin );
+	PLVector2 b = plAddVector2( PLVector2( bounds->mins.x, bounds->mins.z ), origin );
+
+	float x = plTestPointLinePosition( &a, lineStart, lineEnd );
+	float y = plTestPointLinePosition( &b, lineStart, lineEnd );
+	if( x < 0 && y > 0 || y < 0 && x > 0 ) {
+		return true;
+	}
+
+	return false;
+}
+
+PL_INLINE static bool plIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere ) {
+	PLVector3 difference = plSubtractVector3( aSphere->origin, bSphere->origin );
+	float distance = plVector3Length( &difference );
+	float sum_radius = aSphere->radius + bSphere->radius;
+	return distance < sum_radius;
+}
+
+/* https://github.com/erich666/GraphicsGems/blob/master/gemsii/intersect/intsph.c */
+PL_INLINE static bool plIsRayIntersectingSphere( const PLCollisionSphere *sphere, const PLCollisionRay *ray, float *enterDistance, float *leaveDistance ) {
+	PLVector3 d = plSubtractVector3( ray->origin, sphere->origin );
+	float u = plVector3DotProduct( d, d ) - sphere->radius * sphere->radius;
+	float bsq = plVector3DotProduct( d, ray->direction );
+	float disc = bsq * bsq - u;
+
+	if( disc >= 0.0f ) {
+		float root = sqrtf( disc );
+		*enterDistance = -bsq - root;
+		*leaveDistance = -bsq + root;
+		return true;
+	}
+
+	return false;
+}
+
+PL_EXTERN_C_END
 
 /************************************************************/
-

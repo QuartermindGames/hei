@@ -227,9 +227,9 @@ void plDrawMesh( PLMesh *mesh ) {
 	CallGfxFunction( DrawMesh, mesh );
 }
 
-PLAABB plCalculateMeshAABB( PLMesh *mesh ) {
-	static PLAABB bounds;
-	memset( &bounds, 0, sizeof( PLAABB ));
+PLCollisionAABB plCalculateMeshAABB( const PLMesh *mesh ) {
+	static PLCollisionAABB bounds;
+	memset( &bounds, 0, sizeof( PLCollisionAABB ));
 	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
 		if ( bounds.maxs.x < mesh->vertices[ i ].position.x ) {
 			bounds.maxs.x = mesh->vertices[ i ].position.x;
@@ -394,14 +394,11 @@ static void SetupRectangleMesh( PLMesh *mesh, int x, int y, unsigned int w, unsi
 	plSetMeshVertexST( mesh, 3, 1, 1 );
 }
 
-void plDrawTexturedRectangle( int x, int y, int w, int h, PLTexture *texture ) {
+void plDrawTexturedRectangle( const PLMatrix4 *transform, int x, int y, int w, int h, PLTexture *texture ) {
 	static PLMesh *mesh = NULL;
 	if ( mesh == NULL) {
-		if (( mesh = plCreateMesh(
-				PL_MESH_TRIANGLE_STRIP,
-				PL_DRAW_DYNAMIC,
-				2, 4
-		)) == NULL) {
+		mesh = plCreateMesh( PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 2, 4 );
+		if ( mesh == NULL) {
 			return;
 		}
 	}
@@ -410,11 +407,11 @@ void plDrawTexturedRectangle( int x, int y, int w, int h, PLTexture *texture ) {
 
 	plSetTexture( texture, 0 );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
+	plSetNamedShaderUniformMatrix4( NULL, "pl_model", *transform, true );
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
 
-	plSetTexture(NULL, 0 );
+	plSetTexture( NULL, 0 );
 }
 
 PLMesh *plCreateMeshRectangle( int x, int y, unsigned int w, unsigned int h, PLColour colour ) {
@@ -469,6 +466,7 @@ void plDrawFilledRectangle( PLRectangle2D rect ) {
 void plDrawTexturedQuad(
 		const PLVector3 *ul, const PLVector3 *ur,
 		const PLVector3 *ll, const PLVector3 *lr,
+		float hScale, float vScale,
 		PLTexture *texture ) {
 	static PLMesh *mesh = NULL;
 	if ( mesh == NULL) {
@@ -486,19 +484,14 @@ void plDrawTexturedQuad(
 	plSetMeshVertexPosition( mesh, 3, *lr );
 
 	PLVector3 upperDist = plSubtractVector3( *ul, *ur );
-	float quadWidth = plVector3Length( &upperDist ) / 10.0f;
+	float quadWidth = plVector3Length( &upperDist ) / hScale;
+	PLVector3 lowerDist = plSubtractVector3( *ll, *ul );
+	float quadHeight = plVector3Length( &lowerDist ) / vScale;
 
-	plSetMeshVertexST( mesh, 0, 0.0f, 0.0f );
-	plSetMeshVertexST( mesh, 1, 0.0f, quadWidth / texture->w );
-	plSetMeshVertexST( mesh, 3, 1.0f, quadWidth / texture->w );
-	plSetMeshVertexST( mesh, 2, 1.0f, 0.0f );
-
-#if 0
-	plSetMeshVertexNormal( mesh, 0, PLVector3( 1.0f, 1.0f, 1.0f ) );
-	plSetMeshVertexNormal( mesh, 1, PLVector3( 1.0f, 1.0f, 1.0f ) );
-	plSetMeshVertexNormal( mesh, 2, PLVector3( 1.0f, 1.0f, 1.0f ) );
-	plSetMeshVertexNormal( mesh, 3, PLVector3( 1.0f, 1.0f, 1.0f ) );
-#endif
+	plSetMeshVertexST( mesh, 3, 0.0f, quadHeight / texture->h );
+	plSetMeshVertexST( mesh, 2, quadWidth / texture->w, quadHeight / texture->h );
+	plSetMeshVertexST( mesh, 1, 0.0f, 0.0f  );
+	plSetMeshVertexST( mesh, 0, quadWidth / texture->w, 0.0f );
 
 	plGenerateMeshNormals( mesh, true );
 

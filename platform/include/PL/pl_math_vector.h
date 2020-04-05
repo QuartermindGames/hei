@@ -88,20 +88,45 @@ typedef struct PLVector2 {
 
 #endif
 
-PL_INLINE static PLVector2 plAddVector2(PLVector2 v, PLVector2 v2) {
-  v.x += v2.x;
-  v.y += v2.y;
-  return v;
+PL_INLINE static PLVector2 plAddVector2( PLVector2 v, PLVector2 v2 ) {
+    v.x += v2.x;
+    v.y += v2.y;
+    return v;
 }
 
-PL_INLINE static PLVector2 plDivideVector2(PLVector2 v, PLVector2 v2) {
-  v.x /= v2.x;
-  v.y /= v2.y;
-  return v;
+PL_INLINE static PLVector2 plScaleVector2( const PLVector2 *v, const PLVector2 *scale ) {
+    return PLVector2( v->x * scale->x, v->y * scale->y );
 }
 
-PL_INLINE static bool plCompareVector2(const PLVector2 *v, PLVector2 *v2) {
-  return ((v->x == v2->x) && (v->y == v2->y));
+PL_INLINE static PLVector2 plScaleVector2f( const PLVector2 *v, float scale ) {
+    return PLVector2( v->x * scale, v->y * scale );
+}
+
+PL_INLINE static PLVector2 plDivideVector2( PLVector2 v, PLVector2 v2 ) {
+    v.x /= v2.x;
+    v.y /= v2.y;
+    return v;
+}
+
+PL_INLINE static PLVector2 plDivideVector2f( const PLVector2 *v, float f ) {
+    return PLVector2( v->x / f, v->y / f );
+}
+
+PL_INLINE static bool plCompareVector2( const PLVector2 *v, const PLVector2 *v2 ) {
+    return ( ( v->x == v2->x ) && ( v->y == v2->y ) );
+}
+
+PL_INLINE static float plGetVector2Length( const PLVector2 *v ) {
+    return sqrtf( v->x * v->x + v->y * v->y );
+}
+
+PL_INLINE static PLVector2 plNormalizeVector2( const PLVector2 *v ) {
+    float length = plGetVector2Length( v );
+    return PLVector2( v->x / length, v->y / length );
+}
+
+PL_INLINE static PLVector2 plComputeLineNormal( const PLVector2 *x, const PLVector2 *y ) {
+    return plNormalizeVector2( &PLVector2( x->y - y->y, y->x - x->x ) );
 }
 
 // 3D
@@ -252,6 +277,14 @@ typedef struct PLVector3 {
 #   define PLVector3(x, y, z)   (PLVector3){ (float)x, (float)y, (float)z }
 
 #endif
+
+PL_INLINE static PLVector3 plClampVector3( const PLVector3* v, float min, float max ) {
+    return PLVector3(
+        plClamp( min, v->x, max ),
+        plClamp( min, v->y, max ),
+        plClamp( min, v->z, max )
+    );
+}
 
 PL_INLINE static PLVector3 plAddVector3(PLVector3 v, PLVector3 v2) {
   v.x += v2.x;

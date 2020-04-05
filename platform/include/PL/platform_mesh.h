@@ -83,7 +83,7 @@ typedef struct PLMesh {
     } internal;
 } PLMesh;
 
-typedef struct PLAABB PLAABB;
+typedef struct PLCollisionAABB PLCollisionAABB;
 
 PL_EXTERN_C
 
@@ -95,10 +95,10 @@ PL_EXTERN void plDestroyMesh(PLMesh *mesh);
 PL_EXTERN void plDrawBevelledBorder( int x, int y, unsigned int w, unsigned int h );
 PL_EXTERN void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h, PLColour colour );
 PL_EXTERN void plDrawRectangle( int x, int y, unsigned int w, unsigned int h, PLColour colour );
-PL_EXTERN void plDrawTexturedRectangle( int x, int y, int w, int h, PLTexture *texture );
+PL_EXTERN void plDrawTexturedRectangle( const PLMatrix4 *transform, int x, int y, int w, int h, PLTexture *texture );
 PL_EXTERN void plDrawFilledRectangle( PLRectangle2D rect );
 PL_EXTERN void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
-								   PLTexture *texture );
+								   float hScale, float vScale, PLTexture *texture );
 PL_EXTERN void plDrawTriangle( int x, int y, unsigned int w, unsigned int h );
 PL_EXTERN void plDrawLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLColour *startColour, const PLVector3 *endPos, const PLColour *endColour );
 PL_EXTERN void plDrawSimpleLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLVector3 *endPos, const PLColour *colour );
@@ -119,7 +119,7 @@ PL_EXTERN void plUploadMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawMesh(PLMesh *mesh);
 
-PL_EXTERN PLAABB plCalculateMeshAABB(PLMesh *mesh);
+PL_EXTERN PLCollisionAABB plCalculateMeshAABB( const PLMesh *mesh );
 
 PL_EXTERN PLVector3 plGenerateVertexNormal(PLVector3 a, PLVector3 b, PLVector3 c);
 

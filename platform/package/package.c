@@ -174,19 +174,45 @@ PLFile* plLoadPackageFile( PLPackage* package, const char* path ) {
 	return NULL;
 }
 
+PLFile *plLoadPackageFileByIndex( PLPackage *package, unsigned int index ) {
+	if ( index >= package->table_size ) {
+		ReportBasicError( PL_RESULT_INVALID_PARM2 );
+		return NULL;
+	}
+
+	return plLoadPackageFile( package, package->table[ index ].fileName );
+}
+
 const char *plGetPackagePath( const PLPackage *package ) {
 	return package->path;
+}
+
+const char *plGetPackageFileName( const PLPackage *package, unsigned int index ) {
+	if ( index >= package->table_size ) {
+		ReportBasicError( PL_RESULT_INVALID_PARM2 );
+		return NULL;
+	}
+
+	return package->table[ index ].fileName;
 }
 
 unsigned int plGetPackageTableSize( const PLPackage *package ) {
 	return package->table_size;
 }
 
-const PLPackageIndex *plGetPackageTableIndex( const PLPackage *package, unsigned int index ) {
-	if ( index >= package->table_size ) {
-		ReportError( PL_RESULT_INVALID_PARM2, "invalid package index" );
-		return NULL;
+unsigned int plGetPackageTableIndex( const PLPackage *package, const char *indexName ) {
+	FunctionStart();
+
+	for ( unsigned int i = 0; i < package->table_size; ++i ) {
+		if ( strcmp( indexName, package->table[ i ].fileName ) != 0 ) {
+			continue;
+		}
+
+		return i;
 	}
 
-	return &package->table[ index ];
+	ReportBasicError( PL_RESULT_INVALID_PARM2 );
+
+	/* todo: revisit this... */
+	return (unsigned int) -1;
 }
