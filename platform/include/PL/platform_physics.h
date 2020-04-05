@@ -99,11 +99,7 @@ PL_INLINE static bool plIsAABBIntersectingLine( const PLCollisionAABB *bounds, c
 
 	float x = plTestPointLinePosition( &a, lineStart, lineEnd );
 	float y = plTestPointLinePosition( &b, lineStart, lineEnd );
-	if( x < 0 && y > 0 || y < 0 && x > 0 ) {
-		return true;
-	}
-
-	return false;
+	return ( x < 0 && y > 0 ) || ( y < 0 && x > 0 );
 }
 
 PL_INLINE static bool plIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere ) {

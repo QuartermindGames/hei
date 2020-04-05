@@ -126,7 +126,8 @@ PL_INLINE static PLVector2 plNormalizeVector2( const PLVector2 *v ) {
 }
 
 PL_INLINE static PLVector2 plComputeLineNormal( const PLVector2 *x, const PLVector2 *y ) {
-    return plNormalizeVector2( &PLVector2( x->y - y->y, y->x - x->x ) );
+	PLVector2 v = PLVector2( x->y - y->y, y->x - x->x );
+    return plNormalizeVector2( &v );
 }
 
 // 3D
