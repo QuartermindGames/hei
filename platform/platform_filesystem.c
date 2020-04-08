@@ -316,13 +316,23 @@ bool plIsEndOfFile( const PLFile* ptr ) {
  * @param path
  * @return Modification time in seconds. returns 0 upon fail.
  */
-time_t plGetFileModifiedTime( const char* path ) {
+time_t plGetLocalFileTimeStamp( const char* path ) {
 	struct stat attributes;
 	if ( stat( path, &attributes ) == -1 ) {
 		ReportError( PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror( errno ) );
 		return 0;
 	}
+
 	return attributes.st_mtime;
+}
+
+time_t plGetFileTimeStamp( PLFile *ptr ) {
+	/* timestamp defaults to -1 for files loaded locally */
+	if( ptr->timeStamp < 0 ) {
+		plGetLocalFileTimeStamp( ptr->path );
+	}
+
+	return ptr->timeStamp;
 }
 
 // Creates a folder at the given path.
@@ -803,6 +813,9 @@ PLFile* plOpenLocalFile( const char* path, bool cache ) {
 	} else {
 		ptr->fptr = fp;
 	}
+
+	/* timestamp for local files is a special case */
+	ptr->timeStamp = -1;
 
 	return ptr;
 }

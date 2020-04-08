@@ -81,10 +81,12 @@ PL_EXTERN bool plDeleteFile( const char* path );
 PL_EXTERN bool plIsFileModified( time_t oldtime, const char* path );
 PL_EXTERN bool plIsEndOfFile( const PLFile* ptr );
 
+PL_EXTERN time_t plGetLocalFileTimeStamp( const char *path );
+PL_EXTERN size_t plGetLocalFileSize( const char *path );
+
 PL_EXTERN const char* plGetFilePath( const PLFile* ptr );
 PL_EXTERN const uint8_t* plGetFileData( const PLFile* ptr );
-PL_EXTERN time_t plGetFileModifiedTime( const char* path );
-PL_EXTERN size_t plGetLocalFileSize( const char* path );
+PL_EXTERN time_t plGetFileTimeStamp( PLFile *ptr );
 PL_EXTERN size_t plGetFileSize( const PLFile* ptr );
 PL_EXTERN size_t plGetFileOffset( const PLFile* ptr );
 

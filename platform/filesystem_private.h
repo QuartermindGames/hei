@@ -42,9 +42,10 @@ For more information, please refer to <http://unlicense.org>
 #endif
 
 typedef struct PLFile {
-    char        path[PL_SYSTEM_MAX_PATH];
-    uint8_t*    data;
-    uint8_t*    pos;
-    size_t      size;
-    void*       fptr;
+	char		path[ PL_SYSTEM_MAX_PATH ];
+	uint8_t		*data;
+	uint8_t		*pos;
+	size_t		size;
+	time_t		timeStamp;
+	void		*fptr;
 } PLFile;
