@@ -94,6 +94,10 @@ PL_INLINE static PLVector2 plAddVector2( PLVector2 v, PLVector2 v2 ) {
     return v;
 }
 
+PL_INLINE static PLVector2 plSubtractVector2( const PLVector2 *a, const PLVector2 *b ) {
+	return PLVector2( a->x - b->x, a->y - b->y );
+}
+
 PL_INLINE static PLVector2 plScaleVector2( const PLVector2 *v, const PLVector2 *scale ) {
     return PLVector2( v->x * scale->x, v->y * scale->y );
 }
@@ -116,8 +120,12 @@ PL_INLINE static bool plCompareVector2( const PLVector2 *v, const PLVector2 *v2 
     return ( ( v->x == v2->x ) && ( v->y == v2->y ) );
 }
 
+PL_INLINE static float plVector2DotProduct( const PLVector2 *a, const PLVector2 *b ) {
+	return a->x * b->x + a->y * b->y;
+}
+
 PL_INLINE static float plGetVector2Length( const PLVector2 *v ) {
-    return sqrtf( v->x * v->x + v->y * v->y );
+    return sqrtf( plVector2DotProduct( v, v ) );
 }
 
 PL_INLINE static PLVector2 plNormalizeVector2( const PLVector2 *v ) {
@@ -277,6 +285,8 @@ typedef struct PLVector3 {
 #   define PLVector3(x, y, z)   (PLVector3){ (float)x, (float)y, (float)z }
 
 #endif
+
+#define plVector3Index( VECTOR, INDEX ) ( ( float* ) &( VECTOR ) )[ INDEX ]
 
 PL_INLINE static PLVector3 plClampVector3( const PLVector3* v, float min, float max ) {
     return PLVector3(
