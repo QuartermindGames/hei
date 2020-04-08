@@ -41,10 +41,13 @@ For more information, please refer to <http://unlicense.org>
 #   define _pl_mkdir(a) mkdir((a), 0777)
 #endif
 
+#define _pl_fclose(a)  fclose((a)); (a) = NULL
+
 typedef struct PLFile {
-    char        path[PL_SYSTEM_MAX_PATH];
-    uint8_t*    data;
-    uint8_t*    pos;
-    size_t      size;
-    void*       fptr;
+	char		path[ PL_SYSTEM_MAX_PATH ];
+	uint8_t		*data;
+	uint8_t		*pos;
+	size_t		size;
+	time_t		timeStamp;
+	void		*fptr;
 } PLFile;

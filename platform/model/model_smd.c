@@ -103,7 +103,7 @@ bool plWriteSmdModel(PLModel *model, const char *path) {
         }
         /* and leave a blank line at the end, to keep studiomdl happy */
         fprintf(fp_out, "end\n\n\n");
-        pl_fclose(fp_out);
+        _pl_fclose(fp_out);
     }
     return true;
 }

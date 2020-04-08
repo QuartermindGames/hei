@@ -35,7 +35,7 @@ For more information, please refer to <http://unlicense.org>
  */
 
 #define SWGetDisplayBufferSize(a) \
-    plGetImageSize( PL_IMAGEFORMAT_RGBA8, (unsigned int) (a)->w, (unsigned int) (a)->h )
+    plGetImageSize( PL_IMAGEFORMAT_RGBA8, (a)->w, (a)->h )
 #define SWGetCurrentDisplayBuffer()    gfx_state.current_viewport->buffer
 
 static void SWSetClearColour(PLColour colour) {}
@@ -110,7 +110,7 @@ static void SWDrawPixel(int x, int y, PLColour colour) {
     }
 
     unsigned int pos = y * viewport->w + x;
-    if (pos >= SWGetDisplayBufferSize(viewport)) {
+    if (pos >= (int) SWGetDisplayBufferSize(viewport)) {
         return;
     }
 

@@ -137,6 +137,7 @@ PL_INLINE static bool plIsAABBIntersectingLine( const PLCollisionAABB *bounds, c
 	//PLVector2 c = plAddVector2( PLVector2( bounds->mins.x, bounds->maxs.z ), origin );
 	//PLVector2 d = plAddVector2( PLVector2( bounds->maxs.x, bounds->maxs.z ), origin );
 
+<<<<<<< HEAD
 	float aR, bR, cR, dR;
 	plIsPointIntersectingLine( &a, lineStart, lineEnd, lineNormal, &aR );
 	plIsPointIntersectingLine( &b, lineStart, lineEnd, lineNormal, &bR );
@@ -162,6 +163,11 @@ PL_INLINE static bool plIsLineInBox( const PLCollisionAABB *bounds, const PLVect
 
 	/* no separating axis, the line intersects */
 	return true;
+=======
+	float x = plTestPointLinePosition( &a, lineStart, lineEnd );
+	float y = plTestPointLinePosition( &b, lineStart, lineEnd );
+	return ( x < 0 && y > 0 ) || ( y < 0 && x > 0 );
+>>>>>>> da810f3aeb37efb113ea2e754658294d027fac1f
 }
 
 PL_INLINE static bool plIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere ) {

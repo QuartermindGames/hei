@@ -37,8 +37,6 @@ For more information, please refer to <http://unlicense.org>
 #define plBytesToMebibytes(a)   (plBytesToKibibytes(a) / 1024)
 #define plBytesToGibibytes(a)   (plBytesToMebibytes(a) / 1024)
 
-#define pl_fclose(a)  fclose((a)); (a) = NULL
-
 typedef struct PLFile PLFile;
 
 PL_EXTERN_C
@@ -81,10 +79,12 @@ PL_EXTERN bool plDeleteFile( const char* path );
 PL_EXTERN bool plIsFileModified( time_t oldtime, const char* path );
 PL_EXTERN bool plIsEndOfFile( const PLFile* ptr );
 
+PL_EXTERN time_t plGetLocalFileTimeStamp( const char *path );
+PL_EXTERN size_t plGetLocalFileSize( const char *path );
+
 PL_EXTERN const char* plGetFilePath( const PLFile* ptr );
 PL_EXTERN const uint8_t* plGetFileData( const PLFile* ptr );
-PL_EXTERN time_t plGetFileModifiedTime( const char* path );
-PL_EXTERN size_t plGetLocalFileSize( const char* path );
+PL_EXTERN time_t plGetFileTimeStamp( PLFile *ptr );
 PL_EXTERN size_t plGetFileSize( const PLFile* ptr );
 PL_EXTERN size_t plGetFileOffset( const PLFile* ptr );
 
@@ -98,9 +98,13 @@ PL_EXTERN int64_t plReadInt64(PLFile* ptr, bool big_endian, bool* status);
 PL_EXTERN char* plReadString(PLFile* ptr, char* str, size_t size);
 
 typedef enum PLFileSeek {
+#if defined( SEEK_SET ) && defined( SEEK_CUR ) && defined( SEEK_END )
 	PL_SEEK_SET = SEEK_SET,
 	PL_SEEK_CUR = SEEK_CUR,
 	PL_SEEK_END = SEEK_END
+#else
+	PL_SEEK_SET, PL_SEEK_CUR, PL_SEEK_END
+#endif
 } PLFileSeek;
 
 PL_EXTERN bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek );

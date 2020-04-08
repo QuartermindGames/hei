@@ -372,8 +372,8 @@ void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h,
 		}
 
 		plSetMeshVertexPosition( mesh, pos++, PLVector3(
-				( position.x + w ) + cosf( plDegreesToRadians( i )) * w,
-				( position.y + h ) + sinf( plDegreesToRadians( i )) * h, 0 ) );
+				( position.x + w ) + cosf( plDegreesToRadians( ( float ) i )) * w,
+				( position.y + h ) + sinf( plDegreesToRadians( ( float ) i )) * h, 0 ) );
 	}
 
 	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
@@ -381,7 +381,7 @@ void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h,
 	plDrawMesh( mesh );
 }
 
-static void SetupRectangleMesh( PLMesh *mesh, int x, int y, unsigned int w, unsigned int h, PLColour colour ) {
+static void SetupRectangleMesh( PLMesh *mesh, float x, float y, float w, float h, PLColour colour ) {
 	plClearMesh( mesh );
 	plSetMeshVertexPosition( mesh, 0, PLVector3( x, y, 0 ) );
 	plSetMeshVertexPosition( mesh, 1, PLVector3( x, y + h, 0 ) );
@@ -440,7 +440,7 @@ void plDrawRectangle( int x, int y, unsigned int w, unsigned int h, PLColour col
 	plDrawMesh( mesh );
 }
 
-void plDrawFilledRectangle( PLRectangle2D rect ) {
+void plDrawFilledRectangle( const PLRectangle2D *rectangle ) {
 	static PLMesh *mesh = NULL;
 	if ( mesh == NULL) {
 		if (( mesh = plCreateMesh(
@@ -452,11 +452,11 @@ void plDrawFilledRectangle( PLRectangle2D rect ) {
 		}
 	}
 
-	SetupRectangleMesh( mesh, rect.xy.x, rect.xy.y, rect.wh.x, rect.wh.y, PLColour( 255, 255, 255, 255 ) );
-	plSetMeshVertexColour( mesh, 0, rect.ll );
-	plSetMeshVertexColour( mesh, 1, rect.ul );
-	plSetMeshVertexColour( mesh, 2, rect.lr );
-	plSetMeshVertexColour( mesh, 3, rect.ur );
+	SetupRectangleMesh( mesh, rectangle->xy.x, rectangle->xy.y, rectangle->wh.x, rectangle->wh.y, PLColour( 255, 255, 255, 255 ) );
+	plSetMeshVertexColour( mesh, 0, rectangle->ll );
+	plSetMeshVertexColour( mesh, 1, rectangle->ul );
+	plSetMeshVertexColour( mesh, 2, rectangle->lr );
+	plSetMeshVertexColour( mesh, 3, rectangle->ur );
 
 	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
 	plUploadMesh( mesh );

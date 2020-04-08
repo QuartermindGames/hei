@@ -656,6 +656,7 @@ void plSetConsoleColour(unsigned int id, PLColour colour) {
 
 #if defined(PL_USE_GRAPHICS)
 void plDrawConsole(void) {
+#if 0
     ResizeConsoles();
 
     for(unsigned int i = 0; i < num_console_panes; i++) {
@@ -664,7 +665,7 @@ void plDrawConsole(void) {
         }
 
         if(i == active_console_pane) {
-            plDrawFilledRectangle(console_panes[i].display);
+            plDrawFilledRectangle( &console_panes[i].display );
 
             plDrawFilledRectangle(plCreateRectangle(
                     PLVector2(
@@ -765,6 +766,7 @@ void plDrawConsole(void) {
 #if 0
 #if defined(PL_MODE_OPENGL)
     glDisable(GL_TEXTURE_RECTANGLE);
+#endif
 #endif
 #endif
 }
