@@ -741,7 +741,7 @@ bool plWriteFile( const char* path, const uint8_t* buf, size_t length ) {
 		result = false;
 	}
 
-	pl_fclose( fp );
+	_pl_fclose( fp );
 
 	return result;
 }
@@ -766,7 +766,7 @@ bool plCopyFile( const char* path, const char* dest ) {
 		goto BAIL;
 	}
 
-	pl_fclose( copy );
+	_pl_fclose( copy );
 
 	plCloseFile( original );
 	return true;
@@ -774,7 +774,7 @@ bool plCopyFile( const char* path, const char* dest ) {
 	BAIL:
 
 	if ( copy != NULL ) {
-		pl_fclose( copy );
+		_pl_fclose( copy );
 	}
 
 	plCloseFile( original );
@@ -809,7 +809,7 @@ PLFile* plOpenLocalFile( const char* path, bool cache ) {
 		if ( fread( ptr->data, sizeof( uint8_t ), ptr->size, fp ) != ptr->size ) {
 			FSLog( "Failed to read complete file (%s)!\n", path );
 		}
-		pl_fclose( fp );
+		_pl_fclose( fp );
 	} else {
 		ptr->fptr = fp;
 	}
@@ -870,7 +870,7 @@ void plCloseFile( PLFile* ptr ) {
 	}
 
 	if ( ptr->fptr != NULL ) {
-		pl_fclose( ptr->fptr );
+		_pl_fclose( ptr->fptr );
 	}
 
 	pl_free( ptr->data );
