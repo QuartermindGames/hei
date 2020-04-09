@@ -66,7 +66,7 @@ PLPackage *plLoadBdirPackage( const char *path ) {
 	uint32_t numLumps = plReadInt32( filePtr, false, &status );
 	uint32_t tableOffset = plReadInt32( filePtr, false, &status );
 	size_t tableSize = sizeof( BdirIndex ) * numLumps;
-	if( tableOffset + tableSize >= plGetFileSize( filePtr ) ) {
+	if( tableOffset + tableSize > plGetFileSize( filePtr ) ) {
 		ReportError( PL_RESULT_INVALID_PARM1, "invalid table offset" );
 		plCloseFile( filePtr );
 		return NULL;
@@ -84,7 +84,7 @@ PLPackage *plLoadBdirPackage( const char *path ) {
 	BdirIndex *indices = pl_malloc( tableSize );
 	for( unsigned int i = 0; i < numLumps; ++i ) {
 #define cleanup() pl_free( indices ); plCloseFile( filePtr )
-		if( plReadFile( filePtr, indices[ i ].name, 1, 8 ) != 8 ) {
+		if( plReadFile( filePtr, indices[ i ].name, 1, 12 ) != 12 ) {
 			cleanup();
 			return NULL;
 		}

@@ -95,12 +95,18 @@ void plRegisterPackageLoader( const char* ext, PLPackage* (* LoadFunction)( cons
 
 void plRegisterStandardPackageLoaders( void ) {
 	plRegisterPackageLoader( "ff", plLoadFFPackage );
+	
 	plRegisterPackageLoader( "mad", plLoadMADPackage );
 	plRegisterPackageLoader( "mtd", plLoadMADPackage );
+	
 	plRegisterPackageLoader( "lst", plLoadLSTPackage );
 	plRegisterPackageLoader( "tab", plLoadTABPackage );
 	plRegisterPackageLoader( "vsr", plLoadVSRPackage );
 	plRegisterPackageLoader( "wad", plLoadDoomWadPackage );
+
+	/* eradicator */
+	plRegisterPackageLoader( "rid", plLoadBdirPackage );
+	plRegisterPackageLoader( "rim", plLoadBdirPackage );
 }
 
 PLPackage* plLoadPackage( const char* path ) {

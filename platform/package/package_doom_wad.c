@@ -29,11 +29,11 @@ For more information, please refer to <http://unlicense.org>
 
 /* id Software's Doom WAD package format */
 
-typedef struct WadIndex {
+PL_PACKED_STRUCT_START( WadIndex )
 	uint32_t offset;
 	uint32_t size;
-	char     name[ 9 ];
-} WadIndex;
+	char     name[ 8 ];
+PL_PACKED_STRUCT_END( WadIndex )
 
 PLPackage *plLoadDoomWadPackage( const char *path ) {
 	FunctionStart();
@@ -64,7 +64,7 @@ PLPackage *plLoadDoomWadPackage( const char *path ) {
 	uint32_t numLumps = plReadInt32( filePtr, false, &status );
 	uint32_t tableOffset = plReadInt32( filePtr, false, &status );
 	size_t tableSize = sizeof( WadIndex ) * numLumps;
-	if( tableOffset + tableSize >= plGetFileSize( filePtr ) ) {
+	if( tableOffset + tableSize > plGetFileSize( filePtr ) ) {
 		ReportError( PL_RESULT_INVALID_PARM1, "invalid table offset" );
 		plCloseFile( filePtr );
 		return NULL;
@@ -100,7 +100,6 @@ PLPackage *plLoadDoomWadPackage( const char *path ) {
 			cleanup();
 			return NULL;
 		}
-		indices[ i ].name[ 8 ] = '\0';
 	}
 
 	plCloseFile( filePtr );
@@ -122,7 +121,7 @@ PLPackage *plLoadDoomWadPackage( const char *path ) {
 		PLPackageIndex *index = &package->table[ i ];
 		index->offset = indices[ i ].offset;
 		index->fileSize = indices[ i ].size;
-		strncpy( index->fileName, indices[ i ].name, sizeof( index->fileName ) );
+		snprintf( index->fileName, 8, "%s", indices[ i ].name );
 	}
 
 	pl_free( indices );

@@ -104,6 +104,7 @@ PLPackage *plLoadTABPackage( const char *path );
 PLPackage *plLoadVSRPackage( const char *path );
 PLPackage *plLoadFFPackage( const char *path );
 PLPackage *plLoadDoomWadPackage( const char *path );
+PLPackage *plLoadBdirPackage( const char *path );
 
 /**
  * Generic loader for package files, since this is unlikely to change
