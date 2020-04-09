@@ -27,15 +27,15 @@ For more information, please refer to <http://unlicense.org>
 
 #include "package_private.h"
 
-/* id Software's Doom WAD package format */
+/* Eradicator's BDIR package format */
 
-typedef struct WadIndex {
-	uint32_t offset;
-	uint32_t size;
-	char     name[ 9 ];
-} WadIndex;
+typedef struct BdirIndex {
+	char		name[ 12 ];
+	uint32_t	offset;
+	uint32_t	size;
+} BdirIndex;
 
-PLPackage *plLoadDoomWadPackage( const char *path ) {
+PLPackage *plLoadBdirPackage( const char *path ) {
 	FunctionStart();
 
 	PLFile *filePtr = plOpenFile( path, false );
@@ -51,10 +51,12 @@ PLPackage *plLoadDoomWadPackage( const char *path ) {
 		return NULL;
 	}
 
-	/* first part of the ident varys between I (initial) and P (patch) */
-	if( ( identifier[ 0 ] != 'I' && identifier[ 0 ] != 'P' ) ||
-		!( identifier[ 1 ] == 'W' && identifier[ 2 ] == 'A' && identifier[ 3 ] == 'D' ) ) {
-		ReportError( PL_RESULT_FILETYPE, "invalid wad header, \"%s\"", identifier );
+	if( !(
+		identifier[ 0 ] == 'R' &&
+		identifier[ 1 ] == 'I' && 
+		identifier[ 2 ] == 'D' && 
+		identifier[ 3 ] == 'B' ) ) {
+		ReportError( PL_RESULT_FILETYPE, "invalid bdir header, \"%s\"", identifier );
 		plCloseFile( filePtr );
 		return NULL;
 	}
@@ -63,7 +65,7 @@ PLPackage *plLoadDoomWadPackage( const char *path ) {
 
 	uint32_t numLumps = plReadInt32( filePtr, false, &status );
 	uint32_t tableOffset = plReadInt32( filePtr, false, &status );
-	size_t tableSize = sizeof( WadIndex ) * numLumps;
+	size_t tableSize = sizeof( BdirIndex ) * numLumps;
 	if( tableOffset + tableSize >= plGetFileSize( filePtr ) ) {
 		ReportError( PL_RESULT_INVALID_PARM1, "invalid table offset" );
 		plCloseFile( filePtr );
@@ -79,9 +81,15 @@ PLPackage *plLoadDoomWadPackage( const char *path ) {
 
 	plFileSeek( filePtr, tableOffset, PL_SEEK_SET );
 
-	WadIndex *indices = pl_malloc( tableSize );
+	BdirIndex *indices = pl_malloc( tableSize );
 	for( unsigned int i = 0; i < numLumps; ++i ) {
 #define cleanup() pl_free( indices ); plCloseFile( filePtr )
+		if( plReadFile( filePtr, indices[ i ].name, 1, 8 ) != 8 ) {
+			cleanup();
+			return NULL;
+		}
+		indices[ i ].name[ 11 ] = '\0';
+
 		indices[ i ].offset = plReadInt32( filePtr, false, &status );
 		if( indices[ i ].offset >= tableOffset ) {
 			ReportError( PL_RESULT_INVALID_PARM1, "invalid file offset for index %d", i );
@@ -95,12 +103,6 @@ PLPackage *plLoadDoomWadPackage( const char *path ) {
 			cleanup();
 			return NULL;
 		}
-
-		if( plReadFile( filePtr, indices[ i ].name, 1, 8 ) != 8 ) {
-			cleanup();
-			return NULL;
-		}
-		indices[ i ].name[ 8 ] = '\0';
 	}
 
 	plCloseFile( filePtr );
