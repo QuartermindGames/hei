@@ -425,17 +425,18 @@ PLMesh *plCreateMeshRectangle( int x, int y, unsigned int w, unsigned int h, PLC
 	return mesh;
 }
 
-void plDrawRectangle( int x, int y, unsigned int w, unsigned int h, PLColour colour ) {
+void plDrawRectangle( const PLMatrix4 *transform, int x, int y, unsigned int w, unsigned int h, PLColour colour ) {
 	static PLMesh *mesh = NULL;
 	if ( mesh == NULL) {
-		if (( mesh = plCreateMesh( PL_MESH_LINE_LOOP, PL_DRAW_DYNAMIC, 0, 4 )) == NULL) {
+		if (( mesh = plCreateMesh( PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 0, 4 )) == NULL) {
 			return;
 		}
 	}
 
 	SetupRectangleMesh( mesh, x, y, w, h, colour );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
+	plSetNamedShaderUniformMatrix4( NULL, "pl_model", *transform, true );
+
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
 }

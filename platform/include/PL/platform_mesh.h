@@ -94,7 +94,7 @@ PL_EXTERN void plDestroyMesh(PLMesh *mesh);
 
 PL_EXTERN void plDrawBevelledBorder( int x, int y, unsigned int w, unsigned int h );
 PL_EXTERN void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h, PLColour colour );
-PL_EXTERN void plDrawRectangle( int x, int y, unsigned int w, unsigned int h, PLColour colour );
+PL_EXTERN void plDrawRectangle( const PLMatrix4 *transform, int x, int y, unsigned int w, unsigned int h, PLColour colour );
 PL_EXTERN void plDrawTexturedRectangle( const PLMatrix4 *transform, int x, int y, int w, int h, PLTexture *texture );
 PL_EXTERN void plDrawFilledRectangle( const PLRectangle2D *rectangle );
 PL_EXTERN void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
