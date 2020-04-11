@@ -372,8 +372,8 @@ void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h,
 		}
 
 		plSetMeshVertexPosition( mesh, pos++, PLVector3(
-				( position.x + w ) + cosf( plDegreesToRadians( i )) * w,
-				( position.y + h ) + sinf( plDegreesToRadians( i )) * h, 0 ) );
+				( position.x + w ) + cosf( plDegreesToRadians( ( float ) i )) * w,
+				( position.y + h ) + sinf( plDegreesToRadians( ( float ) i )) * h, 0 ) );
 	}
 
 	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );

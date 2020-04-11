@@ -30,6 +30,11 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform.h>
 #include <PL/platform_math.h>
 
+/**
+ * References:
+ *	http://www.3dkingdoms.com/weekly/weekly.php?a=21
+ */
+
 PL_EXTERN_C
 
 typedef struct PLCollisionRay { PLVector3 origin, direction; } PLCollisionRay;
@@ -74,32 +79,89 @@ PL_INLINE static bool plIsPointIntersectingAABB( const PLCollisionAABB *bounds, 
 		);
 }
 
+/**
+ * Get which side of a line a point is on.
+ */
 PL_INLINE static float plTestPointLinePosition( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd ) {
-	return ( lineEnd->x - lineStart->x ) * ( position->y - lineStart->y ) - ( lineEnd->y - lineStart->y ) * ( position->x - lineStart->x );
+	float d = ( lineEnd->x - lineStart->x ) * ( position->y - lineStart->y ) - ( lineEnd->y - lineStart->y ) * ( position->x - lineStart->x );
+	return d;
 }
 
-PL_INLINE static bool plIsPointIntersectingLine( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal ) {
-	/* first figure out which side of the line we're on */
-	float d = plTestPointLinePosition( position, lineStart, lineEnd );
-	/* now factor in the normal of the line, figure out if we're inside or outside */
+PL_INLINE static bool plIsPointIntersectingLine( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal, float *intersection ) {
+	*intersection = 0.0f;
+	
+#if 0
+	PLVector2 xCoord = ( lineEnd->x > lineStart->x ) ? PLVector2( lineEnd->x, lineStart->x ) : PLVector2( lineStart->x, lineEnd->x );
+	PLVector2 yCoord = ( lineEnd->y > lineStart->y ) ? PLVector2( lineEnd->y, lineStart->y ) : PLVector2( lineStart->y, lineEnd->y );
+	if( !( position->x > xCoord.x && position->x < xCoord.y ) && !( position->y > yCoord.x && position->y < yCoord.y ) ) {
+		return false;
+	}
+#endif
+	
+	//if( ( position->x > xCoord.y || position->x < xCoord.x ) && ( position->y > yCoord.y || position->y < yCoord.x ) ) {
+	//	return false;
+	//}
 
+	/* figure out which side of the line we're on */
+	float lineSide = plTestPointLinePosition( position, lineStart, lineEnd );
+	if( lineSide <= -1000.0f ) {
+		return false;
+	}
 
-	return ( d < 0 );
+	*intersection = lineSide;
+
+	return ( *intersection <= 1000.0f );
+}
+
+PL_INLINE static bool plTestLineIntersection( float dst1, float dst2, const PLVector3 *lineStart, const PLVector3 *lineEnd, PLVector3 *hit ) {
+	if( ( dst1 * dst2 ) >= 0.0f || dst1 == dst2 ) {
+		return false;
+	}
+
+	for( unsigned int i = 0; i < 3; ++i ) {
+		plVector3Index( hit, i ) = plVector3Index( lineStart, i ) + ( plVector3Index( lineEnd, i ) - plVector3Index( lineStart, i ) ) * ( -dst1 / ( dst2 - dst1 ) );
+	}
+
+	return true;
 }
 
 /**
  * Checks whether or not AABB is intersecting with the given line.
  * Currently only works in 2D space (X & Z).
  */
-PL_INLINE static bool plIsAABBIntersectingLine( const PLCollisionAABB *bounds, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal ) {
+PL_INLINE static bool plIsAABBIntersectingLine( const PLCollisionAABB *bounds, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal ) {	
 	PLVector2 origin = PLVector2( bounds->origin.x, bounds->origin.z );
 
-	PLVector2 a = plAddVector2( PLVector2( bounds->maxs.x, bounds->maxs.z ), origin );
-	PLVector2 b = plAddVector2( PLVector2( bounds->mins.x, bounds->mins.z ), origin );
+	PLVector2 a = plAddVector2( PLVector2( bounds->mins.x, bounds->mins.z ), origin );
+	PLVector2 b = plAddVector2( PLVector2( bounds->maxs.x, bounds->mins.z ), origin );
+	//PLVector2 c = plAddVector2( PLVector2( bounds->mins.x, bounds->maxs.z ), origin );
+	//PLVector2 d = plAddVector2( PLVector2( bounds->maxs.x, bounds->maxs.z ), origin );
 
-	float x = plTestPointLinePosition( &a, lineStart, lineEnd );
-	float y = plTestPointLinePosition( &b, lineStart, lineEnd );
-	return ( x < 0 && y > 0 ) || ( y < 0 && x > 0 );
+	float aR, bR, cR, dR;
+	plIsPointIntersectingLine( &a, lineStart, lineEnd, lineNormal, &aR );
+	plIsPointIntersectingLine( &b, lineStart, lineEnd, lineNormal, &bR );
+	//plIsPointIntersectingLine( &c, lineStart, lineEnd, lineNormal, &cR );
+	//plIsPointIntersectingLine( &d, lineStart, lineEnd, lineNormal, &dR );
+
+#if 0
+	if( x == 0.0f || y == 0.0f ) {
+		return PLVector2( x, y );
+	}
+#endif
+
+	return ;
+}
+
+PL_INLINE static bool plIsLineInBox( const PLCollisionAABB *bounds, const PLVector3 *lineStart, const PLVector3 *lineEnd ) {
+	/* get line midpoint and extent */
+	PLVector3 lineMiddle = plScaleVector3f( plAddVector3( *lineStart, *lineEnd ), 0.5f );
+	PLVector3 l = plSubtractVector3( *lineStart, lineMiddle );
+	PLVector3 lineExtent = PLVector3( fabsf( l.x ), fabsf( l.y ), fabsf( l.z ) );
+
+
+
+	/* no separating axis, the line intersects */
+	return true;
 }
 
 PL_INLINE static bool plIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere ) {
@@ -124,6 +186,79 @@ PL_INLINE static bool plIsRayIntersectingSphere( const PLCollisionSphere *sphere
 	}
 
 	return false;
+}
+
+/* https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c */
+PL_INLINE static bool plIsRayIntersectingAABB( const PLCollisionAABB *bounds, const PLCollisionRay *ray, PLVector3 *hitPoint ) {
+	PLVector3 max = plAddVector3( bounds->maxs, bounds->origin );
+	PLVector3 min = plAddVector3( bounds->mins, bounds->origin );
+
+	/* Find candidate planes */
+
+	static const unsigned int right = 0;
+	static const unsigned int left = 1;
+	static const unsigned int middle = 2;
+
+	PLVector3 candidatePlane;
+	bool hitQuadrant[ 3 ];
+	bool isInside = true;
+
+	for( unsigned int i = 0; i < 3; ++i ) {
+		if( plVector3Index( ray->origin, i ) < plVector3Index( min, i ) ) {
+			hitQuadrant[ i ] = left;
+			plVector3Index( candidatePlane, i ) = plVector3Index( min, i );
+			isInside = false;
+		} else if( plVector3Index( ray->origin, i ) > plVector3Index( max, i ) ) {
+			hitQuadrant[ i ] = right;
+			plVector3Index( candidatePlane, i ) = plVector3Index( max, i );
+			isInside = false;
+		} else {
+			hitQuadrant[ i ] = middle;
+		}
+	}
+
+	/* Ray origin inside bounding box */
+	if( isInside ) {
+		*hitPoint = ray->origin;
+		return true;
+	}
+
+	/* Calculate T distances to candidate planes */
+	PLVector3 maxT;
+	for( unsigned int i = 0; i < 3; ++i ) {
+		if( hitQuadrant[ i ] != middle && plVector3Index( ray->direction, i ) != 0.0f ) {
+			plVector3Index( maxT, i ) = ( plVector3Index( candidatePlane, i ) - plVector3Index( ray->origin, i ) ) / plVector3Index( ray->direction, i );
+		} else {
+			plVector3Index( maxT, i ) = -1.0f;
+		}
+	}
+
+	/* Get largest of the maxT's for final choice of intersection */
+	unsigned int whichPlane = 0;
+	for( unsigned int i = 1; i < 3; ++i ) {
+		if( plVector3Index( maxT, whichPlane ) < plVector3Index( maxT, i ) ) {
+			whichPlane = i;
+		}
+	}
+
+	/* Check final candidate actually inside box */
+
+	if( plVector3Index( maxT, whichPlane ) < 0.0f ) {
+		return false;
+	}
+
+	for( unsigned int i = 0; i < 3; ++i ) {
+		if( whichPlane != i ) {
+			plVector3Index( hitPoint, i ) = plVector3Index( ray->origin, i ) + plVector3Index( maxT, whichPlane ) * plVector3Index( ray->direction, i );
+			if( plVector3Index( hitPoint, i ) < plVector3Index( min, i ) || plVector3Index( hitPoint, i ) > plVector3Index( max, i ) ) {
+				return false;
+			}
+		} else {
+			plVector3Index( hitPoint, i ) = plVector3Index( candidatePlane, i );
+		}
+	}
+
+	return true;
 }
 
 PL_EXTERN_C_END

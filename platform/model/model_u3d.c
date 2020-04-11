@@ -200,7 +200,7 @@ PLModel* plLoadU3DModel(const char *path) {
 }
 
 bool plWriteU3DModel(PLModel* ptr, const char* path) {
-
+    return false;
 }
 
 /* Example UC file, this is what we _should_ be loading from.

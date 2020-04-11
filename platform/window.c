@@ -25,29 +25,60 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#pragma once
+#include "platform_private.h"
 
-#include <PL/platform_filesystem.h>
-
-#ifdef _DEBUG
-#   define FSLog(...) plLogMessage(LOG_LEVEL_FILESYSTEM, __VA_ARGS__)
-#else
-#   define FSLog(...)
+#if defined( _WIN32 )
+#	include <Windows.h>
 #endif
 
-#if defined(_WIN32)
-#   define _pl_mkdir(a) _mkdir((a))
-#else
-#   define _pl_mkdir(a) mkdir((a), 0777)
+typedef struct PLWindow {
+	int				x, y;
+	unsigned int	w, h;
+	char			windowTitle[ 32 ];
+} PLWindow;
+
+#if defined( _WIN32 )
+static LRESULT WindowCallbackProcedure( HWND windowHandle, unsigned int msg, WPARAM wParam, LPARAM lParam ) {
+
+}
 #endif
 
-#define _pl_fclose(a)  fclose((a)); (a) = NULL
+PLWindow *plCreateWindow( int w, int h, const char *title ) {
+#if defined( _WIN32 )
+	HINSTANCE instance = GetModuleHandle( 0 );
+	if( instance == NULL ) {
+		ReportError( PL_RESULT_FAIL, "failed to fetch valid module handle" );
+		return NULL;
+	}
 
-typedef struct PLFile {
-	char		path[ PL_SYSTEM_MAX_PATH ];
-	uint8_t		*data;
-	uint8_t		*pos;
-	size_t		size;
-	time_t		timeStamp;
-	void		*fptr;
-} PLFile;
+	/* create the window class */
+	WNDCLASS windowClass;
+	memset( &windowClass, 0, sizeof( WNDCLASS ) );
+	windowClass.lpfnWndProc		= WindowCallbackProcedure;
+	windowClass.lpszClassName	= title;
+	windowClass.hInstance		= instance;
+
+	RegisterClass( &windowClass );
+
+	/* and now create the window */
+
+	HWND windowInstance = CreateWindowEx(
+		0,
+		title,
+		title,
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, CW_USEDEFAULT, w, h,
+
+		NULL,
+		NULL,
+		instance,
+		NULL
+	);
+	if( windowInstance == NULL ) {
+		ReportError( PL_RESULT_FAIL, "failed to create window" );
+		return NULL;
+	}
+
+	ShowWindow( windowInstance, SW_SHOW );
+#endif
+}

@@ -56,6 +56,8 @@ PLLinkedListNode *plInsertLinkedListNode( PLLinkedList *list, void *userPtr ) {
 	node->next = NULL;
 
 	node->userPtr = userPtr;
+
+	return node;
 }
 
 PLLinkedListNode *plGetNextLinkedListNode( PLLinkedListNode *node ) {
