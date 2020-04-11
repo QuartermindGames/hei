@@ -76,6 +76,7 @@ PL_INLINE static PLMatrix4 plScaleMatrix4( PLMatrix4 m, PLVector3 scale );
 PL_INLINE static PLMatrix4 plMultiplyMatrix4( PLMatrix4 m, PLMatrix4 m2 );
 PL_INLINE static PLMatrix4 plRotateMatrix4( float angle, PLVector3 axis );
 PL_INLINE static PLMatrix4 plTranslateMatrix4( PLVector3 v );
+PL_INLINE static PLVector3 plGetMatrix4Translation( const PLMatrix4 *m );
 PL_INLINE static PLVector3 plGetMatrix4Angle( const PLMatrix4* m );
 
 typedef struct PLMatrix4 {
@@ -129,8 +130,12 @@ typedef struct PLMatrix4 {
 		for ( float& i : m ) { i = 0; }
 	}
 
-	PL_INLINE PLVector3 GetMatrixAngle() {
+	PL_INLINE PLVector3 GetAngle() {
 		return plGetMatrix4Angle( this );
+	}
+
+	PL_INLINE PLVector3 GetTranslation() {
+		return plGetMatrix4Translation( this );
 	}
 
 	PL_INLINE PLMatrix4 operator+( PLMatrix4 m2 ) const {
@@ -322,6 +327,10 @@ PL_INLINE static PLMatrix4 plRotateMatrix4( float angle, PLVector3 axis ) {
 
 /******************************************************************/
 /* Utility Functions */
+
+PL_INLINE static PLVector3 plGetMatrix4Translation( const PLMatrix4 *m ) {
+	return PLVector3( m->pl_m4pos( 0, 3 ), m->pl_m4pos( 1, 3 ), m->pl_m4pos( 2, 3 ) );
+}
 
 PL_INLINE static PLVector3 plGetMatrix4Angle( const PLMatrix4* m ) {
 	PLVector3 out = PLVector3( 0, 0, 0 );

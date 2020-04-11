@@ -129,7 +129,8 @@ PL_INLINE static bool plTestLineIntersection( float dst1, float dst2, const PLVe
  * Checks whether or not AABB is intersecting with the given line.
  * Currently only works in 2D space (X & Z).
  */
-PL_INLINE static bool plIsAABBIntersectingLine( const PLCollisionAABB *bounds, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal ) {	
+PL_INLINE static bool plIsAABBIntersectingLine( const PLCollisionAABB *bounds, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal ) {
+#if 0
 	PLVector2 origin = PLVector2( bounds->origin.x, bounds->origin.z );
 
 	PLVector2 a = plAddVector2( PLVector2( bounds->mins.x, bounds->mins.z ), origin );
@@ -148,15 +149,16 @@ PL_INLINE static bool plIsAABBIntersectingLine( const PLCollisionAABB *bounds, c
 		return PLVector2( x, y );
 	}
 #endif
+#endif
 
-	return ;
+	return false;
 }
 
 PL_INLINE static bool plIsLineInBox( const PLCollisionAABB *bounds, const PLVector3 *lineStart, const PLVector3 *lineEnd ) {
 	/* get line midpoint and extent */
-	PLVector3 lineMiddle = plScaleVector3f( plAddVector3( *lineStart, *lineEnd ), 0.5f );
-	PLVector3 l = plSubtractVector3( *lineStart, lineMiddle );
-	PLVector3 lineExtent = PLVector3( fabsf( l.x ), fabsf( l.y ), fabsf( l.z ) );
+//	PLVector3 lineMiddle = plScaleVector3f( plAddVector3( *lineStart, *lineEnd ), 0.5f );
+//	PLVector3 l = plSubtractVector3( *lineStart, lineMiddle );
+//	PLVector3 lineExtent = PLVector3( fabsf( l.x ), fabsf( l.y ), fabsf( l.z ) );
 
 
 
@@ -195,12 +197,12 @@ PL_INLINE static bool plIsRayIntersectingAABB( const PLCollisionAABB *bounds, co
 
 	/* Find candidate planes */
 
-	static const unsigned int right = 0;
-	static const unsigned int left = 1;
-	static const unsigned int middle = 2;
+	static const unsigned char right = 0;
+	static const unsigned char left = 1;
+	static const unsigned char middle = 2;
 
 	PLVector3 candidatePlane;
-	bool hitQuadrant[ 3 ];
+	unsigned char hitQuadrant[ 3 ];
 	bool isInside = true;
 
 	for( unsigned int i = 0; i < 3; ++i ) {

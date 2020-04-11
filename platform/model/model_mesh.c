@@ -425,7 +425,7 @@ PLMesh *plCreateMeshRectangle( int x, int y, unsigned int w, unsigned int h, PLC
 	return mesh;
 }
 
-void plDrawRectangle( const PLMatrix4 *transform, int x, int y, unsigned int w, unsigned int h, PLColour colour ) {
+void plDrawRectangle( const PLMatrix4 *transform, float x, float y, float w, float h, PLColour colour ) {
 	static PLMesh *mesh = NULL;
 	if ( mesh == NULL) {
 		if (( mesh = plCreateMesh( PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 0, 4 )) == NULL) {
