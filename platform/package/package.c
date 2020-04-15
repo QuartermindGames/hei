@@ -94,19 +94,24 @@ void plRegisterPackageLoader( const char* ext, PLPackage* (* LoadFunction)( cons
 }
 
 void plRegisterStandardPackageLoaders( void ) {
+	/* outwars */
 	plRegisterPackageLoader( "ff", plLoadFFPackage );
-	
+	/* hogs of war */
 	plRegisterPackageLoader( "mad", plLoadMADPackage );
 	plRegisterPackageLoader( "mtd", plLoadMADPackage );
-	
+	/* iron storm */
 	plRegisterPackageLoader( "lst", plLoadLSTPackage );
+	/* starfox adventures */
 	plRegisterPackageLoader( "tab", plLoadTABPackage );
+	/* sentient */
 	plRegisterPackageLoader( "vsr", plLoadVSRPackage );
-	plRegisterPackageLoader( "wad", plLoadDoomWadPackage );
-
+	/* doom */
+	plRegisterPackageLoader( "wad", plLoadWADPackage );
 	/* eradicator */
-	plRegisterPackageLoader( "rid", plLoadBdirPackage );
-	plRegisterPackageLoader( "rim", plLoadBdirPackage );
+	plRegisterPackageLoader( "rid", plLoadRIDBPackage );
+	plRegisterPackageLoader( "rim", plLoadRIDBPackage );
+	/* mortyr */
+	plRegisterPackageLoader( "hal", plLoadAPUKPackage );
 }
 
 PLPackage* plLoadPackage( const char* path ) {

@@ -99,7 +99,15 @@ int main(int argc, char **argv) {
             char out[PL_SYSTEM_MAX_PATH];
             snprintf(out, sizeof(out), "./extract/%s", desc);
             plCreateDirectory("./extract/");
-            plWriteFile(out, plGetFileData( filePtr ), plGetFileSize( filePtr ) );
+
+            uint8_t *data = plGetFileData( filePtr );
+            size_t length = plGetFileSize( filePtr );
+            if( !plWriteFile( out, data, length ) ) {
+                PRINT( "Failed to write \"%s\"!\nERR: %s\n", desc, plGetError() );
+                continue;
+            }
+
+            PRINT( "Wrote \"%s\"\n", out );
         }
     }
 

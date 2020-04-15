@@ -35,7 +35,7 @@ PL_PACKED_STRUCT_START( WadIndex )
 	char     name[ 8 ];
 PL_PACKED_STRUCT_END( WadIndex )
 
-PLPackage *plLoadDoomWadPackage( const char *path ) {
+PLPackage *plLoadWADPackage( const char *path ) {
 	FunctionStart();
 
 	PLFile *filePtr = plOpenFile( path, false );

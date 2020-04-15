@@ -27,15 +27,9 @@ For more information, please refer to <http://unlicense.org>
 
 #include "package_private.h"
 
-/* Eradicator's BDIR package format */
+/* Mortyr's APUK package format */
 
-typedef struct BdirIndex {
-	char		name[ 12 ];
-	uint32_t	offset;
-	uint32_t	size;
-} BdirIndex;
-
-PLPackage *plLoadRIDBPackage( const char *path ) {
+PLPackage *plLoadAPUKPackage( const char *path ) {
 	FunctionStart();
 
 	PLFile *filePtr = plOpenFile( path, false );
@@ -52,56 +46,53 @@ PLPackage *plLoadRIDBPackage( const char *path ) {
 	}
 
 	if( !(
-		identifier[ 0 ] == 'R' &&
-		identifier[ 1 ] == 'I' && 
-		identifier[ 2 ] == 'D' && 
-		identifier[ 3 ] == 'B' ) ) {
-		ReportError( PL_RESULT_FILETYPE, "invalid bdir header, \"%s\"", identifier );
+		identifier[ 0 ] == 'A' &&
+		identifier[ 1 ] == 'P' &&
+		identifier[ 2 ] == 'U' &&
+		identifier[ 3 ] == 'K'
+		) ) {
+		ReportError( PL_RESULT_FILETYPE, "invalid package identifier, \"%s\"", identifier );
 		plCloseFile( filePtr );
 		return NULL;
 	}
+
+	typedef struct FileIndex {
+		uint32_t size;
+		uint32_t offset;
+		int32_t unknown[ 2 ];
+		char name[ 16 ];
+	} FileIndex;
 
 	bool status;
-
-	uint32_t numLumps = plReadInt32( filePtr, false, &status );
-	uint32_t tableOffset = plReadInt32( filePtr, false, &status );
-	size_t tableSize = sizeof( BdirIndex ) * numLumps;
-	if( tableOffset + tableSize > plGetFileSize( filePtr ) ) {
-		ReportError( PL_RESULT_INVALID_PARM1, "invalid table offset" );
-		plCloseFile( filePtr );
-		return NULL;
-	}
-
+	uint32_t numFiles = plReadInt32( filePtr, false, &status );
 	if( !status ) {
 		plCloseFile( filePtr );
 		return NULL;
 	}
 
-	/* and now read in the file table */
+	/* make sure the file table is valid */
+	size_t tableSize = sizeof( FileIndex ) * numFiles;
+	if( tableSize + 32 > plGetFileSize( filePtr ) ) {
+		ReportError( PL_RESULT_INVALID_PARM1, "invalid file table" );
+		plCloseFile( filePtr );
+		return NULL;
+	}
 
-	plFileSeek( filePtr, tableOffset, PL_SEEK_SET );
+	/* 24 bytes of nothing, can't think what this was intended for... */
+	if( !plFileSeek( filePtr, 24, PL_SEEK_CUR ) ) {
+		plCloseFile( filePtr );
+		return NULL;
+	}
 
-	BdirIndex *indices = pl_malloc( tableSize );
-	for( unsigned int i = 0; i < numLumps; ++i ) {
-#define cleanup() pl_free( indices ); plCloseFile( filePtr )
-		if( plReadFile( filePtr, indices[ i ].name, 1, 12 ) != 12 ) {
-			cleanup();
-			return NULL;
-		}
-		indices[ i ].name[ 11 ] = '\0';
-
-		indices[ i ].offset = plReadInt32( filePtr, false, &status );
-		if( indices[ i ].offset >= tableOffset ) {
-			ReportError( PL_RESULT_INVALID_PARM1, "invalid file offset for index %d", i );
-			cleanup();
-			return NULL;
-		}
-
+	FileIndex *indices = pl_malloc( sizeof( FileIndex ) * numFiles );
+	for( unsigned int i = 0; i < numFiles; ++i ) {
 		indices[ i ].size = plReadInt32( filePtr, false, &status );
-		if( indices[ i ].size >= plGetFileSize( filePtr ) ) {
-			ReportError( PL_RESULT_INVALID_PARM1, "invalid file size for index %d", i );
-			cleanup();
-			return NULL;
+		indices[ i ].offset = plReadInt32( filePtr, false, &status );
+		indices[ i ].unknown[ 0 ] = plReadInt32( filePtr, false, &status );
+		indices[ i ].unknown[ 1 ] = plReadInt32( filePtr, false, &status );
+		
+		if( plReadFile( filePtr, indices[ i ].name, 1, 16 ) != 16 ) {
+			status = false;
 		}
 	}
 
@@ -118,7 +109,7 @@ PLPackage *plLoadRIDBPackage( const char *path ) {
 	package->internal.LoadFile = _plLoadGenericPackageFile;
 
 	/* setup the file table */
-	package->table_size = numLumps;
+	package->table_size = numFiles;
 	package->table = pl_malloc( sizeof( PLPackageIndex ) * package->table_size );
 	for( unsigned int i = 0; i < package->table_size; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
