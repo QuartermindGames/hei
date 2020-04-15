@@ -27,14 +27,19 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform_private.h"
 
+#include <PL/pl_window.h>
+
 #if defined( _WIN32 )
 #	include <Windows.h>
 #endif
 
 typedef struct PLWindow {
-	int				x, y;
-	unsigned int	w, h;
-	char			windowTitle[ 32 ];
+	char windowTitle[ 32 ];
+
+#if defined( _WIN32 )
+	HWND		winHandle;
+	HINSTANCE	appInstance;
+#endif
 } PLWindow;
 
 #if defined( _WIN32 )
@@ -45,7 +50,7 @@ static LRESULT WindowCallbackProcedure( HWND windowHandle, unsigned int msg, WPA
 
 PLWindow *plCreateWindow( int w, int h, const char *title ) {
 #if defined( _WIN32 )
-	HINSTANCE instance = GetModuleHandle( 0 );
+	HINSTANCE instance = GetModuleHandle( NULL );
 	if( instance == NULL ) {
 		ReportError( PL_RESULT_FAIL, "failed to fetch valid module handle" );
 		return NULL;
@@ -58,7 +63,10 @@ PLWindow *plCreateWindow( int w, int h, const char *title ) {
 	windowClass.lpszClassName	= title;
 	windowClass.hInstance		= instance;
 
-	RegisterClass( &windowClass );
+	if( !RegisterClass( &windowClass ) ) {
+		ReportError( PL_RESULT_FAIL, "failed to register window class" );
+		return NULL;
+	}
 
 	/* and now create the window */
 
@@ -80,5 +88,35 @@ PLWindow *plCreateWindow( int w, int h, const char *title ) {
 	}
 
 	ShowWindow( windowInstance, SW_SHOW );
+
+	PLWindow *window = pl_calloc( 1, sizeof( PLWindow ) );
+	window->winHandle	= windowInstance;
+	window->appInstance = instance;
+	
 #endif
+}
+
+void plDestroyWindow( PLWindow *windowPtr ) {
+	if( windowPtr == NULL ) {
+		return;
+	}
+
+	if( windowPtr->winHandle != NULL ) {
+		DestroyWindow( windowPtr->winHandle );
+
+		UnregisterClass( windowPtr->windowTitle, windowPtr->appInstance );
+	}
+}
+
+void plGetWindowPosition( PLWindow *windowPtr, int *x, int *y ) {
+	*x = 0; *y = 0;
+
+	RECT position;
+	if( !GetWindowRect( windowPtr->winHandle, &position ) ) {
+		ReportError( PL_RESULT_FAIL, "failed to get window position" );
+		return;
+	}
+
+	*x = position.left;
+	*y = position.top;
 }

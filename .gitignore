@@ -30,3 +30,13 @@
 
 # Assorted files
 /bin/pl_graphics.log
+*.pdb
+*.ilk
+*.ipch
+*.db
+*.opendb
+*.suo
+*.db-shm
+*.db-wal
+*.tlog
+/build
