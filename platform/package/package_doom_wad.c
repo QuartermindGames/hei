@@ -121,7 +121,7 @@ PLPackage *plLoadWADPackage( const char *path ) {
 		PLPackageIndex *index = &package->table[ i ];
 		index->offset = indices[ i ].offset;
 		index->fileSize = indices[ i ].size;
-		snprintf( index->fileName, 8, "%s", indices[ i ].name );
+		snprintf( index->fileName, 9, "%s", indices[ i ].name );
 	}
 
 	pl_free( indices );
