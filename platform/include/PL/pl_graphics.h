@@ -122,8 +122,7 @@ PL_EXTERN_C_END
 //-----------------
 // Textures
 
-// todo: rename to pl_graphics_texture.h
-#include "platform_graphics_texture.h"
+#include "pl_graphics_texture.h"
 
 //-----------------
 // Meshes

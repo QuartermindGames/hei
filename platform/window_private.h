@@ -25,7 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_private.h"
-#include "window_private.h"
+#pragma once
 
-static PLLinkedList *windowList;
+#include <PL/pl_window.h>
+#include <PL/pl_llist.h>
+
+typedef struct PLSharedWindowState {
+	char 				windowTitle[ 32 ];
+	PLLinkedListNode 	*node;
+} PLSharedWindowState;

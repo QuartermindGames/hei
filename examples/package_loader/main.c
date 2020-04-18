@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
             snprintf(out, sizeof(out), "./extract/%s", desc);
             plCreateDirectory("./extract/");
 
-            uint8_t *data = plGetFileData( filePtr );
+            const uint8_t *data = plGetFileData( filePtr );
             size_t length = plGetFileSize( filePtr );
             if( !plWriteFile( out, data, length ) ) {
                 PRINT( "Failed to write \"%s\"!\nERR: %s\n", desc, plGetError() );

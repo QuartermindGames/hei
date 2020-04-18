@@ -29,8 +29,10 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform_private.h"
 
-#include <PL/graphics.h>
-#include <PL/platform_graphics_camera.h>
+#include <PL/pl_graphics.h>
+#include <PL/pl_graphics_texture.h>
+#include <PL/pl_graphics_font.h>
+#include <PL/pl_graphics_camera.h>
 
 #ifdef _DEBUG
 #   define GfxLog( ... ) plLogMessage(LOG_LEVEL_GRAPHICS, __VA_ARGS__)

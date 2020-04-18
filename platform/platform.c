@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include <PL/platform_filesystem.h>
-#include <PL/platform_graphics.h>
+#include <PL/pl_graphics.h>
 
 #if defined( _WIN32 )
 #	include <Windows.h>
@@ -379,7 +379,8 @@ const char *plGetResultString(PLresult result) {
         case PL_RESULT_IMAGEFORMAT:     return "unsupported image format!";
 
         // MEMORY
-        case PL_RESULT_MEMORY_ALLOCATION: return "failed to allocate memory!";
+        case PL_RESULT_MEMORY_ALLOCATION: 	return "failed to allocate memory!";
+        case PL_RESULT_MEMORY_UNDERFLOW: 	return "underflow in array";
 
         default:    return "an unknown error occurred";
     }

@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-//#define COMMAND_ONLY    /* uncomment if you want the viewer window */
+#define COMMAND_ONLY    /* uncomment if you want the viewer window */
 
 #include <PL/platform_math.h>
 #include <PL/platform_console.h>
@@ -150,10 +150,10 @@ static void ProcessKeyboard(void) {
     PLVector3 left, up, forward;
     plAnglesAxes(main_camera->angles, &left, &up, &forward);
     if(state[SDL_SCANCODE_W] || state[SDL_SCANCODE_UP]) {
-        main_camera->position = plVector3Add(main_camera->position, main_camera->forward);
+        main_camera->position = plAddVector3(main_camera->position, main_camera->forward);
         //main_camera->position = plVector3Scale(main_camera->position, PLVector3(0.5f, 0.5f, 4.f));
     } else if(state[SDL_SCANCODE_D] || state[SDL_SCANCODE_DOWN]) {
-        main_camera->position = plVector3Subtract(main_camera->position, main_camera->forward);
+        main_camera->position = plSubtractVector3(main_camera->position, main_camera->forward);
         //main_camera->position = plVector3Scale(main_camera->position, PLVector3(4.f, 4.f, 4.f));
     }
 

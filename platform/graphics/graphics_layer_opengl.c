@@ -34,9 +34,6 @@ For more information, please refer to <http://unlicense.org>
 #include <GL/glew.h>
 
 #include <PL/platform_mesh.h>
-#include <PL/graphics.h>
-#include <PL/platform_graphics_camera.h>
-#include <PL/graphics_texture.h>
 
 #define DEBUG_GL
 
