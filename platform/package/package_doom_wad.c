@@ -111,12 +111,7 @@ PLPackage *plLoadWADPackage( const char *path ) {
 
 	/* yay, we're finally done - now to setup the package object */
 
-	PLPackage *package = pl_malloc( sizeof( PLPackage ) );
-	package->internal.LoadFile = _plLoadGenericPackageFile;
-
-	/* setup the file table */
-	package->table_size = numLumps;
-	package->table = pl_malloc( sizeof( PLPackageIndex ) * package->table_size );
+	PLPackage *package = plCreatePackageHandle( path, numLumps, NULL );
 	for( unsigned int i = 0; i < package->table_size; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
 		index->offset = indices[ i ].offset;

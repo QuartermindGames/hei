@@ -69,10 +69,7 @@ PLPackage* plLoadFFPackage( const char* path ) {
 		return NULL;
 	}
 
-	PLPackage* package = pl_malloc( sizeof( PLPackage ) );
-	package->internal.LoadFile = _plLoadGenericPackageFile;
-	package->table_size = ( num_indices - 1 );
-	strncpy( package->path, path, sizeof( package->path ) );
+	PLPackage* package = plCreatePackageHandle( path, num_indices - 1, NULL );
 	if( ( package->table = pl_calloc( package->table_size, sizeof( struct PLPackageIndex ) ) ) != NULL ) {
 		for( unsigned int i = 0; i < package->table_size; ++i ) {
 			PLPackageIndex *index = &package->table[ i ];

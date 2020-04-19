@@ -29,22 +29,22 @@ For more information, please refer to <http://unlicense.org>
 #include "package_private.h"
 #include "filesystem_private.h"
 
-PLPackage* plCreatePackage( const char* dest ) {
-	if ( dest == NULL || dest[ 0 ] == '\0' ) {
-		ReportError( PL_RESULT_FILEPATH, "invalid path" );
-		return NULL;
+/**
+ * Allocate a new package handle.
+ */
+PLPackage *plCreatePackageHandle( const char *path, unsigned int tableSize, void(*OpenFile)( PLFile *filePtr, PLPackageIndex *index ) ) {
+	PLPackage *package = pl_malloc( sizeof( PLPackage ) );
+
+	if ( OpenFile == NULL ) {
+		package->internal.LoadFile = _plLoadGenericPackageFile;
 	}
 
-	PLPackage* package = pl_calloc( 1, sizeof( PLPackage ) );
-	if ( package == NULL ) {
-		return NULL;
-	}
+	package->table_size = tableSize;
+	package->table = pl_calloc( tableSize, sizeof( PLPackageIndex ) );
 
-	memset( package, 0, sizeof( PLPackage ) );
+	snprintf( package->path, sizeof( package->path ), "%s", path );
 
-	strncpy( package->path, dest, sizeof( package->path ) );
-
-	return NULL;
+	return package;
 }
 
 /* Unloads package from memory

@@ -47,6 +47,8 @@ typedef struct PLPackage {
 
 PL_EXTERN_C
 
+PL_EXTERN PLPackage *plCreatePackageHandle( const char *path, unsigned int tableSize, void(*OpenFile)( PLFile *filePtr, PLPackageIndex *index ) );
+
 PL_EXTERN PLPackage* plLoadPackage( const char* path );
 PL_EXTERN PLFile* plLoadPackageFile( PLPackage* package, const char* path );
 PL_EXTERN PLFile *plLoadPackageFileByIndex( PLPackage *package, unsigned int index );
@@ -55,8 +57,6 @@ PL_EXTERN void plDestroyPackage( PLPackage* package );
 PL_EXTERN void plRegisterPackageLoader( const char* ext, PLPackage* (* LoadFunction)( const char* path ) );
 PL_EXTERN void plRegisterStandardPackageLoaders( void );
 PL_EXTERN void plClearPackageLoaders( void );
-
-PL_EXTERN PLPackage* plCreatePackage( const char* dest );
 
 PL_EXTERN const char *plGetPackagePath( const PLPackage *package );
 PL_EXTERN unsigned int plGetPackageTableSize( const PLPackage *package );

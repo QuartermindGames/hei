@@ -35,16 +35,6 @@ For more information, please refer to <http://unlicense.org>
  * There doesn't appear to be any form of
  * compression used on these packages. */
 
-static uint8_t* LoadLSTPackageFile( PLFile* fh, PLPackageIndex* pi ) {
-	uint8_t* dataPtr = pl_malloc( pi->fileSize );
-	if ( !plFileSeek( fh, (signed)pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, pi->fileSize, 1 ) != 1 ) {
-		pl_free( dataPtr );
-		return NULL;
-	}
-
-	return dataPtr;
-}
-
 PLPackage* plLoadLSTPackage( const char* path ) {
 	PLFile* fh = plOpenFile( path, false );
 	if ( fh == NULL ) {
@@ -98,27 +88,13 @@ PLPackage* plLoadLSTPackage( const char* path ) {
 
 	//DebugPrint("LST INDICES %u\n", num_indices);
 
-	package = pl_malloc( sizeof( PLPackage ) );
-	if ( package == NULL ) {
-		goto ABORT;
-	}
-
-	memset( package, 0, sizeof( PLPackage ) );
-	package->internal.LoadFile = LoadLSTPackageFile;
-	package->table_size = num_indices;
-	package->table = pl_calloc( num_indices, sizeof( struct PLPackageIndex ) );
-	if ( package->table == NULL ) {
-		goto ABORT;
-	}
-
-	strncpy( package->path, ibf_path, sizeof( package->path ) );
-
 	struct {
 		char name[64];
 		uint32_t data_offset;
 		uint32_t data_length;
 	} index;
 
+	package = plCreatePackageHandle( path, num_indices, NULL );
 	for ( unsigned int i = 0; i < num_indices; ++i ) {
 		if ( plIsEndOfFile( fh ) != 0 ) {
 			printf( "Unexpected end of package in %s, ignoring!\n", path );
