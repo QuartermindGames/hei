@@ -394,7 +394,7 @@ static void SetupRectangleMesh( PLMesh *mesh, float x, float y, float w, float h
 	plSetMeshVertexST( mesh, 3, 1, 1 );
 }
 
-void plDrawTexturedRectangle( const PLMatrix4 *transform, int x, int y, int w, int h, PLTexture *texture ) {
+void plDrawTexturedRectangle( const PLMatrix4 *transform, float x, float y, float w, float h, PLTexture *texture ) {
 	static PLMesh *mesh = NULL;
 	if ( mesh == NULL) {
 		mesh = plCreateMesh( PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 2, 4 );
