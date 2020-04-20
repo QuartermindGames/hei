@@ -93,7 +93,7 @@ void plDestroyWindow( PLWindow *windowPtr ) {
 	if( windowPtr->winHandle != NULL ) {
 		DestroyWindow( windowPtr->winHandle );
 
-		UnregisterClass( windowPtr->windowTitle, windowPtr->appInstance );
+		UnregisterClass( windowPtr->sharedState.windowTitle, windowPtr->appInstance );
 	}
 }
 
