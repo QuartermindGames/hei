@@ -116,7 +116,8 @@ PLPackage *plLoadWADPackage( const char *path ) {
 		PLPackageIndex *index = &package->table[ i ];
 		index->offset = indices[ i ].offset;
 		index->fileSize = indices[ i ].size;
-		snprintf( index->fileName, 9, "%s", indices[ i ].name );
+		strncpy( index->fileName, indices[ i ].name, sizeof( indices[ i ].name ) );
+		index->fileName[ 8 ] = '\0';
 	}
 
 	pl_free( indices );
