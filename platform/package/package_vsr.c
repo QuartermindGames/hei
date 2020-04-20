@@ -67,18 +67,6 @@ typedef struct VSRHeader {
 } VSRHeader;
 PL_STATIC_ASSERT( sizeof( VSRHeader ) == 32, "needs to be 32 bytes" );
 
-static uint8_t* LoadVSRPackageFile( PLFile* fh, PLPackageIndex* pi ) {
-	FunctionStart();
-
-	uint8_t* dataPtr = pl_malloc( pi->fileSize );
-	if ( !plFileSeek( fh, (signed)pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, 1, pi->fileSize ) != pi->fileSize ) {
-		pl_free( dataPtr );
-		return NULL;
-	}
-
-	return dataPtr;
-}
-
 PLPackage* plLoadVSRPackage( const char* path ) {
 	FunctionStart();
 
@@ -142,19 +130,12 @@ PLPackage* plLoadVSRPackage( const char* path ) {
 
 	/* now create our package handle */
 
-	PLPackage* package = pl_malloc( sizeof( PLPackage ) );
-	if ( package != NULL ) {
-		package->internal.LoadFile = LoadVSRPackageFile;
-		package->table_size = chunk_directory.num_indices;
-		strncpy( package->path, path, sizeof( package->path ) );
-		if ( ( package->table = pl_calloc( package->table_size, sizeof( struct PLPackageIndex ) ) ) != NULL ) {
-			for ( unsigned int i = 0; i < package->table_size; ++i ) {
-				PLPackageIndex* index = &package->table[ i ];
-				index->offset = directories[ i ].offset;
-				index->fileSize = directories[ i ].length;
-				strncpy( index->fileName, strings[ i ].file_name, sizeof( index->fileName ) );
-			}
-		}
+	PLPackage* package = plCreatePackageHandle( path, chunk_directory.num_indices, NULL );
+	for ( unsigned int i = 0; i < package->table_size; ++i ) {
+		PLPackageIndex* index = &package->table[ i ];
+		index->offset = directories[ i ].offset;
+		index->fileSize = directories[ i ].length;
+		strncpy( index->fileName, strings[ i ].file_name, sizeof( index->fileName ) );
 	}
 
 	pl_free( directories );

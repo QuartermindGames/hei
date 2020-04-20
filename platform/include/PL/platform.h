@@ -173,6 +173,7 @@ typedef enum {
 
     // MEMORY
     PL_RESULT_MEMORY_ALLOCATION,    // Ran out of memory!
+    PL_RESULT_MEMORY_UNDERFLOW,
     PL_RESULT_MEMORY_EOA,           // End of array
 
     PL_RESULT_SYSERR,         // Generic system error

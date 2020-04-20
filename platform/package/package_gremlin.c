@@ -51,16 +51,6 @@ PL_PACKED_STRUCT_START(MADIndex)
 	uint32_t length;
 PL_PACKED_STRUCT_END(MADIndex)
 
-static uint8_t* LoadMADPackageFile( PLFile* fh, PLPackageIndex* pi ) {
-	uint8_t* dataPtr = pl_malloc( pi->fileSize );
-	if ( !plFileSeek( fh, (signed)pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, pi->fileSize, 1 ) != 1 ) {
-		pl_free( dataPtr );
-		return NULL;
-	}
-
-	return dataPtr;
-}
-
 PLPackage* plLoadMADPackage( const char* path ) {
 	FunctionStart();
 
@@ -112,14 +102,7 @@ PLPackage* plLoadMADPackage( const char* path ) {
 	}
 
 	/* Allocate the basic package structure now we know how many files are in the archive. */
-
-	package = pl_malloc( sizeof( PLPackage ) );
-
-	memset( package, 0, sizeof( PLPackage ) );
-
-	package->internal.LoadFile = LoadMADPackageFile;
-	package->table_size = num_indices;
-	package->table = pl_calloc( num_indices, sizeof( struct PLPackageIndex ) );
+	package = plCreatePackageHandle( path, num_indices, NULL );
 
 	/* Rewind the file handle and populate package->table with the metadata from the headers. */
 

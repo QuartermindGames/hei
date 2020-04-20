@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include <PL/platform_graphics.h>
-#include <PL/platform_graphics_texture.h>
+#include <PL/graphics.h>
+#include <PL/graphics_texture.h>
 #include <PL/platform_math.h>
 
 typedef enum PLMaterialTextureType {

@@ -480,7 +480,7 @@ typedef struct FSScanInstance {
 } FSScanInstance;
 
 static void _plScanLocalDirectory( const PLFileSystemMount* mount, FSScanInstance** fileList, const char* path,
-								   const char* extension, void (* Function)( const char* ), bool recursive ) {
+								   const char* extension, void (* Function)( const char*, void* ), bool recursive, void *userData ) {
 #if !defined( _MSC_VER )
 	DIR* directory = opendir( path );
 	if ( directory ) {
@@ -498,7 +498,7 @@ static void _plScanLocalDirectory( const PLFileSystemMount* mount, FSScanInstanc
 				if ( S_ISREG( st.st_mode ) ) {
 					if ( extension == NULL || pl_strcasecmp( plGetFileExtension( entry->d_name ), extension ) == 0 ) {
 						if ( mount == NULL ) {
-							Function( filestring );
+							Function( filestring, userData );
 							continue;
 						}
 
@@ -525,7 +525,7 @@ static void _plScanLocalDirectory( const PLFileSystemMount* mount, FSScanInstanc
 							continue;
 						}
 
-						Function( filePath );
+						Function( filePath, userData );
 
 						// Tack it onto the list
 						cur = pl_calloc( 1, sizeof( FSScanInstance ) );
@@ -534,7 +534,7 @@ static void _plScanLocalDirectory( const PLFileSystemMount* mount, FSScanInstanc
 						*fileList = cur;
 					}
 				} else if ( S_ISDIR( st.st_mode ) && recursive ) {
-					_plScanLocalDirectory( mount, fileList, filestring, extension, Function, recursive );
+					_plScanLocalDirectory( mount, fileList, filestring, extension, Function, recursive, userData );
 				}
 			}
 		}
@@ -556,15 +556,15 @@ static void _plScanLocalDirectory( const PLFileSystemMount* mount, FSScanInstanc
  * @param Function callback function to deal with the file.
  * @param recursive if true, also scans the contents of each sub-directory.
  */
-void plScanDirectory( const char* path, const char* extension, void (* Function)( const char* ), bool recursive ) {
+void plScanDirectory( const char* path, const char* extension, void (* Function)( const char*, void* ), bool recursive, void *userData ) {
 	if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
-		_plScanLocalDirectory( NULL, NULL, path + sizeof( FS_LOCAL_HINT ), extension, Function, recursive );
+		_plScanLocalDirectory( NULL, NULL, path + sizeof( FS_LOCAL_HINT ), extension, Function, recursive, userData );
 		return;
 	}
 
 	// If no mounted locations, assume local scan
 	if ( fs_mount_root == NULL ) {
-		_plScanLocalDirectory( NULL, NULL, path, extension, Function, recursive );
+		_plScanLocalDirectory( NULL, NULL, path, extension, Function, recursive, userData );
 		return;
 	}
 
@@ -576,7 +576,7 @@ void plScanDirectory( const char* path, const char* extension, void (* Function)
 		} else if ( location->type == FS_MOUNT_DIR ) {
 			char mounted_path[PL_SYSTEM_MAX_PATH + 1];
 			snprintf( mounted_path, sizeof( mounted_path ), "%s/%s", location->path, path );
-			_plScanLocalDirectory( location, &fileList, mounted_path, extension, Function, recursive );
+			_plScanLocalDirectory( location, &fileList, mounted_path, extension, Function, recursive, userData );
 		}
 
 		location = location->next;
@@ -1036,7 +1036,13 @@ char* plReadString( PLFile* ptr, char* str, size_t size ) {
 
 bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek ) {
 	if ( ptr->fptr != NULL ) {
-		return !fseek( ptr->fptr, pos, seek );
+		int err = fseek( ptr->fptr, pos, seek );
+		if ( err != 0 ) {
+			ReportError( PL_RESULT_FILEREAD, "failed to seek file (%s)", GetLastError_strerror( GetLastError() ) );
+			return false;
+		}
+
+		return true;
 	}
 
 	size_t posn = plGetFileOffset( ptr );

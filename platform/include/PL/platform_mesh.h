@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 #pragma once
 
 #include <PL/platform_math.h>
-#include <PL/platform_graphics_texture.h>
+#include <PL/pl_graphics_texture.h>
 
 typedef enum PLMeshPrimitive {
     PL_MESH_LINES,

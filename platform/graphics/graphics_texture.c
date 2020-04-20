@@ -29,7 +29,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_image.h>
 #include <PL/platform_console.h>
-#include <PL/platform_graphics_texture.h>
+#include <PL/pl_graphics_texture.h>
 #include <PL/platform_filesystem.h>
 
 PLConsoleVariable pl_texture_anisotropy = { "gr_texture_anisotropy", "16", pl_int_var, NULL };

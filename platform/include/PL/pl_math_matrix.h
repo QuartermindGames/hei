@@ -435,3 +435,26 @@ PL_INLINE static PLMatrix4 plPerspective( float fov, float aspect, float near, f
 	return plFrustum( -x_max, x_max, -y_max, y_max, near, far );
 }
 
+/* Matrix Stack, sorta mirrors OpenGL behaviour */
+
+typedef enum PLMatrixMode {
+	PL_MODELVIEW_MATRIX,
+	PL_PROJECTION_MATRIX,
+	PL_TEXTURE_MATRIX,
+
+	PL_NUM_MATRIX_MODES
+} PLMatrixMode;
+
+void plMatrixMode( PLMatrixMode mode );
+PLMatrixMode plGetMatrixMode( void );
+
+PLMatrix4 *plGetMatrix( PLMatrixMode mode );
+void plLoadMatrix( const PLMatrix4 *matrix );
+
+void plMultiMatrix( const PLMatrix4 *matrix );
+void plRotateMatrix( float angle, float x, float y, float z );
+void plTranslateMatrix( PLVector3 vector );
+void plScaleMatrix( PLVector3 scale );
+
+void plPushMatrix( void );
+void plPopMatrix( void );

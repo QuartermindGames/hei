@@ -51,7 +51,11 @@ file(
 		platform_filesystem.c 
 		platform_memory.c 
 		platform_parser.c
+
         llist.c
+        polygon.c
+        math_matrix.c
+        window.c
 
         string/*.*
         memory/*.*
@@ -61,6 +65,13 @@ file(
         )
 
 file(GLOB PLATFORM_PACKAGE_FILES package/*.*)
+
+# Platform specific implementations go here...
+if ( WIN32 )
+    file( GLOB PLATFORM_WINDOW_FILES window_win32.c )
+elseif( UNIX )
+    file( GLOB PLATFORM_WINDOW_FILES window_x11.c )
+endif()
 
 if(PL_USE_MODEL)
     file(GLOB PLATFORM_MODEL_FILES model/*.*)
@@ -74,6 +85,7 @@ endif()
 
 add_library(platform STATIC
         ${PLATFORM_SOURCE_FILES}
+        ${PLATFORM_WINDOW_FILES}
         ${PLATFORM_GRAPHICS_FILES}
         ${PLATFORM_IMAGE_FILES}
         ${PLATFORM_MODEL_FILES}

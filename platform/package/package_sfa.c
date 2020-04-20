@@ -31,16 +31,6 @@ For more information, please refer to <http://unlicense.org>
 
 /* Loader for SFA TAB/BIN format */
 
-static uint8_t* LoadTABPackageFile( PLFile* fh, PLPackageIndex* pi ) {
-	uint8_t* dataPtr = pl_malloc( pi->fileSize );
-	if ( !plFileSeek( fh, (signed)pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, pi->fileSize, 1 ) != 1 ) {
-		pl_free( dataPtr );
-		return NULL;
-	}
-
-	return dataPtr;
-}
-
 PLPackage* plLoadTABPackage( const char* path ) {
 	char bin_path[PL_SYSTEM_MAX_PATH + 1];
 	strncpy( bin_path, path, strlen( path ) - 3 );
@@ -89,26 +79,12 @@ PLPackage* plLoadTABPackage( const char* path ) {
 		indices[ i ].end = be32toh( indices[ i ].end );
 	}
 
-	PLPackage* package = pl_malloc( sizeof( PLPackage ) );
-	if ( package != NULL ) {
-		memset( package, 0, sizeof( PLPackage ) );
-
-		strncpy( package->path, bin_path, sizeof( package->path ) );
-
-		package->internal.LoadFile = LoadTABPackageFile;
-		package->table_size = num_indices;
-		package->table = pl_calloc( package->table_size, sizeof( struct PLPackageIndex ) );
-		if ( package->table != NULL ) {
-			for ( unsigned int i = 0; i < num_indices; ++i ) {
-				PLPackageIndex* index = &package->table[ i ];
-				snprintf( index->fileName, sizeof( index->fileName ), "%u", i );
-				index->fileSize = indices[ i ].end - indices[ i ].start;
-				index->offset = indices[ i ].start;
-			}
-		} else {
-			plDestroyPackage( package );
-			package = NULL;
-		}
+	PLPackage* package = plCreatePackageHandle( path, num_indices, NULL );
+	for ( unsigned int i = 0; i < num_indices; ++i ) {
+		PLPackageIndex* index = &package->table[ i ];
+		snprintf( index->fileName, sizeof( index->fileName ), "%u", i );
+		index->fileSize = indices[ i ].end - indices[ i ].start;
+		index->offset = indices[ i ].start;
 	}
 
 	pl_free( indices );

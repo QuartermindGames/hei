@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include <PL/platform_console.h>
-#include <PL/platform_graphics_camera.h>
+#include <PL/pl_graphics_camera.h>
 
 #include "graphics_private.h"
 

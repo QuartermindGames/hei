@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include <PL/platform_console.h>
-#include <PL/platform_graphics.h>
+#include <PL/pl_graphics.h>
 
 void _InitMaterials(void) {
     //PLConsoleCommand cmd_list_materials = { };

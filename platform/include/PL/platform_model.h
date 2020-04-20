@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform.h"
 #include "platform_math.h"
-#include "platform_graphics.h"
+#include "pl_graphics.h"
 #include "platform_physics.h"
 
 #define PL_MAX_MODEL_LODS       5

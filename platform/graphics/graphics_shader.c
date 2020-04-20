@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include <PL/platform_console.h>
-#include <PL/platform_graphics.h>
+#include <PL/pl_graphics.h>
 
 #if defined(PL_SUPPORT_OPENGL)
 #   include <GL/glew.h>

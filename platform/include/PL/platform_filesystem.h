@@ -58,10 +58,7 @@ PL_EXTERN bool plFileExists( const char* path );
 PL_EXTERN bool plLocalPathExists( const char* path );
 PL_EXTERN bool plPathExists( const char* path );
 
-PL_EXTERN void plScanDirectory( const char* path,
-								const char* extension,
-								void (* Function)( const char* ),
-								bool recursive );
+PL_EXTERN void plScanDirectory( const char* path, const char* extension, void (* Function)( const char*, void* ), bool recursive, void *userData );
 
 PL_EXTERN bool plCreateDirectory( const char* path );
 PL_EXTERN bool plCreatePath( const char* path );
