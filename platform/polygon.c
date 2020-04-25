@@ -39,19 +39,19 @@ void plDestroyPolygon( PLPolygon *polygon ) {
 	pl_free( polygon );
 }
 
-void plAddPolygonVertex( PLPolygon *polygon, PLVertex vertex ) {
+void plAddPolygonVertex( PLPolygon *polygon, const PLVertex *vertex ) {
 	if( polygon->numVertices >= PL_POLYGON_MAX_SIDES ) {
 		ReportError( PL_RESULT_INVALID_PARM2, "reached maximum number of polygon sides (%d)", PL_POLYGON_MAX_SIDES );
 		return;
 	}
 
-	polygon->vertices[ polygon->numVertices ] = vertex;
+	polygon->vertices[ polygon->numVertices ] = *vertex;
 	polygon->numVertices++;
 }
 
 void plRemovePolygonVertex( PLPolygon *polygon, unsigned int vertIndex ) {
 	if( vertIndex >= polygon->numVertices ) {
-		ReportError( PL_RESULT_INVALID_PARM2, "reached maximum number of polygon sides (%d)", PL_POLYGON_MAX_SIDES );
+		ReportError( PL_RESULT_INVALID_PARM2, "invalid vertex index (%d)", polygon->numVertices );
 		return;
 	}
 
@@ -71,4 +71,53 @@ PLVertex *plGetPolygonVertex( PLPolygon *polygon, unsigned int vertIndex ) {
 	}
 
 	return &polygon->vertices[ vertIndex ];
+}
+
+PLVertex *plGetPolygonVertices( PLPolygon *polygon, unsigned int *numVertices ) {
+	return polygon->vertices;
+}
+
+/**
+ * Return the number of triangles in this polygon.
+ */
+unsigned int plGetNumOfPolygonTriangles( const PLPolygon *polygon ) {
+	if ( polygon->numVertices < 3 ) {
+		return 0;
+	}
+
+	return polygon->numVertices - 2;
+}
+
+unsigned int *plConvertPolygonToTriangles( const PLPolygon *polygon, unsigned int *numTriangles ) {
+	*numTriangles = plGetNumOfPolygonTriangles( polygon );
+	if ( *numTriangles == 0 ) {
+		ReportError( PL_RESULT_INVALID_PARM1, "invalid polygon" );
+		return NULL;
+	}
+
+	unsigned int *indices = pl_malloc( sizeof( unsigned int ) * ( *numTriangles * 3 ) );
+	unsigned int *index = indices;
+	for ( unsigned int i = 1; i + 1 < polygon->numVertices; ++i ) {
+		index[ 0 ] = 0;
+		index[ 1 ] = i;
+		index[ 2 ] = i + 1;
+		index += 3;
+	}
+
+	return indices;
+}
+
+PLMesh *plConvertPolygonToMesh( const PLPolygon *polygon ) {
+	unsigned int numTriangles;
+	unsigned int *indices = plConvertPolygonToTriangles( polygon, &numTriangles );
+	if ( indices == NULL ) {
+		return NULL;
+	}
+
+	PLMesh *mesh = plCreateMeshInit( PL_MESH_TRIANGLES, PL_DRAW_STATIC, numTriangles, polygon->numVertices, indices, polygon->vertices );
+	plGenerateMeshNormals( mesh, true );
+
+	pl_free( indices );
+
+	return mesh;
 }
