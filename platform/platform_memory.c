@@ -34,6 +34,7 @@ static void *MemoryCountAlloc(size_t num, size_t size) {
     if(buf == NULL) {
         ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %lu bytes!\n", (unsigned long) size * num);
     }
+
     return buf;
 }
 
@@ -41,6 +42,16 @@ static void *MemoryAlloc(size_t size) {
     return MemoryCountAlloc(1, size);
 }
 
+static void *MemoryReAlloc( void *ptr, size_t newSize ) {
+	void *buf = realloc( ptr, newSize );
+	if ( buf == NULL ) {
+		ReportError( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %lu bytes!\n", newSize );
+	}
+
+	return buf;
+}
+
 void *(*pl_malloc)(size_t size) = MemoryAlloc;
 void *(*pl_calloc)(size_t num, size_t size) = MemoryCountAlloc;
+void *(*pl_realloc)(void *ptr, size_t newSize) = MemoryReAlloc;
 void (*pl_free)(void* ptr) = free;

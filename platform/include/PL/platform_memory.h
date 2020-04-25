@@ -27,4 +27,5 @@ For more information, please refer to <http://unlicense.org>
 
 extern void *(*pl_malloc)(size_t size);
 extern void *(*pl_calloc)(size_t num, size_t size);
+extern void *(*pl_realloc)(void* ptr, size_t newSize);
 extern void (*pl_free)(void* ptr);
