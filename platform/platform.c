@@ -164,6 +164,10 @@ bool plHasCommandLineArgument(const char *arg) {
     }
 
     for(unsigned int i = 0; i < pl_arguments.num_arguments; i++) {
+    	if ( pl_arguments.arguments[ i ] == NULL ) {
+    		continue;
+    	}
+
         if(strcmp(pl_arguments.arguments[i], arg) == 0) {
             return true;
         }
