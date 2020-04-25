@@ -106,9 +106,9 @@ PLMesh *plCreateMesh( PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned i
 	return plCreateMeshInit( primitive, mode, num_tris, num_verts, NULL, NULL);
 }
 
-PLMesh *plCreateMeshInit( PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts,
-						  void *indexData, void *vertexData ) {
-	plAssert( num_verts );
+PLMesh *plCreateMeshInit( PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
+	const unsigned int *indicies, const PLVertex *verticies ) {
+	plAssert( numVerts );
 
 	PLMesh *mesh = ( PLMesh * ) pl_calloc( 1, sizeof( PLMesh ));
 	if ( mesh == NULL) {
@@ -116,30 +116,34 @@ PLMesh *plCreateMeshInit( PLMeshPrimitive primitive, PLMeshDrawMode mode, unsign
 	}
 
 	mesh->primitive = primitive;
-	mesh->num_triangles = num_tris;
-	mesh->num_verts = num_verts;
 	mesh->mode = mode;
 
 	mesh->internal.old_primitive = mesh->primitive;
 
-	if ( num_tris > 0 ) {
+	if ( numTriangles > 0 ) {
+		mesh->num_triangles = numTriangles;
 		if ( mesh->primitive == PL_MESH_TRIANGLES ) {
-			mesh->num_indices = num_tris * 3;
+			mesh->num_indices = mesh->num_triangles * 3;
 			if (( mesh->indices = pl_calloc( mesh->num_indices, sizeof( unsigned int ))) == NULL) {
 				plDestroyMesh( mesh );
 				return NULL;
 			}
 
-			if ( indexData != NULL) {
-				memcpy( mesh->indices, indexData, mesh->num_indices * sizeof( unsigned int ));
+			if ( indicies != NULL) {
+				memcpy( mesh->indices, indicies, mesh->num_indices * sizeof( unsigned int ));
 			}
 		}
 	}
 
-	mesh->vertices = ( PLVertex * ) pl_calloc( num_verts, sizeof( PLVertex ));
+	mesh->num_verts = numVerts;
+	mesh->vertices = ( PLVertex * ) pl_calloc( mesh->num_verts, sizeof( PLVertex ));
 	if ( mesh->vertices == NULL) {
 		plDestroyMesh( mesh );
 		return NULL;
+	}
+
+	if ( verticies != NULL ) {
+		memcpy( mesh->vertices, verticies, sizeof( PLVertex ) * mesh->num_verts );
 	}
 
 	CallGfxFunction( CreateMesh, mesh );
@@ -563,21 +567,26 @@ plDrawLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLColou
 	plDrawMesh( mesh );
 }
 
-void plDrawSimpleLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLVector3 *endPos,
-					   const PLColour *colour ) {
+void plDrawSimpleLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLVector3 *endPos, const PLColour *colour ) {
 	plDrawLine( transform, startPos, colour, endPos, colour );
 }
 
 void plDrawGrid( const PLMatrix4 *transform, int x, int y, int w, int h, unsigned int gridSize ) {
 	int c = 0, r = 0;
 	for ( ; r < h + 1; r += gridSize ) {
-		plDrawSimpleLine( transform, &PLVector3( x, r + y, 0 ), &PLVector3( x + w, r + y, 0 ),
-						  &PLColour( 255, 255, 255, 255 ) );
+		plDrawSimpleLine( transform, &PLVector3( x, r + y, 0 ), &PLVector3( x + w, r + y, 0 ), &PLColour( 255, 255, 255, 255 ) );
 
 		for ( ; c < w + 1; c += gridSize ) {
-			plDrawSimpleLine( transform, &PLVector3( c + x, y, 0 ), &PLVector3( c + x, y + h, 0 ),
-							  &PLColour( 255, 255, 255, 255 ) );
+			plDrawSimpleLine( transform, &PLVector3( c + x, y, 0 ), &PLVector3( c + x, y + h, 0 ), &PLColour( 255, 255, 255, 255 ) );
 		}
+	}
+}
+
+void plDrawMeshNormals( const PLMatrix4 *transform, const PLMesh *mesh ) {
+	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
+		PLVector3 linePos = mesh->vertices[ i ].position;
+		PLVector3 lineEndPos = plAddVector3( linePos, plScaleVector3f( mesh->vertices[ i ].normal, 64.0f ) );
+		plDrawSimpleLine( transform, &linePos, &lineEndPos, &PLColour( 255, 0, 0, 255 ) );
 	}
 }
 
