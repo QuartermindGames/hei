@@ -362,12 +362,16 @@ PL_EXTERN void plSetGraphicsMode(PLGfxMode mode);
 
 typedef struct PLPolygon PLPolygon;
 typedef struct PLVertex PLVertex;
+typedef struct PLMesh PLMesh;
 
 PL_EXTERN PLPolygon *plCreatePolygon( void );
 PL_EXTERN void plDestroyPolygon( PLPolygon *polygon );
-PL_EXTERN void plAddPolygonVertex( PLPolygon *polygon, PLVertex vertex );
+PL_EXTERN void plAddPolygonVertex( PLPolygon *polygon, const PLVertex *vertex );
 PL_EXTERN void plRemovePolygonVertex( PLPolygon *polygon, unsigned int vertIndex );
 PL_EXTERN unsigned int plGetNumOfPolygonVertices( const PLPolygon *polygon );
 PL_EXTERN PLVertex *plGetPolygonVertex( PLPolygon *polygon, unsigned int vertIndex );
+PL_EXTERN unsigned int plGetNumOfPolygonTriangles( const PLPolygon *polygon );
+PL_EXTERN unsigned int *plConvertPolygonToTriangles( const PLPolygon *polygon, unsigned int *numTriangles );
+PL_EXTERN PLMesh *plConvertPolygonToMesh( const PLPolygon *polygon );
 
 PL_EXTERN_C_END

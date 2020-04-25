@@ -211,8 +211,8 @@ typedef struct PLFrameBuffer {
 #define PL_POLYGON_MAX_SIDES 32
 
 typedef struct PLPolygon {
-	PLVertex vertices[ PL_POLYGON_MAX_SIDES ];
-	unsigned int numVertices;
+	PLVertex        vertices[ PL_POLYGON_MAX_SIDES ];
+	unsigned int    numVertices;
 } PLPolygon;
 
 PL_EXTERN_C
