@@ -68,15 +68,19 @@ typedef struct PLTriangle {
 } PLTriangle;
 
 typedef struct PLMesh {
-    PLVertex*               vertices;
-    unsigned int            *indices;
-    unsigned int            num_indices;
-    unsigned int            num_verts;
-    unsigned int            num_triangles;
-    struct PLShaderProgram* shader_program;
-    PLTexture*              texture;
-    PLMeshPrimitive         primitive;
-    PLMeshDrawMode          mode;
+	PLVertex        *vertices;
+	unsigned int    num_verts;
+	unsigned int    maxVertices;
+
+	unsigned int    *indices;
+    unsigned int    num_indices;
+    unsigned int    maxIndices;
+	unsigned int    num_triangles;
+
+	struct PLShaderProgram* shader_program;
+	PLTexture*              texture;
+	PLMeshPrimitive         primitive;
+	PLMeshDrawMode          mode;
     struct {
         unsigned int    buffers[32];
         PLMeshPrimitive old_primitive;  /* provided for switching between different primitive modes */
@@ -93,6 +97,7 @@ PL_EXTERN PLMesh *plCreateMeshInit( PLMeshPrimitive primitive, PLMeshDrawMode mo
 PL_EXTERN PLMesh* plCreateMeshRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colour);
 PL_EXTERN void plDestroyMesh(PLMesh *mesh);
 
+#if defined( PL_USE_GRAPHICS )
 PL_EXTERN void plDrawBevelledBorder( int x, int y, unsigned int w, unsigned int h );
 PL_EXTERN void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h, PLColour colour );
 PL_EXTERN void plDrawRectangle( const PLMatrix4 *transform, float x, float y, float w, float h, PLColour colour );
@@ -105,11 +110,14 @@ PL_EXTERN void plDrawLine( const PLMatrix4 *transform, const PLVector3 *startPos
 PL_EXTERN void plDrawSimpleLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLVector3 *endPos, const PLColour *colour );
 PL_EXTERN void plDrawGrid( const PLMatrix4 *transform, int x, int y, int w, int h, unsigned int gridSize );
 PL_EXTERN void plDrawMeshNormals( const PLMatrix4 *transform, const PLMesh *mesh );
+#endif
 
-PL_EXTERN void plClearMesh(PLMesh *mesh);
+PL_EXTERN void plClearMesh( PLMesh *mesh );
+PL_EXTERN void plClearMeshVertices( PLMesh *mesh );
+PL_EXTERN void plClearMeshIndices( PLMesh *mesh );
+
 PL_EXTERN void plScaleMesh(PLMesh *mesh, PLVector3 scale);
-PL_EXTERN void plSetMeshTrianglePosition(PLMesh *mesh, unsigned int *index,
-        unsigned int x, unsigned int y, unsigned int z);
+PL_EXTERN void plSetMeshTrianglePosition(PLMesh *mesh, unsigned int *index, unsigned int x, unsigned int y, unsigned int z);
 PL_EXTERN void plSetMeshVertexPosition(PLMesh *mesh, unsigned int index, PLVector3 vector);
 PL_EXTERN void plSetMeshVertexNormal(PLMesh *mesh, unsigned int index, PLVector3 vector);
 PL_EXTERN void plSetMeshVertexST(PLMesh *mesh, unsigned int index, float s, float t);
@@ -117,14 +125,13 @@ PL_EXTERN void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index
 PL_EXTERN void plSetMeshVertexColour(PLMesh *mesh, unsigned int index, PLColour colour);
 PL_EXTERN void plSetMeshUniformColour(PLMesh *mesh, PLColour colour);
 PL_EXTERN void plSetMeshShaderProgram(PLMesh* mesh, struct PLShaderProgram* program);
+PL_EXTERN unsigned int plAddMeshVertex( PLMesh *mesh );
 PL_EXTERN void plUploadMesh(PLMesh *mesh);
-
 PL_EXTERN void plDrawMesh(PLMesh *mesh);
 
 PL_EXTERN PLCollisionAABB plCalculateMeshAABB( const PLMesh *mesh );
 
 PL_EXTERN PLVector3 plGenerateVertexNormal(PLVector3 a, PLVector3 b, PLVector3 c);
-
 PL_EXTERN void plGenerateMeshNormals(PLMesh *mesh, bool perFace);
 
 PL_EXTERN_C_END

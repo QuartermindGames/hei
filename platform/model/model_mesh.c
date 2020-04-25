@@ -123,8 +123,8 @@ PLMesh *plCreateMeshInit( PLMeshPrimitive primitive, PLMeshDrawMode mode, unsign
 	if ( numTriangles > 0 ) {
 		mesh->num_triangles = numTriangles;
 		if ( mesh->primitive == PL_MESH_TRIANGLES ) {
-			mesh->num_indices = mesh->num_triangles * 3;
-			if (( mesh->indices = pl_calloc( mesh->num_indices, sizeof( unsigned int ))) == NULL) {
+			mesh->maxIndices = mesh->num_indices = mesh->num_triangles * 3;
+			if (( mesh->indices = pl_calloc( mesh->maxIndices, sizeof( unsigned int ))) == NULL) {
 				plDestroyMesh( mesh );
 				return NULL;
 			}
@@ -135,8 +135,8 @@ PLMesh *plCreateMeshInit( PLMeshPrimitive primitive, PLMeshDrawMode mode, unsign
 		}
 	}
 
-	mesh->num_verts = numVerts;
-	mesh->vertices = ( PLVertex * ) pl_calloc( mesh->num_verts, sizeof( PLVertex ));
+	mesh->maxVertices = mesh->num_verts = numVerts;
+	mesh->vertices = ( PLVertex * ) pl_calloc( mesh->maxVertices, sizeof( PLVertex ));
 	if ( mesh->vertices == NULL) {
 		plDestroyMesh( mesh );
 		return NULL;
@@ -164,8 +164,16 @@ void plDestroyMesh( PLMesh *mesh ) {
 }
 
 void plClearMesh( PLMesh *mesh ) {
-	// Reset the data contained by the mesh, if we're going to begin a new draw.
-	memset( mesh->vertices, 0, sizeof( PLVertex ) * mesh->num_verts );
+	plClearMeshVertices( mesh );
+	plClearMeshIndices( mesh );
+}
+
+void plClearMeshVertices( PLMesh *mesh ) {
+	mesh->num_verts = 0;
+}
+
+void plClearMeshIndices( PLMesh *mesh ) {
+	mesh->num_indices = 0;
 }
 
 void plScaleMesh( PLMesh *mesh, PLVector3 scale ) {
@@ -175,24 +183,24 @@ void plScaleMesh( PLMesh *mesh, PLVector3 scale ) {
 }
 
 void plSetMeshTrianglePosition( PLMesh *mesh, unsigned int *index, unsigned int x, unsigned int y, unsigned int z ) {
-	plAssert( *index < mesh->num_indices );
+	plAssert( *index < mesh->maxIndices );
 	mesh->indices[ ( *index )++ ] = x;
 	mesh->indices[ ( *index )++ ] = y;
 	mesh->indices[ ( *index )++ ] = z;
 }
 
 void plSetMeshVertexPosition( PLMesh *mesh, unsigned int index, PLVector3 vector ) {
-	plAssert( index < mesh->num_verts );
+	plAssert( index < mesh->maxVertices );
 	mesh->vertices[ index ].position = vector;
 }
 
 void plSetMeshVertexNormal( PLMesh *mesh, unsigned int index, PLVector3 vector ) {
-	plAssert( index < mesh->num_verts );
+	plAssert( index < mesh->maxVertices );
 	mesh->vertices[ index ].normal = vector;
 }
 
 void plSetMeshVertexST( PLMesh *mesh, unsigned int index, float s, float t ) {
-	plAssert( index < mesh->num_verts );
+	plAssert( index < mesh->maxVertices );
 	mesh->vertices[ index ].st[ 0 ] = PLVector2( s, t );
 }
 
@@ -209,7 +217,7 @@ void plSetMeshVertexSTv( PLMesh *mesh, uint8_t unit, unsigned int index, unsigne
 }
 
 void plSetMeshVertexColour( PLMesh *mesh, unsigned int index, PLColour colour ) {
-	plAssert( index < mesh->num_verts );
+	plAssert( index < mesh->maxVertices );
 	mesh->vertices[ index ].colour = colour;
 }
 
@@ -221,6 +229,15 @@ void plSetMeshUniformColour( PLMesh *mesh, PLColour colour ) {
 
 void plSetMeshShaderProgram( PLMesh *mesh, PLShaderProgram *program ) {
 	mesh->shader_program = program;
+}
+
+unsigned int plAddMeshVertex( PLMesh *mesh ) {
+	unsigned int vertexIndex = mesh->num_verts++;
+	if ( vertexIndex >= mesh->maxVertices ) {
+		mesh->vertices = pl_realloc( mesh->vertices, ( mesh->maxVertices += 32 ) * sizeof( PLVertex ) );
+	}
+
+	return mesh->num_verts++;
 }
 
 void plUploadMesh( PLMesh *mesh ) {
@@ -291,8 +308,6 @@ void plDrawBevelledBorder( int x, int y, unsigned int w, unsigned int h ) {
 			return;
 		}
 	}
-
-	plClearMesh( mesh );
 
 	plSetMeshVertexPosition( mesh, 0, PLVector3( x, y, 0 ) );
 	plSetMeshVertexPosition( mesh, 1, PLVector3( x + w, y, 0 ) );
@@ -386,7 +401,6 @@ void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h,
 }
 
 static void SetupRectangleMesh( PLMesh *mesh, float x, float y, float w, float h, PLColour colour ) {
-	plClearMesh( mesh );
 	plSetMeshVertexPosition( mesh, 0, PLVector3( x, y, 0 ) );
 	plSetMeshVertexPosition( mesh, 1, PLVector3( x, y + h, 0 ) );
 	plSetMeshVertexPosition( mesh, 2, PLVector3( x + w, y, 0 ) );
@@ -481,8 +495,6 @@ void plDrawTexturedQuad(
 		}
 	}
 
-	plClearMesh( mesh );
-
 	plSetMeshVertexPosition( mesh, 0, *ul );
 	plSetMeshVertexPosition( mesh, 1, *ur );
 	plSetMeshVertexPosition( mesh, 2, *ll );
@@ -526,8 +538,6 @@ void plDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 		}
 	}
 
-	plClearMesh( mesh );
-
 	plSetMeshVertexPosition( mesh, 0, PLVector3( x, y + h, 0 ) );
 	plSetMeshVertexPosition( mesh, 1, PLVector3( x + w / 2, x, 0 ) );
 	plSetMeshVertexPosition( mesh, 2, PLVector3( x + w, y + h, 0 ) );
@@ -553,8 +563,6 @@ plDrawLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLColou
 			return;
 		}
 	}
-
-	plClearMesh( mesh );
 
 	plSetMeshVertexPosition( mesh, 0, *startPos );
 	plSetMeshVertexColour( mesh, 0, *startColour );

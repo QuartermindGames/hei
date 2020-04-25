@@ -306,8 +306,6 @@ void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColo
     float w = (float)font->chars[character].w;/* * scale; */
     float h = (float)font->chars[character].h;/* * scale; */
 
-    plClearMesh(mesh);
-
     plSetTexture(font->texture, 0);
 
     plSetMeshUniformColour(mesh, colour);
