@@ -69,6 +69,11 @@ void plLoadMatrix( const PLMatrix4 *matrix ) {
 	*curStack = *matrix;
 }
 
+void plLoadIdentityMatrix( void ) {
+	PLMatrix4 identity = plMatrix4Identity();
+	plLoadMatrix( &identity );
+}
+
 void plMultiMatrix( const PLMatrix4 *matrix ) {
 	PLMatrix4 *curStack = plGetMatrix( curMatrixMode );
 	*curStack = plMultiplyMatrix4( *curStack, *matrix );

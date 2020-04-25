@@ -450,6 +450,7 @@ PLMatrixMode plGetMatrixMode( void );
 
 PLMatrix4 *plGetMatrix( PLMatrixMode mode );
 void plLoadMatrix( const PLMatrix4 *matrix );
+void plLoadIdentityMatrix( void );
 
 void plMultiMatrix( const PLMatrix4 *matrix );
 void plRotateMatrix( float angle, float x, float y, float z );
