@@ -30,21 +30,55 @@ For more information, please refer to <http://unlicense.org>
 
 #include "../graphics/graphics_private.h"
 
+/* todo: move into physics.c */
+PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertices ) {
+	PLCollisionAABB bounds;
+	bounds.maxs = ( PLVector3 ) { -999999.0f, -999999.0f, -999999.0f };
+	bounds.mins = ( PLVector3 ) { 999999.0f, 999999.0f, 999999.0f };
+
+	for ( unsigned int i = 0; i < numVertices; ++i ) {
+		if ( bounds.maxs.x < vertices[ i ].position.x ) { bounds.maxs.x = vertices[ i ].position.x; }
+		if ( bounds.maxs.y < vertices[ i ].position.y ) { bounds.maxs.y = vertices[ i ].position.y; }
+		if ( bounds.maxs.z < vertices[ i ].position.z ) { bounds.maxs.z = vertices[ i ].position.z; }
+		if ( bounds.mins.x > vertices[ i ].position.x ) { bounds.mins.x = vertices[ i ].position.x; }
+		if ( bounds.mins.y > vertices[ i ].position.y ) { bounds.mins.y = vertices[ i ].position.y; }
+		if ( bounds.mins.z > vertices[ i ].position.z ) { bounds.mins.z = vertices[ i ].position.z; }
+	}
+
+	return bounds;
+}
+
 /**
  * Generate cubic coordinates for the given vertices.
  */
 void plGenerateTextureCoordinates( PLVertex *vertices, unsigned int numVertices, PLVector2 textureOffset, PLVector2 textureScale ) {
-	/* figure out what project face we're using */
-	unsigned int projFace = 0;
-	float projSum = 0.0f;
+	/* todo: figure out what projection face we're using */
+	unsigned int l = 0, r = 2;
+	PLVector3 projSums[ 2 ] = { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
 	for( unsigned int i = 0; i < numVertices; ++i ) {
 		for ( unsigned int j = 0; j < 3; ++j ) {
 			float v = plVector3Index( vertices[ i ].normal, j );
-			if ( v > projSum || v < projSum ) {
-				projFace = j;
-				projSum = v;
-			}
+			float max = plVector3Index( projSums[ 0 ], j );
+			if ( v > max ) { plVector3Index( projSums[ 0 ], j ) = v; }
+			float min = plVector3Index( projSums[ 1 ], j );
+			if ( v < min ) { plVector3Index( projSums[ 1 ], j ) = v; }
 		}
+	}
+
+	/* now get the greater sum and dir */
+	float sum = 0.0f;
+	unsigned int dir = 0;
+	for ( unsigned int j = 0; j < 3; ++j ) {
+		float max = plVector3Index( projSums[ 0 ], j );
+		float min = plVector3Index( projSums[ 1 ], j );
+		if ( sum > max ) { plVector3Index( projSums[ 0 ], j ) = sum; dir = j; }
+		else if ( sum < min ) { plVector3Index( projSums[ 1 ], j ) = sum; dir = j; }
+	}
+
+	PLCollisionAABB bounds = plGenerateAABB( vertices, numVertices );
+	for ( unsigned int i = 0; i < numVertices; ++i ) {
+		vertices[ i ].st[ 0 ].x = ( plVector3Index( vertices[ i ].position, l ) / plVector3Index( bounds.maxs, l ) + textureOffset.x ) * textureScale.x;
+		vertices[ i ].st[ 0 ].y = ( plVector3Index( vertices[ i ].position, r ) / plVector3Index( bounds.maxs, r ) + textureOffset.y ) * textureScale.y;
 	}
 }
 
@@ -290,38 +324,6 @@ void plUploadMesh( PLMesh *mesh ) {
 
 void plDrawMesh( PLMesh *mesh ) {
 	CallGfxFunction( DrawMesh, mesh );
-}
-
-PLCollisionAABB plCalculateMeshAABB( const PLMesh *mesh ) {
-	static PLCollisionAABB bounds;
-	memset( &bounds, 0, sizeof( PLCollisionAABB ));
-	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
-		if ( bounds.maxs.x < mesh->vertices[ i ].position.x ) {
-			bounds.maxs.x = mesh->vertices[ i ].position.x;
-		}
-
-		if ( bounds.mins.x > mesh->vertices[ i ].position.x ) {
-			bounds.mins.x = mesh->vertices[ i ].position.x;
-		}
-
-		if ( bounds.maxs.y < mesh->vertices[ i ].position.y ) {
-			bounds.maxs.y = mesh->vertices[ i ].position.y;
-		}
-
-		if ( bounds.mins.y > mesh->vertices[ i ].position.y ) {
-			bounds.mins.y = mesh->vertices[ i ].position.y;
-		}
-
-		if ( bounds.maxs.z < mesh->vertices[ i ].position.z ) {
-			bounds.maxs.z = mesh->vertices[ i ].position.z;
-		}
-
-		if ( bounds.mins.z > mesh->vertices[ i ].position.z ) {
-			bounds.mins.z = mesh->vertices[ i ].position.z;
-		}
-	}
-
-	return bounds;
 }
 
 /* primitive types */

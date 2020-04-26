@@ -49,6 +49,8 @@ typedef struct PLCollisionSphere { PLVector3 origin; float radius; } PLCollision
 #	define PLCollisionSphere( ORIGIN, RADIUS ) ( PLCollisionSphere ){ ( ORIGIN ), ( RADIUS ) }
 #endif
 
+PLCollisionAABB plGenerateAABB( const struct PLVertex *vertices, unsigned int numVertices );
+
 PL_INLINE static bool plIsAABBIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB *bBounds ) {
 	PLVector3 aMax = plAddVector3( aBounds->maxs, aBounds->origin );
 	PLVector3 aMin = plAddVector3( aBounds->mins, aBounds->origin );
