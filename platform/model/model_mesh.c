@@ -30,24 +30,40 @@ For more information, please refer to <http://unlicense.org>
 
 #include "../graphics/graphics_private.h"
 
-void plGenerateMeshNormals( PLMesh *mesh, bool perFace ) {
-	plAssert( mesh );
+/**
+ * Generate cubic coordinates for the given vertices.
+ */
+void plGenerateTextureCoordinates( PLVertex *vertices, unsigned int numVertices, PLVector2 textureOffset, PLVector2 textureScale ) {
+	/* figure out what project face we're using */
+	unsigned int projFace = 0;
+	float projSum = 0.0f;
+	for( unsigned int i = 0; i < numVertices; ++i ) {
+		for ( unsigned int j = 0; j < 3; ++j ) {
+			float v = plVector3Index( vertices[ i ].normal, j );
+			if ( v > projSum || v < projSum ) {
+				projFace = j;
+				projSum = v;
+			}
+		}
+	}
+}
 
+void plGenerateVertexNormals( PLVertex *vertices, unsigned int numVertices, unsigned int *indices, unsigned int numTriangles, bool perFace ) {
 	if ( perFace ) {
-		for ( unsigned int i = 0, idx = 0; i < mesh->num_triangles; ++i, idx += 3 ) {
-			unsigned int a = mesh->indices[ idx ];
-			unsigned int b = mesh->indices[ idx + 1 ];
-			unsigned int c = mesh->indices[ idx + 2 ];
+		for ( unsigned int i = 0, idx = 0; i < numTriangles; ++i, idx += 3 ) {
+			unsigned int a = indices[ idx ];
+			unsigned int b = indices[ idx + 1 ];
+			unsigned int c = indices[ idx + 2 ];
 
 			PLVector3 normal = plGenerateVertexNormal(
-					mesh->vertices[ a ].position,
-					mesh->vertices[ b ].position,
-					mesh->vertices[ c ].position
+					vertices[ a ].position,
+					vertices[ b ].position,
+					vertices[ c ].position
 			);
 
-			mesh->vertices[ a ].normal = plAddVector3( mesh->vertices[ a ].normal, normal );
-			mesh->vertices[ b ].normal = plAddVector3( mesh->vertices[ b ].normal, normal );
-			mesh->vertices[ c ].normal = plAddVector3( mesh->vertices[ c ].normal, normal );
+			vertices[ a ].normal = plAddVector3( vertices[ a ].normal, normal );
+			vertices[ b ].normal = plAddVector3( vertices[ b ].normal, normal );
+			vertices[ c ].normal = plAddVector3( vertices[ c ].normal, normal );
 		}
 
 		return;
@@ -60,6 +76,12 @@ PLVector3 plGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3 c ) {
 	PLVector3 x = PLVector3( c.x - b.x, c.y - b.y, c.z - b.z );
 	PLVector3 y = PLVector3( a.x - b.x, a.y - b.y, a.z - b.z );
 	return plNormalizeVector3( plVector3CrossProduct( x, y ));
+}
+
+void plGenerateMeshNormals( PLMesh *mesh, bool perFace ) {
+	plAssert( mesh );
+
+	plGenerateVertexNormals( mesh->vertices, mesh->num_verts, mesh->indices, mesh->num_triangles, perFace );
 }
 
 /* software implementation of gouraud shading */
@@ -260,24 +282,6 @@ unsigned int plAddMeshTriangle( PLMesh *mesh, unsigned int x, unsigned int y, un
 	mesh->num_triangles++;
 
 	return triangleIndex;
-}
-
-/**
- * Generate cubic coordinates for the given vertices.
- */
-void plGenerateTextureCoordinates( PLVertex *vertices, unsigned int numVertices, PLVector2 textureOffset, PLVector2 textureScale ) {
-	/* figure out what project face we're using */
-	unsigned int projFace = 0;
-	float projSum = 0.0f;
-	for( unsigned int i = 0; i < numVertices; ++i ) {
-		for ( unsigned int j = 0; j < 3; ++j ) {
-			float v = plVector3Index( vertices[ i ].normal, j );
-			if ( v > projSum || v < projSum ) {
-				projFace = j;
-				projSum = v;
-			}
-		}
-	}
 }
 
 void plUploadMesh( PLMesh *mesh ) {
