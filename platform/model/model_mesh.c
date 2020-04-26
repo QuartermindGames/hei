@@ -165,15 +165,15 @@ void plDestroyMesh( PLMesh *mesh ) {
 
 void plClearMesh( PLMesh *mesh ) {
 	plClearMeshVertices( mesh );
-	plClearMeshIndices( mesh );
+	plClearMeshTriangles( mesh );
 }
 
 void plClearMeshVertices( PLMesh *mesh ) {
 	mesh->num_verts = 0;
 }
 
-void plClearMeshIndices( PLMesh *mesh ) {
-	mesh->num_indices = 0;
+void plClearMeshTriangles( PLMesh *mesh ) {
+	mesh->num_triangles = mesh->num_indices = 0;
 }
 
 void plScaleMesh( PLMesh *mesh, PLVector3 scale ) {
@@ -231,13 +231,53 @@ void plSetMeshShaderProgram( PLMesh *mesh, PLShaderProgram *program ) {
 	mesh->shader_program = program;
 }
 
-unsigned int plAddMeshVertex( PLMesh *mesh ) {
+unsigned int plAddMeshVertex( PLMesh *mesh, PLVector3 position, PLVector3 normal, PLColour colour, PLVector2 st ) {
 	unsigned int vertexIndex = mesh->num_verts++;
 	if ( vertexIndex >= mesh->maxVertices ) {
-		mesh->vertices = pl_realloc( mesh->vertices, ( mesh->maxVertices += 32 ) * sizeof( PLVertex ) );
+		mesh->vertices = pl_realloc( mesh->vertices, ( mesh->maxVertices += 16 ) * sizeof( PLVertex ) );
 	}
 
-	return mesh->num_verts++;
+	plSetMeshVertexPosition( mesh, vertexIndex, position );
+	plSetMeshVertexNormal( mesh, vertexIndex, normal );
+	plSetMeshVertexColour( mesh, vertexIndex, colour );
+	plSetMeshVertexST( mesh, vertexIndex, st.x, st.y );
+
+	return vertexIndex;
+}
+
+unsigned int plAddMeshTriangle( PLMesh *mesh, unsigned int x, unsigned int y, unsigned int z  ) {
+	unsigned int triangleIndex = mesh->num_indices;
+
+	mesh->num_indices += 3;
+	if ( mesh->num_indices >= mesh->maxIndices ) {
+		mesh->indices = pl_realloc( mesh->indices, ( mesh->maxIndices += 16 ) * sizeof( unsigned int ) );
+	}
+
+	mesh->indices[ triangleIndex ]      = x;
+	mesh->indices[ triangleIndex + 1 ]  = y;
+	mesh->indices[ triangleIndex + 2 ]  = z;
+
+	mesh->num_triangles++;
+
+	return triangleIndex;
+}
+
+/**
+ * Generate cubic coordinates for the given vertices.
+ */
+void plGenerateTextureCoordinates( PLVertex *vertices, unsigned int numVertices, PLVector2 textureOffset, PLVector2 textureScale ) {
+	/* figure out what project face we're using */
+	unsigned int projFace = 0;
+	float projSum = 0.0f;
+	for( unsigned int i = 0; i < numVertices; ++i ) {
+		for ( unsigned int j = 0; j < 3; ++j ) {
+			float v = plVector3Index( vertices[ i ].normal, j );
+			if ( v > projSum || v < projSum ) {
+				projFace = j;
+				projSum = v;
+			}
+		}
+	}
 }
 
 void plUploadMesh( PLMesh *mesh ) {

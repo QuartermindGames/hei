@@ -97,7 +97,6 @@ PL_EXTERN PLMesh *plCreateMeshInit( PLMeshPrimitive primitive, PLMeshDrawMode mo
 PL_EXTERN PLMesh* plCreateMeshRectangle(int x, int y, unsigned int w, unsigned int h, PLColour colour);
 PL_EXTERN void plDestroyMesh(PLMesh *mesh);
 
-#if defined( PL_USE_GRAPHICS )
 PL_EXTERN void plDrawBevelledBorder( int x, int y, unsigned int w, unsigned int h );
 PL_EXTERN void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h, PLColour colour );
 PL_EXTERN void plDrawRectangle( const PLMatrix4 *transform, float x, float y, float w, float h, PLColour colour );
@@ -110,11 +109,10 @@ PL_EXTERN void plDrawLine( const PLMatrix4 *transform, const PLVector3 *startPos
 PL_EXTERN void plDrawSimpleLine( const PLMatrix4 *transform, const PLVector3 *startPos, const PLVector3 *endPos, const PLColour *colour );
 PL_EXTERN void plDrawGrid( const PLMatrix4 *transform, int x, int y, int w, int h, unsigned int gridSize );
 PL_EXTERN void plDrawMeshNormals( const PLMatrix4 *transform, const PLMesh *mesh );
-#endif
 
 PL_EXTERN void plClearMesh( PLMesh *mesh );
 PL_EXTERN void plClearMeshVertices( PLMesh *mesh );
-PL_EXTERN void plClearMeshIndices( PLMesh *mesh );
+PL_EXTERN void plClearMeshTriangles( PLMesh *mesh );
 
 PL_EXTERN void plScaleMesh(PLMesh *mesh, PLVector3 scale);
 PL_EXTERN void plSetMeshTrianglePosition(PLMesh *mesh, unsigned int *index, unsigned int x, unsigned int y, unsigned int z);
@@ -125,7 +123,10 @@ PL_EXTERN void plSetMeshVertexSTv(PLMesh *mesh, uint8_t unit, unsigned int index
 PL_EXTERN void plSetMeshVertexColour(PLMesh *mesh, unsigned int index, PLColour colour);
 PL_EXTERN void plSetMeshUniformColour(PLMesh *mesh, PLColour colour);
 PL_EXTERN void plSetMeshShaderProgram(PLMesh* mesh, struct PLShaderProgram* program);
-PL_EXTERN unsigned int plAddMeshVertex( PLMesh *mesh );
+
+PL_EXTERN unsigned int plAddMeshVertex( PLMesh *mesh, PLVector3 position, PLVector3 normal, PLColour colour, PLVector2 st );
+PL_EXTERN unsigned int plAddMeshTriangle( PLMesh *mesh, unsigned int x, unsigned int y, unsigned int z  );
+
 PL_EXTERN void plUploadMesh(PLMesh *mesh);
 PL_EXTERN void plDrawMesh(PLMesh *mesh);
 

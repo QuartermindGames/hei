@@ -74,6 +74,7 @@ PLVertex *plGetPolygonVertex( PLPolygon *polygon, unsigned int vertIndex ) {
 }
 
 PLVertex *plGetPolygonVertices( PLPolygon *polygon, unsigned int *numVertices ) {
+	*numVertices = polygon->numVertices;
 	return polygon->vertices;
 }
 
