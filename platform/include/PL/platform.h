@@ -235,6 +235,8 @@ plSetErrorFunction(PL_FUNCTION);
 
 #endif
 
+typedef void PLLibrary; /* handle to dll/module */
+
 PL_EXTERN_C
 
 PL_EXTERN PLresult plInitialize(int argc, char **argv);
@@ -285,6 +287,10 @@ PL_EXTERN bool plIsRunning(void);
 PL_EXTERN double plGetDeltaTime(void);
 
 PL_EXTERN void plProcess(double delta);
+
+PL_EXTERN PLLibrary *plLoadLibrary( const char *path, bool appendPath );
+PL_EXTERN void *plGetLibraryProcedure( PLLibrary *library, const char *procedureName );
+PL_EXTERN void plUnloadLibrary( PLLibrary *library );
 
 PL_EXTERN_C_END
 

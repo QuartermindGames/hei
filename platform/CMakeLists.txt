@@ -52,6 +52,7 @@ file(
 		platform_memory.c 
 		platform_parser.c
 
+        LibraryLoader.c
         llist.c
         polygon.c
         math_matrix.c
