@@ -50,7 +50,7 @@ PLWindow *plCreateWindow( int w, int h, const char *title ) {
 	/* create the window class */
 	WNDCLASS windowClass;
 	memset( &windowClass, 0, sizeof( WNDCLASS ) );
-	windowClass.lpfnWndProc		= WindowCallbackProcedure;
+	windowClass.lpfnWndProc		= ( WNDPROC ) WindowCallbackProcedure;
 	windowClass.lpszClassName	= title;
 	windowClass.hInstance		= instance;
 
