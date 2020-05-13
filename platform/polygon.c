@@ -27,8 +27,13 @@ For more information, please refer to <http://unlicense.org>
 
 #include "../graphics/graphics_private.h"
 
-PLPolygon *plCreatePolygon( void ) {
-	return pl_calloc( 1, sizeof( PLPolygon ) );
+PLPolygon *plCreatePolygon( PLTexture *texture, PLVector2 textureOffset, PLVector2 textureScale, float textureRotation ) {
+	PLPolygon *polygon = pl_calloc( 1, sizeof( PLPolygon ) );
+	polygon->texture = texture;
+	polygon->textureOffset = textureOffset;
+	polygon->textureScale = textureScale;
+	polygon->textureRotation = textureRotation;
+	return polygon;
 }
 
 void plDestroyPolygon( PLPolygon *polygon ) {
@@ -39,6 +44,18 @@ void plDestroyPolygon( PLPolygon *polygon ) {
 	pl_free( polygon );
 }
 
+/**
+ * Generate vertex normals for the given polygon.
+ */
+static void _plGeneratePolygonNormals( PLPolygon *polygon ) {
+	unsigned int numTriangles;
+	unsigned int *indices = plConvertPolygonToTriangles( polygon, &numTriangles );
+
+	plGenerateVertexNormals( polygon->vertices, polygon->numVertices, indices, numTriangles, true );
+
+	free( indices );
+}
+
 void plAddPolygonVertex( PLPolygon *polygon, const PLVertex *vertex ) {
 	if( polygon->numVertices >= PL_POLYGON_MAX_SIDES ) {
 		ReportError( PL_RESULT_INVALID_PARM2, "reached maximum number of polygon sides (%d)", PL_POLYGON_MAX_SIDES );
@@ -47,6 +64,11 @@ void plAddPolygonVertex( PLPolygon *polygon, const PLVertex *vertex ) {
 
 	polygon->vertices[ polygon->numVertices ] = *vertex;
 	polygon->numVertices++;
+
+	_plGeneratePolygonNormals( polygon );
+	if( polygon->texture != NULL ) {
+		plGenerateTextureCoordinates( polygon->vertices, polygon->numVertices, polygon->textureOffset, polygon->textureScale );
+	}
 }
 
 void plRemovePolygonVertex( PLPolygon *polygon, unsigned int vertIndex ) {
@@ -58,6 +80,11 @@ void plRemovePolygonVertex( PLPolygon *polygon, unsigned int vertIndex ) {
 	/* reshuffle the list */
 	memmove( polygon->vertices + vertIndex, polygon->vertices + vertIndex + 1, ( polygon->numVertices - vertIndex ) - 1);
 	--( polygon->numVertices );
+
+	_plGeneratePolygonNormals( polygon );
+	if( polygon->texture != NULL ) {
+		plGenerateTextureCoordinates( polygon->vertices, polygon->numVertices, polygon->textureOffset, polygon->textureScale );
+	}
 }
 
 unsigned int plGetNumOfPolygonVertices( const PLPolygon *polygon ) {
@@ -116,7 +143,6 @@ PLMesh *plConvertPolygonToMesh( const PLPolygon *polygon ) {
 	}
 
 	PLMesh *mesh = plCreateMeshInit( PL_MESH_TRIANGLES, PL_DRAW_STATIC, numTriangles, polygon->numVertices, indices, polygon->vertices );
-	plGenerateMeshNormals( mesh, true );
 
 	pl_free( indices );
 
