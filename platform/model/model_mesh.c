@@ -478,7 +478,7 @@ void plDrawTexturedRectangle( const PLMatrix4 *transform, float x, float y, floa
 	plSetTexture( NULL, 0 );
 }
 
-PLMesh *plCreateMeshRectangle( int x, int y, unsigned int w, unsigned int h, PLColour colour ) {
+PLMesh *plCreateMeshRectangle( float x, float y, float w, float h, PLColour colour ) {
 	PLMesh *mesh = plCreateMesh( PL_MESH_TRIANGLE_STRIP, PL_DRAW_DYNAMIC, 2, 4 );
 	if ( mesh == NULL) {
 		return NULL;

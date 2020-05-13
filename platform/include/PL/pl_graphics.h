@@ -364,7 +364,7 @@ typedef struct PLPolygon PLPolygon;
 typedef struct PLVertex PLVertex;
 typedef struct PLMesh PLMesh;
 
-PL_EXTERN PLPolygon *plCreatePolygon( void );
+PL_EXTERN PLPolygon *plCreatePolygon( PLTexture *texture, PLVector2 textureOffset, PLVector2 textureScale, float textureRotation );
 PL_EXTERN void plDestroyPolygon( PLPolygon *polygon );
 PL_EXTERN void plAddPolygonVertex( PLPolygon *polygon, const PLVertex *vertex );
 PL_EXTERN void plRemovePolygonVertex( PLPolygon *polygon, unsigned int vertIndex );
