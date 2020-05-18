@@ -105,6 +105,10 @@ PLVertex *plGetPolygonVertices( PLPolygon *polygon, unsigned int *numVertices ) 
 	return polygon->vertices;
 }
 
+PLTexture *plGetPolygonTexture( PLPolygon *polygon ) {
+	return polygon->texture;
+}
+
 /**
  * Return the number of triangles in this polygon.
  */
