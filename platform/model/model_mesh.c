@@ -528,11 +528,7 @@ void plDrawFilledRectangle( const PLRectangle2D *rectangle ) {
 	plDrawMesh( mesh );
 }
 
-void plDrawTexturedQuad(
-		const PLVector3 *ul, const PLVector3 *ur,
-		const PLVector3 *ll, const PLVector3 *lr,
-		float hScale, float vScale,
-		PLTexture *texture ) {
+void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr, float hScale, float vScale, PLTexture *texture ) {
 	static PLMesh *mesh = NULL;
 	if ( mesh == NULL) {
 		mesh = plCreateMesh( PL_MESH_TRIANGLES, PL_DRAW_DYNAMIC, 2, 4 );

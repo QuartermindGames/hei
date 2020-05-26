@@ -409,7 +409,12 @@ PL_INLINE static const char *plPrintVector2(const PLVector2 *v, PLVariableType f
 /******************************************************************/
 
 typedef struct PLVector4 {
-  float x, y, z, w;
+#ifdef __cplusplus
+    PLVector4() : x( 0.0f ), y( 0.0f ), z( 0.0f ), w( 0.0f ) {}
+    PLVector4( float x, float y, float z, float w ) : x( x ), y( y ), z( z ), w( w ) {}
+#endif
+
+    float x, y, z, w;
 } PLVector4;
 
 PL_INLINE static PLVector4 plAddVector4(PLVector4 v, PLVector4 v2) {
