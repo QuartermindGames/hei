@@ -34,9 +34,8 @@ For more information, please refer to <http://unlicense.org>
  * - buffer upscaling and downscaling
  */
 
-#define SWGetDisplayBufferSize(a) \
-    plGetImageSize( PL_IMAGEFORMAT_RGBA8, (a)->w, (a)->h )
-#define SWGetCurrentDisplayBuffer()    gfx_state.current_viewport->buffer
+#define SWGetDisplayBufferSize(a)       plGetImageSize( PL_IMAGEFORMAT_RGBA8, (a)->w, (a)->h )
+#define SWGetCurrentDisplayBuffer()     gfx_state.current_viewport->buffer
 
 static void SWSetClearColour(PLColour colour) {}
 
@@ -73,7 +72,10 @@ static uint8_t *SWCreateDisplayBuffer(PLViewport *viewport) {
 }
 
 static void SWCreateCamera(PLCamera *camera) {
-    plAssert(camera);
+    plAssert( camera != NULL );
+	if ( camera == NULL ) {
+    	return;
+    }
 
     PLViewport *viewport = &camera->viewport;
     if (viewport->buffer != NULL) {
@@ -110,7 +112,7 @@ static void SWDrawPixel(int x, int y, PLColour colour) {
     }
 
     unsigned int pos = y * viewport->w + x;
-    if (pos >= (int) SWGetDisplayBufferSize(viewport)) {
+    if (pos >= SWGetDisplayBufferSize(viewport)) {
         return;
     }
 
