@@ -45,20 +45,16 @@ For more information, please refer to <http://unlicense.org>
 /**
  * Sets up some basic properties for the given
  * shader and deals with any macros such as 'include'
- *
- * todo: most of this can be rewritten into platform_parser : make it safe!
- *
- * @param buf
- * @param length
+ * todo: this is dumb... rewrite and move it
  */
-static void GLPreProcessGLSLShader(char **buf, size_t *length, PLShaderStageType type) {
-    size_t n_len = 1000000; /*(*length) * 2*/;
-    char *n_buf = pl_calloc(n_len, sizeof(char));
+static char *GLPreProcessGLSLShader( char **buf, size_t *length, PLShaderStageType type ) {
+    size_t newLength = *length;
+    char *n_buf = pl_calloc( newLength, sizeof( char ) );
     if(n_buf == NULL) {
-        return;
+        return NULL;
     }
 
-    memset(n_buf, 0, n_len);
+    memset( n_buf, 0, newLength );
 
     char *pos = &*buf[0];
     char *n_pos = &n_buf[0];
@@ -117,14 +113,41 @@ static void GLPreProcessGLSLShader(char **buf, size_t *length, PLShaderStageType
                 SkipSpaces();
 
                 /* pull the path out */
-                if(*pos++ == '\"') {
-                    pos += 2;
+                if(*pos++ == '"') {
                     char path[PL_SYSTEM_MAX_PATH];
                     unsigned int i = 0;
-                    while(*pos != '\"') {
-                        path[i++] = *pos++;
-                    }   path[i] = '\0';
-                    pos += 2;
+                    while(*pos != '"') {
+						if ( *pos == '\n' || *pos == '\r' ) {
+							GfxLog( "Invalid include argument provided, parsing failed!\n" );
+							break;
+						}
+
+                        path[ i++ ] = *pos++;
+                    }
+					path[ i ] = '\0';
+
+					PLFile *filePtr = plOpenFile( path, true );
+					if ( filePtr != NULL ) {
+						// Copy the data across
+						size_t incLength = plGetFileSize( filePtr );
+						char *incBuf = pl_malloc( incLength );
+						memcpy( incBuf, plGetFileData( filePtr ), incLength );
+
+						// And we're now done with this!
+						plCloseFile( filePtr );
+
+						if ( GLPreProcessGLSLShader( &incBuf, &incLength, type ) != NULL ) {
+
+						}
+
+						// Now resize our current dataset and copy it across
+
+						free( incBuf );
+					} else {
+						GfxLog( "Failed to open include, \"%s\"!\n", path );
+						return NULL;
+					}
+
 #if 0
                     FILE *s = fopen(path, "r");
                     if(s == NULL) {
@@ -134,13 +157,20 @@ static void GLPreProcessGLSLShader(char **buf, size_t *length, PLShaderStageType
 #else
                     printf("%s\n", path);
 #endif
-                }
+					pos += 2;
+					continue;
+                } else {
+					GfxLog( "Expected \"\", got \"%s\"!\n", pos );
+				}
             } else if(pl_strncasecmp(pos, "ifdef", 5) == 0) {
+				pos += 5;
                 /* todo */
             } else if(pl_strncasecmp(pos, "if", 2) == 0) {
+				pos += 2;
                 /* todo
                  * should be followed by 'defined' or whatever? */
             } else if(pl_strncasecmp(pos, "define", 6) == 0) {
+				pos += 6;
                 /* todo
                  * save result to table and overwrite any results */
             }
@@ -151,22 +181,24 @@ static void GLPreProcessGLSLShader(char **buf, size_t *length, PLShaderStageType
         *n_pos++ = *pos++;
     }
 
-    printf("%s\n", n_buf);
+    //printf("%s\n", n_buf);
 
     /* resize and update buf to match */
     char *old_buf = *buf;
-    if(n_len > (*length)) {
-        if((old_buf = realloc(*buf, n_len)) != NULL) {
+    if( newLength > (*length) ) {
+        if( (old_buf = realloc( *buf, newLength ) ) != NULL) {
             *buf = old_buf;
         }
     }
 
     if(old_buf != NULL) {
         memcpy(*buf, n_buf, n_len);
-        *length = n_len;
+        *length = newLength;
     }
 
-    pl_free(n_buf);
+    pl_free( n_buf );
+
+	return *buf;
 }
 
 #endif
@@ -229,7 +261,8 @@ void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) 
 
     char *n_buf = pl_calloc(sizeof(char), length + 1);
     strncpy(n_buf, buf, length);
-    GLPreProcessGLSLShader(&n_buf, &length, stage->type);
+
+    n_buf = GLPreProcessGLSLShader(&n_buf, &length, stage->type);
 
     CallGfxFunction(CompileShaderStage, stage, n_buf, length);
 
