@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org>
 #endif
 
 #include "platform_private.h"
+#include "filesystem_private.h"
 
 /**
  * Loads the specified library module.
@@ -38,9 +39,15 @@ For more information, please refer to <http://unlicense.org>
 PLLibrary *plLoadLibrary( const char *path, bool appendPath ) {
 	char sysPath[ PL_SYSTEM_MAX_PATH ];
 	if ( appendPath ) {
-		snprintf( "%s.%s", sizeof( sysPath ), path, PL_SYSTEM_LIBRARY_EXTENSION );
+		snprintf( sysPath, sizeof( sysPath ), "%s.%s", path, PL_SYSTEM_LIBRARY_EXTENSION );
 	} else {
 		strncpy( sysPath, path, sizeof( sysPath ) );
+	}
+
+	/* check that it actually exists first, since Windows doesn't give a very verbose message for these cases */
+	if ( !plLocalFileExists( path ) ) {
+		ReportError( PL_RESULT_FILEPATH, "failed to find library" );
+		return NULL;
 	}
 
 #if defined( WIN32 )
