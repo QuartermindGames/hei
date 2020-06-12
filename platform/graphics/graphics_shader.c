@@ -43,94 +43,132 @@ For more information, please refer to <http://unlicense.org>
 #if defined(PL_SUPPORT_OPENGL)
 
 /**
- * Sets up some basic properties for the given
- * shader and deals with any macros such as 'include'
+ * Inserts the given string into an existing string buffer.
+ * Automatically reallocs buffer if it doesn't fit.
+ */
+static char *_plInsertString( const char *string, char *buf, size_t *bufSize, size_t *maxBufSize ) {
+	/* check if it's going to fit first */
+	size_t strLength = strlen( string );
+	*bufSize += strLength;
+	if ( *bufSize >= *maxBufSize ) {
+		*maxBufSize = *bufSize + ( strLength + 256 );
+		buf = pl_realloc( buf, *maxBufSize );
+	}
+
+	/* now copy it into our buffer */
+	strncpy( buf, string, strLength );
+
+	return ( buf += strLength );
+}
+
+/**
+ * Continues skipping for all spaces.
+ */
+static char *_plSkipSpaces( char *buf ) {
+	while( *buf != '\0' && *buf == ' ' ) {
+		buf++;
+	}
+
+	return buf;
+}
+
+static char *_plSkipLine( char *buf ) {
+	while ( *buf != '\0' &&
+	        *buf != '\n' &&
+	        *buf != '\r' ) {
+		buf++;
+	}
+
+	return buf;
+}
+
+/**
+ * A basic pre-processor for GLSL - will condense the shader as much as possible
+ * and handle any pre-processor commands.
  * todo: this is dumb... rewrite and move it
  */
 static char *GLPreProcessGLSLShader( char **buf, size_t *length, PLShaderStageType type ) {
-    size_t newLength = *length;
-    char *n_buf = pl_calloc( newLength, sizeof( char ) );
-    if(n_buf == NULL) {
-        return NULL;
-    }
+	/* setup the destination buffer */
+	size_t maxLength = *length;
+    char *dstBuffer = pl_calloc( maxLength, sizeof( char ) );
+    memset( dstBuffer, 0, maxLength );
+	size_t dstLength = 0;
 
-    memset( n_buf, 0, newLength );
+    char *srcPos = *buf;
+    char *dstPos = dstBuffer;
 
-    char *pos = &*buf[0];
-    char *n_pos = &n_buf[0];
+    dstPos = _plInsertString( "#version 150 core\n", dstPos, &dstLength, &maxLength ); //OpenGL 3.2 == GLSL 150
 
-#define InsertString(DEST, STR) {size_t sl = strlen(STR);strncpy(DEST, STR, sl);(DEST) += sl;}
-#define SkipSpaces()            while(*pos == ' ') { pos++; }
-#define SkipLine()              while(*pos != '\n' && *pos != '\r') { pos++; }
-
-    InsertString(n_pos, "#version 150 core\n") //OpenGL 3.2 == GLSL 150
-
-    /* built-in uniforms */
+    /* built-ins */
+#define insert( str ) dstPos = _plInsertString( ( str ), dstPos, &dstLength, &maxLength )
+	insert( "uniform mat4 pl_model;" );
+	insert( "uniform mat4 pl_view;" );
+	insert( "uniform mat4 pl_proj;" );
     if(type == PL_SHADER_TYPE_VERTEX) {
-        InsertString(n_pos, "in vec3 pl_vposition;")
-        InsertString(n_pos, "in vec3 pl_vnormal;")
-        InsertString(n_pos, "in vec2 pl_vuv;")
-        InsertString(n_pos, "in vec4 pl_vcolour;")
+		insert( "in vec3 pl_vposition;" );
+		insert( "in vec3 pl_vnormal;" );
+		insert( "in vec2 pl_vuv;" );
+		insert( "in vec4 pl_vcolour;" );
     } else if(type == PL_SHADER_TYPE_FRAGMENT) {
-        InsertString(n_pos, "out vec4 pl_frag;")
+		insert( "out vec4 pl_frag;" );
     }
 
-    InsertString(n_pos, "uniform mat4 pl_model;")
-    InsertString(n_pos, "uniform mat4 pl_view;")
-    InsertString(n_pos, "uniform mat4 pl_proj;")
-
-    while(*pos != '\0') {
-        if(*pos == '\n' || *pos == '\r' || *pos == '\t') {
-            pos++;
+    while(*srcPos != '\0') {
+        if(*srcPos == '\n' || *srcPos == '\r' || *srcPos == '\t') {
+			srcPos++;
             continue;
         }
 
-        if(pos[0] == ' ' && pos[1] == ' ') {
-            pos += 2;
-            SkipSpaces();
+        if(srcPos[0] == ' ' && srcPos[1] == ' ') {
+			srcPos += 2;
+            srcPos = _plSkipSpaces( srcPos );
             continue;
         }
 
         /* skip comments */
-        if(pos[0] == '/' && pos[1] == '*') {
-            pos += 2;
-            while(!(pos[0] == '*' && pos[1] == '/')) pos++;
-            pos += 2;
+        if(srcPos[0] == '/' && srcPos[1] == '*') {
+			srcPos += 2;
+            while(!(srcPos[0] == '*' && srcPos[1] == '/')) srcPos++;
+			srcPos += 2;
             continue;
         }
 
-        if(pos[0] == '/' && pos[1] == '/') {
-            pos += 2;
-            SkipLine();
+        if(srcPos[0] == '/' && srcPos[1] == '/') {
+			srcPos += 2;
+            srcPos = _plSkipLine( srcPos );
             continue;
         }
 
-        if(pos[0] == '#') {
-            pos++;
-            if(pl_strncasecmp(pos, "include", 7) == 0) {
-                pos += 7;
-
-                SkipSpaces();
+#if 0 /* todo: need to overhaul how shaders work to do this... fun */
+        if(srcPos[0] == '#') {
+			srcPos++;
+            if(pl_strncasecmp(srcPos, "include", 7) == 0) {
+				srcPos += 7;
+				srcPos = _plSkipSpaces( srcPos );
 
                 /* pull the path out */
-                if(*pos++ == '"') {
-                    char path[PL_SYSTEM_MAX_PATH];
+                if(*srcPos++ == '"') {
+                    char fileName[ 64 ];
                     unsigned int i = 0;
-                    while(*pos != '"') {
-						if ( *pos == '\n' || *pos == '\r' ) {
+                    while(*srcPos != '"') {
+						if ( *srcPos == '\n' || *srcPos == '\r' ) {
 							GfxLog( "Invalid include argument provided, parsing failed!\n" );
 							break;
 						}
 
-                        path[ i++ ] = *pos++;
+						fileName[ i++ ] = *srcPos++;
                     }
-					path[ i ] = '\0';
+					fileName[ i ] = '\0';
+
+					char path[ PL_SYSTEM_MAX_PATH ];
+					snprintf( path, sizeof( path ), "%s%s", , fileName );
 
 					PLFile *filePtr = plOpenFile( path, true );
 					if ( filePtr != NULL ) {
 						// Copy the data across
 						size_t incLength = plGetFileSize( filePtr );
 						char *incBuf = pl_malloc( incLength );
+						strncpy( incBuf, dstPos, *length );
 						memcpy( incBuf, plGetFileData( filePtr ), incLength );
 
 						// And we're now done with this!
@@ -145,60 +183,45 @@ static char *GLPreProcessGLSLShader( char **buf, size_t *length, PLShaderStageTy
 						free( incBuf );
 					} else {
 						GfxLog( "Failed to open include, \"%s\"!\n", path );
-						return NULL;
+						continue;
 					}
 
-#if 0
-                    FILE *s = fopen(path, "r");
-                    if(s == NULL) {
-                        GfxLog("Failed to load shader \"%s\"!\n", path);
-                        continue;
-                    }
-#else
-                    printf("%s\n", path);
-#endif
-					pos += 2;
+					srcPos += 2;
 					continue;
                 } else {
-					GfxLog( "Expected \"\", got \"%s\"!\n", pos );
+					GfxLog( "Expected \"\", got \"%s\"!\n", srcPos );
 				}
-            } else if(pl_strncasecmp(pos, "ifdef", 5) == 0) {
-				pos += 5;
+            } else if(pl_strncasecmp(srcPos, "ifdef", 5) == 0) {
+				srcPos += 5;
                 /* todo */
-            } else if(pl_strncasecmp(pos, "if", 2) == 0) {
-				pos += 2;
+            } else if(pl_strncasecmp(srcPos, "if", 2) == 0) {
+				srcPos += 2;
                 /* todo
                  * should be followed by 'defined' or whatever? */
-            } else if(pl_strncasecmp(pos, "define", 6) == 0) {
-				pos += 6;
+            } else if(pl_strncasecmp(srcPos, "define", 6) == 0) {
+				srcPos += 6;
                 /* todo
                  * save result to table and overwrite any results */
             }
 
             continue;
         }
+#endif
 
-        *n_pos++ = *pos++;
+        *dstPos++ = *srcPos++;
+		dstLength++;
     }
-
-    //printf("%s\n", n_buf);
 
     /* resize and update buf to match */
-    char *old_buf = *buf;
-    if( newLength > (*length) ) {
-        if( (old_buf = realloc( *buf, newLength ) ) != NULL) {
-            *buf = old_buf;
-        }
-    }
 
-    if(old_buf != NULL) {
-        memcpy(*buf, n_buf, n_len);
-        *length = newLength;
-    }
+	printf( "%s\n", dstBuffer );
 
-    pl_free( n_buf );
+	free( *buf );
 
-	return *buf;
+	*buf = dstBuffer;
+	*length = dstLength;
+
+	return dstBuffer;
 }
 
 #endif
@@ -254,24 +277,20 @@ void plDestroyShaderStage(PLShaderStage *stage) {
  * @param buf pointer to buffer containing the shader we're compiling.
  * @param length the length of the buffer.
  */
-void plCompileShaderStage(PLShaderStage *stage, const char *buf, size_t length) {
-    _plResetError();
+void plCompileShaderStage( PLShaderStage *stage, const char *buf, size_t length ) {
+	_plResetError();
 
-#if defined(PL_SUPPORT_OPENGL)
+#if defined( PL_SUPPORT_OPENGL )
+	char *n_buf = pl_calloc( sizeof( char ), length + 1 );
+	strncpy( n_buf, buf, length );
 
-    char *n_buf = pl_calloc(sizeof(char), length + 1);
-    strncpy(n_buf, buf, length);
+	n_buf = GLPreProcessGLSLShader( &n_buf, &length, stage->type );
 
-    n_buf = GLPreProcessGLSLShader(&n_buf, &length, stage->type);
+	CallGfxFunction( CompileShaderStage, stage, n_buf, length );
 
-    CallGfxFunction(CompileShaderStage, stage, n_buf, length);
-
-    pl_free(n_buf);
-
+	pl_free( n_buf );
 #else
-
-    CallGfxFunction(CompileShaderStage, stage, buf, length);
-
+	CallGfxFunction( CompileShaderStage, stage, buf, length );
 #endif
 }
 
@@ -324,7 +343,7 @@ PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
     buf[length] = '\0';
     plCloseFile(fp);
 
-    PLShaderStage *stage = plParseShaderStage(type, buf, length);
+    PLShaderStage *stage = plParseShaderStage( type, buf, length );
     pl_free(buf);
     return stage;
 }
