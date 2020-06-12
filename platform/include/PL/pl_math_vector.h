@@ -424,3 +424,27 @@ PL_INLINE static PLVector4 plAddVector4(PLVector4 v, PLVector4 v2) {
   v.w += v2.w;
   return v;
 }
+
+/**
+ * Function that works similarly to D3DXPlaneDotCoord.
+ */
+PL_INLINE static float plGetPlaneDotProduct( const PLVector4 *plane, const PLVector3 *vector ) {
+	return plane->x * vector->x + plane->y * vector->y + plane->z * vector->z + plane->w * 1.0f;
+}
+
+/**
+ * Function that works similarly to D3DXPlaneNormalize.
+ */
+PL_INLINE static PLVector4 plNormalizePlane( PLVector4 plane ) {
+	float normal = sqrtf( plane.x * plane.x + plane.y * plane.y + plane.y * plane.y );
+	if ( normal > 0.0f ) {
+		plane.x /= normal;
+		plane.y /= normal;
+		plane.z /= normal;
+		plane.w /= normal;
+	} else {
+		plane.x = plane.y = plane.z = plane.w = 0.0f;
+	}
+
+	return plane;
+}

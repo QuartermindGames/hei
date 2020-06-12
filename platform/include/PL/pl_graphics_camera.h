@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #pragma once
 
 #include "platform_physics.h"
@@ -44,6 +45,8 @@ typedef struct PLViewport {
     unsigned int bufferSize;
 } PLViewport;
 
+typedef PLVector4 PLViewFrustum[ 5 ];
+
 typedef struct PLCamera {
     float fov;
     float near, far;
@@ -51,6 +54,8 @@ typedef struct PLCamera {
 
     PLVector3 angles, position;
     PLVector3 forward, up;
+
+	PLViewFrustum frustum;
 
     PLAABB bounds;
 
@@ -67,8 +72,10 @@ PL_EXTERN_C
 
 PL_EXTERN PLCamera *plCreateCamera(void);
 PL_EXTERN void plDestroyCamera(PLCamera *camera);
-
 PL_EXTERN void plSetupCamera(PLCamera *camera);
+
+PL_EXTERN bool plIsBoxInsideView( const PLCamera *camera, const PLCollisionAABB *bounds );
+PL_EXTERN bool plIsSphereInsideView( const PLCamera *camera, const PLCollisionSphere *sphere );
 
 PL_EXTERN const PLViewport *plGetCurrentViewport(void);
 
