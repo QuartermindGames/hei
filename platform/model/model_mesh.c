@@ -632,6 +632,9 @@ void plDrawGrid( const PLMatrix4 *transform, int x, int y, int w, int h, unsigne
 	}
 }
 
+/**
+ * Draw lines at each vertex point representing the direction of the normal. This is very slow!
+ */
 void plDrawMeshNormals( const PLMatrix4 *transform, const PLMesh *mesh ) {
 	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
 		PLVector3 linePos = mesh->vertices[ i ].position;
