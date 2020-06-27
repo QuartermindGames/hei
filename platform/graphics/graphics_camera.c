@@ -120,6 +120,42 @@ void plSetupCamera(PLCamera *camera) {
         default: break;
     }
 
+	/* setup the camera frustum */
+
+	PLMatrix4 fov = plMultiplyMatrix4( camera->internal.view, camera->internal.proj );
+
+	/* todo: revisit... */
+
+	camera->frustum[ 0 ].x = fov.m[ 3 ] - fov.m[ 0 ];
+	camera->frustum[ 0 ].y = fov.m[ 7 ] - fov.m[ 4 ];
+	camera->frustum[ 0 ].z = fov.m[ 11 ] - fov.m[ 8 ];
+	camera->frustum[ 0 ].w = fov.m[ 15 ] - fov.m[ 12 ];
+	camera->frustum[ 0 ] = plNormalizePlane( camera->frustum[ 0 ] );
+
+	camera->frustum[ 1 ].x = fov.m[ 3 ] + fov.m[ 0 ];
+	camera->frustum[ 1 ].y = fov.m[ 7 ] + fov.m[ 4 ];
+	camera->frustum[ 1 ].z = fov.m[ 11 ] + fov.m[ 8 ];
+	camera->frustum[ 1 ].w = fov.m[ 15 ] + fov.m[ 12 ];
+	camera->frustum[ 1 ] = plNormalizePlane( camera->frustum[ 1 ] );
+
+	camera->frustum[ 2 ].x = fov.m[ 3 ] - fov.m[ 1 ];
+	camera->frustum[ 2 ].y = fov.m[ 7 ] - fov.m[ 5 ];
+	camera->frustum[ 2 ].z = fov.m[ 11 ] - fov.m[ 9 ];
+	camera->frustum[ 2 ].w = fov.m[ 15 ] - fov.m[ 13 ];
+	camera->frustum[ 2 ] = plNormalizePlane( camera->frustum[ 2 ] );
+
+	camera->frustum[ 3 ].x = fov.m[ 3 ] + fov.m[ 1 ];
+	camera->frustum[ 3 ].y = fov.m[ 7 ] + fov.m[ 5 ];
+	camera->frustum[ 3 ].z = fov.m[ 11 ] + fov.m[ 9 ];
+	camera->frustum[ 3 ].w = fov.m[ 15 ] + fov.m[ 13 ];
+	camera->frustum[ 3 ] = plNormalizePlane( camera->frustum[ 3 ] );
+
+	camera->frustum[ 4 ].x = fov.m[ 3 ] - fov.m[ 2 ];
+	camera->frustum[ 4 ].y = fov.m[ 7 ] - fov.m[ 6 ];
+	camera->frustum[ 4 ].z = fov.m[ 11 ] - fov.m[ 10 ];
+	camera->frustum[ 4 ].w = fov.m[ 15 ] - fov.m[ 14 ];
+	camera->frustum[ 4 ] = plNormalizePlane( camera->frustum[ 4 ] );
+
     // keep the gfx_state up-to-date on the situation
     gfx_state.current_viewport = &camera->viewport;
 
@@ -128,6 +164,54 @@ void plSetupCamera(PLCamera *camera) {
     gfx_state.projection_matrix = camera->internal.proj;
 
     CallGfxFunction(SetupCamera, camera);
+}
+
+/**
+ * Checks that the given bounding box is within the view space.
+ */
+bool plIsBoxInsideView( const PLCamera *camera, const PLCollisionAABB *bounds ) {
+	PLVector3 mins = plAddVector3( bounds->mins, bounds->origin );
+	PLVector3 maxs = plAddVector3( bounds->maxs, bounds->origin );
+	for ( unsigned int i = 0; i < 5; ++i ) {
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( mins.x, mins.y, mins.z ) ) >= 0.0f ) {
+			continue;
+		}
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( maxs.x, mins.y, mins.z ) ) >= 0.0f ) {
+			continue;
+		}
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( mins.x, maxs.y, mins.z ) ) >= 0.0f ) {
+			continue;
+		}
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( maxs.x, maxs.y, mins.z ) ) >= 0.0f ) {
+			continue;
+		}
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( mins.x, mins.y, maxs.z ) ) >= 0.0f ) {
+			continue;
+		}
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( mins.x, maxs.y, maxs.z ) ) >= 0.0f ) {
+			continue;
+		}
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( maxs.x, maxs.y, maxs.z ) ) >= 0.0f ) {
+			continue;
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Checks that the given sphere is within the view space.
+ */
+bool plIsSphereInsideView( const PLCamera *camera, const PLCollisionSphere *sphere ) {
+	for ( unsigned int i = 0; i < 5; ++i ) {
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &sphere->origin ) < -sphere->radius ) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 const PLViewport *plGetCurrentViewport(void) {

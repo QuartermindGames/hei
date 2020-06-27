@@ -445,6 +445,8 @@ typedef enum PLMatrixMode {
 	PL_NUM_MATRIX_MODES
 } PLMatrixMode;
 
+PL_EXTERN_C
+
 void plMatrixMode( PLMatrixMode mode );
 PLMatrixMode plGetMatrixMode( void );
 
@@ -459,3 +461,5 @@ void plScaleMatrix( PLVector3 scale );
 
 void plPushMatrix( void );
 void plPopMatrix( void );
+
+PL_EXTERN_C_END
