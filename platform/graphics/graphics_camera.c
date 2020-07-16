@@ -87,6 +87,45 @@ void plDestroyCamera(PLCamera *camera) {
     pl_free( camera );
 }
 
+void plMakeFrustumPlanes( const PLMatrix4 *matrix, PLViewFrustum outFrustum ) {
+	// Right
+	outFrustum[ PL_FRUSTUM_PLANE_RIGHT ].x = matrix->m[ 3 ] - matrix->m[ 0 ];
+	outFrustum[ PL_FRUSTUM_PLANE_RIGHT ].y = matrix->m[ 7 ] - matrix->m[ 4 ];
+	outFrustum[ PL_FRUSTUM_PLANE_RIGHT ].z = matrix->m[ 11 ] - matrix->m[ 8 ];
+	outFrustum[ PL_FRUSTUM_PLANE_RIGHT ].w = matrix->m[ 15 ] - matrix->m[ 12 ];
+	outFrustum[ PL_FRUSTUM_PLANE_RIGHT ] = plNormalizePlane( outFrustum[ PL_FRUSTUM_PLANE_RIGHT ] );
+	// Left
+	outFrustum[ PL_FRUSTUM_PLANE_LEFT ].x = matrix->m[ 3 ] + matrix->m[ 0 ];
+	outFrustum[ PL_FRUSTUM_PLANE_LEFT ].y = matrix->m[ 7 ] + matrix->m[ 4 ];
+	outFrustum[ PL_FRUSTUM_PLANE_LEFT ].z = matrix->m[ 11 ] + matrix->m[ 8 ];
+	outFrustum[ PL_FRUSTUM_PLANE_LEFT ].w = matrix->m[ 15 ] + matrix->m[ 12 ];
+	outFrustum[ PL_FRUSTUM_PLANE_LEFT ] = plNormalizePlane( outFrustum[ PL_FRUSTUM_PLANE_LEFT ] );
+	// Bottom
+	outFrustum[ PL_FRUSTUM_PLANE_BOTTOM ].x = matrix->m[ 3 ] - matrix->m[ 1 ];
+	outFrustum[ PL_FRUSTUM_PLANE_BOTTOM ].y = matrix->m[ 7 ] - matrix->m[ 5 ];
+	outFrustum[ PL_FRUSTUM_PLANE_BOTTOM ].z = matrix->m[ 11 ] - matrix->m[ 9 ];
+	outFrustum[ PL_FRUSTUM_PLANE_BOTTOM ].w = matrix->m[ 15 ] - matrix->m[ 13 ];
+	outFrustum[ PL_FRUSTUM_PLANE_BOTTOM ] = plNormalizePlane( outFrustum[ PL_FRUSTUM_PLANE_BOTTOM ] );
+	// Top
+	outFrustum[ PL_FRUSTUM_PLANE_TOP ].x = matrix->m[ 3 ] + matrix->m[ 1 ];
+	outFrustum[ PL_FRUSTUM_PLANE_TOP ].y = matrix->m[ 7 ] + matrix->m[ 5 ];
+	outFrustum[ PL_FRUSTUM_PLANE_TOP ].z = matrix->m[ 11 ] + matrix->m[ 9 ];
+	outFrustum[ PL_FRUSTUM_PLANE_TOP ].w = matrix->m[ 15 ] + matrix->m[ 13 ];
+	outFrustum[ PL_FRUSTUM_PLANE_TOP ] = plNormalizePlane( outFrustum[ PL_FRUSTUM_PLANE_TOP ] );
+	// Far
+	outFrustum[ PL_FRUSTUM_PLANE_FAR ].x = matrix->m[ 3 ] - matrix->m[ 2 ];
+	outFrustum[ PL_FRUSTUM_PLANE_FAR ].y = matrix->m[ 7 ] - matrix->m[ 6 ];
+	outFrustum[ PL_FRUSTUM_PLANE_FAR ].z = matrix->m[ 11 ] - matrix->m[ 10 ];
+	outFrustum[ PL_FRUSTUM_PLANE_FAR ].w = matrix->m[ 15 ] - matrix->m[ 14 ];
+	outFrustum[ PL_FRUSTUM_PLANE_FAR ] = plNormalizePlane( outFrustum[ PL_FRUSTUM_PLANE_FAR ] );
+	// Near
+	outFrustum[ PL_FRUSTUM_PLANE_NEAR ].x = matrix->m[ 3 ] + matrix->m[ 2 ];
+	outFrustum[ PL_FRUSTUM_PLANE_NEAR ].y = matrix->m[ 7 ] + matrix->m[ 6 ];
+	outFrustum[ PL_FRUSTUM_PLANE_NEAR ].z = matrix->m[ 11 ] + matrix->m[ 10 ];
+	outFrustum[ PL_FRUSTUM_PLANE_NEAR ].w = matrix->m[ 15 ] + matrix->m[ 14 ];
+	outFrustum[ PL_FRUSTUM_PLANE_NEAR ] = plNormalizePlane( outFrustum[ PL_FRUSTUM_PLANE_NEAR ] );
+}
+
 void plSetupCamera(PLCamera *camera) {
     plAssert(camera);
 
@@ -96,65 +135,35 @@ void plSetupCamera(PLCamera *camera) {
     float w = (float)camera->viewport.w;
     float h = (float)camera->viewport.h;
 
-    switch(camera->mode) {
-        case PL_CAMERA_MODE_PERSPECTIVE: {
-            camera->internal.proj = plPerspective(camera->fov, w / h, camera->near, camera->far);
+	switch ( camera->mode ) {
+		case PL_CAMERA_MODE_PERSPECTIVE: {
+			camera->internal.proj = plPerspective( camera->fov, w / h, camera->near, camera->far );
 
-            PLVector3 forward = PLVector3(
-                    cosf(plDegreesToRadians(camera->angles.y)) * cosf(plDegreesToRadians(camera->angles.x)),
-                    sinf(plDegreesToRadians(camera->angles.x)),
-                    sinf(plDegreesToRadians(camera->angles.y)) * cosf(plDegreesToRadians(camera->angles.x))
-                    );
-            camera->forward = plNormalizeVector3(forward);
-            camera->internal.view = plLookAt(camera->position, plAddVector3(camera->position, camera->forward), camera->up);
-        } break;
+			float x = cosf( plDegreesToRadians( camera->angles.y ) ) * cosf( plDegreesToRadians( camera->angles.x ) );
+			float y = sinf( plDegreesToRadians( camera->angles.x ) );
+			float z = sinf( plDegreesToRadians( camera->angles.y ) ) * cosf( plDegreesToRadians( camera->angles.x ) );
 
-        case PL_CAMERA_MODE_ORTHOGRAPHIC: {
-            camera->internal.proj = plOrtho(0, w, h, 0, camera->near, camera->far);
-        } break;
+			camera->forward = plNormalizeVector3( PLVector3( x, y, z ) );
+			camera->internal.view = plLookAt( camera->position, plAddVector3( camera->position, camera->forward ), camera->up );
+			break;
+		}
 
-        case PL_CAMERA_MODE_ISOMETRIC: {
-            camera->internal.proj = plOrtho(-camera->fov, camera->fov, -camera->fov, 5, -5, 40);
-        } break;
+		case PL_CAMERA_MODE_ORTHOGRAPHIC:
+			camera->internal.proj = plOrtho( 0, w, h, 0, camera->near, camera->far );
+			break;
 
-        default: break;
-    }
+		case PL_CAMERA_MODE_ISOMETRIC:
+			camera->internal.proj = plOrtho( -camera->fov, camera->fov, -camera->fov, 5, -5, 40 );
+			break;
+
+		default:
+			break;
+	}
 
 	/* setup the camera frustum */
-
-	PLMatrix4 fov = plMultiplyMatrix4( camera->internal.view, camera->internal.proj );
-
-	/* todo: revisit... */
-
-	camera->frustum[ 0 ].x = fov.m[ 3 ] - fov.m[ 0 ];
-	camera->frustum[ 0 ].y = fov.m[ 7 ] - fov.m[ 4 ];
-	camera->frustum[ 0 ].z = fov.m[ 11 ] - fov.m[ 8 ];
-	camera->frustum[ 0 ].w = fov.m[ 15 ] - fov.m[ 12 ];
-	camera->frustum[ 0 ] = plNormalizePlane( camera->frustum[ 0 ] );
-
-	camera->frustum[ 1 ].x = fov.m[ 3 ] + fov.m[ 0 ];
-	camera->frustum[ 1 ].y = fov.m[ 7 ] + fov.m[ 4 ];
-	camera->frustum[ 1 ].z = fov.m[ 11 ] + fov.m[ 8 ];
-	camera->frustum[ 1 ].w = fov.m[ 15 ] + fov.m[ 12 ];
-	camera->frustum[ 1 ] = plNormalizePlane( camera->frustum[ 1 ] );
-
-	camera->frustum[ 2 ].x = fov.m[ 3 ] - fov.m[ 1 ];
-	camera->frustum[ 2 ].y = fov.m[ 7 ] - fov.m[ 5 ];
-	camera->frustum[ 2 ].z = fov.m[ 11 ] - fov.m[ 9 ];
-	camera->frustum[ 2 ].w = fov.m[ 15 ] - fov.m[ 13 ];
-	camera->frustum[ 2 ] = plNormalizePlane( camera->frustum[ 2 ] );
-
-	camera->frustum[ 3 ].x = fov.m[ 3 ] + fov.m[ 1 ];
-	camera->frustum[ 3 ].y = fov.m[ 7 ] + fov.m[ 5 ];
-	camera->frustum[ 3 ].z = fov.m[ 11 ] + fov.m[ 9 ];
-	camera->frustum[ 3 ].w = fov.m[ 15 ] + fov.m[ 13 ];
-	camera->frustum[ 3 ] = plNormalizePlane( camera->frustum[ 3 ] );
-
-	camera->frustum[ 4 ].x = fov.m[ 3 ] - fov.m[ 2 ];
-	camera->frustum[ 4 ].y = fov.m[ 7 ] - fov.m[ 6 ];
-	camera->frustum[ 4 ].z = fov.m[ 11 ] - fov.m[ 10 ];
-	camera->frustum[ 4 ].w = fov.m[ 15 ] - fov.m[ 14 ];
-	camera->frustum[ 4 ] = plNormalizePlane( camera->frustum[ 4 ] );
+	/* todo: this is currently incorrect!! */
+	PLMatrix4 mvp = plMultiplyMatrix4( camera->internal.view, camera->internal.proj );
+	plMakeFrustumPlanes( &mvp, camera->frustum );
 
     // keep the gfx_state up-to-date on the situation
     gfx_state.current_viewport = &camera->viewport;

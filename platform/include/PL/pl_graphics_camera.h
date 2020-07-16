@@ -45,7 +45,18 @@ typedef struct PLViewport {
     unsigned int bufferSize;
 } PLViewport;
 
-typedef PLVector4 PLViewFrustum[ 5 ];
+enum {
+	PL_FRUSTUM_PLANE_RIGHT,
+	PL_FRUSTUM_PLANE_LEFT,
+	PL_FRUSTUM_PLANE_BOTTOM,
+	PL_FRUSTUM_PLANE_TOP,
+	PL_FRUSTUM_PLANE_FAR,
+	PL_FRUSTUM_PLANE_NEAR,
+
+	PL_MAX_FRUSTUM_PLANES
+};
+
+typedef PLVector4 PLViewFrustum[ PL_MAX_FRUSTUM_PLANES ];
 
 typedef struct PLCamera {
     float fov;
