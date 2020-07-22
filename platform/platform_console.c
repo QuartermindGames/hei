@@ -825,6 +825,16 @@ static LogLevel *GetLogLevel(int level) {
     return l;
 }
 
+static int _plGetNextLogLevel( void ) {
+	for ( unsigned int i = 0; i < MAX_LOG_LEVELS; ++i ) {
+		if( levels[ i ].id == 0 ) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // public
 
@@ -839,6 +849,17 @@ void plSetupLogOutput(const char *path) {
     if(plFileExists(log_output_path)) {
         unlink(log_output_path);
     }
+}
+
+int plAddLogLevel( const char *prefix, PLColour colour, bool status ) {
+	int level = _plGetNextLogLevel();
+	if ( level == -1 ) {
+		return -1;
+	}
+
+	plSetupLogLevel( level, prefix, colour, status );
+
+	return level;
 }
 
 void plSetupLogLevel(int level, const char *prefix, PLColour colour, bool status) {
