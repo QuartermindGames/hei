@@ -405,28 +405,64 @@ PL_INLINE static PLMatrix4 plLookAt( PLVector3 eye, PLVector3 center, PLVector3 
 }
 
 PL_INLINE static PLMatrix4 plFrustum( float left, float right, float bottom, float top, float near, float far ) {
-	float m0 = 2.f * near;
+	float m0 = 2.0f * near;
 	float m1 = right - left;
 	float m2 = top - bottom;
 	float m3 = far - near;
-	return ( PLMatrix4 ) { {
-							   m0 / m1, 0, 0, 0,
-							   0, m0 / m2, 0, 0,
-							   ( right + left ) / m1, ( top + bottom ) / m2, ( -far - near ) / m3, -1.f,
-							   0, 0, 0, 1
-						   } };
+
+	PLMatrix4 frustumMatrix;
+
+	frustumMatrix.m[ 0 ] = m0 / m1;
+	frustumMatrix.m[ 1 ] = 0.0f;
+	frustumMatrix.m[ 2 ] = 0.0f;
+	frustumMatrix.m[ 3 ] = 0.0f;
+
+	frustumMatrix.m[ 4 ] = 0.0f;
+	frustumMatrix.m[ 5 ] = m0 / m2;
+	frustumMatrix.m[ 6 ] = 0.0f;
+	frustumMatrix.m[ 7 ] = 0.0f;
+
+	frustumMatrix.m[ 8 ] = ( right + left ) / m1;
+	frustumMatrix.m[ 9 ] = ( top + bottom ) / m2;
+	frustumMatrix.m[ 10 ] = ( -far - near ) / m3;
+	frustumMatrix.m[ 11 ] = -1.0f;
+
+	frustumMatrix.m[ 12 ] = 0.0f;
+	frustumMatrix.m[ 13 ] = 0.0f;
+	frustumMatrix.m[ 14 ] = 0.0f;
+	frustumMatrix.m[ 15 ] = 1.0f;
+
+	return frustumMatrix;
 }
 
 PL_INLINE static PLMatrix4 plOrtho( float left, float right, float bottom, float top, float near, float far ) {
 	float tx = -( right + left ) / ( right - left );
 	float ty = -( top + bottom ) / ( top - bottom );
 	float tz = -( far + near ) / ( far - near );
-	return ( PLMatrix4 ) { {
-							   2 / ( right - left ), 0, 0, 0,
-							   0, 2 / ( top - bottom ), 0, 0,
-							   0, 0, -2 / ( far - near ), 0,
-							   tx, ty, tz, 1
-						   } };
+
+	PLMatrix4 frustumMatrix;
+
+	frustumMatrix.m[ 0 ] = 2 / ( right - left );
+	frustumMatrix.m[ 1 ] = 0.0f;
+	frustumMatrix.m[ 2 ] = 0.0f;
+	frustumMatrix.m[ 3 ] = 0.0f;
+
+	frustumMatrix.m[ 4 ] = 0.0f;
+	frustumMatrix.m[ 5 ] = 2 / ( top - bottom );
+	frustumMatrix.m[ 6 ] = 0.0f;
+	frustumMatrix.m[ 7 ] = 0.0f;
+
+	frustumMatrix.m[ 8 ] = 0.0f;
+	frustumMatrix.m[ 9 ] = 0.0f;
+	frustumMatrix.m[ 10 ] = -2 / ( far - near );
+	frustumMatrix.m[ 11 ] = 0.0f;
+
+	frustumMatrix.m[ 12 ] = tx;
+	frustumMatrix.m[ 13 ] = ty;
+	frustumMatrix.m[ 14 ] = tz;
+	frustumMatrix.m[ 15 ] = 1.0f;
+
+	return frustumMatrix;
 }
 
 PL_INLINE static PLMatrix4 plPerspective( float fov, float aspect, float near, float far ) {
@@ -445,6 +481,8 @@ typedef enum PLMatrixMode {
 	PL_NUM_MATRIX_MODES
 } PLMatrixMode;
 
+PL_EXTERN_C
+
 void plMatrixMode( PLMatrixMode mode );
 PLMatrixMode plGetMatrixMode( void );
 
@@ -459,3 +497,5 @@ void plScaleMatrix( PLVector3 scale );
 
 void plPushMatrix( void );
 void plPopMatrix( void );
+
+PL_EXTERN_C_END

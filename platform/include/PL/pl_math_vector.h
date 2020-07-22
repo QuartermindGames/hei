@@ -436,11 +436,12 @@ PL_INLINE static float plGetPlaneDotProduct( const PLVector4 *plane, const PLVec
  * Function that works similarly to D3DXPlaneNormalize.
  */
 PL_INLINE static PLVector4 plNormalizePlane( PLVector4 plane ) {
-	float normal = sqrtf( plane.x * plane.x + plane.y * plane.y + plane.y * plane.y );
+	PLVector3 v = PLVector3( plane.x, plane.y, plane.z );
+	float normal = plVector3Length( &v );
 	if ( normal > 0.0f ) {
-		plane.x /= normal;
-		plane.y /= normal;
-		plane.z /= normal;
+		plane.x /= -normal;
+		plane.y /= -normal;
+		plane.z /= -normal;
 		plane.w /= normal;
 	} else {
 		plane.x = plane.y = plane.z = plane.w = 0.0f;

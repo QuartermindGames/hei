@@ -66,6 +66,7 @@ void plGenerateTextureCoordinates( PLVertex *vertices, unsigned int numVertices,
 	}
 
 	/* now get the greater sum and dir */
+#if 0
 	float sum = 0.0f;
 	unsigned int dir = 0;
 	for ( unsigned int j = 0; j < 3; ++j ) {
@@ -74,6 +75,7 @@ void plGenerateTextureCoordinates( PLVertex *vertices, unsigned int numVertices,
 		if ( sum > max ) { plVector3Index( projSums[ 0 ], j ) = sum; dir = j; }
 		else if ( sum < min ) { plVector3Index( projSums[ 1 ], j ) = sum; dir = j; }
 	}
+#endif
 
 	PLCollisionAABB bounds = plGenerateAABB( vertices, numVertices );
 	for ( unsigned int i = 0; i < numVertices; ++i ) {
@@ -632,6 +634,9 @@ void plDrawGrid( const PLMatrix4 *transform, int x, int y, int w, int h, unsigne
 	}
 }
 
+/**
+ * Draw lines at each vertex point representing the direction of the normal. This is very slow!
+ */
 void plDrawMeshNormals( const PLMatrix4 *transform, const PLMesh *mesh ) {
 	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
 		PLVector3 linePos = mesh->vertices[ i ].position;
