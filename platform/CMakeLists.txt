@@ -33,7 +33,9 @@ option(PL_USE_GRAPHICS "Graphics" ON)
 
 option(PL_SUPPORT_DIRECT3D "Graphics Direct3D API support" OFF)
 option(PL_SUPPORT_GLIDE "Graphics 3dfx Glide API support" OFF)
-option(PL_SUPPORT_OPENGL "Graphics OpenGL API support" ON)
+
+option( PL_SUPPORT_OPENGL "Graphics OpenGL API support" ON )
+option( PL_USE_GLEW "Use GLEW for OpenGL API support" OFF )
 
 ############################################################
 
@@ -109,11 +111,16 @@ if(PL_USE_GRAPHICS)
 
     if(PL_SUPPORT_OPENGL)
         add_definitions("-DPL_SUPPORT_OPENGL")
-        if (WIN32 OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-            build_glew()
-            target_link_libraries(platform glew_s)
-        else()
-            target_link_libraries(platform GLEW GL)
+        if ( PL_USE_GLEW )
+            add_definitions( "-DPL_USE_GLEW" )
+
+            if (WIN32 OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+                build_glew()
+                target_link_libraries(platform glew_s)
+                target_include_directories( platform PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glew-2.2.0/include/ )
+            else()
+                target_link_libraries(platform GLEW GL)
+            endif()
         endif()
     endif()
 
@@ -141,6 +148,4 @@ set_property(TARGET platform PROPERTY C_STANDARD_REQUIRED 11)
 target_include_directories(platform PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/
         ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_include_directories(platform PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glew-2.2.0/include/)
+target_include_directories( platform PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} )

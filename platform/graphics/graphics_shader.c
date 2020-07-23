@@ -28,8 +28,16 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_console.h>
 #include <PL/pl_graphics.h>
 
-#if defined(PL_SUPPORT_OPENGL)
+/* todo: move this shit out of here! */
+#if defined( PL_USE_GLEW )
 #   include <GL/glew.h>
+#else
+#   ifndef GL_GLEXT_PROTOTYPES
+#       define GL_GLEXT_PROTOTYPES
+#   endif
+
+#   include <GL/gl.h>
+#   include <GL/glext.h>
 #endif
 
 #include "filesystem_private.h"

@@ -29,7 +29,19 @@ For more information, please refer to <http://unlicense.org>
 
 #include "graphics_private.h"
 
-#include <GL/glew.h>
+#if defined( PL_USE_GLEW )
+#   include <GL/glew.h>
+#else
+#   ifndef GL_GLEXT_PROTOTYPES
+#       define GL_GLEXT_PROTOTYPES
+#   endif
+
+#   include <GL/gl.h>
+#   include <GL/glext.h>
+#   if defined( _WIN32 )
+#       include <GL/wglext.h>
+#   endif
+#endif
 
 #define DEBUG_GL
 
@@ -1078,12 +1090,14 @@ static void MessageCallback(
 #endif
 
 void plInitOpenGL( void ) {
+#if defined( PL_USE_GLEW )
 	glewExperimental = true;
 	GLenum err = glewInit();
 	if ( err != GLEW_OK ) {
 		ReportError( PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", glewGetErrorString( err ) );
 		return;
 	}
+#endif
 
 	// Get any information that will be presented later.
 	gfx_state.hw_extensions = ( const char * ) glGetString( GL_EXTENSIONS );
@@ -1145,9 +1159,15 @@ void plInitOpenGL( void ) {
 	}
 #endif
 
+#if defined( PL_USE_GLEW )
 	if ( GLEW_ARB_direct_state_access || GLVersion( 4, 5 ) ) {
 		gl_capabilities.direct_state_access = true;
 	}
+#else
+	if ( GLVersion( 4, 5 ) ) {
+		gl_capabilities.direct_state_access = true;
+	}
+#endif
 
 	// Init vertex attributes
 	if ( GLVersion( 3, 0 ) ) {
