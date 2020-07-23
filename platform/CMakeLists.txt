@@ -119,9 +119,11 @@ if(PL_USE_GRAPHICS)
                 target_link_libraries(platform glew_s)
                 target_include_directories( platform PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/glew-2.2.0/include/ )
             else()
-                target_link_libraries(platform GLEW GL)
+                target_link_libraries( platform GLEW )
             endif()
         endif()
+
+        target_link_libraries( platform GL )
     endif()
 
     if(PL_SUPPORT_GLIDE)
