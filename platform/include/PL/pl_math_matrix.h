@@ -213,13 +213,15 @@ PL_INLINE static PLMatrix3 plTransposeMatrix3( PLMatrix3 m, PLMatrix3 m2 ) {
 	return m;
 }
 
-PL_INLINE static PLMatrix4 plTransposeMatrix4( PLMatrix4 m, PLMatrix4 m2 ) {
+PL_INLINE static PLMatrix4 plTransposeMatrix4( const PLMatrix4 *m ) {
+	PLMatrix4 out;
 	for ( unsigned int j = 0; j < 4; ++j ) {
 		for ( unsigned int i = 0; i < 4; ++i ) {
-			m.pl_m4pos( i, j ) = m2.pl_m4pos( j, i );
+			out.pl_m4pos( i, j ) = m->pl_m4pos( j, i );
 		}
 	}
-	return m;
+
+	return out;
 }
 
 /* Add */

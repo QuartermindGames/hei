@@ -68,7 +68,7 @@ typedef struct PLCamera {
 
 	PLViewFrustum frustum;
 
-    PLAABB bounds;
+    PLCollisionAABB bounds;
 
     // Viewport
     PLViewport viewport;

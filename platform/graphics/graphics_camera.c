@@ -162,7 +162,8 @@ void plSetupCamera(PLCamera *camera) {
 
 	/* setup the camera frustum */
 	/* todo: this is currently incorrect!! */
-	PLMatrix4 mvp = plMultiplyMatrix4( camera->internal.view, camera->internal.proj );
+	PLMatrix4 viewModel = plTransposeMatrix4( &camera->internal.view );
+	PLMatrix4 mvp = plMultiplyMatrix4( viewModel, camera->internal.proj );
 	plMakeFrustumPlanes( &mvp, camera->frustum );
 
     // keep the gfx_state up-to-date on the situation
