@@ -880,13 +880,12 @@ static void GLAttachShaderStage( PLShaderProgram *program, PLShaderStage *stage 
 }
 
 static void GLCompileShaderStage( PLShaderStage *stage, const char *buf, size_t length ) {
-	plUnused( length );
-
 	if ( !GLVersion( 2, 0 ) ) {
 		return;
 	}
 
-	glShaderSource( stage->internal.id, 1, &buf, NULL );
+	const GLint glLength = length;
+	glShaderSource( stage->internal.id, 1, &buf, &glLength );
 
 	GfxLog( "COMPILING SHADER STAGE...\n" );
 	glCompileShader( stage->internal.id );
