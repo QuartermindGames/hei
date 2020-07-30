@@ -25,8 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_console.h>
-#include <PL/pl_graphics.h>
+#include "filesystem_private.h"
+#include "graphics_private.h"
+
+#include <PL/pl_parse.h>
 
 /* todo: move this shit out of here! */
 #if defined( PL_USE_GLEW )
@@ -40,9 +42,6 @@ For more information, please refer to <http://unlicense.org>
 #   include <GL/glext.h>
 #endif
 
-#include "filesystem_private.h"
-#include "graphics_private.h"
-
 /* shader implementation */
 
 /**********************************************************/
@@ -54,30 +53,20 @@ For more information, please refer to <http://unlicense.org>
  * Inserts the given string into an existing string buffer.
  * Automatically reallocs buffer if it doesn't fit.
  */
-static char *_plInsertString( const char *string, char *buf, size_t *bufSize, size_t *maxBufSize ) {
+static char *_plInsertString( const char *string, char **buf, size_t *bufSize, size_t *maxBufSize ) {
 	/* check if it's going to fit first */
 	size_t strLength = strlen( string );
+	size_t originalSize = *bufSize;
 	*bufSize += strLength;
 	if ( *bufSize >= *maxBufSize ) {
-		*maxBufSize = *bufSize + ( strLength + 256 );
-		buf = pl_realloc( buf, *maxBufSize );
+		*maxBufSize = *bufSize + strLength;
+		*buf = pl_realloc( *buf, *maxBufSize );
 	}
 
 	/* now copy it into our buffer */
-	strncpy( buf, string, strLength );
+	strncpy( *buf + originalSize, string, strLength );
 
-	return ( buf += strLength );
-}
-
-/**
- * Continues skipping for all spaces.
- */
-static char *_plSkipSpaces( char *buf ) {
-	while( *buf != '\0' && *buf == ' ' ) {
-		buf++;
-	}
-
-	return buf;
+	return *buf + originalSize + strLength;
 }
 
 static char *_plSkipLine( char *buf ) {
@@ -95,20 +84,16 @@ static char *_plSkipLine( char *buf ) {
  * and handle any pre-processor commands.
  * todo: this is dumb... rewrite and move it
  */
-static char *GLPreProcessGLSLShader( char **buf, size_t *length, PLShaderStageType type ) {
+static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageType type ) {
 	/* setup the destination buffer */
+	size_t actualLength = 0;
 	size_t maxLength = *length;
     char *dstBuffer = pl_calloc( maxLength, sizeof( char ) );
-    memset( dstBuffer, 0, maxLength );
-	size_t dstLength = 0;
-
-    char *srcPos = *buf;
-    char *dstPos = dstBuffer;
-
-    dstPos = _plInsertString( "#version 150 core\n", dstPos, &dstLength, &maxLength ); //OpenGL 3.2 == GLSL 150
+	char *dstPos = dstBuffer;
 
     /* built-ins */
-#define insert( str ) dstPos = _plInsertString( ( str ), dstPos, &dstLength, &maxLength )
+#define insert( str ) dstPos = _plInsertString( ( str ), &dstBuffer, &actualLength, &maxLength )
+    insert( "#version 150 core\n" ); //OpenGL 3.2 == GLSL 150
 	insert( "uniform mat4 pl_model;" );
 	insert( "uniform mat4 pl_view;" );
 	insert( "uniform mat4 pl_proj;" );
@@ -121,113 +106,55 @@ static char *GLPreProcessGLSLShader( char **buf, size_t *length, PLShaderStageTy
 		insert( "out vec4 pl_frag;" );
     }
 
-    while(*srcPos != '\0') {
-        if(*srcPos == '\n' || *srcPos == '\r' || *srcPos == '\t') {
-			srcPos++;
-            continue;
-        }
+	char *srcPos = buf;
+    char *srcEnd = buf + *length;
+    while( srcPos < srcEnd ) {
+    	if ( *srcPos == '\0' ) {
+    		break;
+    	}
 
-        if(srcPos[0] == ' ' && srcPos[1] == ' ') {
-			srcPos += 2;
-            srcPos = _plSkipSpaces( srcPos );
-            continue;
-        }
+	    if(*srcPos == '\n' || *srcPos == '\r' || *srcPos == '\t') {
+		    srcPos++;
+		    continue;
+	    }
 
-        /* skip comments */
-        if(srcPos[0] == '/' && srcPos[1] == '*') {
-			srcPos += 2;
-            while(!(srcPos[0] == '*' && srcPos[1] == '/')) srcPos++;
-			srcPos += 2;
-            continue;
-        }
+	    if(srcPos[0] == ' ' && srcPos[1] == ' ') {
+		    srcPos += 2;
+		    srcPos = plSkipSpaces( srcPos );
+		    continue;
+	    }
 
-        if(srcPos[0] == '/' && srcPos[1] == '/') {
-			srcPos += 2;
-            srcPos = _plSkipLine( srcPos );
-            continue;
-        }
+	    /* skip comments */
+	    if(srcPos[0] == '/' && srcPos[1] == '*') {
+		    srcPos += 2;
+		    while(!(srcPos[0] == '*' && srcPos[1] == '/')) srcPos++;
+		    srcPos += 2;
+		    continue;
+	    }
 
-#if 0 /* todo: need to overhaul how shaders work to do this... fun */
-        if(srcPos[0] == '#') {
-			srcPos++;
-            if(pl_strncasecmp(srcPos, "include", 7) == 0) {
-				srcPos += 7;
-				srcPos = _plSkipSpaces( srcPos );
+	    if(srcPos[0] == '/' && srcPos[1] == '/') {
+		    srcPos += 2;
+		    srcPos = _plSkipLine( srcPos );
+		    continue;
+	    }
 
-                /* pull the path out */
-                if(*srcPos++ == '"') {
-                    char fileName[ 64 ];
-                    unsigned int i = 0;
-                    while(*srcPos != '"') {
-						if ( *srcPos == '\n' || *srcPos == '\r' ) {
-							GfxLog( "Invalid include argument provided, parsing failed!\n" );
-							break;
-						}
+	    if ( ++actualLength > maxLength ) {
+		    ++maxLength;
 
-						fileName[ i++ ] = *srcPos++;
-                    }
-					fileName[ i ] = '\0';
+		    char *oldDstBuffer = dstBuffer;
+		    dstBuffer = pl_realloc(dstBuffer, maxLength);
 
-					char path[ PL_SYSTEM_MAX_PATH ];
-					snprintf( path, sizeof( path ), "%s%s", , fileName );
+		    dstPos = dstBuffer + (dstPos - oldDstBuffer);
+	    }
 
-					PLFile *filePtr = plOpenFile( path, true );
-					if ( filePtr != NULL ) {
-						// Copy the data across
-						size_t incLength = plGetFileSize( filePtr );
-						char *incBuf = pl_malloc( incLength );
-						strncpy( incBuf, dstPos, *length );
-						memcpy( incBuf, plGetFileData( filePtr ), incLength );
-
-						// And we're now done with this!
-						plCloseFile( filePtr );
-
-						if ( GLPreProcessGLSLShader( &incBuf, &incLength, type ) != NULL ) {
-
-						}
-
-						// Now resize our current dataset and copy it across
-
-						free( incBuf );
-					} else {
-						GfxLog( "Failed to open include, \"%s\"!\n", path );
-						continue;
-					}
-
-					srcPos += 2;
-					continue;
-                } else {
-					GfxLog( "Expected \"\", got \"%s\"!\n", srcPos );
-				}
-            } else if(pl_strncasecmp(srcPos, "ifdef", 5) == 0) {
-				srcPos += 5;
-                /* todo */
-            } else if(pl_strncasecmp(srcPos, "if", 2) == 0) {
-				srcPos += 2;
-                /* todo
-                 * should be followed by 'defined' or whatever? */
-            } else if(pl_strncasecmp(srcPos, "define", 6) == 0) {
-				srcPos += 6;
-                /* todo
-                 * save result to table and overwrite any results */
-            }
-
-            continue;
-        }
-#endif
-
-        *dstPos++ = *srcPos++;
-		dstLength++;
+	    *dstPos++ = *srcPos++;
     }
 
+    /* free the original buffer that was passed in */
+	pl_free( buf );
+
     /* resize and update buf to match */
-
-	printf( "%s\n", dstBuffer );
-
-	free( *buf );
-
-	*buf = dstBuffer;
-	*length = dstLength;
+	*length = actualLength;
 
 	return dstBuffer;
 }
@@ -289,14 +216,14 @@ void plCompileShaderStage( PLShaderStage *stage, const char *buf, size_t length 
 	_plResetError();
 
 #if defined( PL_SUPPORT_OPENGL )
-	char *n_buf = pl_calloc( sizeof( char ), length + 1 );
-	strncpy( n_buf, buf, length );
+	char *bufDst = pl_malloc( length );
+	memcpy( bufDst, buf, length );
 
-	n_buf = GLPreProcessGLSLShader( &n_buf, &length, stage->type );
+	bufDst = GLPreProcessGLSLShader( bufDst, &length, stage->type );
 
-	CallGfxFunction( CompileShaderStage, stage, n_buf, length );
+	CallGfxFunction( CompileShaderStage, stage, bufDst, length );
 
-	pl_free( n_buf );
+	pl_free( bufDst );
 #else
 	CallGfxFunction( CompileShaderStage, stage, buf, length );
 #endif

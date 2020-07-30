@@ -25,8 +25,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_private.h"
+#include <PL/pl_parse.h>
 
+/**
+ * Continues skipping for all spaces.
+ */
+char *plSkipSpaces( char *buf ) {
+	while( *buf == ' ' ) {
+		buf++;
+	}
+
+	return buf;
+}
+
+#if 0
 struct {
     char *buffer, *line_buffer;
 
@@ -106,5 +118,4 @@ void plSetupParser(const char *buffer, unsigned int length) {
 
     parser_block.buffer_size = length;
 }
-
-
+#endif
