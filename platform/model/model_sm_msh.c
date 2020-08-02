@@ -52,12 +52,13 @@ static PLModel* LoadMESH(PLFile* fp) {
     return NULL;
   }
 
-  char list_identifier[4];
+  char list_identifier[5];
   if (plReadFile(fp, list_identifier, sizeof(char), 4) != 4) {
     return NULL;
   }
+  list_identifier[ 4 ] = '\0';
 
-  if (strncmp(list_identifier, "OLST", 4) != 0) {
+  if ( strncmp( list_identifier, "OLST", 4 ) != 0 ) {
     ReportError(PL_RESULT_FILETYPE, "invalid identifier, expected OLST but found %s", list_identifier);
     return NULL;
   }
