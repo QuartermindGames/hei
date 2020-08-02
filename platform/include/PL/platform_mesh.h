@@ -85,9 +85,6 @@ typedef struct PLMesh {
         unsigned int    buffers[32];
         PLMeshPrimitive old_primitive;  /* provided for switching between different primitive modes */
     } internal;
-
-    struct PLMesh* nextMesh;
-    struct PLMesh* prevMesh;
 } PLMesh;
 
 typedef struct PLCollisionAABB PLCollisionAABB;
