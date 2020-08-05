@@ -119,4 +119,6 @@ uint8_t *plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels);
 
 PLresult plWriteTIFFImage(const PLImage *image, const char *path);
 
+PL_EXTERN const char **plGetSupportedImageFormats( unsigned int *numElements );
+
 PL_EXTERN_C_END

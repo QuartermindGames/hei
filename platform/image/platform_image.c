@@ -628,35 +628,61 @@ uint8_t *plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels) {
 bool plFlipImageVertical(PLImage *image) {
 	unsigned int width  = image->width;
 	unsigned int height = image->height;
-	
+
 	unsigned int bytes_per_pixel = plImageBytesPerPixel(image->format);
 	if(bytes_per_pixel == 0) {
 		ReportError(PL_RESULT_IMAGEFORMAT, "cannot flip images in this format");
 		return false;
 	}
-	
+
 	unsigned int bytes_per_row = width * bytes_per_pixel;
-	
+
 	unsigned char *swap = pl_malloc(bytes_per_row);
 	if(swap == NULL) {
 		return false;
 	}
-	
+
 	for(unsigned int l = 0; l < image->levels; ++l) {
 		for(unsigned int r = 0; r < height / 2; ++r) {
 			unsigned char *tr = image->data[l] + (r * bytes_per_row);
 			unsigned char *br = image->data[l] + (((height - 1) - r) * bytes_per_row);
-			
+
 			memcpy(swap, tr, bytes_per_row);
 			memcpy(tr, br,   bytes_per_row);
 			memcpy(br, swap, bytes_per_row);
 		}
-		
+
 		bytes_per_row /= 2;
 		height        /= 2;
 	}
-	
+
 	free(swap);
-	
+
 	return true;
+}
+
+/**
+ * At the moment this is hard-coded to return a list of
+ * extensions describing what the platform library supports.
+ * In the future this will be dynamically generated when we
+ * update the image API.
+ *
+ * Last element in the list is null.
+ */
+const char **plGetSupportedImageFormats( unsigned int *numElements ) {
+	static const char *imageFormats[] = {
+			"tga",
+			"png",
+			"bmp",
+			"gif",
+			"jpg",
+			"psd",
+			"tim",
+			"vtf",
+			"swl"
+	};
+
+	*numElements = plArrayElements( imageFormats );
+
+	return imageFormats;
 }
