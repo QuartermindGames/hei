@@ -88,6 +88,8 @@ typedef struct PLVector2 {
 
 #endif
 
+extern const PLVector2 pl_vecOrigin2;
+
 PL_INLINE static PLVector2 plAddVector2( PLVector2 v, PLVector2 v2 ) {
     v.x += v2.x;
     v.y += v2.y;
@@ -287,6 +289,8 @@ typedef struct PLVector3 {
 
 #endif
 
+extern const PLVector3 pl_vecOrigin3;
+
 #define plVector3Index( VECTOR, INDEX ) ( ( float* ) &( VECTOR ) )[ INDEX ]
 
 PL_INLINE static PLVector3 plClampVector3( const PLVector3* v, float min, float max ) {
@@ -416,6 +420,8 @@ typedef struct PLVector4 {
 
     float x, y, z, w;
 } PLVector4;
+
+extern const PLVector4 pl_vecOrigin4;
 
 PL_INLINE static PLVector4 plAddVector4(PLVector4 v, PLVector4 v2) {
   v.x += v2.x;

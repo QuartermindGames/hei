@@ -58,6 +58,7 @@ file(
         llist.c
         polygon.c
         math_matrix.c
+        math_vector.c
         window.c
 
         string/*.*

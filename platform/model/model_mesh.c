@@ -408,12 +408,6 @@ void plDrawBevelledBorder( int x, int y, unsigned int w, unsigned int h ) {
 	plDrawMesh( mesh );
 }
 
-void plDrawCube( PLVector3 position, float size ) {
-	/* todo */
-}
-
-void plDrawSphere() {}  // todo
-
 void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h, PLColour colour ) {
 	static unsigned int last_num_segments = 0;
 	static PLMesh *mesh = NULL;
