@@ -332,29 +332,6 @@ void plDrawMesh( PLMesh *mesh ) {
 
 #if defined(PL_USE_GRAPHICS)    /* todo: move these... */
 
-void plDrawLine( PLVector3 start, PLVector3 end, PLColour colour ) {
-	static PLMesh* mesh = NULL;
-	if( mesh == NULL ) {
-		if( ( mesh = plCreateMesh( PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, 2 ) == NULL ) ) {
-			return;
-		}
-	}
-
-	plClearMesh( mesh );
-
-	plSetMeshVertexPosition( mesh, 0, start );
-	plSetMeshVertexColour( mesh, 0, colour );
-
-	plSetMeshVertexPosition( mesh, 1, end );
-	plSetMeshVertexColour( mesh, 1, colour );
-
-	plUploadMesh( mesh );
-
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
-
-	plDrawMesh( mesh );
-}
-
 void plDrawRaisedBox( int x, int y, unsigned int w, unsigned int h ) {
 	static PLMesh *mesh = NULL;
 	if ( mesh == NULL) {
