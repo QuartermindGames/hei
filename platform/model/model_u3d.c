@@ -143,8 +143,8 @@ static PLModel* ReadU3DModelData(PLFile* data_ptr, PLFile* anim_ptr) {
     qsort(triangles, data_hdr.numpolys, sizeof(U3DTriangle), CompareTriangles);
 
     /* read in all of the animation data from the anim file */
-    U3DVertex* vertices = pl_calloc(data_hdr.numverts * anim_hdr.frames, sizeof(U3DVertex));
-    plReadFile(anim_ptr, vertices, sizeof(U3DVertex), data_hdr.numverts * anim_hdr.frames);
+    U3DVertex* vertices = pl_calloc( (size_t) data_hdr.numverts * anim_hdr.frames, sizeof(U3DVertex));
+    plReadFile(anim_ptr, vertices, sizeof(U3DVertex), (size_t) data_hdr.numverts * anim_hdr.frames);
     plCloseFile(anim_ptr);
 
     PLModel* model_ptr = pl_calloc(1, sizeof(PLModel));

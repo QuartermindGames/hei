@@ -31,6 +31,12 @@ For more information, please refer to <http://unlicense.org>
 
 typedef struct PLWindow PLWindow;
 
+enum {
+	PL_WINDOW_FLAG_OPENGL 	= ( 1 << 0 ),
+	PL_WINDOW_FLAG_DIRECTX	= ( 1 << 1 ),
+	PL_WINDOW_FLAG_SOFTWARE	= ( 1 << 2 ),
+};
+
 PLWindow *plCreateWindow( int w, int h, const char *title );
 void plDestroyWindow( PLWindow *windowPtr );
 
