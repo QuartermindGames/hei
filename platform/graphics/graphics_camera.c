@@ -87,6 +87,27 @@ void plDestroyCamera(PLCamera *camera) {
     pl_free( camera );
 }
 
+/**
+ * Set the camera's field of view, carry out some basic validation.
+ * (does not allow fov in excess of 1 or 179)
+ */
+void plSetCameraFieldOfView( PLCamera *camera, float fieldOfView ) {
+	if ( fieldOfView < 1.0f ) {
+		fieldOfView = 1.0f;
+	} else if ( fieldOfView > 179.0f ) {
+		fieldOfView = 179.0f;
+	}
+
+	camera->fov = fieldOfView;
+}
+
+/**
+ * Return the given camera's field of view.
+ */
+float plGetCameraFieldOfView( const PLCamera *camera ) {
+	return camera->fov;
+}
+
 void plMakeFrustumPlanes( const PLMatrix4 *matrix, PLViewFrustum outFrustum ) {
 	// Right
 	outFrustum[ PL_FRUSTUM_PLANE_RIGHT ].x = matrix->m[ 3 ] - matrix->m[ 0 ];
@@ -161,9 +182,9 @@ void plSetupCamera(PLCamera *camera) {
 	}
 
 	/* setup the camera frustum */
-	/* todo: this is currently incorrect!! */
-	PLMatrix4 viewModel = plTransposeMatrix4( &camera->internal.view );
-	PLMatrix4 mvp = plMultiplyMatrix4( viewModel, camera->internal.proj );
+	PLMatrix4 mvp = plMatrix4Identity();
+	mvp = plMultiplyMatrix4( mvp, camera->internal.proj );
+	mvp = plMultiplyMatrix4( mvp, camera->internal.view );
 	plMakeFrustumPlanes( &mvp, camera->frustum );
 
     // keep the gfx_state up-to-date on the situation

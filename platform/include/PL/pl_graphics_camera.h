@@ -83,6 +83,10 @@ PL_EXTERN_C
 
 PL_EXTERN PLCamera *plCreateCamera(void);
 PL_EXTERN void plDestroyCamera(PLCamera *camera);
+
+PL_EXTERN void plSetCameraFieldOfView( PLCamera *camera, float fieldOfView );
+PL_EXTERN float plGetCameraFieldOfView( const PLCamera *camera );
+
 PL_EXTERN void plSetupCamera(PLCamera *camera);
 
 PL_EXTERN bool plIsBoxInsideView( const PLCamera *camera, const PLCollisionAABB *bounds );

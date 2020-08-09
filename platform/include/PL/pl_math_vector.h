@@ -336,13 +336,6 @@ PL_INLINE static PLVector3 plDivideVector3(PLVector3 v, PLVector3 v2) {
   return v;
 }
 
-PL_INLINE static PLVector3 plDivideVector3f(PLVector3 v, float v2) {
-  v.x /= v2;
-  v.y /= v2;
-  v.z /= v2;
-  return v;
-}
-
 PL_INLINE static PLVector3 plInverseVector3(PLVector3 v) {
   v.x = -v.x;
   v.y = -v.y;
@@ -431,6 +424,26 @@ PL_INLINE static PLVector4 plAddVector4(PLVector4 v, PLVector4 v2) {
   return v;
 }
 
+/* Vector Length */
+
+/******************************************************************/
+/* Vector Divide */
+
+PL_INLINE static PLVector3 plDivideVector3f( PLVector3 v, float v2 ) {
+	v.x /= v2;
+	v.y /= v2;
+	v.z /= v2;
+	return v;
+}
+
+PL_INLINE static PLVector4 plDivideVector4f( PLVector4 v, float v2 ) {
+	v.x /= v2;
+	v.y /= v2;
+	v.z /= v2;
+	v.w /= v2;
+	return v;
+}
+
 /**
  * Function that works similarly to D3DXPlaneDotCoord.
  */
@@ -442,16 +455,30 @@ PL_INLINE static float plGetPlaneDotProduct( const PLVector4 *plane, const PLVec
  * Function that works similarly to D3DXPlaneNormalize.
  */
 PL_INLINE static PLVector4 plNormalizePlane( PLVector4 plane ) {
+#if 0
 	PLVector3 v = PLVector3( plane.x, plane.y, plane.z );
-	float normal = plVector3Length( &v );
-	if ( normal > 0.0f ) {
-		plane.x /= -normal;
-		plane.y /= -normal;
-		plane.z /= -normal;
-		plane.w /= normal;
+	float l = plVector3Length( &v );
+	if ( l > 0.0f ) {
+		/* normals */
+		plane.x /= -l;
+		plane.y /= -l;
+		plane.z /= -l;
+		/* dist */
+		plane.w /= l;
 	} else {
 		plane.x = plane.y = plane.z = plane.w = 0.0f;
 	}
 
 	return plane;
+#else
+	PLVector3 v = PLVector3( plane.x, plane.y, plane.z );
+	float l = plVector3Length( &v );
+
+	plane.x /= l;
+	plane.y /= l;
+	plane.z /= l;
+	plane.w /= l;
+
+	return plane;
+#endif
 }
