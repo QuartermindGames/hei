@@ -27,8 +27,8 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_math.h>
 #include <PL/platform_console.h>
-#include <PL/platform_graphics.h>
-#include <PL/platform_graphics_camera.h>
+#include <PL/pl_graphics.h>
+#include <PL/pl_graphics_camera.h>
 #include <PL/platform_model.h>
 #include <PL/platform_package.h>
 #include <PL/platform_filesystem.h>
@@ -44,6 +44,9 @@ For more information, please refer to <http://unlicense.org>
 
 #define WIDTH   800
 #define HEIGHT  600
+
+#define CENTER_X    WIDTH / 2
+#define CENTER_Y    HEIGHT / 2
 
 static PLCamera *mainCamera = NULL;
 static PLWindow *mainWindow = NULL;
@@ -89,43 +92,17 @@ static void CreateWindow( void ) {
     SDL_DisableScreenSaver();
 }
 
-static void DestroyWindow( void ) {
-    if( window == NULL ) {
-        return;
-    }
-
-    SDL_DestroyWindow( window );
-}
-
-/* Displays a simple dialogue window. */
-static void MessageBox( const char *title, const char *msg, ... ) {
-    char buf[ 4096 ];
-    va_list args;
-    va_start( args, msg );
-    vsprintf( buf, msg, args );
-    va_end( args );
-    SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, title, buf, NULL );
-}
-
 ////////////////////////////////////////////////////////////////////////////////////
 
-static PLCamera *main_camera;
-
-static void ProcessKeyboard( void ) {
-    const uint8_t *state = SDL_GetKeyboardState( NULL );
-    if( state[ SDL_SCANCODE_1 ] ) {
-        glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+static void ProcessKeyboard(void) {
+    const uint8_t *state = SDL_GetKeyboardState(NULL);
+    if(state[SDL_SCANCODE_1]) {
         view_mode = VIEW_MODE_LIT;
-    } else if( state[ SDL_SCANCODE_2 ] ) {
-        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-        glDisable( GL_LIGHTING );
+    } else if(state[SDL_SCANCODE_2]) {
         view_mode = VIEW_MODE_WIREFRAME;
-    } else if( state[ SDL_SCANCODE_3 ] ) {
-        glPolygonMode( GL_FRONT_AND_BACK, GL_POINT );
-        glDisable( GL_LIGHTING );
+    } else if(state[SDL_SCANCODE_3]) {
         view_mode = VIEW_MODE_POINTS;
-    } else if( state[ SDL_SCANCODE_4 ] ) {
-        glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    } else if(state[SDL_SCANCODE_4]) {
         view_mode = VIEW_MODE_WEIGHTS;
     } else if( state[ SDL_SCANCODE_5 ] ) {
         view_mode = VIEW_MODE_SKELETON;
@@ -180,7 +157,9 @@ static void ProcessKeyboard( void ) {
 #endif
 
 // loads a model in and then frees it
-static void TempModelLoad( const char *path ) {
+static void TempModelLoad( const char *path, void *userData ) {
+	plUnused( userData );
+
     PLModel *model = plLoadModel( path );
     if( model != NULL ) {
         plDestroyModel( model );
@@ -217,6 +196,7 @@ int main( int argc, char **argv ) {
 
     bool extract_model = false;
     bool scan_directory = false;
+    bool useMouseLook = false;
 
     for( int i = 1; i < argc; ++i ) {
         if( argv[ i ] == NULL || argv[ i ][ 0 ] == '\0' ) {
@@ -247,11 +227,9 @@ int main( int argc, char **argv ) {
             return EXIT_FAILURE;
         }
 
-        plScanDirectory( model_path, model_extension, TempModelLoad, false );
+        plScanDirectory( model_path, model_extension, TempModelLoad, false, NULL );
         return EXIT_SUCCESS;
     }
-
-    CreateWindow();
 
     mainWindow = plCreateWindow( WIDTH, HEIGHT, TITLE );
     if( mainWindow ) {
@@ -289,8 +267,7 @@ int main( int argc, char **argv ) {
     mainCamera->viewport.w  = WIDTH;
     mainCamera->viewport.h  = HEIGHT;
 
-    plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
-
+	plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
     plSetCullMode( PL_CULL_NONE );
 
     PLLight lights[ 4 ];
@@ -317,11 +294,8 @@ int main( int argc, char **argv ) {
     plRegisterShaderStageFromMemory( program, vertex_stage, strlen( vertex_stage ), PL_SHADER_TYPE_VERTEX );
     plRegisterShaderStageFromMemory( program, fragment_stage, strlen( fragment_stage ), PL_SHADER_TYPE_FRAGMENT );
 
-    plLinkShaderProgram( program );
-
-    plRegisterShaderProgramUniforms( program );
-
-    plSetShaderProgram( program );
+    plLinkShaderProgram(program);
+    plSetShaderProgram(program);
 
     /* done, now for main rendering loop! */
 
@@ -333,7 +307,7 @@ int main( int argc, char **argv ) {
         unsigned int state = SDL_GetMouseState( &xpos, &ypos );
 
         static PLVector3 object_angles = { 0, 0 };
-        if( use_mouse_look ) {
+        if( useMouseLook ) {
             object_angles = PLVector3( 0, 0, 0 );
 
             double n_pos[ 2 ] = { xpos - CENTER_X, ypos - CENTER_Y };
@@ -359,7 +333,7 @@ int main( int argc, char **argv ) {
             static double old_right_pos[ 2 ] = { 0, 0 };
             if( state & SDL_BUTTON( SDL_BUTTON_RIGHT ) ) {
                 double n_y_pos = ypos - old_right_pos[ 1 ];
-                main_camera->position.z += ( n_y_pos / 100.f );
+                mainCamera->position.z += ( n_y_pos / 100.f );
             } else {
                 old_right_pos[ 0 ] = xpos;
                 old_right_pos[ 1 ] = ypos;
@@ -370,8 +344,8 @@ int main( int argc, char **argv ) {
             if( state & SDL_BUTTON( SDL_BUTTON_MIDDLE ) ) {
                 double n_x_pos = xpos - old_middle_pos[ 0 ];
                 double n_y_pos = ypos - old_middle_pos[ 1 ];
-                main_camera->position.y += ( n_y_pos / 50.f );
-                main_camera->position.x -= ( n_x_pos / 50.f );
+                mainCamera->position.y += ( n_y_pos / 50.f );
+                mainCamera->position.x -= ( n_x_pos / 50.f );
             } else {
                 old_middle_pos[ 0 ] = xpos;
                 old_middle_pos[ 1 ] = ypos;
@@ -385,25 +359,16 @@ int main( int argc, char **argv ) {
 
         plClearBuffers( PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
 
-        glLoadIdentity();
-        glPushMatrix();
-        glRotatef( object_angles.y, 1, 0, 0 );
-        glRotatef( object_angles.x, 0, 1, 0 );
-        glRotatef( object_angles.z, 0, 0, 1 );
-
-        //light[0].position = PLVector3(0, 10.f, 0);
-        //plApplyModelLighting(model, &light[0], PLVector3(20.f, 50.f, 80.f));
-        //plApplyModelLighting(model, &light[1], PLVector3(0, 0, 0));
-        //plApplyModelLighting(model, &light[2], PLVector3(0, 0, 0));
-        //plApplyModelLighting(model, &light[3], PLVector3(0, 0, 0));
+        plLoadIdentityMatrix();
+        plPushMatrix();
+        plRotateMatrix( object_angles.y, 1, 0, 0 );
+        plRotateMatrix( object_angles.x, 0, 1, 0 );
+        plRotateMatrix( object_angles.z, 0, 0, 1 );
 
         switch( viewMode ) {
         default: break;
 
         case VIEW_MODE_LIT:
-            plDrawModel( model );
-            break;
-
         case VIEW_MODE_WEIGHTS:
         case VIEW_MODE_WIREFRAME:
             plDrawModel( model );
@@ -414,7 +379,7 @@ int main( int argc, char **argv ) {
             break;
         }
 
-        SDL_GL_SwapWindow( window );
+        plSwapWindow( mainWindow );
     }
 
     plDestroyModel( model );

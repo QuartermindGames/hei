@@ -34,6 +34,7 @@ typedef struct PLWindow {
 	PLSharedWindowState	sharedState;
 	HWND				winHandle;
 	HINSTANCE			appInstance;
+	HDC                 deviceContext;
 } PLWindow;
 
 static LRESULT WindowCallbackProcedure( HWND windowHandle, unsigned int msg, WPARAM wParam, LPARAM lParam ) {
@@ -81,8 +82,11 @@ PLWindow *plCreateWindow( int w, int h, const char *title ) {
 	ShowWindow( windowInstance, SW_SHOW );
 
 	PLWindow *window = pl_calloc( 1, sizeof( PLWindow ) );
-	window->winHandle	= windowInstance;
-	window->appInstance = instance;
+	window->winHandle	    = windowInstance;
+	window->appInstance     = instance;
+	window->deviceContext   = wglGetCurrentDC();
+
+	return window;
 }
 
 void plDestroyWindow( PLWindow *windowPtr ) {
@@ -108,4 +112,8 @@ void plGetWindowPosition( PLWindow *windowPtr, int *x, int *y ) {
 
 	*x = position.left;
 	*y = position.top;
+}
+
+void plSwapWindow( PLWindow *windowPtr ) {
+	SwapBuffers( windowPtr->deviceContext );
 }

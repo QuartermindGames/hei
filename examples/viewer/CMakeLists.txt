@@ -32,8 +32,4 @@ file(GLOB MODEL_VIEWER_SOURCE_FILES *.*)
 add_executable(model_viewer ${MODEL_VIEWER_SOURCE_FILES})
 
 target_include_directories(model_viewer PUBLIC . ${CMAKE_SYSTEM_INCLUDE_PATH})
-if(WIN32) #temp
-    target_link_libraries(model_viewer platform)
-else()
-    target_link_libraries(model_viewer platform SDL2)
-endif()
+target_link_libraries(model_viewer platform SDL2)
