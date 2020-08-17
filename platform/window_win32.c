@@ -38,7 +38,7 @@ typedef struct PLWindow {
 } PLWindow;
 
 static LRESULT WindowCallbackProcedure( HWND windowHandle, unsigned int msg, WPARAM wParam, LPARAM lParam ) {
-
+	return 0;
 }
 
 PLWindow *plCreateWindow( int w, int h, const char *title ) {
