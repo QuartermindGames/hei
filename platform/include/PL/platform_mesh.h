@@ -97,7 +97,6 @@ PL_EXTERN PLMesh *plCreateMeshInit( PLMeshPrimitive primitive, PLMeshDrawMode mo
 PL_EXTERN PLMesh* plCreateMeshRectangle( float x, float y, float w, float h, PLColour colour);
 PL_EXTERN void plDestroyMesh(PLMesh *mesh);
 
-PL_EXTERN void plDrawBevelledBorder( int x, int y, unsigned int w, unsigned int h );
 PL_EXTERN void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h, PLColour colour );
 PL_EXTERN void plDrawRectangle( const PLMatrix4 *transform, float x, float y, float w, float h, PLColour colour );
 PL_EXTERN void plDrawTexturedRectangle( const PLMatrix4 *transform, float x, float y, float w, float h, PLTexture *texture );
