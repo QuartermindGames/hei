@@ -581,7 +581,7 @@ void plDrawMeshNormals( const PLMatrix4 *transform, const PLMesh *mesh ) {
 /**
  * Utility function for drawing a bounding volume.
  */
-void plDrawBoundingVolume( const PLCollisionAABB *bounds ) {
+void plDrawBoundingVolume( const PLCollisionAABB *bounds, PLColour colour ) {
 	PLMesh *mesh = _plInitLineMesh();
 	if ( mesh == NULL ) {
 		return;
@@ -604,8 +604,6 @@ void plDrawBoundingVolume( const PLCollisionAABB *bounds ) {
 			{ bounds->mins.x, bounds->mins.y, bounds->maxs.z },
 			{ bounds->maxs.x, bounds->mins.y, bounds->mins.z },
 	};
-
-	PLColour colour = PL_COLOUR_BLUE;
 
 	plAddMeshVertex( mesh, boxPoints[ 0 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
 	plAddMeshVertex( mesh, boxPoints[ 1 ], pl_vecOrigin3, colour, pl_vecOrigin2 );

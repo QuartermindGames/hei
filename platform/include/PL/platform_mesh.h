@@ -108,7 +108,7 @@ PL_EXTERN void plDrawLine( PLMatrix4 transform, PLVector3 startPos, PLColour sta
 PL_EXTERN void plDrawSimpleLine( PLMatrix4 transform, PLVector3 startPos, PLVector3 endPos, PLColour colour );
 PL_EXTERN void plDrawGrid( PLMatrix4 transform, int x, int y, int w, int h, unsigned int gridSize );
 PL_EXTERN void plDrawMeshNormals( const PLMatrix4 *transform, const PLMesh *mesh );
-PL_EXTERN void plDrawBoundingVolume( const PLCollisionAABB *bounds );
+PL_EXTERN void plDrawBoundingVolume( const PLCollisionAABB *bounds, PLColour colour );
 
 PL_EXTERN void plClearMesh( PLMesh *mesh );
 PL_EXTERN void plClearMeshVertices( PLMesh *mesh );
