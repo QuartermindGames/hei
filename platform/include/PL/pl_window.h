@@ -41,3 +41,5 @@ PLWindow *plCreateWindow( int w, int h, const char *title );
 void plDestroyWindow( PLWindow *windowPtr );
 
 void plGetWindowPosition( PLWindow *windowPtr, int *x, int *y );
+
+void plSwapWindow( PLWindow *windowPtr );
