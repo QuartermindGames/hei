@@ -25,8 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform.h>
-#include <PL/pl_math_vector.h>
+#include <PL/platform_math.h>
 
 const PLVector2 pl_vecOrigin2 = { 0.0f, 0.0f };
 const PLVector3 pl_vecOrigin3 = { 0.0f, 0.0f, 0.0f };
