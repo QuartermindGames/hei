@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org>
 static void *MemoryCountAlloc(size_t num, size_t size) {
     void *buf = calloc(num, size);
     if(buf == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %lu bytes!\n", (unsigned long) size * num);
+        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %lu bytes", (unsigned long) size * num);
     }
 
     return buf;
@@ -45,7 +45,7 @@ static void *MemoryAlloc(size_t size) {
 static void *MemoryReAlloc( void *ptr, size_t newSize ) {
 	void *buf = realloc( ptr, newSize );
 	if ( buf == NULL ) {
-		ReportError( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %lu bytes!\n", newSize );
+		ReportError( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %lu bytes", newSize );
 	}
 
 	return buf;

@@ -143,7 +143,7 @@ IMPLEMENT_COMMAND( fsMount, "Mount the specified directory." ) {
 	plMountLocation( path );
 }
 
-static void _plRegisterFSCommands() {
+static void _plRegisterFSCommands( void ) {
 	PLConsoleCommand fsCommands[] = {
 		fsListMounted_var,
 		fsUnmount_var,
