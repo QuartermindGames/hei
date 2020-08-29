@@ -51,13 +51,6 @@ bool plSWLFormatCheck(PLFile* fin) {
     return false;
   }
 
-#if 0 /* sadly, isn't always true... */
-  if(!plImageIsPowerOfTwo(header.width, header.height)) {
-      SetResult(PL_RESULT_IMAGERESOLUTION);
-      return false;
-  }
-#endif
-
   return true;
 }
 

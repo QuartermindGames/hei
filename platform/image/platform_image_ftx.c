@@ -36,27 +36,38 @@ typedef struct FtxHeader {
     uint32_t alpha;
 } FtxHeader;
 
-bool plLoadFtxImage(PLFile *fin, PLImage *out) {
-    FtxHeader header;
-    if(plReadFile(fin, &header, sizeof(FtxHeader), 1) != 1) {
-      return false;
-    }
+PLImage *plLoadFtxImage( const char *path ) {
+	PLFile *file = plOpenFile( path, false );
+	if ( file == NULL ) {
+		return NULL;
+	}
 
-    memset(out, 0, sizeof(PLImage));
-    out->size = (unsigned int)(header.width * header.height * 4);
-    out->levels = 1;
+	FtxHeader header;
+	bool status;
+	header.width = plReadInt32( file, false, &status );
+	header.height = plReadInt32( file, false, &status );
+	header.alpha = plReadInt32( file, false, &status );
 
-    out->data = pl_calloc(out->levels, sizeof(uint8_t*));
-    out->data[0] = pl_calloc(out->size, sizeof(uint8_t));
+	if ( !status ) {
+		plCloseFile( file );
+		return NULL;
+	}
 
-    if (plReadFile(fin, out->data[0], sizeof(uint8_t), out->size) != out->size) {
-        ReportError(PL_RESULT_FILEREAD, "failed to read image data");
-        return false;
-    }
+	unsigned int size = header.width * header.height * 4;
+	uint8_t *buffer = pl_malloc( size );
+	size_t rSize = plReadFile( file, buffer, sizeof( uint8_t ), size );
 
-    out->format = PL_IMAGEFORMAT_RGBA8;
-    out->colour_format = PL_COLOURFORMAT_RGBA;
-    out->width = (unsigned int)header.width;
-    out->height = (unsigned int)header.height;
-    return true;
+	plCloseFile( file );
+
+	if ( rSize != size ) {
+		pl_free( buffer );
+		return NULL;
+	}
+
+	PLImage *image = plCreateImage( buffer, header.width, header.height, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+
+	/* create image makes a copy of the buffer */
+	pl_free( buffer );
+
+	return image;
 }
