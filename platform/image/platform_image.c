@@ -365,11 +365,6 @@ unsigned int plGetImageSize( PLImageFormat format, unsigned int width, unsigned 
 	switch ( format ) {
 		case PL_IMAGEFORMAT_RGB_DXT1:
 			return ( width * height ) >> 1;
-		case PL_IMAGEFORMAT_RGBA_DXT1:
-			return width * height * 4;
-		case PL_IMAGEFORMAT_RGBA_DXT3:
-		case PL_IMAGEFORMAT_RGBA_DXT5:
-			return width * height;
 		default: {
 			unsigned int bytes = plImageBytesPerPixel( format );
 			return width * height * bytes;
@@ -384,19 +379,17 @@ unsigned int plGetImageSize( PLImageFormat format, unsigned int width, unsigned 
 unsigned int plImageBytesPerPixel( PLImageFormat format ) {
 	switch ( format ) {
 		case PL_IMAGEFORMAT_RGBA4:
-			return 2;
 		case PL_IMAGEFORMAT_RGB5A1:
-			return 2;
 		case PL_IMAGEFORMAT_RGB565:
 			return 2;
 		case PL_IMAGEFORMAT_RGB8:
 			return 3;
+		case PL_IMAGEFORMAT_RGBA_DXT1:
 		case PL_IMAGEFORMAT_RGBA8:
 			return 4;
 		case PL_IMAGEFORMAT_RGBA12:
 			return 6;
 		case PL_IMAGEFORMAT_RGBA16:
-			return 8;
 		case PL_IMAGEFORMAT_RGBA16F:
 			return 8;
 		default:
