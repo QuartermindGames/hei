@@ -26,8 +26,8 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include <PL/platform.h>
-#include <PL/platform_image.h>
 #include <PL/platform_console.h>
+#include <PL/platform_image.h>
 
 /**
  * Command line utility to interface with the platform lib.
@@ -36,17 +36,91 @@ For more information, please refer to <http://unlicense.org>
 #define MAX_COMMAND_LENGTH 256
 static char cmdLine[ MAX_COMMAND_LENGTH ];
 
+static void ConvertImage( const char *path, const char *destination ) {
+	PLImage *image = plLoadImage( path );
+	if ( image == NULL ) {
+		printf( "Error: %s\n", plGetError() );
+		return;
+	}
+
+	if ( plWriteImage( image, destination ) ) {
+		printf( "Wrote \"%s\"\n", destination );
+	} else {
+		printf( "Error: %s\n", plGetError() );
+	}
+
+	plDestroyImage( image );
+}
+
+static void ConvertImageCallback( const char *path, void *userData ) {
+	char *outDir = ( char * ) userData;
+
+	if ( !plCreateDirectory( outDir ) ) {
+		printf( "Error: %s\n", plGetError() );
+		return;
+	}
+
+	const char *fileName = plGetFileName( path );
+	if ( fileName == NULL ) {
+		printf( "Error: %s\n", plGetError() );
+		return;
+	}
+
+	char outPath[ PL_SYSTEM_MAX_PATH ];
+	snprintf( outPath, sizeof( outPath ), "%s%s.png", outDir, fileName );
+
+	ConvertImage( path, outPath );
+}
+
+static void Cmd_IMGConvert( unsigned int argc, char **argv ) {
+	if ( argc < 2 ) {
+		return;
+	}
+
+	const char *outPath = "./out.png";
+	if ( argc >= 3 ) {
+		outPath = argv[ 2 ];
+	}
+
+	ConvertImage( argv[ 1 ], outPath );
+}
+
+static void Cmd_IMGBulkConvert( unsigned int argc, char **argv ) {
+	if ( argc < 3 ) {
+		return;
+	}
+
+	char outDir[ PL_SYSTEM_MAX_PATH ];
+	if ( argc >= 4 ) {
+		snprintf( outDir, sizeof( outDir ), "%s/", argv[ 3 ] );
+	} else {
+		snprintf( outDir, sizeof( outDir ), "out/" );
+	}
+
+	plScanDirectory( argv[ 1 ], argv[ 2 ], ConvertImageCallback, false, outDir );
+
+	printf( "Done!\n" );
+}
+
 int main( int argc, char **argv ) {
 	plInitialize( argc, argv );
 
 	plRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
 
-	plRegisterPlugins( "plugins/" );
+	//plRegisterPlugins( "plugins/" );
+
+	/* register all our custom console commands */
+	plRegisterConsoleCommand( "img_convert", Cmd_IMGConvert,
+	                          "Convert the given image.\n"
+	                          "Usage: img_convert ./image.bmp [./out.png]" );
+	plRegisterConsoleCommand( "img_bulkconvert", Cmd_IMGBulkConvert,
+	                          "Bulk convert images in the given directory.\n"
+	                          "Usage: img_bulkconvert ./path bmp [./outpath]" );
 
 	int i;
 	char *p = cmdLine;
-	while( ( i = getchar() ) != '\n' ) {
-		*p++ = (char) i;
+	while ( ( i = getchar() ) != '\n' ) {
+		*p++ = ( char ) i;
 
 		unsigned int numChars = p - cmdLine;
 		if ( numChars >= MAX_COMMAND_LENGTH ) {
