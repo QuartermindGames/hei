@@ -1,4 +1,4 @@
-#[[
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,26 +23,42 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-]]
+*/
 
-cmake_minimum_required(VERSION 3.5.1)
+#include <PL/platform.h>
+#include <PL/platform_image.h>
+#include <PL/platform_console.h>
 
-project(PlatformLibrary)
+/**
+ * Command line utility to interface with the platform lib.
+ **/
 
-option(BUILD_EXAMPLES "Build example applications" ON)
+#define MAX_COMMAND_LENGTH 256
+static char cmdLine[ MAX_COMMAND_LENGTH ];
 
-# Set all of our output directories.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
+int main( int argc, char **argv ) {
+	plInitialize( argc, argv );
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-unused-function")
+	plRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
 
-add_subdirectory(platform)
+	plRegisterPlugins( "plugins/" );
 
-if(BUILD_EXAMPLES)
-    add_subdirectory( examples/viewer )
-    add_subdirectory( examples/package_loader )
-    add_subdirectory( examples/pcmd )
-endif(BUILD_EXAMPLES)
+	int i;
+	char *p = cmdLine;
+	while( ( i = getchar() ) != '\n' ) {
+		*p++ = (char) i;
+
+		unsigned int numChars = p - cmdLine;
+		if ( numChars >= MAX_COMMAND_LENGTH ) {
+			printf( "Hit character limit!\n" );
+			break;
+		}
+	}
+
+	/* and now parse it! */
+	plParseConsoleString( cmdLine );
+
+	plShutdown();
+
+	return EXIT_SUCCESS;
+}
