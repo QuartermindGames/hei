@@ -97,38 +97,47 @@ void plRegisterImageLoader( const char *extension, PLImage *( *LoadImage )( cons
 }
 
 void plRegisterStandardImageLoaders( unsigned int flags ) {
-	if ( flags & PL_IMAGE_FILEFORMAT_TGA ) {
-		plRegisterImageLoader( "tga", LoadStbImage );
+	if ( flags == PL_IMAGE_FILEFORMAT_ALL ) {
+		flags =
+		        PL_IMAGE_FILEFORMAT_TGA |
+		        PL_IMAGE_FILEFORMAT_PNG |
+		        PL_IMAGE_FILEFORMAT_JPG |
+		        PL_IMAGE_FILEFORMAT_BMP |
+		        PL_IMAGE_FILEFORMAT_PSD |
+		        PL_IMAGE_FILEFORMAT_GIF |
+		        PL_IMAGE_FILEFORMAT_HDR |
+		        PL_IMAGE_FILEFORMAT_PIC |
+		        PL_IMAGE_FILEFORMAT_PNM |
+		        PL_IMAGE_FILEFORMAT_FTX |
+		        PL_IMAGE_FILEFORMAT_3DF;
 	}
-	if ( flags & PL_IMAGE_FILEFORMAT_PNG ) {
-		plRegisterImageLoader( "png", LoadStbImage );
-	}
-	if ( flags & PL_IMAGE_FILEFORMAT_JPG ) {
-		plRegisterImageLoader( "jpg", LoadStbImage );
-	}
-	if ( flags & PL_IMAGE_FILEFORMAT_BMP ) {
-		plRegisterImageLoader( "bmp", LoadStbImage );
-	}
-	if ( flags & PL_IMAGE_FILEFORMAT_PSD ) {
-		plRegisterImageLoader( "psd", LoadStbImage );
-	}
-	if ( flags & PL_IMAGE_FILEFORMAT_GIF ) {
-		plRegisterImageLoader( "gif", LoadStbImage );
-	}
-	if ( flags & PL_IMAGE_FILEFORMAT_HDR ) {
-		plRegisterImageLoader( "hdr", LoadStbImage );
-	}
-	if ( flags & PL_IMAGE_FILEFORMAT_PIC ) {
-		plRegisterImageLoader( "pic", LoadStbImage );
-	}
-	if ( flags & PL_IMAGE_FILEFORMAT_PNM ) {
-		plRegisterImageLoader( "pnm", LoadStbImage );
-	}
-	if ( flags & PL_IMAGE_FILEFORMAT_FTX ) {
-		plRegisterImageLoader( "ftx", plLoadFtxImage );
-	}
-	if ( flags & PL_IMAGE_FILEFORMAT_3DF ) {
-		plRegisterImageLoader( "3df", plLoad3dfImage );
+
+	typedef struct SImageLoader {
+		unsigned int flag;
+		const char *extension;
+		PLImage *( *LoadFunction )( const char *path );
+	} SImageLoader;
+
+	static const SImageLoader loaderList[] = {
+	        { PL_IMAGE_FILEFORMAT_TGA, "tga", LoadStbImage },
+	        { PL_IMAGE_FILEFORMAT_PNG, "png", LoadStbImage },
+	        { PL_IMAGE_FILEFORMAT_JPG, "jpg", LoadStbImage },
+	        { PL_IMAGE_FILEFORMAT_BMP, "bmp", LoadStbImage },
+	        { PL_IMAGE_FILEFORMAT_PSD, "psd", LoadStbImage },
+	        { PL_IMAGE_FILEFORMAT_GIF, "gif", LoadStbImage },
+	        { PL_IMAGE_FILEFORMAT_HDR, "hdr", LoadStbImage },
+	        { PL_IMAGE_FILEFORMAT_PIC, "pic", LoadStbImage },
+	        { PL_IMAGE_FILEFORMAT_PNM, "pnm", LoadStbImage },
+	        { PL_IMAGE_FILEFORMAT_FTX, "ftx", plLoadFtxImage },
+	        { PL_IMAGE_FILEFORMAT_3DF, "3df", plLoad3dfImage },
+	};
+
+	for ( unsigned int i = 0; i < plArrayElements( loaderList ); ++i ) {
+		if ( !( flags & loaderList[ i ].flag ) ) {
+			continue;
+		}
+
+		plRegisterImageLoader( loaderList[ i ].extension, loaderList[ i ].LoadFunction );
 	}
 }
 
