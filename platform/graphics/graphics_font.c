@@ -116,6 +116,7 @@ void ParseLine(void) {
 #define _PLFONT_FORMAT_VERSION  1
 
 PLBitmapFont *plParseBitmapFont(const char *name, char *buf, size_t length) {
+#if 0 /* todo: retain this? */
     _plResetParser();
 
     font_script.length = length;
@@ -229,6 +230,9 @@ PLBitmapFont *plParseBitmapFont(const char *name, char *buf, size_t length) {
     plFreeImage(&image);
 
     return font;
+#else
+	return NULL;
+#endif
 }
 
 PLBitmapFont *plCreateDefaultBitmapFont(void) {
