@@ -33,9 +33,6 @@ For more information, please refer to <http://unlicense.org>
  * Command line utility to interface with the platform lib.
  **/
 
-#define MAX_COMMAND_LENGTH 256
-static char cmdLine[ MAX_COMMAND_LENGTH ];
-
 static void ConvertImage( const char *path, const char *destination ) {
 	PLImage *image = plLoadImage( path );
 	if ( image == NULL ) {
@@ -105,7 +102,24 @@ static void Cmd_IMGBulkConvert( unsigned int argc, char **argv ) {
 	printf( "Done!\n" );
 }
 
+static bool isRunning = true;
+
+static void Cmd_Exit( unsigned int argc, char **argv ) {
+	/* we don't use these here, and ommitting var names is a C2x feature :( */
+	(void)( argc );
+	(void)( argv );
+
+	isRunning = false;
+}
+
+#define MAX_COMMAND_LENGTH 256
+static char cmdLine[ MAX_COMMAND_LENGTH ];
 int main( int argc, char **argv ) {
+#if defined( _WIN32 )
+	/* stop buffering stdout! */
+	setvbuf( stdout, NULL, _IONBF, 0 );
+#endif
+
 	plInitialize( argc, argv );
 
 	plRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
@@ -113,6 +127,8 @@ int main( int argc, char **argv ) {
 	//plRegisterPlugins( "plugins/" );
 
 	/* register all our custom console commands */
+	plRegisterConsoleCommand( "exit", Cmd_Exit, "Exit the application." );
+	plRegisterConsoleCommand( "quit", Cmd_Exit, "Exit the application." );
 	plRegisterConsoleCommand( "img_convert", Cmd_IMGConvert,
 	                          "Convert the given image.\n"
 	                          "Usage: img_convert ./image.bmp [./out.png]" );
@@ -120,20 +136,25 @@ int main( int argc, char **argv ) {
 	                          "Bulk convert images in the given directory.\n"
 	                          "Usage: img_bulkconvert ./path bmp [./outpath]" );
 
-	int i;
-	char *p = cmdLine;
-	while ( ( i = getchar() ) != '\n' ) {
-		*p++ = ( char ) i;
+	while( isRunning ) {
+		printf( "> " );
 
-		unsigned int numChars = p - cmdLine;
-		if ( numChars >= MAX_COMMAND_LENGTH ) {
-			printf( "Hit character limit!\n" );
-			break;
+		int i;
+		char *p = cmdLine;
+		while ( ( i = getchar() ) != '\n' ) {
+			*p++ = ( char ) i;
+
+			unsigned int numChars = p - cmdLine;
+			if ( numChars >= MAX_COMMAND_LENGTH ) {
+				printf( "Hit character limit!\n" );
+				break;
+			}
 		}
-	}
 
-	/* and now parse it! */
-	plParseConsoleString( cmdLine );
+		plParseConsoleString( cmdLine );
+
+		memset( cmdLine, 0, sizeof( cmdLine ) );
+	}
 
 	plShutdown();
 
