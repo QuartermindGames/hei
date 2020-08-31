@@ -98,9 +98,6 @@ static PLImage *FD3_ReadFile( PLFile *file ) {
 	/* no longer need this */
 	pl_free( imgBuf );
 
-	/* let's convert it to something else (todo: leave this to caller??) */
-	plConvertPixelFormat( image, PL_IMAGEFORMAT_RGBA8 );
-
 	return image;
 }
 
