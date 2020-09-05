@@ -112,6 +112,7 @@ PL_EXTERN PLImage *plLoadImage( const char *path );
 PL_EXTERN bool plWriteImage(const PLImage *image, const char *path);
 
 PL_EXTERN bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format);
+PL_EXTERN bool plConvertColourFormat( PLImage *image, PLColourFormat newFormat );
 
 PL_EXTERN void plInvertImageColour(PLImage *image);
 PL_EXTERN void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest);
@@ -127,13 +128,7 @@ PL_EXTERN void plFreeImage(PLImage *image);
 
 PL_EXTERN unsigned int plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height);
 
-#if defined(PL_INTERNAL)
-
 unsigned int plImageBytesPerPixel(PLImageFormat format);
-
-uint8_t *plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels);
-
-#endif
 
 PL_EXTERN const char **plGetSupportedImageFormats( unsigned int *numElements );
 
