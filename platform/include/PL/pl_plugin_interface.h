@@ -124,20 +124,10 @@ typedef struct PLPluginExportTable {
 	void (*RegisterModelLoader)( const char *extension, PLModel*(*LoadFunction)( const char *path ) );
 } PLPluginExportTable;
 
-#define PL_PLUGIN_INTERFACE_VERSION     sizeof( PLPluginExportTable ) + sizeof( PLPluginDescription )
+#define PL_PLUGIN_INTERFACE_VERSION sizeof( PLPluginExportTable ) + sizeof( PLPluginDescription )
 
-enum {
-	PL_PLUGIN_REQUEST_REGISTER,
-	PL_PLUGIN_REQUEST_INITIALIZE,
-};
+#define PL_PLUGIN_QUERY_FUNCTION    "PLQueryPlugin"
+#define PL_PLUGIN_INIT_FUNCTION     "PLInitializePlugin"
 
-enum {
-	PL_PLUGIN_RETURN_SUCCESS,
-	PL_PLUGIN_RETURN_INVALID_VERSION,
-};
-
-#define PL_PLUGIN_REGISTER_FUNCTION     "PLRegisterPlugin"
-#define PL_PLUGIN_INTERFACE_FUNCTION    "PLPluginInterfaceCallback"
-
-typedef PLPluginDescription *(*PLPluginRegistrationFunction)( unsigned int interfaceVersion, const PLPluginExportTable *functionTable );
-typedef int (*PLPluginInterfaceFunction)( unsigned int request, void *in, void *out );
+typedef PLPluginDescription *(*PLPluginQueryFunction )( unsigned int interfaceVersion );
+typedef void (*PLPluginInitializationFunction)( const PLPluginExportTable *functionTable );

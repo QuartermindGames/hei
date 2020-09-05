@@ -483,9 +483,10 @@ void plProcess(double delta) {
 #include <PL/pl_plugin_interface.h>
 
 typedef struct PLPlugin {
-	char                pluginPath[ PL_SYSTEM_MAX_PATH ];   /* full path to the plugin */
-	PLLibrary           *libPtr;                            /* library handle */
-	PLLinkedListNode    *node;
+	char                            pluginPath[ PL_SYSTEM_MAX_PATH ];   /* full path to the plugin */
+	PLLibrary                       *libPtr;                            /* library handle */
+	PLPluginInitializationFunction  initFunction;                       /* initialization function */
+	PLLinkedListNode                *node;
 } PLPlugin;
 
 static PLLinkedList *plugins;
@@ -559,17 +560,32 @@ bool plRegisterPlugin( const char *path ) {
 		return false;
 	}
 
-	PLPluginRegistrationFunction RegisterPlugin = ( PLPluginRegistrationFunction ) plGetLibraryProcedure( library, PL_PLUGIN_REGISTER_FUNCTION );
+	PLPluginQueryFunction RegisterPlugin = ( PLPluginQueryFunction ) plGetLibraryProcedure( library, PL_PLUGIN_QUERY_FUNCTION );
 	if ( RegisterPlugin == NULL ) {
 		plUnloadLibrary( library );
 		return false;
 	}
 
-	PLPluginDescription *description = RegisterPlugin( PL_PLUGIN_INTERFACE_VERSION, &exportTable );
+	PLPluginInitializationFunction InitializePlugin = ( PLPluginInitializationFunction ) plGetLibraryProcedure( library, PL_PLUGIN_INIT_FUNCTION );
+	if ( InitializePlugin == NULL ) {
+		plUnloadLibrary( library );
+		return false;
+	}
+
+	/* now fetch the plugin description */
+	PLPluginDescription *description = RegisterPlugin( PL_PLUGIN_INTERFACE_VERSION );
 	if ( description == NULL ) {
 		plUnloadLibrary( library );
 		return false;
 	}
+
+	DebugPrint( "Success, adding \"%s\" to plugins list\n", path );
+
+	PLPlugin *plugin = pl_malloc( sizeof( PLPlugin ) );
+	strncpy( plugin->pluginPath, path, sizeof( plugin->pluginPath ) );
+	plugin->initFunction = InitializePlugin;
+	plugin->libPtr = library;
+	plugin->node = plInsertLinkedListNode( plugins, plugin );
 
 	numPlugins++;
 }
@@ -599,4 +615,17 @@ void plRegisterPlugins( const char *pluginDir ) {
 	plScanDirectory( pluginDir, PL_SYSTEM_LIBRARY_EXTENSION, _plRegisterScannedPlugin, false, NULL );
 
 	Print( "Done, %d plugins loaded.\n", numPlugins );
+}
+
+/**
+ * Iterate over all the registered plugins and initialize each.
+ */
+void plInitializePlugins( void ) {
+	PLLinkedListNode *node = plGetRootNode( plugins );
+	while ( node != NULL ) {
+		PLPlugin *plugin = ( PLPlugin * ) plGetLinkedListNodeUserData( node );
+		plugin->initFunction( &exportTable );
+
+		node = plGetNextLinkedListNode( node );
+	}
 }
