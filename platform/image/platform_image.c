@@ -97,21 +97,6 @@ void plRegisterImageLoader( const char *extension, PLImage *( *LoadImage )( cons
 }
 
 void plRegisterStandardImageLoaders( unsigned int flags ) {
-	if ( flags == PL_IMAGE_FILEFORMAT_ALL ) {
-		flags =
-		        PL_IMAGE_FILEFORMAT_TGA |
-		        PL_IMAGE_FILEFORMAT_PNG |
-		        PL_IMAGE_FILEFORMAT_JPG |
-		        PL_IMAGE_FILEFORMAT_BMP |
-		        PL_IMAGE_FILEFORMAT_PSD |
-		        PL_IMAGE_FILEFORMAT_GIF |
-		        PL_IMAGE_FILEFORMAT_HDR |
-		        PL_IMAGE_FILEFORMAT_PIC |
-		        PL_IMAGE_FILEFORMAT_PNM |
-		        PL_IMAGE_FILEFORMAT_FTX |
-		        PL_IMAGE_FILEFORMAT_3DF;
-	}
-
 	typedef struct SImageLoader {
 		unsigned int flag;
 		const char *extension;
@@ -133,7 +118,7 @@ void plRegisterStandardImageLoaders( unsigned int flags ) {
 	};
 
 	for ( unsigned int i = 0; i < plArrayElements( loaderList ); ++i ) {
-		if ( !( flags & loaderList[ i ].flag ) ) {
+		if ( flags != PL_IMAGE_FILEFORMAT_ALL && !( flags & loaderList[ i ].flag ) ) {
 			continue;
 		}
 
