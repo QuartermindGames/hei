@@ -42,6 +42,7 @@ static void ConvertImage( const char *path, const char *destination ) {
 
 	/* ensure it's a valid format before we write it out */
 	plConvertPixelFormat( image, PL_IMAGEFORMAT_RGBA8 );
+	plConvertColourFormat( image, PL_COLOURFORMAT_RGBA );
 
 	if ( plWriteImage( image, destination ) ) {
 		printf( "Wrote \"%s\"\n", destination );
