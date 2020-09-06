@@ -71,14 +71,20 @@ static PLImage *FD3_ReadFile( PLFile *file ) {
 		return NULL;
 	}
 	int w, h;
-	sscanf( buf, "lod range: %d %d\n", &w, &h );
+	if ( sscanf( buf, "lod range: %d %d\n", &w, &h ) != 2 ) {
+		ReportError( PL_RESULT_FILEREAD, "failed to read lod range" );
+		return NULL;
+	}
 
 	/* aspect */
 	if ( plReadString( file, buf, sizeof( buf ) ) == NULL ) {
 		return NULL;
 	}
 	int x, y;
-	sscanf( buf, "aspect ratio: %d %d\n", &x, &y );
+	if ( sscanf( buf, "aspect ratio: %d %d\n", &x, &y ) != 2 ) {
+		ReportError( PL_RESULT_FILEREAD, "failed to read aspect ratio" );
+		return NULL;
+	}
 	if ( x != 1 && y != 1 ) {
 		ReportError( PL_RESULT_IMAGERESOLUTION, "unsupported aspect ratio, \"%s\"", buf );
 		return NULL;
