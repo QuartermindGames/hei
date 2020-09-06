@@ -161,10 +161,27 @@ void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *
     num_model_loaders++;
 }
 
-void plRegisterStandardModelLoaders(void) {
-    plRegisterModelLoader("hdv", plLoadHDVModel);
-    plRegisterModelLoader("mdl", plLoadRequiemModel);
-    plRegisterModelLoader("obj", plLoadObjModel);
+void plRegisterStandardModelLoaders( unsigned int flags ) {
+	typedef struct SModelLoader {
+		unsigned int flag;
+		const char *extension;
+		PLModel *( *LoadFunction )( const char *path );
+	} SModelLoader;
+
+	static const SModelLoader loaderList[]={
+			{ PL_MODEL_FILEFORMAT_CYCLONE, "mdl", plLoadRequiemModel },
+			{ PL_MODEL_FILEFORMAT_HDV, "hdv", plLoadHDVModel },
+			{ PL_MODEL_FILEFORMAT_U3D, "3d", plLoadU3DModel },
+			{ PL_MODEL_FILEFORMAT_OBJ, "obj", plLoadObjModel },
+	};
+
+	for ( unsigned int i = 0; i < plArrayElements( loaderList ); ++i ) {
+		if ( flags != PL_MODEL_FILEFORMAT_ALL && !( flags & loaderList[ i ].flag ) ) {
+			continue;
+		}
+
+		plRegisterModelLoader( loaderList[ i ].extension, loaderList[ i ].LoadFunction );
+	}
 }
 
 void plClearModelLoaders(void) {
