@@ -284,6 +284,35 @@ static bool RGB8toRGBA8( PLImage *image ) {
 	return true;
 }
 
+#define scale_5to8( i ) ( ( ( ( double ) ( i ) ) / 31 ) * 255 )
+
+static uint8_t *ImageDataRGB5A1toRGBA8( const uint8_t *src, size_t n_pixels ) {
+	uint8_t *dst = pl_malloc( n_pixels * 4 );
+	if ( dst == NULL ) {
+		return NULL;
+	}
+
+	uint8_t *dp = dst;
+
+	for ( size_t i = 0; i < n_pixels; ++i ) {
+		/* Red */
+		*( dp++ ) = scale_5to8( ( src[ 0 ] & 0xF8 ) >> 3 );
+
+		/* Green */
+		*( dp++ ) = scale_5to8( ( ( src[ 0 ] & 0x07 ) << 2 ) | ( ( src[ 1 ] & 0xC0 ) >> 6 ) );
+
+		/* Blue */
+		*( dp++ ) = scale_5to8( ( src[ 1 ] & 0x3E ) >> 1 );
+
+		/* Alpha */
+		*( dp++ ) = ( src[ 1 ] & 0x01 ) ? 255 : 0;
+
+		src += 2;
+	}
+
+	return dst;
+}
+
 bool plConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
 	if ( image->format == new_format ) {
 		return true;
@@ -304,7 +333,7 @@ bool plConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
 				unsigned int lh = image->height;
 
 				for ( unsigned int l = 0; l < image->levels; ++l ) {
-					levels[ l ] = plImageDataRGB5A1toRGBA8( image->data[ l ], lw * lh );
+					levels[ l ] = ImageDataRGB5A1toRGBA8( image->data[ l ], lw * lh );
 					if ( levels[ l ] == NULL ) {
 						/* Memory allocation failed, ditch any buffers we've created so far. */
 						for ( unsigned int m = 0; m < l; ++m ) {
@@ -490,35 +519,6 @@ bool plIsCompressedImageFormat( PLImageFormat format ) {
 		case PL_IMAGEFORMAT_RGB_FXT1:
 			return true;
 	}
-}
-
-#define scale_5to8( i ) ( ( ( ( double ) ( i ) ) / 31 ) * 255 )
-
-uint8_t *plImageDataRGB5A1toRGBA8( const uint8_t *src, size_t n_pixels ) {
-	uint8_t *dst = pl_malloc( n_pixels * 4 );
-	if ( dst == NULL ) {
-		return NULL;
-	}
-
-	uint8_t *dp = dst;
-
-	for ( size_t i = 0; i < n_pixels; ++i ) {
-		/* Red */
-		*( dp++ ) = scale_5to8( ( src[ 0 ] & 0xF8 ) >> 3 );
-
-		/* Green */
-		*( dp++ ) = scale_5to8( ( ( src[ 0 ] & 0x07 ) << 2 ) | ( ( src[ 1 ] & 0xC0 ) >> 6 ) );
-
-		/* Blue */
-		*( dp++ ) = scale_5to8( ( src[ 1 ] & 0x3E ) >> 1 );
-
-		/* Alpha */
-		*( dp++ ) = ( src[ 1 ] & 0x01 ) ? 255 : 0;
-
-		src += 2;
-	}
-
-	return dst;
 }
 
 bool plFlipImageVertical( PLImage *image ) {
