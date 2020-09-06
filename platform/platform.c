@@ -541,7 +541,7 @@ static PLPluginExportTable exportTable = {
 	.InvertImageColour = plInvertImageColour,
 	.ReplaceImageColour = plReplaceImageColour,
 	.FlipImageVertical = plFlipImageVertical,
-	.GetSamplesPerPixel = plGetSamplesPerPixel,
+	.GetNumberOfColourChannels = plGetNumberOfColourChannels,
 	.GetImageSize = plGetImageSize,
 
 	.RegisterModelLoader = plRegisterModelLoader,
@@ -582,7 +582,7 @@ bool plRegisterPlugin( const char *path ) {
 	DebugPrint( "Success, adding \"%s\" to plugins list\n", path );
 
 	PLPlugin *plugin = pl_malloc( sizeof( PLPlugin ) );
-	strncpy( plugin->pluginPath, path, sizeof( plugin->pluginPath ) );
+	snprintf( plugin->pluginPath, sizeof( plugin->pluginPath ), path );
 	plugin->initFunction = InitializePlugin;
 	plugin->libPtr = library;
 	plugin->node = plInsertLinkedListNode( plugins, plugin );

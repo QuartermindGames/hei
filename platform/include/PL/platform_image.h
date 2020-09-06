@@ -119,7 +119,7 @@ PL_EXTERN void plReplaceImageColour(PLImage *image, PLColour target, PLColour de
 
 PL_EXTERN bool plFlipImageVertical(PLImage *image);
 
-PL_EXTERN unsigned int plGetSamplesPerPixel(PLColourFormat format);
+PL_EXTERN unsigned int plGetNumberOfColourChannels(PLColourFormat format);
 
 PL_EXTERN bool plImageIsPowerOfTwo( const PLImage *image );
 PL_EXTERN bool plIsCompressedImageFormat(PLImageFormat format);

@@ -118,7 +118,7 @@ typedef struct PLPluginExportTable {
 	void (*ReplaceImageColour)( PLImage *image, PLColour target, PLColour destination );
 	bool (*FlipImageVertical)( PLImage *image );
 
-	unsigned int (*GetSamplesPerPixel)( PLColourFormat colourFormat );
+	unsigned int (*GetNumberOfColourChannels )( PLColourFormat colourFormat );
 	unsigned int (*GetImageSize)( PLImageFormat format, unsigned int width, unsigned int height );
 
 	void (*RegisterModelLoader)( const char *extension, PLModel*(*LoadFunction)( const char *path ) );
