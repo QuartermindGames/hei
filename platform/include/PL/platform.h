@@ -119,6 +119,8 @@ support.
 #define plIsEmptyString(a)  (((a)[0] == '\0') || ((a)[0] == ' '))
 #define plStringify(num)    #num
 
+#define PL_BITFLAG( A, B ) A = ( 1 << B )
+
 #ifndef offsetof
 #   define pl_offsetof(a, b)    ((size_t)&(((a*)0)->b))
 #else
@@ -182,33 +184,18 @@ typedef enum {
 //////////////////////////////////////////////////////////////////
 
 enum {
-    PL_SUBSYSTEM_GRAPHICS   = (1 << 0), // Graphics/rendering
-    PL_SUBSYSTEM_IO         = (1 << 1), // Filesystem I/O
-    PL_SUBSYSTEM_IMAGE      = (1 << 2), // Image loaders
-    PL_SUBSYSTEM_LIBRARY    = (1 << 3), // Module/library management
+	PL_BITFLAG( PL_SUBSYSTEM_GRAPHICS, 0 ),
+	PL_BITFLAG( PL_SUBSYSTEM_IO, 1 ),
 };
 
 #if defined(PL_INTERNAL)
-
-#define PL_DLL  PL_EXPORT
-
-#ifndef __cplusplus
-#define pFUNCTION_START  plSetErrorFunction(PL_FUNCTION); {
-#else
-#define	pFUNCTION_START	\
-plSetErrorFunction(PL_FUNCTION);
-// TRY whatever
-#endif
-#define pFUNCTION_END   }
+#   define PL_DLL  PL_EXPORT
 
 // C Exceptions, Inspired by the following
 // http://www.di.unipi.it/~nids/docs/longjump_try_trow_catch.html
-
 #if 1
-
-#define plFunctionStart()
-#define plFunctionEnd()
-
+#   define plFunctionStart()
+#   define plFunctionEnd()
 #else
 
 #include <setjmp.h>
@@ -230,9 +217,7 @@ plSetErrorFunction(PL_FUNCTION);
 #endif
 
 #else
-
-#define PL_DLL  PL_IMPORT
-
+#   define PL_DLL  PL_IMPORT
 #endif
 
 typedef void PLLibrary; /* handle to dll/module */
@@ -278,7 +263,8 @@ bool plIsSubSystemActive(unsigned int subsystem);
 #include <PL/platform_string.h>
 #include <PL/platform_memory.h>
 
-const char *plGetFormattedTime(void);
+PL_EXTERN const char *plGetFormattedTime(void);
+PL_EXTERN time_t plStringToTime( const char *ts );
 
 //////////////////////////////////////////////////////////////////
 
@@ -292,27 +278,18 @@ PL_EXTERN PLLibrary *plLoadLibrary( const char *path, bool appendPath );
 PL_EXTERN void *plGetLibraryProcedure( PLLibrary *library, const char *procedureName );
 PL_EXTERN void plUnloadLibrary( PLLibrary *library );
 
+/**
+ * Plugin Interface
+ **/
+
+PL_EXTERN bool plRegisterPlugin( const char *path );
+PL_EXTERN void plRegisterPlugins( const char *pluginDir );
+
 PL_EXTERN_C_END
 
 //////////////////////////////////////////////////////////////////
 
-/*	Converts string to time.
-	http://stackoverflow.com/questions/1765014/convert-string-from-date-into-a-time-t
-*/
-static PL_INLINE time_t plStringToTime(const char *ts) {
-    char s_month[5];
-    int day, year;
-    sscanf(ts, "%s %d %d", s_month, &day, &year);
 
-    static const char months[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
-    int month = (int)((strstr(months, s_month) - months) / 3);
-    struct tm time = {0};
-    time.tm_mon = month;
-    time.tm_mday = day;
-    time.tm_year = year - 1900;
-    time.tm_isdst = -1;
 
-    return mktime(&time);
-}
 
 //////////////////////////////////////////////////////////////////

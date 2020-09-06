@@ -77,14 +77,6 @@ bool plTIMFormatCheck(PLFile *fin) {
     return (bool)(ident == TIM_IDENT);
 }
 
-PLresult plWriteTIMImage(const PLImage *image, const char *path) {
-    if(plIsEmptyString(path)) {
-        return PL_RESULT_FILEPATH;
-    }
-
-    return PL_RESULT_UNSUPPORTED;
-}
-
 /* Convert a 16-bit TIM colour value to RGB5A1. */
 static uint16_t _tim16toRGB51A(uint16_t colour_in) {
     uint16_t colour_out = 0;

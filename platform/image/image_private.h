@@ -24,25 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #pragma once
 
 #include "platform_private.h"
 
 #include <PL/platform_image.h>
 
-//#define PL_NEW_IMAGE_SUBSYSTEM
-
-bool plDDSFormatCheck(PLFile *fin);
-bool plDTXFormatCheck(PLFile *fin);
-bool plVTFFormatCheck(PLFile *fin);
-bool plTIMFormatCheck(PLFile *fin);
-bool plSWLFormatCheck(PLFile *fin);
-bool plSentientTxtrFormatCheck(PLFile* ptr);
-
-bool plLoadFtxImage(PLFile *fin, PLImage *out);         // Ritual's FTX image format.
-bool plLoadDTXImage(PLFile *fin, PLImage *out);         // Lithtech's DTX image format.
-bool plLoadVTFImage(PLFile *fin, PLImage *out);         // Valve's VTF image format.
-bool plLoadDDSImage(PLFile *fin, PLImage *out);
-bool plLoadTIMImage(PLFile *fin, PLImage *out);         // Sony's TIM image format.
-bool plLoadSWLImage(PLFile *fin, PLImage *out);       // Ritual's SWL image format.
-bool plLoadSentientTxtrImage(PLFile* ptr, PLImage* out);
+PLImage *plLoad3dfImage( const char *path );
+PLImage *plLoadFtxImage( const char *path );

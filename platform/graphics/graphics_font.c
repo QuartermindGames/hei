@@ -116,6 +116,7 @@ void ParseLine(void) {
 #define _PLFONT_FORMAT_VERSION  1
 
 PLBitmapFont *plParseBitmapFont(const char *name, char *buf, size_t length) {
+#if 0 /* todo: retain this? */
     _plResetParser();
 
     font_script.length = length;
@@ -129,7 +130,7 @@ PLBitmapFont *plParseBitmapFont(const char *name, char *buf, size_t length) {
     if(!strncmp(font_script.line_buffer, "VERSION ", 8)) {
         long version = strtol(font_script.line_buffer + 8, NULL, 0);
         if (version <= 0 || version > _PLFONT_FORMAT_VERSION) {
-            ReportError(PL_RESULT_FILEVERSION, "expected version %d, received %d, for %s!",
+            ReportError(PL_RESULT_FILEVERSION, "expected version %d, received %d, for %s",
                         _PLFONT_FORMAT_VERSION, version, name);
             return NULL;
         }
@@ -229,6 +230,9 @@ PLBitmapFont *plParseBitmapFont(const char *name, char *buf, size_t length) {
     plFreeImage(&image);
 
     return font;
+#else
+	return NULL;
+#endif
 }
 
 PLBitmapFont *plCreateDefaultBitmapFont(void) {

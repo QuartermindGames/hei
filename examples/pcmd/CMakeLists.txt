@@ -1,4 +1,4 @@
-/*
+#[[
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,35 +23,10 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-*/
+]]
 
-#include <stdlib.h>
+project( pcmd )
 
-#include "platform_private.h"
+add_executable( pcmd main.c )
 
-static void *MemoryCountAlloc(size_t num, size_t size) {
-    void *buf = calloc(num, size);
-    if(buf == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %lu bytes", (unsigned long) size * num);
-    }
-
-    return buf;
-}
-
-static void *MemoryAlloc(size_t size) {
-    return MemoryCountAlloc(1, size);
-}
-
-static void *MemoryReAlloc( void *ptr, size_t newSize ) {
-	void *buf = realloc( ptr, newSize );
-	if ( buf == NULL ) {
-		ReportError( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %lu bytes", newSize );
-	}
-
-	return buf;
-}
-
-void *(*pl_malloc)(size_t size) = MemoryAlloc;
-void *(*pl_calloc)(size_t num, size_t size) = MemoryCountAlloc;
-void *(*pl_realloc)(void *ptr, size_t newSize) = MemoryReAlloc;
-void (*pl_free)(void* ptr) = free;
+target_link_libraries( pcmd platform )

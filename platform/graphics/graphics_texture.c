@@ -153,22 +153,22 @@ void plDestroyTexture( PLTexture *texture ) {
  * Automatically loads in an image and uploads it as a texture.
  */
 PLTexture *plLoadTextureFromImage( const char *path, PLTextureFilter filter_mode ) {
-	PLImage image;
-	if ( !plLoadImage( path, &image ) ) {
+	PLImage *image = plLoadImage( path );
+	if ( image == NULL ) {
 		return NULL;
 	}
 
 	PLTexture *texture = plCreateTexture();
 	if ( texture != NULL ) {
 		/* store the path, so we can easily reload the image if we need to */
-		strncpy( texture->path, image.path, sizeof( texture->path ) );
+		strncpy( texture->path, image->path, sizeof( texture->path ) );
 	
 		texture->filter = filter_mode;
 
-		plUploadTextureImage( texture, &image );
+		plUploadTextureImage( texture, image );
 	}
 
-	plFreeImage( &image );
+	plDestroyImage( image );
 
 	return texture;
 }

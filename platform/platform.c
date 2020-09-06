@@ -27,10 +27,15 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_filesystem.h>
 #include <PL/pl_graphics.h>
+#include <PL/pl_llist.h>
 
 #if defined( _WIN32 )
 #	include <Windows.h>
+#   ifdef CreateDirectory
+#       undef CreateDirectory
+#   endif
 #endif
+
 #if !defined( _MSC_VER )
 #	include <sys/time.h>
 #endif
@@ -62,18 +67,6 @@ PLSubSystem pl_subsystems[]= {
                 PL_SUBSYSTEM_IO,
                 &plInitFileSystem,
                 &plShutdownFileSystem
-        },
-
-        {
-                PL_SUBSYSTEM_IMAGE,
-                NULL,
-                NULL
-        },
-
-        {
-                PL_SUBSYSTEM_LIBRARY,
-                NULL,
-                NULL
         }
 };
 
@@ -404,7 +397,7 @@ void _plResetError(void) {
 int gettimeofday( struct timeval* tp, struct timezone* tzp ) {
 	// Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
 	// This magic number is the number of 100 nanosecond intervals since January 1, 1601 (UTC)
-	// until 00:00:00 January 1, 1970 
+	// until 00:00:00 January 1, 1970
 	static const uint64_t EPOCH = ( (uint64_t)116444736000000000ULL );
 
 	SYSTEMTIME  system_time;
@@ -435,6 +428,26 @@ const char *plGetFormattedTime(void) {
     return time_out;
 }
 
+/**
+ * Converts the given string to time.
+ * http://stackoverflow.com/questions/1765014/convert-string-from-date-into-a-time-t
+ */
+time_t plStringToTime( const char *ts ) {
+	char s_month[ 5 ];
+	int day, year;
+	sscanf( ts, "%s %d %d", s_month, &day, &year );
+
+	static const char months[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
+	int month = ( int ) ( ( strstr( months, s_month ) - months ) / 3 );
+	struct tm time = { 0 };
+	time.tm_mon = month;
+	time.tm_mday = day;
+	time.tm_year = year - 1900;
+	time.tm_isdst = -1;
+
+	return mktime( &time );
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Loop
 
@@ -443,17 +456,10 @@ bool plIsRunning(void) {
 }
 
 double plGetDeltaTime(void) {
-#if defined(PL_USE_SDL2)
-    static uint64_t now = 0, last;
-    last = now;
-    now = SDL_GetPerformanceCounter();
-    return ((now - last) * 1000 / (double)SDL_GetPerformanceFrequency());
-#else // currently untested, probably only works on linux...
     static struct timeval last, now = { 0 };
     last = now;
     gettimeofday(&now, NULL);
     return (now.tv_sec - last.tv_sec) * 1000;
-#endif
 }
 
 double accumulator = 0;
@@ -469,4 +475,157 @@ void plProcess(double delta) {
 #if defined(PL_USE_GRAPHICS)
     plProcessGraphics();
 #endif
+}
+
+/**********************************************************/
+/** Plugin Interface **/
+
+#include <PL/pl_plugin_interface.h>
+
+typedef struct PLPlugin {
+	char                            pluginPath[ PL_SYSTEM_MAX_PATH ];   /* full path to the plugin */
+	PLLibrary                       *libPtr;                            /* library handle */
+	PLPluginInitializationFunction  initFunction;                       /* initialization function */
+	PLLinkedListNode                *node;
+} PLPlugin;
+
+static PLLinkedList *plugins;
+static unsigned int numPlugins;
+
+static PLPluginExportTable exportTable = {
+	.LocalFileExists = plLocalFileExists,
+	.FileExists = plFileExists,
+	.LocalPathExists = plLocalPathExists,
+	.PathExists = plPathExists,
+	.ScanDirectory = plScanDirectory,
+	.CreateDirectory = plCreateDirectory,
+	.CreatePath = plCreatePath,
+	.OpenLocalFile = plOpenLocalFile,
+	.OpenFile = plOpenFile,
+	.CloseFile = plCloseFile,
+	.IsEndOfFile = plIsEndOfFile,
+	.GetFilePath = plGetFilePath,
+	.GetFileData = plGetFileData,
+	.GetFileSize = plGetFileSize,
+	.GetFileOffset = plGetFileOffset,
+	.ReadFile = plReadFile,
+	.ReadInt8 = plReadInt8,
+	.ReadInt16 = plReadInt16,
+	.ReadInt32 = plReadInt32,
+	.ReadInt64 = plReadInt64,
+	.ReadString = plReadString,
+	.FileSeek = plFileSeek,
+	.RewindFile = plRewindFile,
+
+	.CreateMesh = plCreateMesh,
+	.DestroyMesh = plDestroyMesh,
+	.ClearMesh = plClearMesh,
+	.ClearMeshVertices = plClearMeshVertices,
+	.ClearMeshTriangles = plClearMeshTriangles,
+	.ScaleMesh = plScaleMesh,
+	.AddMeshVertex = plAddMeshVertex,
+	.AddMeshTriangle = plAddMeshTriangle,
+	.GenerateMeshNormals = plGenerateMeshNormals,
+	.GenerateTextureCoordinates = plGenerateTextureCoordinates,
+	.GenerateVertexNormals = plGenerateVertexNormals,
+
+	.CreateStaticModel = plCreateStaticModel,
+	.CreateSkeletalModel = plCreateSkeletalModel,
+	.DestroyModel = plDestroyModel,
+	.GenerateModelNormals = plGenerateModelNormals,
+	.GenerateModelBounds = plGenerateModelBounds,
+
+	.CreateImage = plCreateImage,
+	.DestroyImage = plDestroyImage,
+	.ConvertPixelFormat = plConvertPixelFormat,
+	.InvertImageColour = plInvertImageColour,
+	.ReplaceImageColour = plReplaceImageColour,
+	.FlipImageVertical = plFlipImageVertical,
+	.GetNumberOfColourChannels = plGetNumberOfColourChannels,
+	.GetImageSize = plGetImageSize,
+
+	.RegisterModelLoader = plRegisterModelLoader,
+};
+
+/**
+ * Attempts to load the given plugin and validate it.
+ */
+bool plRegisterPlugin( const char *path ) {
+	_plResetError();
+
+	DebugPrint( "Registering plugin: \"%s\"\n", path );
+
+	PLLibrary *library = plLoadLibrary( path, false );
+	if ( library == NULL ) {
+		return false;
+	}
+
+	PLPluginQueryFunction RegisterPlugin = ( PLPluginQueryFunction ) plGetLibraryProcedure( library, PL_PLUGIN_QUERY_FUNCTION );
+	if ( RegisterPlugin == NULL ) {
+		plUnloadLibrary( library );
+		return false;
+	}
+
+	PLPluginInitializationFunction InitializePlugin = ( PLPluginInitializationFunction ) plGetLibraryProcedure( library, PL_PLUGIN_INIT_FUNCTION );
+	if ( InitializePlugin == NULL ) {
+		plUnloadLibrary( library );
+		return false;
+	}
+
+	/* now fetch the plugin description */
+	PLPluginDescription *description = RegisterPlugin( PL_PLUGIN_INTERFACE_VERSION );
+	if ( description == NULL ) {
+		plUnloadLibrary( library );
+		return false;
+	}
+
+	DebugPrint( "Success, adding \"%s\" to plugins list\n", path );
+
+	PLPlugin *plugin = pl_malloc( sizeof( PLPlugin ) );
+	snprintf( plugin->pluginPath, sizeof( plugin->pluginPath ), path );
+	plugin->initFunction = InitializePlugin;
+	plugin->libPtr = library;
+	plugin->node = plInsertLinkedListNode( plugins, plugin );
+
+	numPlugins++;
+}
+
+/**
+ * Private callback when scanning for plugins.
+ */
+static void _plRegisterScannedPlugin( const char *path, void *unused ) {
+	plUnused( unused );
+
+	plRegisterPlugin( path );
+}
+
+/**
+ * Scans for libraries in the given directory for supporting other model formats.
+ */
+void plRegisterPlugins( const char *pluginDir ) {
+	_plResetError();
+
+	if ( !plPathExists( pluginDir ) ) {
+		ReportBasicError( PL_RESULT_INVALID_PARM1 );
+		return;
+	}
+
+	Print( "Scanning for plugins in \"%s\"\n", pluginDir );
+
+	plScanDirectory( pluginDir, PL_SYSTEM_LIBRARY_EXTENSION, _plRegisterScannedPlugin, false, NULL );
+
+	Print( "Done, %d plugins loaded.\n", numPlugins );
+}
+
+/**
+ * Iterate over all the registered plugins and initialize each.
+ */
+void plInitializePlugins( void ) {
+	PLLinkedListNode *node = plGetRootNode( plugins );
+	while ( node != NULL ) {
+		PLPlugin *plugin = ( PLPlugin * ) plGetLinkedListNodeUserData( node );
+		plugin->initFunction( &exportTable );
+
+		node = plGetNextLinkedListNode( node );
+	}
 }

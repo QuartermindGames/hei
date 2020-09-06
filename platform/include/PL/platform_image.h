@@ -83,41 +83,52 @@ typedef struct PLPalette {
     unsigned int    num_colours;
 } PLPalette;
 
+enum {
+	PL_IMAGE_FILEFORMAT_ALL = 0,
+
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_TGA, 0 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_PNG, 1 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_JPG, 2 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_BMP, 3 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_PSD, 4 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_GIF, 5 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_HDR, 6 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_PIC, 7 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_PNM, 8 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_FTX, 9 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_3DF, 10 ),
+};
+
 PL_EXTERN_C
+
+PL_EXTERN void plRegisterImageLoader( const char *extension, PLImage *(*LoadImage)( const char *path ) );
+PL_EXTERN void plRegisterStandardImageLoaders( unsigned int flags );
+PL_EXTERN void plClearImageLoaders( void );
 
 PL_EXTERN PLImage *plCreateImage(uint8_t *buf, unsigned int w, unsigned int h, PLColourFormat col, PLImageFormat dat);
 PL_EXTERN void plDestroyImage(PLImage *image);
 
-PL_EXTERN bool plLoadImage(const char *path, PLImage *out);
-PL_EXTERN bool plLoadImageFromMemory(const uint8_t *data, size_t length, const char *type, PLImage *out);
-PL_EXTERN bool plLoadImageFromFile(PLFile *fin, const char *path, PLImage *out);
+PL_EXTERN PLImage *plLoadImage( const char *path );
 PL_EXTERN bool plWriteImage(const PLImage *image, const char *path);
 
-PL_EXTERN unsigned int plGetSamplesPerPixel(PLColourFormat format);
+PL_EXTERN bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format);
+PL_EXTERN bool plConvertColourFormat( PLImage *image, PLColourFormat newFormat );
 
-bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format);
-
-void plInvertImageColour(PLImage *image);
-void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest);
-
-PL_EXTERN bool plImageIsPowerOfTwo(unsigned int width, unsigned int height);
-PL_EXTERN bool plIsCompressedImageFormat(PLImageFormat format);
+PL_EXTERN void plInvertImageColour(PLImage *image);
+PL_EXTERN void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest);
 
 PL_EXTERN bool plFlipImageVertical(PLImage *image);
+
+PL_EXTERN unsigned int plGetNumberOfColourChannels(PLColourFormat format);
+
+PL_EXTERN bool plImageIsPowerOfTwo( const PLImage *image );
+PL_EXTERN bool plIsCompressedImageFormat(PLImageFormat format);
 
 PL_EXTERN void plFreeImage(PLImage *image);
 
 PL_EXTERN unsigned int plGetImageSize(PLImageFormat format, unsigned int width, unsigned int height);
 
-#if defined(PL_INTERNAL)
-
 unsigned int plImageBytesPerPixel(PLImageFormat format);
-
-uint8_t *plImageDataRGB5A1toRGBA8(const uint8_t *src, size_t n_pixels);
-
-#endif
-
-PLresult plWriteTIFFImage(const PLImage *image, const char *path);
 
 PL_EXTERN const char **plGetSupportedImageFormats( unsigned int *numElements );
 

@@ -130,9 +130,10 @@ PL_EXTERN unsigned int plAddMeshTriangle( PLMesh *mesh, unsigned int x, unsigned
 PL_EXTERN void plUploadMesh(PLMesh *mesh);
 PL_EXTERN void plDrawMesh(PLMesh *mesh);
 
+PL_EXTERN void plGenerateMeshNormals(PLMesh *mesh, bool perFace);
+
 PL_EXTERN void plGenerateTextureCoordinates( PLVertex *vertices, unsigned int numVertices, PLVector2 textureOffset, PLVector2 textureScale );
 PL_EXTERN void plGenerateVertexNormals( PLVertex *vertices, unsigned int numVertices, unsigned int *indices, unsigned int numTriangles, bool perFace );
 PL_EXTERN PLVector3 plGenerateVertexNormal(PLVector3 a, PLVector3 b, PLVector3 c);
-PL_EXTERN void plGenerateMeshNormals(PLMesh *mesh, bool perFace);
 
 PL_EXTERN_C_END

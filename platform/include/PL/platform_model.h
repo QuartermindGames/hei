@@ -146,13 +146,21 @@ void plDrawModelBounds(const PLModel* model);
 void plDrawModelSkeleton(PLModel *model);
 
 void plApplyModelLighting(PLModel *model, PLLight *light, PLVector3 position);
-
-void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path));
-void plRegisterStandardModelLoaders(void);
-void plClearModelLoaders(void);
-
 void plGenerateModelNormals(PLModel *model, bool perFace);
 void plGenerateModelBounds(PLModel *model);
+
+enum {
+	PL_MODEL_FILEFORMAT_ALL = 0,
+
+	PL_BITFLAG( PL_MODEL_FILEFORMAT_CYCLONE, 0 ),
+	PL_BITFLAG( PL_MODEL_FILEFORMAT_HDV, 1 ),
+	PL_BITFLAG( PL_MODEL_FILEFORMAT_U3D, 2 ),
+	PL_BITFLAG( PL_MODEL_FILEFORMAT_OBJ, 3 ),
+};
+
+void plRegisterModelLoader(const char *ext, PLModel*(*LoadFunction)(const char *path));
+void plRegisterStandardModelLoaders( unsigned int flags );
+void plClearModelLoaders(void);
 
 PLModelLod *plGetModelLodLevel(PLModel *model, unsigned int level);
 
