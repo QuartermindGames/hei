@@ -33,6 +33,8 @@ For more information, please refer to <http://unlicense.org>
  * Command line utility to interface with the platform lib.
  **/
 
+#define Error( ... ) fprintf( stderr, __VA_ARGS__ )
+
 static void ConvertImage( const char *path, const char *destination ) {
 	PLImage *image = plLoadImage( path );
 	if ( image == NULL ) {
@@ -47,7 +49,7 @@ static void ConvertImage( const char *path, const char *destination ) {
 	if ( plWriteImage( image, destination ) ) {
 		printf( "Wrote \"%s\"\n", destination );
 	} else {
-		printf( "Error: %s\n", plGetError() );
+		Error( "Error: %s\n", plGetError() );
 	}
 
 	plDestroyImage( image );
@@ -57,13 +59,13 @@ static void ConvertImageCallback( const char *path, void *userData ) {
 	char *outDir = ( char * ) userData;
 
 	if ( !plCreateDirectory( outDir ) ) {
-		printf( "Error: %s\n", plGetError() );
+		Error( "Error: %s\n", plGetError() );
 		return;
 	}
 
 	const char *fileName = plGetFileName( path );
 	if ( fileName == NULL ) {
-		printf( "Error: %s\n", plGetError() );
+		Error( "Error: %s\n", plGetError() );
 		return;
 	}
 
@@ -116,10 +118,8 @@ static void Cmd_Exit( unsigned int argc, char **argv ) {
 #define MAX_COMMAND_LENGTH 256
 static char cmdLine[ MAX_COMMAND_LENGTH ];
 int main( int argc, char **argv ) {
-#if defined( _WIN32 )
-	/* stop buffering stdout! */
+	/* no buffering stdout! */
 	setvbuf( stdout, NULL, _IONBF, 0 );
-#endif
 
 	plInitialize( argc, argv );
 
@@ -146,8 +146,8 @@ int main( int argc, char **argv ) {
 			*p++ = ( char ) i;
 
 			unsigned int numChars = p - cmdLine;
-			if ( numChars >= MAX_COMMAND_LENGTH ) {
-				printf( "Hit character limit!\n" );
+			if ( numChars >= MAX_COMMAND_LENGTH - 1 ) {
+				Error( "Hit character limit!\n" );
 				break;
 			}
 		}
