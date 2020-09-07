@@ -50,7 +50,7 @@ static PLImage *LoadStbImage( const char *path ) {
 	}
 
 	int x, y, component;
-	unsigned char *data = stbi_load_from_memory( file->pos, ( int ) file->size, &x, &y, &component, 4 );
+	unsigned char *data = stbi_load_from_memory( file->data, ( int ) file->size, &x, &y, &component, 4 );
 
 	plCloseFile( file );
 
