@@ -588,6 +588,8 @@ bool plRegisterPlugin( const char *path ) {
 	plugin->node = plInsertLinkedListNode( plugins, plugin );
 
 	numPlugins++;
+
+	return true;
 }
 
 /**
