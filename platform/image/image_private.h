@@ -33,3 +33,4 @@ For more information, please refer to <http://unlicense.org>
 
 PLImage *plLoad3dfImage( const char *path );
 PLImage *plLoadFtxImage( const char *path );
+PLImage *plLoadTimImage( const char *path );

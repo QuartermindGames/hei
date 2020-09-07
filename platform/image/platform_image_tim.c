@@ -66,7 +66,7 @@ enum TIMType {
 
 #define TIM_IDENT   16
 
-bool plTIMFormatCheck(PLFile *fin) {
+static bool TIM_FormatCheck(PLFile *fin) {
   plRewindFile(fin);
 
     uint32_t ident;
@@ -113,9 +113,7 @@ static uint16_t _tim16toRGB51A(uint16_t colour_in) {
     return colour_out;
 }
 
-bool plLoadTIMImage(PLFile *fin, PLImage *out) {
-    memset(out, 0, sizeof(PLImage));
-
+static bool TIM_ReadFile(PLFile *fin, PLImage *out) {
     uint16_t *palette = NULL;
     uint8_t *image_data  = NULL;
 
@@ -309,4 +307,28 @@ bool plLoadTIMImage(PLFile *fin, PLImage *out) {
     pl_free(palette);
 
     return false;
+}
+
+PLImage *plLoadTimImage( const char *path ) {
+	PLFile *file = plOpenFile( path, false );
+	if ( file == NULL ) {
+		return NULL;
+	}
+
+	if ( !TIM_FormatCheck( file ) ) {
+		plCloseFile( file );
+		return NULL;
+	}
+
+	plRewindFile( file );
+
+	PLImage *image = pl_calloc( 1, sizeof( PLImage ) );
+	if ( !TIM_ReadFile( file, image ) ) {
+		pl_free( image );
+		image = NULL;
+	}
+
+	plCloseFile( file );
+
+	return image;
 }

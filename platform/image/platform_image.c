@@ -115,6 +115,7 @@ void plRegisterStandardImageLoaders( unsigned int flags ) {
 	        { PL_IMAGE_FILEFORMAT_PNM, "pnm", LoadStbImage },
 	        { PL_IMAGE_FILEFORMAT_FTX, "ftx", plLoadFtxImage },
 	        { PL_IMAGE_FILEFORMAT_3DF, "3df", plLoad3dfImage },
+	        { PL_IMAGE_FILEFORMAT_TIM, "tim", plLoadTimImage },
 	};
 
 	for ( unsigned int i = 0; i < plArrayElements( loaderList ); ++i ) {
