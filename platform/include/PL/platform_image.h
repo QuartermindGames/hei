@@ -113,7 +113,7 @@ PL_EXTERN PLImage *plLoadImage( const char *path );
 PL_EXTERN bool plWriteImage(const PLImage *image, const char *path);
 
 PL_EXTERN bool plConvertPixelFormat(PLImage *image, PLImageFormat new_format);
-PL_EXTERN bool plConvertColourFormat( PLImage *image, PLColourFormat newFormat );
+//PL_EXTERN bool plConvertColourFormat( PLImage *image, PLColourFormat newFormat );
 
 PL_EXTERN void plInvertImageColour(PLImage *image);
 PL_EXTERN void plReplaceImageColour(PLImage *image, PLColour target, PLColour dest);
