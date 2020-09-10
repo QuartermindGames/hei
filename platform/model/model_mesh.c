@@ -33,21 +33,25 @@ For more information, please refer to <http://unlicense.org>
 #include <float.h>
 
 /* todo: move into physics.c */
-PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertices ) {
+PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertices, bool absolute ) {
 	PLCollisionAABB bounds;
-#if 0 /* original implementation, did not account for rotations... */
-	bounds.maxs = ( PLVector3 ) { -999999.0f, -999999.0f, -999999.0f };
-	bounds.mins = ( PLVector3 ) { 999999.0f, 999999.0f, 999999.0f };
+	if ( absolute ) {
+		bounds.maxs = ( PLVector3 ) { FLT_MIN, FLT_MIN, FLT_MIN };
+		bounds.mins = ( PLVector3 ) { FLT_MAX, FLT_MAX, FLT_MAX };
 
-	for ( unsigned int i = 0; i < numVertices; ++i ) {
-		if ( bounds.maxs.x < vertices[ i ].position.x ) { bounds.maxs.x = vertices[ i ].position.x; }
-		if ( bounds.maxs.y < vertices[ i ].position.y ) { bounds.maxs.y = vertices[ i ].position.y; }
-		if ( bounds.maxs.z < vertices[ i ].position.z ) { bounds.maxs.z = vertices[ i ].position.z; }
-		if ( bounds.mins.x > vertices[ i ].position.x ) { bounds.mins.x = vertices[ i ].position.x; }
-		if ( bounds.mins.y > vertices[ i ].position.y ) { bounds.mins.y = vertices[ i ].position.y; }
-		if ( bounds.mins.z > vertices[ i ].position.z ) { bounds.mins.z = vertices[ i ].position.z; }
+		for ( unsigned int i = 0; i < numVertices; ++i ) {
+			if ( bounds.maxs.x < vertices[ i ].position.x ) { bounds.maxs.x = vertices[ i ].position.x; }
+			if ( bounds.maxs.y < vertices[ i ].position.y ) { bounds.maxs.y = vertices[ i ].position.y; }
+			if ( bounds.maxs.z < vertices[ i ].position.z ) { bounds.maxs.z = vertices[ i ].position.z; }
+			if ( bounds.mins.x > vertices[ i ].position.x ) { bounds.mins.x = vertices[ i ].position.x; }
+			if ( bounds.mins.y > vertices[ i ].position.y ) { bounds.mins.y = vertices[ i ].position.y; }
+			if ( bounds.mins.z > vertices[ i ].position.z ) { bounds.mins.z = vertices[ i ].position.z; }
+		}
+
+		return bounds;
 	}
-#else /* this technically still doesn't, but it's better */
+
+	/* this technically still doesn't, but it's better */
 	float max = FLT_MIN;
 	float min = FLT_MAX;
 	for ( unsigned int i = 0; i < numVertices; ++i ) {
@@ -65,7 +69,6 @@ PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertic
 	float abs = min > max ? min : max;
 	bounds.maxs = PLVector3( abs, abs, abs );
 	bounds.mins = PLVector3( -abs, -abs, -abs );
-#endif
 
 	return bounds;
 }
@@ -100,7 +103,7 @@ void plGenerateTextureCoordinates( PLVertex *vertices, unsigned int numVertices,
 	}
 #endif
 
-	PLCollisionAABB bounds = plGenerateAABB( vertices, numVertices );
+	PLCollisionAABB bounds = plGenerateAABB( vertices, numVertices, false );
 	for ( unsigned int i = 0; i < numVertices; ++i ) {
 		vertices[ i ].st[ 0 ].x = ( plVector3Index( vertices[ i ].position, l ) / plVector3Index( bounds.maxs, l ) + textureOffset.x ) * textureScale.x;
 		vertices[ i ].st[ 0 ].y = ( plVector3Index( vertices[ i ].position, r ) / plVector3Index( bounds.maxs, r ) + textureOffset.y ) * textureScale.y;

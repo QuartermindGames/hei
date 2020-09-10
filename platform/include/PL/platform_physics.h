@@ -50,7 +50,7 @@ typedef struct PLCollisionSphere { PLVector3 origin; float radius; } PLCollision
 #endif
 
 typedef struct PLVertex PLVertex;
-PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertices );
+PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertices, bool absolute );
 
 PL_INLINE static bool plIsAABBIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB *bBounds ) {
 	PLVector3 aMax = plAddVector3( aBounds->maxs, aBounds->origin );
