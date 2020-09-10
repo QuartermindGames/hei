@@ -108,7 +108,7 @@ float plGetCameraFieldOfView( const PLCamera *camera ) {
 	return camera->fov;
 }
 
-void plMakeFrustumPlanes( const PLMatrix4 *matrix, PLViewFrustum outFrustum ) {
+static void MakeFrustumPlanes( const PLMatrix4 *matrix, PLViewFrustum outFrustum ) {
 	// Right
 	outFrustum[ PL_FRUSTUM_PLANE_RIGHT ].x = matrix->m[ 3 ] - matrix->m[ 0 ];
 	outFrustum[ PL_FRUSTUM_PLANE_RIGHT ].y = matrix->m[ 7 ] - matrix->m[ 4 ];
@@ -147,34 +147,41 @@ void plMakeFrustumPlanes( const PLMatrix4 *matrix, PLViewFrustum outFrustum ) {
 	outFrustum[ PL_FRUSTUM_PLANE_NEAR ] = plNormalizePlane( outFrustum[ PL_FRUSTUM_PLANE_NEAR ] );
 }
 
+static void SetupCameraFrustum( PLCamera *camera ) {
+	PLMatrix4 mvp = plMatrix4Identity();
+	mvp = plMultiplyMatrix4( mvp, camera->internal.proj );
+	mvp = plMultiplyMatrix4( mvp, camera->internal.view );
+	MakeFrustumPlanes( &mvp, camera->frustum );
+}
+
+static void SetupCameraPerspective( PLCamera *camera ) {
+	camera->internal.proj = plPerspective( camera->fov, camera->viewport.w / camera->viewport.h, camera->near, camera->far );
+
+	float x = cosf( plDegreesToRadians( camera->angles.y ) ) * cosf( plDegreesToRadians( camera->angles.x ) );
+	float y = sinf( plDegreesToRadians( camera->angles.x ) );
+	float z = sinf( plDegreesToRadians( camera->angles.y ) ) * cosf( plDegreesToRadians( camera->angles.x ) );
+
+	camera->forward = plNormalizeVector3( PLVector3( x, y, z ) );
+	camera->internal.view = plLookAt( camera->position, plAddVector3( camera->position, camera->forward ), camera->up );
+}
+
 void plSetupCamera(PLCamera *camera) {
     plAssert(camera);
 
-    camera->internal.proj = plMatrix4Identity();
-    camera->internal.view = plMatrix4Identity();
-
-    float w = (float)camera->viewport.w;
-    float h = (float)camera->viewport.h;
-
 	switch ( camera->mode ) {
 		case PL_CAMERA_MODE_PERSPECTIVE: {
-			camera->internal.proj = plPerspective( camera->fov, w / h, camera->near, camera->far );
-
-			float x = cosf( plDegreesToRadians( camera->angles.y ) ) * cosf( plDegreesToRadians( camera->angles.x ) );
-			float y = sinf( plDegreesToRadians( camera->angles.x ) );
-			float z = sinf( plDegreesToRadians( camera->angles.y ) ) * cosf( plDegreesToRadians( camera->angles.x ) );
-
-			camera->forward = plNormalizeVector3( PLVector3( x, y, z ) );
-			camera->internal.view = plLookAt( camera->position, plAddVector3( camera->position, camera->forward ), camera->up );
+			SetupCameraPerspective( camera );
 			break;
 		}
 
 		case PL_CAMERA_MODE_ORTHOGRAPHIC:
-			camera->internal.proj = plOrtho( 0, w, h, 0, camera->near, camera->far );
+			camera->internal.proj = plOrtho( 0, camera->viewport.w, camera->viewport.h, 0, camera->near, camera->far );
+			camera->internal.view = plMatrix4Identity();
 			break;
 
 		case PL_CAMERA_MODE_ISOMETRIC:
 			camera->internal.proj = plOrtho( -camera->fov, camera->fov, -camera->fov, 5, -5, 40 );
+			camera->internal.view = plMatrix4Identity();
 			break;
 
 		default:
@@ -182,10 +189,7 @@ void plSetupCamera(PLCamera *camera) {
 	}
 
 	/* setup the camera frustum */
-	PLMatrix4 mvp = plMatrix4Identity();
-	mvp = plMultiplyMatrix4( mvp, camera->internal.proj );
-	mvp = plMultiplyMatrix4( mvp, camera->internal.view );
-	plMakeFrustumPlanes( &mvp, camera->frustum );
+	SetupCameraFrustum( camera );
 
     // keep the gfx_state up-to-date on the situation
     gfx_state.current_viewport = &camera->viewport;
