@@ -76,6 +76,7 @@ PL_INLINE static PLMatrix4 plScaleMatrix4( PLMatrix4 m, PLVector3 scale );
 PL_INLINE static PLMatrix4 plMultiplyMatrix4( PLMatrix4 m, PLMatrix4 m2 );
 PL_INLINE static PLMatrix4 plRotateMatrix4( float angle, PLVector3 axis );
 PL_INLINE static PLMatrix4 plTranslateMatrix4( PLVector3 v );
+PL_INLINE static PLMatrix4 plInverseMatrix4( PLMatrix4 m );
 PL_INLINE static PLVector3 plGetMatrix4Translation( const PLMatrix4 *m );
 PL_INLINE static PLVector3 plGetMatrix4Angle( const PLMatrix4* m );
 
@@ -382,6 +383,136 @@ PL_INLINE static PLMatrix4 plTranslateMatrix4( PLVector3 v ) {
 	m.pl_m4pos( 1, 3 ) = v.y;
 	m.pl_m4pos( 2, 3 ) = v.z;
 	return m;
+}
+
+PL_INLINE static PLMatrix4 plInverseMatrix4( const PLMatrix4 m ) {
+	PLMatrix4 out;
+
+	out.m[ 0 ] =
+	        m.m[ 5 ] * m.m[ 10 ] * m.m[ 15 ] -
+	        m.m[ 5 ] * m.m[ 11 ] * m.m[ 14 ] -
+	        m.m[ 9 ] * m.m[ 6 ] * m.m[ 15 ] +
+	        m.m[ 9 ] * m.m[ 7 ] * m.m[ 14 ] +
+	        m.m[ 13 ] * m.m[ 6 ] * m.m[ 11 ] -
+	        m.m[ 13 ] * m.m[ 7 ] * m.m[ 10 ];
+	out.m[ 4 ] =
+	        -m.m[ 4 ] * m.m[ 10 ] * m.m[ 15 ] +
+	        m.m[ 4 ] * m.m[ 11 ] * m.m[ 14 ] +
+	        m.m[ 8 ] * m.m[ 6 ] * m.m[ 15 ] -
+	        m.m[ 8 ] * m.m[ 7 ] * m.m[ 14 ] -
+	        m.m[ 12 ] * m.m[ 6 ] * m.m[ 11 ] +
+	        m.m[ 12 ] * m.m[ 7 ] * m.m[ 10 ];
+	out.m[ 8 ] =
+	        m.m[ 4 ] * m.m[ 9 ] * m.m[ 15 ] -
+	        m.m[ 4 ] * m.m[ 11 ] * m.m[ 13 ] -
+	        m.m[ 8 ] * m.m[ 5 ] * m.m[ 15 ] +
+	        m.m[ 8 ] * m.m[ 7 ] * m.m[ 13 ] +
+	        m.m[ 12 ] * m.m[ 5 ] * m.m[ 11 ] -
+	        m.m[ 12 ] * m.m[ 7 ] * m.m[ 9 ];
+	out.m[ 12 ] =
+	        -m.m[ 4 ] * m.m[ 9 ] * m.m[ 14 ] +
+	        m.m[ 4 ] * m.m[ 10 ] * m.m[ 13 ] +
+	        m.m[ 8 ] * m.m[ 5 ] * m.m[ 14 ] -
+	        m.m[ 8 ] * m.m[ 6 ] * m.m[ 13 ] -
+	        m.m[ 12 ] * m.m[ 5 ] * m.m[ 10 ] +
+	        m.m[ 12 ] * m.m[ 6 ] * m.m[ 9 ];
+	out.m[ 1 ] =
+	        -m.m[ 1 ] * m.m[ 10 ] * m.m[ 15 ] +
+	        m.m[ 1 ] * m.m[ 11 ] * m.m[ 14 ] +
+	        m.m[ 9 ] * m.m[ 2 ] * m.m[ 15 ] -
+	        m.m[ 9 ] * m.m[ 3 ] * m.m[ 14 ] -
+	        m.m[ 13 ] * m.m[ 2 ] * m.m[ 11 ] +
+	        m.m[ 13 ] * m.m[ 3 ] * m.m[ 10 ];
+	out.m[ 5 ] =
+	        m.m[ 0 ] * m.m[ 10 ] * m.m[ 15 ] -
+	        m.m[ 0 ] * m.m[ 11 ] * m.m[ 14 ] -
+	        m.m[ 8 ] * m.m[ 2 ] * m.m[ 15 ] +
+	        m.m[ 8 ] * m.m[ 3 ] * m.m[ 14 ] +
+	        m.m[ 12 ] * m.m[ 2 ] * m.m[ 11 ] -
+	        m.m[ 12 ] * m.m[ 3 ] * m.m[ 10 ];
+	out.m[ 9 ] =
+	        -m.m[ 0 ] * m.m[ 9 ] * m.m[ 15 ] +
+	        m.m[ 0 ] * m.m[ 11 ] * m.m[ 13 ] +
+	        m.m[ 8 ] * m.m[ 1 ] * m.m[ 15 ] -
+	        m.m[ 8 ] * m.m[ 3 ] * m.m[ 13 ] -
+	        m.m[ 12 ] * m.m[ 1 ] * m.m[ 11 ] +
+	        m.m[ 12 ] * m.m[ 3 ] * m.m[ 9 ];
+	out.m[ 13 ] =
+	        m.m[ 0 ] * m.m[ 9 ] * m.m[ 14 ] -
+	        m.m[ 0 ] * m.m[ 10 ] * m.m[ 13 ] -
+	        m.m[ 8 ] * m.m[ 1 ] * m.m[ 14 ] +
+	        m.m[ 8 ] * m.m[ 2 ] * m.m[ 13 ] +
+	        m.m[ 12 ] * m.m[ 1 ] * m.m[ 10 ] -
+	        m.m[ 12 ] * m.m[ 2 ] * m.m[ 9 ];
+	out.m[ 2 ] =
+	        m.m[ 1 ] * m.m[ 6 ] * m.m[ 15 ] -
+	        m.m[ 1 ] * m.m[ 7 ] * m.m[ 14 ] -
+	        m.m[ 5 ] * m.m[ 2 ] * m.m[ 15 ] +
+	        m.m[ 5 ] * m.m[ 3 ] * m.m[ 14 ] +
+	        m.m[ 13 ] * m.m[ 2 ] * m.m[ 7 ] -
+	        m.m[ 13 ] * m.m[ 3 ] * m.m[ 6 ];
+	out.m[ 6 ] =
+	        -m.m[ 0 ] * m.m[ 6 ] * m.m[ 15 ] +
+	        m.m[ 0 ] * m.m[ 7 ] * m.m[ 14 ] +
+	        m.m[ 4 ] * m.m[ 2 ] * m.m[ 15 ] -
+	        m.m[ 4 ] * m.m[ 3 ] * m.m[ 14 ] -
+	        m.m[ 12 ] * m.m[ 2 ] * m.m[ 7 ] +
+	        m.m[ 12 ] * m.m[ 3 ] * m.m[ 6 ];
+	out.m[ 10 ] =
+	        m.m[ 0 ] * m.m[ 5 ] * m.m[ 15 ] -
+	        m.m[ 0 ] * m.m[ 7 ] * m.m[ 13 ] -
+	        m.m[ 4 ] * m.m[ 1 ] * m.m[ 15 ] +
+	        m.m[ 4 ] * m.m[ 3 ] * m.m[ 13 ] +
+	        m.m[ 12 ] * m.m[ 1 ] * m.m[ 7 ] -
+	        m.m[ 12 ] * m.m[ 3 ] * m.m[ 5 ];
+	out.m[ 14 ] =
+	        -m.m[ 0 ] * m.m[ 5 ] * m.m[ 14 ] +
+	        m.m[ 0 ] * m.m[ 6 ] * m.m[ 13 ] +
+	        m.m[ 4 ] * m.m[ 1 ] * m.m[ 14 ] -
+	        m.m[ 4 ] * m.m[ 2 ] * m.m[ 13 ] -
+	        m.m[ 12 ] * m.m[ 1 ] * m.m[ 6 ] +
+	        m.m[ 12 ] * m.m[ 2 ] * m.m[ 5 ];
+	out.m[ 3 ] =
+	        -m.m[ 1 ] * m.m[ 6 ] * m.m[ 11 ] +
+	        m.m[ 1 ] * m.m[ 7 ] * m.m[ 10 ] +
+	        m.m[ 5 ] * m.m[ 2 ] * m.m[ 11 ] -
+	        m.m[ 5 ] * m.m[ 3 ] * m.m[ 10 ] -
+	        m.m[ 9 ] * m.m[ 2 ] * m.m[ 7 ] +
+	        m.m[ 9 ] * m.m[ 3 ] * m.m[ 6 ];
+	out.m[ 7 ] =
+	        m.m[ 0 ] * m.m[ 6 ] * m.m[ 11 ] -
+	        m.m[ 0 ] * m.m[ 7 ] * m.m[ 10 ] -
+	        m.m[ 4 ] * m.m[ 2 ] * m.m[ 11 ] +
+	        m.m[ 4 ] * m.m[ 3 ] * m.m[ 10 ] +
+	        m.m[ 8 ] * m.m[ 2 ] * m.m[ 7 ] -
+	        m.m[ 8 ] * m.m[ 3 ] * m.m[ 6 ];
+	out.m[ 11 ] =
+	        -m.m[ 0 ] * m.m[ 5 ] * m.m[ 11 ] +
+	        m.m[ 0 ] * m.m[ 7 ] * m.m[ 9 ] +
+	        m.m[ 4 ] * m.m[ 1 ] * m.m[ 11 ] -
+	        m.m[ 4 ] * m.m[ 3 ] * m.m[ 9 ] -
+	        m.m[ 8 ] * m.m[ 1 ] * m.m[ 7 ] +
+	        m.m[ 8 ] * m.m[ 3 ] * m.m[ 5 ];
+	out.m[ 15 ] =
+	        m.m[ 0 ] * m.m[ 5 ] * m.m[ 10 ] -
+	        m.m[ 0 ] * m.m[ 6 ] * m.m[ 9 ] -
+	        m.m[ 4 ] * m.m[ 1 ] * m.m[ 10 ] +
+	        m.m[ 4 ] * m.m[ 2 ] * m.m[ 9 ] +
+	        m.m[ 8 ] * m.m[ 1 ] * m.m[ 6 ] -
+	        m.m[ 8 ] * m.m[ 2 ] * m.m[ 5 ];
+
+	float d = m.m[0] * out.m[0] + m.m[1] * out.m[4] + m.m[2] * out.m[8] + m.m[3] * out.m[12];
+	if ( d == 0 ) {
+		return m;
+	}
+
+	d = 1.0f / d;
+
+	for ( unsigned int i = 0; i < 16; ++i ) {
+		out.m[ i ] *= d;
+	}
+
+	return out;
 }
 
 PL_INLINE static PLMatrix4 plLookAt( PLVector3 eye, PLVector3 center, PLVector3 up ) {
