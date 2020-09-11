@@ -125,7 +125,7 @@ int main( int argc, char **argv ) {
 
 	plRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
 
-	//plRegisterPlugins( "plugins/" );
+	plRegisterPlugins( "./" );
 
 	/* register all our custom console commands */
 	plRegisterConsoleCommand( "exit", Cmd_Exit, "Exit the application." );
