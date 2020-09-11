@@ -328,7 +328,12 @@ void plDestroyShaderProgram(PLShaderProgram *program, bool free_stages) {
 
     CallGfxFunction(DestroyShaderProgram, program);
 
+	/* free uniforms */
+	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
+		free( program->uniforms[ i ].name );
+	}
     pl_free(program->uniforms);
+
     pl_free(program->attributes);
     pl_free(program);
 }
@@ -439,35 +444,28 @@ static PLShaderProgram *GetShaderProgram(PLShaderProgram *program) {
 }
 
 /**
- * searches through programs registered uniforms
+ * Searches through programs registered uniforms
  * for the specified uniform entry.
  *
- * if it fails to find the uniform it'll return '-1'.
- *
- * @param program
- * @param name
- * @return index for the shader uniform
+ * If it fails to find the uniform it'll return '-1'.
  */
-int plGetShaderUniformSlot(PLShaderProgram *program, const char *name) {
-    PLShaderProgram *prg = GetShaderProgram(program);
-    if(prg == NULL) {
-        return -1;
-    }
+int plGetShaderUniformSlot( PLShaderProgram *program, const char *name ) {
+	PLShaderProgram *prg = GetShaderProgram( program );
+	if ( prg == NULL ) {
+		return -1;
+	}
 
-#if 1
-    for(unsigned int i = 0; i < prg->num_uniforms; ++i) {
-        if(pl_strncasecmp(prg->uniforms[i].name, name, sizeof(prg->uniforms[i].name)) == 0) {
-            return i;
-        }
-    }
-#else
-    GLint uniform = glGetUniformLocation(prg->internal.id, name);
-    if(uniform != -1) {
-        return uniform;
-    }
-#endif
+	for ( unsigned int i = 0; i < prg->num_uniforms; ++i ) {
+		if ( prg->uniforms[ i ].name == NULL ) {
+			continue;
+		}
 
-    return -1;
+		if ( pl_strcasecmp( prg->uniforms[ i ].name, name ) == 0 ) {
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 /*****************************************************/
@@ -531,33 +529,36 @@ static void RegisterShaderProgramData(PLShaderProgram *program) {
 
     GfxLog("Found %u uniforms in shader\n", program->num_uniforms);
 
-    program->uniforms = pl_calloc((size_t)program->num_uniforms, sizeof(*program->uniforms));
-    if(program->uniforms == NULL) {
-        return;
-    }
+	program->uniforms = pl_calloc( ( size_t ) program->num_uniforms, sizeof( *program->uniforms ) );
+	unsigned int registered = 0;
+	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
+		int maxUniformNameLength;
+		glGetActiveUniformsiv( program->internal.id, 1, &i, GL_UNIFORM_NAME_LENGTH, &maxUniformNameLength );
 
-    unsigned int registered = 0;
-    for(unsigned int i = 0; i < program->num_uniforms; ++i) {
-        char name[16];
-        int name_length;
-        unsigned int type;
+		GLchar *uniformName = malloc( maxUniformNameLength );
+		GLsizei nameLength;
 
-        glGetActiveUniform(program->internal.id, (GLuint) i, 16, NULL, &name_length, &type, name);
-        if(name_length <= 0) {
-            GfxLog("Invalid name for uniform, ignoring!\n");
-            continue;
-        }
+		GLenum glType;
+		GLint uniformSize;
 
-        GfxLog(" %20s (%d) %u\n", name, i, type);
+		glGetActiveUniform( program->internal.id, i, maxUniformNameLength, &nameLength, &uniformSize, &glType, uniformName );
+		if ( nameLength == 0 ) {
+			free( uniformName );
 
-        program->uniforms[i].type = GLConvertGLUniformType(type);
-        program->uniforms[i].slot = i;
-        strncpy(program->uniforms[i].name, name, sizeof(program->uniforms[i].name));
+			GfxLog( "No information available for uniform %d!\n", i );
+			continue;
+		}
 
-        registered++;
-    }
+		program->uniforms[ i ].type = GLConvertGLUniformType( glType );
+		program->uniforms[ i ].slot = i;
+		program->uniforms[ i ].name = uniformName;
 
-    if(registered == 0) {
+		GfxLog( " %20d (%s) %u\n", i, program->uniforms[ i ].name, program->uniforms[ i ].type );
+
+		registered++;
+	}
+
+	if(registered == 0) {
         GfxLog("Failed to validate any shader program uniforms!\n");
     }
 #endif
