@@ -223,6 +223,8 @@ typedef enum PLShaderUniformType {
     /* matrices */
     PL_UNIFORM_MAT3,
     PL_UNIFORM_MAT4,
+
+	PL_MAX_UNIFORM_TYPES
 } PLShaderUniformType;
 
 typedef struct PLShaderProgram PLShaderProgram;

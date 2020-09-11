@@ -473,6 +473,24 @@ int plGetShaderUniformSlot( PLShaderProgram *program, const char *name ) {
 
 #if defined(PL_SUPPORT_OPENGL)
 
+static const char *uniformDescriptors[ PL_MAX_UNIFORM_TYPES ] = {
+		[ PL_UNIFORM_FLOAT ] = "float",
+		[ PL_UNIFORM_INT ] = "int",
+		[ PL_UNIFORM_UINT ] = "uint",
+		[ PL_UNIFORM_BOOL ] = "bool",
+		[ PL_UNIFORM_DOUBLE ] = "double",
+		[ PL_UNIFORM_SAMPLER1D ] = "sampler1D",
+		[ PL_UNIFORM_SAMPLER2D ] = "sampler2D",
+		[ PL_UNIFORM_SAMPLER3D ] = "sampler3D",
+		[ PL_UNIFORM_SAMPLERCUBE ] = "samplerCube",
+		[ PL_UNIFORM_SAMPLER1DSHADOW ] = "sampler1DShadow",
+		[ PL_UNIFORM_VEC2 ] = "vec2",
+		[ PL_UNIFORM_VEC3 ] = "vec3",
+		[ PL_UNIFORM_VEC4 ] = "vec4",
+		[ PL_UNIFORM_MAT3 ] = "mat3",
+		[ PL_UNIFORM_MAT4 ] = "mat4",
+};
+
 /* todo, move into layer_opengl */
 static PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
     switch(type) {
@@ -553,7 +571,7 @@ static void RegisterShaderProgramData(PLShaderProgram *program) {
 		program->uniforms[ i ].slot = i;
 		program->uniforms[ i ].name = uniformName;
 
-		GfxLog( " %4d (%20s) %u\n", i, program->uniforms[ i ].name, program->uniforms[ i ].type );
+		GfxLog( " %4d (%20s) %s\n", i, program->uniforms[ i ].name, uniformDescriptors[ program->uniforms[ i ].type ] );
 
 		registered++;
 	}
