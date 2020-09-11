@@ -553,7 +553,7 @@ static void RegisterShaderProgramData(PLShaderProgram *program) {
 		program->uniforms[ i ].slot = i;
 		program->uniforms[ i ].name = uniformName;
 
-		GfxLog( " %20d (%s) %u\n", i, program->uniforms[ i ].name, program->uniforms[ i ].type );
+		GfxLog( " %4d (%20s) %u\n", i, program->uniforms[ i ].name, program->uniforms[ i ].type );
 
 		registered++;
 	}
