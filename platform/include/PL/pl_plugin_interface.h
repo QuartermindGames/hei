@@ -124,10 +124,11 @@ typedef struct PLPluginExportTable {
 	void (*RegisterModelLoader)( const char *extension, PLModel*(*LoadFunction)( const char *path ) );
 } PLPluginExportTable;
 
-#define PL_PLUGIN_INTERFACE_VERSION sizeof( PLPluginExportTable ) + sizeof( PLPluginDescription )
+/* be absolutely sure to change this whenever the API is updated! */
+#define PL_PLUGIN_INTERFACE_VERSION 1
 
 #define PL_PLUGIN_QUERY_FUNCTION    "PLQueryPlugin"
 #define PL_PLUGIN_INIT_FUNCTION     "PLInitializePlugin"
 
-typedef PLPluginDescription *(*PLPluginQueryFunction )( unsigned int interfaceVersion );
+typedef const PLPluginDescription *(*PLPluginQueryFunction )( unsigned int interfaceVersion );
 typedef void (*PLPluginInitializationFunction)( const PLPluginExportTable *functionTable );

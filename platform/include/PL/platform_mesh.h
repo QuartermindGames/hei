@@ -91,6 +91,8 @@ typedef struct PLCollisionAABB PLCollisionAABB;
 
 PL_EXTERN_C
 
+#if !defined( PL_COMPILE_PLUGIN )
+
 PL_EXTERN PLMesh *plCreateMesh(PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts);
 PL_EXTERN PLMesh *plCreateMeshInit( PLMeshPrimitive primitive, PLMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
 	const unsigned int* indicies, const PLVertex* vertices );
@@ -135,5 +137,7 @@ PL_EXTERN void plGenerateMeshNormals(PLMesh *mesh, bool perFace);
 PL_EXTERN void plGenerateTextureCoordinates( PLVertex *vertices, unsigned int numVertices, PLVector2 textureOffset, PLVector2 textureScale );
 PL_EXTERN void plGenerateVertexNormals( PLVertex *vertices, unsigned int numVertices, unsigned int *indices, unsigned int numTriangles, bool perFace );
 PL_EXTERN PLVector3 plGenerateVertexNormal(PLVector3 a, PLVector3 b, PLVector3 c);
+
+#endif
 
 PL_EXTERN_C_END
