@@ -419,10 +419,17 @@ void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h,
 		plAddMeshVertex( mesh, coord, pl_vecOrigin3, colour, pl_vecOrigin2 );
 	}
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
+	plMatrixMode( PL_MODELVIEW_MATRIX );
+	plPushMatrix();
+
+	plLoadIdentityMatrix();
+
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), false );
 
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
+
+	plPopMatrix();
 }
 
 static void SetupRectangleMesh( PLMesh *mesh, float x, float y, float w, float h, PLColour colour ) {
@@ -442,7 +449,8 @@ void plDrawTexturedRectangle( const PLMatrix4 *transform, float x, float y, floa
 
 	plSetTexture( texture, 0 );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", *transform, true );
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", transform, true );
+
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
 
@@ -468,7 +476,7 @@ void plDrawRectangle( const PLMatrix4 *transform, float x, float y, float w, flo
 
 	SetupRectangleMesh( mesh, x, y, w, h, colour );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", *transform, true );
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", transform, true );
 
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
@@ -487,9 +495,17 @@ void plDrawFilledRectangle( const PLRectangle2D *rectangle ) {
 	plSetMeshVertexColour( mesh, 2, rectangle->lr );
 	plSetMeshVertexColour( mesh, 3, rectangle->ur );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
+	plMatrixMode( PL_MODELVIEW_MATRIX );
+	plPushMatrix();
+
+	plLoadIdentityMatrix();
+
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), false );
+
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
+
+	plPopMatrix();
 }
 
 void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr, float hScale, float vScale, PLTexture *texture ) {
@@ -515,10 +531,17 @@ void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVecto
 
 	plSetTexture( texture, 0 );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), true );
+	plMatrixMode( PL_MODELVIEW_MATRIX );
+	plPushMatrix();
+
+	plLoadIdentityMatrix();
+
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), false );
 
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
+
+	plPopMatrix();
 }
 
 void plDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
@@ -535,9 +558,17 @@ void plDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 
 	//plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
+	plMatrixMode( PL_MODELVIEW_MATRIX );
+	plPushMatrix();
+
+	plLoadIdentityMatrix();
+
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), false );
+
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
+
+	plPopMatrix();
 }
 
 void plDrawLine( PLMatrix4 transform, PLVector3 startPos, PLColour startColour, PLVector3 endPos, PLColour endColour ) {
@@ -549,7 +580,7 @@ void plDrawLine( PLMatrix4 transform, PLVector3 startPos, PLColour startColour, 
 	plAddMeshVertex( mesh, startPos, pl_vecOrigin3, startColour, pl_vecOrigin2 );
 	plAddMeshVertex( mesh, endPos, pl_vecOrigin3, endColour, pl_vecOrigin2 );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", transform, true );
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", &transform, true );
 
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
@@ -637,7 +668,7 @@ void plDrawBoundingVolume( const PLCollisionAABB *bounds, PLColour colour ) {
 	plAddMeshVertex( mesh, boxPoints[ 3 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
 	plAddMeshVertex( mesh, boxPoints[ 6 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", *plGetMatrix( PL_MODELVIEW_MATRIX ), true );
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), true );
 
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );

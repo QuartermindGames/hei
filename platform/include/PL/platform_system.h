@@ -156,6 +156,8 @@ For more information, please refer to <http://unlicense.org>
 #   define PL_EXPORT    __declspec(dllexport)
 #   define PL_IMPORT    __declspec(dllimport)
 
+#   define PL_DEPRECATED( function )    __declspec(deprecated) function
+
 #	define PL_STATIC_ASSERT(a, b)	static_assert((a), b)
 
 #	define PL_PACKED_STRUCT_START(a) \
@@ -164,7 +166,7 @@ For more information, please refer to <http://unlicense.org>
 #	define PL_PACKED_STRUCT_END(a) \
 		} a; \
 		__pragma(pack(pop))
-#else
+#else /* currently assumed to be GCC */
 #   define PL_INSTANCE  void*
 #   define PL_FARPROC   void*
 
@@ -182,6 +184,8 @@ For more information, please refer to <http://unlicense.org>
 
 #   define PL_EXPORT    __attribute__((visibility("default")))
 #   define PL_IMPORT    __attribute__((visibility("hidden")))
+
+#   define PL_DEPRECATED( function )    function __attribute__ ((deprecated))
 
 #	define PL_STATIC_ASSERT(a, b)	_Static_assert((a), b)
 

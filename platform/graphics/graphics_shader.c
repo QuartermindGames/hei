@@ -571,6 +571,42 @@ static void RegisterShaderProgramData(PLShaderProgram *program) {
 		program->uniforms[ i ].slot = i;
 		program->uniforms[ i ].name = uniformName;
 
+		/* fetch it's current value, assume it's the default */
+		switch( program->uniforms[ i ].type ) {
+			case PL_UNIFORM_FLOAT:
+				glGetUniformfv( program->internal.id, i, &program->uniforms[ i ].defaultFloat );
+				break;
+			case PL_UNIFORM_INT:
+				glGetUniformiv( program->internal.id, i, &program->uniforms[ i ].defaultInt );
+				break;
+			case PL_UNIFORM_UINT:
+				glGetUniformuiv( program->internal.id, i, &program->uniforms[ i ].defaultUInt );
+				break;
+			case PL_UNIFORM_BOOL:
+				glGetUniformiv( program->internal.id, i, ( GLint * ) &program->uniforms[ i ].defaultBool );
+				break;
+			case PL_UNIFORM_DOUBLE:
+				glGetUniformdv( program->internal.id, i, &program->uniforms[ i ].defaultDouble );
+				break;
+			case PL_UNIFORM_VEC2:
+				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec2 );
+				break;
+			case PL_UNIFORM_VEC3:
+				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec3 );
+				break;
+			case PL_UNIFORM_VEC4:
+				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec4 );
+				break;
+			case PL_UNIFORM_MAT3:
+				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultMat3 );
+				break;
+			case PL_UNIFORM_MAT4:
+				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultMat4 );
+				break;
+			default:
+				break;
+		}
+
 		GfxLog( " %4d (%20s) %s\n", i, program->uniforms[ i ].name, uniformDescriptors[ program->uniforms[ i ].type ] );
 
 		registered++;
@@ -597,13 +633,180 @@ static int ValidateShaderUniformSlot(PLShaderProgram* program, int slot) {
     return slot;
 }
 
-void plSetShaderUniformFloat(PLShaderProgram *program, int slot, float value) {
-    PLShaderProgram *prg = GetShaderProgram(program);
-    if(prg == NULL || prg->uniforms == NULL) {
-        return;
-    }
+void plSetShaderUniformDefaultValueByIndex( PLShaderProgram *program, int slot, const void *defaultValue ) {
+	switch ( program->uniforms[ slot ].type ) {
+		case PL_UNIFORM_FLOAT:
+			program->uniforms[ slot ].defaultFloat = *( float * ) defaultValue;
+			break;
+		case PL_UNIFORM_INT:
+			program->uniforms[ slot ].defaultInt = *( int * ) defaultValue;
+			break;
+		case PL_UNIFORM_UINT:
+			program->uniforms[ slot ].defaultUInt = *( unsigned int * ) defaultValue;
+			break;
+		case PL_UNIFORM_BOOL:
+			program->uniforms[ slot ].defaultBool = *( bool * ) defaultValue;
+			break;
+		case PL_UNIFORM_DOUBLE:
+			program->uniforms[ slot ].defaultDouble = *( double * ) defaultValue;
+			break;
+		case PL_UNIFORM_VEC2:
+			program->uniforms[ slot ].defaultVec2 = *( PLVector2 * ) defaultValue;
+			break;
+		case PL_UNIFORM_VEC3:
+			program->uniforms[ slot ].defaultVec3 = *( PLVector3 * ) defaultValue;
+			break;
+		case PL_UNIFORM_VEC4:
+			program->uniforms[ slot ].defaultVec4 = *( PLVector4 * ) defaultValue;
+			break;
+		case PL_UNIFORM_MAT3:
+			program->uniforms[ slot ].defaultMat3 = *( PLMatrix3 * ) defaultValue;
+			break;
+		case PL_UNIFORM_MAT4:
+			program->uniforms[ slot ].defaultMat4 = *( PLMatrix4 * ) defaultValue;
+			break;
+		default:
+			break;
+	}
+}
 
-    if(ValidateShaderUniformSlot(prg, slot) == -1) {
+/**
+ * Set a default value to use for the particular uniform that
+ * it can be reset to later.
+ */
+void plSetShaderUniformDefaultValue( PLShaderProgram *program, const char *name, const void *defaultValue ) {
+	int slot = plGetShaderUniformSlot( program, name );
+	if ( slot == -1 ) {
+		return;
+	}
+
+	plSetShaderUniformDefaultValueByIndex( program, slot, defaultValue );
+}
+
+void plSetShaderUniformToDefaultByIndex( PLShaderProgram *program, int slot ) {
+	switch ( program->uniforms[ slot ].type ) {
+		case PL_UNIFORM_FLOAT:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultFloat, false );
+			break;
+		case PL_UNIFORM_INT:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultInt, false );
+			break;
+		case PL_UNIFORM_UINT:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultUInt, false );
+			break;
+		case PL_UNIFORM_BOOL:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultBool, false );
+			break;
+		case PL_UNIFORM_DOUBLE:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultDouble, false );
+			break;
+		case PL_UNIFORM_VEC2:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultVec2, false );
+			break;
+		case PL_UNIFORM_VEC3:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultVec3, false );
+			break;
+		case PL_UNIFORM_VEC4:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultVec4, false );
+			break;
+		case PL_UNIFORM_MAT3:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultMat3, false );
+			break;
+		case PL_UNIFORM_MAT4:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultMat4, false );
+			break;
+		default:
+			break;
+	}
+}
+
+void plSetShaderUniformToDefault( PLShaderProgram *program, const char *name ) {
+	int slot = plGetShaderUniformSlot( program, name );
+	if ( slot == -1 ) {
+		return;
+	}
+
+	plSetShaderUniformToDefaultByIndex( program, slot );
+}
+
+void plSetShaderUniformsToDefault( PLShaderProgram *program ) {
+	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
+		plSetShaderUniformToDefaultByIndex( program, i );
+	}
+}
+
+void plSetShaderUniformValueByIndex( PLShaderProgram *program, int slot, const void *value, bool transpose ) {
+#if defined(PL_SUPPORT_OPENGL) /* todo, move into layer_opengl */
+	/* this should be done by the GL layer!! */
+	PLShaderProgram* oldProgram = plGetCurrentShaderProgram();
+	plSetShaderProgram( program );
+
+	switch ( program->uniforms[ slot ].type ) {
+		case PL_UNIFORM_FLOAT:
+			glUniform1f( program->uniforms[ slot ].slot, *( float * ) value );
+			break;
+		case PL_UNIFORM_INT:
+			glUniform1i(  program->uniforms[ slot ].slot, *( int * ) value );
+			break;
+		case PL_UNIFORM_UINT:
+			glUniform1ui(  program->uniforms[ slot ].slot, *( unsigned int * ) value );
+			break;
+		case PL_UNIFORM_BOOL:
+			glUniform1i(  program->uniforms[ slot ].slot, *( bool * ) value );
+			break;
+		case PL_UNIFORM_DOUBLE:
+			glUniform1d(  program->uniforms[ slot ].slot, *( double * ) value );
+			break;
+		case PL_UNIFORM_VEC2: {
+			PLVector2 vec2 = *( PLVector2 * ) value;
+			glUniform2f( program->uniforms[ slot ].slot, vec2.x, vec2.y );
+			break;
+		}
+		case PL_UNIFORM_VEC3: {
+			PLVector3 vec3 = *( PLVector3 * ) value;
+			glUniform3f( program->uniforms[ slot ].slot, vec3.x, vec3.y, vec3.z );
+			break;
+		}
+		case PL_UNIFORM_VEC4: {
+			PLVector4 vec4 = *( PLVector4 * ) value;
+			glUniform4f( program->uniforms[ slot ].slot, vec4.x, vec4.y, vec4.z, vec4.w );
+			break;
+		}
+		case PL_UNIFORM_MAT3: {
+			PLMatrix3 mat3 = *( PLMatrix3 * ) value;
+			glUniformMatrix3fv( program->uniforms[ slot ].slot, 1, transpose ? GL_TRUE : GL_FALSE, mat3.m );
+			break;
+		}
+		case PL_UNIFORM_MAT4: {
+			PLMatrix4 mat4 = *( PLMatrix4 * ) value;
+			glUniformMatrix4fv( program->uniforms[ slot ].slot, 1, transpose ? GL_TRUE : GL_FALSE, mat4.m );
+			break;
+		}
+		default:
+			break;
+	}
+
+	/* this should be done by the GL layer!! */
+	plSetShaderProgram( oldProgram );
+#endif
+}
+
+void plSetShaderUniformValue( PLShaderProgram *program, const char *name, const void *value, bool transpose ) {
+	int slot = plGetShaderUniformSlot( program, name );
+	if ( slot == -1 ) {
+		return;
+	}
+
+	plSetShaderUniformValueByIndex( program, slot, value, transpose );
+}
+
+void plSetShaderUniformFloat(PLShaderProgram *program, int slot, float value) {
+	PLShaderProgram *prg = GetShaderProgram( program );
+	if ( prg == NULL || prg->uniforms == NULL ) {
+		return;
+	}
+
+	if(ValidateShaderUniformSlot(prg, slot) == -1) {
         return;
     }
 
