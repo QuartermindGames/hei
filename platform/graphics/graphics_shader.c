@@ -248,14 +248,12 @@ PLShaderStage *plParseShaderStage(PLShaderStageType type, const char *buf, size_
  * Shortcut function that can be used to quickly produce a new
  * shader stage. this will automatically handle loading the given
  * shader into memory, compiling it and then returning the new
- * shader stage object.
- *
- * If the compilation fails an error will be reported and the
+ * shader stage object. If the compilation fails an error will be reported and the
  * function will return a null pointer.
  *
- * @param path path to the shader stage document.
- * @param type the type of shader stage.
- * @return the new shader stage.
+ * @param path Path to the shader stage document.
+ * @param type The type of shader stage.
+ * @return The new shader stage on success, otherwise a null pointer.
  */
 PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
     PLFile *fp = plOpenFile(path, false);
@@ -317,7 +315,7 @@ void plDestroyShaderProgram(PLShaderProgram *program, bool free_stages) {
         return;
     }
 
-    for(unsigned int i = 0; i < PL_NUM_SHADER_TYPES; ++i) {
+    for(unsigned int i = 0; i < PL_MAX_SHADER_TYPES; ++i) {
         if(program->stages[i] != NULL) {
             CallGfxFunction(DetachShaderStage, program, program->stages[i]);
             if(free_stages) {
@@ -347,7 +345,7 @@ void plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {
 
 bool plRegisterShaderStageFromMemory(PLShaderProgram *program, const char *buffer, size_t length,
                                      PLShaderStageType type) {
-    if((program->num_stages + 1) > 4) {
+    if(program->num_stages >= PL_MAX_SHADER_TYPES) {
         ReportError(PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
                     program->num_stages);
         return false;
@@ -364,7 +362,7 @@ bool plRegisterShaderStageFromMemory(PLShaderProgram *program, const char *buffe
 }
 
 bool plRegisterShaderStageFromDisk(PLShaderProgram *program, const char *path, PLShaderStageType type) {
-    if((program->num_stages + 1) > 4) {
+    if(program->num_stages >= PL_MAX_SHADER_TYPES) {
         ReportError(PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
                     program->num_stages);
         return false;

@@ -195,7 +195,7 @@ typedef enum PLShaderType {
     PL_SHADER_TYPE_GEOMETRY,
     PL_SHADER_TYPE_COMPUTE,
 
-    PL_NUM_SHADER_TYPES
+    PL_MAX_SHADER_TYPES
 } PLShaderStageType;
 
 typedef enum PLShaderUniformType {
@@ -272,7 +272,7 @@ typedef struct PLShaderProgram {
     } *attributes;
     unsigned int num_attributes;
 
-    PLShaderStage *stages[PL_NUM_SHADER_TYPES];
+    PLShaderStage *stages[PL_MAX_SHADER_TYPES];
     unsigned int num_stages;
 
     bool is_linked;
