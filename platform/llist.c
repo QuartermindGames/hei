@@ -36,6 +36,7 @@ typedef struct PLLinkedListNode {
 typedef struct PLLinkedList {
 	PLLinkedListNode *root;
 	PLLinkedListNode *ceiling;
+	unsigned int numNodes;
 } PLLinkedList;
 
 PLLinkedList *plCreateLinkedList( void ) {
@@ -56,6 +57,8 @@ PLLinkedListNode *plInsertLinkedListNode( PLLinkedList *list, void *userPtr ) {
 	node->next = NULL;
 
 	node->userPtr = userPtr;
+
+	list->numNodes++;
 
 	return node;
 }
@@ -97,15 +100,22 @@ void plDestroyLinkedListNode( PLLinkedList *list, PLLinkedListNode *node ) {
 		list->ceiling = node->prev;
 	}
 
+	list->numNodes--;
+
 	pl_free( node );
 }
 
 void plDestroyLinkedListNodes( PLLinkedList *list ) {
 	while( list->root != NULL ) { plDestroyLinkedListNode( list, list->root ); }
+	list->numNodes = 0;
 }
 
 void plDestroyLinkedList( PLLinkedList *list ) {
 	plDestroyLinkedListNodes( list );
 
 	pl_free( list );
+}
+
+unsigned int plGetNumLinkedListNodes( PLLinkedList *list ) {
+	return list->numNodes;
 }
