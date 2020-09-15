@@ -574,6 +574,7 @@ static void RegisterShaderProgramData(PLShaderProgram *program) {
 			case PL_UNIFORM_FLOAT:
 				glGetUniformfv( program->internal.id, i, &program->uniforms[ i ].defaultFloat );
 				break;
+			case PL_UNIFORM_SAMPLER2D:
 			case PL_UNIFORM_INT:
 				glGetUniformiv( program->internal.id, i, &program->uniforms[ i ].defaultInt );
 				break;
@@ -636,6 +637,7 @@ void plSetShaderUniformDefaultValueByIndex( PLShaderProgram *program, int slot, 
 		case PL_UNIFORM_FLOAT:
 			program->uniforms[ slot ].defaultFloat = *( float * ) defaultValue;
 			break;
+		case PL_UNIFORM_SAMPLER2D:
 		case PL_UNIFORM_INT:
 			program->uniforms[ slot ].defaultInt = *( int * ) defaultValue;
 			break;
@@ -686,6 +688,7 @@ void plSetShaderUniformToDefaultByIndex( PLShaderProgram *program, int slot ) {
 		case PL_UNIFORM_FLOAT:
 			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultFloat, false );
 			break;
+		case PL_UNIFORM_SAMPLER2D:
 		case PL_UNIFORM_INT:
 			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultInt, false );
 			break;
@@ -743,6 +746,7 @@ void plSetShaderUniformValueByIndex( PLShaderProgram *program, int slot, const v
 		case PL_UNIFORM_FLOAT:
 			glUniform1f( program->uniforms[ slot ].slot, *( float * ) value );
 			break;
+		case PL_UNIFORM_SAMPLER2D:
 		case PL_UNIFORM_INT:
 			glUniform1i(  program->uniforms[ slot ].slot, *( int * ) value );
 			break;

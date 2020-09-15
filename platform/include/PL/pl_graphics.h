@@ -380,8 +380,12 @@ typedef struct PLMesh PLMesh;
 
 PL_EXTERN PLPolygon *plCreatePolygon( PLTexture *texture, PLVector2 textureOffset, PLVector2 textureScale, float textureRotation );
 PL_EXTERN void plDestroyPolygon( PLPolygon *polygon );
+
+PL_EXTERN void plGeneratePolygonNormals( PLPolygon *polygon );
+
 PL_EXTERN void plAddPolygonVertex( PLPolygon *polygon, const PLVertex *vertex );
 PL_EXTERN void plRemovePolygonVertex( PLPolygon *polygon, unsigned int vertIndex );
+
 PL_EXTERN unsigned int plGetNumOfPolygonVertices( const PLPolygon *polygon );
 PL_EXTERN PLVertex *plGetPolygonVertex( PLPolygon *polygon, unsigned int vertIndex );
 PL_EXTERN PLVertex *plGetPolygonVertices( PLPolygon *polygon, unsigned int *numVertices );

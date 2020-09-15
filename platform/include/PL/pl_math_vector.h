@@ -414,6 +414,12 @@ typedef struct PLVector4 {
     float x, y, z, w;
 } PLVector4;
 
+#ifndef __cplusplus
+
+#   define PLVector4(x, y, z, w)   (PLVector4){ (float)x, (float)y, (float)z, (float)w }
+
+#endif
+
 extern const PLVector4 pl_vecOrigin4;
 
 PL_INLINE static PLVector4 plAddVector4(PLVector4 v, PLVector4 v2) {

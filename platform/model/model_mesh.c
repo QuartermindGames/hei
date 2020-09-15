@@ -47,28 +47,29 @@ PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertic
 			if ( bounds.mins.y > vertices[ i ].position.y ) { bounds.mins.y = vertices[ i ].position.y; }
 			if ( bounds.mins.z > vertices[ i ].position.z ) { bounds.mins.z = vertices[ i ].position.z; }
 		}
+	} else {
+		/* this technically still doesn't, but it's better */
+		float max = FLT_MIN;
+		float min = FLT_MAX;
+		for ( unsigned int i = 0; i < numVertices; ++i ) {
+			if ( vertices[ i ].position.x > max ) { max = vertices[ i ].position.x; }
+			if ( vertices[ i ].position.y > max ) { max = vertices[ i ].position.y; }
+			if ( vertices[ i ].position.z > max ) { max = vertices[ i ].position.z; }
+			if ( vertices[ i ].position.x < min ) { min = vertices[ i ].position.x; }
+			if ( vertices[ i ].position.y < min ) { min = vertices[ i ].position.y; }
+			if ( vertices[ i ].position.z < min ) { min = vertices[ i ].position.z; }
+		}
 
-		return bounds;
+		if ( min < 0 ) { min *= -1; }
+		if ( max < 0 ) { max *= -1; }
+
+		float abs = min > max ? min : max;
+		bounds.maxs = PLVector3( abs, abs, abs );
+		bounds.mins = PLVector3( -abs, -abs, -abs );
 	}
 
-	/* this technically still doesn't, but it's better */
-	float max = FLT_MIN;
-	float min = FLT_MAX;
-	for ( unsigned int i = 0; i < numVertices; ++i ) {
-		if ( vertices[ i ].position.x > max ) { max = vertices[ i ].position.x; }
-		if ( vertices[ i ].position.y > max ) { max = vertices[ i ].position.y; }
-		if ( vertices[ i ].position.z > max ) { max = vertices[ i ].position.z; }
-		if ( vertices[ i ].position.x < min ) { min = vertices[ i ].position.x; }
-		if ( vertices[ i ].position.y < min ) { min = vertices[ i ].position.y; }
-		if ( vertices[ i ].position.z < min ) { min = vertices[ i ].position.z; }
-	}
-
-	if ( min < 0 ) { min *= -1; }
-	if ( max < 0 ) { max *= -1; }
-
-	float abs = min > max ? min : max;
-	bounds.maxs = PLVector3( abs, abs, abs );
-	bounds.mins = PLVector3( -abs, -abs, -abs );
+	/* set the initial origin to the average of the vertices we went through */
+	bounds.origin = plDivideVector3f( bounds.maxs, 2 );
 
 	return bounds;
 }
@@ -103,7 +104,7 @@ void plGenerateTextureCoordinates( PLVertex *vertices, unsigned int numVertices,
 	}
 #endif
 
-	PLCollisionAABB bounds = plGenerateAABB( vertices, numVertices, false );
+	PLCollisionAABB bounds = plGenerateAABB( vertices, numVertices, true );
 	for ( unsigned int i = 0; i < numVertices; ++i ) {
 		vertices[ i ].st[ 0 ].x = ( plVector3Index( vertices[ i ].position, l ) / plVector3Index( bounds.maxs, l ) + textureOffset.x ) * textureScale.x;
 		vertices[ i ].st[ 0 ].y = ( plVector3Index( vertices[ i ].position, r ) / plVector3Index( bounds.maxs, r ) + textureOffset.y ) * textureScale.y;

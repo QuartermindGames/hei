@@ -47,7 +47,7 @@ void plDestroyPolygon( PLPolygon *polygon ) {
 /**
  * Generate vertex normals for the given polygon.
  */
-static void _plGeneratePolygonNormals( PLPolygon *polygon ) {
+void plGeneratePolygonNormals( PLPolygon *polygon ) {
 	unsigned int numTriangles;
 	unsigned int *indices = plConvertPolygonToTriangles( polygon, &numTriangles );
 
@@ -65,10 +65,11 @@ void plAddPolygonVertex( PLPolygon *polygon, const PLVertex *vertex ) {
 	polygon->vertices[ polygon->numVertices ] = *vertex;
 	polygon->numVertices++;
 
-	_plGeneratePolygonNormals( polygon );
+#if 0
 	if( polygon->texture != NULL ) {
 		plGenerateTextureCoordinates( polygon->vertices, polygon->numVertices, polygon->textureOffset, polygon->textureScale );
 	}
+#endif
 }
 
 void plRemovePolygonVertex( PLPolygon *polygon, unsigned int vertIndex ) {
@@ -81,10 +82,11 @@ void plRemovePolygonVertex( PLPolygon *polygon, unsigned int vertIndex ) {
 	memmove( polygon->vertices + vertIndex, polygon->vertices + vertIndex + 1, ( polygon->numVertices - vertIndex ) - 1);
 	--( polygon->numVertices );
 
-	_plGeneratePolygonNormals( polygon );
+#if 0
 	if( polygon->texture != NULL ) {
 		plGenerateTextureCoordinates( polygon->vertices, polygon->numVertices, polygon->textureOffset, polygon->textureScale );
 	}
+#endif
 }
 
 unsigned int plGetNumOfPolygonVertices( const PLPolygon *polygon ) {
