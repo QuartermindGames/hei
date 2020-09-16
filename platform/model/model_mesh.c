@@ -69,7 +69,8 @@ PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertic
 	}
 
 	/* set the initial origin to the average of the vertices we went through */
-	bounds.origin = plDivideVector3f( bounds.maxs, 2 );
+	/*bounds.origin = plDivideVector3f( bounds.maxs, 2 );*/
+	bounds.origin = pl_vecOrigin3;
 
 	return bounds;
 }
