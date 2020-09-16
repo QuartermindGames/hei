@@ -81,6 +81,8 @@ typedef enum PLBlend {
     PL_BLEND_DST_COLOR,
     PL_BLEND_ONE_MINUS_DST_COLOR,
     PL_BLEND_SRC_ALPHA_SATURATE,
+
+	PL_MAX_BLEND_MODES
 } PLBlend;
 
 // Blending
