@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org>
 typedef struct PLLinkedListNode {
 	struct PLLinkedListNode *next;
 	struct PLLinkedListNode *prev;
+	struct PLLinkedList *listParent;
 	void *userPtr;
 } PLLinkedListNode;
 
@@ -56,6 +57,7 @@ PLLinkedListNode *plInsertLinkedListNode( PLLinkedList *list, void *userPtr ) {
 	list->ceiling = node;
 	node->next = NULL;
 
+	node->listParent = list;
 	node->userPtr = userPtr;
 
 	list->numNodes++;
@@ -118,4 +120,8 @@ void plDestroyLinkedList( PLLinkedList *list ) {
 
 unsigned int plGetNumLinkedListNodes( PLLinkedList *list ) {
 	return list->numNodes;
+}
+
+PLLinkedList *plGetLinkedListNodeContainer( PLLinkedListNode *node ) {
+	return node->listParent;
 }
