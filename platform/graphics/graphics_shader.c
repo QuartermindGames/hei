@@ -466,13 +466,22 @@ int plGetShaderUniformSlot( PLShaderProgram *program, const char *name ) {
 	return -1;
 }
 
+PLShaderUniformType plGetShaderUniformType( const PLShaderProgram *program, int slot ) {
+	if ( slot == -1 || slot >= program->num_uniforms ) {
+		return PL_INVALID_UNIFORM;
+	}
+
+	return program->uniforms[ slot ].type;
+}
+
 /*****************************************************/
 /** shader uniform **/
 
 #if defined(PL_SUPPORT_OPENGL)
 
 static const char *uniformDescriptors[ PL_MAX_UNIFORM_TYPES ] = {
-		[ PL_UNIFORM_FLOAT ] = "float",
+		[ PL_INVALID_UNIFORM ] = "invalid",
+        [ PL_UNIFORM_FLOAT ] = "float",
 		[ PL_UNIFORM_INT ] = "int",
 		[ PL_UNIFORM_UINT ] = "uint",
 		[ PL_UNIFORM_BOOL ] = "bool",

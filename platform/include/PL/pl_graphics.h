@@ -303,6 +303,7 @@ PL_EXTERN bool plRegisterShaderStageFromDisk(PLShaderProgram *program, const cha
 PL_EXTERN bool plLinkShaderProgram(PLShaderProgram *program);
 
 PL_EXTERN int plGetShaderUniformSlot(PLShaderProgram *program, const char *name);
+PL_EXTERN PLShaderUniformType plGetShaderUniformType( const PLShaderProgram *program, int slot );
 
 PL_EXTERN void plSetShaderUniformDefaultValueByIndex( PLShaderProgram *program, int slot, const void *defaultValue );
 PL_EXTERN void plSetShaderUniformDefaultValue( PLShaderProgram *program, const char *name, const void *defaultValue );
