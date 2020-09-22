@@ -32,7 +32,7 @@ For more information, please refer to <http://unlicense.org>
 /**
  * Allocate a new package handle.
  */
-PLPackage *plCreatePackageHandle( const char *path, unsigned int tableSize, void(*OpenFile)( PLFile *filePtr, PLPackageIndex *index ) ) {
+PLPackage *plCreatePackageHandle( const char *path, unsigned int tableSize, uint8_t*(*OpenFile)( PLFile *filePtr, PLPackageIndex *index ) ) {
 	PLPackage *package = pl_malloc( sizeof( PLPackage ) );
 
 	if ( OpenFile == NULL ) {
