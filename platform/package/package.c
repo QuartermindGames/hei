@@ -37,6 +37,8 @@ PLPackage *plCreatePackageHandle( const char *path, unsigned int tableSize, uint
 
 	if ( OpenFile == NULL ) {
 		package->internal.LoadFile = _plLoadGenericPackageFile;
+	} else {
+		package->internal.LoadFile = OpenFile;
 	}
 
 	package->table_size = tableSize;
