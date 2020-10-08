@@ -1,8 +1,6 @@
 /* Copyright (C) 2020 Mark E Sowden <markelswo@gmail.com> */
 
-#define PL_COMPILE_PLUGIN 1
-
-#include <PL/pl_plugin_interface.h>
+#include "plugin.h"
 
 static PLPluginDescription pluginDesc = {
         .description = "Jade.",
