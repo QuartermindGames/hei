@@ -103,6 +103,10 @@ void plGenerateMeshNormals( PLMesh *mesh, bool perFace ) {
 	plGenerateVertexNormals( mesh->vertices, mesh->num_verts, mesh->indices, mesh->num_triangles, perFace );
 }
 
+void plGenerateMeshTangentBasis( PLMesh *mesh ) {
+	plGenerateTangentBasis( mesh->vertices, mesh->num_verts, mesh->indices, mesh->num_triangles );
+}
+
 /* based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#computing-the-tangents-and-bitangents */
 void plGenerateTangentBasis( PLVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles ) {
 	for ( unsigned int i = 0; i < numTriangles; i += 3 ) {
