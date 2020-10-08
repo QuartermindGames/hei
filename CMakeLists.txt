@@ -30,6 +30,7 @@ cmake_minimum_required(VERSION 3.5.1)
 project(PlatformLibrary)
 
 option(BUILD_EXAMPLES "Build example applications" ON)
+option( PL_BUILD_PLUGINS "Build plugins" ON )
 
 # Set all of our output directories.
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
@@ -46,3 +47,7 @@ if(BUILD_EXAMPLES)
     add_subdirectory( examples/package_loader )
     add_subdirectory( examples/pcmd )
 endif(BUILD_EXAMPLES)
+
+if( PL_BUILD_PLUGINS )
+    add_subdirectory( plugins/jade/ )
+endif( PL_BUILD_PLUGINS )

@@ -560,21 +560,25 @@ bool plRegisterPlugin( const char *path ) {
 		return false;
 	}
 
-	PLPluginQueryFunction RegisterPlugin = ( PLPluginQueryFunction ) plGetLibraryProcedure( library, PL_PLUGIN_QUERY_FUNCTION );
-	if ( RegisterPlugin == NULL ) {
-		plUnloadLibrary( library );
-		return false;
+	PLPluginQueryFunction RegisterPlugin;
+	PLPluginInitializationFunction InitializePlugin;
+	const PLPluginDescription *description;
+
+	RegisterPlugin = ( PLPluginQueryFunction ) plGetLibraryProcedure( library, PL_PLUGIN_QUERY_FUNCTION );
+	if ( RegisterPlugin != NULL ) {
+		InitializePlugin = ( PLPluginInitializationFunction ) plGetLibraryProcedure( library, PL_PLUGIN_INIT_FUNCTION );
+		if ( InitializePlugin != NULL ) {
+			/* now fetch the plugin description */
+			description = RegisterPlugin( PL_PLUGIN_INTERFACE_VERSION );
+			if ( description != NULL ) {
+				if ( description->interfaceVersion != PL_PLUGIN_INTERFACE_VERSION ) {
+					ReportError( PL_RESULT_UNSUPPORTED, "Unsupported interface version!\n" );
+				}
+			}
+		}
 	}
 
-	PLPluginInitializationFunction InitializePlugin = ( PLPluginInitializationFunction ) plGetLibraryProcedure( library, PL_PLUGIN_INIT_FUNCTION );
-	if ( InitializePlugin == NULL ) {
-		plUnloadLibrary( library );
-		return false;
-	}
-
-	/* now fetch the plugin description */
-	PLPluginDescription *description = RegisterPlugin( PL_PLUGIN_INTERFACE_VERSION );
-	if ( description == NULL ) {
+	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
 		plUnloadLibrary( library );
 		return false;
 	}
@@ -614,7 +618,7 @@ void plRegisterPlugins( const char *pluginDir ) {
 
 	Print( "Scanning for plugins in \"%s\"\n", pluginDir );
 
-	plScanDirectory( pluginDir, PL_SYSTEM_LIBRARY_EXTENSION, _plRegisterScannedPlugin, false, NULL );
+	plScanDirectory( pluginDir, "plugin" PL_SYSTEM_LIBRARY_EXTENSION, _plRegisterScannedPlugin, false, NULL );
 
 	Print( "Done, %d plugins loaded.\n", numPlugins );
 }

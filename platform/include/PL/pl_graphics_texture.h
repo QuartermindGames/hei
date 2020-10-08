@@ -101,6 +101,8 @@ typedef struct PLTexture {
 
 PL_EXTERN_C
 
+#if !defined( PL_COMPILE_PLUGIN )
+
 PL_EXTERN PLTexture *plCreateTexture(void);
 PL_EXTERN PLTexture *plLoadTextureFromImage(const char *path, PLTextureFilter filter_mode);
 PL_EXTERN void plDestroyTexture(PLTexture *texture);
@@ -120,5 +122,7 @@ PL_EXTERN void plSetTextureEnvironmentMode(PLTextureEnvironmentMode mode);
 PL_EXTERN void plSetTextureFlags(PLTexture *texture, unsigned int flags);
 
 PL_EXTERN const char *plPrintTextureMemoryUsage(void);
+
+#endif
 
 PL_EXTERN_C_END

@@ -56,6 +56,8 @@ typedef struct PLPackage {
 
 PL_EXTERN_C
 
+#if !defined( PL_COMPILE_PLUGIN )
+
 PL_EXTERN PLPackage *plCreatePackageHandle( const char *path, unsigned int tableSize, uint8_t*(*OpenFile)( PLFile *filePtr, PLPackageIndex *index ) );
 
 PL_EXTERN PLPackage* plLoadPackage( const char* path );
@@ -72,5 +74,7 @@ PL_EXTERN unsigned int plGetPackageTableSize( const PLPackage *package );
 PL_EXTERN unsigned int plGetPackageTableIndex( const PLPackage *package, const char *indexName );
 
 const char *plGetPackageFileName( const PLPackage *package, unsigned int index );
+
+#endif
 
 PL_EXTERN_C_END

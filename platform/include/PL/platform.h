@@ -222,6 +222,8 @@ typedef void PLLibrary; /* handle to dll/module */
 
 PL_EXTERN_C
 
+#if !defined( PL_COMPILE_PLUGIN )
+
 PL_EXTERN PLresult plInitialize(int argc, char **argv);
 PL_EXTERN PLresult plInitializeSubSystems(unsigned int subsystems);
 PL_EXTERN void plShutdown(void);
@@ -283,11 +285,6 @@ PL_EXTERN void plUnloadLibrary( PLLibrary *library );
 PL_EXTERN bool plRegisterPlugin( const char *path );
 PL_EXTERN void plRegisterPlugins( const char *pluginDir );
 
+#endif
+
 PL_EXTERN_C_END
-
-//////////////////////////////////////////////////////////////////
-
-
-
-
-//////////////////////////////////////////////////////////////////

@@ -578,42 +578,45 @@ static void GLUploadMesh( PLMesh *mesh ) {
 	glBindBuffer( GL_ARRAY_BUFFER, mesh->internal.buffers[ BUFFER_VERTEX_DATA ] );
 
 	//Write the current CPU vertex data into the VBO
-	glBufferData( GL_ARRAY_BUFFER, sizeof( PLVertex ) * mesh->num_verts, &mesh->vertices[ 0 ],
-				  TranslateDrawMode( mesh->mode ) );
+	unsigned int drawMode = TranslateDrawMode( mesh->mode );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( PLVertex ) * mesh->num_verts, &mesh->vertices[ 0 ], drawMode );
 
 	//Point to the different substreams of the interleaved BVO
 	//Args: Index, Size, Type, (Normalized), Stride, StartPtr
 
 	if ( program->internal.v_position != -1 ) {
 		glEnableVertexAttribArray( program->internal.v_position );
-		glVertexAttribPointer( program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof( PLVertex ),
-							   ( const GLvoid * ) pl_offsetof( PLVertex, position ) );
+		glVertexAttribPointer( program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof( PLVertex ), ( const GLvoid * ) pl_offsetof( PLVertex, position ) );
 	}
 
 	if ( program->internal.v_normal != -1 ) {
 		glEnableVertexAttribArray( program->internal.v_normal );
-		glVertexAttribPointer( program->internal.v_normal, 3, GL_FLOAT, GL_FALSE, sizeof( PLVertex ),
-							   ( const GLvoid * ) pl_offsetof( PLVertex, normal ) );
+		glVertexAttribPointer( program->internal.v_normal, 3, GL_FLOAT, GL_FALSE, sizeof( PLVertex ), ( const GLvoid * ) pl_offsetof( PLVertex, normal ) );
 	}
 
 	if ( program->internal.v_uv != -1 ) {
 		glEnableVertexAttribArray( program->internal.v_uv );
-		glVertexAttribPointer( program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof( PLVertex ),
-							   ( const GLvoid * ) pl_offsetof( PLVertex, st ) );
+		glVertexAttribPointer( program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof( PLVertex ), ( const GLvoid * ) pl_offsetof( PLVertex, st ) );
 	}
 
 	if ( program->internal.v_colour != -1 ) {
 		glEnableVertexAttribArray( program->internal.v_colour );
-		glVertexAttribPointer( program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( PLVertex ),
-							   ( const GLvoid * ) pl_offsetof( PLVertex, colour ) );
+		glVertexAttribPointer( program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( PLVertex ), ( const GLvoid * ) pl_offsetof( PLVertex, colour ) );
+	}
+
+	if ( program->internal.v_tangent != -1 ) {
+		glEnableVertexAttribArray( program->internal.v_tangent );
+		glVertexAttribPointer( program->internal.v_tangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLVertex ), ( const GLvoid * ) pl_offsetof( PLVertex, tangent ) );
+	}
+
+	if ( program->internal.v_bitangent != -1 ) {
+		glEnableVertexAttribArray( program->internal.v_bitangent );
+		glVertexAttribPointer( program->internal.v_bitangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLVertex ), ( const GLvoid * ) pl_offsetof( PLVertex, bitangent ) );
 	}
 
 	if ( mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] != 0 ) {
 		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] );
-		glBufferData( GL_ELEMENT_ARRAY_BUFFER,
-					  sizeof( unsigned int ) * mesh->num_indices,
-					  &mesh->indices[ 0 ],
-					  GL_STATIC_DRAW );
+		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( unsigned int ) * mesh->num_indices, &mesh->indices[ 0 ], drawMode );
 	}
 }
 

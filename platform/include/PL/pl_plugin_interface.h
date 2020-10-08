@@ -30,6 +30,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform.h>
 #include <PL/platform_mesh.h>
 #include <PL/platform_model.h>
+#include <PL/platform_package.h>
 
 typedef struct PLPluginDescription {
 	unsigned int interfaceVersion;
@@ -42,6 +43,8 @@ typedef struct PLPluginDescription {
  */
 typedef struct PLPluginExportTable {
 	unsigned int version;
+
+	void (*ReportError)( PLresult resultType, const char *err, ... );
 
 	/**
 	 * FILE API
@@ -79,6 +82,20 @@ typedef struct PLPluginExportTable {
 
 	bool (*FileSeek)( PLFile *file, long int pos, PLFileSeek seek );
 	void (*RewindFile)( PLFile *file );
+
+	/**
+ 	 * PLUGIN API
+ 	 **/
+
+	PLPackage *(*CreatePackageHandle)( const char *path, unsigned int tableSize, void(*OpenFile)( PLFile *filePtr, PLPackageIndex *index ) );
+
+	void (*RegisterPackageLoader)( const char *extension, PLPackage *(*LoadFunction)( const char *path ) );
+
+	const char *(*GetPackagePath)( const PLPackage *package );
+	unsigned int (*GetPackageTableSize)( const PLPackage *package );
+	unsigned int (*GetPackageTableIndex)( const PLPackage *package, const char *indexName );
+
+	const char *(*GetPackageFileName)( const PLPackage *package, unsigned int index );
 
 	/**
 	 * MESH API
@@ -124,10 +141,11 @@ typedef struct PLPluginExportTable {
 	void (*RegisterModelLoader)( const char *extension, PLModel*(*LoadFunction)( const char *path ) );
 } PLPluginExportTable;
 
-#define PL_PLUGIN_INTERFACE_VERSION sizeof( PLPluginExportTable ) + sizeof( PLPluginDescription )
+/* be absolutely sure to change this whenever the API is updated! */
+#define PL_PLUGIN_INTERFACE_VERSION 1
 
 #define PL_PLUGIN_QUERY_FUNCTION    "PLQueryPlugin"
 #define PL_PLUGIN_INIT_FUNCTION     "PLInitializePlugin"
 
-typedef PLPluginDescription *(*PLPluginQueryFunction )( unsigned int interfaceVersion );
+typedef const PLPluginDescription *(*PLPluginQueryFunction )( unsigned int interfaceVersion );
 typedef void (*PLPluginInitializationFunction)( const PLPluginExportTable *functionTable );

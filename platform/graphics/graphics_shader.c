@@ -538,12 +538,14 @@ static void RegisterShaderProgramData(PLShaderProgram *program) {
     }
 
 #if defined(PL_SUPPORT_OPENGL)
-    program->internal.v_position = glGetAttribLocation(program->internal.id, "pl_vposition");
-    program->internal.v_normal = glGetAttribLocation(program->internal.id, "pl_vnormal");
-    program->internal.v_uv = glGetAttribLocation(program->internal.id, "pl_vuv");
-    program->internal.v_colour = glGetAttribLocation(program->internal.id, "pl_vcolour");
+	program->internal.v_position = glGetAttribLocation( program->internal.id, "pl_vposition" );
+	program->internal.v_normal = glGetAttribLocation( program->internal.id, "pl_vnormal" );
+	program->internal.v_uv = glGetAttribLocation( program->internal.id, "pl_vuv" );
+	program->internal.v_colour = glGetAttribLocation( program->internal.id, "pl_vcolour" );
+	program->internal.v_tangent = glGetAttribLocation( program->internal.id, "pl_vtangent" );
+	program->internal.v_bitangent = glGetAttribLocation( program->internal.id, "pl_bitangent" );
 
-    int num_uniforms = 0;
+	int num_uniforms = 0;
     glGetProgramiv(program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms);
     if(num_uniforms <= 0) {
         /* true, because technically this isn't a fault - there just aren't any */
