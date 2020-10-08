@@ -39,7 +39,21 @@ For more information, please refer to <http://unlicense.org>
 
 typedef struct PLFile PLFile;
 
+typedef enum PLFileSeek {
+#if defined( SEEK_SET ) && defined( SEEK_CUR ) && defined( SEEK_END )
+	PL_SEEK_SET = SEEK_SET,
+	PL_SEEK_CUR = SEEK_CUR,
+	PL_SEEK_END = SEEK_END
+#else
+	PL_SEEK_SET, PL_SEEK_CUR, PL_SEEK_END
+#endif
+} PLFileSeek;
+
+typedef struct PLFileSystemMount PLFileSystemMount;
+
 PL_EXTERN_C
+
+#if !defined( PL_COMPILE_PLUGIN )
 
 PL_EXTERN char *plGetUserName(char *out, size_t n);
 
@@ -94,22 +108,10 @@ PL_EXTERN int64_t plReadInt64(PLFile* ptr, bool big_endian, bool* status);
 
 PL_EXTERN char* plReadString(PLFile* ptr, char* str, size_t size);
 
-typedef enum PLFileSeek {
-#if defined( SEEK_SET ) && defined( SEEK_CUR ) && defined( SEEK_END )
-	PL_SEEK_SET = SEEK_SET,
-	PL_SEEK_CUR = SEEK_CUR,
-	PL_SEEK_END = SEEK_END
-#else
-	PL_SEEK_SET, PL_SEEK_CUR, PL_SEEK_END
-#endif
-} PLFileSeek;
-
 PL_EXTERN bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek );
 PL_EXTERN void plRewindFile( PLFile* ptr );
 
 /** FS Mounting **/
-
-typedef struct PLFileSystemMount PLFileSystemMount;
 
 PL_EXTERN PLFileSystemMount* plMountLocalLocation( const char* path );
 PL_EXTERN PLFileSystemMount* plMountLocation( const char* path );
@@ -118,5 +120,7 @@ PL_EXTERN void plClearMountedLocation( PLFileSystemMount* location );
 PL_EXTERN void plClearMountedLocations( void );
 
 /****/
+
+#endif
 
 PL_EXTERN_C_END
