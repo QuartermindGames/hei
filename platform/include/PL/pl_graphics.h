@@ -279,14 +279,15 @@ typedef struct PLShaderProgram {
 
     bool is_linked;
 
-    struct {
-        unsigned int id;
+	struct {
+		unsigned int id;
 
-        PLShaderAttribute   v_position;
-        PLShaderAttribute   v_normal;
-        PLShaderAttribute   v_uv;
-        PLShaderAttribute   v_colour;
-    } internal;
+		PLShaderAttribute v_position;
+		PLShaderAttribute v_normal;
+		PLShaderAttribute v_uv;
+		PLShaderAttribute v_colour;
+		PLShaderAttribute v_tangent, v_bitangent;
+	} internal;
 } PLShaderProgram;
 
 PL_EXTERN_C

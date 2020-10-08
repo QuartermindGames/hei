@@ -55,7 +55,8 @@ typedef enum PLMeshDrawMode {
 
 typedef struct PLVertex {
     PLVector3       position, normal;
-    PLVector2       st[1];//[16]; Limit to one UV channel while setting up graphics
+	PLVector3       tangent, bitangent;
+    PLVector2       st[16];
     PLColour        colour;
     /* specific to skeletal animation */
     unsigned int    bone_index;

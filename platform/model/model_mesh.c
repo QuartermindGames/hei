@@ -103,6 +103,31 @@ void plGenerateMeshNormals( PLMesh *mesh, bool perFace ) {
 	plGenerateVertexNormals( mesh->vertices, mesh->num_verts, mesh->indices, mesh->num_triangles, perFace );
 }
 
+/* based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#computing-the-tangents-and-bitangents */
+void plGenerateTangentBasis( PLVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles ) {
+	for ( unsigned int i = 0; i < numTriangles; i += 3 ) {
+		PLVertex *a = &vertices[ indices[ i ] ];
+		PLVertex *b = &vertices[ indices[ i + 1 ] ];
+		PLVertex *c = &vertices[ indices[ i + 2 ] ];
+
+		/* edges of the triangle, aka, position delta */
+		PLVector3 deltaPos1 = plSubtractVector3( b->position, a->position );
+		PLVector3 deltaPos2 = plSubtractVector3( c->position, a->position );
+
+		/* uv delta */
+		PLVector2 deltaUV1 = plSubtractVector2( &b->st[ 0 ], &a->st[ 0 ] );
+		PLVector2 deltaUV2 = plSubtractVector2( &c->st[ 0 ], &a->st[ 0 ] );
+
+		/* now actually compute the tangent and bitangent */
+		float r = 1.0f / ( deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x );
+		PLVector3 tangent = plScaleVector3f( plSubtractVector3( plScaleVector3f( deltaPos1, deltaUV2.y ), plScaleVector3f( deltaPos2, deltaUV1.y ) ), r );
+		PLVector3 bitangent = plScaleVector3f( plSubtractVector3( plScaleVector3f( deltaPos2, deltaUV1.x ), plScaleVector3f( deltaPos1, deltaUV2.x ) ), r );
+
+		a->tangent = b->tangent = c->tangent = tangent;
+		a->bitangent = b->bitangent = c->bitangent = bitangent;
+	}
+}
+
 /* software implementation of gouraud shading */
 void plApplyMeshLighting( PLMesh *mesh, const PLLight *light, PLVector3 position ) {
 	PLVector3 distvec = plSubtractVector3( position, light->position );
