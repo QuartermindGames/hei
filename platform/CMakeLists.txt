@@ -59,6 +59,7 @@ file(
         polygon.c
         math_matrix.c
         math_vector.c
+        physics.c
         window.c
 
         string/*.*

@@ -248,14 +248,12 @@ PLShaderStage *plParseShaderStage(PLShaderStageType type, const char *buf, size_
  * Shortcut function that can be used to quickly produce a new
  * shader stage. this will automatically handle loading the given
  * shader into memory, compiling it and then returning the new
- * shader stage object.
- *
- * If the compilation fails an error will be reported and the
+ * shader stage object. If the compilation fails an error will be reported and the
  * function will return a null pointer.
  *
- * @param path path to the shader stage document.
- * @param type the type of shader stage.
- * @return the new shader stage.
+ * @param path Path to the shader stage document.
+ * @param type The type of shader stage.
+ * @return The new shader stage on success, otherwise a null pointer.
  */
 PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
     PLFile *fp = plOpenFile(path, false);
@@ -317,7 +315,7 @@ void plDestroyShaderProgram(PLShaderProgram *program, bool free_stages) {
         return;
     }
 
-    for(unsigned int i = 0; i < PL_NUM_SHADER_TYPES; ++i) {
+    for(unsigned int i = 0; i < PL_MAX_SHADER_TYPES; ++i) {
         if(program->stages[i] != NULL) {
             CallGfxFunction(DetachShaderStage, program, program->stages[i]);
             if(free_stages) {
@@ -328,7 +326,12 @@ void plDestroyShaderProgram(PLShaderProgram *program, bool free_stages) {
 
     CallGfxFunction(DestroyShaderProgram, program);
 
+	/* free uniforms */
+	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
+		free( program->uniforms[ i ].name );
+	}
     pl_free(program->uniforms);
+
     pl_free(program->attributes);
     pl_free(program);
 }
@@ -342,7 +345,7 @@ void plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {
 
 bool plRegisterShaderStageFromMemory(PLShaderProgram *program, const char *buffer, size_t length,
                                      PLShaderStageType type) {
-    if((program->num_stages + 1) > 4) {
+    if(program->num_stages >= PL_MAX_SHADER_TYPES) {
         ReportError(PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
                     program->num_stages);
         return false;
@@ -359,7 +362,7 @@ bool plRegisterShaderStageFromMemory(PLShaderProgram *program, const char *buffe
 }
 
 bool plRegisterShaderStageFromDisk(PLShaderProgram *program, const char *path, PLShaderStageType type) {
-    if((program->num_stages + 1) > 4) {
+    if(program->num_stages >= PL_MAX_SHADER_TYPES) {
         ReportError(PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
                     program->num_stages);
         return false;
@@ -439,41 +442,61 @@ static PLShaderProgram *GetShaderProgram(PLShaderProgram *program) {
 }
 
 /**
- * searches through programs registered uniforms
+ * Searches through programs registered uniforms
  * for the specified uniform entry.
  *
- * if it fails to find the uniform it'll return '-1'.
- *
- * @param program
- * @param name
- * @return index for the shader uniform
+ * If it fails to find the uniform it'll return '-1'.
  */
-int plGetShaderUniformSlot(PLShaderProgram *program, const char *name) {
-    PLShaderProgram *prg = GetShaderProgram(program);
-    if(prg == NULL) {
-        return -1;
-    }
+int plGetShaderUniformSlot( PLShaderProgram *program, const char *name ) {
+	PLShaderProgram *prg = GetShaderProgram( program );
+	if ( prg == NULL ) {
+		return -1;
+	}
 
-#if 1
-    for(unsigned int i = 0; i < prg->num_uniforms; ++i) {
-        if(pl_strncasecmp(prg->uniforms[i].name, name, sizeof(prg->uniforms[i].name)) == 0) {
-            return i;
-        }
-    }
-#else
-    GLint uniform = glGetUniformLocation(prg->internal.id, name);
-    if(uniform != -1) {
-        return uniform;
-    }
-#endif
+	for ( unsigned int i = 0; i < prg->num_uniforms; ++i ) {
+		if ( prg->uniforms[ i ].name == NULL ) {
+			continue;
+		}
 
-    return -1;
+		if ( pl_strcasecmp( prg->uniforms[ i ].name, name ) == 0 ) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+PLShaderUniformType plGetShaderUniformType( const PLShaderProgram *program, int slot ) {
+	if ( slot == -1 || slot >= program->num_uniforms ) {
+		return PL_INVALID_UNIFORM;
+	}
+
+	return program->uniforms[ slot ].type;
 }
 
 /*****************************************************/
 /** shader uniform **/
 
 #if defined(PL_SUPPORT_OPENGL)
+
+static const char *uniformDescriptors[ PL_MAX_UNIFORM_TYPES ] = {
+		[ PL_INVALID_UNIFORM ] = "invalid",
+        [ PL_UNIFORM_FLOAT ] = "float",
+		[ PL_UNIFORM_INT ] = "int",
+		[ PL_UNIFORM_UINT ] = "uint",
+		[ PL_UNIFORM_BOOL ] = "bool",
+		[ PL_UNIFORM_DOUBLE ] = "double",
+		[ PL_UNIFORM_SAMPLER1D ] = "sampler1D",
+		[ PL_UNIFORM_SAMPLER2D ] = "sampler2D",
+		[ PL_UNIFORM_SAMPLER3D ] = "sampler3D",
+		[ PL_UNIFORM_SAMPLERCUBE ] = "samplerCube",
+		[ PL_UNIFORM_SAMPLER1DSHADOW ] = "sampler1DShadow",
+		[ PL_UNIFORM_VEC2 ] = "vec2",
+		[ PL_UNIFORM_VEC3 ] = "vec3",
+		[ PL_UNIFORM_VEC4 ] = "vec4",
+		[ PL_UNIFORM_MAT3 ] = "mat3",
+		[ PL_UNIFORM_MAT4 ] = "mat4",
+};
 
 /* todo, move into layer_opengl */
 static PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
@@ -531,33 +554,73 @@ static void RegisterShaderProgramData(PLShaderProgram *program) {
 
     GfxLog("Found %u uniforms in shader\n", program->num_uniforms);
 
-    program->uniforms = pl_calloc((size_t)program->num_uniforms, sizeof(*program->uniforms));
-    if(program->uniforms == NULL) {
-        return;
-    }
+	program->uniforms = pl_calloc( ( size_t ) program->num_uniforms, sizeof( *program->uniforms ) );
+	unsigned int registered = 0;
+	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
+		int maxUniformNameLength;
+		glGetActiveUniformsiv( program->internal.id, 1, &i, GL_UNIFORM_NAME_LENGTH, &maxUniformNameLength );
 
-    unsigned int registered = 0;
-    for(unsigned int i = 0; i < program->num_uniforms; ++i) {
-        char name[16];
-        int name_length;
-        unsigned int type;
+		GLchar *uniformName = malloc( maxUniformNameLength );
+		GLsizei nameLength;
 
-        glGetActiveUniform(program->internal.id, (GLuint) i, 16, NULL, &name_length, &type, name);
-        if(name_length <= 0) {
-            GfxLog("Invalid name for uniform, ignoring!\n");
-            continue;
-        }
+		GLenum glType;
+		GLint uniformSize;
 
-        GfxLog(" %20s (%d) %u\n", name, i, type);
+		glGetActiveUniform( program->internal.id, i, maxUniformNameLength, &nameLength, &uniformSize, &glType, uniformName );
+		if ( nameLength == 0 ) {
+			free( uniformName );
 
-        program->uniforms[i].type = GLConvertGLUniformType(type);
-        program->uniforms[i].slot = i;
-        strncpy(program->uniforms[i].name, name, sizeof(program->uniforms[i].name));
+			GfxLog( "No information available for uniform %d!\n", i );
+			continue;
+		}
 
-        registered++;
-    }
+		program->uniforms[ i ].type = GLConvertGLUniformType( glType );
+		program->uniforms[ i ].slot = i;
+		program->uniforms[ i ].name = uniformName;
 
-    if(registered == 0) {
+		/* fetch it's current value, assume it's the default */
+		switch( program->uniforms[ i ].type ) {
+			case PL_UNIFORM_FLOAT:
+				glGetUniformfv( program->internal.id, i, &program->uniforms[ i ].defaultFloat );
+				break;
+			case PL_UNIFORM_SAMPLER2D:
+			case PL_UNIFORM_INT:
+				glGetUniformiv( program->internal.id, i, &program->uniforms[ i ].defaultInt );
+				break;
+			case PL_UNIFORM_UINT:
+				glGetUniformuiv( program->internal.id, i, &program->uniforms[ i ].defaultUInt );
+				break;
+			case PL_UNIFORM_BOOL:
+				glGetUniformiv( program->internal.id, i, ( GLint * ) &program->uniforms[ i ].defaultBool );
+				break;
+			case PL_UNIFORM_DOUBLE:
+				glGetUniformdv( program->internal.id, i, &program->uniforms[ i ].defaultDouble );
+				break;
+			case PL_UNIFORM_VEC2:
+				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec2 );
+				break;
+			case PL_UNIFORM_VEC3:
+				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec3 );
+				break;
+			case PL_UNIFORM_VEC4:
+				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec4 );
+				break;
+			case PL_UNIFORM_MAT3:
+				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultMat3 );
+				break;
+			case PL_UNIFORM_MAT4:
+				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultMat4 );
+				break;
+			default:
+				break;
+		}
+
+		GfxLog( " %4d (%20s) %s\n", i, program->uniforms[ i ].name, uniformDescriptors[ program->uniforms[ i ].type ] );
+
+		registered++;
+	}
+
+	if(registered == 0) {
         GfxLog("Failed to validate any shader program uniforms!\n");
     }
 #endif
@@ -578,13 +641,183 @@ static int ValidateShaderUniformSlot(PLShaderProgram* program, int slot) {
     return slot;
 }
 
-void plSetShaderUniformFloat(PLShaderProgram *program, int slot, float value) {
-    PLShaderProgram *prg = GetShaderProgram(program);
-    if(prg == NULL || prg->uniforms == NULL) {
-        return;
-    }
+void plSetShaderUniformDefaultValueByIndex( PLShaderProgram *program, int slot, const void *defaultValue ) {
+	switch ( program->uniforms[ slot ].type ) {
+		case PL_UNIFORM_FLOAT:
+			program->uniforms[ slot ].defaultFloat = *( float * ) defaultValue;
+			break;
+		case PL_UNIFORM_SAMPLER2D:
+		case PL_UNIFORM_INT:
+			program->uniforms[ slot ].defaultInt = *( int * ) defaultValue;
+			break;
+		case PL_UNIFORM_UINT:
+			program->uniforms[ slot ].defaultUInt = *( unsigned int * ) defaultValue;
+			break;
+		case PL_UNIFORM_BOOL:
+			program->uniforms[ slot ].defaultBool = *( bool * ) defaultValue;
+			break;
+		case PL_UNIFORM_DOUBLE:
+			program->uniforms[ slot ].defaultDouble = *( double * ) defaultValue;
+			break;
+		case PL_UNIFORM_VEC2:
+			program->uniforms[ slot ].defaultVec2 = *( PLVector2 * ) defaultValue;
+			break;
+		case PL_UNIFORM_VEC3:
+			program->uniforms[ slot ].defaultVec3 = *( PLVector3 * ) defaultValue;
+			break;
+		case PL_UNIFORM_VEC4:
+			program->uniforms[ slot ].defaultVec4 = *( PLVector4 * ) defaultValue;
+			break;
+		case PL_UNIFORM_MAT3:
+			program->uniforms[ slot ].defaultMat3 = *( PLMatrix3 * ) defaultValue;
+			break;
+		case PL_UNIFORM_MAT4:
+			program->uniforms[ slot ].defaultMat4 = *( PLMatrix4 * ) defaultValue;
+			break;
+		default:
+			break;
+	}
+}
 
-    if(ValidateShaderUniformSlot(prg, slot) == -1) {
+/**
+ * Set a default value to use for the particular uniform that
+ * it can be reset to later.
+ */
+void plSetShaderUniformDefaultValue( PLShaderProgram *program, const char *name, const void *defaultValue ) {
+	int slot = plGetShaderUniformSlot( program, name );
+	if ( slot == -1 ) {
+		return;
+	}
+
+	plSetShaderUniformDefaultValueByIndex( program, slot, defaultValue );
+}
+
+void plSetShaderUniformToDefaultByIndex( PLShaderProgram *program, int slot ) {
+	switch ( program->uniforms[ slot ].type ) {
+		case PL_UNIFORM_FLOAT:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultFloat, false );
+			break;
+		case PL_UNIFORM_SAMPLER2D:
+		case PL_UNIFORM_INT:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultInt, false );
+			break;
+		case PL_UNIFORM_UINT:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultUInt, false );
+			break;
+		case PL_UNIFORM_BOOL:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultBool, false );
+			break;
+		case PL_UNIFORM_DOUBLE:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultDouble, false );
+			break;
+		case PL_UNIFORM_VEC2:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultVec2, false );
+			break;
+		case PL_UNIFORM_VEC3:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultVec3, false );
+			break;
+		case PL_UNIFORM_VEC4:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultVec4, false );
+			break;
+		case PL_UNIFORM_MAT3:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultMat3, false );
+			break;
+		case PL_UNIFORM_MAT4:
+			plSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultMat4, false );
+			break;
+		default:
+			break;
+	}
+}
+
+void plSetShaderUniformToDefault( PLShaderProgram *program, const char *name ) {
+	int slot = plGetShaderUniformSlot( program, name );
+	if ( slot == -1 ) {
+		return;
+	}
+
+	plSetShaderUniformToDefaultByIndex( program, slot );
+}
+
+void plSetShaderUniformsToDefault( PLShaderProgram *program ) {
+	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
+		plSetShaderUniformToDefaultByIndex( program, i );
+	}
+}
+
+void plSetShaderUniformValueByIndex( PLShaderProgram *program, int slot, const void *value, bool transpose ) {
+#if defined(PL_SUPPORT_OPENGL) /* todo, move into layer_opengl */
+	/* this should be done by the GL layer!! */
+	PLShaderProgram* oldProgram = plGetCurrentShaderProgram();
+	plSetShaderProgram( program );
+
+	switch ( program->uniforms[ slot ].type ) {
+		case PL_UNIFORM_FLOAT:
+			glUniform1f( program->uniforms[ slot ].slot, *( float * ) value );
+			break;
+		case PL_UNIFORM_SAMPLER2D:
+		case PL_UNIFORM_INT:
+			glUniform1i(  program->uniforms[ slot ].slot, *( int * ) value );
+			break;
+		case PL_UNIFORM_UINT:
+			glUniform1ui(  program->uniforms[ slot ].slot, *( unsigned int * ) value );
+			break;
+		case PL_UNIFORM_BOOL:
+			glUniform1i(  program->uniforms[ slot ].slot, *( bool * ) value );
+			break;
+		case PL_UNIFORM_DOUBLE:
+			glUniform1d(  program->uniforms[ slot ].slot, *( double * ) value );
+			break;
+		case PL_UNIFORM_VEC2: {
+			PLVector2 vec2 = *( PLVector2 * ) value;
+			glUniform2f( program->uniforms[ slot ].slot, vec2.x, vec2.y );
+			break;
+		}
+		case PL_UNIFORM_VEC3: {
+			PLVector3 vec3 = *( PLVector3 * ) value;
+			glUniform3f( program->uniforms[ slot ].slot, vec3.x, vec3.y, vec3.z );
+			break;
+		}
+		case PL_UNIFORM_VEC4: {
+			PLVector4 vec4 = *( PLVector4 * ) value;
+			glUniform4f( program->uniforms[ slot ].slot, vec4.x, vec4.y, vec4.z, vec4.w );
+			break;
+		}
+		case PL_UNIFORM_MAT3: {
+			PLMatrix3 mat3 = *( PLMatrix3 * ) value;
+			glUniformMatrix3fv( program->uniforms[ slot ].slot, 1, transpose ? GL_TRUE : GL_FALSE, mat3.m );
+			break;
+		}
+		case PL_UNIFORM_MAT4: {
+			PLMatrix4 mat4 = *( PLMatrix4 * ) value;
+			glUniformMatrix4fv( program->uniforms[ slot ].slot, 1, transpose ? GL_TRUE : GL_FALSE, mat4.m );
+			break;
+		}
+		default:
+			break;
+	}
+
+	/* this should be done by the GL layer!! */
+	plSetShaderProgram( oldProgram );
+#endif
+}
+
+void plSetShaderUniformValue( PLShaderProgram *program, const char *name, const void *value, bool transpose ) {
+	int slot = plGetShaderUniformSlot( program, name );
+	if ( slot == -1 ) {
+		return;
+	}
+
+	plSetShaderUniformValueByIndex( program, slot, value, transpose );
+}
+
+void plSetShaderUniformFloat(PLShaderProgram *program, int slot, float value) {
+	PLShaderProgram *prg = GetShaderProgram( program );
+	if ( prg == NULL || prg->uniforms == NULL ) {
+		return;
+	}
+
+	if(ValidateShaderUniformSlot(prg, slot) == -1) {
         return;
     }
 

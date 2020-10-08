@@ -30,10 +30,19 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform.h>
 #include <PL/platform_filesystem.h>
 
+typedef enum PLCompressionType {
+	PL_COMPRESSION_NONE,
+	PL_COMPRESSION_ZLIB,
+
+	PL_MAX_COMPRESSION_FORMATS
+} PLCompressionType;
+
 typedef struct PLPackageIndex {
 	size_t offset;
-	char   fileName[PL_SYSTEM_MAX_PATH];
+	char fileName[ PL_SYSTEM_MAX_PATH ];
 	size_t fileSize;
+	size_t compressedSize;
+	PLCompressionType compressionType;
 } PLPackageIndex;
 
 typedef struct PLPackage {
@@ -47,7 +56,7 @@ typedef struct PLPackage {
 
 PL_EXTERN_C
 
-PL_EXTERN PLPackage *plCreatePackageHandle( const char *path, unsigned int tableSize, void(*OpenFile)( PLFile *filePtr, PLPackageIndex *index ) );
+PL_EXTERN PLPackage *plCreatePackageHandle( const char *path, unsigned int tableSize, uint8_t*(*OpenFile)( PLFile *filePtr, PLPackageIndex *index ) );
 
 PL_EXTERN PLPackage* plLoadPackage( const char* path );
 PL_EXTERN PLFile* plLoadPackageFile( PLPackage* package, const char* path );

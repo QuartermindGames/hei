@@ -216,7 +216,7 @@ typedef struct PLPolygon {
 	PLVector2 textureScale;
 	float textureRotation;
 
-	PLVector2 normal;
+	PLVector3 normal;
 
 	PLVertex vertices[ PL_POLYGON_MAX_SIDES ];
 	unsigned int numVertices;

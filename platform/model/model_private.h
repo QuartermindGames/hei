@@ -40,6 +40,7 @@ PLModel *plLoadU3DModel(const char *path);
 PLModel *plLoadHDVModel(const char *path);
 PLModel *plLoadRequiemModel(const char *path);
 PLModel *plLoadObjModel(const char *path);
+PLModel *plLoadSmdModel( const char *path );
 
 bool plWriteSmdModel(PLModel *model, const char *path);
 bool plWriteObjModel(PLModel *model, const char *path);

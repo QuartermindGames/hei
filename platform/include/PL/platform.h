@@ -40,9 +40,7 @@ support.
  is intended only for internal usage!
 */
 
-#define PL_VERSION_MAJOR    19
-#define PL_VERSION_MINOR    10
-#define PL_VERSION_PATCH    18
+#define PL_VERSION  200824
 
 // PL_IGNORE_SHARED_HEADERS
 // PL_IGNORE_PLATFORM_HEADERS
@@ -113,7 +111,7 @@ support.
 #   define plAssert(a) (a)
 #endif
 
-#define plUnused( ... )	(void)( __VA_ARGS__ )
+#define plUnused( ... )	( void )( __VA_ARGS__ )
 
 #define plArrayElements(a)  (sizeof(a) / sizeof(*(a)))          // Returns the number of elements within an array.
 #define plIsEmptyString(a)  (((a)[0] == '\0') || ((a)[0] == ' '))

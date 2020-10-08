@@ -81,6 +81,8 @@ typedef enum PLBlend {
     PL_BLEND_DST_COLOR,
     PL_BLEND_ONE_MINUS_DST_COLOR,
     PL_BLEND_SRC_ALPHA_SATURATE,
+
+	PL_MAX_BLEND_MODES
 } PLBlend;
 
 // Blending
@@ -195,7 +197,7 @@ typedef enum PLShaderType {
     PL_SHADER_TYPE_GEOMETRY,
     PL_SHADER_TYPE_COMPUTE,
 
-    PL_NUM_SHADER_TYPES
+    PL_MAX_SHADER_TYPES
 } PLShaderStageType;
 
 typedef enum PLShaderUniformType {
@@ -223,6 +225,8 @@ typedef enum PLShaderUniformType {
     /* matrices */
     PL_UNIFORM_MAT3,
     PL_UNIFORM_MAT4,
+
+	PL_MAX_UNIFORM_TYPES
 } PLShaderUniformType;
 
 typedef struct PLShaderProgram PLShaderProgram;
@@ -242,11 +246,24 @@ typedef struct PLShaderStage {
 
 typedef struct PLShaderProgram {
     struct {
-        char name[32];
-
+        char *name;
         unsigned int slot;
-
         PLShaderUniformType type;
+
+		union {
+			int defaultInt;
+			unsigned int defaultUInt;
+			bool defaultBool;
+			double defaultDouble;
+			float defaultFloat;
+
+			PLVector2 defaultVec2;
+			PLVector3 defaultVec3;
+			PLVector4 defaultVec4;
+
+			PLMatrix3 defaultMat3;
+			PLMatrix4 defaultMat4;
+		};
     } *uniforms;
     unsigned int num_uniforms;
 
@@ -257,7 +274,7 @@ typedef struct PLShaderProgram {
     } *attributes;
     unsigned int num_attributes;
 
-    PLShaderStage *stages[PL_NUM_SHADER_TYPES];
+    PLShaderStage *stages[PL_MAX_SHADER_TYPES];
     unsigned int num_stages;
 
     bool is_linked;
@@ -286,35 +303,35 @@ PL_EXTERN bool plRegisterShaderStageFromDisk(PLShaderProgram *program, const cha
 PL_EXTERN bool plLinkShaderProgram(PLShaderProgram *program);
 
 PL_EXTERN int plGetShaderUniformSlot(PLShaderProgram *program, const char *name);
+PL_EXTERN PLShaderUniformType plGetShaderUniformType( const PLShaderProgram *program, int slot );
 
-PL_EXTERN void plSetShaderUniformFloat(PLShaderProgram *program, int slot, float value); /* todo */
-PL_EXTERN void plSetShaderUniformDouble(PLShaderProgram *program, int slot, double value); /* todo */
-PL_EXTERN void plSetShaderUniformBool(PLShaderProgram *program, int slot, bool value); /* todo */
-PL_EXTERN void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value);
-PL_EXTERN void plSetShaderUniformUInt(PLShaderProgram *program, int slot, unsigned int value); /* todo */
-PL_EXTERN void plSetShaderUniformVector4(PLShaderProgram* program, int slot, PLVector4 value);
-PL_EXTERN void plSetShaderUniformVector3(PLShaderProgram *program, int slot, PLVector3 value); /* todo */
-PL_EXTERN void plSetShaderUniformVector2(PLShaderProgram *program, int slot, PLVector2 value); /* todo */
-PL_EXTERN void plSetShaderUniformMatrix4(PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose);
+PL_EXTERN void plSetShaderUniformDefaultValueByIndex( PLShaderProgram *program, int slot, const void *defaultValue );
+PL_EXTERN void plSetShaderUniformDefaultValue( PLShaderProgram *program, const char *name, const void *defaultValue );
+PL_EXTERN void plSetShaderUniformToDefaultByIndex( PLShaderProgram *program, int slot );
+PL_EXTERN void plSetShaderUniformToDefault( PLShaderProgram *program, const char *name );
+PL_EXTERN void plSetShaderUniformsToDefault( PLShaderProgram *program );
+
+PL_EXTERN void plSetShaderUniformValueByIndex( PLShaderProgram *program, int slot, const void *value, bool transpose );
+PL_EXTERN void plSetShaderUniformValue( PLShaderProgram *program, const char *name, const void *value, bool transpose );
+
+#if !defined( PL_EXCLUDE_DEPRECATED_API )
+PL_EXTERN PL_DEPRECATED( void plSetShaderUniformFloat(PLShaderProgram *program, int slot, float value) );
+PL_EXTERN PL_DEPRECATED( void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value) );
+PL_EXTERN PL_DEPRECATED( void plSetShaderUniformVector4(PLShaderProgram* program, int slot, PLVector4 value) );
+PL_EXTERN PL_DEPRECATED( void plSetShaderUniformVector3(PLShaderProgram *program, int slot, PLVector3 value) );
+PL_EXTERN PL_DEPRECATED( void plSetShaderUniformMatrix4(PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose) );
 
 #define plSetNamedShaderUniformFloat(program, name, value)  \
     plSetShaderUniformFloat((program), plGetShaderUniformSlot((program), (name)), (value))
-#define plSetNamedShaderUniformDouble(program, name, value) \
-    plSetShaderUniformDouble((program), plGetShaderUniformSlot((program), (name)), (value))
-#define plSetNamedShaderUniformBool(program, name, value) \
-    plSetShaderUniformBool((program), plGetShaderUniformSlot((program), (name)), (value))
 #define plSetNamedShaderUniformInt(program, name, value) \
     plSetShaderUniformInt((program), plGetShaderUniformSlot((program), (name)), (value))
-#define plSetNamedShaderUniformUInt(program, name, value) \
-    plSetShaderUniformUInt((program), plGetShaderUniformSlot((program), (name)), (value))
 #define plSetNamedShaderUniformVector4(program, name, value) \
     plSetShaderUniformVector4((program), plGetShaderUniformSlot((program), (name)), (value))
 #define plSetNamedShaderUniformVector3(program, name, value) \
     plSetShaderUniformVector3((program), plGetShaderUniformSlot((program), (name)), (value))
-#define plSetNamedShaderUniformVector2(program, name, value) \
-    plSetShaderUniformVector2((program), plGetShaderUniformSlot((program), (name)), (value))
 #define plSetNamedShaderUniformMatrix4(program, name, value, transpose) \
     plSetShaderUniformMatrix4((program), plGetShaderUniformSlot((program), (name)), (value), (transpose))
+#endif
 
 PL_EXTERN PLShaderProgram *plCreateShaderProgram(void);
 PL_EXTERN void plDestroyShaderProgram(PLShaderProgram *program, bool free_stages);
@@ -366,12 +383,17 @@ typedef struct PLMesh PLMesh;
 
 PL_EXTERN PLPolygon *plCreatePolygon( PLTexture *texture, PLVector2 textureOffset, PLVector2 textureScale, float textureRotation );
 PL_EXTERN void plDestroyPolygon( PLPolygon *polygon );
+
+PL_EXTERN void plGeneratePolygonNormals( PLPolygon *polygon );
+
 PL_EXTERN void plAddPolygonVertex( PLPolygon *polygon, const PLVertex *vertex );
 PL_EXTERN void plRemovePolygonVertex( PLPolygon *polygon, unsigned int vertIndex );
+
 PL_EXTERN unsigned int plGetNumOfPolygonVertices( const PLPolygon *polygon );
 PL_EXTERN PLVertex *plGetPolygonVertex( PLPolygon *polygon, unsigned int vertIndex );
 PL_EXTERN PLVertex *plGetPolygonVertices( PLPolygon *polygon, unsigned int *numVertices );
 PL_EXTERN PLTexture *plGetPolygonTexture( PLPolygon *polygon );
+PL_EXTERN PLVector3 plGetPolygonFaceNormal( const PLPolygon *polygon );
 PL_EXTERN unsigned int plGetNumOfPolygonTriangles( const PLPolygon *polygon );
 PL_EXTERN unsigned int *plConvertPolygonToTriangles( const PLPolygon *polygon, unsigned int *numTriangles );
 PL_EXTERN PLMesh *plConvertPolygonToMesh( const PLPolygon *polygon );

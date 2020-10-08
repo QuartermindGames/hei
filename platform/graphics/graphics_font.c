@@ -310,6 +310,11 @@ void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColo
     float w = (float)font->chars[character].w;/* * scale; */
     float h = (float)font->chars[character].h;/* * scale; */
 
+	plMatrixMode( PL_MODELVIEW_MATRIX );
+	plPushMatrix();
+
+	plLoadIdentityMatrix();
+
     plSetTexture(font->texture, 0);
 
     plSetMeshUniformColour(mesh, colour);
@@ -323,14 +328,18 @@ void plDrawBitmapCharacter(PLBitmapFont *font, int x, int y, float scale, PLColo
     float th = (float)font->chars[character].h / font->texture->h;
     float tx = (float)font->chars[character].x / font->texture->w;
     float ty = (float)font->chars[character].y / font->texture->h;
+
     plSetMeshVertexST(mesh, 0, tx, ty);
     plSetMeshVertexST(mesh, 1, tx, ty + th);
     plSetMeshVertexST(mesh, 2, tx + tw, ty);
     plSetMeshVertexST(mesh, 3, tx + tw, ty + th);
 
-    plSetNamedShaderUniformMatrix4(NULL, "pl_model", plMatrix4Identity(), false);
-    plUploadMesh(mesh);
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), false );
+
+	plUploadMesh(mesh);
     plDrawMesh(mesh);
+
+	plPopMatrix();
 }
 
 void plDrawBitmapString(PLBitmapFont *font, int x, int y, float scale, PLColour colour, const char *msg) {

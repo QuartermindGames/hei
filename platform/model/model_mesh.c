@@ -30,49 +30,6 @@ For more information, please refer to <http://unlicense.org>
 
 #include "../graphics/graphics_private.h"
 
-#include <float.h>
-
-/* todo: move into physics.c */
-PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertices, bool absolute ) {
-	PLCollisionAABB bounds;
-	if ( absolute ) {
-		bounds.maxs = ( PLVector3 ) { FLT_MIN, FLT_MIN, FLT_MIN };
-		bounds.mins = ( PLVector3 ) { FLT_MAX, FLT_MAX, FLT_MAX };
-
-		for ( unsigned int i = 0; i < numVertices; ++i ) {
-			if ( bounds.maxs.x < vertices[ i ].position.x ) { bounds.maxs.x = vertices[ i ].position.x; }
-			if ( bounds.maxs.y < vertices[ i ].position.y ) { bounds.maxs.y = vertices[ i ].position.y; }
-			if ( bounds.maxs.z < vertices[ i ].position.z ) { bounds.maxs.z = vertices[ i ].position.z; }
-			if ( bounds.mins.x > vertices[ i ].position.x ) { bounds.mins.x = vertices[ i ].position.x; }
-			if ( bounds.mins.y > vertices[ i ].position.y ) { bounds.mins.y = vertices[ i ].position.y; }
-			if ( bounds.mins.z > vertices[ i ].position.z ) { bounds.mins.z = vertices[ i ].position.z; }
-		}
-
-		return bounds;
-	}
-
-	/* this technically still doesn't, but it's better */
-	float max = FLT_MIN;
-	float min = FLT_MAX;
-	for ( unsigned int i = 0; i < numVertices; ++i ) {
-		if ( vertices[ i ].position.x > max ) { max = vertices[ i ].position.x; }
-		if ( vertices[ i ].position.y > max ) { max = vertices[ i ].position.y; }
-		if ( vertices[ i ].position.z > max ) { max = vertices[ i ].position.z; }
-		if ( vertices[ i ].position.x < min ) { min = vertices[ i ].position.x; }
-		if ( vertices[ i ].position.y < min ) { min = vertices[ i ].position.y; }
-		if ( vertices[ i ].position.z < min ) { min = vertices[ i ].position.z; }
-	}
-
-	if ( min < 0 ) { min *= -1; }
-	if ( max < 0 ) { max *= -1; }
-
-	float abs = min > max ? min : max;
-	bounds.maxs = PLVector3( abs, abs, abs );
-	bounds.mins = PLVector3( -abs, -abs, -abs );
-
-	return bounds;
-}
-
 /**
  * Generate cubic coordinates for the given vertices.
  */
@@ -103,7 +60,7 @@ void plGenerateTextureCoordinates( PLVertex *vertices, unsigned int numVertices,
 	}
 #endif
 
-	PLCollisionAABB bounds = plGenerateAABB( vertices, numVertices, false );
+	PLCollisionAABB bounds = plGenerateAABB( vertices, numVertices, true );
 	for ( unsigned int i = 0; i < numVertices; ++i ) {
 		vertices[ i ].st[ 0 ].x = ( plVector3Index( vertices[ i ].position, l ) / plVector3Index( bounds.maxs, l ) + textureOffset.x ) * textureScale.x;
 		vertices[ i ].st[ 0 ].y = ( plVector3Index( vertices[ i ].position, r ) / plVector3Index( bounds.maxs, r ) + textureOffset.y ) * textureScale.y;
@@ -149,7 +106,7 @@ void plGenerateMeshNormals( PLMesh *mesh, bool perFace ) {
 /* software implementation of gouraud shading */
 void plApplyMeshLighting( PLMesh *mesh, const PLLight *light, PLVector3 position ) {
 	PLVector3 distvec = plSubtractVector3( position, light->position );
-	float distance = ( plByteToFloat( light->colour.a ) - plVector3Length( &distvec ) ) / 100.f;
+	float distance = ( plByteToFloat( light->colour.a ) - plVector3Length( distvec ) ) / 100.f;
 	for ( unsigned int i = 0; i < mesh->num_verts; i++ ) {
 		PLVector3 normal = mesh->vertices[ i ].normal;
 		float angle = ( distance * ( ( normal.x * distvec.x ) + ( normal.y * distvec.y ) + ( normal.z * distvec.z ) ) );
@@ -419,10 +376,17 @@ void plDrawEllipse( unsigned int segments, PLVector2 position, float w, float h,
 		plAddMeshVertex( mesh, coord, pl_vecOrigin3, colour, pl_vecOrigin2 );
 	}
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
+	plMatrixMode( PL_MODELVIEW_MATRIX );
+	plPushMatrix();
+
+	plLoadIdentityMatrix();
+
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), false );
 
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
+
+	plPopMatrix();
 }
 
 static void SetupRectangleMesh( PLMesh *mesh, float x, float y, float w, float h, PLColour colour ) {
@@ -442,7 +406,8 @@ void plDrawTexturedRectangle( const PLMatrix4 *transform, float x, float y, floa
 
 	plSetTexture( texture, 0 );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", *transform, true );
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", transform, true );
+
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
 
@@ -468,7 +433,7 @@ void plDrawRectangle( const PLMatrix4 *transform, float x, float y, float w, flo
 
 	SetupRectangleMesh( mesh, x, y, w, h, colour );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", *transform, true );
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", transform, true );
 
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
@@ -487,9 +452,17 @@ void plDrawFilledRectangle( const PLRectangle2D *rectangle ) {
 	plSetMeshVertexColour( mesh, 2, rectangle->lr );
 	plSetMeshVertexColour( mesh, 3, rectangle->ur );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
+	plMatrixMode( PL_MODELVIEW_MATRIX );
+	plPushMatrix();
+
+	plLoadIdentityMatrix();
+
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), false );
+
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
+
+	plPopMatrix();
 }
 
 void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr, float hScale, float vScale, PLTexture *texture ) {
@@ -499,9 +472,9 @@ void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVecto
 	}
 
 	PLVector3 upperDist = plSubtractVector3( *ul, *ur );
-	float quadWidth = plVector3Length( &upperDist ) / hScale;
+	float quadWidth = plVector3Length( upperDist ) / hScale;
 	PLVector3 lowerDist = plSubtractVector3( *ll, *ul );
-	float quadHeight = plVector3Length( &lowerDist ) / vScale;
+	float quadHeight = plVector3Length( lowerDist ) / vScale;
 
 	plAddMeshVertex( mesh, *ul, pl_vecOrigin3, PL_COLOUR_WHITE, PLVector2( 0.0f, quadHeight / texture->h ) );
 	plAddMeshVertex( mesh, *ur, pl_vecOrigin3, PL_COLOUR_WHITE, PLVector2( quadWidth / texture->w, quadHeight / texture->h ) );
@@ -515,10 +488,17 @@ void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVecto
 
 	plSetTexture( texture, 0 );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), true );
+	plMatrixMode( PL_MODELVIEW_MATRIX );
+	plPushMatrix();
+
+	plLoadIdentityMatrix();
+
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), false );
 
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
+
+	plPopMatrix();
 }
 
 void plDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
@@ -535,9 +515,17 @@ void plDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 
 	//plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", plMatrix4Identity(), false );
+	plMatrixMode( PL_MODELVIEW_MATRIX );
+	plPushMatrix();
+
+	plLoadIdentityMatrix();
+
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), false );
+
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
+
+	plPopMatrix();
 }
 
 void plDrawLine( PLMatrix4 transform, PLVector3 startPos, PLColour startColour, PLVector3 endPos, PLColour endColour ) {
@@ -549,7 +537,7 @@ void plDrawLine( PLMatrix4 transform, PLVector3 startPos, PLColour startColour, 
 	plAddMeshVertex( mesh, startPos, pl_vecOrigin3, startColour, pl_vecOrigin2 );
 	plAddMeshVertex( mesh, endPos, pl_vecOrigin3, endColour, pl_vecOrigin2 );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", transform, true );
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", &transform, true );
 
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );
@@ -637,7 +625,7 @@ void plDrawBoundingVolume( const PLCollisionAABB *bounds, PLColour colour ) {
 	plAddMeshVertex( mesh, boxPoints[ 3 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
 	plAddMeshVertex( mesh, boxPoints[ 6 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
 
-	plSetNamedShaderUniformMatrix4( NULL, "pl_model", *plGetMatrix( PL_MODELVIEW_MATRIX ), true );
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), true );
 
 	plUploadMesh( mesh );
 	plDrawMesh( mesh );

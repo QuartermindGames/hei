@@ -308,11 +308,25 @@ PL_INLINE static PLVector3 plAddVector3(PLVector3 v, PLVector3 v2) {
   return v;
 }
 
+PL_INLINE static PLVector3 plAddVector3f( PLVector3 v, float f ) {
+	v.x += f;
+	v.y += f;
+	v.z += f;
+	return v;
+}
+
 PL_INLINE static PLVector3 plSubtractVector3(PLVector3 v, PLVector3 v2) {
   v.x -= v2.x;
   v.y -= v2.y;
   v.z -= v2.z;
   return v;
+}
+
+PL_INLINE static PLVector3 plSubtractVector3f( PLVector3 v, float f ) {
+	v.x -= f;
+	v.y -= f;
+	v.z -= f;
+	return v;
 }
 
 PL_INLINE static PLVector3 plScaleVector3(PLVector3 v, PLVector3 v2) {
@@ -375,12 +389,12 @@ PL_INLINE static float plVector3DotProduct(PLVector3 v, PLVector3 v2) {
   return (v.x * v2.x + v.y * v2.y + v.z * v2.z);
 }
 
-PL_INLINE static float plVector3Length(const PLVector3 *v) {
-  return sqrtf(v->x * v->x + v->y * v->y + v->z * v->z);
+PL_INLINE static float plVector3Length( const PLVector3 v ) {
+	return sqrtf( v.x * v.x + v.y * v.y + v.z * v.z );
 }
 
 PL_INLINE static PLVector3 plNormalizeVector3(PLVector3 v) {
-  float length = plVector3Length(&v);
+  float length = plVector3Length( v );
   if (length != 0) {
     v.x /= length;
     v.y /= length;
@@ -413,6 +427,12 @@ typedef struct PLVector4 {
 
     float x, y, z, w;
 } PLVector4;
+
+#ifndef __cplusplus
+
+#   define PLVector4(x, y, z, w)   (PLVector4){ (float)x, (float)y, (float)z, (float)w }
+
+#endif
 
 extern const PLVector4 pl_vecOrigin4;
 
@@ -455,24 +475,7 @@ PL_INLINE static float plGetPlaneDotProduct( const PLVector4 *plane, const PLVec
  * Function that works similarly to D3DXPlaneNormalize.
  */
 PL_INLINE static PLVector4 plNormalizePlane( PLVector4 plane ) {
-#if 0
-	PLVector3 v = PLVector3( plane.x, plane.y, plane.z );
-	float l = plVector3Length( &v );
-	if ( l > 0.0f ) {
-		/* normals */
-		plane.x /= -l;
-		plane.y /= -l;
-		plane.z /= -l;
-		/* dist */
-		plane.w /= l;
-	} else {
-		plane.x = plane.y = plane.z = plane.w = 0.0f;
-	}
-
-	return plane;
-#else
-	PLVector3 v = PLVector3( plane.x, plane.y, plane.z );
-	float l = plVector3Length( &v );
+	float l = plVector3Length( PLVector3( plane.x, plane.y, plane.z ) );
 
 	plane.x /= l;
 	plane.y /= l;
@@ -480,5 +483,4 @@ PL_INLINE static PLVector4 plNormalizePlane( PLVector4 plane ) {
 	plane.w /= l;
 
 	return plane;
-#endif
 }

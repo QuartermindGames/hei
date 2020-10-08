@@ -47,13 +47,43 @@ void plDestroyPolygon( PLPolygon *polygon ) {
 /**
  * Generate vertex normals for the given polygon.
  */
-static void _plGeneratePolygonNormals( PLPolygon *polygon ) {
+void plGeneratePolygonNormals( PLPolygon *polygon ) {
 	unsigned int numTriangles;
 	unsigned int *indices = plConvertPolygonToTriangles( polygon, &numTriangles );
 
 	plGenerateVertexNormals( polygon->vertices, polygon->numVertices, indices, numTriangles, true );
 
-	free( indices );
+	pl_free( indices );
+}
+
+/**
+ * Generate face normal for the given polygon.
+ */
+void plGeneratePolygonFaceNormal( PLPolygon *polygon ) {
+	unsigned int numTriangles;
+	unsigned int *indices = plConvertPolygonToTriangles( polygon, &numTriangles );
+
+	PLVector3 *normals = pl_malloc( sizeof( PLVector3 ) * polygon->numVertices );
+	for ( unsigned int i = 0, idx = 0; i < numTriangles; ++i, idx += 3 ) {
+		unsigned int a = indices[ idx ];
+		unsigned int b = indices[ idx + 1 ];
+		unsigned int c = indices[ idx + 2 ];
+
+		PLVector3 normal = plGenerateVertexNormal(
+				polygon->vertices[ a ].position,
+				polygon->vertices[ b ].position,
+				polygon->vertices[ c ].position
+		);
+
+		normals[ a ] = plAddVector3( normals[ a ], normal );
+		normals[ b ] = plAddVector3( normals[ b ], normal );
+		normals[ c ] = plAddVector3( normals[ c ], normal );
+	}
+
+	polygon->normal = normals[ 0 ];
+
+	pl_free( normals );
+	pl_free( indices );
 }
 
 void plAddPolygonVertex( PLPolygon *polygon, const PLVertex *vertex ) {
@@ -65,10 +95,13 @@ void plAddPolygonVertex( PLPolygon *polygon, const PLVertex *vertex ) {
 	polygon->vertices[ polygon->numVertices ] = *vertex;
 	polygon->numVertices++;
 
-	_plGeneratePolygonNormals( polygon );
+	plGeneratePolygonFaceNormal( polygon );
+
+#if 0
 	if( polygon->texture != NULL ) {
 		plGenerateTextureCoordinates( polygon->vertices, polygon->numVertices, polygon->textureOffset, polygon->textureScale );
 	}
+#endif
 }
 
 void plRemovePolygonVertex( PLPolygon *polygon, unsigned int vertIndex ) {
@@ -81,10 +114,13 @@ void plRemovePolygonVertex( PLPolygon *polygon, unsigned int vertIndex ) {
 	memmove( polygon->vertices + vertIndex, polygon->vertices + vertIndex + 1, ( polygon->numVertices - vertIndex ) - 1);
 	--( polygon->numVertices );
 
-	_plGeneratePolygonNormals( polygon );
+	plGeneratePolygonFaceNormal( polygon );
+
+#if 0
 	if( polygon->texture != NULL ) {
 		plGenerateTextureCoordinates( polygon->vertices, polygon->numVertices, polygon->textureOffset, polygon->textureScale );
 	}
+#endif
 }
 
 unsigned int plGetNumOfPolygonVertices( const PLPolygon *polygon ) {
@@ -107,6 +143,10 @@ PLVertex *plGetPolygonVertices( PLPolygon *polygon, unsigned int *numVertices ) 
 
 PLTexture *plGetPolygonTexture( PLPolygon *polygon ) {
 	return polygon->texture;
+}
+
+PLVector3 plGetPolygonFaceNormal( const PLPolygon *polygon ) {
+	return polygon->normal;
 }
 
 /**

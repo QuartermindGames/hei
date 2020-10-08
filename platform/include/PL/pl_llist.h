@@ -47,4 +47,8 @@ PLLinkedListNode *plGetPrevLinkedListNode( PLLinkedListNode *node );
 PLLinkedListNode *plGetRootNode( PLLinkedList *list );
 void *plGetLinkedListNodeUserData( PLLinkedListNode *node );
 
+unsigned int plGetNumLinkedListNodes( PLLinkedList *list );
+
+PLLinkedList *plGetLinkedListNodeContainer( PLLinkedListNode *node );
+
 PL_EXTERN_C_END
