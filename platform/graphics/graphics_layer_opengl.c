@@ -578,8 +578,8 @@ static void GLUploadMesh( PLMesh *mesh ) {
 	glBindBuffer( GL_ARRAY_BUFFER, mesh->internal.buffers[ BUFFER_VERTEX_DATA ] );
 
 	//Write the current CPU vertex data into the VBO
-	glBufferData( GL_ARRAY_BUFFER, sizeof( PLVertex ) * mesh->num_verts, &mesh->vertices[ 0 ],
-				  TranslateDrawMode( mesh->mode ) );
+	unsigned int drawMode = TranslateDrawMode( mesh->mode );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( PLVertex ) * mesh->num_verts, &mesh->vertices[ 0 ], drawMode );
 
 	//Point to the different substreams of the interleaved BVO
 	//Args: Index, Size, Type, (Normalized), Stride, StartPtr
@@ -610,10 +610,7 @@ static void GLUploadMesh( PLMesh *mesh ) {
 
 	if ( mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] != 0 ) {
 		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] );
-		glBufferData( GL_ELEMENT_ARRAY_BUFFER,
-					  sizeof( unsigned int ) * mesh->num_indices,
-					  &mesh->indices[ 0 ],
-					  GL_STATIC_DRAW );
+		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( unsigned int ) * mesh->num_indices, &mesh->indices[ 0 ], drawMode );
 	}
 }
 
