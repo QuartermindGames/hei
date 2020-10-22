@@ -155,7 +155,10 @@ static void SetupCameraFrustum( PLCamera *camera ) {
 }
 
 static void SetupCameraPerspective( PLCamera *camera ) {
-	camera->internal.proj = plPerspective( camera->fov, camera->viewport.w / camera->viewport.h, camera->near, camera->far );
+	float w = (float)camera->viewport.w;
+	float h = (float)camera->viewport.h;
+
+	camera->internal.proj = plPerspective( camera->fov, w / h, camera->near, camera->far );
 
 	float x = cosf( plDegreesToRadians( camera->angles.y ) ) * cosf( plDegreesToRadians( camera->angles.x ) );
 	float y = sinf( plDegreesToRadians( camera->angles.x ) );
