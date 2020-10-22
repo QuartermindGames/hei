@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #pragma once
 
 #include <PL/platform_math.h>
@@ -84,7 +85,6 @@ typedef struct PLMesh {
 	PLMeshDrawMode          mode;
     struct {
         unsigned int    buffers[32];
-        PLMeshPrimitive old_primitive;  /* provided for switching between different primitive modes */
     } internal;
 } PLMesh;
 

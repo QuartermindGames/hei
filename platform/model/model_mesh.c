@@ -188,8 +188,6 @@ PLMesh *plCreateMeshInit( PLMeshPrimitive primitive, PLMeshDrawMode mode, unsign
 	mesh->primitive = primitive;
 	mesh->mode = mode;
 
-	mesh->internal.old_primitive = mesh->primitive;
-
 	if ( numTriangles > 0 ) {
 		mesh->num_triangles = numTriangles;
 		if ( mesh->primitive == PL_MESH_TRIANGLES ) {
