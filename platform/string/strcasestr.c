@@ -37,6 +37,7 @@
 
 #include <ctype.h>
 #include <string.h>
+
 #include <PL/platform_string.h>
 
 /*

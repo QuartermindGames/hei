@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include <ctype.h>
-#include <stdbool.h>
 
 int pl_strisdigit(const char *s) {
     for(unsigned int i = 0; s[i] != '\0'; ++i) {
