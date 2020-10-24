@@ -37,6 +37,7 @@ typedef struct SMDNode {
 	int parentId;
 } SMDNode;
 
+/*
 typedef struct SMDSkeleton {
 
 } SMDSkeleton;
@@ -44,6 +45,7 @@ typedef struct SMDSkeleton {
 typedef struct SMDTriangle {
 
 } SMDTriangle;
+*/
 
 static SMDNode *SMD_ReadNodes( PLFile *file, unsigned int *numNodes ) {
 	*numNodes = 0;
