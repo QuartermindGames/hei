@@ -30,65 +30,65 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_math.h>
 
 typedef struct PLConsoleVariable {
-    char var[32];
-    char description[256];
+	char var[ 32 ];
+	char description[ 256 ];
 
-    PLVariableType type;
+	PLVariableType type;
 
-    void(*CallbackFunction)(const struct PLConsoleVariable *variable);
+	void ( *CallbackFunction )( const struct PLConsoleVariable *variable );
 
-    /////////////////////////////
+	/////////////////////////////
 
-#define PL_VAR_VALUE_LENGTH  512
+#define PL_VAR_VALUE_LENGTH 512
 
-    union {
-        float f_value;
-        int i_value;
-        const char *s_value;
-        bool b_value;
-    };
-    char value[PL_VAR_VALUE_LENGTH];
-    char default_value[PL_VAR_VALUE_LENGTH];
+	union {
+		float f_value;
+		int i_value;
+		const char *s_value;
+		bool b_value;
+	};
+	char value[ PL_VAR_VALUE_LENGTH ];
+	char default_value[ PL_VAR_VALUE_LENGTH ];
 
-    /////////////////////////////
+	/////////////////////////////
 
-    bool archive;
+	bool archive;
 } PLConsoleVariable;
 
-#define plGetConsoleVariableValue(var) \
-    switch(var->type) {}
+#define plGetConsoleVariableValue( var ) \
+	switch ( var->type ) {}
 
 PL_EXTERN_C
 
-void plGetConsoleVariables( PLConsoleVariable*** vars, size_t* num_vars );
+void plGetConsoleVariables( PLConsoleVariable ***vars, size_t *num_vars );
 
-PLConsoleVariable *plGetConsoleVariable(const char *name);
-void plSetConsoleVariable(PLConsoleVariable *var, const char *value);
+PLConsoleVariable *plGetConsoleVariable( const char *name );
+void plSetConsoleVariable( PLConsoleVariable *var, const char *value );
 
-PLConsoleVariable *plRegisterConsoleVariable(const char *name, const char *def, PLVariableType type,
-                                             void(*CallbackFunction)(const PLConsoleVariable *variable),
-                                             const char *desc);
+PLConsoleVariable *plRegisterConsoleVariable( const char *name, const char *def, PLVariableType type,
+                                              void ( *CallbackFunction )( const PLConsoleVariable *variable ),
+                                              const char *desc );
 
 PL_EXTERN_C_END
 
 /////////////////////////////////////////////////////////////////////////////////////
 
 typedef struct PLConsoleCommand {
-    char cmd[24];
+	char cmd[ 24 ];
 
-    void(*Callback)(unsigned int argc, char *argv[]);
+	void ( *Callback )( unsigned int argc, char *argv[] );
 
-    char description[512];
+	char description[ 512 ];
 } PLConsoleCommand;
 
 PL_EXTERN_C
 
-void plGetConsoleCommands(const PLConsoleCommand ***cmds, size_t *num_cmds);
+void plGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds );
 
-void plRegisterConsoleCommand(const char *name, void(*CallbackFunction)(unsigned int argc, char *argv[]),
-                              const char *description);
+void plRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( unsigned int argc, char *argv[] ),
+                               const char *description );
 
-PLConsoleCommand *plGetConsoleCommand(const char *name);
+PLConsoleCommand *plGetConsoleCommand( const char *name );
 
 PL_EXTERN_C_END
 
@@ -96,24 +96,24 @@ PL_EXTERN_C_END
 
 PL_EXTERN_C
 
-PL_EXTERN void plSetupConsole(unsigned int num_instances);
+PL_EXTERN void plSetupConsole( unsigned int num_instances );
 
-PL_EXTERN void plSetConsoleColour(unsigned int id, PLColour colour);
-PL_EXTERN void plSetConsoleOutputCallback(void(*Callback)(int level, const char *msg));
+PL_EXTERN void plSetConsoleColour( unsigned int id, PLColour colour );
+PL_EXTERN void plSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg ) );
 
-PL_EXTERN void plParseConsoleString(const char *string);
+PL_EXTERN void plParseConsoleString( const char *string );
 
-PL_EXTERN void plShowConsole(bool show);
-PL_EXTERN void plDrawConsole(void);
+PL_EXTERN void plShowConsole( bool show );
+PL_EXTERN void plDrawConsole( void );
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-PL_EXTERN void plSetupLogOutput(const char *path);
+PL_EXTERN void plSetupLogOutput( const char *path );
 
 PL_EXTERN int plAddLogLevel( const char *prefix, PLColour colour, bool status );
-PL_EXTERN void plSetupLogLevel(int level, const char *prefix, PLColour colour, bool status);
-PL_EXTERN void plSetLogLevelStatus(int level, bool status);
+PL_EXTERN void plSetupLogLevel( int level, const char *prefix, PLColour colour, bool status );
+PL_EXTERN void plSetLogLevelStatus( int level, bool status );
 
-PL_EXTERN void plLogMessage(int level, const char *msg, ...);
+PL_EXTERN void plLogMessage( int level, const char *msg, ... );
 
 PL_EXTERN_C_END
