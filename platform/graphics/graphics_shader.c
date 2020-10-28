@@ -102,6 +102,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageTyp
 		insert( "in vec3 pl_vnormal;" );
 		insert( "in vec2 pl_vuv;" );
 		insert( "in vec4 pl_vcolour;" );
+		insert( "in vec3 pl_vtangent, pl_vbitangent;" );
     } else if(type == PL_SHADER_TYPE_FRAGMENT) {
 		insert( "out vec4 pl_frag;" );
     }
