@@ -93,9 +93,9 @@ void plRegisterConsoleCommand(const char *name, void(*CallbackFunction)(unsigned
     }
 }
 
-void plGetConsoleCommands(const PLConsoleCommand *** cmds, size_t *num_cmds) {
-    *cmds = _pl_commands;
-    *num_cmds = _pl_num_commands;
+void plGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds ) {
+	*cmds = _pl_commands;
+	*num_cmds = _pl_num_commands;
 }
 
 PLConsoleCommand *plGetConsoleCommand(const char *name) {

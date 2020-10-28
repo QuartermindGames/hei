@@ -41,30 +41,57 @@ typedef struct PLVector2 {
 
   PLVector2 &operator=(float a) { x = a; y = a; return *this; }
 
-  void operator*=(PLVector2 a) { x *= a.x; y *= a.y; }
-  void operator*=(float a) { x *= a; y *= a; }
+  void operator*=( PLVector2 a ) {
+	  x *= a.x;
+	  y *= a.y;
+  }
+  void operator*=( float a ) {
+	  x *= a;
+	  y *= a;
+  }
 
-  void operator/=(PLVector2 a) { x /= a.x; y /= a.y; }
-  void operator/=(float a) { x /= a; y /= a; }
+  void operator/=( const PLVector2 &a ) {
+	  x /= a.x;
+	  y /= a.y;
+  }
+  void operator/=( float a ) {
+	  x /= a;
+	  y /= a;
+  }
 
-  void operator+=(PLVector2 a) { x += a.x; y += a.y; }
-  void operator+=(float a) { x += a; y += a; }
+  void operator+=( const PLVector2 &a ) {
+	  x += a.x;
+	  y += a.y;
+  }
+  void operator+=( float a ) {
+	  x += a;
+	  y += a;
+  }
 
-  bool operator==(PLVector2 a) const { return ((x == a.x) && (y == a.y)); }
-  bool operator==(float a) const { return ((x == a) && (y == a)); }
-  bool operator != ( float a ) const { return ( ( x != a ) && ( y != a ) ); }
+  void operator-=( const PLVector2 &a ) {
+	  x -= a.x;
+	  y -= a.y;
+  }
+  void operator-=( float a ) {
+	  x -= a;
+	  y -= a;
+  }
 
-  PLVector2 operator*(PLVector2 a) const { return PLVector2(x * a.x, y * a.y); }
-  PLVector2 operator*(float a) const { return PLVector2(x * a, y * a); }
+  bool operator==( const PLVector2 &a ) const { return ( ( x == a.x ) && ( y == a.y ) ); }
+  bool operator==( float a ) const { return ( ( x == a ) && ( y == a ) ); }
+  bool operator!=( float a ) const { return ( ( x != a ) && ( y != a ) ); }
 
-  PLVector2 operator/(PLVector2 a) const { return PLVector2(x / a.x, y / a.y); }
-  PLVector2 operator/(float a) const { return PLVector2(x / a, y / a); }
+  PLVector2 operator*( const PLVector2 &a ) const { return PLVector2( x * a.x, y * a.y ); }
+  PLVector2 operator*( float a ) const { return PLVector2( x * a, y * a ); }
 
-  PLVector2 operator+(PLVector2 a) const { return PLVector2(x + a.x, y + a.y); }
-  PLVector2 operator+(float a) const { return PLVector2(x + a, y + a); }
+  PLVector2 operator/( const PLVector2 &a ) const { return PLVector2( x / a.x, y / a.y ); }
+  PLVector2 operator/( float a ) const { return PLVector2( x / a, y / a ); }
 
-  PLVector2 operator-(PLVector2 a) const { return PLVector2(x - a.x, y - a.y); }
-  PLVector2 operator-(float a) const { return PLVector2(x - a, y - a); }
+  PLVector2 operator+( const PLVector2 &a ) const { return PLVector2( x + a.x, y + a.y ); }
+  PLVector2 operator+( float a ) const { return PLVector2( x + a, y + a ); }
+
+  PLVector2 operator-( const PLVector2 &a ) const { return PLVector2( x - a.x, y - a.y ); }
+  PLVector2 operator-( float a ) const { return PLVector2( x - a, y - a ); }
 
   float Length() { return std::sqrt(x * x + y * y); }
 

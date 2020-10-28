@@ -3,7 +3,6 @@
  * Invalid file names and files that cause errors are silently skipped.
  * The program reads from stdin if it is called with no arguments. */
 
-#include <stdio.h>
 #include <stdint.h>
 
 uint32_t pl_crc32_for_byte( uint32_t r ) {

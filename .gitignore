@@ -40,3 +40,5 @@
 *.db-wal
 *.tlog
 /build
+
+platform/3rdparty/glew-2.2.0/glew.pc

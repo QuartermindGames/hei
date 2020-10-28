@@ -24,25 +24,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#include <ctype.h>
 
-int pl_strisalnum(const char *s) {
-    for(int i = 0; s[i] != '\0'; ++i) {
-        if(isalnum(s[i])) {
-            return i;
-        }
-    }
-    return -1;
-}
+#include <stdio.h>
+#include <stdarg.h>
 
-int pl_strnisalnum(const char *s, unsigned int n) {
-    for(int i = 0; i < n; ++i) {
-        if(s[i] == '\0') {
-            break;
-        }
-        if(isalnum(s[i])) {
-            return i;
-        }
-    }
-    return -1;
+/* https://stackoverflow.com/a/19692380 */
+int pl_vscprintf( const char *format, va_list pArgs ) {
+	va_list argCopy;
+	va_copy( argCopy, pArgs );
+	int retVal = vsnprintf( NULL, 0, format, argCopy );
+	va_end( argCopy );
+	return retVal;
 }
