@@ -304,7 +304,7 @@ static bool VTF_LoadImage( PLFile *fin, PLImage *out ) {
 		ConvertVTFFormat( out, header.highresimageformat );
 
 		out->levels = 1;
-		out->data = ( uint8_t ** ) pl_calloc( 1, sizeof( uint8_t * ) );
+		out->data = ( uint8_t ** ) gInterface->CAlloc( 1, sizeof( uint8_t * ) );
 
 		for ( int mipmap = 0; mipmap < header.mipmaps; ++mipmap ) {
 			for ( unsigned int frame = 0; frame < header.frames; ++frame ) {
@@ -314,7 +314,7 @@ static bool VTF_LoadImage( PLFile *fin, PLImage *out ) {
 					miph *= ( unsigned int ) pow( 2, mipmap );//(out->height * (mipmap + 1)) / header.mipmaps;
 					unsigned int mipsize = plGetImageSize( out->format, mipw, miph );
 					if ( mipmap == ( header.mipmaps - 1 ) ) {
-						out->data[ 0 ] = ( uint8_t * ) pl_calloc( mipsize, sizeof( uint8_t ) );
+						out->data[ 0 ] = ( uint8_t * ) gInterface->CAlloc( mipsize, sizeof( uint8_t ) );
 						if ( gInterface->ReadFile( fin, out->data[ 0 ], sizeof( uint8_t ), mipsize ) != mipsize ) {
 							plFreeImage( out );
 							return false;
