@@ -46,6 +46,11 @@ typedef struct PLPluginExportTable {
 
 	void (*ReportError)( PLresult resultType, const char *err, ... );
 
+	void *( *MAlloc )( size_t size );
+	void *( *CAlloc )( size_t num, size_t size );
+	void *( *ReAlloc )( void *ptr, size_t newSize );
+	void ( *Free )( void *ptr );
+
 	/**
 	 * FILE API
 	 **/

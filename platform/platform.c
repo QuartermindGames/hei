@@ -493,58 +493,58 @@ static PLLinkedList *plugins;
 static unsigned int numPlugins;
 
 static PLPluginExportTable exportTable = {
-	.LocalFileExists = plLocalFileExists,
-	.FileExists = plFileExists,
-	.LocalPathExists = plLocalPathExists,
-	.PathExists = plPathExists,
-	.ScanDirectory = plScanDirectory,
-	.CreateDirectory = plCreateDirectory,
-	.CreatePath = plCreatePath,
-	.OpenLocalFile = plOpenLocalFile,
-	.OpenFile = plOpenFile,
-	.CloseFile = plCloseFile,
-	.IsEndOfFile = plIsEndOfFile,
-	.GetFilePath = plGetFilePath,
-	.GetFileData = plGetFileData,
-	.GetFileSize = plGetFileSize,
-	.GetFileOffset = plGetFileOffset,
-	.ReadFile = plReadFile,
-	.ReadInt8 = plReadInt8,
-	.ReadInt16 = plReadInt16,
-	.ReadInt32 = plReadInt32,
-	.ReadInt64 = plReadInt64,
-	.ReadString = plReadString,
-	.FileSeek = plFileSeek,
-	.RewindFile = plRewindFile,
+        .LocalFileExists = plLocalFileExists,
+        .FileExists = plFileExists,
+        .LocalPathExists = plLocalPathExists,
+        .PathExists = plPathExists,
+        .ScanDirectory = plScanDirectory,
+        .CreateDirectory = plCreateDirectory,
+        .CreatePath = plCreatePath,
+        .OpenLocalFile = plOpenLocalFile,
+        .OpenFile = plOpenFile,
+        .CloseFile = plCloseFile,
+        .IsEndOfFile = plIsEndOfFile,
+        .GetFilePath = plGetFilePath,
+        .GetFileData = plGetFileData,
+        .GetFileSize = plGetFileSize,
+        .GetFileOffset = plGetFileOffset,
+        .ReadFile = plReadFile,
+        .ReadInt8 = plReadInt8,
+        .ReadInt16 = plReadInt16,
+        .ReadInt32 = plReadInt32,
+        .ReadInt64 = plReadInt64,
+        .ReadString = plReadString,
+        .FileSeek = plFileSeek,
+        .RewindFile = plRewindFile,
 
-	.CreateMesh = plCreateMesh,
-	.DestroyMesh = plDestroyMesh,
-	.ClearMesh = plClearMesh,
-	.ClearMeshVertices = plClearMeshVertices,
-	.ClearMeshTriangles = plClearMeshTriangles,
-	.ScaleMesh = plScaleMesh,
-	.AddMeshVertex = plAddMeshVertex,
-	.AddMeshTriangle = plAddMeshTriangle,
-	.GenerateMeshNormals = plGenerateMeshNormals,
-	.GenerateTextureCoordinates = plGenerateTextureCoordinates,
-	.GenerateVertexNormals = plGenerateVertexNormals,
+        .CreateMesh = plCreateMesh,
+        .DestroyMesh = plDestroyMesh,
+        .ClearMesh = plClearMesh,
+        .ClearMeshVertices = plClearMeshVertices,
+        .ClearMeshTriangles = plClearMeshTriangles,
+        .ScaleMesh = plScaleMesh,
+        .AddMeshVertex = plAddMeshVertex,
+        .AddMeshTriangle = plAddMeshTriangle,
+        .GenerateMeshNormals = plGenerateMeshNormals,
+        .GenerateTextureCoordinates = plGenerateTextureCoordinates,
+        .GenerateVertexNormals = plGenerateVertexNormals,
 
-	.CreateStaticModel = plCreateStaticModel,
-	.CreateSkeletalModel = plCreateSkeletalModel,
-	.DestroyModel = plDestroyModel,
-	.GenerateModelNormals = plGenerateModelNormals,
-	.GenerateModelBounds = plGenerateModelBounds,
+        .CreateStaticModel = plCreateStaticModel,
+        .CreateSkeletalModel = plCreateSkeletalModel,
+        .DestroyModel = plDestroyModel,
+        .GenerateModelNormals = plGenerateModelNormals,
+        .GenerateModelBounds = plGenerateModelBounds,
 
-	.CreateImage = plCreateImage,
-	.DestroyImage = plDestroyImage,
-	.ConvertPixelFormat = plConvertPixelFormat,
-	.InvertImageColour = plInvertImageColour,
-	.ReplaceImageColour = plReplaceImageColour,
-	.FlipImageVertical = plFlipImageVertical,
-	.GetNumberOfColourChannels = plGetNumberOfColourChannels,
-	.GetImageSize = plGetImageSize,
+        .CreateImage = plCreateImage,
+        .DestroyImage = plDestroyImage,
+        .ConvertPixelFormat = plConvertPixelFormat,
+        .InvertImageColour = plInvertImageColour,
+        .ReplaceImageColour = plReplaceImageColour,
+        .FlipImageVertical = plFlipImageVertical,
+        .GetNumberOfColourChannels = plGetNumberOfColourChannels,
+        .GetImageSize = plGetImageSize,
 
-	.RegisterModelLoader = plRegisterModelLoader,
+        .RegisterModelLoader = plRegisterModelLoader,
 };
 
 /**
@@ -630,6 +630,12 @@ void plInitializePlugins( void ) {
 	PLLinkedListNode *node = plGetRootNode( plugins );
 	while ( node != NULL ) {
 		PLPlugin *plugin = ( PLPlugin * ) plGetLinkedListNodeUserData( node );
+
+		exportTable.MAlloc = pl_malloc;
+		exportTable.CAlloc = pl_calloc;
+		exportTable.ReAlloc = pl_realloc;
+		exportTable.Free = pl_free;
+
 		plugin->initFunction( &exportTable );
 
 		node = plGetNextLinkedListNode( node );
