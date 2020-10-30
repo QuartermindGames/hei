@@ -517,8 +517,8 @@ static PLPluginExportTable exportTable = {
         .FileSeek = plFileSeek,
         .RewindFile = plRewindFile,
 
-		.RegisterPackageLoader = plRegisterPackageLoader,
-		.RegisterModelLoader = plRegisterModelLoader,
+        .RegisterPackageLoader = plRegisterPackageLoader,
+        .RegisterModelLoader = plRegisterModelLoader,
         .RegisterImageLoader = plRegisterImageLoader,
 
         .CreateMesh = plCreateMesh,
