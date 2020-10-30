@@ -517,6 +517,10 @@ static PLPluginExportTable exportTable = {
         .FileSeek = plFileSeek,
         .RewindFile = plRewindFile,
 
+		.RegisterPackageLoader = plRegisterPackageLoader,
+		.RegisterModelLoader = plRegisterModelLoader,
+        .RegisterImageLoader = plRegisterImageLoader,
+
         .CreateMesh = plCreateMesh,
         .DestroyMesh = plDestroyMesh,
         .ClearMesh = plClearMesh,
@@ -543,8 +547,6 @@ static PLPluginExportTable exportTable = {
         .FlipImageVertical = plFlipImageVertical,
         .GetNumberOfColourChannels = plGetNumberOfColourChannels,
         .GetImageSize = plGetImageSize,
-
-        .RegisterModelLoader = plRegisterModelLoader,
 };
 
 /**

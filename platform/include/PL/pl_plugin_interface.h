@@ -95,6 +95,8 @@ typedef struct PLPluginExportTable {
 	PLPackage *(*CreatePackageHandle)( const char *path, unsigned int tableSize, void(*OpenFile)( PLFile *filePtr, PLPackageIndex *index ) );
 
 	void (*RegisterPackageLoader)( const char *extension, PLPackage *(*LoadFunction)( const char *path ) );
+	void (*RegisterModelLoader)( const char *extension, PLModel*(*LoadFunction)( const char *path ) );
+	void (*RegisterImageLoader)( const char *extension, PLImage*(*LoadFunction)( const char *path ) );
 
 	const char *(*GetPackagePath)( const PLPackage *package );
 	unsigned int (*GetPackageTableSize)( const PLPackage *package );
@@ -142,8 +144,6 @@ typedef struct PLPluginExportTable {
 
 	unsigned int (*GetNumberOfColourChannels )( PLColourFormat colourFormat );
 	unsigned int (*GetImageSize)( PLImageFormat format, unsigned int width, unsigned int height );
-
-	void (*RegisterModelLoader)( const char *extension, PLModel*(*LoadFunction)( const char *path ) );
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */
