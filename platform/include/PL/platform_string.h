@@ -25,6 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#pragma once
+
+#include <stdarg.h>
+
 #if 0
 PL_INLINE static void plGetStringExtension(char *out, const char *in, unsigned int length) {
     const char *s = strrchr(in, '.');type
