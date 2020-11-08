@@ -246,22 +246,26 @@ static void GLCreateFrameBuffer( PLFrameBuffer *buffer ) {
 	//GfxLog( "Created framebuffer %dx%d", buffer->width, buffer->height );
 
 	if ( buffer->flags & PL_BUFFER_COLOUR ) {
-		glGenRenderbuffers( 1, &buffer->rbo_colour );
-		glBindRenderbuffer( GL_RENDERBUFFER, buffer->rbo_colour );
+		glGenRenderbuffers( 1, &buffer->renderBuffers[ PL_RENDERBUFFER_COLOUR ] );
+		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_COLOUR ] );
 		glRenderbufferStorage( GL_RENDERBUFFER, GL_RGBA, buffer->width, buffer->height );
-		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->rbo_colour );
+		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_COLOUR ] );
 		//GfxLog( "Created colour renderbuffer %dx%d", buffer->width, buffer->height );
 	}
 
 	if ( buffer->flags & PL_BUFFER_DEPTH ) {
-		glGenRenderbuffers( 1, &buffer->rbo_depth );
-		glBindRenderbuffer( GL_RENDERBUFFER, buffer->rbo_depth );
+		glGenRenderbuffers( 1, &buffer->renderBuffers[ PL_RENDERBUFFER_DEPTH ] );
+		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_DEPTH ] );
 		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, buffer->width, buffer->height );
-		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->rbo_depth );
+		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_DEPTH ] );
 		//GfxLog( "Created depth renderbuffer %dx%d", buffer->width, buffer->height );
 	}
 
 	if ( buffer->flags & PL_BUFFER_STENCIL ) {
+		glGenRenderbuffers( 1, &buffer->renderBuffers[ PL_RENDERBUFFER_STENCIL ] );
+		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_STENCIL ] );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_STENCIL, buffer->width, buffer->height );
+		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_STENCIL ] );
 		GfxLog( "Stencil renderbuffer not supported yet!" );
 	}
 }
@@ -269,11 +273,14 @@ static void GLCreateFrameBuffer( PLFrameBuffer *buffer ) {
 static void GLDeleteFrameBuffer( PLFrameBuffer *buffer ) {
 	if ( buffer ) {
 		glDeleteFramebuffers( 1, &buffer->fbo );
-		if ( buffer->rbo_colour ) {
-			glDeleteRenderbuffers( 1, &buffer->rbo_colour );
+		if ( buffer->renderBuffers[ PL_RENDERBUFFER_COLOUR ] ) {
+			glDeleteRenderbuffers( 1, &buffer->renderBuffers[ PL_RENDERBUFFER_COLOUR ] );
 		}
-		if ( buffer->rbo_depth ) {
-			glDeleteRenderbuffers( 1, &buffer->rbo_depth );
+		if ( buffer->renderBuffers[ PL_RENDERBUFFER_DEPTH ] ) {
+			glDeleteRenderbuffers( 1, &buffer->renderBuffers[ PL_RENDERBUFFER_DEPTH ] );
+		}
+		if ( buffer->renderBuffers[ PL_RENDERBUFFER_STENCIL ] ) {
+			glDeleteRenderbuffers( 1, &buffer->renderBuffers[ PL_RENDERBUFFER_STENCIL ] );
 		}
 	}
 }
@@ -970,7 +977,9 @@ static void GLSetShaderProgram( PLShaderProgram *program ) {
 
 unsigned int TranslateGraphicsState( PLGraphicsState state ) {
 	switch ( state ) {
-		default:return 0;
+		default:
+			GfxLog( "Unhandled graphics state, %d!\n", state );
+			return 0;
 		case PL_GFX_STATE_FOG:
 			if ( GLVersion( 3, 0 ) ) {
 				return 0;
@@ -981,12 +990,20 @@ unsigned int TranslateGraphicsState( PLGraphicsState state ) {
 				return 0;
 			}
 			return GL_ALPHA_TEST;
-		case PL_GFX_STATE_BLEND:return GL_BLEND;
-		case PL_GFX_STATE_DEPTHTEST:return GL_DEPTH_TEST;
-		case PL_GFX_STATE_STENCILTEST:return GL_STENCIL_TEST;
-		case PL_GFX_STATE_MULTISAMPLE:return GL_MULTISAMPLE;
-		case PL_GFX_STATE_SCISSORTEST:return GL_SCISSOR_TEST;
-		case PL_GFX_STATE_ALPHATOCOVERAGE:return GL_SAMPLE_ALPHA_TO_COVERAGE;
+		case PL_GFX_STATE_BLEND:
+			return GL_BLEND;
+		case PL_GFX_STATE_DEPTHTEST:
+			return GL_DEPTH_TEST;
+		case PL_GFX_STATE_STENCILTEST:
+			return GL_STENCIL_TEST;
+		case PL_GFX_STATE_MULTISAMPLE:
+			return GL_MULTISAMPLE;
+		case PL_GFX_STATE_SCISSORTEST:
+			return GL_SCISSOR_TEST;
+		case PL_GFX_STATE_ALPHATOCOVERAGE:
+			return GL_SAMPLE_ALPHA_TO_COVERAGE;
+		case PL_GFX_STATE_DEPTH_CLAMP:
+			return GL_DEPTH_CLAMP;
 	}
 }
 
@@ -1034,19 +1051,14 @@ static void MessageCallback(
 
 	const char *s_severity;
 	switch ( severity ) {
-		case GL_DEBUG_SEVERITY_HIGH: {
+		case GL_DEBUG_SEVERITY_HIGH:
 			s_severity = "HIGH";
-		}
 			break;
-
-		case GL_DEBUG_SEVERITY_MEDIUM: {
+		case GL_DEBUG_SEVERITY_MEDIUM:
 			s_severity = "MEDIUM";
-		}
 			break;
-
-		case GL_DEBUG_SEVERITY_LOW: {
+		case GL_DEBUG_SEVERITY_LOW:
 			s_severity = "LOW";
-		}
 			break;
 
 		default:return;
@@ -1054,34 +1066,23 @@ static void MessageCallback(
 
 	const char *s_type;
 	switch ( type ) {
-		case GL_DEBUG_TYPE_ERROR: {
+		case GL_DEBUG_TYPE_ERROR:
 			s_type = "ERROR";
-		}
 			break;
-
-		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: {
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
 			s_type = "DEPRECATED";
-		}
 			break;
-
-		case GL_DEBUG_TYPE_MARKER: {
+		case GL_DEBUG_TYPE_MARKER:
 			s_type = "MARKER";
-		}
 			break;
-
-		case GL_DEBUG_TYPE_PERFORMANCE: {
+		case GL_DEBUG_TYPE_PERFORMANCE:
 			s_type = "PERFORMANCE";
-		}
 			break;
-
-		case GL_DEBUG_TYPE_PORTABILITY: {
+		case GL_DEBUG_TYPE_PORTABILITY:
 			s_type = "PORTABILITY";
-		}
 			break;
-
-		default: {
+		default:
 			s_type = "OTHER";
-		}
 			break;
 	}
 

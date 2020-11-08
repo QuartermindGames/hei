@@ -108,6 +108,7 @@ typedef enum PLGraphicsState {
     PL_GFX_STATE_MULTISAMPLE,     // Multisampling.
     PL_GFX_STATE_SCISSORTEST,     // Scissor test for buffer clear.
     PL_GFX_STATE_ALPHATOCOVERAGE, // Alpha to Coverage
+	PL_GFX_STATE_DEPTH_CLAMP,
 
     PL_GFX_MAX_STATES
 } PLGraphicsState;
@@ -141,10 +142,10 @@ typedef enum PLFBOTarget {
     PL_FRAMEBUFFER_READ
 } PLFBOTarget;
 
-typedef enum PLFBORenderFlags {
-    PL_BUFFER_COLOUR    = (1 << 0),
-    PL_BUFFER_DEPTH     = (1 << 1),
-    PL_BUFFER_STENCIL   = (1 << 2),
+typedef enum PLFrameBufferRenderFlags {
+	PL_BITFLAG( PL_BUFFER_COLOUR, 0 ),
+	PL_BITFLAG( PL_BUFFER_DEPTH, 1 ),
+	PL_BITFLAG( PL_BUFFER_STENCIL, 2 ),
 } PLFrameBufferRenderFlags;
 
 typedef struct PLFrameBuffer PLFrameBuffer;

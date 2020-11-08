@@ -199,10 +199,17 @@ typedef struct GfxLayer {
 
 ///////////////////////////////////////////////////////
 
+enum {
+	PL_RENDERBUFFER_COLOUR,
+	PL_RENDERBUFFER_DEPTH,
+	PL_RENDERBUFFER_STENCIL,
+
+	PL_MAX_RENDERBUFFER_TYPES
+};
+
 typedef struct PLFrameBuffer {
 	unsigned int fbo;
-	unsigned int rbo_colour;
-	unsigned int rbo_depth;
+	unsigned int renderBuffers[ PL_MAX_RENDERBUFFER_TYPES ];
 	unsigned int width;
 	unsigned int height;
 	PLFrameBufferRenderFlags flags;
