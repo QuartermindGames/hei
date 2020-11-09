@@ -575,6 +575,8 @@ bool plRegisterPlugin( const char *path ) {
 			if ( description != NULL ) {
 				if ( description->interfaceVersion != PL_PLUGIN_INTERFACE_VERSION ) {
 					ReportError( PL_RESULT_UNSUPPORTED, "Unsupported interface version!\n" );
+				} else {
+					DebugPrint( "Found plugin (%s)\n", description->description );
 				}
 			}
 		}
@@ -586,6 +588,10 @@ bool plRegisterPlugin( const char *path ) {
 	}
 
 	DebugPrint( "Success, adding \"%s\" to plugins list\n", path );
+
+	if ( plugins == NULL ) {
+		plugins = plCreateLinkedList();
+	}
 
 	PLPlugin *plugin = pl_malloc( sizeof( PLPlugin ) );
 	snprintf( plugin->pluginPath, sizeof( plugin->pluginPath ), path );
@@ -604,6 +610,19 @@ bool plRegisterPlugin( const char *path ) {
 static void _plRegisterScannedPlugin( const char *path, void *unused ) {
 	plUnused( unused );
 
+	/* validate it's actually a plugin */
+	size_t length = strlen( path );
+	const char *c = strrchr( path, '_' );
+	if ( c == NULL ) {
+		return;
+	}
+
+	/* remaining length */
+	length -= c - path;
+	if ( pl_strncasecmp( c, "_plugin" PL_SYSTEM_LIBRARY_EXTENSION, length ) != 0 ) {
+		return;
+	}
+
 	plRegisterPlugin( path );
 }
 
@@ -620,7 +639,7 @@ void plRegisterPlugins( const char *pluginDir ) {
 
 	Print( "Scanning for plugins in \"%s\"\n", pluginDir );
 
-	plScanDirectory( pluginDir, "plugin" PL_SYSTEM_LIBRARY_EXTENSION, _plRegisterScannedPlugin, false, NULL );
+	plScanDirectory( pluginDir, NULL, _plRegisterScannedPlugin, false, NULL );
 
 	Print( "Done, %d plugins loaded.\n", numPlugins );
 }

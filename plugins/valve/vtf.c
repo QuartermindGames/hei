@@ -221,63 +221,76 @@ static void ConvertVTFFormat( PLImage *image, unsigned int in ) {
 	}
 }
 
-static bool VTF_FormatCheck( PLFile *fin ) {
-	gInterface->RewindFile( fin );
-
-	char ident[ 4 ];
-	if ( gInterface->ReadFile( fin, ident, sizeof( char ), 4 ) != 4 ) {
+static bool VTF_ValidateFile( PLFile *file, VTFHeader *out ) {
+	char magic[ 4 ];
+	if ( gInterface->ReadFile( file, magic, sizeof( char ), 4 ) != 4 ) {
 		return false;
 	}
 
-	return ( bool ) ( strncmp( ident, "VTF", 3 ) == 0 );
-}
-
-static bool VTF_LoadImage( PLFile *fin, PLImage *out ) {
-	VTFHeader header;
-#define VTF_VERSION( maj, min ) ( ( ( ( maj ) ) == header.version[ 1 ] && ( min ) <= header.version[ 0 ] ) || ( maj ) < header.version[ 0 ] )
-
-	if ( gInterface->ReadFile( fin, &header, sizeof( VTFHeader ), 1 ) != 1 ) {
-		gInterface->ReportError( PL_RESULT_FILEREAD, "failed to read header" );
+	if( strncmp( magic, "VTF", 3 ) != 0 ) {
+		gInterface->ReportError( PL_RESULT_FILETYPE, "expected vtf, got %s", magic );
 		return false;
 	}
 
+	if ( gInterface->ReadFile( file, out, sizeof( VTFHeader ), 1 ) != 1 ) {
+		return false;
+	}
+	
+#define VTF_VERSION( maj, min ) ( ( ( ( maj ) ) == out->version[ 1 ] && ( min ) <= out->version[ 0 ] ) || ( maj ) < out->version[ 0 ] )
 	if ( VTF_VERSION( 7, 5 ) ) {
-		gInterface->ReportError( PL_RESULT_FILEVERSION, "invalid version: %d.%d", header.version[ 1 ], header.version[ 0 ] );
+		gInterface->ReportError( PL_RESULT_FILEVERSION, "invalid version: %d.%d", out->version[ 1 ], out->version[ 0 ] );
 		return false;
 	}
 
-	if ( !( plIsPowerOfTwo( header.width ) && plIsPowerOfTwo( header.height ) ) ) {
-		gInterface->ReportError( PL_RESULT_IMAGERESOLUTION, "invalid resolution: %dx%d", header.width, header.height );
+	if ( !( plIsPowerOfTwo( out->width ) && plIsPowerOfTwo( out->height ) ) ) {
+		gInterface->ReportError( PL_RESULT_IMAGERESOLUTION, "invalid resolution: %dx%d", out->width, out->height );
 		return false;
 	}
 
-	if ( header.lowresimageformat != VTF_FORMAT_DXT1 ) {
+	if ( out->lowresimageformat != VTF_FORMAT_DXT1 ) {
 		gInterface->ReportError( PL_RESULT_IMAGEFORMAT, "invalid texture format for lowresimage in VTF" );
 		return false;
 	}
 
-	if ( ( header.lowresimagewidth > 16 ) || ( header.lowresimageheight > 16 ) ||
-	     ( header.lowresimagewidth > header.width ) || ( header.lowresimageheight > header.height ) ) {
-		gInterface->ReportError( PL_RESULT_IMAGERESOLUTION, "invalid resolution: %dx%d", header.width, header.height );
+	if ( ( out->lowresimagewidth > 16 ) || ( out->lowresimageheight > 16 ) ||
+			( out->lowresimagewidth > out->width ) || ( out->lowresimageheight > out->height ) ) {
+		gInterface->ReportError( PL_RESULT_IMAGERESOLUTION, "invalid resolution: %dx%d", out->width, out->height );
 		return false;
+	}
+
+	return true;
+}
+
+PLImage *VTF_LoadImage( const char *path ) {
+	PLFile *file = gInterface->OpenFile( path, false );
+	if ( file == NULL ) {
+		return NULL;
+	}
+	
+	VTFHeader header;
+	if( !VTF_ValidateFile( file, &header ) ) {
+		gInterface->CloseFile( file );
+		return NULL;
 	}
 
 	// todo, use the headersize flag so we can load this more intelligently!
 
 	VTFHeader72 header2;
 	if ( header.version[ 1 ] >= 2 ) {
-		if ( gInterface->ReadFile( fin, &header2, sizeof( VTFHeader72 ), 1 ) != 1 ) {
-			gInterface->ReportError( PL_RESULT_FILEREAD, "failed to read header" );
-			return false;
+		if ( gInterface->ReadFile( file, &header2, sizeof( VTFHeader72 ), 1 ) != 1 ) {
+			gInterface->CloseFile( file );
+			return NULL;
 		}
 	}
 	VTFHeader73 header3;
 	if ( header.version[ 1 ] >= 3 ) {
-		if ( gInterface->ReadFile( fin, &header3, sizeof( VTFHeader73 ), 1 ) != 1 ) {
-			gInterface->ReportError( PL_RESULT_FILEREAD, "failed to read header" );
-			return false;
+		if ( gInterface->ReadFile( file, &header3, sizeof( VTFHeader73 ), 1 ) != 1 ) {
+			gInterface->CloseFile( file );
+			return NULL;
 		}
 	}
+	
+	PLImage *out = NULL;
 
 	/*
     if (header.version[1] >= 3) {
@@ -292,8 +305,8 @@ static bool VTF_LoadImage( PLFile *fin, PLImage *out ) {
 		}
 
 		// VTF's typically include a tiny thumbnail image at the start, which we'll skip.
-		if ( !gInterface->FileSeek( fin, header.lowresimagewidth * header.lowresimageheight / 2, PL_SEEK_CUR ) ) {
-			return false;
+		if ( !gInterface->FileSeek( file, header.lowresimagewidth * header.lowresimageheight / 2, PL_SEEK_CUR ) ) {
+			return NULL;
 		}
 
 		memset( out, 0, sizeof( PLImage ) );
@@ -312,21 +325,21 @@ static bool VTF_LoadImage( PLFile *fin, PLImage *out ) {
 					// We'll just skip the smaller mipmaps for now, can generate these later.
 					mipw *= ( unsigned int ) pow( 2, mipmap );//(out->width * (mipmap + 1)) / header.mipmaps;
 					miph *= ( unsigned int ) pow( 2, mipmap );//(out->height * (mipmap + 1)) / header.mipmaps;
-					unsigned int mipsize = plGetImageSize( out->format, mipw, miph );
+					unsigned int mipsize = gInterface->GetImageSize( out->format, mipw, miph );
 					if ( mipmap == ( header.mipmaps - 1 ) ) {
 						out->data[ 0 ] = ( uint8_t * ) gInterface->CAlloc( mipsize, sizeof( uint8_t ) );
-						if ( gInterface->ReadFile( fin, out->data[ 0 ], sizeof( uint8_t ), mipsize ) != mipsize ) {
-							plFreeImage( out );
-							return false;
+						if ( gInterface->ReadFile( file, out->data[ 0 ], sizeof( uint8_t ), mipsize ) != mipsize ) {
+							gInterface->DestroyImage( out );
+							return NULL;
 						}
 					} else {
-						if ( !gInterface->FileSeek( fin, mipsize, SEEK_CUR ) ) {
-							plFreeImage( out );
-							return false;
+						if ( !gInterface->FileSeek( file, ( long ) mipsize, SEEK_CUR ) ) {
+							gInterface->DestroyImage( out );
+							return NULL;
 						}
 					}
 
-					if ( gInterface->IsEndOfFile( fin ) ) {
+					if ( gInterface->IsEndOfFile( file ) ) {
 						perror( PL_FUNCTION );
 						break;
 					}
@@ -335,5 +348,5 @@ static bool VTF_LoadImage( PLFile *fin, PLImage *out ) {
 		}
 	}
 
-	return true;
+	return out;
 }

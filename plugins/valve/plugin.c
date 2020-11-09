@@ -14,6 +14,10 @@ PL_EXPORT const PLPluginDescription *PLQueryPlugin( unsigned int interfaceVersio
 	return &pluginDesc;
 }
 
+PLImage *VTF_LoadImage( const char *path );
+
 PL_EXPORT void PLInitializePlugin( const PLPluginExportTable *functionTable ) {
 	gInterface = functionTable;
+
+	gInterface->RegisterImageLoader( "vtf", VTF_LoadImage );
 }
