@@ -332,6 +332,8 @@ void plDrawPixel(int x, int y, PLColour colour) {
 /////////////////////////////////////////////////////////////////////////////////////
 
 void plSetGraphicsMode(PLGfxMode mode) {
+	FunctionStart();
+
     GfxLog("Initializing graphics abstraction layer...\n");
 
     gfx_layer.mode = mode;
