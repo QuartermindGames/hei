@@ -225,6 +225,16 @@ void plSetConsoleVariable(PLConsoleVariable *var, const char *value) {
     }
 }
 
+void plSetConsoleVariableByName( const char *name, const char *value ) {
+	PLConsoleVariable *var = plGetConsoleVariable( name );
+	if ( var == NULL ) {
+		Print( "Failed to find console variable \"%s\"!\n", name );
+		return;
+	}
+
+	plSetConsoleVariable( var, value );
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 #define CONSOLE_MAX_INSTANCES 4
