@@ -150,6 +150,7 @@ typedef enum PLFrameBufferRenderFlags {
 
 typedef struct PLFrameBuffer PLFrameBuffer;
 typedef struct PLTexture PLTexture;
+typedef enum PLTextureFilter PLTextureFilter;
 
 PL_EXTERN_C
 
@@ -158,7 +159,7 @@ PL_EXTERN void plDestroyFrameBuffer(PLFrameBuffer *buffer);
 PL_EXTERN void plBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget target_binding);
 PL_EXTERN void plBlitFrameBuffers(PLFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, bool linear );
 
-PL_EXTERN PLTexture *plGetFrameBufferTextureAttachment( PLFrameBuffer *buffer );
+PL_EXTERN PLTexture *plGetFrameBufferTextureAttachment( PLFrameBuffer *buffer, unsigned int component, PLTextureFilter filter );
 PL_EXTERN void plGetFrameBufferResolution( const PLFrameBuffer *buffer, unsigned int *width, unsigned int *height );
 
 PL_EXTERN void plSetClearColour(PLColour rgba);
@@ -399,5 +400,23 @@ PL_EXTERN PLVector3 plGetPolygonFaceNormal( const PLPolygon *polygon );
 PL_EXTERN unsigned int plGetNumOfPolygonTriangles( const PLPolygon *polygon );
 PL_EXTERN unsigned int *plConvertPolygonToTriangles( const PLPolygon *polygon, unsigned int *numTriangles );
 PL_EXTERN PLMesh *plConvertPolygonToMesh( const PLPolygon *polygon );
+
+/* stencil operations */
+
+typedef enum PLStencilTestFunction {
+	PL_STENCIL_TEST_ALWAYS,
+	PL_STENCIL_TEST_NEVER,
+	PL_STENCIL_TEST_LESS,
+	PL_STENCIL_TEST_LEQUAL,
+
+	PL_MAX_STENCIL_TEST_OPERATIONS
+} PLStencilTestFunction;
+
+typedef enum PLStencilFace {
+	PL_STENCIL_FACE_FRONT,
+	PL_STENCIL_FACE_BACK,
+} PLStencilFace;
+
+PL_EXTERN void plStencilFunction( PLStencilTestFunction function, int reference, unsigned int mask );
 
 PL_EXTERN_C_END

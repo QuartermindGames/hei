@@ -136,7 +136,7 @@ typedef struct GfxLayer {
 	void (*CreateFrameBuffer)( PLFrameBuffer *buffer );
 	void (*DeleteFrameBuffer)( PLFrameBuffer *buffer );
 	void (*BindFrameBuffer)( PLFrameBuffer *buffer, PLFBOTarget targetBinding );
-	PLTexture *(*GetFrameBufferTextureAttachment)( PLFrameBuffer *buffer );
+	PLTexture *(*GetFrameBufferTextureAttachment)( PLFrameBuffer *buffer, unsigned int component, PLTextureFilter filter );
 	void (*BlitFrameBuffers)( PLFrameBuffer *srcBuffer,
 							  unsigned int srcW,
 							  unsigned int srcH,
@@ -174,6 +174,8 @@ typedef struct GfxLayer {
 	//Shader uniforms
 	void (*SetShaderUniformMatrix4)( PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose );
 
+	// Stencil operations
+	void (*StencilFunction)( PLStencilTestFunction function, int reference, unsigned int mask );
 } GfxLayer;
 
 #if defined(PL_USE_GRAPHICS)

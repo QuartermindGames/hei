@@ -149,7 +149,6 @@ PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h, unsigned int 
     return buffer;
 }
 
-
 void plDestroyFrameBuffer(PLFrameBuffer *buffer) {
 	if(!buffer) {
 		return;
@@ -160,12 +159,12 @@ void plDestroyFrameBuffer(PLFrameBuffer *buffer) {
 	pl_free(buffer);
 }
 
-PLTexture *plGetFrameBufferTextureAttachment( PLFrameBuffer *buffer ) {
+PLTexture *plGetFrameBufferTextureAttachment( PLFrameBuffer *buffer, unsigned int component, PLTextureFilter filter ) {
 	if ( gfx_layer.GetFrameBufferTextureAttachment == NULL ) {
 		return NULL;
 	}
 
-	return gfx_layer.GetFrameBufferTextureAttachment( buffer );
+	return gfx_layer.GetFrameBufferTextureAttachment( buffer, component, filter );
 }
 
 void plGetFrameBufferResolution( const PLFrameBuffer *buffer, unsigned int *width, unsigned int *height ) {
@@ -371,4 +370,12 @@ void plProcessGraphics(void) {
 
     plDrawConsole();
     //plDrawPerspective();
+}
+
+/*===========================
+	STENCIL OPERATIONS
+===========================*/
+
+void plStencilFunction( PLStencilTestFunction function, int reference, unsigned int mask ) {
+	CallGfxFunction( StencilFunction, function, reference, mask );
 }

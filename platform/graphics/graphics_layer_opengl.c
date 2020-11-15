@@ -114,6 +114,34 @@ static void ClearBoundBuffers( void ) {
 	glBindRenderbuffer( GL_RENDERBUFFER, 0 );
 }
 
+static void GL_TranslateTextureFilterFormat( PLTextureFilter filterMode, unsigned int *min, unsigned int *mag ) {
+	switch ( filterMode ) {
+		case PL_TEXTURE_FILTER_LINEAR:
+			*min = *mag = GL_LINEAR;
+			break;
+		default:
+		case PL_TEXTURE_FILTER_NEAREST:
+			*min = *mag = GL_NEAREST;
+			break;
+		case PL_TEXTURE_FILTER_MIPMAP_LINEAR:
+			*min = GL_LINEAR_MIPMAP_LINEAR;
+			*mag = GL_LINEAR;
+			break;
+		case PL_TEXTURE_FILTER_MIPMAP_LINEAR_NEAREST:
+			*min = GL_LINEAR_MIPMAP_NEAREST;
+			*mag = GL_LINEAR;
+			break;
+		case PL_TEXTURE_FILTER_MIPMAP_NEAREST:
+			*min = GL_NEAREST_MIPMAP_NEAREST;
+			*mag = GL_NEAREST;
+			break;
+		case PL_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR:
+			*min = GL_NEAREST_MIPMAP_LINEAR;
+			*mag = GL_NEAREST;
+			break;
+	}
+}
+
 /////////////////////////////////////////////////////////////
 
 static bool GLHWSupportsShaders( void ) {
@@ -243,14 +271,12 @@ static unsigned int TranslateFrameBufferBinding( PLFBOTarget targetBinding ) {
 static void GLCreateFrameBuffer( PLFrameBuffer *buffer ) {
 	glGenFramebuffers( 1, &buffer->fbo );
 	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, buffer->fbo );
-	//GfxLog( "Created framebuffer %dx%d", buffer->width, buffer->height );
 
 	if ( buffer->flags & PL_BUFFER_COLOUR ) {
 		glGenRenderbuffers( 1, &buffer->renderBuffers[ PL_RENDERBUFFER_COLOUR ] );
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_COLOUR ] );
 		glRenderbufferStorage( GL_RENDERBUFFER, GL_RGBA, buffer->width, buffer->height );
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_COLOUR ] );
-		//GfxLog( "Created colour renderbuffer %dx%d", buffer->width, buffer->height );
 	}
 
 	if ( buffer->flags & PL_BUFFER_DEPTH ) {
@@ -258,7 +284,6 @@ static void GLCreateFrameBuffer( PLFrameBuffer *buffer ) {
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_DEPTH ] );
 		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, buffer->width, buffer->height );
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_DEPTH ] );
-		//GfxLog( "Created depth renderbuffer %dx%d", buffer->width, buffer->height );
 	}
 
 	if ( buffer->flags & PL_BUFFER_STENCIL ) {
@@ -266,7 +291,6 @@ static void GLCreateFrameBuffer( PLFrameBuffer *buffer ) {
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_STENCIL ] );
 		glRenderbufferStorage( GL_RENDERBUFFER, GL_STENCIL, buffer->width, buffer->height );
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_STENCIL ] );
-		GfxLog( "Stencil renderbuffer not supported yet!" );
 	}
 }
 
@@ -316,7 +340,7 @@ static void GLBlitFrameBuffers( PLFrameBuffer *src_buffer,
 	glBlitFramebuffer( 0, 0, src_w, src_h, 0, 0, dst_w, dst_h, GL_COLOR_BUFFER_BIT, linear ? GL_LINEAR : GL_NEAREST );
 }
 
-static PLTexture *GLGetFrameBufferTextureAttachment( PLFrameBuffer *buffer ) {
+static PLTexture *GLGetFrameBufferTextureAttachment( PLFrameBuffer *buffer, unsigned int component, PLTextureFilter filter ) {
 	PLTexture *texture = plCreateTexture();
 	if ( texture == NULL ) {
 		return NULL;
@@ -327,17 +351,38 @@ static PLTexture *GLGetFrameBufferTextureAttachment( PLFrameBuffer *buffer ) {
 
 	_plBindTexture( texture );
 
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, buffer->width, buffer->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+	unsigned int glComponent;
+	unsigned int glType;
+	unsigned int glAttachment;
+	switch( component ) {
+		case PL_BUFFER_DEPTH:
+			glComponent = GL_DEPTH_COMPONENT;
+			glType = GL_FLOAT;
+			glAttachment = GL_DEPTH_ATTACHMENT;
+			break;
+		case PL_BUFFER_COLOUR:
+			glComponent = GL_RGBA;
+			glType = GL_UNSIGNED_BYTE;
+			glAttachment = GL_COLOR_ATTACHMENT0;
+			break;
+	}
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D( GL_TEXTURE_2D, 0, glComponent, buffer->width, buffer->height, 0, glComponent, glType, NULL );
 
-	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->internal.id, 0 );
+	unsigned int min, mag;
+	GL_TranslateTextureFilterFormat( filter, &min, &mag );
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+
+	glFramebufferTexture2D( GL_FRAMEBUFFER, glAttachment, GL_TEXTURE_2D, texture->internal.id, 0 );
 
 	_plBindTexture( NULL );
 
 	return texture;
 }
+
+/////////////////////////////////////////////////////////////
+// Stencil Operations
 
 /////////////////////////////////////////////////////////////
 // Texture
@@ -390,34 +435,6 @@ static void GLBindTexture( const PLTexture *texture ) {
 		return;
 	}
 	glBindTexture( GL_TEXTURE_2D, texture->internal.id );
-}
-
-static void GL_TranslateTextureFilterFormat( PLTextureFilter filterMode, unsigned int *min, unsigned int *mag ) {
-	switch ( filterMode ) {
-		case PL_TEXTURE_FILTER_LINEAR:
-			*min = *mag = GL_LINEAR;
-			break;
-		default:
-		case PL_TEXTURE_FILTER_NEAREST:
-			*min = *mag = GL_NEAREST;
-			break;
-		case PL_TEXTURE_FILTER_MIPMAP_LINEAR:
-			*min = GL_LINEAR_MIPMAP_LINEAR;
-			*mag = GL_LINEAR;
-			break;
-		case PL_TEXTURE_FILTER_MIPMAP_LINEAR_NEAREST:
-			*min = GL_LINEAR_MIPMAP_NEAREST;
-			*mag = GL_LINEAR;
-			break;
-		case PL_TEXTURE_FILTER_MIPMAP_NEAREST:
-			*min = GL_NEAREST_MIPMAP_NEAREST;
-			*mag = GL_NEAREST;
-			break;
-		case PL_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR:
-			*min = GL_NEAREST_MIPMAP_LINEAR;
-			*mag = GL_NEAREST;
-			break;
-	}
 }
 
 static void GLUploadTexture( PLTexture *texture, const PLImage *upload ) {
