@@ -74,7 +74,7 @@ file(GLOB PLATFORM_PACKAGE_FILES package/*.*)
 # Platform specific implementations go here...
 if (WIN32)
     file(GLOB PLATFORM_WINDOW_FILES window_win32.c)
-elseif (UNIX)
+elseif (UNIX AND NOT APPLE)
     file(GLOB PLATFORM_WINDOW_FILES window_x11.c)
 endif ()
 
