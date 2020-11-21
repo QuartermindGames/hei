@@ -64,6 +64,7 @@ void plGetConsoleVariables( PLConsoleVariable ***vars, size_t *num_vars );
 
 PLConsoleVariable *plGetConsoleVariable( const char *name );
 void plSetConsoleVariable( PLConsoleVariable *var, const char *value );
+void plSetConsoleVariableByName( const char *name, const char *value );
 
 PLConsoleVariable *plRegisterConsoleVariable( const char *name, const char *def, PLVariableType type,
                                               void ( *CallbackFunction )( const PLConsoleVariable *variable ),

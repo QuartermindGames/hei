@@ -25,46 +25,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#pragma once
+#include <PL/platform_filesystem.h>
+#include <PL/platform_model.h>
+#include <PL/platform_console.h>
 
-#include <stdarg.h>
+#include <platform_private.h>
 
-#if 0
-PL_INLINE static void plGetStringExtension(char *out, const char *in, unsigned int length) {
-    const char *s = strrchr(in, '.');type
-    if(!s || s[0] == '\0') {
-        return;
-    }
+#include "model_private.h"
 
-    strncpy(out, s + 1, length);
-}
+// OutWars Model Format
 
-PL_INLINE static void plStripStringExtension(char *out, const char *in, unsigned int length) {
-    const char *s = strrchr(in, '.');
-    while(in < s) {
-        *out++ = *in++;
-    }
-    *out = 0;
-}
-#endif
+typedef struct __attribute((packed)) DpcHeader {
+  char identity[4]; // DCPM
+  uint32_t version; // always 67
 
-char *pl_itoa(int val, char *buf, size_t len, int base);
-
-char *pl_strtolower(char *s);
-char *pl_strntolower(char *s, size_t n);
-char *pl_strtoupper(char *s);
-char *pl_strntoupper(char *s, size_t n);
-
-char *pl_strcasestr(const char *s, const char *find);
-
-int pl_strcasecmp(const char *s1, const char *s2);
-int pl_strncasecmp(const char *s1, const char *s2, size_t n);
-
-int pl_strisalpha(const char *s);
-int pl_strnisalpha(const char *s, unsigned int n);
-int pl_strisalnum(const char *s);
-int pl_strnisalnum(const char *s, unsigned int n);
-int pl_strisdigit(const char *s);
-int pl_strnisdigit(const char *s, unsigned int n);
-
-int pl_vscprintf( const char *format, va_list pArgs );
+} DpcHeader;

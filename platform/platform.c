@@ -493,58 +493,60 @@ static PLLinkedList *plugins;
 static unsigned int numPlugins;
 
 static PLPluginExportTable exportTable = {
-	.LocalFileExists = plLocalFileExists,
-	.FileExists = plFileExists,
-	.LocalPathExists = plLocalPathExists,
-	.PathExists = plPathExists,
-	.ScanDirectory = plScanDirectory,
-	.CreateDirectory = plCreateDirectory,
-	.CreatePath = plCreatePath,
-	.OpenLocalFile = plOpenLocalFile,
-	.OpenFile = plOpenFile,
-	.CloseFile = plCloseFile,
-	.IsEndOfFile = plIsEndOfFile,
-	.GetFilePath = plGetFilePath,
-	.GetFileData = plGetFileData,
-	.GetFileSize = plGetFileSize,
-	.GetFileOffset = plGetFileOffset,
-	.ReadFile = plReadFile,
-	.ReadInt8 = plReadInt8,
-	.ReadInt16 = plReadInt16,
-	.ReadInt32 = plReadInt32,
-	.ReadInt64 = plReadInt64,
-	.ReadString = plReadString,
-	.FileSeek = plFileSeek,
-	.RewindFile = plRewindFile,
+        .LocalFileExists = plLocalFileExists,
+        .FileExists = plFileExists,
+        .LocalPathExists = plLocalPathExists,
+        .PathExists = plPathExists,
+        .ScanDirectory = plScanDirectory,
+        .CreateDirectory = plCreateDirectory,
+        .CreatePath = plCreatePath,
+        .OpenLocalFile = plOpenLocalFile,
+        .OpenFile = plOpenFile,
+        .CloseFile = plCloseFile,
+        .IsEndOfFile = plIsEndOfFile,
+        .GetFilePath = plGetFilePath,
+        .GetFileData = plGetFileData,
+        .GetFileSize = plGetFileSize,
+        .GetFileOffset = plGetFileOffset,
+        .ReadFile = plReadFile,
+        .ReadInt8 = plReadInt8,
+        .ReadInt16 = plReadInt16,
+        .ReadInt32 = plReadInt32,
+        .ReadInt64 = plReadInt64,
+        .ReadString = plReadString,
+        .FileSeek = plFileSeek,
+        .RewindFile = plRewindFile,
 
-	.CreateMesh = plCreateMesh,
-	.DestroyMesh = plDestroyMesh,
-	.ClearMesh = plClearMesh,
-	.ClearMeshVertices = plClearMeshVertices,
-	.ClearMeshTriangles = plClearMeshTriangles,
-	.ScaleMesh = plScaleMesh,
-	.AddMeshVertex = plAddMeshVertex,
-	.AddMeshTriangle = plAddMeshTriangle,
-	.GenerateMeshNormals = plGenerateMeshNormals,
-	.GenerateTextureCoordinates = plGenerateTextureCoordinates,
-	.GenerateVertexNormals = plGenerateVertexNormals,
+        .RegisterPackageLoader = plRegisterPackageLoader,
+        .RegisterModelLoader = plRegisterModelLoader,
+        .RegisterImageLoader = plRegisterImageLoader,
 
-	.CreateStaticModel = plCreateStaticModel,
-	.CreateSkeletalModel = plCreateSkeletalModel,
-	.DestroyModel = plDestroyModel,
-	.GenerateModelNormals = plGenerateModelNormals,
-	.GenerateModelBounds = plGenerateModelBounds,
+        .CreateMesh = plCreateMesh,
+        .DestroyMesh = plDestroyMesh,
+        .ClearMesh = plClearMesh,
+        .ClearMeshVertices = plClearMeshVertices,
+        .ClearMeshTriangles = plClearMeshTriangles,
+        .ScaleMesh = plScaleMesh,
+        .AddMeshVertex = plAddMeshVertex,
+        .AddMeshTriangle = plAddMeshTriangle,
+        .GenerateMeshNormals = plGenerateMeshNormals,
+        .GenerateTextureCoordinates = plGenerateTextureCoordinates,
+        .GenerateVertexNormals = plGenerateVertexNormals,
 
-	.CreateImage = plCreateImage,
-	.DestroyImage = plDestroyImage,
-	.ConvertPixelFormat = plConvertPixelFormat,
-	.InvertImageColour = plInvertImageColour,
-	.ReplaceImageColour = plReplaceImageColour,
-	.FlipImageVertical = plFlipImageVertical,
-	.GetNumberOfColourChannels = plGetNumberOfColourChannels,
-	.GetImageSize = plGetImageSize,
+        .CreateStaticModel = plCreateStaticModel,
+        .CreateSkeletalModel = plCreateSkeletalModel,
+        .DestroyModel = plDestroyModel,
+        .GenerateModelNormals = plGenerateModelNormals,
+        .GenerateModelBounds = plGenerateModelBounds,
 
-	.RegisterModelLoader = plRegisterModelLoader,
+        .CreateImage = plCreateImage,
+        .DestroyImage = plDestroyImage,
+        .ConvertPixelFormat = plConvertPixelFormat,
+        .InvertImageColour = plInvertImageColour,
+        .ReplaceImageColour = plReplaceImageColour,
+        .FlipImageVertical = plFlipImageVertical,
+        .GetNumberOfColourChannels = plGetNumberOfColourChannels,
+        .GetImageSize = plGetImageSize,
 };
 
 /**
@@ -573,6 +575,8 @@ bool plRegisterPlugin( const char *path ) {
 			if ( description != NULL ) {
 				if ( description->interfaceVersion != PL_PLUGIN_INTERFACE_VERSION ) {
 					ReportError( PL_RESULT_UNSUPPORTED, "Unsupported interface version!\n" );
+				} else {
+					DebugPrint( "Found plugin (%s)\n", description->description );
 				}
 			}
 		}
@@ -584,6 +588,10 @@ bool plRegisterPlugin( const char *path ) {
 	}
 
 	DebugPrint( "Success, adding \"%s\" to plugins list\n", path );
+
+	if ( plugins == NULL ) {
+		plugins = plCreateLinkedList();
+	}
 
 	PLPlugin *plugin = pl_malloc( sizeof( PLPlugin ) );
 	snprintf( plugin->pluginPath, sizeof( plugin->pluginPath ), path );
@@ -602,6 +610,19 @@ bool plRegisterPlugin( const char *path ) {
 static void _plRegisterScannedPlugin( const char *path, void *unused ) {
 	plUnused( unused );
 
+	/* validate it's actually a plugin */
+	size_t length = strlen( path );
+	const char *c = strrchr( path, '_' );
+	if ( c == NULL ) {
+		return;
+	}
+
+	/* remaining length */
+	length -= c - path;
+	if ( pl_strncasecmp( c, "_plugin" PL_SYSTEM_LIBRARY_EXTENSION, length ) != 0 ) {
+		return;
+	}
+
 	plRegisterPlugin( path );
 }
 
@@ -618,7 +639,7 @@ void plRegisterPlugins( const char *pluginDir ) {
 
 	Print( "Scanning for plugins in \"%s\"\n", pluginDir );
 
-	plScanDirectory( pluginDir, "plugin" PL_SYSTEM_LIBRARY_EXTENSION, _plRegisterScannedPlugin, false, NULL );
+	plScanDirectory( pluginDir, NULL, _plRegisterScannedPlugin, false, NULL );
 
 	Print( "Done, %d plugins loaded.\n", numPlugins );
 }
@@ -630,6 +651,12 @@ void plInitializePlugins( void ) {
 	PLLinkedListNode *node = plGetRootNode( plugins );
 	while ( node != NULL ) {
 		PLPlugin *plugin = ( PLPlugin * ) plGetLinkedListNodeUserData( node );
+
+		exportTable.MAlloc = pl_malloc;
+		exportTable.CAlloc = pl_calloc;
+		exportTable.ReAlloc = pl_realloc;
+		exportTable.Free = pl_free;
+
 		plugin->initFunction( &exportTable );
 
 		node = plGetNextLinkedListNode( node );

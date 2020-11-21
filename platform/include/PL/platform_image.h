@@ -102,6 +102,8 @@ enum {
 
 PL_EXTERN_C
 
+#if !defined( PL_COMPILE_PLUGIN )
+
 PL_EXTERN void plRegisterImageLoader( const char *extension, PLImage *(*LoadImage)( const char *path ) );
 PL_EXTERN void plRegisterStandardImageLoaders( unsigned int flags );
 PL_EXTERN void plClearImageLoaders( void );
@@ -132,5 +134,7 @@ PL_EXTERN unsigned int plGetImageSize(PLImageFormat format, unsigned int width, 
 unsigned int plImageBytesPerPixel(PLImageFormat format);
 
 PL_EXTERN const char **plGetSupportedImageFormats( unsigned int *numElements );
+
+#endif
 
 PL_EXTERN_C_END

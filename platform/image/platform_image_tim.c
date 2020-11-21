@@ -114,6 +114,11 @@ static uint16_t _tim16toRGB51A(uint16_t colour_in) {
 }
 
 static bool TIM_ReadFile(PLFile *fin, PLImage *out) {
+	if ( !TIM_FormatCheck( fin ) ) {
+		ReportError( PL_RESULT_FILETYPE, "invalid/unexpected identifier for TIM" );
+		return false;
+	}
+
     uint16_t *palette = NULL;
     uint8_t *image_data  = NULL;
 
