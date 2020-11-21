@@ -29,8 +29,15 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform.h"
 
+typedef struct PLVector3 PLVector3;
+
 PL_EXTERN_C
 
-PL_EXTERN char *plSkipSpaces( char *buf );
+PL_EXTERN void plSkipWhitespace( const char **p );
+PL_EXTERN const char *plParseEnclosedString( const char **p, char *dest, size_t size );
+PL_EXTERN const char *plParseToken( const char **p, char *dest, size_t size );
+PL_EXTERN int plParseInteger( const char **p );
+PL_EXTERN float plParseFloat( const char **p );
+PL_EXTERN PLVector3 plParseVector( const char **p );
 
 PL_EXTERN_C_END
