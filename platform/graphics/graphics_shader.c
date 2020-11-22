@@ -121,7 +121,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageTyp
 
 	    if(srcPos[0] == ' ' && srcPos[1] == ' ') {
 		    srcPos += 2;
-		    srcPos = plSkipSpaces( srcPos );
+			while( *srcPos == ' ' ) { ++srcPos; }
 		    continue;
 	    }
 
