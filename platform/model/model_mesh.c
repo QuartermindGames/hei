@@ -586,14 +586,36 @@ void plDrawGrid( PLMatrix4 transform, int x, int y, int w, int h, unsigned int g
 }
 
 /**
- * Draw lines at each vertex point representing the direction of the normal. This is very slow!
+ * Draw lines at each vertex point representing the direction of the normal.
  */
 void plDrawMeshNormals( const PLMatrix4 *transform, const PLMesh *mesh ) {
+	static PLMesh *linesMesh = NULL;
+	if ( linesMesh == NULL ) {
+		linesMesh = plCreateMesh( PL_MESH_LINES, PL_DRAW_DYNAMIC, 0, mesh->num_verts * 2 );
+		if ( linesMesh == NULL ) {
+			return;
+		}
+	}
+#if 0
+	else {
+		unsigned int numVerts = mesh->num_verts * 2;
+		if ( numVerts < linesMesh->num_verts ) {
+			linesMesh->vertices = pl_realloc( linesMesh->vertices, sizeof( PLVertex ) * numVerts );
+		}
+	}
+#endif
+
+	plClearMesh( linesMesh );
+
 	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
 		PLVector3 linePos = mesh->vertices[ i ].position;
 		PLVector3 lineEndPos = plAddVector3( linePos, plScaleVector3f( mesh->vertices[ i ].normal, 64.0f ) );
-		plDrawSimpleLine( *transform, linePos, lineEndPos, PLColour( 255, 0, 0, 255 ) );
+		plAddMeshVertex( linesMesh, linePos, pl_vecOrigin3, PLColour( 255, 0, 0, 255 ), pl_vecOrigin2 );
+		plAddMeshVertex( linesMesh, lineEndPos, pl_vecOrigin3, PLColour( 0, 255, 0, 255 ), pl_vecOrigin2 );
 	}
+
+	plUploadMesh( linesMesh );
+	plDrawMesh( linesMesh );
 }
 
 /**
