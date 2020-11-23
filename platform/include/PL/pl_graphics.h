@@ -150,7 +150,6 @@ typedef enum PLFrameBufferRenderFlags {
 
 typedef struct PLFrameBuffer PLFrameBuffer;
 typedef struct PLTexture PLTexture;
-typedef enum PLTextureFilter PLTextureFilter;
 
 PL_EXTERN_C
 

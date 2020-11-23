@@ -28,7 +28,6 @@ For more information, please refer to <http://unlicense.org>
 #pragma once
 
 #include <PL/platform_math.h>
-#include <PL/pl_graphics_texture.h>
 
 typedef enum PLMeshPrimitive {
     PL_MESH_LINES,
@@ -68,6 +67,8 @@ typedef struct PLTriangle {
     PLVector3       normal;
     unsigned int    indices[ 3 ];
 } PLTriangle;
+
+typedef struct PLTexture PLTexture;
 
 typedef struct PLMesh {
 	PLVertex        *vertices;
