@@ -29,6 +29,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform.h>
 #include <PL/platform_math.h>
 
+/* todo: make this structure private */
 typedef struct PLConsoleVariable {
 	char var[ 32 ];
 	char description[ 256 ];
@@ -55,14 +56,13 @@ typedef struct PLConsoleVariable {
 	bool archive;
 } PLConsoleVariable;
 
-#define plGetConsoleVariableValue( var ) \
-	switch ( var->type ) {}
-
 PL_EXTERN_C
 
 void plGetConsoleVariables( PLConsoleVariable ***vars, size_t *num_vars );
 
 PLConsoleVariable *plGetConsoleVariable( const char *name );
+const char *plGetConsoleVariableValue( const char *name );
+const char *plGetConsoleVariableDefaultValue( const char *name );
 void plSetConsoleVariable( PLConsoleVariable *var, const char *value );
 void plSetConsoleVariableByName( const char *name, const char *value );
 

@@ -180,6 +180,24 @@ PLConsoleVariable *plGetConsoleVariable(const char *name) {
     return NULL;
 }
 
+const char *plGetConsoleVariableValue( const char *name ) {
+	PLConsoleVariable *var = plGetConsoleVariable( name );
+	if ( var == NULL ) {
+		return NULL;
+	}
+
+	return var->value;
+}
+
+const char *plGetConsoleVariableDefaultValue( const char *name ) {
+	PLConsoleVariable *var = plGetConsoleVariable( name );
+	if ( var == NULL ) {
+		return NULL;
+	}
+
+	return var->default_value;
+}
+
 // Set console variable, with sanity checks...
 void plSetConsoleVariable(PLConsoleVariable *var, const char *value) {
     plAssert(var);
