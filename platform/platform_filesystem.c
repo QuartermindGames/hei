@@ -85,6 +85,43 @@ static PLFileSystemMount* fs_mount_ceiling = NULL;
 
 #define FS_LOCAL_HINT    "local://"
 
+IMPLEMENT_COMMAND( fsLstPkg, "List all the files in a particular package." ) {
+	if ( argc == 1 ) {
+		Print( "%s", fsLstPkg_var.description );
+		return;
+	}
+
+	const char* path = argv[ 1 ];
+	if ( path == NULL ) {
+		Print( "Invalid path specified!\n" );
+		return;
+	}
+
+	PLPackage *pkg = plLoadPackage( path );
+	if ( pkg == NULL ) {
+		Print( "Failed to load package \"%s\"!\nPL: %s\n", path, plGetError() );
+		return;
+	}
+
+	Print( "Listing contents of %s (%d)...\n", path, pkg->table_size );
+	for ( unsigned int i = 0; i < pkg->table_size; ++i ) {
+		Print( " num:    %d\n"
+		       " name:   %s\n"
+		       " size:   %d\n"
+		       " csize:  %d\n"
+		       " ctype:  %d\n"
+		       " offset: %d\n", i,
+		       pkg->table[ i ].fileName,
+		       pkg->table[ i ].fileSize,
+		       pkg->table[ i ].compressedSize,
+		       pkg->table[ i ].compressionType,
+		       pkg->table[ i ].offset );
+	}
+	Print( "End\n" );
+
+	plDestroyPackage( pkg );
+}
+
 IMPLEMENT_COMMAND( fsListMounted, "Lists all of the mounted directories." ) {
 	plUnused( argv );
 	plUnused( argc );
@@ -145,9 +182,10 @@ IMPLEMENT_COMMAND( fsMount, "Mount the specified directory." ) {
 
 static void _plRegisterFSCommands( void ) {
 	PLConsoleCommand fsCommands[] = {
-		fsListMounted_var,
-		fsUnmount_var,
-		fsMount_var,
+	        fsLstPkg_var,
+	        fsListMounted_var,
+	        fsUnmount_var,
+	        fsMount_var,
 	};
 	for ( unsigned int i = 0; i < plArrayElements( fsCommands ); ++i ) {
 		plRegisterConsoleCommand( fsCommands[ i ].cmd, fsCommands[ i ].Callback, fsCommands[ i ].description );
