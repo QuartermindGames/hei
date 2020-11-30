@@ -38,18 +38,17 @@ For more information, please refer to <http://unlicense.org>
 static void ConvertImage( const char *path, const char *destination ) {
 	PLImage *image = plLoadImage( path );
 	if ( image == NULL ) {
-		printf( "Error: %s\n", plGetError() );
+		printf( "Failed to load \"%s\"! (%s)\n", path, plGetError() );
 		return;
 	}
 
 	/* ensure it's a valid format before we write it out */
 	plConvertPixelFormat( image, PL_IMAGEFORMAT_RGBA8 );
-	//plConvertColourFormat( image, PL_COLOURFORMAT_RGBA );
 
 	if ( plWriteImage( image, destination ) ) {
 		printf( "Wrote \"%s\"\n", destination );
 	} else {
-		Error( "Error: %s\n", plGetError() );
+		printf( "Failed to write \"%s\"! (%s)\n", destination, plGetError() );
 	}
 
 	plDestroyImage( image );
