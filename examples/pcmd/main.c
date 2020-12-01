@@ -121,6 +121,7 @@ int main( int argc, char **argv ) {
 	setvbuf( stdout, NULL, _IONBF, 0 );
 
 	plInitialize( argc, argv );
+	plInitializeSubSystems( PL_SUBSYSTEM_IO );
 
 	plRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
 
@@ -135,6 +136,16 @@ int main( int argc, char **argv ) {
 	plRegisterConsoleCommand( "img_bulkconvert", Cmd_IMGBulkConvert,
 	                          "Bulk convert images in the given directory.\n"
 	                          "Usage: img_bulkconvert ./path bmp [./outpath]" );
+
+	plInitializePlugins();
+
+	/* allow us to just push a command via the command line if we want */
+	const char *arg = plGetCommandLineArgumentValue( "-cmd" );
+	if ( arg != NULL ) {
+		plParseConsoleString( arg );
+		plShutdown();
+		return EXIT_SUCCESS;
+	}
 
 	while( isRunning ) {
 		printf( "> " );
