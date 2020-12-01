@@ -286,6 +286,7 @@ PL_EXTERN void plUnloadLibrary( PLLibrary *library );
 
 PL_EXTERN bool plRegisterPlugin( const char *path );
 PL_EXTERN void plRegisterPlugins( const char *pluginDir );
+PL_EXTERN void plInitializePlugins( void );
 
 #endif
 

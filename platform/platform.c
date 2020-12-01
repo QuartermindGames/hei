@@ -321,18 +321,18 @@ void plSetFunctionResult(PLresult result) {
     global_result = result;
 }
 
+static void _plSetErrorMessageV( const char *msg, va_list args ) {
+	char buf[ MAX_ERROR_LENGTH ];
+	vsnprintf( buf, sizeof( buf ), msg, args );
+	strncpy( loc_error, buf, sizeof( loc_error ) );
+}
+
 // Sets the local error message.
-void SetErrorMessage(const char *msg, ...) {
-#ifdef _DEBUG
-    char out[MAX_ERROR_LENGTH];
-    va_list args;
-
-    va_start(args, msg);
-    vsnprintf(out, sizeof(out), msg, args);
-    va_end(args);
-
-    strncpy(loc_error, out, sizeof(loc_error));
-#endif
+void SetErrorMessage( const char *msg, ... ) {
+	va_list args;
+	va_start( args, msg );
+	_plSetErrorMessageV( msg, args );
+	va_end( args );
 }
 
 // Returns locally generated error message.
@@ -386,6 +386,18 @@ const char *plGetResultString(PLresult result) {
 void _plResetError(void) {
     loc_function[0] = loc_error[0] = '\0';
     global_result = PL_RESULT_SUCCESS;
+}
+
+/**
+ * ReportError but exposed to plugins.
+ */
+static void plReportError( PLresult resultType, const char *err, ... ) {
+	plSetFunctionResult( resultType );
+
+	va_list args;
+	va_start( args, err );
+	_plSetErrorMessageV( err, args );
+	va_end( args );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -493,6 +505,8 @@ static PLLinkedList *plugins;
 static unsigned int numPlugins;
 
 static PLPluginExportTable exportTable = {
+        .ReportError = plReportError,
+
         .LocalFileExists = plLocalFileExists,
         .FileExists = plFileExists,
         .LocalPathExists = plLocalPathExists,
