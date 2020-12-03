@@ -45,7 +45,6 @@ static PLPackage *PKG_ReadFile( PLFile *file ) {
 	header.length = gInterface->ReadInt32( file, false, &status );
 	header.unused = gInterface->ReadInt32( file, false, &status );
 	header.startOffset = gInterface->ReadInt32( file, false, &status );
-	char eof = gInterface->ReadInt8( file, &status );
 	if ( !status ) {
 		return NULL;
 	}
@@ -53,18 +52,6 @@ static PLPackage *PKG_ReadFile( PLFile *file ) {
 	/* verify it */
 	if ( strncmp( PKG_MAGIC, header.magic, 4 ) != 0 ) {
 		gInterface->ReportError( PL_RESULT_FILETYPE, "magic was \"%s\", expected \"%s\"", header.magic, PKG_MAGIC );
-		return NULL;
-	}
-	if ( header.length <= sizeof( PkgHeader ) ) {
-		gInterface->ReportError( PL_RESULT_FILETYPE, "invalid length provided in header" );
-		return NULL;
-	}
-	if ( header.startOffset >= header.length ) {
-		gInterface->ReportError( PL_RESULT_FILETYPE, "invalid first file offset in header" );
-		return NULL;
-	}
-	if ( eof != '\0' ) {
-		gInterface->ReportError( PL_RESULT_FILETYPE, "unexpected filename terminator" );
 		return NULL;
 	}
 
@@ -119,8 +106,10 @@ static PLPackage *PKG_ReadFile( PLFile *file ) {
 		}
 		curIndex->fileName[ curIndex->fileNameLength ] = '\0';
 
-		/* now check and read in the extension */
+		/* now check for and read in the extension */
+		if ( numFiles == 0 ) {
 
+		}
 
 		/* documentation on xentax says that terminator is indicated
 		 * by '243' - however packages from the prototype do not respect
