@@ -40,7 +40,9 @@ support.
  is intended only for internal usage!
 */
 
-#define PL_VERSION  200824
+#define PL_VERSION_MAJOR 1
+#define PL_VERSION_MINOR 0
+#define PL_VERSION_PATCH 0
 
 // PL_IGNORE_SHARED_HEADERS
 // PL_IGNORE_PLATFORM_HEADERS
