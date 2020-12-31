@@ -662,6 +662,11 @@ void plRegisterPlugins( const char *pluginDir ) {
  * Iterate over all the registered plugins and initialize each.
  */
 void plInitializePlugins( void ) {
+	if ( plugins == NULL ) {
+		/* no plugins registered */
+		return;
+	}
+
 	PLLinkedListNode *node = plGetRootNode( plugins );
 	while ( node != NULL ) {
 		PLPlugin *plugin = ( PLPlugin * ) plGetLinkedListNodeUserData( node );
