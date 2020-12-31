@@ -1146,7 +1146,7 @@ void plInitOpenGL( void ) {
 	GfxLog( "  renderer:   %s\n", gfx_state.hw_renderer );
 	GfxLog( "  vendor:     %s\n", gfx_state.hw_vendor );
 	GfxLog( "  version:    %s\n", gfx_state.hw_version );
-	GfxLog( "  extensions:\n" );
+	//GfxLog( "  extensions:\n" );
 
 	/* this is kind of gross, but manually change the version,
 	 * otherwise there's no other way we can do it on newer
@@ -1163,7 +1163,7 @@ void plInitOpenGL( void ) {
 		for ( unsigned int i = 0; i < gl_num_extensions; ++i ) {
 			const uint8_t *extension = glGetStringi( GL_EXTENSIONS, i );
 			snprintf( gl_extensions[ i ], sizeof( gl_extensions[ i ] ), "%s", extension );
-			GfxLog( "    %s\n", extension );
+			//GfxLog( "    %s\n", extension );
 		}
 	} else {
 		// todo
