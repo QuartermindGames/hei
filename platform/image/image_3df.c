@@ -133,20 +133,10 @@ static PLImage *FD3_ReadFile( PLFile *file ) {
 			case PL_IMAGEFORMAT_RGB5A1: {
 				uint8_t *dstPos = dstBuf;
                 for ( size_t i = 0; i < srcSize; i += 2 ) {
-					dstPos[ 0 ] = 255 * ( srcBuf[ i ] << 1 ) / 31;
-					dstPos[ 1 ] = 255 * ( srcBuf[ i ] << 6 ) / 31;
-					dstPos[ 2 ] = 255 * ( srcBuf[ i ] << 11 ) / 31;
-					dstPos[ 3 ] = 255;
-
-#if 0
-					unsigned int a = srcBuf[ i ] & 0x8000;
-					unsigned int r = srcBuf[ i ] & 0x7C00;
-					unsigned int g = srcBuf[ i ] & 0x03E0;
-					unsigned int b = srcBuf[ i ] & 0x1F;
-					unsigned int rgb = ( r << 9 ) | ( g << 6 ) | ( b << 3 );
-					*dstPos = ( a * 0x1FE00 ) | rgb | ( ( rgb >> 5 ) & 0x070707 );
-#endif
-
+					dstPos[ PL_RED ]    = ( ( srcBuf[ i ] & 124 ) << 1 );
+					dstPos[ PL_GREEN ]  = ( ( srcBuf[ i ] & 3 ) << 6 ) | ( ( srcBuf[ i + 1 ] & 224 ) >> 2 );
+					dstPos[ PL_BLUE ]   = ( ( srcBuf[ i + 1 ] & 31 ) << 3 );
+					dstPos[ PL_ALPHA ]  = ( srcBuf[ i ] & 128 ) ? 0 : 255;
 					dstPos += 4;
 				}
 
