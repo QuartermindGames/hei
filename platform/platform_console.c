@@ -466,7 +466,7 @@ const char **plAutocompleteConsoleString( const char *string, unsigned int *numE
 	for ( unsigned int i = 0; i < _pl_num_variables; ++i ) {
 		if ( c >= MAX_AUTO_OPTIONS ) {
 			break;
-		} else if ( pl_strcasecmp( string, _pl_variables[ i ]->var ) < 0 ) {
+		} else if ( pl_strncasecmp( string, _pl_variables[ i ]->var, strlen( string ) ) != 0 ) {
 			continue;
 		}
         options[ c++ ] = _pl_variables[ i ]->var;
@@ -475,7 +475,7 @@ const char **plAutocompleteConsoleString( const char *string, unsigned int *numE
 	for ( unsigned int i = 0; i < _pl_num_commands; ++i ) {
 		if ( c >= MAX_AUTO_OPTIONS ) {
 			break;
-		} else if ( pl_strcasecmp( string, _pl_commands[ i ]->cmd ) < 0 ) {
+		} else if ( pl_strncasecmp( string, _pl_commands[ i ]->cmd, strlen( string ) ) != 0 ) {
 			continue;
 		}
 		options[ c++ ] = _pl_commands[ i ]->cmd;
