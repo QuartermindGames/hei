@@ -84,24 +84,16 @@ typedef struct PLConsoleCommand {
 
 PL_EXTERN_C
 
-void plGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds );
-
-void plRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( unsigned int argc, char *argv[] ),
-                               const char *description );
-
-PLConsoleCommand *plGetConsoleCommand( const char *name );
-
-PL_EXTERN_C_END
-
-/////////////////////////////////////////////////////////////////////////////////////
-
-PL_EXTERN_C
+PL_EXTERN void plGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds );
+PL_EXTERN void plRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( unsigned int argc, char *argv[] ), const char *description );
+PL_EXTERN PLConsoleCommand *plGetConsoleCommand( const char *name );
 
 PL_EXTERN void plSetupConsole( unsigned int num_instances );
 
 PL_EXTERN void plSetConsoleColour( unsigned int id, PLColour colour );
 PL_EXTERN void plSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg ) );
 
+PL_EXTERN const char **plAutocompleteConsoleString( const char *string, unsigned int *numElements );
 PL_EXTERN void plParseConsoleString( const char *string );
 
 PL_EXTERN void plShowConsole( bool show );
