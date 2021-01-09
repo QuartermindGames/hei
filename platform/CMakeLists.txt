@@ -61,7 +61,7 @@ file(
         physics.c
         window.c
 
-        string/*.*
+        string/*.c string/*.h
         memory/*.*
 
         include/*.h
