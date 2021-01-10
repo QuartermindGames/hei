@@ -25,31 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-cmake_minimum_required(VERSION 3.5.1)
+project(tests)
 
-project(PlatformLibrary)
+file(GLOB TEST_SOURCE_FILES *.c *.h)
 
-option(BUILD_EXAMPLES "Build example applications" ON)
-option(PL_BUILD_PLUGINS "Build plugins" ON)
+add_executable(tests ${TEST_SOURCE_FILES})
 
-# Set all of our output directories.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-unused-function")
-
-add_subdirectory(platform)
-add_subdirectory(tests)
-
-if (BUILD_EXAMPLES)
-    add_subdirectory(examples/viewer)
-    add_subdirectory(examples/package_loader)
-    add_subdirectory(examples/pcmd)
-endif (BUILD_EXAMPLES)
-
-if (PL_BUILD_PLUGINS)
-    add_subdirectory(plugins/jade/)
-    add_subdirectory(plugins/valve/)
-endif (PL_BUILD_PLUGINS)
+target_link_libraries(tests platform)
