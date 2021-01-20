@@ -109,10 +109,10 @@ void plGenerateMeshTangentBasis( PLMesh *mesh ) {
 
 /* based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#computing-the-tangents-and-bitangents */
 void plGenerateTangentBasis( PLVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles ) {
-	for ( unsigned int i = 0; i < numTriangles; i += 3 ) {
-		PLVertex *a = &vertices[ indices[ i ] ];
-		PLVertex *b = &vertices[ indices[ i + 1 ] ];
-		PLVertex *c = &vertices[ indices[ i + 2 ] ];
+	for ( unsigned int i = 0; i < numTriangles; i++, indices += 3 ) {
+		PLVertex *a = &vertices[ indices[ 0 ] ];
+		PLVertex *b = &vertices[ indices[ 1 ] ];
+		PLVertex *c = &vertices[ indices[ 2 ] ];
 
 		/* edges of the triangle, aka, position delta */
 		PLVector3 deltaPos1 = plSubtractVector3( b->position, a->position );
