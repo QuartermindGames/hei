@@ -25,23 +25,23 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#if defined(PL_SUPPORT_OPENGL)
+#if defined( PL_SUPPORT_OPENGL )
 
 #include "graphics_private.h"
 #include <PL/pl_parse.h>
 
 #if defined( PL_USE_GLEW )
-#   include <GL/glew.h>
+#include <GL/glew.h>
 #else
-#   ifndef GL_GLEXT_PROTOTYPES
-#       define GL_GLEXT_PROTOTYPES
-#   endif
+#ifndef GL_GLEXT_PROTOTYPES
+#define GL_GLEXT_PROTOTYPES
+#endif
 
-#   include <GL/gl.h>
-#   include <GL/glext.h>
-#   if defined( _WIN32 )
-#       include <GL/wglext.h>
-#   endif
+#include <GL/gl.h>
+#include <GL/glext.h>
+#if defined( _WIN32 )
+#include <GL/wglext.h>
+#endif
 #endif
 
 #define DEBUG_GL
@@ -63,11 +63,11 @@ struct {
 static int gl_version_major = 0;
 static int gl_version_minor = 0;
 
-#define GLVersion( maj, min ) (((maj) == gl_version_major && (min) <= gl_version_minor) || (maj) < gl_version_major)
+#define GLVersion( maj, min ) ( ( ( maj ) == gl_version_major && ( min ) <= gl_version_minor ) || ( maj ) < gl_version_major )
 
 unsigned int gl_num_extensions = 0;
 
-static GLuint VAO[1];
+static GLuint VAO[ 1 ];
 
 ///////////////////////////////////////////
 // Debug
@@ -78,11 +78,11 @@ static void GLInsertDebugMarker( const char *msg ) {
 	}
 
 	glDebugMessageInsert( GL_DEBUG_SOURCE_APPLICATION,
-						  GL_DEBUG_TYPE_MARKER,
-						  0,
-						  GL_DEBUG_SEVERITY_NOTIFICATION,
-						  -1,
-						  msg );
+	                      GL_DEBUG_TYPE_MARKER,
+	                      0,
+	                      GL_DEBUG_SEVERITY_NOTIFICATION,
+	                      -1,
+	                      msg );
 }
 
 static void GLPushDebugGroupMarker( const char *msg ) {
@@ -164,11 +164,10 @@ static void GLGetMaxTextureSize( unsigned int *s ) {
 
 static void GLSetClearColour( PLColour rgba ) {
 	glClearColor(
-		plByteToFloat( rgba.r ),
-		plByteToFloat( rgba.g ),
-		plByteToFloat( rgba.b ),
-		plByteToFloat( rgba.a )
-	);
+	        plByteToFloat( rgba.r ),
+	        plByteToFloat( rgba.g ),
+	        plByteToFloat( rgba.b ),
+	        plByteToFloat( rgba.a ) );
 }
 
 static void GLClearBuffers( unsigned int buffers ) {
@@ -205,17 +204,28 @@ static void GLSetDepthMask( bool enable ) {
 static unsigned int TranslateBlendFunc( PLBlend blend ) {
 	switch ( blend ) {
 		default:
-		case PL_BLEND_ONE: return GL_ONE;
-		case PL_BLEND_ZERO: return GL_ZERO;
-		case PL_BLEND_SRC_COLOR: return GL_SRC_COLOR;
-		case PL_BLEND_ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
-		case PL_BLEND_SRC_ALPHA: return GL_SRC_ALPHA;
-		case PL_BLEND_ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
-		case PL_BLEND_DST_ALPHA: return GL_DST_ALPHA;
-		case PL_BLEND_ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
-		case PL_BLEND_DST_COLOR: return GL_DST_COLOR;
-		case PL_BLEND_ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
-		case PL_BLEND_SRC_ALPHA_SATURATE: return GL_SRC_ALPHA_SATURATE;
+		case PL_BLEND_ONE:
+			return GL_ONE;
+		case PL_BLEND_ZERO:
+			return GL_ZERO;
+		case PL_BLEND_SRC_COLOR:
+			return GL_SRC_COLOR;
+		case PL_BLEND_ONE_MINUS_SRC_COLOR:
+			return GL_ONE_MINUS_SRC_COLOR;
+		case PL_BLEND_SRC_ALPHA:
+			return GL_SRC_ALPHA;
+		case PL_BLEND_ONE_MINUS_SRC_ALPHA:
+			return GL_ONE_MINUS_SRC_ALPHA;
+		case PL_BLEND_DST_ALPHA:
+			return GL_DST_ALPHA;
+		case PL_BLEND_ONE_MINUS_DST_ALPHA:
+			return GL_ONE_MINUS_DST_ALPHA;
+		case PL_BLEND_DST_COLOR:
+			return GL_DST_COLOR;
+		case PL_BLEND_ONE_MINUS_DST_COLOR:
+			return GL_ONE_MINUS_DST_COLOR;
+		case PL_BLEND_SRC_ALPHA_SATURATE:
+			return GL_SRC_ALPHA_SATURATE;
 	}
 }
 
@@ -255,16 +265,19 @@ static void GLSetCullMode( PLCullMode mode ) {
 }
 
 
-
 /////////////////////////////////////////////////////////////
 // Framebuffer
 
 static unsigned int TranslateFrameBufferBinding( PLFBOTarget targetBinding ) {
 	switch ( targetBinding ) {
-		case PL_FRAMEBUFFER_DEFAULT: return GL_FRAMEBUFFER;
-		case PL_FRAMEBUFFER_DRAW: return GL_DRAW_FRAMEBUFFER;
-		case PL_FRAMEBUFFER_READ: return GL_READ_FRAMEBUFFER;
-		default: return 0;
+		case PL_FRAMEBUFFER_DEFAULT:
+			return GL_FRAMEBUFFER;
+		case PL_FRAMEBUFFER_DRAW:
+			return GL_DRAW_FRAMEBUFFER;
+		case PL_FRAMEBUFFER_READ:
+			return GL_READ_FRAMEBUFFER;
+		default:
+			return 0;
 	}
 }
 
@@ -314,27 +327,27 @@ static void GLBindFrameBuffer( PLFrameBuffer *buffer, PLFBOTarget target_binding
 	if ( buffer ) {
 		glBindFramebuffer( binding, buffer->fbo );
 	} else {
-		glBindFramebuffer( binding, 0 ); //Bind default backbuffer
+		glBindFramebuffer( binding, 0 );//Bind default backbuffer
 	}
 }
 
 static void GLBlitFrameBuffers( PLFrameBuffer *src_buffer,
-								unsigned int src_w,
-								unsigned int src_h,
-								PLFrameBuffer *dst_buffer,
-								unsigned int dst_w,
-								unsigned int dst_h,
-								bool linear ) {
+                                unsigned int src_w,
+                                unsigned int src_h,
+                                PLFrameBuffer *dst_buffer,
+                                unsigned int dst_w,
+                                unsigned int dst_h,
+                                bool linear ) {
 	if ( src_buffer ) {
 		glBindFramebuffer( GL_READ_FRAMEBUFFER, src_buffer->fbo );
 	} else {
-		glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 ); //Bind default backbuffer
+		glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 );//Bind default backbuffer
 	}
 
 	if ( dst_buffer ) {
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, dst_buffer->fbo );
 	} else {
-		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 ); //Bind default backbuffer
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );//Bind default backbuffer
 	}
 
 	glBlitFramebuffer( 0, 0, src_w, src_h, 0, 0, dst_w, dst_h, GL_COLOR_BUFFER_BIT, linear ? GL_LINEAR : GL_NEAREST );
@@ -354,7 +367,7 @@ static PLTexture *GLGetFrameBufferTextureAttachment( PLFrameBuffer *buffer, unsi
 	unsigned int glComponent;
 	unsigned int glType;
 	unsigned int glAttachment;
-	switch( component ) {
+	switch ( component ) {
 		case PL_BUFFER_DEPTH:
 			glComponent = GL_DEPTH_COMPONENT;
 			glType = GL_FLOAT;
@@ -371,8 +384,8 @@ static PLTexture *GLGetFrameBufferTextureAttachment( PLFrameBuffer *buffer, unsi
 
 	unsigned int min, mag;
 	GL_TranslateTextureFilterFormat( filter, &min, &mag );
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag );
 
 	glFramebufferTexture2D( GL_FRAMEBUFFER, glAttachment, GL_TEXTURE_2D, texture->internal.id, 0 );
 
@@ -389,26 +402,39 @@ static PLTexture *GLGetFrameBufferTextureAttachment( PLFrameBuffer *buffer, unsi
 
 static unsigned int TranslateImageFormat( PLImageFormat format ) {
 	switch ( format ) {
-		case PL_IMAGEFORMAT_RGB8: return GL_RGB8;
-		case PL_IMAGEFORMAT_RGBA8: return GL_RGBA8;
-		case PL_IMAGEFORMAT_RGB4: return GL_RGB4;
-		case PL_IMAGEFORMAT_RGBA4: return GL_RGBA4;
-		case PL_IMAGEFORMAT_RGB5: return GL_RGB5;
-		case PL_IMAGEFORMAT_RGB5A1: return GL_RGB5_A1;
+		case PL_IMAGEFORMAT_RGB8:
+			return GL_RGB8;
+		case PL_IMAGEFORMAT_RGBA8:
+			return GL_RGBA8;
+		case PL_IMAGEFORMAT_RGB4:
+			return GL_RGB4;
+		case PL_IMAGEFORMAT_RGBA4:
+			return GL_RGBA4;
+		case PL_IMAGEFORMAT_RGB5:
+			return GL_RGB5;
+		case PL_IMAGEFORMAT_RGB5A1:
+			return GL_RGB5_A1;
 
-		case PL_IMAGEFORMAT_RGB_DXT1: return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-		case PL_IMAGEFORMAT_RGBA_DXT1: return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-		case PL_IMAGEFORMAT_RGB_FXT1: return GL_COMPRESSED_RGB_FXT1_3DFX;
+		case PL_IMAGEFORMAT_RGB_DXT1:
+			return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+		case PL_IMAGEFORMAT_RGBA_DXT1:
+			return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+		case PL_IMAGEFORMAT_RGB_FXT1:
+			return GL_COMPRESSED_RGB_FXT1_3DFX;
 
-		default: return 0;
+		default:
+			return 0;
 	}
 }
 
 static unsigned int TranslateStorageFormat( PLDataFormat format ) {
 	switch ( format ) {
-		case PL_UNSIGNED_BYTE: return GL_UNSIGNED_BYTE;
-		case PL_UNSIGNED_INT_8_8_8_8_REV: return GL_UNSIGNED_INT_8_8_8_8_REV;
-		default:plAssert( 0 );
+		case PL_UNSIGNED_BYTE:
+			return GL_UNSIGNED_BYTE;
+		case PL_UNSIGNED_INT_8_8_8_8_REV:
+			return GL_UNSIGNED_INT_8_8_8_8_REV;
+		default:
+			plAssert( 0 );
 			return 0; /* todo */
 	}
 }
@@ -416,8 +442,10 @@ static unsigned int TranslateStorageFormat( PLDataFormat format ) {
 static unsigned int TranslateImageColourFormat( PLColourFormat format ) {
 	switch ( format ) {
 		default:
-		case PL_COLOURFORMAT_RGBA: return GL_RGBA;
-		case PL_COLOURFORMAT_RGB: return GL_RGB;
+		case PL_COLOURFORMAT_RGBA:
+			return GL_RGBA;
+		case PL_COLOURFORMAT_RGB:
+			return GL_RGB;
 	}
 }
 
@@ -467,25 +495,23 @@ static void GLUploadTexture( PLTexture *texture, const PLImage *upload ) {
 		GLsizei h = texture->h / ( unsigned int ) pow( 2, i );
 		if ( plIsCompressedImageFormat( upload->format ) ) {
 			glCompressedTexImage2D(
-				GL_TEXTURE_2D,
-				i,
-				image_format,
-				w, h,
-				0,
-				( GLsizei ) upload->size,
-				upload->data[ 0 ]
-			);
+			        GL_TEXTURE_2D,
+			        i,
+			        image_format,
+			        w, h,
+			        0,
+			        ( GLsizei ) upload->size,
+			        upload->data[ 0 ] );
 		} else {
 			glTexImage2D(
-				GL_TEXTURE_2D,
-				i,
-				image_format,
-				w, h,
-				0,
-				colour_format,
-				storage_format,
-				upload->data[ 0 ]
-			);
+			        GL_TEXTURE_2D,
+			        i,
+			        image_format,
+			        w, h,
+			        0,
+			        colour_format,
+			        storage_format,
+			        upload->data[ 0 ] );
 		}
 	}
 
@@ -507,11 +533,16 @@ static void GLActiveTexture( unsigned int target ) {
 
 static int TranslateColourChannel( int channel ) {
 	switch ( channel ) {
-		case PL_RED: return GL_RED;
-		case PL_GREEN: return GL_GREEN;
-		case PL_BLUE: return GL_BLUE;
-		case PL_ALPHA: return GL_ALPHA;
-		default: return channel;
+		case PL_RED:
+			return GL_RED;
+		case PL_GREEN:
+			return GL_GREEN;
+		case PL_BLUE:
+			return GL_BLUE;
+		case PL_ALPHA:
+			return GL_ALPHA;
+		default:
+			return channel;
 	}
 }
 
@@ -519,11 +550,10 @@ static void GLSwizzleTexture( PLTexture *texture, uint8_t r, uint8_t g, uint8_t 
 	GLBindTexture( texture );
 	if ( GLVersion( 3, 3 ) ) {
 		int swizzle[] = {
-			TranslateColourChannel( r ),
-			TranslateColourChannel( g ),
-			TranslateColourChannel( b ),
-			TranslateColourChannel( a )
-		};
+		        TranslateColourChannel( r ),
+		        TranslateColourChannel( g ),
+		        TranslateColourChannel( b ),
+		        TranslateColourChannel( a ) };
 		glTexParameteriv( GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle );
 	} else {
 		ReportError( PL_RESULT_UNSUPPORTED, "missing software implementation" );
@@ -540,14 +570,14 @@ typedef struct MeshTranslatePrimitive {
 } MeshTranslatePrimitive;
 
 static MeshTranslatePrimitive primitives[] = {
-	{ PL_MESH_LINES, GL_LINES, "LINES" },
-	{ PL_MESH_LINE_LOOP, GL_LINE_LOOP, "LINE_LOOP" },
-	{ PL_MESH_POINTS, GL_POINTS, "POINTS" },
-	{ PL_MESH_TRIANGLES, GL_TRIANGLES, "TRIANGLES" },
-	{ PL_MESH_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN" },
-	{ PL_MESH_TRIANGLE_FAN_LINE, GL_LINES, "TRIANGLE_FAN_LINE" },
-	{ PL_MESH_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP" },
-	{ PL_MESH_QUADS, GL_TRIANGLES, "QUADS" }   // todo, translate
+        { PL_MESH_LINES, GL_LINES, "LINES" },
+        { PL_MESH_LINE_LOOP, GL_LINE_LOOP, "LINE_LOOP" },
+        { PL_MESH_POINTS, GL_POINTS, "POINTS" },
+        { PL_MESH_TRIANGLES, GL_TRIANGLES, "TRIANGLES" },
+        { PL_MESH_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN" },
+        { PL_MESH_TRIANGLE_FAN_LINE, GL_LINES, "TRIANGLE_FAN_LINE" },
+        { PL_MESH_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP" },
+        { PL_MESH_QUADS, GL_TRIANGLES, "QUADS" }// todo, translate
 };
 
 static unsigned int TranslatePrimitiveMode( PLMeshPrimitive mode ) {
@@ -562,10 +592,14 @@ static unsigned int TranslatePrimitiveMode( PLMeshPrimitive mode ) {
 
 static unsigned int TranslateDrawMode( PLMeshDrawMode mode ) {
 	switch ( mode ) {
-		case PL_DRAW_DYNAMIC: return GL_DYNAMIC_DRAW;
-		case PL_DRAW_STATIC: return GL_STATIC_DRAW;
-		case PL_DRAW_STREAM: return GL_STREAM_DRAW;
-		default: return 0;
+		case PL_DRAW_DYNAMIC:
+			return GL_DYNAMIC_DRAW;
+		case PL_DRAW_STATIC:
+			return GL_STATIC_DRAW;
+		case PL_DRAW_STREAM:
+			return GL_STREAM_DRAW;
+		default:
+			return 0;
 	}
 }
 
@@ -758,75 +792,117 @@ static void GLSetupCamera( PLCamera *camera ) {
 /////////////////////////////////////////////////////////////
 // Shader
 
-#define SHADER_INVALID_TYPE ((uint32_t)0 - 1)
+#define SHADER_INVALID_TYPE ( ( uint32_t ) 0 - 1 )
 
 static GLenum TranslateShaderStageType( PLShaderStageType type ) {
 	switch ( type ) {
-		case PL_SHADER_TYPE_VERTEX: return GL_VERTEX_SHADER;
-		case PL_SHADER_TYPE_COMPUTE: return GL_COMPUTE_SHADER;
-		case PL_SHADER_TYPE_FRAGMENT: return GL_FRAGMENT_SHADER;
-		case PL_SHADER_TYPE_GEOMETRY: return GL_GEOMETRY_SHADER;
-		default: return SHADER_INVALID_TYPE;
+		case PL_SHADER_TYPE_VERTEX:
+			return GL_VERTEX_SHADER;
+		case PL_SHADER_TYPE_COMPUTE:
+			return GL_COMPUTE_SHADER;
+		case PL_SHADER_TYPE_FRAGMENT:
+			return GL_FRAGMENT_SHADER;
+		case PL_SHADER_TYPE_GEOMETRY:
+			return GL_GEOMETRY_SHADER;
+		default:
+			return SHADER_INVALID_TYPE;
 	}
 }
 
 static const char *GetGLShaderStageDescriptor( GLenum type ) {
 	switch ( type ) {
-		case GL_VERTEX_SHADER: return "GL_VERTEX_SHADER";
-		case GL_COMPUTE_SHADER: return "GL_COMPUTE_SHADER";
-		case GL_FRAGMENT_SHADER: return "GL_FRAGMENT_SHADER";
-		case GL_GEOMETRY_SHADER: return "GL_GEOMETRY_SHADER";
-		default: return "unknown";
+		case GL_VERTEX_SHADER:
+			return "GL_VERTEX_SHADER";
+		case GL_COMPUTE_SHADER:
+			return "GL_COMPUTE_SHADER";
+		case GL_FRAGMENT_SHADER:
+			return "GL_FRAGMENT_SHADER";
+		case GL_GEOMETRY_SHADER:
+			return "GL_GEOMETRY_SHADER";
+		default:
+			return "unknown";
 	}
 }
 
 static GLenum TranslateShaderUniformType( PLShaderUniformType type ) {
 	switch ( type ) {
-		case PL_UNIFORM_BOOL: return GL_BOOL;
-		case PL_UNIFORM_DOUBLE: return GL_DOUBLE;
-		case PL_UNIFORM_FLOAT: return GL_FLOAT;
-		case PL_UNIFORM_INT: return GL_INT;
-		case PL_UNIFORM_UINT: return GL_UNSIGNED_INT;
+		case PL_UNIFORM_BOOL:
+			return GL_BOOL;
+		case PL_UNIFORM_DOUBLE:
+			return GL_DOUBLE;
+		case PL_UNIFORM_FLOAT:
+			return GL_FLOAT;
+		case PL_UNIFORM_INT:
+			return GL_INT;
+		case PL_UNIFORM_UINT:
+			return GL_UNSIGNED_INT;
 
-		case PL_UNIFORM_SAMPLER1D: return GL_SAMPLER_1D;
-		case PL_UNIFORM_SAMPLER1DSHADOW: return GL_SAMPLER_1D_SHADOW;
-		case PL_UNIFORM_SAMPLER2D: return GL_SAMPLER_2D;
-		case PL_UNIFORM_SAMPLER2DSHADOW: return GL_SAMPLER_2D_SHADOW;
-		case PL_UNIFORM_SAMPLER3D: return GL_SAMPLER_3D;
-		case PL_UNIFORM_SAMPLERCUBE: return GL_SAMPLER_CUBE;
+		case PL_UNIFORM_SAMPLER1D:
+			return GL_SAMPLER_1D;
+		case PL_UNIFORM_SAMPLER1DSHADOW:
+			return GL_SAMPLER_1D_SHADOW;
+		case PL_UNIFORM_SAMPLER2D:
+			return GL_SAMPLER_2D;
+		case PL_UNIFORM_SAMPLER2DSHADOW:
+			return GL_SAMPLER_2D_SHADOW;
+		case PL_UNIFORM_SAMPLER3D:
+			return GL_SAMPLER_3D;
+		case PL_UNIFORM_SAMPLERCUBE:
+			return GL_SAMPLER_CUBE;
 
-		case PL_UNIFORM_VEC2: return GL_FLOAT_VEC2;
-		case PL_UNIFORM_VEC3: return GL_FLOAT_VEC3;
-		case PL_UNIFORM_VEC4: return GL_FLOAT_VEC4;
+		case PL_UNIFORM_VEC2:
+			return GL_FLOAT_VEC2;
+		case PL_UNIFORM_VEC3:
+			return GL_FLOAT_VEC3;
+		case PL_UNIFORM_VEC4:
+			return GL_FLOAT_VEC4;
 
-		case PL_UNIFORM_MAT3: return GL_FLOAT_MAT3;
+		case PL_UNIFORM_MAT3:
+			return GL_FLOAT_MAT3;
 
-		default: return SHADER_INVALID_TYPE;
+		default:
+			return SHADER_INVALID_TYPE;
 	}
 }
 
 static unsigned int TranslateGLShaderUniformType( GLenum type ) {
 	switch ( type ) {
-		case GL_BOOL: return PL_UNIFORM_BOOL;
-		case GL_DOUBLE: return PL_UNIFORM_DOUBLE;
-		case GL_FLOAT: return PL_UNIFORM_FLOAT;
-		case GL_INT: return PL_UNIFORM_INT;
-		case GL_UNSIGNED_INT: return PL_UNIFORM_UINT;
+		case GL_BOOL:
+			return PL_UNIFORM_BOOL;
+		case GL_DOUBLE:
+			return PL_UNIFORM_DOUBLE;
+		case GL_FLOAT:
+			return PL_UNIFORM_FLOAT;
+		case GL_INT:
+			return PL_UNIFORM_INT;
+		case GL_UNSIGNED_INT:
+			return PL_UNIFORM_UINT;
 
-		case GL_SAMPLER_1D: return PL_UNIFORM_SAMPLER1D;
-		case GL_SAMPLER_1D_SHADOW: return PL_UNIFORM_SAMPLER1DSHADOW;
-		case GL_SAMPLER_2D: return PL_UNIFORM_SAMPLER2D;
-		case GL_SAMPLER_2D_SHADOW: return PL_UNIFORM_SAMPLER2DSHADOW;
-		case GL_SAMPLER_3D: return PL_UNIFORM_SAMPLER3D;
-		case GL_SAMPLER_CUBE: return PL_UNIFORM_SAMPLERCUBE;
+		case GL_SAMPLER_1D:
+			return PL_UNIFORM_SAMPLER1D;
+		case GL_SAMPLER_1D_SHADOW:
+			return PL_UNIFORM_SAMPLER1DSHADOW;
+		case GL_SAMPLER_2D:
+			return PL_UNIFORM_SAMPLER2D;
+		case GL_SAMPLER_2D_SHADOW:
+			return PL_UNIFORM_SAMPLER2DSHADOW;
+		case GL_SAMPLER_3D:
+			return PL_UNIFORM_SAMPLER3D;
+		case GL_SAMPLER_CUBE:
+			return PL_UNIFORM_SAMPLERCUBE;
 
-		case GL_FLOAT_VEC2: return PL_UNIFORM_VEC2;
-		case GL_FLOAT_VEC3: return PL_UNIFORM_VEC3;
-		case GL_FLOAT_VEC4: return PL_UNIFORM_VEC4;
+		case GL_FLOAT_VEC2:
+			return PL_UNIFORM_VEC2;
+		case GL_FLOAT_VEC3:
+			return PL_UNIFORM_VEC3;
+		case GL_FLOAT_VEC4:
+			return PL_UNIFORM_VEC4;
 
-		case GL_FLOAT_MAT3: return PL_UNIFORM_MAT3;
+		case GL_FLOAT_MAT3:
+			return PL_UNIFORM_MAT3;
 
-		default: return SHADER_INVALID_TYPE;
+		default:
+			return SHADER_INVALID_TYPE;
 	}
 }
 
@@ -836,19 +912,19 @@ static unsigned int TranslateGLShaderUniformType( GLenum type ) {
  * todo: consider cleaning this up and making part of API?
  */
 static char *InsertString( const char *string, char **buf, size_t *bufSize, size_t *maxBufSize ) {
-    /* check if it's going to fit first */
-    size_t strLength = strlen( string );
-    size_t originalSize = *bufSize;
-    *bufSize += strLength;
-    if ( *bufSize >= *maxBufSize ) {
-        *maxBufSize = *bufSize + strLength;
-        *buf = pl_realloc( *buf, *maxBufSize );
-    }
+	/* check if it's going to fit first */
+	size_t strLength = strlen( string );
+	size_t originalSize = *bufSize;
+	*bufSize += strLength;
+	if ( *bufSize >= *maxBufSize ) {
+		*maxBufSize = *bufSize + strLength;
+		*buf = pl_realloc( *buf, *maxBufSize );
+	}
 
-    /* now copy it into our buffer */
-    strncpy( *buf + originalSize, string, strLength );
+	/* now copy it into our buffer */
+	strncpy( *buf + originalSize, string, strLength );
 
-    return *buf + originalSize + strLength;
+	return *buf + originalSize + strLength;
 }
 
 /**
@@ -857,13 +933,13 @@ static char *InsertString( const char *string, char **buf, size_t *bufSize, size
  * todo: this is dumb... rewrite it
  */
 static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageType type, bool head ) {
-    /* setup the destination buffer */
-    size_t actualLength = 0;
-    size_t maxLength = *length;
-    char *dstBuffer = pl_calloc( maxLength, sizeof( char ) );
-    char *dstPos = dstBuffer;
+	/* setup the destination buffer */
+	size_t actualLength = 0;
+	size_t maxLength = *length;
+	char *dstBuffer = pl_calloc( maxLength, sizeof( char ) );
+	char *dstPos = dstBuffer;
 
-    /* built-ins */
+	/* built-ins */
 #define insert( str ) dstPos = InsertString( ( str ), &dstBuffer, &actualLength, &maxLength )
 	if ( head ) {
 		insert( "#version 150 core\n" );//OpenGL 3.2 == GLSL 150
@@ -881,55 +957,55 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageTyp
 		}
 	}
 
-    const char *srcPos = buf;
-    char *srcEnd = buf + *length;
-    while( srcPos < srcEnd ) {
-        if ( *srcPos == '\0' ) {
-            break;
-        }
+	const char *srcPos = buf;
+	char *srcEnd = buf + *length;
+	while ( srcPos < srcEnd ) {
+		if ( *srcPos == '\0' ) {
+			break;
+		}
 
-        if(*srcPos == '\n' || *srcPos == '\r' || *srcPos == '\t') {
-            srcPos++;
-            continue;
-        }
+		if ( *srcPos == '\n' || *srcPos == '\r' || *srcPos == '\t' ) {
+			srcPos++;
+			continue;
+		}
 
-        if(srcPos[0] == ' ' && srcPos[1] == ' ') {
-            srcPos += 2;
-            while( *srcPos == ' ' ) { ++srcPos; }
-            continue;
-        }
+		if ( srcPos[ 0 ] == ' ' && srcPos[ 1 ] == ' ' ) {
+			srcPos += 2;
+			while ( *srcPos == ' ' ) { ++srcPos; }
+			continue;
+		}
 
-        /* skip comments */
-        if(srcPos[0] == '/' && srcPos[1] == '*') {
-            srcPos += 2;
-            while(!(srcPos[0] == '*' && srcPos[1] == '/')) srcPos++;
-            srcPos += 2;
-            continue;
-        }
+		/* skip comments */
+		if ( srcPos[ 0 ] == '/' && srcPos[ 1 ] == '*' ) {
+			srcPos += 2;
+			while ( !( srcPos[ 0 ] == '*' && srcPos[ 1 ] == '/' ) ) srcPos++;
+			srcPos += 2;
+			continue;
+		}
 
-        if(srcPos[0] == '/' && srcPos[1] == '/') {
-            srcPos += 2;
-            plSkipLine( &srcPos );
-            continue;
-        }
+		if ( srcPos[ 0 ] == '/' && srcPos[ 1 ] == '/' ) {
+			srcPos += 2;
+			plSkipLine( &srcPos );
+			continue;
+		}
 
-		if( *srcPos == '#' ) {
+		if ( *srcPos == '#' ) {
 			srcPos++;
 
 			char token[ 32 ];
 			plParseToken( &srcPos, token, sizeof( token ) );
-			if( pl_strcasecmp( token, "include" ) == 0 ) {
+			if ( pl_strcasecmp( token, "include" ) == 0 ) {
 				plSkipWhitespace( &srcPos );
 
 				/* pull the path - needs to be enclosed otherwise this'll fail */
-                char path[ PL_SYSTEM_MAX_PATH ];
+				char path[ PL_SYSTEM_MAX_PATH ];
 				plParseEnclosedString( &srcPos, path, sizeof( path ) );
 
 				PLFile *file = plOpenFile( path, true );
 				if ( file != NULL ) {
 					/* allocate a temporary buffer */
 					size_t incLength = plGetFileSize( file );
-                    char *incBuf = pl_malloc( incLength );
+					char *incBuf = pl_malloc( incLength );
 					memcpy( incBuf, plGetFileData( file ), incLength );
 
 					/* close the current file, to avoid recursively opening files
@@ -940,36 +1016,36 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageTyp
 					incBuf = GLPreProcessGLSLShader( incBuf, &incLength, type, false );
 
 					/* and finally, push it into our destination */
-                    dstPos = InsertString( incBuf, &dstBuffer, &actualLength, &maxLength );
+					dstPos = InsertString( incBuf, &dstBuffer, &actualLength, &maxLength );
 					pl_free( incBuf );
 				} else {
-                    GfxLog( "Failed to load include \"%s\": %s\n", plGetError() );
+					GfxLog( "Failed to load include \"%s\": %s\n", plGetError() );
 				}
 
-                plSkipLine( &srcPos );
+				plSkipLine( &srcPos );
 				continue;
 			}
 		}
 
-        if ( ++actualLength > maxLength ) {
-            ++maxLength;
+		if ( ++actualLength > maxLength ) {
+			++maxLength;
 
-            char *oldDstBuffer = dstBuffer;
-            dstBuffer = pl_realloc(dstBuffer, maxLength);
+			char *oldDstBuffer = dstBuffer;
+			dstBuffer = pl_realloc( dstBuffer, maxLength );
 
-            dstPos = dstBuffer + (dstPos - oldDstBuffer);
-        }
+			dstPos = dstBuffer + ( dstPos - oldDstBuffer );
+		}
 
-        *dstPos++ = *srcPos++;
-    }
+		*dstPos++ = *srcPos++;
+	}
 
-    /* free the original buffer that was passed in */
-    pl_free( buf );
+	/* free the original buffer that was passed in */
+	pl_free( buf );
 
-    /* resize and update buf to match */
-    *length = actualLength;
+	/* resize and update buf to match */
+	*length = actualLength;
 
-    return dstBuffer;
+	return dstBuffer;
 }
 
 static void GLCreateShaderProgram( PLShaderProgram *program ) {
@@ -1054,9 +1130,9 @@ static void GLCompileShaderStage( PLShaderStage *stage, const char *buf, size_t 
 	}
 
 	/* shove this here for now... */
-    char *mbuf = pl_malloc( length );
-    memcpy( mbuf, buf, length );
-    mbuf = GLPreProcessGLSLShader( mbuf, &length, stage->type, true );
+	char *mbuf = pl_malloc( length );
+	memcpy( mbuf, buf, length );
+	mbuf = GLPreProcessGLSLShader( mbuf, &length, stage->type, true );
 	buf = mbuf;
 
 	const GLint glLength = length;
@@ -1200,17 +1276,17 @@ void GLDisableState( PLGraphicsState state ) {
 
 /////////////////////////////////////////////////////////////
 
-static char gl_extensions[4096][4096] = { { '\0' } };
+static char gl_extensions[ 4096 ][ 4096 ] = { { '\0' } };
 
-#if defined(DEBUG_GL)
+#if defined( DEBUG_GL )
 static void MessageCallback(
-	GLenum source,
-	GLenum type,
-	GLuint id,
-	GLenum severity,
-	GLsizei length,
-	const GLchar *message,
-	void *param ) {
+        GLenum source,
+        GLenum type,
+        GLuint id,
+        GLenum severity,
+        GLsizei length,
+        const GLchar *message,
+        void *param ) {
 	plUnused( source );
 	plUnused( id );
 	plUnused( length );
@@ -1228,7 +1304,8 @@ static void MessageCallback(
 			s_severity = "LOW";
 			break;
 
-		default:return;
+		default:
+			return;
 	}
 
 	const char *s_type;
@@ -1319,7 +1396,7 @@ void plInitOpenGL( void ) {
 		// todo
 	}
 
-#if defined(DEBUG_GL)
+#if defined( DEBUG_GL )
 	if ( GLVersion( 4, 3 ) ) {
 		glEnable( GL_DEBUG_OUTPUT );
 		glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
@@ -1396,7 +1473,7 @@ void plInitOpenGL( void ) {
 }
 
 void plShutdownOpenGL( void ) {
-#if defined(DEBUG_GL)
+#if defined( DEBUG_GL )
 	if ( GLVersion( 4, 3 ) ) {
 		glDisable( GL_DEBUG_OUTPUT );
 		glDisable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
