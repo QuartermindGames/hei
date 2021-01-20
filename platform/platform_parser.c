@@ -40,15 +40,19 @@ void plSkipLine( const char **p ) {
 }
 
 const char *plParseEnclosedString( const char **p, char *dest, size_t size ) {
-	if ( *( *p ) == '\"' ) { ( *p )++; }
+	if ( *( *p ) == '\"' ) ( *p )++;
 	size_t i = 0;
+	/* todo!!!
+	 * you'll probably notice an issue here. yes, indeed.
+	 * if the string is not enclosed, this will iterate until
+	 * it hits the end of the buffer. not good. i want to rewrite
+	 * this anyway, so i'll review it soooonish. */
 	while ( *( *p ) != '\0' && *( *p ) != '\"' ) {
-		if ( i < size ) {
-			dest[ i++ ] = *( *p );
-		}
+		if ( ( i + 1 ) < size ) dest[ i++ ] = *( *p );
 		( *p )++;
 	}
-	if ( *( *p ) == '\"' ) { ( *p )++; }
+	if ( *( *p ) == '\"' ) ( *p )++;
+	dest[ i ] = '\0';
 	return dest;
 }
 
