@@ -417,7 +417,7 @@ static void RegisterShaderProgramData(PLShaderProgram *program) {
 	program->internal.v_uv = glGetAttribLocation( program->internal.id, "pl_vuv" );
 	program->internal.v_colour = glGetAttribLocation( program->internal.id, "pl_vcolour" );
 	program->internal.v_tangent = glGetAttribLocation( program->internal.id, "pl_vtangent" );
-	program->internal.v_bitangent = glGetAttribLocation( program->internal.id, "pl_bitangent" );
+	program->internal.v_bitangent = glGetAttribLocation( program->internal.id, "pl_vbitangent" );
 
 	int num_uniforms = 0;
     glGetProgramiv(program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms);
