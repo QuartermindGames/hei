@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #if defined(PL_SUPPORT_OPENGL)
 
 #include "graphics_private.h"
+#include <PL/pl_parse.h>
 
 #if defined( PL_USE_GLEW )
 #   include <GL/glew.h>
@@ -57,7 +58,6 @@ struct {
 	bool texture_env_add;
 	bool vertex_program;
 	bool fragment_program;
-	bool direct_state_access;
 } gl_capabilities;
 
 static int gl_version_major = 0;
@@ -830,6 +830,148 @@ static unsigned int TranslateGLShaderUniformType( GLenum type ) {
 	}
 }
 
+/**
+ * Inserts the given string into an existing string buffer.
+ * Automatically reallocs buffer if it doesn't fit.
+ * todo: consider cleaning this up and making part of API?
+ */
+static char *InsertString( const char *string, char **buf, size_t *bufSize, size_t *maxBufSize ) {
+    /* check if it's going to fit first */
+    size_t strLength = strlen( string );
+    size_t originalSize = *bufSize;
+    *bufSize += strLength;
+    if ( *bufSize >= *maxBufSize ) {
+        *maxBufSize = *bufSize + strLength;
+        *buf = pl_realloc( *buf, *maxBufSize );
+    }
+
+    /* now copy it into our buffer */
+    strncpy( *buf + originalSize, string, strLength );
+
+    return *buf + originalSize + strLength;
+}
+
+/**
+ * A basic pre-processor for GLSL - will condense the shader as much as possible
+ * and handle any pre-processor commands.
+ * todo: this is dumb... rewrite it
+ */
+static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageType type, bool head ) {
+    /* setup the destination buffer */
+    size_t actualLength = 0;
+    size_t maxLength = *length;
+    char *dstBuffer = pl_calloc( maxLength, sizeof( char ) );
+    char *dstPos = dstBuffer;
+
+    /* built-ins */
+#define insert( str ) dstPos = InsertString( ( str ), &dstBuffer, &actualLength, &maxLength )
+	if ( head ) {
+		insert( "#version 150 core\n" );//OpenGL 3.2 == GLSL 150
+		insert( "uniform mat4 pl_model;" );
+		insert( "uniform mat4 pl_view;" );
+		insert( "uniform mat4 pl_proj;" );
+		if ( type == PL_SHADER_TYPE_VERTEX ) {
+			insert( "in vec3 pl_vposition;" );
+			insert( "in vec3 pl_vnormal;" );
+			insert( "in vec2 pl_vuv;" );
+			insert( "in vec4 pl_vcolour;" );
+			insert( "in vec3 pl_vtangent, pl_vbitangent;" );
+		} else if ( type == PL_SHADER_TYPE_FRAGMENT ) {
+			insert( "out vec4 pl_frag;" );
+		}
+	}
+
+    const char *srcPos = buf;
+    char *srcEnd = buf + *length;
+    while( srcPos < srcEnd ) {
+        if ( *srcPos == '\0' ) {
+            break;
+        }
+
+        if(*srcPos == '\n' || *srcPos == '\r' || *srcPos == '\t') {
+            srcPos++;
+            continue;
+        }
+
+        if(srcPos[0] == ' ' && srcPos[1] == ' ') {
+            srcPos += 2;
+            while( *srcPos == ' ' ) { ++srcPos; }
+            continue;
+        }
+
+        /* skip comments */
+        if(srcPos[0] == '/' && srcPos[1] == '*') {
+            srcPos += 2;
+            while(!(srcPos[0] == '*' && srcPos[1] == '/')) srcPos++;
+            srcPos += 2;
+            continue;
+        }
+
+        if(srcPos[0] == '/' && srcPos[1] == '/') {
+            srcPos += 2;
+            plSkipLine( &srcPos );
+            continue;
+        }
+
+		if( *srcPos == '#' ) {
+			srcPos++;
+
+			char token[ 32 ];
+			plParseToken( &srcPos, token, sizeof( token ) );
+			if( pl_strcasecmp( token, "include" ) == 0 ) {
+				plSkipWhitespace( &srcPos );
+
+				/* pull the path - needs to be enclosed otherwise this'll fail */
+                char path[ PL_SYSTEM_MAX_PATH ];
+				plParseEnclosedString( &srcPos, path, sizeof( path ) );
+
+				PLFile *file = plOpenFile( path, true );
+				if ( file != NULL ) {
+					/* allocate a temporary buffer */
+					size_t incLength = plGetFileSize( file );
+                    char *incBuf = pl_malloc( incLength );
+					memcpy( incBuf, plGetFileData( file ), incLength );
+
+					/* close the current file, to avoid recursively opening files
+					 * and hitting any limits */
+					plCloseFile( file );
+
+					/* now throw it into the pre-processor */
+					incBuf = GLPreProcessGLSLShader( incBuf, &incLength, type, false );
+
+					/* and finally, push it into our destination */
+                    dstPos = InsertString( incBuf, &dstBuffer, &actualLength, &maxLength );
+					pl_free( incBuf );
+				} else {
+                    GfxLog( "Failed to load include \"%s\": %s\n", plGetError() );
+				}
+
+                plSkipLine( &srcPos );
+				continue;
+			}
+		}
+
+        if ( ++actualLength > maxLength ) {
+            ++maxLength;
+
+            char *oldDstBuffer = dstBuffer;
+            dstBuffer = pl_realloc(dstBuffer, maxLength);
+
+            dstPos = dstBuffer + (dstPos - oldDstBuffer);
+        }
+
+        *dstPos++ = *srcPos++;
+    }
+
+    /* free the original buffer that was passed in */
+    pl_free( buf );
+
+    /* resize and update buf to match */
+    *length = actualLength;
+
+    return dstBuffer;
+}
+
 static void GLCreateShaderProgram( PLShaderProgram *program ) {
 	if ( !GLVersion( 2, 0 ) ) {
 		GfxLog( "HW shaders unsupported on platform, relying on SW fallback\n" );
@@ -911,6 +1053,12 @@ static void GLCompileShaderStage( PLShaderStage *stage, const char *buf, size_t 
 		return;
 	}
 
+	/* shove this here for now... */
+    char *mbuf = pl_malloc( length );
+    memcpy( mbuf, buf, length );
+    mbuf = GLPreProcessGLSLShader( mbuf, &length, stage->type, true );
+	buf = mbuf;
+
 	const GLint glLength = length;
 	glShaderSource( stage->internal.id, 1, &buf, &glLength );
 
@@ -932,6 +1080,8 @@ static void GLCompileShaderStage( PLShaderStage *stage, const char *buf, size_t 
 	} else {
 		GfxLog( " COMPLETED SUCCESSFULLY!\n" );
 	}
+
+	pl_free( mbuf );
 }
 
 static void GLSetShaderUniformMatrix4( PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose ) {
@@ -1176,16 +1326,6 @@ void plInitOpenGL( void ) {
 
 		glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE );
 		glDebugMessageCallback( ( GLDEBUGPROC ) MessageCallback, NULL );
-	}
-#endif
-
-#if defined( PL_USE_GLEW )
-	if ( GLEW_ARB_direct_state_access || GLVersion( 4, 5 ) ) {
-		gl_capabilities.direct_state_access = true;
-	}
-#else
-	if ( GLVersion( 4, 5 ) ) {
-		gl_capabilities.direct_state_access = true;
 	}
 #endif
 

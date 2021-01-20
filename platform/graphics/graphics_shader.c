@@ -45,126 +45,6 @@ For more information, please refer to <http://unlicense.org>
 /* shader implementation */
 
 /**********************************************************/
-/** preprocessor **/
-
-#if defined(PL_SUPPORT_OPENGL)
-
-/**
- * Inserts the given string into an existing string buffer.
- * Automatically reallocs buffer if it doesn't fit.
- */
-static char *_plInsertString( const char *string, char **buf, size_t *bufSize, size_t *maxBufSize ) {
-	/* check if it's going to fit first */
-	size_t strLength = strlen( string );
-	size_t originalSize = *bufSize;
-	*bufSize += strLength;
-	if ( *bufSize >= *maxBufSize ) {
-		*maxBufSize = *bufSize + strLength;
-		*buf = pl_realloc( *buf, *maxBufSize );
-	}
-
-	/* now copy it into our buffer */
-	strncpy( *buf + originalSize, string, strLength );
-
-	return *buf + originalSize + strLength;
-}
-
-static char *_plSkipLine( char *buf ) {
-	while ( *buf != '\0' &&
-	        *buf != '\n' &&
-	        *buf != '\r' ) {
-		buf++;
-	}
-
-	return buf;
-}
-
-/**
- * A basic pre-processor for GLSL - will condense the shader as much as possible
- * and handle any pre-processor commands.
- * todo: this is dumb... rewrite and move it
- */
-static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageType type ) {
-	/* setup the destination buffer */
-	size_t actualLength = 0;
-	size_t maxLength = *length;
-    char *dstBuffer = pl_calloc( maxLength, sizeof( char ) );
-	char *dstPos = dstBuffer;
-
-    /* built-ins */
-#define insert( str ) dstPos = _plInsertString( ( str ), &dstBuffer, &actualLength, &maxLength )
-    insert( "#version 150 core\n" ); //OpenGL 3.2 == GLSL 150
-	insert( "uniform mat4 pl_model;" );
-	insert( "uniform mat4 pl_view;" );
-	insert( "uniform mat4 pl_proj;" );
-    if(type == PL_SHADER_TYPE_VERTEX) {
-		insert( "in vec3 pl_vposition;" );
-		insert( "in vec3 pl_vnormal;" );
-		insert( "in vec2 pl_vuv;" );
-		insert( "in vec4 pl_vcolour;" );
-		insert( "in vec3 pl_vtangent, pl_vbitangent;" );
-    } else if(type == PL_SHADER_TYPE_FRAGMENT) {
-		insert( "out vec4 pl_frag;" );
-    }
-
-	char *srcPos = buf;
-    char *srcEnd = buf + *length;
-    while( srcPos < srcEnd ) {
-    	if ( *srcPos == '\0' ) {
-    		break;
-    	}
-
-	    if(*srcPos == '\n' || *srcPos == '\r' || *srcPos == '\t') {
-		    srcPos++;
-		    continue;
-	    }
-
-	    if(srcPos[0] == ' ' && srcPos[1] == ' ') {
-		    srcPos += 2;
-			while( *srcPos == ' ' ) { ++srcPos; }
-		    continue;
-	    }
-
-	    /* skip comments */
-	    if(srcPos[0] == '/' && srcPos[1] == '*') {
-		    srcPos += 2;
-		    while(!(srcPos[0] == '*' && srcPos[1] == '/')) srcPos++;
-		    srcPos += 2;
-		    continue;
-	    }
-
-	    if(srcPos[0] == '/' && srcPos[1] == '/') {
-		    srcPos += 2;
-		    srcPos = _plSkipLine( srcPos );
-		    continue;
-	    }
-
-	    if ( ++actualLength > maxLength ) {
-		    ++maxLength;
-
-		    char *oldDstBuffer = dstBuffer;
-		    dstBuffer = pl_realloc(dstBuffer, maxLength);
-
-		    dstPos = dstBuffer + (dstPos - oldDstBuffer);
-	    }
-
-	    *dstPos++ = *srcPos++;
-    }
-
-    /* free the original buffer that was passed in */
-	pl_free( buf );
-
-    /* resize and update buf to match */
-	*length = actualLength;
-
-	return dstBuffer;
-}
-
-#endif
-
-/**********************************************************/
-
-/**********************************************************/
 /** shader stages **/
 
 /**
@@ -216,20 +96,13 @@ void plDestroyShaderStage(PLShaderStage *stage) {
 void plCompileShaderStage( PLShaderStage *stage, const char *buf, size_t length ) {
 	_plResetError();
 
-#if defined( PL_SUPPORT_OPENGL )
-	char *bufDst = pl_malloc( length );
-	memcpy( bufDst, buf, length );
-
-	bufDst = GLPreProcessGLSLShader( bufDst, &length, stage->type );
-
-	CallGfxFunction( CompileShaderStage, stage, bufDst, length );
-
-	pl_free( bufDst );
-#else
 	CallGfxFunction( CompileShaderStage, stage, buf, length );
-#endif
 }
 
+/**
+ * This actually parses _and_ compiles the given stage.
+ * Returns NULL on fail.
+ */
 PLShaderStage *plParseShaderStage(PLShaderStageType type, const char *buf, size_t length) {
     PLShaderStage *stage = CreateShaderStage(type);
     if(stage == NULL) {
