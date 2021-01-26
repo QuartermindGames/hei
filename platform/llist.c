@@ -113,8 +113,11 @@ void plDestroyLinkedListNodes( PLLinkedList *list ) {
 }
 
 void plDestroyLinkedList( PLLinkedList *list ) {
-	plDestroyLinkedListNodes( list );
+	if ( list == NULL ) {
+		return;
+	}
 
+	plDestroyLinkedListNodes( list );
 	pl_free( list );
 }
 
