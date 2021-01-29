@@ -57,17 +57,21 @@ const char *plParseEnclosedString( const char **p, char *dest, size_t size ) {
 }
 
 const char *plParseToken( const char **p, char *dest, size_t size ) {
-	memset( dest, 0, size );
 	plSkipWhitespace( p );
+
 	size_t i = 0;
 	while ( *( *p ) != '\0' && *( *p ) != ' ' ) {
-		if ( i < size ) {
+		if ( ( i + 1 ) < size ) {
 			dest[ i++ ] = *( *p );
 		}
 		( *p )++;
 	}
 
-	if ( *( *p ) == ' ' ) { ( *p )++; }
+	if ( *( *p ) == ' ' ) {
+		( *p )++;
+	}
+
+	dest[ i ] = '\0';
 	return dest;
 }
 
