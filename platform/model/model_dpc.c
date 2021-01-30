@@ -33,6 +33,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include "model_private.h"
 
+#if 0
 // OutWars Model Format
 
 typedef struct __attribute((packed)) DpcHeader {
@@ -40,3 +41,4 @@ typedef struct __attribute((packed)) DpcHeader {
   uint32_t version; // always 67
 
 } DpcHeader;
+#endif
