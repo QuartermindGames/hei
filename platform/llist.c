@@ -73,7 +73,7 @@ PLLinkedListNode *plGetPrevLinkedListNode( PLLinkedListNode *node ) {
 	return node->prev;
 }
 
-PLLinkedListNode *plGetRootNode( PLLinkedList *list ) {
+PLLinkedListNode *plGetFirstNode( PLLinkedList *list ) {
 	return list->root;
 }
 
