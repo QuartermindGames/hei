@@ -667,7 +667,7 @@ void plInitializePlugins( void ) {
 		return;
 	}
 
-	PLLinkedListNode *node = plGetRootNode( plugins );
+	PLLinkedListNode *node = plGetFirstNode( plugins );
 	while ( node != NULL ) {
 		PLPlugin *plugin = ( PLPlugin * ) plGetLinkedListNodeUserData( node );
 
