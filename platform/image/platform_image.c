@@ -564,7 +564,6 @@ bool plFlipImageVertical( PLImage *image ) {
  */
 const char **plGetSupportedImageFormats( unsigned int *numElements ) {
 	static const char *imageFormats[ MAX_IMAGE_LOADERS ];
-	memset( imageFormats, 0, sizeof( imageFormats ) );
 	for ( unsigned int i = 0; i < numImageLoaders; ++i ) {
 		imageFormats[ i ] = imageLoaders[ i ].extension;
 	}

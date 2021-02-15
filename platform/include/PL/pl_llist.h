@@ -44,7 +44,7 @@ void plDestroyLinkedListNodes( PLLinkedList *list );
 
 PLLinkedListNode *plGetNextLinkedListNode( PLLinkedListNode *node );
 PLLinkedListNode *plGetPrevLinkedListNode( PLLinkedListNode *node );
-PLLinkedListNode *plGetRootNode( PLLinkedList *list );
+PLLinkedListNode *plGetFirstNode( PLLinkedList *list );
 void *plGetLinkedListNodeUserData( PLLinkedListNode *node );
 
 unsigned int plGetNumLinkedListNodes( PLLinkedList *list );

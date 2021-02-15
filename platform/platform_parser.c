@@ -25,24 +25,34 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_math.h>
 #include <PL/pl_parse.h>
+#include <PL/platform_math.h>
 
 void plSkipWhitespace( const char **p ) {
-	while ( *( *p ) == ' ' && *( *p ) != '\0' ) { ( *p )++; }
+	while ( *( *p ) == ' ' ) ( *p )++;
 	if ( *( *p ) == ' ' ) ++( *p );
 }
 
+void plSkipLine( const char **p ) {
+	while ( *( *p ) != '\0' && *( *p ) != '\n' && *( *p ) != '\r' ) ( *p )++;
+	if ( *( *p ) == '\r' ) ( *p )++;
+	if ( *( *p ) == '\n' ) ( *p )++;
+}
+
 const char *plParseEnclosedString( const char **p, char *dest, size_t size ) {
-	if ( *( *p ) == '\"' ) { ( *p )++; }
+	if ( *( *p ) == '\"' ) ( *p )++;
 	size_t i = 0;
-	while( *( *p ) != '\0' && *( *p ) != '\"') {
-		if ( !( i >= size ) ) {
-			dest[ i++ ] = *( *p );
-		}
+	/* todo!!!
+	 * you'll probably notice an issue here. yes, indeed.
+	 * if the string is not enclosed, this will iterate until
+	 * it hits the end of the buffer. not good. i want to rewrite
+	 * this anyway, so i'll review it soooonish. */
+	while ( *( *p ) != '\0' && *( *p ) != '\"' ) {
+		if ( ( i + 1 ) < size ) dest[ i++ ] = *( *p );
 		( *p )++;
 	}
-	if ( *( *p ) == '\"' ) { ( *p )++; }
+	if ( *( *p ) == '\"' ) ( *p )++;
+	dest[ i ] = '\0';
 	return dest;
 }
 
@@ -50,8 +60,8 @@ const char *plParseToken( const char **p, char *dest, size_t size ) {
 	memset( dest, 0, size );
 	plSkipWhitespace( p );
 	size_t i = 0;
-	while( *( *p ) != '\0' && *( *p ) != ' ') {
-		if ( !( i >= size ) ) {
+	while ( *( *p ) != '\0' && *( *p ) != ' ' ) {
+		if ( i < size ) {
 			dest[ i++ ] = *( *p );
 		}
 		( *p )++;
@@ -62,7 +72,7 @@ const char *plParseToken( const char **p, char *dest, size_t size ) {
 }
 
 int plParseInteger( const char **p ) {
-	char num[ 32 ];
+	char num[ 64 ];
 	if ( !plParseToken( p, num, sizeof( num ) ) ) {
 		printf( "Failed to parse integer!\n" );
 		return 0;
@@ -72,7 +82,7 @@ int plParseInteger( const char **p ) {
 }
 
 float plParseFloat( const char **p ) {
-	char num[ 32 ];
+	char num[ 64 ];
 	if ( !plParseToken( p, num, sizeof( num ) ) ) {
 		printf( "Failed to parse float!\n" );
 		return 0;
@@ -84,9 +94,9 @@ float plParseFloat( const char **p ) {
 PLVector3 plParseVector( const char **p ) {
 	plSkipWhitespace( p );
 	if ( *( *p ) == '(' ) { ( *p )++; }
-	float x = plParseInteger( p );
-	float y = plParseInteger( p );
-	float z = plParseInteger( p );
+	float x = plParseFloat( p );
+	float y = plParseFloat( p );
+	float z = plParseFloat( p );
 	if ( *( *p ) == ')' ) { ( *p )++; }
 	return PLVector3( x, y, z );
 }

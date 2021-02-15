@@ -42,8 +42,6 @@ For more information, please refer to <http://unlicense.org>
 #define PL_TAU          6.28318530717f
 #define PL_EPSILON      1.19209290e-7f
 
-#define PL_MAX_UINT     (unsigned int)(-1)
-
 enum {
 	// Colours
     PL_RED = 0,

@@ -68,3 +68,6 @@ int pl_strisdigit(const char *s);
 int pl_strnisdigit(const char *s, unsigned int n);
 
 int pl_vscprintf( const char *format, va_list pArgs );
+
+unsigned int pl_strcnt( const char *s, char c );
+unsigned int pl_strncnt( const char *s, char c, unsigned int n );

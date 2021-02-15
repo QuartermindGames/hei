@@ -455,6 +455,36 @@ void plSetConsoleOutputCallback(void(*Callback)(int level, const char *msg)) {
 
 /////////////////////////////////////////////////////
 
+/**
+ * Takes a string and returns a list of possible options.
+ */
+const char **plAutocompleteConsoleString( const char *string, unsigned int *numElements ) {
+#define MAX_AUTO_OPTIONS 16
+	static const char *options[ MAX_AUTO_OPTIONS ];
+	unsigned int c = 0;
+	/* gather all the console variables */
+	for ( unsigned int i = 0; i < _pl_num_variables; ++i ) {
+		if ( c >= MAX_AUTO_OPTIONS ) {
+			break;
+		} else if ( pl_strncasecmp( string, _pl_variables[ i ]->var, strlen( string ) ) != 0 ) {
+			continue;
+		}
+        options[ c++ ] = _pl_variables[ i ]->var;
+	}
+	/* gather up all the console commands */
+	for ( unsigned int i = 0; i < _pl_num_commands; ++i ) {
+		if ( c >= MAX_AUTO_OPTIONS ) {
+			break;
+		} else if ( pl_strncasecmp( string, _pl_commands[ i ]->cmd, strlen( string ) ) != 0 ) {
+			continue;
+		}
+		options[ c++ ] = _pl_commands[ i ]->cmd;
+	}
+
+	*numElements = c;
+	return options;
+}
+
 void plParseConsoleString(const char *string) {
     if(string == NULL || string[0] == '\0') {
         DebugPrint("Invalid string passed to ParseConsoleString!\n");

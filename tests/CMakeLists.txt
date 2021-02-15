@@ -1,4 +1,4 @@
-/*
+#[[
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,22 +23,12 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-*/
+]]
 
-#include <PL/platform_filesystem.h>
-#include <PL/platform_model.h>
-#include <PL/platform_console.h>
+project(tests)
 
-#include <platform_private.h>
+file(GLOB TEST_SOURCE_FILES *.c *.h)
 
-#include "model_private.h"
+add_executable(tests ${TEST_SOURCE_FILES})
 
-#if 0
-// OutWars Model Format
-
-typedef struct __attribute((packed)) DpcHeader {
-  char identity[4]; // DCPM
-  uint32_t version; // always 67
-
-} DpcHeader;
-#endif
+target_link_libraries(tests platform)

@@ -34,36 +34,28 @@ For more information, please refer to <http://unlicense.org>
  * Generate cubic coordinates for the given vertices.
  */
 void plGenerateTextureCoordinates( PLVertex *vertices, unsigned int numVertices, PLVector2 textureOffset, PLVector2 textureScale ) {
-	/* todo: figure out what projection face we're using */
-	unsigned int l = 0, r = 2;
-	PLVector3 projSums[2] = { { 0.0f, 0.0f, 0.0f },
-	                          { 0.0f, 0.0f, 0.0f } };
-	for ( unsigned int i = 0; i < numVertices; ++i ) {
-		for ( unsigned int j = 0; j < 3; ++j ) {
-			float v = plVector3Index( vertices[ i ].normal, j );
-			float max = plVector3Index( projSums[ 0 ], j );
-			if ( v > max ) { plVector3Index( projSums[ 0 ], j ) = v; }
-			float min = plVector3Index( projSums[ 1 ], j );
-			if ( v < min ) { plVector3Index( projSums[ 1 ], j ) = v; }
-		}
+	if ( textureScale.x == 0.0f || textureScale.y == 0.0f ) {
+		return;
 	}
 
-	/* now get the greater sum and dir */
-#if 0
-	float sum = 0.0f;
-	unsigned int dir = 0;
-	for ( unsigned int j = 0; j < 3; ++j ) {
-		float max = plVector3Index( projSums[ 0 ], j );
-		float min = plVector3Index( projSums[ 1 ], j );
-		if ( sum > max ) { plVector3Index( projSums[ 0 ], j ) = sum; dir = j; }
-		else if ( sum < min ) { plVector3Index( projSums[ 1 ], j ) = sum; dir = j; }
-	}
-#endif
-
-	PLCollisionAABB bounds = plGenerateAABB( vertices, numVertices, true );
+	unsigned int x, y;
 	for ( unsigned int i = 0; i < numVertices; ++i ) {
-		vertices[ i ].st[ 0 ].x = ( plVector3Index( vertices[ i ].position, l ) / plVector3Index( bounds.maxs, l ) + textureOffset.x ) * textureScale.x;
-		vertices[ i ].st[ 0 ].y = ( plVector3Index( vertices[ i ].position, r ) / plVector3Index( bounds.maxs, r ) + textureOffset.y ) * textureScale.y;
+        if ( ( fabsf( vertices[ i ].normal.x ) > fabsf( vertices[ i ].normal.y ) ) &&
+		     ( fabsf( vertices[ i ].normal.x ) > fabsf( vertices[ i ].normal.z ) ) ) {
+			x = ( vertices[ i ].normal.x > 0.0 ) ? 1 : 2;
+			y = ( vertices[ i ].normal.x > 0.0 ) ? 2 : 1;
+		} else if ( ( fabsf( vertices[ i ].normal.z ) > fabsf( vertices[ i ].normal.x ) ) &&
+		            ( fabsf( vertices[ i ].normal.z ) > fabsf( vertices[ i ].normal.y ) ) ) {
+			x = ( vertices[ i ].normal.z > 0.0 ) ? 0 : 1;
+			y = ( vertices[ i ].normal.z > 0.0 ) ? 1 : 0;
+		} else {
+            x = ( vertices[ i ].normal.y > 0.0 ) ? 2 : 0;
+            y = ( vertices[ i ].normal.y > 0.0 ) ? 0 : 2;
+        }
+
+		/* why the weird multiplication at the end here? to roughly match previous scaling values */
+        vertices[ i ].st[ 0 ].x = ( plVector3Index( vertices[ i ].position, x ) + textureOffset.x ) / ( textureScale.x * 500.0f );
+        vertices[ i ].st[ 0 ].y = ( plVector3Index( vertices[ i ].position, y ) + textureOffset.y ) / ( textureScale.y * 500.0f );
 	}
 }
 
@@ -109,10 +101,10 @@ void plGenerateMeshTangentBasis( PLMesh *mesh ) {
 
 /* based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#computing-the-tangents-and-bitangents */
 void plGenerateTangentBasis( PLVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles ) {
-	for ( unsigned int i = 0; i < numTriangles; i += 3 ) {
-		PLVertex *a = &vertices[ indices[ i ] ];
-		PLVertex *b = &vertices[ indices[ i + 1 ] ];
-		PLVertex *c = &vertices[ indices[ i + 2 ] ];
+	for ( unsigned int i = 0; i < numTriangles; i++, indices += 3 ) {
+		PLVertex *a = &vertices[ indices[ 0 ] ];
+		PLVertex *b = &vertices[ indices[ 1 ] ];
+		PLVertex *c = &vertices[ indices[ 2 ] ];
 
 		/* edges of the triangle, aka, position delta */
 		PLVector3 deltaPos1 = plSubtractVector3( b->position, a->position );

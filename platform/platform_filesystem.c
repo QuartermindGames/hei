@@ -844,6 +844,7 @@ PLFile* plOpenLocalFile( const char* path, bool cache ) {
 
 	if ( cache ) {
 		ptr->data = pl_malloc( ptr->size * sizeof( uint8_t ) );
+        ptr->pos = ptr->data;
 		if ( fread( ptr->data, sizeof( uint8_t ), ptr->size, fp ) != ptr->size ) {
 			FSLog( "Failed to read complete file (%s)!\n", path );
 		}

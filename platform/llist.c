@@ -73,7 +73,7 @@ PLLinkedListNode *plGetPrevLinkedListNode( PLLinkedListNode *node ) {
 	return node->prev;
 }
 
-PLLinkedListNode *plGetRootNode( PLLinkedList *list ) {
+PLLinkedListNode *plGetFirstNode( PLLinkedList *list ) {
 	return list->root;
 }
 
@@ -113,8 +113,11 @@ void plDestroyLinkedListNodes( PLLinkedList *list ) {
 }
 
 void plDestroyLinkedList( PLLinkedList *list ) {
-	plDestroyLinkedListNodes( list );
+	if ( list == NULL ) {
+		return;
+	}
 
+	plDestroyLinkedListNodes( list );
 	pl_free( list );
 }
 

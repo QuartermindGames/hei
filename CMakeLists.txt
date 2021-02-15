@@ -41,6 +41,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-unused-function")
 
 add_subdirectory(platform)
+add_subdirectory(tests)
 
 if (BUILD_EXAMPLES)
     add_subdirectory(examples/viewer)

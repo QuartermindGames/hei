@@ -25,20 +25,30 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_filesystem.h>
-#include <PL/platform_model.h>
-#include <PL/platform_console.h>
+unsigned int pl_strcnt( const char *s, char c ) {
+	unsigned int num = 0;
+	for ( unsigned int i = 0; s[ i ] != '\0'; ++i ) {
+		if ( s[ i ] != c ) {
+			continue;
+		}
 
-#include <platform_private.h>
+		num++;
+	}
+	return num;
+}
 
-#include "model_private.h"
+unsigned int pl_strncnt( const char *s, char c, unsigned int n ) {
+	unsigned int num = 0;
+	for ( unsigned int i = 0; i < n; ++i ) {
+		if ( s[ i ] == '\0' ) {
+			break;
+		}
 
-#if 0
-// OutWars Model Format
+		if ( s[ i ] != c ) {
+			continue;
+		}
 
-typedef struct __attribute((packed)) DpcHeader {
-  char identity[4]; // DCPM
-  uint32_t version; // always 67
-
-} DpcHeader;
-#endif
+		num++;
+	}
+	return num;
+}

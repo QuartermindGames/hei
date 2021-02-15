@@ -37,6 +37,7 @@ option(PL_SUPPORT_GLIDE "Graphics 3dfx Glide API support" OFF)
 option(PL_SUPPORT_OPENGL "Graphics OpenGL API support" OFF)
 
 option(PL_USE_GLEW "Use GLEW for OpenGL API support" OFF)
+option(PL_COMPILE_STATIC "Compile as static library" OFF)
 
 ############################################################
 
@@ -63,7 +64,7 @@ file(
         physics.c
         window.c
 
-        string/*.*
+        string/*.c string/*.h
         memory/*.*
 
         include/*.h
@@ -89,13 +90,23 @@ if (PL_USE_GRAPHICS)
     file(GLOB PLATFORM_GRAPHICS_FILES graphics/*.*)
 endif ()
 
-add_library(platform STATIC
-        ${PLATFORM_SOURCE_FILES}
-        ${PLATFORM_WINDOW_FILES}
-        ${PLATFORM_GRAPHICS_FILES}
-        ${PLATFORM_IMAGE_FILES}
-        ${PLATFORM_MODEL_FILES}
-        ${PLATFORM_PACKAGE_FILES})
+if (PL_COMPILE_STATIC)
+    add_library(platform STATIC
+            ${PLATFORM_SOURCE_FILES}
+            ${PLATFORM_WINDOW_FILES}
+            ${PLATFORM_GRAPHICS_FILES}
+            ${PLATFORM_IMAGE_FILES}
+            ${PLATFORM_MODEL_FILES}
+            ${PLATFORM_PACKAGE_FILES})
+else ()
+    add_library(platform SHARED
+            ${PLATFORM_SOURCE_FILES}
+            ${PLATFORM_WINDOW_FILES}
+            ${PLATFORM_GRAPHICS_FILES}
+            ${PLATFORM_IMAGE_FILES}
+            ${PLATFORM_MODEL_FILES}
+            ${PLATFORM_PACKAGE_FILES})
+endif ()
 
 target_compile_options(platform PUBLIC -DPL_INTERNAL)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")

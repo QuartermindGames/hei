@@ -75,6 +75,10 @@ static PLImage *FD3_ReadFile( PLFile *file ) {
 		ReportError( PL_RESULT_FILEREAD, "failed to read lod range" );
 		return NULL;
 	}
+	if ( w <= 0 || h <= 0 || w > 256 || h > 256 ) {
+		ReportBasicError( PL_RESULT_IMAGERESOLUTION );
+		return NULL;
+	}
 
 	/* aspect */
 	if ( plReadString( file, buf, sizeof( buf ) ) == NULL ) {
@@ -85,24 +89,72 @@ static PLImage *FD3_ReadFile( PLFile *file ) {
 		ReportError( PL_RESULT_FILEREAD, "failed to read aspect ratio" );
 		return NULL;
 	}
-	if ( x != 1 && y != 1 ) {
-		ReportError( PL_RESULT_IMAGERESOLUTION, "unsupported aspect ratio, \"%s\"", buf );
-		return NULL;
+
+	switch ( ( x << 4 ) | ( y ) ) {
+		case 0x81:
+			h = h / 8;
+			break;
+		case 0x41:
+			h = h / 4;
+			break;
+		case 0x21:
+			h = h / 2;
+			break;
+		case 0x11:
+			h = h / 1;
+			break;
+		case 0x12:
+			w = w / 2;
+			break;
+		case 0x14:
+			w = w / 4;
+			break;
+		case 0x18:
+			w = w / 8;
+			break;
+		default:
+			ReportError( PL_RESULT_FAIL, "unexpected aspect-ratio: %dx%d", x, y );
+			return NULL;
 	}
 
 	/* now we can load the actual data in */
-	size_t imgBufSize = plGetImageSize( dataFormat, w, h );
-	uint8_t *imgBuf = pl_malloc( imgBufSize );
-
-	if ( plReadFile( file, imgBuf, sizeof( char ), imgBufSize ) != imgBufSize ) {
-		pl_free( imgBuf );
+	size_t srcSize = plGetImageSize( dataFormat, w, h );
+	uint8_t *srcBuf = pl_malloc( srcSize );
+	if ( plReadFile( file, srcBuf, sizeof( char ), srcSize ) != srcSize ) {
+		pl_free( srcBuf );
 		return NULL;
 	}
 
-	PLImage *image = plCreateImage( imgBuf, w, h, PL_COLOURFORMAT_ARGB, dataFormat );
+	/* convert it... */
+	size_t dstSize = plGetImageSize( PL_IMAGEFORMAT_RGBA8, w, h );
+	uint8_t *dstBuf = pl_malloc( dstSize );
+	if ( dataFormat != PL_IMAGEFORMAT_RGBA8 ) {
+		switch( dataFormat ) {
+			case PL_IMAGEFORMAT_RGB5A1: {
+				uint8_t *dstPos = dstBuf;
+                for ( size_t i = 0; i < srcSize; i += 2 ) {
+					dstPos[ PL_RED ]    = ( ( srcBuf[ i ] & 124 ) << 1 );
+					dstPos[ PL_GREEN ]  = ( ( srcBuf[ i ] & 3 ) << 6 ) | ( ( srcBuf[ i + 1 ] & 224 ) >> 2 );
+					dstPos[ PL_BLUE ]   = ( ( srcBuf[ i + 1 ] & 31 ) << 3 );
+					dstPos[ PL_ALPHA ]  = ( srcBuf[ i ] & 128 ) ? 0 : 255;
+					dstPos += 4;
+				}
+
+				pl_free( srcBuf );
+				break;
+			}
+			default:
+				pl_free( dstBuf );
+				dstBuf = srcBuf;
+				break;
+
+		}
+	}
+
+	PLImage *image = plCreateImage( dstBuf, w, h, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
 	/* no longer need this */
-	pl_free( imgBuf );
+	pl_free( dstBuf );
 
 	return image;
 }

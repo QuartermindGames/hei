@@ -53,16 +53,13 @@ support.
 
 // Shared headers
 #ifndef PL_IGNORE_SHARED_HEADERS
-
 #	include <stdio.h>
 #	include <stdlib.h>
 #	include <stdarg.h>
 #	include <stdlib.h>
 
 #	ifdef PL_INCLUDE_STD_BOOL
-
 #		include <stdbool.h>
-
 #	endif
 
 #	include <stdint.h>
@@ -74,25 +71,6 @@ support.
 
 #	include <sys/stat.h>
 #	include <sys/types.h>
-
-// C++
-#	ifndef PL_IGNORE_STD_HEADERS
-#		ifdef __cplusplus
-#			include <cstdint>
-#			include <memory>
-#			include <string>
-#			include <vector>
-#			include <set>
-#			include <unordered_set>
-#			include <map>
-#			include <unordered_map>
-#			include <algorithm>
-
-// istream
-#			include <fstream>
-#			include <iostream>
-#		endif
-#	endif
 #endif
 
 #ifdef __cplusplus
