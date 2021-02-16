@@ -27,9 +27,10 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include "platform.h"
-#include "platform_math.h"
-#include "platform_image.h"
+#include <PL/platform.h>
+#include <PL/platform_math.h>
+
+typedef struct PLImage PLImage;
 
 typedef enum PLGfxMode {
     PL_GFX_MODE_NONE,

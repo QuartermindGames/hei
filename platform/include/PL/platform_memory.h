@@ -25,7 +25,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#pragma once
+
 extern void *(*pl_malloc)(size_t size);
 extern void *(*pl_calloc)(size_t num, size_t size);
 extern void *(*pl_realloc)(void* ptr, size_t newSize);
 extern void (*pl_free)(void* ptr);
+
+extern uint64_t plGetTotalSystemMemory( void );
+extern uint64_t plGetTotalAvailableSystemMemory( void );
+extern uint64_t plGetCurrentMemoryUsage( void );
