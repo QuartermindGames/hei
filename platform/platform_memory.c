@@ -29,17 +29,17 @@ For more information, please refer to <http://unlicense.org>
 
 #include "platform_private.h"
 
-static void *MemoryCountAlloc(size_t num, size_t size) {
-    void *buf = calloc(num, size);
-    if(buf == NULL) {
-        ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %lu bytes", (unsigned long) size * num);
-    }
+static void *MemoryCountAlloc( size_t num, size_t size ) {
+	void *buf = calloc( num, size );
+	if ( buf == NULL ) {
+		ReportError( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %lu bytes", ( unsigned long ) size * num );
+	}
 
-    return buf;
+	return buf;
 }
 
-static void *MemoryAlloc(size_t size) {
-    return MemoryCountAlloc(1, size);
+static void *MemoryAlloc( size_t size ) {
+	return MemoryCountAlloc( 1, size );
 }
 
 static void *MemoryReAlloc( void *ptr, size_t newSize ) {
@@ -51,7 +51,58 @@ static void *MemoryReAlloc( void *ptr, size_t newSize ) {
 	return buf;
 }
 
-void *(*pl_malloc)(size_t size) = MemoryAlloc;
-void *(*pl_calloc)(size_t num, size_t size) = MemoryCountAlloc;
-void *(*pl_realloc)(void *ptr, size_t newSize) = MemoryReAlloc;
-void (*pl_free)(void* ptr) = free;
+void *( *pl_malloc )( size_t size ) = MemoryAlloc;
+void *( *pl_calloc )( size_t num, size_t size ) = MemoryCountAlloc;
+void *( *pl_realloc )( void *ptr, size_t newSize ) = MemoryReAlloc;
+void ( *pl_free )( void *ptr ) = free;
+
+/**
+ * Returns the total amount of system memory in bytes.
+ */
+uint64_t plGetTotalSystemMemory( void ) {
+#if defined( __linux__ )
+	long pages = sysconf( _SC_PHYS_PAGES );
+	long pageSize = sysconf( _SC_PAGE_SIZE );
+	return pages * pageSize;
+#elif defined( _WIN32 )
+	MEMORYSTATUSEX stat;
+	stat.dwLength = sizeof( stat );
+	GlobalMemoryStatusEx( &stat );
+	return stat.ullTotalPageFile;
+#else
+#error "Missing implementation!"
+#endif
+}
+
+/**
+ * Returns the total amount of available system memory in bytes.
+ */
+uint64_t plGetTotalAvailableSystemMemory( void ) {
+#if defined( __linux__ )
+	long pages = sysconf( _SC_AVPHYS_PAGES );
+	long pageSize = sysconf( _SC_PAGE_SIZE );
+	return pages * pageSize;
+#elif defined( _WIN32 )
+	MEMORYSTATUSEX stat;
+	stat.dwLength = sizeof( stat );
+	GlobalMemoryStatusEx( &stat );
+	return stat.ullAvailPageFile;
+#else
+#error "Missing implementation!"
+#endif
+}
+
+/**
+ * Returns the memory usage of the current process in bytes.
+ */
+uint64_t plGetCurrentMemoryUsage( void ) {
+#if defined( __linux__ )
+	return 0; /* todo */
+#elif defined( _WIN32 )
+	PROCESS_MEMORY_COUNTERS pmc;
+	GetProcessMemoryInfo( GetCurrentProcess(), &pmc, sizeof( pmc ) );
+	return pmc.PagefileUsage;
+#else
+#error "Missing implementation!"
+#endif
+}
