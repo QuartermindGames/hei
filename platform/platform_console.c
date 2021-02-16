@@ -851,13 +851,13 @@ static LogLevel *GetLogLevel(int level) {
         mem_cleared = true;
 
         // todo, eventually some of these should be disabled by default - unless enabled via console command
-        plSetupLogLevel(LOG_LEVEL_LOW, "pl", (PLColour){255, 255, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_MEDIUM, "plwarn", (PLColour){255, 255, 0, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_HIGH, "plerror", (PLColour){255, 0, 0, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_DEBUG, "pldebug", (PLColour){255, 255, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_GRAPHICS, "plgfx", (PLColour){0, 255, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_FILESYSTEM, "plfs", (PLColour){0, 255, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_MODEL, "plmodel", (PLColour){0, 255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_LOW, "libplatform", (PLColour){255, 255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_MEDIUM, "libplatform/warning", (PLColour){255, 255, 0, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_HIGH, "libplatform/error", (PLColour){255, 0, 0, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_DEBUG, "libplatform/debug", (PLColour){255, 255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_GRAPHICS, "libplatform/graphics", (PLColour){0, 255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_FILESYSTEM, "libplatform/filesystem", (PLColour){0, 255, 255, 255}, true);
+        plSetupLogLevel(LOG_LEVEL_MODEL, "libplatform/model", (PLColour){0, 255, 255, 255}, true);
     }
 
     // the following ensures there's no conflict
