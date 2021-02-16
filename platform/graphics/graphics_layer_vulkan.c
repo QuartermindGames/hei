@@ -36,9 +36,21 @@ For more information, please refer to <http://unlicense.org>
 
 static VkInstance vk_instance = NULL;
 static VkPhysicalDevice vk_physicalDevice = VK_NULL_HANDLE;
+static VkDevice vk_device = NULL;
 
 static VkExtensionProperties *vk_extensionProperties = NULL;
 static unsigned int vk_numExtensions = 0;
+
+static const char *vk_layers[] = {
+#if !defined( NDEBUG )
+	/* push validation layer if we're debugging */
+	"VK_LAYER_KHRONOS_validation"
+#endif
+};
+
+typedef struct QueueFamilyIndex {
+	uint32_t graphics, present;
+} QueueFamilyIndex;
 
 static VkInstance VK_CreateInstance( void ) {
 	static const VkApplicationInfo appInfo = {
@@ -54,11 +66,12 @@ static VkInstance VK_CreateInstance( void ) {
 			.pNext = NULL,
 			.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
 			.enabledExtensionCount = 0,
-			.enabledLayerCount = 0,
 			.flags = 0,
 			.pApplicationInfo = &appInfo,
 			.ppEnabledExtensionNames = NULL,
-			.ppEnabledLayerNames = NULL,
+	        /* push validation layer if we're debugging */
+			.ppEnabledLayerNames = vk_layers,
+			.enabledLayerCount = plArrayElements( vk_layers ),
 	};
 
 	GfxLog( "Creating Vulkan instance...\n" );
@@ -120,6 +133,28 @@ static VkPhysicalDevice VK_SelectPhysicalDevice( void ) {
 	return vk_physicalDevice;
 }
 
+static VkDevice VK_CreateLogicalDevice( void ) {
+	VkDeviceQueueCreateInfo queueCreateInfo;
+	memset( &queueCreateInfo, 0, sizeof( VkDeviceQueueCreateInfo ) );
+	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+
+	float priority = 1.0f;
+	queueCreateInfo.pQueuePriorities = &priority;
+	queueCreateInfo.queueCount = 1;
+	queueCreateInfo.queueFamilyIndex = -1;
+
+	VkDeviceCreateInfo createInfo;
+	memset( &createInfo, 0, sizeof( VkDeviceCreateInfo ) );
+	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
+	VkPhysicalDeviceFeatures deviceFeatures;
+
+	if ( vkCreateDevice( vk_physicalDevice, &createInfo, NULL, &vk_device ) != VK_SUCCESS ) {
+		ReportError( PL_RESULT_GRAPHICSINIT, "failed to create device" );
+		return NULL;
+	}
+}
+
 void plInitVulkan( void ) {
 	FunctionStart();
 
@@ -153,11 +188,11 @@ void plShutdownVulkan( void ) {
 		vkDestroyInstance( vk_instance, NULL );
 		vk_instance = NULL;
 	}
+
+	if ( vk_device != NULL ) {
+		vkDestroyDevice( vk_device, NULL );
+		vk_device = NULL;
+	}
 }
-
-#else
-
-void plInitVulkan( void ) {}
-void plShutdownVulkan( void ) {}
 
 #endif /* PL_SUPPORT_VULKAN */
