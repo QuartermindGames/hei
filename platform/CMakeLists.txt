@@ -30,10 +30,13 @@ project(platform)
 ############################################################
 
 option(PL_USE_GRAPHICS "Graphics" ON)
+
+option(PL_SUPPORT_VULKAN "Vulkan API support" ON)
 option(PL_SUPPORT_DIRECT3D "Graphics Direct3D API support" OFF)
 option(PL_SUPPORT_GLIDE "Graphics 3dfx Glide API support" OFF)
-option(PL_SUPPORT_OPENGL "Graphics OpenGL API support" ON)
-option(PL_USE_GLEW "Use GLEW for OpenGL API support" ON)
+option(PL_SUPPORT_OPENGL "Graphics OpenGL API support" OFF)
+
+option(PL_USE_GLEW "Use GLEW for OpenGL API support" OFF)
 option(PL_COMPILE_STATIC "Compile as static library" OFF)
 
 ############################################################
@@ -148,6 +151,23 @@ if (PL_USE_GRAPHICS)
     if (PL_SUPPORT_DIRECT3D)
         add_definitions("-DPL_SUPPORT_DIRECT3D")
     endif ()
+
+    if (PL_SUPPORT_VULKAN)
+        add_definitions("-DPL_SUPPORT_VULKAN")
+
+        find_package(Vulkan)
+        if (NOT Vulkan_FOUND)
+            find_library(Vulkan_LIBRARY NAMES vulkan-1 vulkan PATHS
+                    "$ENV{VK_SDK_PATH}/Lib/"
+                    "${CMAKE_SOURCE_DIR}/platform/3rdparty/vulkan/Lib/")
+            find_path(Vulkan_INCLUDE_DIR PATHS
+                    "$ENV{VK_SDK_PATH}/Include/"
+                    "${CMAKE_SOURCE_DIR}/platform/3rdparty/vulkan/Include/")
+        endif ()
+
+        target_link_libraries(platform Vulkan_LIBRARY)
+        target_include_directories(platform PRIVATE ${Vulkan_INCLUDE_DIR})
+    endif (PL_SUPPORT_VULKAN)
 endif ()
 
 # Platform specific libraries should be provided here

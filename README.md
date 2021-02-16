@@ -22,7 +22,7 @@ mounted packages before falling back to the local FS
     - Supported APIs
         - OpenGL 3.3
         - OpenGL 1.0
-        - Vulkan (*planned*)
+        - Vulkan (*work in progress*)
         - Software (*planned*)
         - 3dfx Glide (*planned :)* )
 - Model API supports static and animated per-vertex/skeletal formats

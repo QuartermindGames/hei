@@ -243,6 +243,11 @@ void plInitOpenGL( void );
 void plShutdownOpenGL( void );
 #endif
 
+#if defined( PL_SUPPORT_VULKAN )
+void plInitVulkan( void );
+void plShutdownVulkan( void );
+#endif
+
 void plInitSoftwareGraphicsLayer( void );
 void plShutdownSoftwareGraphicsLayer( void );
 

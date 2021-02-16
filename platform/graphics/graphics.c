@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #include <PL/platform_image.h>
 #include <PL/platform_console.h>
 
@@ -314,18 +315,8 @@ PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
 	UTILITY FUNCTIONS
 ===========================*/
 
-#if 0
-void plScreenshot(PLViewport *viewport, const char *path) {
-    uint8_t *buffer = (uint8_t*)pl_calloc(viewport->height * viewport->width * 3, sizeof(uint8_t));
-    glReadPixels(viewport->x, viewport->y, viewport->width, viewport->height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
-
-    pl_free(buffer);
-}
-#endif
-
-/* DRAWING  */
-
-void plDrawPixel(int x, int y, PLColour colour) {
+void plDrawPixel( int x, int y, PLColour colour ) {
+	CallGfxFunction( DrawPixel, x, y, colour );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -354,6 +345,12 @@ void plSetGraphicsMode(PLGfxMode mode) {
         case PL_GFX_MODE_OPENGL:
             plInitOpenGL();
             break;
+#endif
+
+#if defined( PL_SUPPORT_VULKAN )
+		case PL_GFX_MODE_VULKAN:
+			plInitVulkan();
+			break;
 #endif
 
         default: {
