@@ -31,12 +31,13 @@ project(platform)
 
 option(PL_USE_GRAPHICS "Graphics" ON)
 
-option(PL_SUPPORT_VULKAN "Vulkan API support" ON)
+option(PL_SUPPORT_VULKAN "Vulkan API support" OFF)
 option(PL_SUPPORT_DIRECT3D "Graphics Direct3D API support" OFF)
 option(PL_SUPPORT_GLIDE "Graphics 3dfx Glide API support" OFF)
-option(PL_SUPPORT_OPENGL "Graphics OpenGL API support" OFF)
 
-option(PL_USE_GLEW "Use GLEW for OpenGL API support" OFF)
+option(PL_SUPPORT_OPENGL "Graphics OpenGL API support" ON)
+option(PL_USE_GLEW "Use GLEW for OpenGL API support" ON)
+
 option(PL_COMPILE_STATIC "Compile as static library" OFF)
 
 ############################################################
