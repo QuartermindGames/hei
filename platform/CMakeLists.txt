@@ -178,7 +178,7 @@ elseif (WIN32)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         target_compile_options(platform PRIVATE -static -static-libstdc++ -static-libgcc)
     endif ()
-    target_link_libraries(platform Secur32 ws2_32)
+    target_link_libraries(platform Secur32 ws2_32 Psapi)
 endif ()
 
 set_property(TARGET platform PROPERTY C_STANDARD_REQUIRED 11)
