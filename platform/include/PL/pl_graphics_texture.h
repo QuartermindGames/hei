@@ -28,8 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #pragma once
 
 #include <PL/pl_graphics.h>
-
-typedef struct PLImage PLImage;
+#include <PL/platform_image.h>
 
 // Texture Environment Modes
 typedef enum PLTextureEnvironmentMode {

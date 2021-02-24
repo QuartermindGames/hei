@@ -1138,7 +1138,6 @@ static void GLCompileShaderStage( PLShaderStage *stage, const char *buf, size_t 
 	const GLint glLength = length;
 	glShaderSource( stage->internal.id, 1, &buf, &glLength );
 
-	GfxLog( "COMPILING SHADER STAGE...\n" );
 	glCompileShader( stage->internal.id );
 
 	int status;
@@ -1153,8 +1152,6 @@ static void GLCompileShaderStage( PLShaderStage *stage, const char *buf, size_t 
 			ReportError( PL_RESULT_SHADER_COMPILE, "%s", log );
 			pl_free( log );
 		}
-	} else {
-		GfxLog( " COMPLETED SUCCESSFULLY!\n" );
 	}
 
 	pl_free( mbuf );
@@ -1176,7 +1173,6 @@ static void GLLinkShaderProgram( PLShaderProgram *program ) {
 		return;
 	}
 
-	GfxLog( "LINKING SHADER PROGRAM...\n" );
 	glLinkProgram( program->internal.id );
 
 	int status;
@@ -1198,7 +1194,6 @@ static void GLLinkShaderProgram( PLShaderProgram *program ) {
 		return;
 	}
 
-	GfxLog( " LINKED SUCCESSFULLY!\n" );
 	program->is_linked = true;
 }
 
