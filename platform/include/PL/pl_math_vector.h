@@ -318,7 +318,9 @@ typedef struct PLVector3 {
 
 extern const PLVector3 pl_vecOrigin3;
 
-#define plVector3Index( VECTOR, INDEX ) ( ( float* ) &( VECTOR ) )[ INDEX ]
+#define plVectorIndex( VECTOR, INDEX ) ( ( float* ) &( VECTOR ) )[ INDEX ]
+/* todo: add bound checking to the below implementation??? Or just remove!? */
+#define plVector3Index( VECTOR, INDEX ) plVectorIndex( VECTOR, INDEX )
 
 PL_INLINE static PLVector3 plClampVector3( const PLVector3* v, float min, float max ) {
     return PLVector3(

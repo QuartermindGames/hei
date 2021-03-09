@@ -57,46 +57,62 @@ const char *plParseEnclosedString( const char **p, char *dest, size_t size ) {
 }
 
 const char *plParseToken( const char **p, char *dest, size_t size ) {
-	memset( dest, 0, size );
 	plSkipWhitespace( p );
+
 	size_t i = 0;
 	while ( *( *p ) != '\0' && *( *p ) != ' ' ) {
-		if ( i < size ) {
+		if ( ( i + 1 ) < size ) {
 			dest[ i++ ] = *( *p );
 		}
 		( *p )++;
 	}
 
-	if ( *( *p ) == ' ' ) { ( *p )++; }
+	if ( *( *p ) == ' ' ) {
+		( *p )++;
+	}
+
+	dest[ i ] = '\0';
 	return dest;
 }
 
-int plParseInteger( const char **p ) {
+int plParseInteger( const char **p, bool *status ) {
+	*status = false;
+
 	char num[ 64 ];
 	if ( !plParseToken( p, num, sizeof( num ) ) ) {
-		printf( "Failed to parse integer!\n" );
 		return 0;
 	}
 
-	return strtol( num, NULL, 10 );
+	int v = strtol( num, NULL, 10 );
+	/* todo: validate strtol succeeded! */
+
+	*status = true;
+
+	return v;
 }
 
-float plParseFloat( const char **p ) {
+float plParseFloat( const char **p, bool *status ) {
+	*status = false;
+
 	char num[ 64 ];
 	if ( !plParseToken( p, num, sizeof( num ) ) ) {
-		printf( "Failed to parse float!\n" );
-		return 0;
+		return 0.0f;
 	}
 
-	return strtof( num, NULL );
+	float v = strtof( num, NULL );
+	/* todo: validate strtof succeeded! */
+
+	*status = true;
+
+	return v;
 }
 
-PLVector3 plParseVector( const char **p ) {
+PLVector3 plParseVector( const char **p, bool *status ) {
 	plSkipWhitespace( p );
 	if ( *( *p ) == '(' ) { ( *p )++; }
-	float x = plParseFloat( p );
-	float y = plParseFloat( p );
-	float z = plParseFloat( p );
+	float x = plParseFloat( p, status );
+	float y = plParseFloat( p, status );
+	float z = plParseFloat( p, status );
 	if ( *( *p ) == ')' ) { ( *p )++; }
 	return PLVector3( x, y, z );
 }

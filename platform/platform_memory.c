@@ -27,8 +27,8 @@ For more information, please refer to <http://unlicense.org>
 
 #include <stdlib.h>
 #if defined( _WIN32 )
-#   include <Windows.h>
-#   include <psapi.h>
+#include <windows.h>
+#include <psapi.h>
 #endif
 
 #include "platform_private.h"

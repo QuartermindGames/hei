@@ -37,8 +37,8 @@ PL_EXTERN void plSkipWhitespace( const char **p );
 PL_EXTERN void plSkipLine( const char **p );
 PL_EXTERN const char *plParseEnclosedString( const char **p, char *dest, size_t size );
 PL_EXTERN const char *plParseToken( const char **p, char *dest, size_t size );
-PL_EXTERN int plParseInteger( const char **p );
-PL_EXTERN float plParseFloat( const char **p );
-PL_EXTERN PLVector3 plParseVector( const char **p );
+PL_EXTERN int plParseInteger( const char **p, bool *status );
+PL_EXTERN float plParseFloat( const char **p, bool *status );
+PL_EXTERN PLVector3 plParseVector( const char **p, bool *status );
 
 PL_EXTERN_C_END
