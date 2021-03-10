@@ -33,12 +33,13 @@ typedef struct PLVector3 PLVector3;
 
 PL_EXTERN_C
 
-PL_EXTERN void plSkipWhitespace( const char **p );
-PL_EXTERN void plSkipLine( const char **p );
-PL_EXTERN const char *plParseEnclosedString( const char **p, char *dest, size_t size );
-PL_EXTERN const char *plParseToken( const char **p, char *dest, size_t size );
-PL_EXTERN int plParseInteger( const char **p, bool *status );
-PL_EXTERN float plParseFloat( const char **p, bool *status );
-PL_EXTERN PLVector3 plParseVector( const char **p, bool *status );
+extern bool plIsEndOfLine( const char **p );
+extern void plSkipWhitespace( const char **p );
+extern void plSkipLine( const char **p );
+extern const char *plParseEnclosedString( const char **p, char *dest, size_t size );
+extern const char *plParseToken( const char **p, char *dest, size_t size );
+extern int plParseInteger( const char **p, bool *status );
+extern float plParseFloat( const char **p, bool *status );
+extern PLVector3 plParseVector( const char **p, bool *status );
 
 PL_EXTERN_C_END
