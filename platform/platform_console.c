@@ -361,6 +361,7 @@ static PLBitmapFont *console_font = NULL;
 
 void (*ConsoleOutputCallback)(int level, const char *msg);
 
+static void InitializeDefaultLogLevels( void );
 PLresult plInitConsole(void) {
     console_visible = false;
 
@@ -408,6 +409,10 @@ PLresult plInitConsole(void) {
     for(unsigned int i = 0; i < plArrayElements(base_commands); ++i) {
         plRegisterConsoleCommand(base_commands[i].cmd, base_commands[i].Callback, base_commands[i].description);
     }
+
+	/* initialize our internal log levels here
+	 * as we depend on the console variables being setup first */
+	InitializeDefaultLogLevels();
 
     return PL_RESULT_SUCCESS;
 }
@@ -837,55 +842,65 @@ void plDrawConsole(void) {
 #define MAX_LOG_LEVELS  512
 
 typedef struct LogLevel {
-    int id;
+    bool isReserved;
     char prefix[64];    // e.g. 'warning, 'error'
     PLColour colour;
     PLConsoleVariable *var;
 } LogLevel;
-
 static LogLevel levels[MAX_LOG_LEVELS];
-static LogLevel *GetLogLevel(int level) {
-    static bool mem_cleared = false;
-    if(!mem_cleared) {
-        memset(levels, 0, sizeof(LogLevel) * MAX_LOG_LEVELS);
-        mem_cleared = true;
 
-        // todo, eventually some of these should be disabled by default - unless enabled via console command
-        plSetupLogLevel(LOG_LEVEL_LOW, "libplatform", (PLColour){255, 255, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_MEDIUM, "libplatform/warning", (PLColour){255, 255, 0, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_HIGH, "libplatform/error", (PLColour){255, 0, 0, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_DEBUG, "libplatform/debug", (PLColour){255, 255, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_GRAPHICS, "libplatform/graphics", (PLColour){0, 255, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_FILESYSTEM, "libplatform/filesystem", (PLColour){0, 255, 255, 255}, true);
-        plSetupLogLevel(LOG_LEVEL_MODEL, "libplatform/model", (PLColour){0, 255, 255, 255}, true);
-    }
+int LOG_LEVEL_LOW = 0;
+int LOG_LEVEL_MEDIUM = 0;
+int LOG_LEVEL_HIGH = 0;
+int LOG_LEVEL_DEBUG = 0;
 
-    // the following ensures there's no conflict
-    // between internal/external log levels
-    if(level < 0) {
-        level *= -1;
-    } else {
-        level += LOG_LEVEL_END;
-    }
+int LOG_LEVEL_GRAPHICS = 0;
+int LOG_LEVEL_FILESYSTEM = 0;
+int LOG_LEVEL_MODEL = 0;
 
-    if(level >= MAX_LOG_LEVELS) {
-        ReportError(PL_RESULT_MEMORY_EOA, "failed to find slot for log level %d", level);
-        return NULL;
-    }
+static void InitializeDefaultLogLevels( void ) {
+	memset( levels, 0, sizeof( LogLevel ) * MAX_LOG_LEVELS );
 
-    LogLevel *l = &levels[level];
-    if(l->id == 0) {
-        // register it as a new level
-        l->id = level;
-        l->colour = PLColour(255, 255, 255, 255);
-    }
-
-    return l;
+	LOG_LEVEL_LOW = plAddLogLevel( "libplatform", ( PLColour ){ 255, 255, 255, 255 }, true );
+	LOG_LEVEL_MEDIUM = plAddLogLevel( "libplatform/warning", ( PLColour ){ 255, 255, 0, 255 }, true );
+	LOG_LEVEL_HIGH = plAddLogLevel( "libplatform/error", ( PLColour ){ 255, 0, 0, 255 }, true );
+	LOG_LEVEL_DEBUG = plAddLogLevel( "libplatform/debug", ( PLColour ){ 255, 255, 255, 255 },
+#if !defined( NDEBUG )
+	                 true
+#else
+	                 false
+#endif
+	);
+	LOG_LEVEL_GRAPHICS = plAddLogLevel( "libplatform/graphics", ( PLColour ){ 0, 255, 255, 255 },
+#if !defined( NDEBUG )
+	                 true
+#else
+	                 false
+#endif
+	);
+	LOG_LEVEL_FILESYSTEM = plAddLogLevel( "libplatform/filesystem", ( PLColour ){ 0, 255, 255, 255 }, true );
+	LOG_LEVEL_MODEL = plAddLogLevel( "libplatform/model", ( PLColour ){ 0, 255, 255, 255 }, true );
 }
 
-static int _plGetNextLogLevel( void ) {
-	for ( unsigned int i = 0; i < MAX_LOG_LEVELS; ++i ) {
-		if( levels[ i ].id == 0 ) {
+/**
+ * Converts an external log level id into an
+ * internal one.
+ */
+static LogLevel *GetLogLevelForId( int id ) {
+	if ( id >= MAX_LOG_LEVELS ) {
+		ReportError( PL_RESULT_MEMORY_EOA, "failed to find slot for log level %d", id );
+		return NULL;
+	}
+
+	return &levels[ id ];
+}
+
+/**
+ * Fetches the next unreserved slot.
+ */
+static int GetNextFreeLogLevel( void ) {
+	for ( int i = 0; i < MAX_LOG_LEVELS; ++i ) {
+		if( !levels[ i ].isReserved ) {
 			return i;
 		}
 	}
@@ -896,63 +911,52 @@ static int _plGetNextLogLevel( void ) {
 /////////////////////////////////////////////////////////////////////////////////////
 // public
 
-static char log_output_path[PL_SYSTEM_MAX_PATH] = {'\0'};
+static char logOutputPath[ PL_SYSTEM_MAX_PATH ] = { '\0' };
 
 void plSetupLogOutput(const char *path) {
     if(path == NULL || path[0] == '\0') {
         return;
     }
 
-    strncpy(log_output_path, path, sizeof(log_output_path));
-    if(plFileExists(log_output_path)) {
-        unlink(log_output_path);
+    strncpy( logOutputPath, path, sizeof( logOutputPath ));
+    if(plFileExists( logOutputPath )) {
+        unlink( logOutputPath );
     }
 }
 
 int plAddLogLevel( const char *prefix, PLColour colour, bool status ) {
-	int level = _plGetNextLogLevel();
-	if ( level == -1 ) {
+	int i = GetNextFreeLogLevel();
+	if ( i == -1 ) {
 		return -1;
 	}
 
-	plSetupLogLevel( level, prefix, colour, status );
-
-	return level;
-}
-
-void plSetupLogLevel(int level, const char *prefix, PLColour colour, bool status) {
-    LogLevel *l = GetLogLevel(level);
-    if(l == NULL) {
-        return;
-    }
-
-    if(prefix != NULL && prefix[0] != '\0') {
-        snprintf(l->prefix, sizeof(l->prefix), "%s", prefix);
-    }
-
+	LogLevel *l = &levels[ i ];
     l->colour = colour;
+    l->isReserved = true;
+
+    if ( prefix != NULL && prefix[ 0 ] != '\0' ) {
+        snprintf( l->prefix, sizeof( l->prefix ), "%s", prefix );
+    }
 
     char var[32];
-    snprintf(var, sizeof(var), "log_level_%s", prefix);
+    snprintf(var, sizeof(var), "pl.log.level.%s", prefix);
     l->var = plRegisterConsoleVariable(var, status ? "1" : "0", pl_bool_var, NULL, "Console output level.");
+
+	return i;
 }
 
-void plSetLogLevelStatus(int level, bool status) {
-    LogLevel *l = GetLogLevel(level);
-    if(l == NULL) {
-        return;
-    }
+void plSetLogLevelStatus( int id, bool status ) {
+	LogLevel *l = GetLogLevelForId( id );
+	if ( l == NULL ) {
+		return;
+	}
 
-    plSetConsoleVariable(l->var, status ? "1" : "0");
+	plSetConsoleVariable( l->var, status ? "1" : "0" );
 }
 
-void plLogMessage(int level, const char *msg, ...) {
-    LogLevel *l = GetLogLevel(level);
-    if(l == NULL) {
-        return;
-    }
-
-    if(!l->var->b_value) {
+void plLogMessage(int id, const char *msg, ...) {
+    LogLevel *l = GetLogLevelForId( id );
+    if(l == NULL || !l->var->b_value) {
         return;
     }
 
@@ -984,18 +988,18 @@ void plLogMessage(int level, const char *msg, ...) {
     // todo, decide how we're going to pass it to the console/log
 
     if(ConsoleOutputCallback != NULL) {
-        ConsoleOutputCallback(level, buf);
+        ConsoleOutputCallback(id, buf);
     }
 
     static bool avoid_recursion = false;
     if(!avoid_recursion) {
-        if (log_output_path[0] != '\0') {
+        if ( logOutputPath[0] != '\0') {
             size_t size = strlen(buf);
-            FILE *file = fopen(log_output_path, "a");
+            FILE *file = fopen( logOutputPath, "a");
             if (file != NULL) {
                 if (fwrite(buf, sizeof(char), size, file) != size) {
                     avoid_recursion = true;
-                    ReportError(PL_RESULT_FILEERR, "failed to write to log, %s\n%s", log_output_path, strerror(errno));
+                    ReportError(PL_RESULT_FILEERR, "failed to write to log, %s\n%s", logOutputPath, strerror(errno));
                 }
                 fclose(file);
                 return;
@@ -1003,7 +1007,7 @@ void plLogMessage(int level, const char *msg, ...) {
 
             // todo, needs to be more appropriate; return details on exact issue
             avoid_recursion = true;
-            ReportError(PL_RESULT_FILEREAD, "failed to open %s", log_output_path);
+            ReportError(PL_RESULT_FILEREAD, "failed to open %s", logOutputPath );
         }
     }
 }

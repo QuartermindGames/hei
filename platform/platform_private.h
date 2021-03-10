@@ -52,16 +52,10 @@ For more information, please refer to <http://unlicense.org>
 
 /*********************************/
 
-enum {
-	LOG_LEVEL_HIGH = -1,    // Error
-	LOG_LEVEL_MEDIUM = -2,    // Warning
-	LOG_LEVEL_LOW = -3,    // Info
-	LOG_LEVEL_DEBUG = -4,
-	LOG_LEVEL_GRAPHICS = -5,
-	LOG_LEVEL_FILESYSTEM = -6,
-	LOG_LEVEL_MODEL = -7,
-	LOG_LEVEL_END = 10
-};
+extern int LOG_LEVEL_LOW, LOG_LEVEL_MEDIUM, LOG_LEVEL_HIGH, LOG_LEVEL_DEBUG;
+extern int LOG_LEVEL_GRAPHICS;
+extern int LOG_LEVEL_FILESYSTEM;
+extern int LOG_LEVEL_MODEL;
 
 void plLogMessage( int level, const char* msg, ... );
 
