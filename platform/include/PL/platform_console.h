@@ -101,12 +101,9 @@ PL_EXTERN void plDrawConsole( void );
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-PL_EXTERN void plSetupLogOutput( const char *path );
-
-PL_EXTERN int plAddLogLevel( const char *prefix, PLColour colour, bool status );
-PL_EXTERN void plSetupLogLevel( int level, const char *prefix, PLColour colour, bool status );
-PL_EXTERN void plSetLogLevelStatus( int level, bool status );
-
-PL_EXTERN void plLogMessage( int level, const char *msg, ... );
+extern void plSetupLogOutput( const char *path );
+extern int plAddLogLevel( const char *prefix, PLColour colour, bool status );
+extern void plSetLogLevelStatus( int id, bool status );
+extern void plLogMessage( int id, const char *msg, ... );
 
 PL_EXTERN_C_END

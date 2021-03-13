@@ -28,6 +28,14 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/pl_parse.h>
 #include <PL/platform_math.h>
 
+bool plIsEndOfLine( const char **p ) {
+    if ( *( *p ) == '\n' || *( *p ) == '\r' ) {
+        return true;
+    }
+
+    return false;
+}
+
 void plSkipWhitespace( const char **p ) {
 	while ( *( *p ) == ' ' ) ( *p )++;
 	if ( *( *p ) == ' ' ) ++( *p );
@@ -60,7 +68,10 @@ const char *plParseToken( const char **p, char *dest, size_t size ) {
 	plSkipWhitespace( p );
 
 	size_t i = 0;
-	while ( *( *p ) != '\0' && *( *p ) != ' ' ) {
+	while ( *( *p ) != '\0' &&
+	        *( *p ) != '\n' &&
+	        *( *p ) != '\r' &&
+	        *( *p ) != ' ' ) {
 		if ( ( i + 1 ) < size ) {
 			dest[ i++ ] = *( *p );
 		}
