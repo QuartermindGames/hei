@@ -85,6 +85,59 @@ static PLFileSystemMount* fs_mount_ceiling = NULL;
 
 #define FS_LOCAL_HINT    "local://"
 
+IMPLEMENT_COMMAND( fsExtractPkg, "Extract the contents of a package." ) {
+	if ( argc == 1 ) {
+		Print( "%s", fsExtractPkg_var.description );
+		return;
+	}
+
+	const char* path = argv[ 1 ];
+	if ( path == NULL ) {
+		PrintWarning( "Invalid path specified!\n" );
+		return;
+	}
+
+	PLPackage *pkg = plLoadPackage( path );
+	if ( pkg == NULL ) {
+		PrintWarning( "Failed to load package \"%s\"!\nPL: %s\n", path, plGetError() );
+		return;
+	}
+
+	for ( unsigned int i = 0; i < pkg->table_size; ++i ) {
+		PLFile *file = plLoadPackageFileByIndex( pkg, i );
+		if ( file == NULL ) {
+			PrintWarning( "Failed to load file by index, %d!\nPL: %s\n", i, plGetError() );
+			continue;
+		}
+
+		char pkgPath[ PL_SYSTEM_MAX_PATH ];
+		memset( pkgPath, 0, sizeof( pkgPath ) );
+		strncpy( pkgPath, file->path, strlen( file->path ) - strlen( plGetFileName( file->path ) ) );
+
+		char outPath[ PL_SYSTEM_MAX_PATH ];
+		snprintf( outPath, sizeof( outPath ), "extracted/%s", pkgPath );
+		if ( !plCreatePath( outPath ) ) {
+			PrintWarning( "Failed to create path, \"%s\"!\nPL: %s\n", outPath, plGetError() );
+			break;
+		}
+
+		snprintf( outPath, sizeof( outPath ), "extracted/%s", file->path );
+
+		FILE *fout = fopen( outPath, "wb" );
+		if ( fout == NULL ) {
+			PrintWarning( "Failed to write file to destination, \"%s\"!\n", outPath );
+			break;
+		}
+		fwrite( plGetFileData( file ), sizeof( uint8_t ), plGetFileSize( file ), fout );
+		fclose( fout );
+
+		Print( "Wrote \"%s\"\n", outPath );
+	}
+	Print( "End\n" );
+
+	plDestroyPackage( pkg );
+}
+
 IMPLEMENT_COMMAND( fsLstPkg, "List all the files in a particular package." ) {
 	if ( argc == 1 ) {
 		Print( "%s", fsLstPkg_var.description );
@@ -105,12 +158,13 @@ IMPLEMENT_COMMAND( fsLstPkg, "List all the files in a particular package." ) {
 
 	Print( "Listing contents of %s (%d)...\n", path, pkg->table_size );
 	for ( unsigned int i = 0; i < pkg->table_size; ++i ) {
-		Print( " num:    %d\n"
+		Print( "\n"
+		       " num:    %d\n"
 		       " name:   %s\n"
-		       " size:   %d\n"
-		       " csize:  %d\n"
+		       " size:   %u\n"
+		       " csize:  %u\n"
 		       " ctype:  %d\n"
-		       " offset: %d\n", i,
+		       " offset: %u\n", i,
 		       pkg->table[ i ].fileName,
 		       pkg->table[ i ].fileSize,
 		       pkg->table[ i ].compressedSize,
@@ -182,6 +236,7 @@ IMPLEMENT_COMMAND( fsMount, "Mount the specified directory." ) {
 
 static void _plRegisterFSCommands( void ) {
 	PLConsoleCommand fsCommands[] = {
+	        fsExtractPkg_var,
 	        fsLstPkg_var,
 	        fsListMounted_var,
 	        fsUnmount_var,

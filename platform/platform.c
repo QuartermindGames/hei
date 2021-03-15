@@ -567,7 +567,6 @@ static PLPluginExportTable exportTable = {
         .GetPackageTableSize = plGetPackageTableSize,
         .GetPackageTableIndex = plGetPackageTableIndex,
         .GetPackageFileName = plGetPackageFileName,
-
 };
 
 /**
