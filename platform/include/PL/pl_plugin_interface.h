@@ -92,7 +92,7 @@ typedef struct PLPluginExportTable {
  	 * PLUGIN API
  	 **/
 
-	PLPackage *(*CreatePackageHandle)( const char *path, unsigned int tableSize, void(*OpenFile)( PLFile *filePtr, PLPackageIndex *index ) );
+	PLPackage *(*CreatePackageHandle)( const char *path, unsigned int tableSize, uint8_t*(*OpenFile)( PLFile *filePtr, PLPackageIndex *index ) );
 
 	void (*RegisterPackageLoader)( const char *extension, PLPackage *(*LoadFunction)( const char *path ) );
 	void (*RegisterModelLoader)( const char *extension, PLModel*(*LoadFunction)( const char *path ) );

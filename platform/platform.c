@@ -561,6 +561,13 @@ static PLPluginExportTable exportTable = {
         .FlipImageVertical = plFlipImageVertical,
         .GetNumberOfColourChannels = plGetNumberOfColourChannels,
         .GetImageSize = plGetImageSize,
+
+		.CreatePackageHandle = plCreatePackageHandle,
+        .GetPackagePath = plGetPackagePath,
+        .GetPackageTableSize = plGetPackageTableSize,
+        .GetPackageTableIndex = plGetPackageTableIndex,
+        .GetPackageFileName = plGetPackageFileName,
+
 };
 
 /**
