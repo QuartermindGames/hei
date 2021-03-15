@@ -106,7 +106,7 @@ IMPLEMENT_COMMAND( fsExtractPkg, "Extract the contents of a package." ) {
 	for ( unsigned int i = 0; i < pkg->table_size; ++i ) {
 		PLFile *file = plLoadPackageFileByIndex( pkg, i );
 		if ( file == NULL ) {
-			PrintWarning( "Failed to load file by index, %d!\nPL: %s\n", i, plGetError() );
+			PrintWarning( "Failed to load file at index %d, \"%s\"!\nPL: %s\n", i, pkg->table[ i ].fileName, plGetError() );
 			continue;
 		}
 
