@@ -117,6 +117,10 @@ typedef struct PLVector2 {
 
 extern const PLVector2 pl_vecOrigin2;
 
+PL_INLINE static PLVector2 plClampVector2( const PLVector2 *v, float min, float max ) {
+	return PLVector2( plClamp( min, v->x, max ), plClamp( min, v->y, max ) );
+}
+
 PL_INLINE static PLVector2 plAddVector2( PLVector2 v, PLVector2 v2 ) {
     v.x += v2.x;
     v.y += v2.y;
