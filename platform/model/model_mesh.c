@@ -547,6 +547,22 @@ void plDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 	plPopMatrix();
 }
 
+void plDrawLines( const PLVector3 *points, unsigned int numPoints, PLColour colour ) {
+	PLMesh *mesh = _plInitLineMesh();
+	if ( mesh == NULL ) {
+		return;
+	}
+
+	for ( unsigned int i = 0; i < numPoints; ++i ) {
+		plAddMeshVertex( mesh, points[ i ], pl_vecOrigin3, colour, pl_vecOrigin2 );
+	}
+
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), true );
+
+	plUploadMesh( mesh );
+	plDrawMesh( mesh );
+}
+
 void plDrawLine( PLMatrix4 transform, PLVector3 startPos, PLColour startColour, PLVector3 endPos, PLColour endColour ) {
 	PLMesh *mesh = _plInitLineMesh();
 	if ( mesh == NULL ) {

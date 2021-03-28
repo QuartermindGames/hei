@@ -108,6 +108,7 @@ PL_EXTERN void plDrawFilledRectangle( const PLRectangle2D *rectangle );
 PL_EXTERN void plDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
                                    float hScale, float vScale, PLTexture *texture );
 PL_EXTERN void plDrawTriangle( int x, int y, unsigned int w, unsigned int h );
+PL_EXTERN void plDrawLines( const PLVector3 *points, unsigned int numPoints, PLColour colour );
 PL_EXTERN void plDrawLine( PLMatrix4 transform, PLVector3 startPos, PLColour startColour, PLVector3 endPos, PLColour endColour );
 PL_EXTERN void plDrawSimpleLine( PLMatrix4 transform, PLVector3 startPos, PLVector3 endPos, PLColour colour );
 PL_EXTERN void plDrawGrid( PLMatrix4 transform, int x, int y, int w, int h, unsigned int gridSize );
