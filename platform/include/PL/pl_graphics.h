@@ -323,17 +323,6 @@ PL_EXTERN PL_DEPRECATED( void plSetShaderUniformInt(PLShaderProgram *program, in
 PL_EXTERN PL_DEPRECATED( void plSetShaderUniformVector4(PLShaderProgram* program, int slot, PLVector4 value) );
 PL_EXTERN PL_DEPRECATED( void plSetShaderUniformVector3(PLShaderProgram *program, int slot, PLVector3 value) );
 PL_EXTERN PL_DEPRECATED( void plSetShaderUniformMatrix4(PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose) );
-
-#define plSetNamedShaderUniformFloat(program, name, value)  \
-    plSetShaderUniformFloat((program), plGetShaderUniformSlot((program), (name)), (value))
-#define plSetNamedShaderUniformInt(program, name, value) \
-    plSetShaderUniformInt((program), plGetShaderUniformSlot((program), (name)), (value))
-#define plSetNamedShaderUniformVector4(program, name, value) \
-    plSetShaderUniformVector4((program), plGetShaderUniformSlot((program), (name)), (value))
-#define plSetNamedShaderUniformVector3(program, name, value) \
-    plSetShaderUniformVector3((program), plGetShaderUniformSlot((program), (name)), (value))
-#define plSetNamedShaderUniformMatrix4(program, name, value, transpose) \
-    plSetShaderUniformMatrix4((program), plGetShaderUniformSlot((program), (name)), (value), (transpose))
 #endif
 
 PL_EXTERN PLShaderProgram *plCreateShaderProgram(void);
