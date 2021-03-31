@@ -50,6 +50,8 @@ if (BUILD_EXAMPLES)
 endif (BUILD_EXAMPLES)
 
 if (PL_BUILD_PLUGINS)
+    add_subdirectory(plugins/driver_opengl/)
+
     add_subdirectory(plugins/jade/)
     add_subdirectory(plugins/valve/)
 endif (PL_BUILD_PLUGINS)

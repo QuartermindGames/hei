@@ -27,7 +27,6 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include <PL/pl_graphics.h>
 #include <PL/platform_image.h>
 
 // Texture Environment Modes
@@ -122,6 +121,6 @@ PL_EXTERN void plSetTextureFlags(PLTexture *texture, unsigned int flags);
 
 PL_EXTERN const char *plPrintTextureMemoryUsage(void);
 
-#endif
+#endif /* !defined( PL_COMPILE_PLUGIN ) */
 
 PL_EXTERN_C_END

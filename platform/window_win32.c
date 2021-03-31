@@ -84,7 +84,7 @@ PLWindow *plCreateWindow( int w, int h, const char *title ) {
 	PLWindow *window = pl_calloc( 1, sizeof( PLWindow ) );
 	window->winHandle	    = windowInstance;
 	window->appInstance     = instance;
-	window->deviceContext   = wglGetCurrentDC();
+	/* window->deviceContext   = wglGetCurrentDC(); */
 
 	return window;
 }

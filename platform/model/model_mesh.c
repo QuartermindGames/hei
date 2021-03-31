@@ -322,12 +322,22 @@ unsigned int plAddMeshTriangle( PLMesh *mesh, unsigned int x, unsigned int y, un
 	return triangleIndex;
 }
 
+/* todo: combine with Draw? */
 void plUploadMesh( PLMesh *mesh ) {
-	CallGfxFunction( UploadMesh, mesh );
+	CallGfxFunction( UploadMesh, mesh, gfx_state.current_program );
 }
 
 void plDrawMesh( PLMesh *mesh ) {
-	CallGfxFunction( DrawMesh, mesh );
+	if ( gfx_state.current_program != NULL ) {
+		plSetShaderUniformValue( gfx_state.current_program, "pl_view", gfx_state.view_matrix.m, false );
+		plSetShaderUniformValue( gfx_state.current_program, "pl_proj", gfx_state.projection_matrix.m, false );
+	}
+
+	CallGfxFunction( DrawMesh, mesh, gfx_state.current_program );
+}
+
+void plDrawInstancedMesh( PLMesh *mesh, const PLMatrix4 *transforms, unsigned int instanceCount ) {
+	CallGfxFunction( DrawInstancedMesh, mesh, gfx_state.current_program, transforms, instanceCount );
 }
 
 /* primitive types */
