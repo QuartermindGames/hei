@@ -512,6 +512,14 @@ char* plGetApplicationDataDirectory( const char* app_name, char* out, size_t n )
 	return out;
 }
 
+/**
+ * Returns true if the path ends in a forward/backward slash.
+ */
+static bool PathEndsInSlash( const char *p ) {
+	size_t l = strlen( p );
+	return ( l > 0 && ( p[ l - 1 ] == '/' || p[ l - 1 ] == '\\' ) );
+}
+
 typedef struct FSScanInstance {
 	char path[PL_SYSTEM_MAX_PATH];
 	struct FSScanInstance* next;
@@ -529,7 +537,11 @@ static void _plScanLocalDirectory( const PLFileSystemMount* mount, FSScanInstanc
 			}
 
 			char filestring[PL_SYSTEM_MAX_PATH + 1];
-			snprintf( filestring, sizeof( filestring ), "%s/%s", path, entry->d_name );
+			if ( PathEndsInSlash( path ) ) {
+				snprintf( filestring, sizeof( filestring ), "%s%s", path, entry->d_name );
+			} else {
+				snprintf( filestring, sizeof( filestring ), "%s/%s", path, entry->d_name );
+			}
 
 			struct stat st;
 			if ( stat( filestring, &st ) == 0 ) {
@@ -613,7 +625,12 @@ void plScanDirectory( const char* path, const char* extension, void (* Function)
 			// Only works for directories for now
 		} else if ( location->type == FS_MOUNT_DIR ) {
 			char mounted_path[PL_SYSTEM_MAX_PATH + 1];
-			snprintf( mounted_path, sizeof( mounted_path ), "%s/%s", location->path, path );
+			if ( PathEndsInSlash( location->path ) ) {
+				snprintf( mounted_path, sizeof( mounted_path ), "%s%s", location->path, path );
+			} else {
+				snprintf( mounted_path, sizeof( mounted_path ), "%s/%s", location->path, path );
+			}
+
 			_plScanLocalDirectory( location, &fileList, mounted_path, extension, Function, recursive, userData );
 		}
 
