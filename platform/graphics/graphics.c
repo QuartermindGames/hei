@@ -314,6 +314,24 @@ void plRegisterGraphicsMode( const char *description, const PLGraphicsInterface 
 	numGraphicsModes++;
 }
 
+/**
+ * Query what available graphics modes there are so that the
+ * host can either choose their preference or attempt each.
+ */
+const char **plGetAvailableGraphicsModes( unsigned int *numModes ) {
+	static unsigned int cachedModes = 0;
+	static const char *descriptors[ MAX_OBJECT_INTERFACES ];
+	if ( cachedModes != numGraphicsModes ) {
+		for ( unsigned int i = 0; i < numGraphicsModes; ++i ) {
+			descriptors[ i ] = graphicsModes[ i ].description;
+		}
+	}
+	*numModes = numGraphicsModes;
+	cachedModes = *numModes;
+
+	return descriptors;
+}
+
 void plSetGraphicsMode( const char *mode ) {
 	FunctionStart();
 

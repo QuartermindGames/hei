@@ -330,6 +330,7 @@ PL_EXTERN void plSetDepthBufferMode( unsigned int mode );
 PL_EXTERN void plSetDepthMask( bool enable );
 
 PL_EXTERN void plRegisterGraphicsMode( const char *description, const PLGraphicsInterface *interface );
+PL_EXTERN const char **plGetAvailableGraphicsModes( unsigned int *numModes );
 PL_EXTERN void plSetGraphicsMode( const char *mode );
 
 /* polygons */
