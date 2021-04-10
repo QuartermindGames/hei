@@ -83,12 +83,12 @@ support.
 
 #include "platform_system.h"
 
-#if defined(_DEBUG)
+#if !defined(NDEBUG)
 #   include <assert.h>
 
 #   define plAssert(a) assert(a)
 #else
-#   define plAssert(a) (a)
+#   define plAssert(a)
 #endif
 
 #define plUnused( ... )	( void )( __VA_ARGS__ )

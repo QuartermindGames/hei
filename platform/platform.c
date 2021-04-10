@@ -619,7 +619,7 @@ bool plRegisterPlugin( const char *path ) {
 	}
 
 	PLPlugin *plugin = pl_malloc( sizeof( PLPlugin ) );
-	snprintf( plugin->pluginPath, sizeof( plugin->pluginPath ), path );
+	snprintf( plugin->pluginPath, sizeof( plugin->pluginPath ), "%s", path );
 	plugin->initFunction = InitializePlugin;
 	plugin->libPtr = library;
 	plugin->node = plInsertLinkedListNode( plugins, plugin );

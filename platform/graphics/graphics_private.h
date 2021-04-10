@@ -141,11 +141,6 @@ PL_EXTERN GfxState gfx_state;
 
 void _plBindTexture( const PLTexture *texture );
 
-#if defined(PL_SUPPORT_OPENGL)
-void plInitOpenGL( void );
-void plShutdownOpenGL( void );
-#endif
-
 #if defined( PL_SUPPORT_VULKAN )
 void plInitVulkan( void );
 void plShutdownVulkan( void );

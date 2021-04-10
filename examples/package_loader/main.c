@@ -25,7 +25,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_math.h>
 #include <PL/platform_console.h>
 #include <PL/platform_model.h>
 #include <PL/platform_package.h>
@@ -38,7 +37,7 @@ int main(int argc, char **argv) {
     plSetupLogOutput("./package.log");
 
     plRegisterStandardPackageLoaders();
-    plRegisterStandardModelLoaders();
+    plRegisterStandardModelLoaders( PL_MODEL_FILEFORMAT_ALL );
 
     if(argc < 2) {
         PRINT(" package_loader <path> -<optional mode>\n");
@@ -96,9 +95,12 @@ int main(int argc, char **argv) {
                 continue;
             }
 
-            char out[PL_SYSTEM_MAX_PATH];
-            snprintf(out, sizeof(out), "./extract/%s", desc);
             plCreateDirectory("./extract/");
+
+            char out[PL_SYSTEM_MAX_PATH];
+            if ( snprintf(out, sizeof(out), "./extract/%s", desc) < 0 ) {
+				PRINT( "Path was truncated due to limited buffer size!\n" );
+			}
 
             const uint8_t *data = plGetFileData( filePtr );
             size_t length = plGetFileSize( filePtr );

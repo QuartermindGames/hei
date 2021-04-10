@@ -5,6 +5,6 @@
 #define PL_COMPILE_PLUGIN 1
 #include <PL/pl_plugin_interface.h>
 
-const PLPluginExportTable *gInterface;
+extern const PLPluginExportTable *gInterface;
 
 extern int glLogLevel;

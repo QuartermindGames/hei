@@ -27,24 +27,10 @@ For more information, please refer to <http://unlicense.org>
 
 project(platform)
 
-############################################################
-
 option(PL_USE_GRAPHICS "Graphics" ON)
-
 option(PL_SUPPORT_VULKAN "Vulkan API support" OFF)
-option(PL_SUPPORT_DIRECT3D "Graphics Direct3D API support" OFF)
-option(PL_SUPPORT_GLIDE "Graphics 3dfx Glide API support" OFF)
-
-option(PL_SUPPORT_OPENGL "Graphics OpenGL API support" ON)
-option(PL_USE_GLEW "Use GLEW for OpenGL API support" ON)
-
 option(PL_COMPILE_STATIC "Compile as static library" OFF)
-
-############################################################
-
 option(PL_USE_MODEL "Model" ON)
-
-############################################################
 
 add_definitions("-D_DEBUG")
 
@@ -63,7 +49,6 @@ file(
         math_matrix.c
         math_vector.c
         physics.c
-        window.c
 
         string/*.c string/*.h
         memory/*.*
@@ -73,13 +58,6 @@ file(
 )
 
 file(GLOB PLATFORM_PACKAGE_FILES package/*.*)
-
-# Platform specific implementations go here...
-if (WIN32)
-    file(GLOB PLATFORM_WINDOW_FILES window_win32.c)
-elseif (UNIX AND NOT APPLE)
-    file(GLOB PLATFORM_WINDOW_FILES window_x11.c)
-endif ()
 
 if (PL_USE_MODEL)
     file(GLOB PLATFORM_MODEL_FILES model/*.*)
@@ -94,7 +72,6 @@ endif ()
 if (PL_COMPILE_STATIC)
     add_library(platform STATIC
             ${PLATFORM_SOURCE_FILES}
-            ${PLATFORM_WINDOW_FILES}
             ${PLATFORM_GRAPHICS_FILES}
             ${PLATFORM_IMAGE_FILES}
             ${PLATFORM_MODEL_FILES}
@@ -102,7 +79,6 @@ if (PL_COMPILE_STATIC)
 else ()
     add_library(platform SHARED
             ${PLATFORM_SOURCE_FILES}
-            ${PLATFORM_WINDOW_FILES}
             ${PLATFORM_GRAPHICS_FILES}
             ${PLATFORM_IMAGE_FILES}
             ${PLATFORM_MODEL_FILES}
