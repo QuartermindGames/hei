@@ -120,15 +120,21 @@ static void SWDrawPixel(int x, int y, PLColour colour) {
     buffer[pos] = colour;
 }
 
-void plInitSoftwareGraphicsLayer(void) {
-    gfx_layer.CreateCamera = SWCreateCamera;
-    gfx_layer.DestroyCamera = SWDestroyCamera;
-    gfx_layer.SetupCamera = SWSetupCamera;
-
-    gfx_layer.ClearBuffers = SWClearBuffers;
-    gfx_layer.SetClearColour = SWSetClearColour;
-
-    gfx_layer.DrawPixel = SWDrawPixel;
+static bool SWSupportsHWShaders( void ) {
+	return false;
 }
 
-void plShutdownSoftwareGraphicsLayer(void) {}
+PLGraphicsInterface swGraphicsInterface = {
+        .version = { PL_GRAPHICSINTERFACE_VERSION_MAJOR, PL_GRAPHICSINTERFACE_VERSION_MINOR },
+
+        .CreateCamera = SWCreateCamera,
+        .DestroyCamera = SWDestroyCamera,
+        .SetupCamera = SWSetupCamera,
+
+        .ClearBuffers = SWClearBuffers,
+        .SetClearColour = SWSetClearColour,
+
+        .SupportsHWShaders = SWSupportsHWShaders,
+
+        .DrawPixel = SWDrawPixel,
+};

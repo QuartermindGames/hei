@@ -30,18 +30,6 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/pl_parse.h>
 
-/* todo: move this shit out of here! */
-#if defined( PL_USE_GLEW )
-#   include <GL/glew.h>
-#else
-#   ifndef GL_GLEXT_PROTOTYPES
-#       define GL_GLEXT_PROTOTYPES
-#   endif
-
-#   include <GL/gl.h>
-#   include <GL/glext.h>
-#endif
-
 /* shader implementation */
 
 /**********************************************************/
@@ -54,17 +42,17 @@ For more information, please refer to <http://unlicense.org>
  * @param type the type of shader stage.
  * @return the new shader stage.
  */
-static PLShaderStage *CreateShaderStage(PLShaderStageType type) {
-    PLShaderStage *stage = pl_calloc(1, sizeof(PLShaderStage));
-    if(stage == NULL) {
-        return NULL;
-    }
+static PLShaderStage *CreateShaderStage( PLShaderStageType type ) {
+	PLShaderStage *stage = pl_calloc( 1, sizeof( PLShaderStage ) );
+	if ( stage == NULL ) {
+		return NULL;
+	}
 
-    stage->type = type;
+	stage->type = type;
 
-    CallGfxFunction(CreateShaderStage, stage);
+	CallGfxFunction( CreateShaderStage, stage );
 
-    return stage;
+	return stage;
 }
 
 /**
@@ -73,12 +61,12 @@ static PLShaderStage *CreateShaderStage(PLShaderStageType type) {
  *
  * @param stage stage we're deleting.
  */
-void plDestroyShaderStage(PLShaderStage *stage) {
-    if(stage == NULL) {
-        return;
-    }
+void plDestroyShaderStage( PLShaderStage *stage ) {
+	if ( stage == NULL ) {
+		return;
+	}
 
-    CallGfxFunction(DestroyShaderStage, stage);
+	CallGfxFunction( DestroyShaderStage, stage );
 }
 
 /**
@@ -103,19 +91,19 @@ void plCompileShaderStage( PLShaderStage *stage, const char *buf, size_t length 
  * This actually parses _and_ compiles the given stage.
  * Returns NULL on fail.
  */
-PLShaderStage *plParseShaderStage(PLShaderStageType type, const char *buf, size_t length) {
-    PLShaderStage *stage = CreateShaderStage(type);
-    if(stage == NULL) {
-        return NULL;
-    }
+PLShaderStage *plParseShaderStage( PLShaderStageType type, const char *buf, size_t length ) {
+	PLShaderStage *stage = CreateShaderStage( type );
+	if ( stage == NULL ) {
+		return NULL;
+	}
 
-    plCompileShaderStage(stage, buf, length);
-    if(plGetFunctionResult() == PL_RESULT_SHADER_COMPILE) {
-        plDestroyShaderStage(stage);
-        return NULL;
-    }
+	plCompileShaderStage( stage, buf, length );
+	if ( plGetFunctionResult() == PL_RESULT_SHADER_COMPILE ) {
+		plDestroyShaderStage( stage );
+		return NULL;
+	}
 
-    return stage;
+	return stage;
 }
 
 /**
@@ -129,30 +117,31 @@ PLShaderStage *plParseShaderStage(PLShaderStageType type, const char *buf, size_
  * @param type The type of shader stage.
  * @return The new shader stage on success, otherwise a null pointer.
  */
-PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
-    PLFile *fp = plOpenFile(path, false);
-    if(fp == NULL) {
-        ReportError(PL_RESULT_FILEREAD, "failed to open %s", path);
-        return NULL;
-    }
+PLShaderStage *plLoadShaderStage( const char *path, PLShaderStageType type ) {
+	PLFile *fp = plOpenFile( path, false );
+	if ( fp == NULL ) {
+		ReportError( PL_RESULT_FILEREAD, "failed to open %s", path );
+		return NULL;
+	}
 
-    size_t length = plGetFileSize(fp);
-    char *buf = pl_malloc(length + 1);
-    if(buf == NULL) {
-      return NULL;
-    }
+	size_t length = plGetFileSize( fp );
+	char *buf = pl_malloc( length + 1 );
+	if ( buf == NULL ) {
+		return NULL;
+	}
 
-    size_t rlen = plReadFile(fp, buf, length, 1);
-    if(rlen != 1) {
-        GfxLog("Failed to read in entirety of %s (%d)!\n"
-               "Continuing anyway but expect issues...", path, rlen);
-    }
-    buf[length] = '\0';
-    plCloseFile(fp);
+	size_t rlen = plReadFile( fp, buf, length, 1 );
+	if ( rlen != 1 ) {
+		GfxLog( "Failed to read in entirety of %s (%d)!\n"
+		        "Continuing anyway but expect issues...",
+		        path, rlen );
+	}
+	buf[ length ] = '\0';
+	plCloseFile( fp );
 
-    PLShaderStage *stage = plParseShaderStage( type, buf, length );
-    pl_free(buf);
-    return stage;
+	PLShaderStage *stage = plParseShaderStage( type, buf, length );
+	pl_free( buf );
+	return stage;
 }
 
 /**********************************************************/
@@ -164,17 +153,17 @@ PLShaderStage *plLoadShaderStage(const char *path, PLShaderStageType type) {
  *
  * @return the new shader program.
  */
-PLShaderProgram *plCreateShaderProgram(void) {
-    PLShaderProgram *program = pl_calloc(1, sizeof(PLShaderProgram));
-    if(program == NULL) {
-        return NULL;
-    }
+PLShaderProgram *plCreateShaderProgram( void ) {
+	PLShaderProgram *program = pl_calloc( 1, sizeof( PLShaderProgram ) );
+	if ( program == NULL ) {
+		return NULL;
+	}
 
-    memset(program, 0, sizeof(PLShaderProgram));
+	memset( program, 0, sizeof( PLShaderProgram ) );
 
-    CallGfxFunction(CreateShaderProgram, program);
+	CallGfxFunction( CreateShaderProgram, program );
 
-    return program;
+	return program;
 }
 
 /**
@@ -184,72 +173,72 @@ PLShaderProgram *plCreateShaderProgram(void) {
  * @param program the program being deleted.
  * @param free_stages if true, automatically frees any linked shader stages.
  */
-void plDestroyShaderProgram(PLShaderProgram *program, bool free_stages) {
-    if(program == NULL) {
-        return;
-    }
+void plDestroyShaderProgram( PLShaderProgram *program, bool free_stages ) {
+	if ( program == NULL ) {
+		return;
+	}
 
-    for(unsigned int i = 0; i < PL_MAX_SHADER_TYPES; ++i) {
-        if(program->stages[i] != NULL) {
-            CallGfxFunction(DetachShaderStage, program, program->stages[i]);
-            if(free_stages) {
-                pl_free(program->stages[i]);
-            }
-        }
-    }
+	for ( unsigned int i = 0; i < PL_MAX_SHADER_TYPES; ++i ) {
+		if ( program->stages[ i ] != NULL ) {
+			CallGfxFunction( DetachShaderStage, program, program->stages[ i ] );
+			if ( free_stages ) {
+				pl_free( program->stages[ i ] );
+			}
+		}
+	}
 
-    CallGfxFunction(DestroyShaderProgram, program);
+	CallGfxFunction( DestroyShaderProgram, program );
 
 	/* free uniforms */
 	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
 		free( program->uniforms[ i ].name );
 	}
-    pl_free(program->uniforms);
+	pl_free( program->uniforms );
 
-    pl_free(program->attributes);
-    pl_free(program);
+	pl_free( program->attributes );
+	pl_free( program );
 }
 
-void plAttachShaderStage(PLShaderProgram *program, PLShaderStage *stage) {
-    plAssert(program != NULL);
-    plAssert(stage != NULL);
-    program->stages[program->num_stages++] = stage;
-    CallGfxFunction(AttachShaderStage, program, stage);
+void plAttachShaderStage( PLShaderProgram *program, PLShaderStage *stage ) {
+	plAssert( program != NULL );
+	plAssert( stage != NULL );
+	program->stages[ program->num_stages++ ] = stage;
+	CallGfxFunction( AttachShaderStage, program, stage );
 }
 
-bool plRegisterShaderStageFromMemory(PLShaderProgram *program, const char *buffer, size_t length,
-                                     PLShaderStageType type) {
-    if(program->num_stages >= PL_MAX_SHADER_TYPES) {
-        ReportError(PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
-                    program->num_stages);
-        return false;
-    }
+bool plRegisterShaderStageFromMemory( PLShaderProgram *program, const char *buffer, size_t length,
+                                      PLShaderStageType type ) {
+	if ( program->num_stages >= PL_MAX_SHADER_TYPES ) {
+		ReportError( PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
+		             program->num_stages );
+		return false;
+	}
 
-    PLShaderStage *stage = plParseShaderStage(type, buffer, length);
-    if(stage == NULL) {
-        return false;
-    }
+	PLShaderStage *stage = plParseShaderStage( type, buffer, length );
+	if ( stage == NULL ) {
+		return false;
+	}
 
-    plAttachShaderStage(program, stage);
+	plAttachShaderStage( program, stage );
 
-    return true;
+	return true;
 }
 
-bool plRegisterShaderStageFromDisk(PLShaderProgram *program, const char *path, PLShaderStageType type) {
-    if(program->num_stages >= PL_MAX_SHADER_TYPES) {
-        ReportError(PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
-                    program->num_stages);
-        return false;
-    }
+bool plRegisterShaderStageFromDisk( PLShaderProgram *program, const char *path, PLShaderStageType type ) {
+	if ( program->num_stages >= PL_MAX_SHADER_TYPES ) {
+		ReportError( PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
+		             program->num_stages );
+		return false;
+	}
 
-    PLShaderStage *stage = plLoadShaderStage(path, type);
-    if(stage == NULL) {
-        return false;
-    }
+	PLShaderStage *stage = plLoadShaderStage( path, type );
+	if ( stage == NULL ) {
+		return false;
+	}
 
-    plAttachShaderStage(program, stage);
+	plAttachShaderStage( program, stage );
 
-    return true;
+	return true;
 }
 
 /**
@@ -257,8 +246,8 @@ bool plRegisterShaderStageFromDisk(PLShaderProgram *program, const char *path, P
  *
  * @return pointer to the currently active shader program.
  */
-PLShaderProgram *plGetCurrentShaderProgram(void) {
-    return gfx_state.current_program;
+PLShaderProgram *plGetCurrentShaderProgram( void ) {
+	return gfx_state.current_program;
 }
 
 /**
@@ -269,23 +258,20 @@ PLShaderProgram *plGetCurrentShaderProgram(void) {
  * @param program
  * @return true if the program is equal to that currently enabled.
  */
-bool plIsShaderProgramEnabled(PLShaderProgram *program) {
-    if(gfx_state.current_program == program) {
-        return true;
-    }
+bool plIsShaderProgramEnabled( PLShaderProgram *program ) {
+	if ( gfx_state.current_program == program ) {
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
-static void RegisterShaderProgramData(PLShaderProgram *program);
-bool plLinkShaderProgram(PLShaderProgram *program) {
-    FunctionStart();
+bool plLinkShaderProgram( PLShaderProgram *program ) {
+	FunctionStart();
 
-    CallGfxFunction(LinkShaderProgram, program);
+	CallGfxFunction( LinkShaderProgram, program );
 
-    RegisterShaderProgramData(program);
-
-    return program->is_linked;
+	return program->is_linked;
 }
 
 /**
@@ -294,25 +280,25 @@ bool plLinkShaderProgram(PLShaderProgram *program) {
  *
  * @param program
  */
-void plSetShaderProgram(PLShaderProgram *program) {
-    if (program == gfx_state.current_program) {
-        return;
-    }
+void plSetShaderProgram( PLShaderProgram *program ) {
+	if ( program == gfx_state.current_program ) {
+		return;
+	}
 
-    CallGfxFunction(SetShaderProgram, program);
+	CallGfxFunction( SetShaderProgram, program );
 
-    gfx_state.current_program = program;
+	gfx_state.current_program = program;
 }
 
-static PLShaderProgram *GetShaderProgram(PLShaderProgram *program) {
-    if(program != NULL) {
-        return program;
-    } else if(gfx_state.current_program != NULL) {
-        return gfx_state.current_program;
-    }
+static PLShaderProgram *GetShaderProgram( PLShaderProgram *program ) {
+	if ( program != NULL ) {
+		return program;
+	} else if ( gfx_state.current_program != NULL ) {
+		return gfx_state.current_program;
+	}
 
-    GfxLog("NULL shader specified for uniform write, and no active shader program bound!\n");
-    return NULL;
+	GfxLog( "NULL shader specified for uniform write, and no active shader program bound!\n" );
+	return NULL;
 }
 
 /**
@@ -351,170 +337,19 @@ PLShaderUniformType plGetShaderUniformType( const PLShaderProgram *program, int 
 /*****************************************************/
 /** shader uniform **/
 
-#if defined(PL_SUPPORT_OPENGL)
-
-static const char *uniformDescriptors[ PL_MAX_UNIFORM_TYPES ] = {
-		[ PL_INVALID_UNIFORM ] = "invalid",
-        [ PL_UNIFORM_FLOAT ] = "float",
-		[ PL_UNIFORM_INT ] = "int",
-		[ PL_UNIFORM_UINT ] = "uint",
-		[ PL_UNIFORM_BOOL ] = "bool",
-		[ PL_UNIFORM_DOUBLE ] = "double",
-		[ PL_UNIFORM_SAMPLER1D ] = "sampler1D",
-		[ PL_UNIFORM_SAMPLER2D ] = "sampler2D",
-		[ PL_UNIFORM_SAMPLER3D ] = "sampler3D",
-		[ PL_UNIFORM_SAMPLERCUBE ] = "samplerCube",
-		[ PL_UNIFORM_SAMPLER1DSHADOW ] = "sampler1DShadow",
-		[ PL_UNIFORM_VEC2 ] = "vec2",
-		[ PL_UNIFORM_VEC3 ] = "vec3",
-		[ PL_UNIFORM_VEC4 ] = "vec4",
-		[ PL_UNIFORM_MAT3 ] = "mat3",
-		[ PL_UNIFORM_MAT4 ] = "mat4",
-};
-
-/* todo, move into layer_opengl */
-static PLShaderUniformType GLConvertGLUniformType(unsigned int type) {
-    switch(type) {
-        case GL_FLOAT:      return PL_UNIFORM_FLOAT;
-        case GL_FLOAT_VEC2: return PL_UNIFORM_VEC2;
-        case GL_FLOAT_VEC3: return PL_UNIFORM_VEC3;
-        case GL_FLOAT_VEC4: return PL_UNIFORM_VEC4;
-        case GL_FLOAT_MAT3: return PL_UNIFORM_MAT3;
-        case GL_FLOAT_MAT4: return PL_UNIFORM_MAT4;
-
-        case GL_DOUBLE: return PL_UNIFORM_DOUBLE;
-
-        case GL_INT:            return PL_UNIFORM_INT;
-        case GL_UNSIGNED_INT:   return PL_UNIFORM_UINT;
-
-        case GL_BOOL:   return PL_UNIFORM_BOOL;
-
-        case GL_SAMPLER_1D:         return PL_UNIFORM_SAMPLER1D;
-        case GL_SAMPLER_1D_SHADOW:  return PL_UNIFORM_SAMPLER1DSHADOW;
-        case GL_SAMPLER_2D:         return PL_UNIFORM_SAMPLER2D;
-        case GL_SAMPLER_2D_SHADOW:  return PL_UNIFORM_SAMPLER2DSHADOW;
-
-        default: {
-            GfxLog("Unhandled GLSL data type, \"%u\"!\n", type);
-            return PL_INVALID_UNIFORM;
-        }
-    }
-}
-
-#endif
-
-static void RegisterShaderProgramData(PLShaderProgram *program) {
-    /* todo, move into layer_opengl */
-
-    if(program->uniforms != NULL) {
-        GfxLog("Uniforms have already been initialised!\n");
-        return;
-    }
-
-#if defined(PL_SUPPORT_OPENGL)
-	program->internal.v_position = glGetAttribLocation( program->internal.id, "pl_vposition" );
-	program->internal.v_normal = glGetAttribLocation( program->internal.id, "pl_vnormal" );
-	program->internal.v_uv = glGetAttribLocation( program->internal.id, "pl_vuv" );
-	program->internal.v_colour = glGetAttribLocation( program->internal.id, "pl_vcolour" );
-	program->internal.v_tangent = glGetAttribLocation( program->internal.id, "pl_vtangent" );
-	program->internal.v_bitangent = glGetAttribLocation( program->internal.id, "pl_vbitangent" );
-
-	int num_uniforms = 0;
-    glGetProgramiv(program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms);
-    if(num_uniforms <= 0) {
-        /* true, because technically this isn't a fault - there just aren't any */
-        GfxLog("No uniforms found in shader program...\n");
-        return;
-    }
-    program->num_uniforms = (unsigned int) num_uniforms;
-
-    GfxLog("Found %u uniforms in shader\n", program->num_uniforms);
-
-	program->uniforms = pl_calloc( ( size_t ) program->num_uniforms, sizeof( *program->uniforms ) );
-	unsigned int registered = 0;
-	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
-		int maxUniformNameLength;
-		glGetActiveUniformsiv( program->internal.id, 1, &i, GL_UNIFORM_NAME_LENGTH, &maxUniformNameLength );
-
-		GLchar *uniformName = malloc( maxUniformNameLength );
-		GLsizei nameLength;
-
-		GLenum glType;
-		GLint uniformSize;
-
-		glGetActiveUniform( program->internal.id, i, maxUniformNameLength, &nameLength, &uniformSize, &glType, uniformName );
-		if ( nameLength == 0 ) {
-			free( uniformName );
-
-			GfxLog( "No information available for uniform %d!\n", i );
-			continue;
-		}
-
-		program->uniforms[ i ].type = GLConvertGLUniformType( glType );
-		program->uniforms[ i ].slot = i;
-		program->uniforms[ i ].name = uniformName;
-
-		/* fetch it's current value, assume it's the default */
-		switch( program->uniforms[ i ].type ) {
-			case PL_UNIFORM_FLOAT:
-				glGetUniformfv( program->internal.id, i, &program->uniforms[ i ].defaultFloat );
-				break;
-			case PL_UNIFORM_SAMPLER2D:
-			case PL_UNIFORM_INT:
-				glGetUniformiv( program->internal.id, i, &program->uniforms[ i ].defaultInt );
-				break;
-			case PL_UNIFORM_UINT:
-				glGetUniformuiv( program->internal.id, i, &program->uniforms[ i ].defaultUInt );
-				break;
-			case PL_UNIFORM_BOOL:
-				glGetUniformiv( program->internal.id, i, ( GLint * ) &program->uniforms[ i ].defaultBool );
-				break;
-			case PL_UNIFORM_DOUBLE:
-				glGetUniformdv( program->internal.id, i, &program->uniforms[ i ].defaultDouble );
-				break;
-			case PL_UNIFORM_VEC2:
-				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec2 );
-				break;
-			case PL_UNIFORM_VEC3:
-				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec3 );
-				break;
-			case PL_UNIFORM_VEC4:
-				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec4 );
-				break;
-			case PL_UNIFORM_MAT3:
-				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultMat3 );
-				break;
-			case PL_UNIFORM_MAT4:
-				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultMat4 );
-				break;
-			default:
-				break;
-		}
-
-		GfxLog( " %4d (%20s) %s\n", i, program->uniforms[ i ].name, uniformDescriptors[ program->uniforms[ i ].type ] );
-
-		registered++;
+static int ValidateShaderUniformSlot( PLShaderProgram *program, int slot ) {
+	if ( slot == -1 ) {
+		GfxLog( "Invalid shader uniform slot, \"%d\"!\n", slot );
+		return -1;
+	} else if ( ( unsigned int ) ( slot ) >= program->num_uniforms ) {
+		GfxLog( "Potential overflow for uniform slot! (%d / %d)\n", slot, program->num_uniforms );
+		return -1;
+	} else if ( program->uniforms[ slot ].type == PL_INVALID_UNIFORM ) {
+		GfxLog( "Unknown uniform type for slot! (%d)\n", slot );
+		return -1;
 	}
 
-	if(registered == 0) {
-        GfxLog("Failed to validate any shader program uniforms!\n");
-    }
-#endif
-}
-
-static int ValidateShaderUniformSlot(PLShaderProgram* program, int slot) {
-    if(slot == -1) {
-        GfxLog("Invalid shader uniform slot, \"%d\"!\n", slot);
-        return -1;
-    } else if((unsigned int)(slot) >= program->num_uniforms) {
-        GfxLog("Potential overflow for uniform slot! (%d / %d)\n", slot, program->num_uniforms);
-        return -1;
-    } else if(program->uniforms[slot].type == PL_INVALID_UNIFORM) {
-        GfxLog("Unknown uniform type for slot! (%d)\n", slot);
-        return -1;
-    }
-
-    return slot;
+	return slot;
 }
 
 void plSetShaderUniformDefaultValueByIndex( PLShaderProgram *program, int slot, const void *defaultValue ) {
@@ -622,161 +457,40 @@ void plSetShaderUniformsToDefault( PLShaderProgram *program ) {
 }
 
 void plSetShaderUniformValueByIndex( PLShaderProgram *program, int slot, const void *value, bool transpose ) {
-#if defined(PL_SUPPORT_OPENGL) /* todo, move into layer_opengl */
+	if ( ValidateShaderUniformSlot( program, slot ) == -1 ) {
+		return;
+	}
+
 	/* this should be done by the GL layer!! */
-	PLShaderProgram* oldProgram = plGetCurrentShaderProgram();
+	PLShaderProgram *oldProgram = plGetCurrentShaderProgram();
 	plSetShaderProgram( program );
 
-	switch ( program->uniforms[ slot ].type ) {
-		case PL_UNIFORM_FLOAT:
-			glUniform1f( program->uniforms[ slot ].slot, *( float * ) value );
-			break;
-		case PL_UNIFORM_SAMPLER2D:
-		case PL_UNIFORM_INT:
-			glUniform1i(  program->uniforms[ slot ].slot, *( int * ) value );
-			break;
-		case PL_UNIFORM_UINT:
-			glUniform1ui(  program->uniforms[ slot ].slot, *( unsigned int * ) value );
-			break;
-		case PL_UNIFORM_BOOL:
-			glUniform1i(  program->uniforms[ slot ].slot, *( bool * ) value );
-			break;
-		case PL_UNIFORM_DOUBLE:
-			glUniform1d(  program->uniforms[ slot ].slot, *( double * ) value );
-			break;
-		case PL_UNIFORM_VEC2: {
-			PLVector2 vec2 = *( PLVector2 * ) value;
-			glUniform2f( program->uniforms[ slot ].slot, vec2.x, vec2.y );
-			break;
-		}
-		case PL_UNIFORM_VEC3: {
-			PLVector3 vec3 = *( PLVector3 * ) value;
-			glUniform3f( program->uniforms[ slot ].slot, vec3.x, vec3.y, vec3.z );
-			break;
-		}
-		case PL_UNIFORM_VEC4: {
-			PLVector4 vec4 = *( PLVector4 * ) value;
-			glUniform4f( program->uniforms[ slot ].slot, vec4.x, vec4.y, vec4.z, vec4.w );
-			break;
-		}
-		case PL_UNIFORM_MAT3: {
-			PLMatrix3 mat3 = *( PLMatrix3 * ) value;
-			glUniformMatrix3fv( program->uniforms[ slot ].slot, 1, transpose ? GL_TRUE : GL_FALSE, mat3.m );
-			break;
-		}
-		case PL_UNIFORM_MAT4: {
-			PLMatrix4 mat4 = *( PLMatrix4 * ) value;
-			glUniformMatrix4fv( program->uniforms[ slot ].slot, 1, transpose ? GL_TRUE : GL_FALSE, mat4.m );
-			break;
-		}
-		default:
-			break;
-	}
+	CallGfxFunction( SetShaderUniformValue, program, slot, value, transpose );
 
 	/* this should be done by the GL layer!! */
 	plSetShaderProgram( oldProgram );
-#endif
 }
 
 void plSetShaderUniformValue( PLShaderProgram *program, const char *name, const void *value, bool transpose ) {
-	int slot = plGetShaderUniformSlot( program, name );
-	if ( slot == -1 ) {
-		return;
-	}
-
-	plSetShaderUniformValueByIndex( program, slot, value, transpose );
+	plSetShaderUniformValueByIndex( program, plGetShaderUniformSlot( program, name ), value, transpose );
 }
 
-void plSetShaderUniformFloat(PLShaderProgram *program, int slot, float value) {
-	PLShaderProgram *prg = GetShaderProgram( program );
-	if ( prg == NULL || prg->uniforms == NULL ) {
-		return;
-	}
-
-	if(ValidateShaderUniformSlot(prg, slot) == -1) {
-        return;
-    }
-
-    PLShaderProgram* old_program = plGetCurrentShaderProgram();
-    plSetShaderProgram(prg);
-
-#if defined(PL_SUPPORT_OPENGL) /* todo, move into layer_opengl */
-    glUniform1f(prg->uniforms[slot].slot, value);
-#endif
-
-    plSetShaderProgram(old_program);
+void plSetShaderUniformFloat( PLShaderProgram *program, int slot, float value ) {
+	plSetShaderUniformValueByIndex( program, slot, &value, false );
 }
 
-void plSetShaderUniformVector3(PLShaderProgram* program, int slot, PLVector3 value) {
-  PLShaderProgram* prg = GetShaderProgram(program);
-  if(prg == NULL || prg->uniforms == NULL) {
-    return;
-  }
-
-  if(ValidateShaderUniformSlot(prg, slot) == -1) {
-    return;
-  }
-
-  PLShaderProgram* old_program = plGetCurrentShaderProgram();
-  plSetShaderProgram(prg);
-
-#if defined(PL_SUPPORT_OPENGL) /* todo, move into layer_opengl */
-  glUniform3f(prg->uniforms[slot].slot, value.x, value.y, value.z);
-#endif
-
-  plSetShaderProgram(old_program);
+void plSetShaderUniformVector3( PLShaderProgram *program, int slot, PLVector3 value ) {
+	plSetShaderUniformValueByIndex( program, slot, &value, false );
 }
 
-void plSetShaderUniformVector4(PLShaderProgram* program, int slot, PLVector4 value) {
-    PLShaderProgram* prg = GetShaderProgram(program);
-    if(prg == NULL || prg->uniforms == NULL) {
-        return;
-    }
-
-    if(ValidateShaderUniformSlot(prg, slot) == -1) {
-        return;
-    }
-
-    PLShaderProgram* old_program = plGetCurrentShaderProgram();
-    plSetShaderProgram(prg);
-
-#if defined(PL_SUPPORT_OPENGL) /* todo, move into layer_opengl */
-    glUniform4f(prg->uniforms[slot].slot, value.x, value.y, value.z, value.w);
-#endif
-
-    plSetShaderProgram(old_program);
+void plSetShaderUniformVector4( PLShaderProgram *program, int slot, PLVector4 value ) {
+	plSetShaderUniformValueByIndex( program, slot, &value, false );
 }
 
-void plSetShaderUniformInt(PLShaderProgram *program, int slot, int value) {
-    PLShaderProgram *prg = GetShaderProgram(program);
-    if(prg == NULL || prg->uniforms == NULL) {
-        return;
-    }
-
-    if(ValidateShaderUniformSlot(prg, slot) == -1) {
-        return;
-    }
-
-    PLShaderProgram *old_program = plGetCurrentShaderProgram();
-    plSetShaderProgram(prg);
-
-#if defined(PL_SUPPORT_OPENGL)
-    /* todo, move into layer_opengl */
-    glUniform1i(prg->uniforms[slot].slot, value);
-#endif
-
-    plSetShaderProgram(old_program);
+void plSetShaderUniformInt( PLShaderProgram *program, int slot, int value ) {
+	plSetShaderUniformValueByIndex( program, slot, &value, false );
 }
 
-void plSetShaderUniformMatrix4(PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose){
-    PLShaderProgram *prg = GetShaderProgram(program);
-    if(prg == NULL || prg->uniforms == NULL) {
-        return;
-    }
-
-    if(ValidateShaderUniformSlot(prg, slot) == -1) {
-        return;
-    }
-
-    CallGfxFunction(SetShaderUniformMatrix4, prg, slot, value, transpose);
+void plSetShaderUniformMatrix4( PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose ) {
+	plSetShaderUniformValueByIndex( program, slot, &value, transpose );
 }

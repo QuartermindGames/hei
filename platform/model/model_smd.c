@@ -114,6 +114,8 @@ static PLModel *SMD_ReadFile( PLFile *file ) {
 		ReportError( PL_RESULT_FILEREAD, "failed to read in nodes" );
 		return NULL;
 	}
+
+	return NULL;
 }
 
 /**

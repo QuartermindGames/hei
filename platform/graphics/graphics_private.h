@@ -41,6 +41,8 @@ For more information, please refer to <http://unlicense.org>
 #endif
 
 typedef struct GfxState {
+	const PLGraphicsInterface *interface;
+
 	PLCullMode current_cullmode;
 
 	PLColour current_clearcolour;
@@ -93,98 +95,16 @@ typedef struct GfxState {
 	bool mode_debug;
 } GfxState;
 
-typedef struct GfxLayer {
-	PLGfxMode mode;    // Current gfx interface
-
-	// Debug
-	void (*InsertDebugMarker)( const char *msg );
-	void (*PushDebugGroupMarker)( const char *msg );
-	void (*PopDebugGroupMarker)( void );
-
-	/* hw information */
-
-	bool (*HWSupportsMultitexture)( void );
-	bool (*HWSupportsShaders)( void );
-
-	void (*GetMaxTextureUnits)( unsigned int *num_units );
-	void (*GetMaxTextureSize)( unsigned int *s );
-
-	/******************************************/
-
-	/* generic state management */
-	void (*EnableState)( PLGraphicsState state );
-	void (*DisableState)( PLGraphicsState state );
-
-	void (*SetBlendMode)( PLBlend a, PLBlend b );
-	void (*SetCullMode)( PLCullMode mode );
-
-	void (*SetClearColour)( PLColour rgba );
-	void (*ClearBuffers)( unsigned int buffers );
-
-	void (*DrawPixel)( int x, int y, PLColour colour );
-
-	void (*SetDepthBufferMode)( unsigned int mode );
-	void (*SetDepthMask)( bool enable );
-
-	// Mesh
-	void (*CreateMesh)( PLMesh *mesh );
-	void (*UploadMesh)( PLMesh *mesh );
-	void (*DrawMesh)( PLMesh *mesh );
-	void (*DeleteMesh)( PLMesh *mesh );
-
-	// Framebuffer
-	void (*CreateFrameBuffer)( PLFrameBuffer *buffer );
-	void (*DeleteFrameBuffer)( PLFrameBuffer *buffer );
-	void (*BindFrameBuffer)( PLFrameBuffer *buffer, PLFBOTarget targetBinding );
-	PLTexture *(*GetFrameBufferTextureAttachment)( PLFrameBuffer *buffer, unsigned int component, PLTextureFilter filter );
-	void (*BlitFrameBuffers)( PLFrameBuffer *srcBuffer,
-							  unsigned int srcW,
-							  unsigned int srcH,
-							  PLFrameBuffer *dstBuffer,
-							  unsigned int dstW,
-							  unsigned int dstH,
-							  bool linear );
-
-	// Texture
-	void (*CreateTexture)( PLTexture *texture );
-	void (*DeleteTexture)( PLTexture *texture );
-	void (*BindTexture)( const PLTexture *texture );
-	void (*UploadTexture)( PLTexture *texture, const PLImage *upload );
-	void (*SwizzleTexture)( PLTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a );
-	void (*SetTextureAnisotropy)( PLTexture *texture, uint32_t value );
-	void (*ActiveTexture)( unsigned int target );
-
-	// Camera
-	void (*CreateCamera)( PLCamera *camera );
-	void (*DestroyCamera)( PLCamera *camera );
-	void (*SetupCamera)( PLCamera *camera );
-	///////////////////////////////////////////
-
-	// Shaders
-	void (*CreateShaderProgram)( PLShaderProgram *program );
-	void (*DestroyShaderProgram)( PLShaderProgram *program );
-	void (*AttachShaderStage)( PLShaderProgram *program, PLShaderStage *stage );
-	void (*DetachShaderStage)( PLShaderProgram *program, PLShaderStage *stage );
-	void (*LinkShaderProgram)( PLShaderProgram *program );
-	void (*SetShaderProgram)( PLShaderProgram *program );
-	void (*CreateShaderStage)( PLShaderStage *stage );
-	void (*DestroyShaderStage)( PLShaderStage *stage );
-	void (*CompileShaderStage)( PLShaderStage *stage, const char *buf, size_t length );
-
-	//Shader uniforms
-	void (*SetShaderUniformMatrix4)( PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose );
-
-	// Stencil operations
-	void (*StencilFunction)( PLStencilTestFunction function, int reference, unsigned int mask );
-} GfxLayer;
-
 #if defined(PL_USE_GRAPHICS)
 #   define CallGfxFunction( FUNCTION, ... ) \
-    if(gfx_layer.FUNCTION != NULL) { \
-        gfx_layer.FUNCTION(__VA_ARGS__); \
+    if(gfx_state.interface != NULL && gfx_state.interface->FUNCTION != NULL) { \
+        gfx_state.interface->FUNCTION(__VA_ARGS__); \
     } else { \
         GfxLog("Unbound layer function %s was called\n", #FUNCTION); \
     }
+#   define CallReturningGfxFunction( FUNCTION, RETURN, ... ) \
+	if ( gfx_state.interface != NULL && gfx_state.interface->FUNCTION != NULL ) return gfx_state.interface->FUNCTION( __VA_ARGS__ ); \
+    else { GfxLog( "Unbound layer function %s was called\n", #FUNCTION ); return ( RETURN ); }
 #else
 #   define CallGfxFunction(FUNCTION, ...)
 #endif
@@ -200,22 +120,6 @@ typedef struct GfxLayer {
 #endif
 
 ///////////////////////////////////////////////////////
-
-enum {
-	PL_RENDERBUFFER_COLOUR,
-	PL_RENDERBUFFER_DEPTH,
-	PL_RENDERBUFFER_STENCIL,
-
-	PL_MAX_RENDERBUFFER_TYPES
-};
-
-typedef struct PLFrameBuffer {
-	unsigned int fbo;
-	unsigned int renderBuffers[ PL_MAX_RENDERBUFFER_TYPES ];
-	unsigned int width;
-	unsigned int height;
-	PLFrameBufferRenderFlags flags;
-} PLFrameBuffer;
 
 #define PL_POLYGON_MAX_SIDES 32
 
@@ -234,21 +138,12 @@ typedef struct PLPolygon {
 PL_EXTERN_C
 
 PL_EXTERN GfxState gfx_state;
-PL_EXTERN GfxLayer gfx_layer;
 
 void _plBindTexture( const PLTexture *texture );
-
-#if defined(PL_SUPPORT_OPENGL)
-void plInitOpenGL( void );
-void plShutdownOpenGL( void );
-#endif
 
 #if defined( PL_SUPPORT_VULKAN )
 void plInitVulkan( void );
 void plShutdownVulkan( void );
 #endif
-
-void plInitSoftwareGraphicsLayer( void );
-void plShutdownSoftwareGraphicsLayer( void );
 
 PL_EXTERN_C_END

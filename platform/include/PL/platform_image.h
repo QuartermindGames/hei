@@ -30,6 +30,11 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_filesystem.h>
 #include <PL/platform_math.h>
 
+typedef enum PLDataFormat {
+	PL_UNSIGNED_BYTE,
+	PL_UNSIGNED_INT_8_8_8_8_REV,
+} PLDataFormat;
+
 typedef enum PLImageFormat {
     PL_IMAGEFORMAT_UNKNOWN,
 
@@ -125,7 +130,6 @@ PL_EXTERN bool plFlipImageVertical(PLImage *image);
 PL_EXTERN unsigned int plGetNumberOfColourChannels(PLColourFormat format);
 
 PL_EXTERN bool plImageIsPowerOfTwo( const PLImage *image );
-PL_EXTERN bool plIsCompressedImageFormat(PLImageFormat format);
 
 PL_EXTERN void plFreeImage(PLImage *image);
 

@@ -25,15 +25,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_image.h>
 #include <PL/platform_console.h>
+#include <PL/platform_image.h>
 
 #include "graphics_private.h"
 
 /*	Graphics	*/
 
 GfxState gfx_state;
-GfxLayer gfx_layer;
 
 /*	TODO:
 - Add somewhere we can store tracking
@@ -41,131 +40,97 @@ data for each of these functions
 - Do this in another thread if possible
 - Display that data as an overlay
 */
-#define GRAPHICS_TRACK()                            \
-    {                                               \
-        static unsigned int num_calls = 0;          \
-        if(gfx_state.mode_debug) {                  \
-            GfxLog(" %s\n", PL_FUNCTION);    \
-            num_calls++;                            \
-        }                                           \
-    }
+#define GRAPHICS_TRACK()                    \
+	{                                       \
+		static unsigned int num_calls = 0;  \
+		if ( gfx_state.mode_debug ) {       \
+			GfxLog( " %s\n", PL_FUNCTION ); \
+			num_calls++;                    \
+		}                                   \
+	}
 
 /*===========================
 	INITIALIZATION
 ===========================*/
 
-void _InitTextures(void);     // platform_graphics_texture
-void _InitMaterials(void);    // material
+void _InitTextures( void );// platform_graphics_texture
 
-PLresult plInitGraphics(void) {
-    memset(&gfx_state, 0, sizeof(GfxState));
-    memset(&gfx_layer, 0, sizeof(GfxLayer));
+PLresult plInitGraphics( void ) {
+	memset( &gfx_state, 0, sizeof( GfxState ) );
 
-    gfx_layer.mode = PL_GFX_MODE_NONE;
-
-    return PL_RESULT_SUCCESS;
+	return PL_RESULT_SUCCESS;
 }
 
-void plShutdownTextures(void); // platform_graphics_texture
+void plShutdownTextures( void );// platform_graphics_texture
 
-void plShutdownGraphics(void) {
-    GRAPHICS_TRACK();
+void plShutdownGraphics( void ) {
+	GRAPHICS_TRACK();
 
-    plShutdownTextures();
+	CallGfxFunction( Shutdown );
 
-    switch(gfx_layer.mode) {
-        default: break;
-
-        case PL_GFX_MODE_OPENGL_CORE:
-        case PL_GFX_MODE_OPENGL_ES:
-        case PL_GFX_MODE_OPENGL: {
-#if defined(PL_SUPPORT_OPENGL)
-            plShutdownOpenGL();
-#endif
-        } break;
-    }
+	plShutdownTextures();
 }
 
 /*===========================
 	DEBUGGING
 ===========================*/
 
-void plInsertDebugMarker(const char *msg) {
-    CallGfxFunction(InsertDebugMarker, msg);
+void plInsertDebugMarker( const char *msg ) {
+	CallGfxFunction( InsertDebugMarker, msg );
 }
 
-void plPushDebugGroupMarker(const char *msg) {
-    CallGfxFunction(PushDebugGroupMarker, msg);
+void plPushDebugGroupMarker( const char *msg ) {
+	CallGfxFunction( PushDebugGroupMarker, msg );
 }
 
-void plPopDebugGroupMarker(void) {
-    CallGfxFunction(PopDebugGroupMarker);
+void plPopDebugGroupMarker( void ) {
+	CallGfxFunction( PopDebugGroupMarker );
 }
-
 
 /*===========================
 	HARDWARE INFORMATION
 ===========================*/
 
-bool plHWSupportsMultitexture(void) {
-    GRAPHICS_TRACK();
-
-    if(gfx_layer.HWSupportsMultitexture) {
-        return gfx_layer.HWSupportsMultitexture();
-    }
-
-    return false;
-}
-
-bool plHWSupportsShaders(void) {
-    GRAPHICS_TRACK();
-
-    if(gfx_layer.HWSupportsShaders) {
-        return gfx_layer.HWSupportsShaders();
-    }
-
-    return false;
+bool plSupportsHWShaders( void ) {
+	GRAPHICS_TRACK();
+	CallReturningGfxFunction( SupportsHWShaders, false );
 }
 
 /*===========================
 	FRAMEBUFFERS
 ===========================*/
 
-PLFrameBuffer *plCreateFrameBuffer(unsigned int w, unsigned int h, unsigned int flags) {
-    if(flags == 0){
-        return NULL;
-    }
-
-    PLFrameBuffer *buffer = (PLFrameBuffer*)pl_malloc(sizeof(PLFrameBuffer));
-    if(!buffer) {
-        return NULL;
-    }
-
-    buffer->width = w;
-    buffer->height = h;
-    buffer->flags = flags;
-
-    CallGfxFunction(CreateFrameBuffer, buffer);
-
-    return buffer;
-}
-
-void plDestroyFrameBuffer(PLFrameBuffer *buffer) {
-	if(!buffer) {
-		return;
-	}
-
-	CallGfxFunction(DeleteFrameBuffer, buffer);
-
-	pl_free(buffer);
-}
-
-PLTexture *plGetFrameBufferTextureAttachment( PLFrameBuffer *buffer, unsigned int component, PLTextureFilter filter ) {
-	if ( gfx_layer.GetFrameBufferTextureAttachment == NULL ) {
+PLFrameBuffer *plCreateFrameBuffer( unsigned int w, unsigned int h, unsigned int flags ) {
+	if ( flags == 0 ) {
 		return NULL;
 	}
 
-	return gfx_layer.GetFrameBufferTextureAttachment( buffer, component, filter );
+	PLFrameBuffer *buffer = ( PLFrameBuffer * ) pl_malloc( sizeof( PLFrameBuffer ) );
+	if ( !buffer ) {
+		return NULL;
+	}
+
+	buffer->width = w;
+	buffer->height = h;
+	buffer->flags = flags;
+
+	CallGfxFunction( CreateFrameBuffer, buffer );
+
+	return buffer;
+}
+
+void plDestroyFrameBuffer( PLFrameBuffer *buffer ) {
+	if ( !buffer ) {
+		return;
+	}
+
+	CallGfxFunction( DeleteFrameBuffer, buffer );
+
+	pl_free( buffer );
+}
+
+PLTexture *plGetFrameBufferTextureAttachment( PLFrameBuffer *buffer, unsigned int component, PLTextureFilter filter ) {
+	CallReturningGfxFunction( GetFrameBufferTextureAttachment, NULL, buffer, component, filter );
 }
 
 void plGetFrameBufferResolution( const PLFrameBuffer *buffer, unsigned int *width, unsigned int *height ) {
@@ -173,73 +138,83 @@ void plGetFrameBufferResolution( const PLFrameBuffer *buffer, unsigned int *widt
 	*height = buffer->height;
 }
 
-void plBindFrameBuffer(PLFrameBuffer *buffer, PLFBOTarget target_binding) {
-    //NOTE: NULL is valid for *buffer, to bind the SDL window default backbuffer
-    CallGfxFunction(BindFrameBuffer, buffer, target_binding)
+void plBindFrameBuffer( PLFrameBuffer *buffer, PLFBOTarget target_binding ) {
+	//NOTE: NULL is valid for *buffer, to bind the SDL window default backbuffer
+	CallGfxFunction( BindFrameBuffer, buffer, target_binding )
 }
 
-void plBlitFrameBuffers(PLFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, bool linear ) {
-    //NOTE: NULL is valid for *srcBuffer/*dstBuffer, to bind the SDL window default backbuffer
-    //      SRC and DST can be the same buffer, in order to quickly copy a subregion of the buffer to a new location
-    CallGfxFunction(BlitFrameBuffers, src_buffer, src_w, src_h, dst_buffer, dst_w, dst_h, linear);
+void plBlitFrameBuffers( PLFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, bool linear ) {
+	//NOTE: NULL is valid for *srcBuffer/*dstBuffer, to bind the SDL window default backbuffer
+	//      SRC and DST can be the same buffer, in order to quickly copy a subregion of the buffer to a new location
+	CallGfxFunction( BlitFrameBuffers, src_buffer, src_w, src_h, dst_buffer, dst_w, dst_h, linear );
 }
 
-void plSetClearColour(PLColour rgba) {
-    if (plCompareColour(rgba, gfx_state.current_clearcolour)) {
-        return;
-    }
+void plSetClearColour( PLColour rgba ) {
+	if ( plCompareColour( rgba, gfx_state.current_clearcolour ) ) {
+		return;
+	}
 
-    CallGfxFunction(SetClearColour, rgba);
+	CallGfxFunction( SetClearColour, rgba );
 
-    gfx_state.current_clearcolour = rgba;
+	gfx_state.current_clearcolour = rgba;
 }
 
-void plClearBuffers(unsigned int buffers) {
-    CallGfxFunction( ClearBuffers, buffers );
+void plClearBuffers( unsigned int buffers ) {
+	CallGfxFunction( ClearBuffers, buffers );
 }
 
 /*===========================
 	CAPABILITIES
 ===========================*/
 
-bool plIsGraphicsStateEnabled(PLGraphicsState state) {
-  return gfx_state.current_capabilities[state];
+bool plIsGraphicsStateEnabled( PLGraphicsState state ) {
+	return gfx_state.current_capabilities[ state ];
 }
 
-void plEnableGraphicsState(PLGraphicsState state) {
-    if (plIsGraphicsStateEnabled(state)) {
-        return;
-    }
+void plEnableGraphicsState( PLGraphicsState state ) {
+	if ( plIsGraphicsStateEnabled( state ) ) {
+		return;
+	}
 
-    CallGfxFunction(EnableState, state);
+	CallGfxFunction( EnableState, state );
+
+	gfx_state.current_capabilities[ state ] = false;
 }
 
-void plDisableGraphicsState(PLGraphicsState state) {
-    if (!plIsGraphicsStateEnabled(state)) {
-        return;
-    }
+void plDisableGraphicsState( PLGraphicsState state ) {
+	if ( !plIsGraphicsStateEnabled( state ) ) {
+		return;
+	}
 
-    CallGfxFunction(DisableState, state);
+	CallGfxFunction( DisableState, state );
+
+	gfx_state.current_capabilities[ state ] = true;
 }
 
 /*===========================
 	DRAW
 ===========================*/
 
-void plSetBlendMode(PLBlend a, PLBlend b) {
-    CallGfxFunction(SetBlendMode, a, b);
+void plSetBlendMode( PLBlend a, PLBlend b ) {
+	CallGfxFunction( SetBlendMode, a, b );
 }
 
-void plSetCullMode(PLCullMode mode) {
-    CallGfxFunction(SetCullMode, mode);
+void plSetCullMode( PLCullMode mode ) {
+	if ( mode == gfx_state.current_cullmode ) {
+		return;
+	}
+
+	CallGfxFunction( SetCullMode, mode );
+
+	gfx_state.current_cullmode = mode;
 }
 
-void plSetDepthBufferMode(unsigned int mode) {
-    CallGfxFunction(SetDepthBufferMode, mode);
+void plSetDepthBufferMode( unsigned int mode ) {
+	CallGfxFunction( SetDepthBufferMode, mode );
 }
 
-void plSetDepthMask(bool enable) {
-    CallGfxFunction(SetDepthMask, enable);
+void plSetDepthMask( bool enable ) {
+	CallGfxFunction( SetDepthMask, enable );
 }
 
 /*===========================
@@ -252,7 +227,7 @@ PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
 
     _plSetActiveTexture(texture);
 
-#if defined (PL_MODE_OPENGL) || defined (VL_MODE_OPENGL_CORE)
+#if defined( PL_MODE_OPENGL ) || defined( VL_MODE_OPENGL_CORE )
     unsigned int storage = _plTranslateTextureStorageFormat(upload->storage_type);
     unsigned int format = _plTranslateTextureFormat(upload->format);
 
@@ -294,21 +269,21 @@ PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
     if (plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP) && (levels > 1)) {
         glGenerateMipmap(GL_TEXTURE_2D);
     }
-#elif defined (VL_MODE_GLIDE)
-#elif defined (VL_MODE_DIRECT3D)
+#elif defined( VL_MODE_GLIDE )
+#elif defined( VL_MODE_DIRECT3D )
 #endif
 
     return PL_RESULT_SUCCESS;
 }
 #endif
 
-#if defined(__GNUC__) || defined(__GNUG__)
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+#if defined( __GNUC__ ) || defined( __GNUG__ )
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
 #endif
 
-#if defined(__GNUC__) || defined(__GNUG__)
-#   pragma GCC diagnostic pop
+#if defined( __GNUC__ ) || defined( __GNUG__ )
+#pragma GCC diagnostic pop
 #endif
 
 /*===========================
@@ -321,54 +296,72 @@ void plDrawPixel( int x, int y, PLColour colour ) {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-void plSetGraphicsMode(PLGfxMode mode) {
-	FunctionStart();
+typedef struct GraphicsMode {
+	const char *description;
+	const PLGraphicsInterface *interface;
+} GraphicsMode;
+static GraphicsMode graphicsModes[ MAX_OBJECT_INTERFACES ];
+static unsigned int numGraphicsModes = 0;
 
-    GfxLog("Initializing graphics abstraction layer...\n");
+void plRegisterGraphicsMode( const char *description, const PLGraphicsInterface *interface ) {
+	if ( numGraphicsModes >= MAX_OBJECT_INTERFACES ) {
+		ReportBasicError( PL_RESULT_MEMORY_EOA );
+		return;
+	}
 
-    gfx_layer.mode = mode;
-    switch(gfx_layer.mode) {
-        case PL_GFX_MODE_NONE: break;
-
-#if defined(PL_SUPPORT_DIRECT3D)
-        case PL_GFX_MODE_DIRECT3D: break;
-#endif
-
-        case PL_GFX_MODE_SOFTWARE: {
-            plInitSoftwareGraphicsLayer();
-        } break;
-
-#if defined(PL_SUPPORT_OPENGL)
-        case PL_GFX_MODE_OPENGL_CORE:
-        case PL_GFX_MODE_OPENGL_ES:
-        case PL_GFX_MODE_OPENGL_1_0:
-        case PL_GFX_MODE_OPENGL:
-            plInitOpenGL();
-            break;
-#endif
-
-#if defined( PL_SUPPORT_VULKAN )
-		case PL_GFX_MODE_VULKAN:
-			plInitVulkan();
-			break;
-#endif
-
-        default: {
-            ReportError(PL_RESULT_GRAPHICSINIT, "invalid graphics layer, %d, selected", gfx_layer.mode);
-            DebugPrint("Reverting to software mode...\n");
-            plSetGraphicsMode(PL_GFX_MODE_SOFTWARE);
-        } break;
-    }
-
-    _InitTextures();
-    _InitMaterials();
+	graphicsModes[ numGraphicsModes ].description = description;
+	graphicsModes[ numGraphicsModes ].interface = interface;
+	numGraphicsModes++;
 }
 
-void plProcessGraphics(void) {
-    plClearBuffers(PL_BUFFER_COLOUR | PL_BUFFER_DEPTH | PL_BUFFER_STENCIL);
+/**
+ * Query what available graphics modes there are so that the
+ * host can either choose their preference or attempt each.
+ */
+const char **plGetAvailableGraphicsModes( unsigned int *numModes ) {
+	static unsigned int cachedModes = 0;
+	static const char *descriptors[ MAX_OBJECT_INTERFACES ];
+	if ( cachedModes != numGraphicsModes ) {
+		for ( unsigned int i = 0; i < numGraphicsModes; ++i ) {
+			descriptors[ i ] = graphicsModes[ i ].description;
+		}
+	}
+	*numModes = numGraphicsModes;
+	cachedModes = *numModes;
 
-    plDrawConsole();
-    //plDrawPerspective();
+	return descriptors;
+}
+
+void plSetGraphicsMode( const char *mode ) {
+	FunctionStart();
+
+	GfxLog( "Initializing graphics abstraction layer...\n" );
+
+	const PLGraphicsInterface *interface = NULL;
+	for ( unsigned int i = 0; i < numGraphicsModes; ++i ) {
+		if ( pl_strcasecmp( mode, graphicsModes[ i ].description ) != 0 ) {
+			continue;
+		}
+
+		interface = graphicsModes[ i ].interface;
+		break;
+	}
+
+	if ( interface == NULL ) {
+		ReportError( PL_RESULT_GRAPHICSINIT, "invalid graphics interface \"%s\" selected", mode );
+		return;
+	}
+
+	if ( gfx_state.interface != NULL && interface == gfx_state.interface ) {
+		ReportError( PL_RESULT_GRAPHICSINIT, "chosen interface \"%s\" is already active", mode );
+		return;
+	}
+
+	gfx_state.interface = interface;
+
+	CallGfxFunction( Initialize );
+
+	_InitTextures();
 }
 
 /*===========================

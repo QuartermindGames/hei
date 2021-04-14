@@ -27,14 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include "graphics_private.h"
 
-#include <PL/platform_image.h>
 #include <PL/platform_console.h>
-#include <PL/pl_graphics_texture.h>
-#include <PL/platform_filesystem.h>
-
-PLConsoleVariable pl_texture_anisotropy = { "gr_texture_anisotropy", "16", pl_int_var, NULL };
-
-#define FREE_TEXTURE    ((unsigned int)-1)
 
 void _InitTextures( void ) {
 	gfx_state.tmu = ( PLTextureMappingUnit * ) pl_calloc( plGetMaxTextureUnits(), sizeof( PLTextureMappingUnit ) );
@@ -71,60 +64,12 @@ unsigned int plGetMaxTextureSize( void ) {
 		return gfx_state.hw_maxtexturesize;
 	}
 
-	if ( gfx_layer.GetMaxTextureSize != NULL ) {
-		gfx_layer.GetMaxTextureSize( &gfx_state.hw_maxtexturesize );
-	} else {
-		gfx_state.hw_maxtexturesize = 4096;
-	}
+	CallGfxFunction( GetMaxTextureSize, &gfx_state.hw_maxtexturesize );
 
 	return gfx_state.hw_maxtexturesize;
 }
 
 PLTexture *plCreateTexture( void ) {
-#if 0
-	PLTexture **texture = gfx_state.textures; unsigned int slot;
-	for(slot = 0; texture < gfx_state.textures + gfx_state.max_textures; ++texture, ++slot) {
-		if(!(*texture)) {
-			(*texture) = (PLTexture*)pl_malloc(sizeof(PLTexture));
-			if(!(*texture)) {
-				ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for Texture object, %d", sizeof(PLTexture));
-				return NULL;
-			}
-
-			memset((*texture), 0, sizeof(PLTexture));
-			break;
-		}
-
-		if((*texture)->internal.id == FREE_TEXTURE) {
-			break;
-		}
-	}
-
-	if(texture >= gfx_state.textures + gfx_state.max_textures) { // ran out of available slots... ?
-		PLTexture **old_mem = gfx_state.textures;
-		gfx_state.textures = (PLTexture**)realloc(
-				gfx_state.textures,
-				(gfx_state.max_textures += 512) * sizeof(PLTexture)
-		);
-		if(!gfx_state.textures) {
-			ReportError(PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes",
-						   gfx_state.max_textures * sizeof(PLTexture));
-			gfx_state.textures = old_mem;
-			gfx_state.max_textures -= 512;
-		}
-		memset(gfx_state.textures + (sizeof(PLTexture) * (gfx_state.max_textures - 512)), 0, sizeof(PLTexture*) * 512);
-		return plCreateTexture();
-	}
-
-	(*texture)->internal.id = slot;
-	(*texture)->format      = PL_IMAGEFORMAT_RGBA8;
-	(*texture)->w           = 8;
-	(*texture)->h           = 8;
-
-	CallGfxFunction(CreateTexture, (*texture));
-
-	return (*texture);
-#else
 	PLTexture *texture = pl_calloc( 1, sizeof( PLTexture ) );
 	if ( texture == NULL ) {
 		return NULL;
@@ -136,7 +81,6 @@ PLTexture *plCreateTexture( void ) {
 
 	CallGfxFunction( CreateTexture, texture );
 	return texture;
-#endif
 }
 
 void plDestroyTexture( PLTexture *texture ) {

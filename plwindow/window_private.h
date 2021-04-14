@@ -27,23 +27,10 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include "platform.h"
+#include "include/plwindow/pl_window.h"
+#include <PL/pl_llist.h>
 
-typedef struct PLVector3 PLVector3;
-
-PL_EXTERN_C
-
-#if !defined( PL_COMPILE_PLUGIN )
-
-extern bool plIsEndOfLine( const char **p );
-extern void plSkipWhitespace( const char **p );
-extern void plSkipLine( const char **p );
-extern const char *plParseEnclosedString( const char **p, char *dest, size_t size );
-extern const char *plParseToken( const char **p, char *dest, size_t size );
-extern int plParseInteger( const char **p, bool *status );
-extern float plParseFloat( const char **p, bool *status );
-extern PLVector3 plParseVector( const char **p, bool *status );
-
-#endif /* !defined( PL_COMPILE_PLUGIN ) */
-
-PL_EXTERN_C_END
+typedef struct PLSharedWindowState {
+	char 				windowTitle[ 32 ];
+	PLLinkedListNode 	*node;
+} PLSharedWindowState;

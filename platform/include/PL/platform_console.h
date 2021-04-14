@@ -58,6 +58,8 @@ typedef struct PLConsoleVariable {
 
 PL_EXTERN_C
 
+#if !defined( PL_COMPILE_PLUGIN )
+
 void plGetConsoleVariables( PLConsoleVariable ***vars, size_t *num_vars );
 
 PLConsoleVariable *plGetConsoleVariable( const char *name );
@@ -69,6 +71,8 @@ void plSetConsoleVariableByName( const char *name, const char *value );
 PLConsoleVariable *plRegisterConsoleVariable( const char *name, const char *def, PLVariableType type,
                                               void ( *CallbackFunction )( const PLConsoleVariable *variable ),
                                               const char *desc );
+
+#endif /* !defined( PL_COMPILE_PLUGIN ) */
 
 PL_EXTERN_C_END
 
@@ -83,6 +87,8 @@ typedef struct PLConsoleCommand {
 } PLConsoleCommand;
 
 PL_EXTERN_C
+
+#if !defined( PL_COMPILE_PLUGIN )
 
 PL_EXTERN void plGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds );
 PL_EXTERN void plRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( unsigned int argc, char *argv[] ), const char *description );
@@ -105,5 +111,7 @@ extern void plSetupLogOutput( const char *path );
 extern int plAddLogLevel( const char *prefix, PLColour colour, bool status );
 extern void plSetLogLevelStatus( int id, bool status );
 extern void plLogMessage( int id, const char *msg, ... );
+
+#endif /* !defined( PL_COMPILE_PLUGIN ) */
 
 PL_EXTERN_C_END

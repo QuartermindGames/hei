@@ -38,169 +38,169 @@ For more information, please refer to <http://unlicense.org>
 */
 
 typedef struct U3DAnimationHeader {
-    uint16_t frames;    // Number of frames.
-    uint16_t size;      // Size of each frame.
+	uint16_t frames;// Number of frames.
+	uint16_t size;  // Size of each frame.
 } U3DAnimationHeader;
 
 typedef struct U3DDataHeader {
-    uint16_t numpolys;    // Number of polygons.
-    uint16_t numverts;    // Number of vertices.
-    uint16_t rotation;    // Mesh rotation?
-    uint16_t frame;       // Initial frame.
+	uint16_t numpolys;// Number of polygons.
+	uint16_t numverts;// Number of vertices.
+	uint16_t rotation;// Mesh rotation?
+	uint16_t frame;   // Initial frame.
 
-    uint32_t norm_x;
-    uint32_t norm_y;
-    uint32_t norm_z;
+	uint32_t norm_x;
+	uint32_t norm_y;
+	uint32_t norm_z;
 
-    uint32_t fixscale;
-    uint32_t unused[3];
+	uint32_t fixscale;
+	uint32_t unused[ 3 ];
 } U3DDataHeader;
 
-#define    U3D_FLAG_UNLIT       16
-#define    U3D_FLAG_FLAT        32
-#define    U3D_FLAG_ENVIRONMENT 64
-#define    U3D_FLAG_NEAREST     128
+#define U3D_FLAG_UNLIT 16
+#define U3D_FLAG_FLAT 32
+#define U3D_FLAG_ENVIRONMENT 64
+#define U3D_FLAG_NEAREST 128
 
 enum U3DType {
-    U3D_TYPE_NORMAL,
-    U3D_TYPE_NORMALTWOSIDED,
-    U3D_TYPE_TRANSLUCENT,
-    U3D_TYPE_MASKED,
-    U3D_TYPE_MODULATE,
-    U3D_TYPE_ATTACHMENT
+	U3D_TYPE_NORMAL,
+	U3D_TYPE_NORMALTWOSIDED,
+	U3D_TYPE_TRANSLUCENT,
+	U3D_TYPE_MASKED,
+	U3D_TYPE_MODULATE,
+	U3D_TYPE_ATTACHMENT
 };
 
 typedef struct U3DVertex {
-    // This is a bit funky...
-    int32_t x : 11;
-    int32_t y : 11;
-    int32_t z : 10;
+	// This is a bit funky...
+	int32_t x : 11;
+	int32_t y : 11;
+	int32_t z : 10;
 } U3DVertex;
 
 typedef struct U3DTriangle {
-    uint16_t vertex[3]; // Vertex indices
+	uint16_t vertex[ 3 ];// Vertex indices
 
-    uint8_t type;       // Triangle type
-    uint8_t colour;     // Triangle colour
-    uint8_t ST[3][2];   // Texture coords
-    uint8_t texturenum; // Texture offset
-    uint8_t flags;      // Triangle flags
+	uint8_t type;        // Triangle type
+	uint8_t colour;      // Triangle colour
+	uint8_t ST[ 3 ][ 2 ];// Texture coords
+	uint8_t texturenum;  // Texture offset
+	uint8_t flags;       // Triangle flags
 } U3DTriangle;
 
-static int CompareTriangles(const void* a, const void* b) {
-    if(((U3DTriangle*)a)->texturenum > ((U3DTriangle*)b)->texturenum) {
-        return -1;
-    } else if(((U3DTriangle*)a)->texturenum < ((U3DTriangle*)b)->texturenum) {
-        return 1;
-    }
+static int CompareTriangles( const void *a, const void *b ) {
+	if ( ( ( U3DTriangle * ) a )->texturenum > ( ( U3DTriangle * ) b )->texturenum ) {
+		return -1;
+	} else if ( ( ( U3DTriangle * ) a )->texturenum < ( ( U3DTriangle * ) b )->texturenum ) {
+		return 1;
+	}
 
-    return 0;
+	return 0;
 }
 
-static PLModel* ReadU3DModelData(PLFile* data_ptr, PLFile* anim_ptr) {
-    U3DAnimationHeader anim_hdr;
-    if(plReadFile(anim_ptr, &anim_hdr, sizeof(U3DAnimationHeader), 1) != 1) {
-      return NULL;
-    }
+static PLModel *ReadU3DModelData( PLFile *data_ptr, PLFile *anim_ptr ) {
+	U3DAnimationHeader anim_hdr;
+	if ( plReadFile( anim_ptr, &anim_hdr, sizeof( U3DAnimationHeader ), 1 ) != 1 ) {
+		return NULL;
+	}
 
-    /* validate animation header */
+	/* validate animation header */
 
-    if(anim_hdr.size == 0) {
-        ReportError(PL_RESULT_FILEREAD, "incorrect animation hdr size for \"%s\"", plGetFilePath(anim_ptr));
-        return NULL;
-    } else if(anim_hdr.frames == 0) {
-        ReportError(PL_RESULT_FILEREAD, "invalid number of frames for \"%s\"", plGetFilePath(anim_ptr));
-        return NULL;
-    }
+	if ( anim_hdr.size == 0 ) {
+		ReportError( PL_RESULT_FILEREAD, "incorrect animation hdr size for \"%s\"", plGetFilePath( anim_ptr ) );
+		return NULL;
+	} else if ( anim_hdr.frames == 0 ) {
+		ReportError( PL_RESULT_FILEREAD, "invalid number of frames for \"%s\"", plGetFilePath( anim_ptr ) );
+		return NULL;
+	}
 
-    U3DDataHeader data_hdr;
-    if(plReadFile(data_ptr, &data_hdr, sizeof(U3DDataHeader), 1) != 1) {
-      return NULL;
-    }
+	U3DDataHeader data_hdr;
+	if ( plReadFile( data_ptr, &data_hdr, sizeof( U3DDataHeader ), 1 ) != 1 ) {
+		return NULL;
+	}
 
-    /* validate data header */
+	/* validate data header */
 
-    if(data_hdr.numverts == 0) {
-        ReportError(PL_RESULT_FILEREAD, "no vertices in model, \"%s\"", plGetFilePath(data_ptr));
-        return NULL;
-    } else if(data_hdr.numpolys == 0) {
-        ReportError(PL_RESULT_FILEREAD, "no polygons in model, \"%s\"", plGetFilePath(data_ptr));
-        return NULL;
-    } else if(data_hdr.frame > anim_hdr.frames) {
-        ReportError(PL_RESULT_FILEREAD, "invalid frame specified in model, \"%s\"", plGetFilePath(data_ptr));
-        return NULL;
-    }
+	if ( data_hdr.numverts == 0 ) {
+		ReportError( PL_RESULT_FILEREAD, "no vertices in model, \"%s\"", plGetFilePath( data_ptr ) );
+		return NULL;
+	} else if ( data_hdr.numpolys == 0 ) {
+		ReportError( PL_RESULT_FILEREAD, "no polygons in model, \"%s\"", plGetFilePath( data_ptr ) );
+		return NULL;
+	} else if ( data_hdr.frame > anim_hdr.frames ) {
+		ReportError( PL_RESULT_FILEREAD, "invalid frame specified in model, \"%s\"", plGetFilePath( data_ptr ) );
+		return NULL;
+	}
 
-    /* skip unused header data */
-    plFileSeek(data_ptr, 12, PL_SEEK_CUR);
+	/* skip unused header data */
+	plFileSeek( data_ptr, 12, PL_SEEK_CUR );
 
-    /* read all the triangle data from the data file */
-    U3DTriangle* triangles = pl_calloc(data_hdr.numpolys, sizeof(U3DTriangle));
-    plReadFile(data_ptr, triangles, sizeof(U3DTriangle), data_hdr.numpolys);
-    plCloseFile(data_ptr);
+	/* read all the triangle data from the data file */
+	U3DTriangle *triangles = pl_calloc( data_hdr.numpolys, sizeof( U3DTriangle ) );
+	plReadFile( data_ptr, triangles, sizeof( U3DTriangle ), data_hdr.numpolys );
+	plCloseFile( data_ptr );
 
-    /* sort triangles by texture id */
-    qsort(triangles, data_hdr.numpolys, sizeof(U3DTriangle), CompareTriangles);
+	/* sort triangles by texture id */
+	qsort( triangles, data_hdr.numpolys, sizeof( U3DTriangle ), CompareTriangles );
 
-    /* read in all of the animation data from the anim file */
-    U3DVertex* vertices = pl_calloc( (size_t) data_hdr.numverts * anim_hdr.frames, sizeof(U3DVertex));
-    plReadFile(anim_ptr, vertices, sizeof(U3DVertex), (size_t) data_hdr.numverts * anim_hdr.frames);
-    plCloseFile(anim_ptr);
+	/* read in all of the animation data from the anim file */
+	U3DVertex *vertices = pl_calloc( ( size_t ) data_hdr.numverts * anim_hdr.frames, sizeof( U3DVertex ) );
+	plReadFile( anim_ptr, vertices, sizeof( U3DVertex ), ( size_t ) data_hdr.numverts * anim_hdr.frames );
+	plCloseFile( anim_ptr );
 
-    PLModel* model_ptr = pl_calloc(1, sizeof(PLModel));
-    model_ptr->type = PL_MODELTYPE_VERTEX;
-    model_ptr->internal.vertex_data.animations = pl_calloc(anim_hdr.frames, sizeof(PLVertexAnimationFrame));
+	PLModel *model_ptr = pl_calloc( 1, sizeof( PLModel ) );
+	model_ptr->type = PL_MODELTYPE_VERTEX;
+	model_ptr->internal.vertex_data.animations = pl_calloc( anim_hdr.frames, sizeof( PLVertexAnimationFrame ) );
 
-    for(unsigned int i = 0; i < anim_hdr.frames; ++i) {
-        PLVertexAnimationFrame* frame = &model_ptr->internal.vertex_data.animations[i];
-    }
+	for ( unsigned int i = 0; i < anim_hdr.frames; ++i ) {
+		PLVertexAnimationFrame *frame = &model_ptr->internal.vertex_data.animations[ i ];
+	}
 
-    pl_free(triangles);
-    pl_free(vertices);
+	pl_free( triangles );
+	pl_free( vertices );
 
-    plGenerateModelBounds(model_ptr);
+	plGenerateModelBounds( model_ptr );
 
-    return NULL;
+	return NULL;
 }
 
 /**
  * Load U3D model from local path.
  * @param path Path to the U3D Data file.
  */
-PLModel* plLoadU3DModel(const char *path) {
-    char anim_path[PL_SYSTEM_MAX_PATH];
-    snprintf(anim_path, sizeof(anim_path), "%s", path);
-    char* p_ext = strstr(anim_path, "Data");
-    if(p_ext != NULL) {
-        strcpy(p_ext, "Anim");
-    } else {
-        p_ext = strstr(anim_path, "D.");
-        if(p_ext != NULL) {
-            p_ext[0] = 'A';
-        }
-    }
+PLModel *plLoadU3DModel( const char *path ) {
+	char anim_path[ PL_SYSTEM_MAX_PATH ];
+	snprintf( anim_path, sizeof( anim_path ), "%s", path );
+	char *p_ext = strstr( anim_path, "Data" );
+	if ( p_ext != NULL ) {
+		strcpy( p_ext, "Anim" );
+	} else {
+		p_ext = strstr( anim_path, "D." );
+		if ( p_ext != NULL ) {
+			p_ext[ 0 ] = 'A';
+		}
+	}
 
-    if(!plFileExists(anim_path)) {
-        ReportError(PL_RESULT_FILEPATH, "failed to find anim companion for \"%s\" at \"%s\"", path, anim_path);
-        return NULL;
-    }
+	if ( !plFileExists( anim_path ) ) {
+		ReportError( PL_RESULT_FILEPATH, "failed to find anim companion for \"%s\" at \"%s\"", path, anim_path );
+		return NULL;
+	}
 
-    PLFile* anim_ptr = plOpenFile(anim_path, false);
-    PLFile* data_ptr = plOpenFile(path, false);
+	PLFile *anim_ptr = plOpenFile( anim_path, false );
+	PLFile *data_ptr = plOpenFile( path, false );
 
-    PLModel* model_ptr = NULL;
-    if(anim_ptr != NULL && data_ptr != NULL) {
-        model_ptr = ReadU3DModelData(data_ptr, anim_ptr);
-    }
+	PLModel *model_ptr = NULL;
+	if ( anim_ptr != NULL && data_ptr != NULL ) {
+		model_ptr = ReadU3DModelData( data_ptr, anim_ptr );
+	}
 
-    plCloseFile(data_ptr);
-    plCloseFile(anim_ptr);
+	plCloseFile( data_ptr );
+	plCloseFile( anim_ptr );
 
-    return model_ptr;
+	return model_ptr;
 }
 
-bool plWriteU3DModel(PLModel* ptr, const char* path) {
-    return false;
+bool plWriteU3DModel( PLModel *ptr, const char *path ) {
+	return false;
 }
 
 /* Example UC file, this is what we _should_ be loading from.

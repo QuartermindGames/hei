@@ -5,7 +5,7 @@
 static PLPluginDescription pluginDesc = {
         .description = "Valve file format support.",
         .pluginVersion = { 0, 0, 1 },
-        .interfaceVersion = PL_PLUGIN_INTERFACE_VERSION,
+        .interfaceVersion = { PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
 };
 
 const PLPluginExportTable *gInterface = NULL;

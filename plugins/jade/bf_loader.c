@@ -8,11 +8,13 @@
  * Might work for other games, unsure.
  */
 
-PLPackage *BFLoader_ReadFile( PLFile *file ) {
+#define BF_LOADER_MAGIC "BUG"
+
+static PLPackage *ReadFile( PLFile *file ) {
 	char magic[ 4 ];
 	gInterface->ReadString( file, magic, sizeof( magic ) );
-	if ( strcmp( "BUG", magic ) != 0 ) {
-		gInterface->ReportError( );
+	if ( strcmp( BF_LOADER_MAGIC, magic ) != 0 ) {
+		gInterface->ReportError( PL_RESULT_FILETYPE, "invalid identifier, received \"%s\" but expected \"" BF_LOADER_MAGIC "\"" );
 		return NULL;
 	}
 
@@ -25,7 +27,7 @@ PLPackage *BFLoader_OpenFile( const char *path ) {
 		return NULL;
 	}
 
-	PLPackage *package = BFLoader_ReadFile( file );
+	PLPackage *package = ReadFile( file );
 
 	gInterface->CloseFile( file );
 

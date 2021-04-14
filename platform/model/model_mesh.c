@@ -322,12 +322,22 @@ unsigned int plAddMeshTriangle( PLMesh *mesh, unsigned int x, unsigned int y, un
 	return triangleIndex;
 }
 
+/* todo: combine with Draw? */
 void plUploadMesh( PLMesh *mesh ) {
-	CallGfxFunction( UploadMesh, mesh );
+	CallGfxFunction( UploadMesh, mesh, gfx_state.current_program );
 }
 
 void plDrawMesh( PLMesh *mesh ) {
-	CallGfxFunction( DrawMesh, mesh );
+	if ( gfx_state.current_program != NULL ) {
+		plSetShaderUniformValue( gfx_state.current_program, "pl_view", gfx_state.view_matrix.m, false );
+		plSetShaderUniformValue( gfx_state.current_program, "pl_proj", gfx_state.projection_matrix.m, false );
+	}
+
+	CallGfxFunction( DrawMesh, mesh, gfx_state.current_program );
+}
+
+void plDrawInstancedMesh( PLMesh *mesh, const PLMatrix4 *transforms, unsigned int instanceCount ) {
+	CallGfxFunction( DrawInstancedMesh, mesh, gfx_state.current_program, transforms, instanceCount );
 }
 
 /* primitive types */
@@ -545,6 +555,22 @@ void plDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 	plDrawMesh( mesh );
 
 	plPopMatrix();
+}
+
+void plDrawLines( const PLVector3 *points, unsigned int numPoints, PLColour colour ) {
+	PLMesh *mesh = _plInitLineMesh();
+	if ( mesh == NULL ) {
+		return;
+	}
+
+	for ( unsigned int i = 0; i < numPoints; ++i ) {
+		plAddMeshVertex( mesh, points[ i ], pl_vecOrigin3, colour, pl_vecOrigin2 );
+	}
+
+	plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", plGetMatrix( PL_MODELVIEW_MATRIX ), true );
+
+	plUploadMesh( mesh );
+	plDrawMesh( mesh );
 }
 
 void plDrawLine( PLMatrix4 transform, PLVector3 startPos, PLColour startColour, PLVector3 endPos, PLColour endColour ) {

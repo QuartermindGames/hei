@@ -537,11 +537,11 @@ PL_INLINE static PLMatrix4 plLookAt( PLVector3 eye, PLVector3 center, PLVector3 
 	return out;
 }
 
-PL_INLINE static PLMatrix4 plFrustum( float left, float right, float bottom, float top, float near, float far ) {
-	float m0 = 2.0f * near;
+PL_INLINE static PLMatrix4 plFrustum( float left, float right, float bottom, float top, float nearf, float farf ) {
+	float m0 = 2.0f * nearf;
 	float m1 = right - left;
 	float m2 = top - bottom;
-	float m3 = far - near;
+	float m3 = farf - nearf;
 
 	PLMatrix4 frustumMatrix;
 
@@ -557,7 +557,7 @@ PL_INLINE static PLMatrix4 plFrustum( float left, float right, float bottom, flo
 
 	frustumMatrix.m[ 8 ] = ( right + left ) / m1;
 	frustumMatrix.m[ 9 ] = ( top + bottom ) / m2;
-	frustumMatrix.m[ 10 ] = ( -far - near ) / m3;
+	frustumMatrix.m[ 10 ] = ( -farf - nearf ) / m3;
 	frustumMatrix.m[ 11 ] = -1.0f;
 
 	frustumMatrix.m[ 12 ] = 0.0f;
@@ -568,10 +568,10 @@ PL_INLINE static PLMatrix4 plFrustum( float left, float right, float bottom, flo
 	return frustumMatrix;
 }
 
-PL_INLINE static PLMatrix4 plOrtho( float left, float right, float bottom, float top, float near, float far ) {
+PL_INLINE static PLMatrix4 plOrtho( float left, float right, float bottom, float top, float nearf, float farf ) {
 	float tx = -( right + left ) / ( right - left );
 	float ty = -( top + bottom ) / ( top - bottom );
-	float tz = -( far + near ) / ( far - near );
+	float tz = -( farf + nearf ) / ( farf - nearf );
 
 	PLMatrix4 frustumMatrix;
 
@@ -587,7 +587,7 @@ PL_INLINE static PLMatrix4 plOrtho( float left, float right, float bottom, float
 
 	frustumMatrix.m[ 8 ] = 0.0f;
 	frustumMatrix.m[ 9 ] = 0.0f;
-	frustumMatrix.m[ 10 ] = -2 / ( far - near );
+	frustumMatrix.m[ 10 ] = -2 / ( farf - nearf );
 	frustumMatrix.m[ 11 ] = 0.0f;
 
 	frustumMatrix.m[ 12 ] = tx;
@@ -598,10 +598,10 @@ PL_INLINE static PLMatrix4 plOrtho( float left, float right, float bottom, float
 	return frustumMatrix;
 }
 
-PL_INLINE static PLMatrix4 plPerspective( float fov, float aspect, float near, float far ) {
-	float y_max = near * tanf( fov * PL_PI / 360 );
+PL_INLINE static PLMatrix4 plPerspective( float fov, float aspect, float nearf, float farf ) {
+	float y_max = nearf * tanf( fov * PL_PI / 360 );
 	float x_max = y_max * aspect;
-	return plFrustum( -x_max, x_max, -y_max, y_max, near, far );
+	return plFrustum( -x_max, x_max, -y_max, y_max, nearf, farf );
 }
 
 /* Matrix Stack, sorta mirrors OpenGL behaviour */

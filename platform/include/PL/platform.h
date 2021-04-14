@@ -83,12 +83,12 @@ support.
 
 #include "platform_system.h"
 
-#if defined(_DEBUG)
+#if !defined(NDEBUG)
 #   include <assert.h>
 
 #   define plAssert(a) assert(a)
 #else
-#   define plAssert(a) (a)
+#   define plAssert(a)
 #endif
 
 #define plUnused( ... )	( void )( __VA_ARGS__ )
@@ -253,8 +253,6 @@ PL_EXTERN time_t plStringToTime( const char *ts );
 PL_EXTERN bool plIsRunning(void);
 
 PL_EXTERN double plGetDeltaTime(void);
-
-PL_EXTERN void plProcess(double delta);
 
 PL_EXTERN PLLibrary *plLoadLibrary( const char *path, bool appendPath );
 PL_EXTERN void *plGetLibraryProcedure( PLLibrary *library, const char *procedureName );

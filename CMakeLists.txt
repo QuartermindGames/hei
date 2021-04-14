@@ -33,7 +33,7 @@ option(BUILD_EXAMPLES "Build example applications" ON)
 option(PL_BUILD_PLUGINS "Build plugins" ON)
 
 # Set all of our output directories.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/")
 
@@ -50,6 +50,8 @@ if (BUILD_EXAMPLES)
 endif (BUILD_EXAMPLES)
 
 if (PL_BUILD_PLUGINS)
+    add_subdirectory(plugins/driver_opengl/)
+
     add_subdirectory(plugins/jade/)
     add_subdirectory(plugins/valve/)
 endif (PL_BUILD_PLUGINS)

@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_filesystem.h>
 #include <PL/pl_graphics.h>
 #include <PL/pl_llist.h>
+#include <PL/pl_parse.h>
 
 #if defined( _WIN32 )
 #	include <Windows.h>
@@ -474,21 +475,6 @@ double plGetDeltaTime(void) {
     return (now.tv_sec - last.tv_sec) * 1000;
 }
 
-double accumulator = 0;
-
-void plProcess(double delta) {
-    // todo, game logic @ locked 60fps (rendering is UNLOCKED?)
-
-    while(accumulator >= delta) {
-        //plProcessActors();
-        //plProcessPhysics();
-    }
-
-#if defined(PL_USE_GRAPHICS)
-    plProcessGraphics();
-#endif
-}
-
 /**********************************************************/
 /** Plugin Interface **/
 
@@ -506,6 +492,7 @@ static unsigned int numPlugins;
 
 static PLPluginExportTable exportTable = {
         .ReportError = plReportError,
+        .GetError = plGetError,
 
         .LocalFileExists = plLocalFileExists,
         .FileExists = plFileExists,
@@ -567,6 +554,28 @@ static PLPluginExportTable exportTable = {
         .GetPackageTableSize = plGetPackageTableSize,
         .GetPackageTableIndex = plGetPackageTableIndex,
         .GetPackageFileName = plGetPackageFileName,
+
+        .AddLogLevel = plAddLogLevel,
+        .SetLogLevelStatus = plSetLogLevelStatus,
+        .LogMessage = plLogMessage,
+        .GetConsoleVariableValue = plGetConsoleVariableValue,
+        .GetConsoleVariableDefaultValue = plGetConsoleVariableDefaultValue,
+        .SetConsoleVariable = plSetConsoleVariableByName,
+        .RegisterConsoleVariable = plRegisterConsoleVariable,
+        .RegisterConsoleCommand = plRegisterConsoleCommand,
+        .ParseConsoleString = plParseConsoleString,
+
+        .IsEndOfLine = plIsEndOfLine,
+        .SkipWhitespace = plSkipWhitespace,
+        .SkipLine = plSkipLine,
+        .ParseEnclosedString = plParseEnclosedString,
+        .ParseToken = plParseToken,
+        .ParseInteger = plParseInteger,
+        .ParseFloat = plParseFloat,
+
+        .RegisterGraphicsMode = plRegisterGraphicsMode,
+
+        .CreateTexture = plCreateTexture,
 };
 
 /**
@@ -591,9 +600,11 @@ bool plRegisterPlugin( const char *path ) {
 		InitializePlugin = ( PLPluginInitializationFunction ) plGetLibraryProcedure( library, PL_PLUGIN_INIT_FUNCTION );
 		if ( InitializePlugin != NULL ) {
 			/* now fetch the plugin description */
-			description = RegisterPlugin( PL_PLUGIN_INTERFACE_VERSION );
+			description = RegisterPlugin( ( PLPluginInterfaceVersion ){
+			        PL_PLUGIN_INTERFACE_VERSION_MAJOR,
+			        PL_PLUGIN_INTERFACE_VERSION_MINOR } );
 			if ( description != NULL ) {
-				if ( description->interfaceVersion != PL_PLUGIN_INTERFACE_VERSION ) {
+				if ( description->interfaceVersion[ 0 ] != PL_PLUGIN_INTERFACE_VERSION_MAJOR ) {
 					ReportError( PL_RESULT_UNSUPPORTED, "Unsupported interface version!\n" );
 				} else {
 					DebugPrint( "Found plugin (%s)\n", description->description );
@@ -614,7 +625,7 @@ bool plRegisterPlugin( const char *path ) {
 	}
 
 	PLPlugin *plugin = pl_malloc( sizeof( PLPlugin ) );
-	snprintf( plugin->pluginPath, sizeof( plugin->pluginPath ), path );
+	snprintf( plugin->pluginPath, sizeof( plugin->pluginPath ), "%s", path );
 	plugin->initFunction = InitializePlugin;
 	plugin->libPtr = library;
 	plugin->node = plInsertLinkedListNode( plugins, plugin );

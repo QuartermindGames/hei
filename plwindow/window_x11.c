@@ -25,25 +25,39 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#pragma once
+#include "../platform/graphics/graphics_private.h"
+#include "../platform/platform_private.h"
+#include "window_private.h"
 
-#include "platform.h"
+#include <X11/X.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
-typedef struct PLVector3 PLVector3;
+typedef struct PLWindow {
+	PLSharedWindowState	sharedState;
+	Window				winHandle;
+} PLWindow;
 
-PL_EXTERN_C
+PLWindow *plCreateWindow( int w, int h, const char *title ) {
+	/* before we do anything, check whether or not the graphics
+	 * subsystem has been initialised */
+#if 0
+	if (	/* for now only support OpenGL modes here */
+			gfx_layer.mode != PL_GFX_MODE_OPENGL &&
+			gfx_layer.mode != PL_GFX_MODE_OPENGL_CORE &&
+			gfx_layer.mode != PL_GFX_MODE_OPENGL_1_0 &&
+			gfx_layer.mode != PL_GFX_MODE_OPENGL_ES ) {
+		ReportError( PL_RESULT_FAIL, "invalid graphics mode, please set graphics mode" );
+		return NULL;
+	}
+#endif
 
-#if !defined( PL_COMPILE_PLUGIN )
+	Display *displayPtr = XOpenDisplay( NULL );
+	if ( displayPtr == NULL ) {
+		ReportError( PL_RESULT_FAIL, "failed to open display" );
+		return NULL;
+	}
 
-extern bool plIsEndOfLine( const char **p );
-extern void plSkipWhitespace( const char **p );
-extern void plSkipLine( const char **p );
-extern const char *plParseEnclosedString( const char **p, char *dest, size_t size );
-extern const char *plParseToken( const char **p, char *dest, size_t size );
-extern int plParseInteger( const char **p, bool *status );
-extern float plParseFloat( const char **p, bool *status );
-extern PLVector3 plParseVector( const char **p, bool *status );
-
-#endif /* !defined( PL_COMPILE_PLUGIN ) */
-
-PL_EXTERN_C_END
+	/* fetch the "root window", aka the desktop */
+	Window rootHandle = XDefaultRootWindow( displayPtr );
+}

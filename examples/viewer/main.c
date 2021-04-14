@@ -33,8 +33,6 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_model.h>
 #include <PL/platform_package.h>
 
-#include <PL/pl_window.h>
-
 #include "../shared.h"
 
 #define TITLE "Model Viewer"
@@ -49,7 +47,6 @@ For more information, please refer to <http://unlicense.org>
 #define CENTER_Y HEIGHT / 2
 
 static PLCamera *mainCamera = NULL;
-static PLWindow *mainWindow = NULL;
 
 enum {
 	VIEW_MODE_LIT,
@@ -200,13 +197,15 @@ int main( int argc, char **argv ) {
 		return EXIT_SUCCESS;
 	}
 
+#if 0
 	mainWindow = plCreateWindow( WIDTH, HEIGHT, TITLE );
 	if ( mainWindow ) {
 		PRINT_ERROR( "Failed to create window!\n%s\n", plGetError() );
 	}
+#endif
 
 	plInitializeSubSystems( PL_SUBSYSTEM_GRAPHICS );
-	plSetGraphicsMode( PL_GFX_MODE_OPENGL );
+	plSetGraphicsMode( NULL );
 
 	PLModel *model = plLoadModel( model_path );
 	if ( model == NULL ) {
@@ -267,13 +266,15 @@ int main( int argc, char **argv ) {
 	/* done, now for main rendering loop! */
 
 	while ( plIsRunning() ) {
+        static PLVector3 object_angles = { 0, 0 };
+
+#if 0 /* todo: windowing... */
 		SDL_PumpEvents();
 
 		// input handlers start..
 		int xpos, ypos;
 		unsigned int state = SDL_GetMouseState( &xpos, &ypos );
 
-		static PLVector3 object_angles = { 0, 0 };
 		if ( useMouseLook ) {
 			object_angles = PLVector3( 0, 0, 0 );
 
@@ -319,6 +320,7 @@ int main( int argc, char **argv ) {
 			}
 		}
 		// input handlers end...
+#endif
 
 		ProcessKeyboard();
 
@@ -347,12 +349,13 @@ int main( int argc, char **argv ) {
 				break;
 		}
 
+#if 0
 		plSwapWindow( mainWindow );
+#endif
 	}
 
 	plDestroyModel( model );
 	plDestroyCamera( mainCamera );
-	plDestroyWindow( mainWindow );
 
 	plShutdown();
 
