@@ -939,7 +939,7 @@ int plAddLogLevel( const char *prefix, PLColour colour, bool status ) {
     }
 
     char var[32];
-    snprintf(var, sizeof(var), "pl.log.level.%s", prefix);
+    snprintf(var, sizeof(var), "log.%s", prefix);
     l->var = plRegisterConsoleVariable(var, status ? "1" : "0", pl_bool_var, NULL, "Console output level.");
 
 	return i;
@@ -979,10 +979,10 @@ void plLogMessage(int id, const char *msg, ...) {
         strncat(buf, "\n", sizeof(buf) - strlen(buf) - 1);
     }
 
-    printf("%s", buf);
-
 #if defined( _WIN32 )
     OutputDebugString( buf );
+#else
+    printf("%s", buf);
 #endif
 
     // todo, decide how we're going to pass it to the console/log

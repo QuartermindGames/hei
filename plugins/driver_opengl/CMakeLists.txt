@@ -22,10 +22,6 @@ else ()
     target_link_libraries(opengl_plugin GLEW GL)
 endif ()
 
-set_target_properties(
-        opengl_plugin PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../bin/plugins/"
-)
 target_include_directories(
         opengl_plugin PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/../../platform/include/"
