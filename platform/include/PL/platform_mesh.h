@@ -29,6 +29,10 @@ For more information, please refer to <http://unlicense.org>
 
 #include <PL/platform_math.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum PLMeshPrimitive {
     PL_MESH_LINES,
     PL_MESH_LINE_STIPPLE,       /* todo */
@@ -62,6 +66,11 @@ typedef struct PLVertex {
     unsigned int    bone_index;
     float           bone_weight;
 } PLVertex;
+static inline PLVertex plInitializeVertex( void ) {
+	PLVertex m;
+	memset( &m, 0, sizeof( PLVertex ) );
+	return m;
+}
 
 typedef struct PLTriangle {
     PLVector3       normal;
@@ -90,8 +99,6 @@ typedef struct PLMesh {
 } PLMesh;
 
 typedef struct PLCollisionAABB PLCollisionAABB;
-
-PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
@@ -146,4 +153,6 @@ PL_EXTERN PLVector3 plGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3 
 
 #endif
 
-PL_EXTERN_C_END
+#ifdef __cplusplus
+};
+#endif

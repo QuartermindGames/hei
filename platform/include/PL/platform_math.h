@@ -266,6 +266,14 @@ PL_INLINE static const char *plPrintColour(PLColour c) {
     return s;
 }
 
+inline static PLVector4 plColourToVector4( const PLColour *c ) {
+	float r = plByteToFloat( c->r );
+	float g = plByteToFloat( c->g );
+	float b = plByteToFloat( c->b );
+	float a = plByteToFloat( c->a );
+	return ( PLVector4 ){ r, g, b, a };
+}
+
 #ifndef __cplusplus
 
 #   define PLColour(r, g, b, a) (PLColour){r  , g  , b  , a  }
