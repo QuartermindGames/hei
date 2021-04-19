@@ -18,7 +18,6 @@ add_subdirectory(tests)
 
 if (BUILD_EXAMPLES)
     add_subdirectory(examples/viewer)
-    add_subdirectory(examples/package_loader)
     add_subdirectory(examples/pcmd)
 endif (BUILD_EXAMPLES)
 
