@@ -33,8 +33,8 @@ For more information, please refer to <http://unlicense.org>
 PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertices, bool absolute ) {
 	PLCollisionAABB bounds;
 	if ( absolute ) {
-		bounds.maxs = ( PLVector3 ) { vertices[ 0 ].position.x, vertices[ 0 ].position.y, vertices[ 0 ].position.z };
-		bounds.mins = ( PLVector3 ) { vertices[ 0 ].position.x, vertices[ 0 ].position.y, vertices[ 0 ].position.z };
+		bounds.maxs = ( PLVector3 ){ vertices[ 0 ].position.x, vertices[ 0 ].position.y, vertices[ 0 ].position.z };
+		bounds.mins = ( PLVector3 ){ vertices[ 0 ].position.x, vertices[ 0 ].position.y, vertices[ 0 ].position.z };
 
 		for ( unsigned int i = 0; i < numVertices; ++i ) {
 			if ( bounds.maxs.x < vertices[ i ].position.x ) { bounds.maxs.x = vertices[ i ].position.x; }
@@ -66,14 +66,14 @@ PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertic
 	}
 
 	/* abs origin is the middle of the bounding volume (wherever it is) and origin is the transformative point */
-	bounds.absOrigin = PLVector3( ( bounds.mins.x + bounds.maxs.x ) / 2, ( bounds.mins.y + bounds.maxs.y ) / 2, ( bounds.mins.z + bounds.maxs.z ) / 2);
+	bounds.absOrigin = PLVector3( ( bounds.mins.x + bounds.maxs.x ) / 2, ( bounds.mins.y + bounds.maxs.y ) / 2, ( bounds.mins.z + bounds.maxs.z ) / 2 );
 	bounds.origin = pl_vecOrigin3;
 
 	return bounds;
 }
 
 PLVector3 plGetAABBAbsOrigin( const PLCollisionAABB *bounds, PLVector3 origin ) {
-	PLVector3 absOrigin = PLVector3( ( bounds->mins.x + bounds->maxs.x ) / 2, ( bounds->mins.y + bounds->maxs.y ) / 2, ( bounds->mins.z + bounds->maxs.z ) / 2);
+	PLVector3 absOrigin = PLVector3( ( bounds->mins.x + bounds->maxs.x ) / 2, ( bounds->mins.y + bounds->maxs.y ) / 2, ( bounds->mins.z + bounds->maxs.z ) / 2 );
 	return plAddVector3( origin, absOrigin );
 }
 
@@ -84,13 +84,12 @@ bool plIsAABBIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB
 	PLVector3 bMin = plAddVector3( bBounds->mins, bBounds->origin );
 
 	return !(
-			aMax.x < bMin.x ||
-					aMax.y < bMin.y ||
-					aMax.z < bMin.z ||
-					aMin.x > bMax.x ||
-					aMin.y > bMax.y ||
-					aMin.z > bMax.z
-	);
+	        aMax.x < bMin.x ||
+	        aMax.y < bMin.y ||
+	        aMax.z < bMin.z ||
+	        aMin.x > bMax.x ||
+	        aMin.y > bMax.y ||
+	        aMin.z > bMax.z );
 }
 
 bool plIsPointIntersectingAABB( const PLCollisionAABB *bounds, PLVector3 point ) {
@@ -98,13 +97,12 @@ bool plIsPointIntersectingAABB( const PLCollisionAABB *bounds, PLVector3 point )
 	PLVector3 min = plAddVector3( bounds->mins, bounds->origin );
 
 	return !(
-			point.x > max.x ||
-					point.x < min.x ||
-					point.y > max.y ||
-					point.y < min.y ||
-					point.z > max.z ||
-					point.z < min.z
-	);
+	        point.x > max.x ||
+	        point.x < min.x ||
+	        point.y > max.y ||
+	        point.y < min.y ||
+	        point.z > max.z ||
+	        point.z < min.z );
 }
 
 bool plIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere ) {

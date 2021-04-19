@@ -29,6 +29,40 @@ For more information, please refer to <http://unlicense.org>
 #include "package_private.h"
 #include "filesystem_private.h"
 
+#include "miniz/miniz.h"
+
+/**
+ * Generic loader for package files, since this is unlikely to change
+ * in most cases.
+ */
+static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
+	FunctionStart();
+
+	size_t size = ( pi->compressionType != PL_COMPRESSION_NONE ) ? pi->compressedSize : pi->fileSize;
+	uint8_t *dataPtr = pl_malloc( size );
+	if( !plFileSeek( fh, (signed)pi->offset, PL_SEEK_SET ) || plReadFile( fh, dataPtr, size, 1 ) != 1 ) {
+		pl_free( dataPtr );
+		return NULL;
+	}
+
+	if ( pi->compressionType == PL_COMPRESSION_ZLIB ) {
+		uint8_t *decompressedPtr = pl_malloc( pi->fileSize );
+		unsigned long uncompressedLength;
+		int status = mz_uncompress( decompressedPtr, &uncompressedLength, dataPtr, pi->compressedSize );
+
+		pl_free( dataPtr );
+		dataPtr = decompressedPtr;
+
+		if ( status != MZ_OK ) {
+			pl_free( dataPtr );
+			ReportError( PL_RESULT_FILEREAD, "failed to decompress buffer" );
+			return NULL;
+		}
+	}
+
+	return dataPtr;
+}
+
 /**
  * Allocate a new package handle.
  */
@@ -36,7 +70,7 @@ PLPackage *plCreatePackageHandle( const char *path, unsigned int tableSize, uint
 	PLPackage *package = pl_malloc( sizeof( PLPackage ) );
 
 	if ( OpenFile == NULL ) {
-		package->internal.LoadFile = _plLoadGenericPackageFile;
+		package->internal.LoadFile = LoadGenericPackageFile;
 	} else {
 		package->internal.LoadFile = OpenFile;
 	}

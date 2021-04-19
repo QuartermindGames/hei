@@ -1,35 +1,28 @@
 /*
-This is free and unencumbered software released into the public domain.
+MIT License
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-For more information, please refer to <http://unlicense.org>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
-#if defined( PL_SUPPORT_VULKAN )
-
 #include <vulkan/vulkan.h>
-
-#include "graphics_private.h"
 
 #define PRINT_VAR_VERSION( VERSION ) GfxLog( PL_TOSTRING( VERSION ) ": %d.%d.%d\n", VK_VERSION_MAJOR( VERSION ), VK_VERSION_MINOR( VERSION ), VK_VERSION_PATCH( VERSION ) )
 #define PRINT_VAR_INTEGER( INTEGER ) GfxLog( PL_TOSTRING( INTEGER ) ": %d\n", INTEGER )
@@ -43,8 +36,8 @@ static unsigned int vk_numExtensions = 0;
 
 static const char *vk_layers[] = {
 #if !defined( NDEBUG )
-	/* push validation layer if we're debugging */
-	"VK_LAYER_KHRONOS_validation"
+		/* push validation layer if we're debugging */
+		"VK_LAYER_KHRONOS_validation"
 #endif
 };
 
@@ -69,7 +62,7 @@ static VkInstance VK_CreateInstance( void ) {
 			.flags = 0,
 			.pApplicationInfo = &appInfo,
 			.ppEnabledExtensionNames = NULL,
-	        /* push validation layer if we're debugging */
+			/* push validation layer if we're debugging */
 			.ppEnabledLayerNames = vk_layers,
 			.enabledLayerCount = plArrayElements( vk_layers ),
 	};
@@ -194,5 +187,3 @@ void plShutdownVulkan( void ) {
 		vk_device = NULL;
 	}
 }
-
-#endif /* PL_SUPPORT_VULKAN */

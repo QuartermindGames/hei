@@ -29,6 +29,10 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform.h>
 #include <PL/platform_math.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* todo: make this structure private */
 typedef struct PLConsoleVariable {
 	char var[ 32 ];
@@ -56,8 +60,6 @@ typedef struct PLConsoleVariable {
 	bool archive;
 } PLConsoleVariable;
 
-PL_EXTERN_C
-
 #if !defined( PL_COMPILE_PLUGIN )
 
 void plGetConsoleVariables( PLConsoleVariable ***vars, size_t *num_vars );
@@ -74,8 +76,6 @@ PLConsoleVariable *plRegisterConsoleVariable( const char *name, const char *def,
 
 #endif /* !defined( PL_COMPILE_PLUGIN ) */
 
-PL_EXTERN_C_END
-
 /////////////////////////////////////////////////////////////////////////////////////
 
 typedef struct PLConsoleCommand {
@@ -86,24 +86,16 @@ typedef struct PLConsoleCommand {
 	char description[ 512 ];
 } PLConsoleCommand;
 
-PL_EXTERN_C
-
 #if !defined( PL_COMPILE_PLUGIN )
 
 PL_EXTERN void plGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds );
 PL_EXTERN void plRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( unsigned int argc, char *argv[] ), const char *description );
 PL_EXTERN PLConsoleCommand *plGetConsoleCommand( const char *name );
 
-PL_EXTERN void plSetupConsole( unsigned int num_instances );
-
-PL_EXTERN void plSetConsoleColour( unsigned int id, PLColour colour );
 PL_EXTERN void plSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg ) );
 
 PL_EXTERN const char **plAutocompleteConsoleString( const char *string, unsigned int *numElements );
 PL_EXTERN void plParseConsoleString( const char *string );
-
-PL_EXTERN void plShowConsole( bool show );
-PL_EXTERN void plDrawConsole( void );
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -114,4 +106,6 @@ extern void plLogMessage( int id, const char *msg, ... );
 
 #endif /* !defined( PL_COMPILE_PLUGIN ) */
 
-PL_EXTERN_C_END
+#ifdef __cplusplus
+};
+#endif
