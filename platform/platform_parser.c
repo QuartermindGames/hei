@@ -37,29 +37,40 @@ bool plIsEndOfLine( const char **p ) {
 }
 
 void plSkipWhitespace( const char **p ) {
-	while ( *( *p ) == ' ' ) ( *p )++;
-	if ( *( *p ) == ' ' ) ++( *p );
+	while ( *( *p ) == ' ' || *( *p ) == '\t' ) ( *p )++;
+	if ( *( *p ) == ' ' || *( *p ) == '\t' ) ++( *p );
 }
 
+#define NOT_TERMINATING_CHAR( P ) ( (P) != '\0' && (P) != '\n' && (P) != '\r' )
+
 void plSkipLine( const char **p ) {
-	while ( *( *p ) != '\0' && *( *p ) != '\n' && *( *p ) != '\r' ) ( *p )++;
+	while ( NOT_TERMINATING_CHAR( *( *p ) ) ) ( *p )++;
 	if ( *( *p ) == '\r' ) ( *p )++;
 	if ( *( *p ) == '\n' ) ( *p )++;
 }
 
 const char *plParseEnclosedString( const char **p, char *dest, size_t size ) {
-	if ( *( *p ) == '\"' ) ( *p )++;
+	bool isEnclosed = false;
+	if ( *( *p ) == '\"' ) {
+		( *p )++;
+		isEnclosed = true;
+	}
+
 	size_t i = 0;
-	/* todo!!!
-	 * you'll probably notice an issue here. yes, indeed.
-	 * if the string is not enclosed, this will iterate until
-	 * it hits the end of the buffer. not good. i want to rewrite
-	 * this anyway, so i'll review it soooonish. */
-	while ( *( *p ) != '\0' && *( *p ) != '\"' ) {
-		if ( ( i + 1 ) < size ) dest[ i++ ] = *( *p );
+	while ( NOT_TERMINATING_CHAR( *( *p ) ) ) {
+		if ( !isEnclosed && *( *p ) == ' ' ) {
+			break;
+		} else if ( isEnclosed && *( *p ) == '\"' ) {
+            ( *p )++;
+			break;
+		}
+
+		if ( ( i + 1 ) < size ) {
+			dest[ i++ ] = *( *p );
+		}
 		( *p )++;
 	}
-	if ( *( *p ) == '\"' ) ( *p )++;
+
 	dest[ i ] = '\0';
 	return dest;
 }
@@ -89,7 +100,7 @@ const char *plParseToken( const char **p, char *dest, size_t size ) {
 int plParseInteger( const char **p, bool *status ) {
 	*status = false;
 
-	char num[ 64 ];
+	char num[ 64 ] = { '\0' };
 	if ( !plParseToken( p, num, sizeof( num ) ) ) {
 		return 0;
 	}
