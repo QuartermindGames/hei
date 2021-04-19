@@ -29,7 +29,10 @@ file(
         include/PL/*.h
 )
 
-file(GLOB PLATFORM_PACKAGE_FILES package/*.*)
+file(GLOB PLATFORM_PACKAGE_FILES
+        package/*.c package/*.h
+        package/miniz/miniz.c
+        package/miniz/miniz.h)
 
 if (PL_USE_MODEL)
     file(GLOB PLATFORM_MODEL_FILES model/*.*)
