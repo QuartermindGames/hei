@@ -26,5 +26,5 @@ target_include_directories(platform PRIVATE ${Vulkan_INCLUDE_DIR})
 
 target_include_directories(
         vulkan_plugin PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../platform/include/"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../plcore/include/"
 )

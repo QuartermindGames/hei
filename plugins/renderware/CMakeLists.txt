@@ -1,18 +1,18 @@
 #[[ Copyright (C) 2020 Mark E Sowden <markelswo@gmail.com> ]]
 
-project( valve_plugin )
+project( renderware_plugin )
 
 add_library(
-        valve_plugin SHARED
-        plugin.c plugin.h
-        vtf.c
-        )
+        renderware_plugin SHARED
+        plugin.c
+        plugin.h
+        pak.c)
 
 set_target_properties(
-        valve_plugin PROPERTIES
+        renderware_plugin PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../bin/plugins/"
 )
 target_include_directories(
-        valve_plugin PRIVATE
+        renderware_plugin PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/../../plcore/include/"
 )

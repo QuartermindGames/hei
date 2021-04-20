@@ -1,4 +1,4 @@
-#[[
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,10 +23,35 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-]]
+*/
 
-project( pcmd )
+#include "plg_private.h"
 
-add_executable( pcmd main.c )
+PLGLight * plCreateLight( PLGLightType type, PLColour colour) {
+	PLGLight * light = ( PLGLight *)pl_malloc(sizeof( PLGLight ));
+    if(light == NULL) {
+        return NULL;
+    }
 
-target_link_libraries( pcmd plcore )
+    memset(light, 0, sizeof( PLGLight ));
+
+    gfx_state.num_lights++;
+    light->colour   = colour;
+    light->type     = type;
+    return light;
+}
+
+void plDestroyLight( PLGLight *light) {
+    if(light == NULL) {
+        return;
+    }
+
+    gfx_state.num_lights--;
+    pl_free(light);
+}
+
+void plDrawLight( PLGLight * light) {
+    if(light->colour.a <= 0) {
+        return;
+    }
+}

@@ -1,4 +1,4 @@
-#[[
+/*
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,10 +23,27 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
-]]
+*/
 
-project( pcmd )
+#include <PL/platform_console.h>
 
-add_executable( pcmd main.c )
+#include "plg_private.h"
 
-target_link_libraries( pcmd plcore )
+#ifdef PL_SUPPORT_GLIDE
+
+/////////////////////////////////////////////////////////////
+
+static void GlideClearBuffers(unsigned int buffers) {
+    // Glide only supports clearing a single buffer.
+    grBufferClear(
+            // Convert buffer_clearcolour to something that works with Glide.
+            _plConvertColour4fv(PL_COLOURFORMAT_RGBA, graphics_state.buffer_clearcolour),
+            1, 1);
+}
+
+unsigned int Glide_GetMaxTextureUnits( unsigned int *numUnits ) {
+	grGet(GR_NUM_TMU, sizeof(param), (FxI32*) numUnits);
+	return numUnits;
+}
+
+#endif

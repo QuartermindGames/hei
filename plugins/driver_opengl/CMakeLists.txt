@@ -22,7 +22,4 @@ else ()
     target_link_libraries(opengl_plugin GLEW GL)
 endif ()
 
-target_include_directories(
-        opengl_plugin PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../platform/include/"
-)
+target_include_directories(opengl_plugin PRIVATE ../../plcore/include/ ../../plgraphics/include/)

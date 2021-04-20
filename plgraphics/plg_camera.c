@@ -1,0 +1,254 @@
+/*
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org>
+*/
+
+#include <PL/platform_console.h>
+#include "plg_private.h"
+
+#define CAMERA_DEFAULT_WIDTH 640
+#define CAMERA_DEFAULT_HEIGHT 480
+#define CAMERA_DEFAULT_BOUNDS 5
+#define CAMERA_DEFAULT_FOV 75.f
+#define CAMERA_DEFAULT_NEAR 0.1f
+#define CAMERA_DEFAULT_FAR 1000.f
+
+PLGCamera *PlgCreateCamera( void ) {
+	PLGCamera *camera = ( PLGCamera * ) pl_calloc( 1, sizeof( PLGCamera ) );
+	if ( camera == NULL ) {
+		return NULL;
+	}
+
+	camera->fov = CAMERA_DEFAULT_FOV;
+	camera->near = CAMERA_DEFAULT_NEAR;
+	camera->far = CAMERA_DEFAULT_FAR;
+	camera->mode = PLG_CAMERA_MODE_PERSPECTIVE;
+
+	/*  XY * * * * W
+     *  *
+     *  *
+     *  *
+     *  *
+     *  H
+     */
+	camera->viewport.w = CAMERA_DEFAULT_WIDTH;
+	camera->viewport.h = CAMERA_DEFAULT_HEIGHT;
+
+	camera->forward = PLVector3( 0, 0, 1 );
+	camera->up = PLVector3( 0, 1, 0 );
+
+	CallGfxFunction( CreateCamera, camera );
+
+	camera->bounds.mins = PLVector3(
+	        -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS );
+	camera->bounds.maxs = PLVector3(
+	        CAMERA_DEFAULT_BOUNDS, CAMERA_DEFAULT_BOUNDS, CAMERA_DEFAULT_BOUNDS );
+
+	return camera;
+}
+
+void PlgDestroyCamera( PLGCamera *camera ) {
+	if ( camera == NULL ) {
+		return;
+	}
+
+	CallGfxFunction( DestroyCamera, camera );
+
+	pl_free( camera->viewport.buffer );
+	pl_free( camera );
+}
+
+/**
+ * Set the camera's field of view, carry out some basic validation.
+ * (does not allow fov in excess of 1 or 179)
+ */
+void PlgSetCameraFieldOfView( PLGCamera *camera, float fieldOfView ) {
+	if ( fieldOfView < 1.0f ) {
+		fieldOfView = 1.0f;
+	} else if ( fieldOfView > 179.0f ) {
+		fieldOfView = 179.0f;
+	}
+
+	camera->fov = fieldOfView;
+}
+
+/**
+ * Return the given camera's field of view.
+ */
+float PlgGetCameraFieldOfView( const PLGCamera *camera ) {
+	return camera->fov;
+}
+
+static void MakeFrustumPlanes( const PLMatrix4 *matrix, PLGViewFrustum outFrustum ) {
+	// Right
+	outFrustum[ PLG_FRUSTUM_PLANE_RIGHT ].x = matrix->m[ 3 ] - matrix->m[ 0 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_RIGHT ].y = matrix->m[ 7 ] - matrix->m[ 4 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_RIGHT ].z = matrix->m[ 11 ] - matrix->m[ 8 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_RIGHT ].w = matrix->m[ 15 ] - matrix->m[ 12 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_RIGHT ] = plNormalizePlane( outFrustum[ PLG_FRUSTUM_PLANE_RIGHT ] );
+	// Left
+	outFrustum[ PLG_FRUSTUM_PLANE_LEFT ].x = matrix->m[ 3 ] + matrix->m[ 0 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_LEFT ].y = matrix->m[ 7 ] + matrix->m[ 4 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_LEFT ].z = matrix->m[ 11 ] + matrix->m[ 8 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_LEFT ].w = matrix->m[ 15 ] + matrix->m[ 12 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_LEFT ] = plNormalizePlane( outFrustum[ PLG_FRUSTUM_PLANE_LEFT ] );
+	// Bottom
+	outFrustum[ PLG_FRUSTUM_PLANE_BOTTOM ].x = matrix->m[ 3 ] - matrix->m[ 1 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_BOTTOM ].y = matrix->m[ 7 ] - matrix->m[ 5 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_BOTTOM ].z = matrix->m[ 11 ] - matrix->m[ 9 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_BOTTOM ].w = matrix->m[ 15 ] - matrix->m[ 13 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_BOTTOM ] = plNormalizePlane( outFrustum[ PLG_FRUSTUM_PLANE_BOTTOM ] );
+	// Top
+	outFrustum[ PLG_FRUSTUM_PLANE_TOP ].x = matrix->m[ 3 ] + matrix->m[ 1 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_TOP ].y = matrix->m[ 7 ] + matrix->m[ 5 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_TOP ].z = matrix->m[ 11 ] + matrix->m[ 9 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_TOP ].w = matrix->m[ 15 ] + matrix->m[ 13 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_TOP ] = plNormalizePlane( outFrustum[ PLG_FRUSTUM_PLANE_TOP ] );
+	// Far
+	outFrustum[ PLG_FRUSTUM_PLANE_FAR ].x = matrix->m[ 3 ] - matrix->m[ 2 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_FAR ].y = matrix->m[ 7 ] - matrix->m[ 6 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_FAR ].z = matrix->m[ 11 ] - matrix->m[ 10 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_FAR ].w = matrix->m[ 15 ] - matrix->m[ 14 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_FAR ] = plNormalizePlane( outFrustum[ PLG_FRUSTUM_PLANE_FAR ] );
+	// Near
+	outFrustum[ PLG_FRUSTUM_PLANE_NEAR ].x = matrix->m[ 3 ] + matrix->m[ 2 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_NEAR ].y = matrix->m[ 7 ] + matrix->m[ 6 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_NEAR ].z = matrix->m[ 11 ] + matrix->m[ 10 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_NEAR ].w = matrix->m[ 15 ] + matrix->m[ 14 ];
+	outFrustum[ PLG_FRUSTUM_PLANE_NEAR ] = plNormalizePlane( outFrustum[ PLG_FRUSTUM_PLANE_NEAR ] );
+}
+
+static void SetupCameraFrustum( PLGCamera *camera ) {
+	PLMatrix4 mvp = plMatrix4Identity();
+	mvp = plMultiplyMatrix4( mvp, camera->internal.proj );
+	mvp = plMultiplyMatrix4( mvp, camera->internal.view );
+	MakeFrustumPlanes( &mvp, camera->frustum );
+}
+
+static void SetupCameraPerspective( PLGCamera *camera ) {
+	float w = ( float ) camera->viewport.w;
+	float h = ( float ) camera->viewport.h;
+
+	camera->internal.proj = plPerspective( camera->fov, w / h, camera->near, camera->far );
+
+	float x = cosf( plDegreesToRadians( camera->angles.y ) ) * cosf( plDegreesToRadians( camera->angles.x ) );
+	float y = sinf( plDegreesToRadians( camera->angles.x ) );
+	float z = sinf( plDegreesToRadians( camera->angles.y ) ) * cosf( plDegreesToRadians( camera->angles.x ) );
+
+	camera->forward = plNormalizeVector3( PLVector3( x, y, z ) );
+	camera->internal.view = plLookAt( camera->position, plAddVector3( camera->position, camera->forward ), camera->up );
+}
+
+void PlgSetupCamera( PLGCamera *camera ) {
+	plAssert( camera );
+
+	switch ( camera->mode ) {
+		case PLG_CAMERA_MODE_PERSPECTIVE: {
+			SetupCameraPerspective( camera );
+			break;
+		}
+
+		case PLG_CAMERA_MODE_ORTHOGRAPHIC:
+			camera->internal.proj = plOrtho( 0, camera->viewport.w, camera->viewport.h, 0, camera->near, camera->far );
+			camera->internal.view = plMatrix4Identity();
+			break;
+
+		case PLG_CAMERA_MODE_ISOMETRIC:
+			camera->internal.proj = plOrtho( -camera->fov, camera->fov, -camera->fov, 5, -5, 40 );
+			camera->internal.view = plMatrix4Identity();
+			break;
+
+		default:
+			break;
+	}
+
+	/* setup the camera frustum */
+	SetupCameraFrustum( camera );
+
+	// keep the gfx_state up-to-date on the situation
+	gfx_state.current_viewport = &camera->viewport;
+
+	// Copy camera matrices
+	gfx_state.view_matrix = camera->internal.view;
+	gfx_state.projection_matrix = camera->internal.proj;
+
+	CallGfxFunction( SetupCamera, camera );
+}
+
+/**
+ * Checks that the given bounding box is within the view space.
+ */
+bool PlgIsBoxInsideView( const PLGCamera *camera, const PLCollisionAABB *bounds ) {
+	PLVector3 mins = plAddVector3( bounds->mins, bounds->origin );
+	PLVector3 maxs = plAddVector3( bounds->maxs, bounds->origin );
+	for ( unsigned int i = 0; i < 5; ++i ) {
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( mins.x, mins.y, mins.z ) ) >= 0.0f ) {
+			continue;
+		}
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( maxs.x, mins.y, mins.z ) ) >= 0.0f ) {
+			continue;
+		}
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( mins.x, maxs.y, mins.z ) ) >= 0.0f ) {
+			continue;
+		}
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( maxs.x, maxs.y, mins.z ) ) >= 0.0f ) {
+			continue;
+		}
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( mins.x, mins.y, maxs.z ) ) >= 0.0f ) {
+			continue;
+		}
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( mins.x, maxs.y, maxs.z ) ) >= 0.0f ) {
+			continue;
+		}
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( maxs.x, maxs.y, maxs.z ) ) >= 0.0f ) {
+			continue;
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Checks that the given sphere is within the view space.
+ */
+bool PlgIsSphereInsideView( const PLGCamera *camera, const PLCollisionSphere *sphere ) {
+	for ( unsigned int i = 0; i < 5; ++i ) {
+		if ( plGetPlaneDotProduct( &camera->frustum[ i ], &sphere->origin ) < -sphere->radius ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+const PLViewport *PlgGetCurrentViewport( void ) {
+	return gfx_state.current_viewport;
+}
+
+void PlgLookAtTargetVector( PLGCamera *camera, PLVector3 target ) {
+	camera->internal.view = plLookAt( camera->position, target, PLVector3( 0, 1, 0 ) );
+}
