@@ -28,6 +28,8 @@ SOFTWARE.
 #include <plgraphics/plg_texture.h>
 #include <plgraphics/plg_camera.h>
 
+#include <PL/platform_console.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
