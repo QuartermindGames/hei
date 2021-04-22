@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include "platform.h"
+#include "pl.h"
 
 #define plBytesToKilobytes(a)   ((double)((a)) / 1000)
 #define plBytesToMegabytes(a)   (plBytesToKilobytes(a) / 1000)

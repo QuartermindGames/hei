@@ -33,11 +33,11 @@ For more information, please refer to <http://unlicense.org>
 #include <dirent.h>
 #endif
 
-#include <PL/platform_console.h>
-#include <PL/platform_package.h>
+#include <plcore/pl_console.h>
+#include <plcore/pl_package.h>
 
 #include "filesystem_private.h"
-#include "platform_private.h"
+#include "pl_private.h"
 
 #if defined( _WIN32 )
 #   include "3rdparty/portable_endian.h"
@@ -97,16 +97,16 @@ IMPLEMENT_COMMAND( fsExtractPkg, "Extract the contents of a package." ) {
 		return;
 	}
 
-	PLPackage *pkg = plLoadPackage( path );
+	PLPackage *pkg = PlLoadPackage( path );
 	if ( pkg == NULL ) {
-		PrintWarning( "Failed to load package \"%s\"!\nPL: %s\n", path, plGetError() );
+		PrintWarning( "Failed to load package \"%s\"!\nPL: %s\n", path, PlGetError() );
 		return;
 	}
 
 	for ( unsigned int i = 0; i < pkg->table_size; ++i ) {
-		PLFile *file = plLoadPackageFileByIndex( pkg, i );
+		PLFile *file = PlLoadPackageFileByIndex( pkg, i );
 		if ( file == NULL ) {
-			PrintWarning( "Failed to load file at index %d, \"%s\"!\nPL: %s\n", i, pkg->table[ i ].fileName, plGetError() );
+			PrintWarning( "Failed to load file at index %d, \"%s\"!\nPL: %s\n", i, pkg->table[ i ].fileName, PlGetError() );
 			continue;
 		}
 
@@ -117,7 +117,7 @@ IMPLEMENT_COMMAND( fsExtractPkg, "Extract the contents of a package." ) {
 		char outPath[ PL_SYSTEM_MAX_PATH ];
 		snprintf( outPath, sizeof( outPath ), "extracted/%s", pkgPath );
 		if ( !plCreatePath( outPath ) ) {
-			PrintWarning( "Failed to create path, \"%s\"!\nPL: %s\n", outPath, plGetError() );
+			PrintWarning( "Failed to create path, \"%s\"!\nPL: %s\n", outPath, PlGetError() );
 			break;
 		}
 
@@ -135,7 +135,7 @@ IMPLEMENT_COMMAND( fsExtractPkg, "Extract the contents of a package." ) {
 	}
 	Print( "End\n" );
 
-	plDestroyPackage( pkg );
+	PlDestroyPackage( pkg );
 }
 
 IMPLEMENT_COMMAND( fsLstPkg, "List all the files in a particular package." ) {
@@ -150,9 +150,9 @@ IMPLEMENT_COMMAND( fsLstPkg, "List all the files in a particular package." ) {
 		return;
 	}
 
-	PLPackage *pkg = plLoadPackage( path );
+	PLPackage *pkg = PlLoadPackage( path );
 	if ( pkg == NULL ) {
-		Print( "Failed to load package \"%s\"!\nPL: %s\n", path, plGetError() );
+		Print( "Failed to load package \"%s\"!\nPL: %s\n", path, PlGetError() );
 		return;
 	}
 
@@ -173,7 +173,7 @@ IMPLEMENT_COMMAND( fsLstPkg, "List all the files in a particular package." ) {
 	}
 	Print( "End\n" );
 
-	plDestroyPackage( pkg );
+	PlDestroyPackage( pkg );
 }
 
 IMPLEMENT_COMMAND( fsListMounted, "Lists all of the mounted directories." ) {
@@ -243,13 +243,13 @@ static void _plRegisterFSCommands( void ) {
 	        fsMount_var,
 	};
 	for ( unsigned int i = 0; i < plArrayElements( fsCommands ); ++i ) {
-		plRegisterConsoleCommand( fsCommands[ i ].cmd, fsCommands[ i ].Callback, fsCommands[ i ].description );
+		PlRegisterConsoleCommand( fsCommands[ i ].cmd, fsCommands[ i ].Callback, fsCommands[ i ].description );
 	}
 }
 
 void plClearMountedLocation( PLFileSystemMount* location ) {
 	if ( location->type == FS_MOUNT_PACKAGE ) {
-		plDestroyPackage( location->pkg );
+		PlDestroyPackage( location->pkg );
 		location->pkg = NULL;
 	}
 
@@ -312,7 +312,7 @@ PLFileSystemMount* plMountLocalLocation( const char* path ) {
 			snprintf( localPath, sizeof( localPath ), "%s", path );
 		}
 
-		PLPackage* pkg = plLoadPackage( localPath );
+		PLPackage* pkg = PlLoadPackage( localPath );
 		if ( pkg != NULL ) {
 			_plInsertMountLocation( location );
 			location->type = FS_MOUNT_PACKAGE;
@@ -349,7 +349,7 @@ PLFileSystemMount* plMountLocation( const char* path ) {
 
 		return location;
 	} else { /* attempt to mount it as a package */
-		PLPackage* pkg = plLoadPackage( path );
+		PLPackage* pkg = PlLoadPackage( path );
 		if ( pkg != NULL ) {
 			_plInsertMountLocation( location );
 			location->type = FS_MOUNT_PACKAGE;
@@ -369,14 +369,14 @@ PLFileSystemMount* plMountLocation( const char* path ) {
 
 /****/
 
-PLFunctionResult plInitFileSystem( void ) {
+PLFunctionResult PlInitFileSystem( void ) {
 	_plRegisterFSCommands();
 
 	plClearMountedLocations();
 	return PL_RESULT_SUCCESS;
 }
 
-void plShutdownFileSystem( void ) {
+void PlShutdownFileSystem( void ) {
 	plClearMountedLocations();
 }
 
@@ -750,7 +750,7 @@ bool plFileExists( const char* path ) {
 				return true;
 			}
 		} else {
-			PLFile* fp = plLoadPackageFile( location->pkg, path );
+			PLFile* fp = PlLoadPackageFile( location->pkg, path );
 			if ( fp != NULL ) {
 				plCloseFile( fp );
 				return true;
@@ -959,7 +959,7 @@ PLFile* plOpenFile( const char* path, bool cache ) {
 			snprintf( buf, sizeof( buf ), "%s/%s", location->path, path );
 			fp = plOpenLocalFile( buf, cache );
 		} else {
-			fp = plLoadPackageFile( location->pkg, path );
+			fp = PlLoadPackageFile( location->pkg, path );
 		}
 
 		if ( fp == NULL ) {

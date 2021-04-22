@@ -25,10 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_filesystem.h>
-#include <PL/pl_llist.h>
-#include <PL/pl_parse.h>
-#include <PL/platform_image.h>
+#include <plcore/pl_filesystem.h>
+#include <plcore/pl_llist.h>
+#include <plcore/pl_parse.h>
+#include <plcore/pl_image.h>
 
 #if defined( _WIN32 )
 #	include <Windows.h>
@@ -42,7 +42,7 @@ For more information, please refer to <http://unlicense.org>
 #endif
 #include <errno.h>
 
-#include "platform_private.h"
+#include "pl_private.h"
 
 /*	Generic functions for platform, such as	error handling.	*/
 
@@ -58,9 +58,8 @@ typedef struct PLSubSystem {
 PLSubSystem pl_subsystems[]= {
         {
                 PL_SUBSYSTEM_IO,
-                &plInitFileSystem,
-                &plShutdownFileSystem
-        }
+          &PlInitFileSystem,
+          &PlShutdownFileSystem }
 };
 
 #if 0 /* incomplete interface? */
@@ -93,10 +92,10 @@ typedef struct PLArguments {
 
 PLArguments pl_arguments;
 
-PLFunctionResult plInitialize(int argc, char **argv) {
+PLFunctionResult PlInitialize(int argc, char **argv) {
     static bool is_initialized = false;
     if(!is_initialized) {
-        plInitConsole();
+		PlInitConsole();
     }
 
     memset(&pl_arguments, 0, sizeof(PLArguments));
@@ -113,14 +112,14 @@ PLFunctionResult plInitialize(int argc, char **argv) {
         pl_arguments.arguments[i] = argv[i];
     }
 
-    _plInitPackageSubSystem();
+	PlInitPackageSubSystem();
 
     is_initialized = true;
 
     return PL_RESULT_SUCCESS;
 }
 
-PLFunctionResult plInitializeSubSystems(unsigned int subsystems) {
+PLFunctionResult PlInitializeSubSystems(unsigned int subsystems) {
     for(unsigned int i = 0; i < plArrayElements(pl_subsystems); i++) {
         if(!pl_subsystems[i].active && (subsystems & pl_subsystems[i].subsystem)) {
             if(pl_subsystems[i].InitFunction) {
@@ -142,7 +141,7 @@ const char *plGetExecutableName(void) {
     return pl_arguments.exe_name;
 }
 
-bool plHasCommandLineArgument(const char *arg) {
+bool PlHasCommandLineArgument(const char *arg) {
     if(pl_arguments.num_arguments < 1) {
         return false;
     }
@@ -161,7 +160,7 @@ bool plHasCommandLineArgument(const char *arg) {
 }
 
 // Returns result for a single command line argument.
-const char *plGetCommandLineArgumentValue(const char *arg) {
+const char *PlGetCommandLineArgumentValue(const char *arg) {
     if(plIsEmptyString(arg)) {
         return NULL;
     }
@@ -200,7 +199,7 @@ bool _plIsSubSystemActive(unsigned int subsystem) {
     return false;
 }
 
-void plShutdown(void) {
+void PlShutdown(void) {
     for(unsigned int i = 0; i < plArrayElements(pl_subsystems); i++) {
         if(!pl_subsystems[i].active) {
             continue;
@@ -213,7 +212,7 @@ void plShutdown(void) {
         pl_subsystems[i].active = false;
     }
 
-    plShutdownConsole();
+	PlShutdownConsole();
 }
 
 /*-------------------------------------------------------------------
@@ -223,7 +222,7 @@ void plShutdown(void) {
  /**
   * Generate a simple unique identifier (!!DO NOT USE FOR ANYTHING THAT NEEDS TO BE SECURE!!)
   */
-const char *plGenerateUniqueIdentifier( char *dest, size_t destLength ) {
+const char *PlGenerateUniqueIdentifier( char *dest, size_t destLength ) {
 	// Specific char set we will set, so we can preview it after
 	static char dataPool[] = {
 		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
@@ -295,7 +294,7 @@ char
 PLFunctionResult global_result = PL_RESULT_SUCCESS;
 
 // Returns locally generated error message.
-const char *plGetError(void) {
+const char *PlGetError(void) {
     return loc_error;
 }
 
@@ -317,11 +316,11 @@ void plReportError( PLFunctionResult result, const char *function, const char *m
 /////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC
 
-PLFunctionResult plGetFunctionResult(void) {
+PLFunctionResult PlGetFunctionResult(void) {
     return global_result;
 }
 
-const char *plGetResultString( PLFunctionResult result) {
+const char *PlGetResultString( PLFunctionResult result) {
     switch (result) {
         case PL_RESULT_SUCCESS:     return "success";
         case PL_RESULT_UNSUPPORTED: return "unsupported";
@@ -357,7 +356,7 @@ const char *plGetResultString( PLFunctionResult result) {
     }
 }
 
-void plClearError( void ) {
+void PlClearError( void ) {
 	loc_function[ 0 ] = loc_error[ 0 ] = '\0';
 	global_result = PL_RESULT_SUCCESS;
 }
@@ -390,7 +389,7 @@ int gettimeofday( struct timeval* tp, struct timezone* tzp ) {
 
 #endif
 
-const char *plGetFormattedTime(void) {
+const char *PlGetFormattedTime(void) {
     struct timeval time;
     if(gettimeofday(&time, NULL) != 0) {
         return "unknown";
@@ -406,7 +405,7 @@ const char *plGetFormattedTime(void) {
  * Converts the given string to time.
  * http://stackoverflow.com/questions/1765014/convert-string-from-date-into-a-time-t
  */
-time_t plStringToTime( const char *ts ) {
+time_t PlStringToTime( const char *ts ) {
 	char s_month[ 5 ];
 	int day, year;
 	sscanf( ts, "%s %d %d", s_month, &day, &year );
@@ -422,24 +421,10 @@ time_t plStringToTime( const char *ts ) {
 	return mktime( &time );
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
-// Loop
-
-bool plIsRunning(void) {
-    return true;
-}
-
-double plGetDeltaTime(void) {
-    static struct timeval last, now = { 0 };
-    last = now;
-    gettimeofday(&now, NULL);
-    return (now.tv_sec - last.tv_sec) * 1000;
-}
-
 /**********************************************************/
 /** Plugin Interface **/
 
-#include <PL/pl_plugin_interface.h>
+#include <plcore/pl_plugin_interface.h>
 
 typedef struct PLPlugin {
 	char                            pluginPath[ PL_SYSTEM_MAX_PATH ];   /* full path to the plugin */
@@ -453,7 +438,7 @@ static unsigned int numPlugins;
 
 static PLPluginExportTable exportTable = {
         .ReportError = plReportError,
-        .GetError = plGetError,
+        .GetError = PlGetError,
 
         .LocalFileExists = plLocalFileExists,
         .FileExists = plFileExists,
@@ -479,7 +464,7 @@ static PLPluginExportTable exportTable = {
         .FileSeek = plFileSeek,
         .RewindFile = plRewindFile,
 
-        .RegisterPackageLoader = plRegisterPackageLoader,
+        .RegisterPackageLoader = PlRegisterPackageLoader,
         .RegisterImageLoader = plRegisterImageLoader,
 
         .CreateImage = plCreateImage,
@@ -491,40 +476,40 @@ static PLPluginExportTable exportTable = {
         .GetNumberOfColourChannels = plGetNumberOfColourChannels,
         .GetImageSize = plGetImageSize,
 
-		.CreatePackageHandle = plCreatePackageHandle,
-        .GetPackagePath = plGetPackagePath,
-        .GetPackageTableSize = plGetPackageTableSize,
-        .GetPackageTableIndex = plGetPackageTableIndex,
-        .GetPackageFileName = plGetPackageFileName,
+		.CreatePackageHandle = PlCreatePackageHandle,
+        .GetPackagePath = PlGetPackagePath,
+        .GetPackageTableSize = PlGetPackageTableSize,
+        .GetPackageTableIndex = PlGetPackageTableIndex,
+        .GetPackageFileName = PlGetPackageFileName,
 
-        .AddLogLevel = plAddLogLevel,
-        .SetLogLevelStatus = plSetLogLevelStatus,
-        .LogMessage = plLogMessage,
-        .GetConsoleVariableValue = plGetConsoleVariableValue,
-        .GetConsoleVariableDefaultValue = plGetConsoleVariableDefaultValue,
-        .SetConsoleVariable = plSetConsoleVariableByName,
-        .RegisterConsoleVariable = plRegisterConsoleVariable,
-        .RegisterConsoleCommand = plRegisterConsoleCommand,
-        .ParseConsoleString = plParseConsoleString,
+        .AddLogLevel = PlAddLogLevel,
+        .SetLogLevelStatus = PlSetLogLevelStatus,
+        .LogMessage = PlLogMessage,
+        .GetConsoleVariableValue = PlGetConsoleVariableValue,
+        .GetConsoleVariableDefaultValue = PlGetConsoleVariableDefaultValue,
+        .SetConsoleVariable = PlSetConsoleVariableByName,
+        .RegisterConsoleVariable = PlRegisterConsoleVariable,
+        .RegisterConsoleCommand = PlRegisterConsoleCommand,
+        .ParseConsoleString = PlParseConsoleString,
 
-        .IsEndOfLine = plIsEndOfLine,
-        .SkipWhitespace = plSkipWhitespace,
-        .SkipLine = plSkipLine,
-        .ParseEnclosedString = plParseEnclosedString,
-        .ParseToken = plParseToken,
-        .ParseInteger = plParseInteger,
-        .ParseFloat = plParseFloat,
+        .IsEndOfLine = PlIsEndOfLine,
+        .SkipWhitespace = PlSkipWhitespace,
+        .SkipLine = PlSkipLine,
+        .ParseEnclosedString = PlParseEnclosedString,
+        .ParseToken = PlParseToken,
+        .ParseInteger = PlParseInteger,
+        .ParseFloat = PlParseFloat,
 };
 
 /**
  * Attempts to load the given plugin and validate it.
  */
-bool plRegisterPlugin( const char *path ) {
-	plClearError();
+bool PlRegisterPlugin( const char *path ) {
+	PlClearError();
 
 	DebugPrint( "Registering plugin: \"%s\"\n", path );
 
-	PLLibrary *library = plLoadLibrary( path, false );
+	PLLibrary *library = PlLoadLibrary( path, false );
 	if ( library == NULL ) {
 		return false;
 	}
@@ -533,9 +518,9 @@ bool plRegisterPlugin( const char *path ) {
 	PLPluginInitializationFunction InitializePlugin;
 	const PLPluginDescription *description;
 
-	RegisterPlugin = ( PLPluginQueryFunction ) plGetLibraryProcedure( library, PL_PLUGIN_QUERY_FUNCTION );
+	RegisterPlugin = ( PLPluginQueryFunction ) PlGetLibraryProcedure( library, PL_PLUGIN_QUERY_FUNCTION );
 	if ( RegisterPlugin != NULL ) {
-		InitializePlugin = ( PLPluginInitializationFunction ) plGetLibraryProcedure( library, PL_PLUGIN_INIT_FUNCTION );
+		InitializePlugin = ( PLPluginInitializationFunction ) PlGetLibraryProcedure( library, PL_PLUGIN_INIT_FUNCTION );
 		if ( InitializePlugin != NULL ) {
 			/* now fetch the plugin description */
 			description = RegisterPlugin( ( PLPluginInterfaceVersion ){
@@ -551,8 +536,8 @@ bool plRegisterPlugin( const char *path ) {
 		}
 	}
 
-	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
-		plUnloadLibrary( library );
+	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
+		PlUnloadLibrary( library );
 		return false;
 	}
 
@@ -576,7 +561,7 @@ bool plRegisterPlugin( const char *path ) {
 /**
  * Private callback when scanning for plugins.
  */
-static void _plRegisterScannedPlugin( const char *path, void *unused ) {
+static void RegisterScannedPlugin( const char *path, void *unused ) {
 	plUnused( unused );
 
 	/* validate it's actually a plugin */
@@ -592,14 +577,14 @@ static void _plRegisterScannedPlugin( const char *path, void *unused ) {
 		return;
 	}
 
-	plRegisterPlugin( path );
+	PlRegisterPlugin( path );
 }
 
 /**
  * Scans for libraries in the given directory for supporting other model formats.
  */
-void plRegisterPlugins( const char *pluginDir ) {
-	plClearError();
+void PlRegisterPlugins( const char *pluginDir ) {
+	PlClearError();
 
 	if ( !plPathExists( pluginDir ) ) {
 		plReportBasicError( PL_RESULT_INVALID_PARM1 );
@@ -608,7 +593,7 @@ void plRegisterPlugins( const char *pluginDir ) {
 
 	Print( "Scanning for plugins in \"%s\"\n", pluginDir );
 
-	plScanDirectory( pluginDir, NULL, _plRegisterScannedPlugin, false, NULL );
+	plScanDirectory( pluginDir, NULL, RegisterScannedPlugin, false, NULL );
 
 	Print( "Done, %d plugins loaded.\n", numPlugins );
 }
@@ -616,7 +601,7 @@ void plRegisterPlugins( const char *pluginDir ) {
 /**
  * Iterate over all the registered plugins and initialize each.
  */
-void plInitializePlugins( void ) {
+void PlInitializePlugins( void ) {
 	if ( plugins == NULL ) {
 		/* no plugins registered */
 		return;

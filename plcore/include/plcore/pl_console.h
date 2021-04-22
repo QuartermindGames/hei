@@ -26,8 +26,8 @@ For more information, please refer to <http://unlicense.org>
 */
 #pragma once
 
-#include <PL/platform.h>
-#include <PL/platform_math.h>
+#include <plcore/pl.h>
+#include <plcore/pl_math.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,15 +62,15 @@ typedef struct PLConsoleVariable {
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-void plGetConsoleVariables( PLConsoleVariable ***vars, size_t *num_vars );
+void PlGetConsoleVariables( PLConsoleVariable ***vars, size_t *num_vars );
 
-PLConsoleVariable *plGetConsoleVariable( const char *name );
-const char *plGetConsoleVariableValue( const char *name );
-const char *plGetConsoleVariableDefaultValue( const char *name );
-void plSetConsoleVariable( PLConsoleVariable *var, const char *value );
-void plSetConsoleVariableByName( const char *name, const char *value );
+PLConsoleVariable *PlGetConsoleVariable( const char *name );
+const char *PlGetConsoleVariableValue( const char *name );
+const char *PlGetConsoleVariableDefaultValue( const char *name );
+void PlSetConsoleVariable( PLConsoleVariable *var, const char *value );
+void PlSetConsoleVariableByName( const char *name, const char *value );
 
-PLConsoleVariable *plRegisterConsoleVariable( const char *name, const char *def, PLVariableType type,
+PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *def, PLVariableType type,
                                               void ( *CallbackFunction )( const PLConsoleVariable *variable ),
                                               const char *desc );
 
@@ -88,21 +88,21 @@ typedef struct PLConsoleCommand {
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PL_EXTERN void plGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds );
-PL_EXTERN void plRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( unsigned int argc, char *argv[] ), const char *description );
-PL_EXTERN PLConsoleCommand *plGetConsoleCommand( const char *name );
+PL_EXTERN void PlGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds );
+PL_EXTERN void PlRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( unsigned int argc, char *argv[] ), const char *description );
+PL_EXTERN PLConsoleCommand *PlGetConsoleCommand( const char *name );
 
-PL_EXTERN void plSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg ) );
+PL_EXTERN void PlSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg ) );
 
-PL_EXTERN const char **plAutocompleteConsoleString( const char *string, unsigned int *numElements );
-PL_EXTERN void plParseConsoleString( const char *string );
+PL_EXTERN const char **PlAutocompleteConsoleString( const char *string, unsigned int *numElements );
+PL_EXTERN void PlParseConsoleString( const char *string );
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-extern void plSetupLogOutput( const char *path );
-extern int plAddLogLevel( const char *prefix, PLColour colour, bool status );
-extern void plSetLogLevelStatus( int id, bool status );
-extern void plLogMessage( int id, const char *msg, ... );
+extern void PlSetupLogOutput( const char *path );
+extern int PlAddLogLevel( const char *prefix, PLColour colour, bool status );
+extern void PlSetLogLevelStatus( int id, bool status );
+extern void PlLogMessage( int id, const char *msg, ... );
 
 #endif /* !defined( PL_COMPILE_PLUGIN ) */
 

@@ -26,7 +26,6 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include "image_private.h"
-#include <PL/platform_filesystem.h>
 
 /*	Ritual's FTX Format	*/
 

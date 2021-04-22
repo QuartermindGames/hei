@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_private.h"
+#include "pl_private.h"
 
-#include <PL/platform_math.h>
+#include <plcore/pl_math.h>
 
 /* Matrix Stack, sorta mirrors OpenGL behaviour */
 

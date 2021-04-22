@@ -27,8 +27,8 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include <PL/platform_filesystem.h>
-#include <PL/platform_math.h>
+#include <plcore/pl_filesystem.h>
+#include <plcore/pl_math.h>
 
 typedef enum PLDataFormat {
 	PL_UNSIGNED_BYTE,

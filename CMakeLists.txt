@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.7)
 
 project(PlatformLibrary)
 
-option(BUILD_EXAMPLES "Build example applications" ON)
 option(PL_BUILD_PLUGINS "Build plugins" ON)
 
 # Set all of our output directories.
@@ -16,6 +15,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-unused-function")
 add_subdirectory(plcore)
 add_subdirectory(plgraphics)
 add_subdirectory(tests)
+
 add_subdirectory(examples/pcmd)
 
 if (PL_BUILD_PLUGINS)

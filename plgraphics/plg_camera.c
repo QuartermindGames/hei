@@ -245,7 +245,7 @@ bool PlgIsSphereInsideView( const PLGCamera *camera, const PLCollisionSphere *sp
 	return true;
 }
 
-const PLViewport *PlgGetCurrentViewport( void ) {
+const PLGViewport *PlgGetCurrentViewport( void ) {
 	return gfx_state.current_viewport;
 }
 

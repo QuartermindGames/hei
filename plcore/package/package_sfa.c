@@ -42,7 +42,7 @@ PLPackage* plLoadTABPackage( const char* path ) {
 
 	size_t tab_size = plGetLocalFileSize( path );
 	if ( tab_size == 0 ) {
-		plReportErrorF( PL_RESULT_FILESIZE, plGetResultString( PL_RESULT_FILESIZE ) );
+		plReportErrorF( PL_RESULT_FILESIZE, PlGetResultString( PL_RESULT_FILESIZE ) );
 		return NULL;
 	}
 
@@ -79,7 +79,7 @@ PLPackage* plLoadTABPackage( const char* path ) {
 		indices[ i ].end = be32toh( indices[ i ].end );
 	}
 
-	PLPackage* package = plCreatePackageHandle( path, num_indices, NULL );
+	PLPackage* package = PlCreatePackageHandle( path, num_indices, NULL );
 	for ( unsigned int i = 0; i < num_indices; ++i ) {
 		PLPackageIndex* index = &package->table[ i ];
 		snprintf( index->fileName, sizeof( index->fileName ), "%u", i );

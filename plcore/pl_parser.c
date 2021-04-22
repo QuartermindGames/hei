@@ -25,10 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/pl_parse.h>
-#include <PL/platform_math.h>
+#include <plcore/pl_parse.h>
+#include <plcore/pl_math.h>
 
-bool plIsEndOfLine( const char **p ) {
+bool PlIsEndOfLine( const char **p ) {
     if ( *( *p ) == '\n' || *( *p ) == '\r' ) {
         return true;
     }
@@ -36,18 +36,18 @@ bool plIsEndOfLine( const char **p ) {
     return false;
 }
 
-void plSkipWhitespace( const char **p ) {
+void PlSkipWhitespace( const char **p ) {
 	while ( *( *p ) == ' ' ) ( *p )++;
 	if ( *( *p ) == ' ' ) ++( *p );
 }
 
-void plSkipLine( const char **p ) {
+void PlSkipLine( const char **p ) {
 	while ( *( *p ) != '\0' && *( *p ) != '\n' && *( *p ) != '\r' ) ( *p )++;
 	if ( *( *p ) == '\r' ) ( *p )++;
 	if ( *( *p ) == '\n' ) ( *p )++;
 }
 
-const char *plParseEnclosedString( const char **p, char *dest, size_t size ) {
+const char *PlParseEnclosedString( const char **p, char *dest, size_t size ) {
 	if ( *( *p ) == '\"' ) ( *p )++;
 	size_t i = 0;
 	/* todo!!!
@@ -64,8 +64,8 @@ const char *plParseEnclosedString( const char **p, char *dest, size_t size ) {
 	return dest;
 }
 
-const char *plParseToken( const char **p, char *dest, size_t size ) {
-	plSkipWhitespace( p );
+const char *PlParseToken( const char **p, char *dest, size_t size ) {
+	PlSkipWhitespace( p );
 
 	size_t i = 0;
 	while ( *( *p ) != '\0' &&
@@ -86,11 +86,11 @@ const char *plParseToken( const char **p, char *dest, size_t size ) {
 	return dest;
 }
 
-int plParseInteger( const char **p, bool *status ) {
+int PlParseInteger( const char **p, bool *status ) {
 	*status = false;
 
 	char num[ 64 ];
-	if ( !plParseToken( p, num, sizeof( num ) ) ) {
+	if ( !PlParseToken( p, num, sizeof( num ) ) ) {
 		return 0;
 	}
 
@@ -102,11 +102,11 @@ int plParseInteger( const char **p, bool *status ) {
 	return v;
 }
 
-float plParseFloat( const char **p, bool *status ) {
+float PlParseFloat( const char **p, bool *status ) {
 	*status = false;
 
 	char num[ 64 ];
-	if ( !plParseToken( p, num, sizeof( num ) ) ) {
+	if ( !PlParseToken( p, num, sizeof( num ) ) ) {
 		return 0.0f;
 	}
 
@@ -118,12 +118,12 @@ float plParseFloat( const char **p, bool *status ) {
 	return v;
 }
 
-PLVector3 plParseVector( const char **p, bool *status ) {
-	plSkipWhitespace( p );
+PLVector3 PlParseVector( const char **p, bool *status ) {
+	PlSkipWhitespace( p );
 	if ( *( *p ) == '(' ) { ( *p )++; }
-	float x = plParseFloat( p, status );
-	float y = plParseFloat( p, status );
-	float z = plParseFloat( p, status );
+	float x = PlParseFloat( p, status );
+	float y = PlParseFloat( p, status );
+	float z = PlParseFloat( p, status );
 	if ( *( *p ) == ')' ) { ( *p )++; }
 	return PLVector3( x, y, z );
 }

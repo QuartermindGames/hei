@@ -30,9 +30,9 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_console.h>
 
 void _InitTextures( void ) {
-	gfx_state.tmu = ( PLGTextureMappingUnit * ) pl_calloc( plGetMaxTextureUnits(), sizeof( PLGTextureMappingUnit ) );
-	for ( unsigned int i = 0; i < plGetMaxTextureUnits(); i++ ) {
-		gfx_state.tmu[ i ].current_envmode = PL_TEXTUREMODE_REPLACE;
+	gfx_state.tmu = ( PLGTextureMappingUnit * ) pl_calloc( PlgGetMaxTextureUnits(), sizeof( PLGTextureMappingUnit ) );
+	for ( unsigned int i = 0; i < PlgGetMaxTextureUnits(); i++ ) {
+		gfx_state.tmu[ i ].current_envmode = PLG_TEXTUREMODE_REPLACE;
 	}
 
 	gfx_state.max_textures = 1024;
@@ -52,14 +52,14 @@ void PlgShutdownTextures( void ) {
 		for ( PLGTexture **texture = gfx_state.textures;
 			  texture < gfx_state.textures + gfx_state.num_textures; ++texture ) {
 			if ( ( *texture ) ) {
-				plDestroyTexture( ( *texture ) );
+				PlgDestroyTexture( ( *texture ) );
 			}
 		}
 		pl_free( gfx_state.textures );
 	}
 }
 
-unsigned int plGetMaxTextureSize( void ) {
+unsigned int PlgGetMaxTextureSize( void ) {
 	if ( gfx_state.hw_maxtexturesize != 0 ) {
 		return gfx_state.hw_maxtexturesize;
 	}
@@ -69,7 +69,7 @@ unsigned int plGetMaxTextureSize( void ) {
 	return gfx_state.hw_maxtexturesize;
 }
 
-PLGTexture *plCreateTexture( void ) {
+PLGTexture *PlgCreateTexture( void ) {
 	PLGTexture *texture = pl_calloc( 1, sizeof( PLGTexture ) );
 	if ( texture == NULL ) {
 		return NULL;
@@ -83,7 +83,7 @@ PLGTexture *plCreateTexture( void ) {
 	return texture;
 }
 
-void plDestroyTexture( PLGTexture *texture ) {
+void PlgDestroyTexture( PLGTexture *texture ) {
 	if ( texture == NULL ) {
 		return;
 	}
@@ -96,20 +96,20 @@ void plDestroyTexture( PLGTexture *texture ) {
 /**
  * Automatically loads in an image and uploads it as a texture.
  */
-PLGTexture *plLoadTextureFromImage( const char *path, PLGTextureFilter filter_mode ) {
+PLGTexture *PlgLoadTextureFromImage( const char *path, PLGTextureFilter filter_mode ) {
 	PLImage *image = plLoadImage( path );
 	if ( image == NULL ) {
 		return NULL;
 	}
 
-	PLGTexture *texture = plCreateTexture();
+	PLGTexture *texture = PlgCreateTexture();
 	if ( texture != NULL ) {
 		/* store the path, so we can easily reload the image if we need to */
 		strncpy( texture->path, image->path, sizeof( texture->path ) );
 	
 		texture->filter = filter_mode;
 
-		plUploadTextureImage( texture, image );
+		PlgUploadTextureImage( texture, image );
 	}
 
 	plDestroyImage( image );
@@ -128,7 +128,7 @@ PLGTexture *plGetCurrentTexture( unsigned int tmu ) {
 	return NULL;
 }
 
-unsigned int plGetMaxTextureUnits( void ) {
+unsigned int PlgGetMaxTextureUnits( void ) {
 	if ( gfx_state.hw_maxtextureunits != 0 ) {
 		return gfx_state.hw_maxtextureunits;
 	}
@@ -141,8 +141,8 @@ unsigned int plGetCurrentTextureUnit( void ) {
 	return gfx_state.current_textureunit;
 }
 
-void plSetTexture( PLGTexture *texture, unsigned int tmu ) {
-	plSetTextureUnit( tmu );
+void PlgSetTexture( PLGTexture *texture, unsigned int tmu ) {
+	PlgSetTextureUnit( tmu );
 
 	if ( ( gfx_state.textures[ tmu ] != NULL ) && ( gfx_state.textures[ tmu ] == texture ) ) {
 		return;
@@ -152,15 +152,15 @@ void plSetTexture( PLGTexture *texture, unsigned int tmu ) {
 
 	gfx_state.textures[ tmu ] = texture;
 
-	plSetTextureUnit( 0 );
+	PlgSetTextureUnit( 0 );
 }
 
-void plSetTextureUnit( unsigned int target ) {
+void PlgSetTextureUnit( unsigned int target ) {
 	if ( target == gfx_state.current_textureunit ) {
 		return;
 	}
 
-	if ( target > plGetMaxTextureUnits() ) {
+	if ( target > PlgGetMaxTextureUnits() ) {
 		GfxLog( "Attempted to select a texture image unit beyond what's supported by your hardware! (%i)\n",
 				target );
 		return;
@@ -171,7 +171,7 @@ void plSetTextureUnit( unsigned int target ) {
 	gfx_state.current_textureunit = target;
 }
 
-unsigned int plGetMaxTextureAnistropy( void ) {
+unsigned int PlgGetMaxTextureAnistropy( void ) {
 	if ( gfx_state.hw_maxtextureanistropy != 0 ) {
 		return gfx_state.hw_maxtextureanistropy;
 	}
@@ -186,7 +186,7 @@ unsigned int plGetMaxTextureAnistropy( void ) {
 }
 
 // todo, hook this up with var
-void plSetTextureAnisotropy( PLGTexture *texture, unsigned int amount ) {
+void PlgSetTextureAnisotropy( PLGTexture *texture, unsigned int amount ) {
 	CallGfxFunction( SetTextureAnisotropy, texture, amount );
 }
 
@@ -209,11 +209,11 @@ void _plBindTexture( const PLGTexture *texture ) {
 	unit->current_texture = id;
 }
 
-void plSetTextureFlags( PLGTexture *texture, unsigned int flags ) {
+void PlgSetTextureFlags( PLGTexture *texture, unsigned int flags ) {
 	texture->flags = flags;
 }
 
-void plSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode ) {
+void PlgSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode ) {
 	if ( gfx_state.tmu[ plGetCurrentTextureUnit() ].current_envmode == mode )
 		return;
 
@@ -233,7 +233,7 @@ void plSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode ) {
 
 /////////////////////
 
-bool plUploadTextureImage( PLGTexture *texture, const PLImage *upload ) {
+bool PlgUploadTextureImage( PLGTexture *texture, const PLImage *upload ) {
 	plAssert( texture );
 
 	texture->w = upload->width;
@@ -246,10 +246,10 @@ bool plUploadTextureImage( PLGTexture *texture, const PLImage *upload ) {
 	/* store the path, so we can easily reload the image if we need to */
 	strncpy( texture->path, upload->path, sizeof( texture->path ) );
 
-	if ( texture->flags & PL_TEXTURE_FLAG_NOMIPS &&
-		( texture->filter != PL_TEXTURE_FILTER_LINEAR && texture->filter != PL_TEXTURE_FILTER_NEAREST ) ) {
+	if ( texture->flags & PLG_TEXTURE_FLAG_NOMIPS &&
+		( texture->filter != PLG_TEXTURE_FILTER_LINEAR && texture->filter != PLG_TEXTURE_FILTER_NEAREST ) ) {
 		GfxLog( "Invalid filter mode for texture - if specifying nomips, use either linear or nearest!" );
-		texture->filter = PL_TEXTURE_FILTER_NEAREST;
+		texture->filter = PLG_TEXTURE_FILTER_NEAREST;
 	}
 
 	const char *file_name = plGetFileName( upload->path );

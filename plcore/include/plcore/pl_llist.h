@@ -24,8 +24,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+
 #pragma once
 
-#include "platform.h"
+#include "pl.h"
 
-/* todo */
+PL_EXTERN_C
+
+typedef struct PLLinkedList PLLinkedList;
+typedef struct PLLinkedListNode PLLinkedListNode;
+
+PLLinkedList *plCreateLinkedList( void );
+
+PLLinkedListNode *plInsertLinkedListNode( PLLinkedList *list, void *userPtr );
+
+void plDestroyLinkedList( PLLinkedList *list );
+void plDestroyLinkedListNode( PLLinkedList *list, PLLinkedListNode *node );
+void plDestroyLinkedListNodes( PLLinkedList *list );
+
+PLLinkedListNode *plGetNextLinkedListNode( PLLinkedListNode *node );
+PLLinkedListNode *plGetPrevLinkedListNode( PLLinkedListNode *node );
+PLLinkedListNode *plGetFirstNode( PLLinkedList *list );
+void *plGetLinkedListNodeUserData( PLLinkedListNode *node );
+
+unsigned int plGetNumLinkedListNodes( PLLinkedList *list );
+
+PLLinkedList *plGetLinkedListNodeContainer( PLLinkedListNode *node );
+
+PL_EXTERN_C_END

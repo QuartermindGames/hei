@@ -107,7 +107,7 @@ bool plDTXFormatCheck(PLFile *fin) {
 bool plLoadDTXImage(PLFile *fin, PLImage *out) {
     DTXHeader header;
     if (plReadFile(fin, &header, sizeof(DTXHeader), 1) != 1) {
-		plReportErrorF(PL_RESULT_FILEREAD, plGetResultString(PL_RESULT_FILEREAD));
+		plReportErrorF(PL_RESULT_FILEREAD, PlGetResultString( PL_RESULT_FILEREAD ));
         return false;
     } else if ((header.version < DTX_VERSION_MAX) || (header.version > DTX_VERSION_MIN)) {
 		plReportErrorF(PL_RESULT_FILEVERSION, "invalid version: %d", header.version);

@@ -27,10 +27,10 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include <PL/platform_filesystem.h>
+#include <plcore/pl_filesystem.h>
 
 #ifdef _DEBUG
-#   define FSLog(...) plLogMessage(LOG_LEVEL_FILESYSTEM, __VA_ARGS__)
+#   define FSLog(...) PlLogMessage(LOG_LEVEL_FILESYSTEM, __VA_ARGS__)
 #else
 #   define FSLog(...)
 #endif

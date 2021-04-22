@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_private.h"
+#include "pl_private.h"
 
 #include <PL/platform_filesystem.h>
 #include <PL/platform_model.h>

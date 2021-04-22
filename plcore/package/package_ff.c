@@ -63,13 +63,13 @@ PLPackage* plLoadFFPackage( const char* path ) {
 
 	plCloseFile( fp );
 
-	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
+	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
 		pl_free( indices );
 		pl_free( sizes );
 		return NULL;
 	}
 
-	PLPackage* package = plCreatePackageHandle( path, num_indices - 1, NULL );
+	PLPackage* package = PlCreatePackageHandle( path, num_indices - 1, NULL );
 	if( ( package->table = pl_calloc( package->table_size, sizeof( struct PLPackageIndex ) ) ) != NULL ) {
 		for( unsigned int i = 0; i < package->table_size; ++i ) {
 			PLPackageIndex *index = &package->table[ i ];
@@ -79,7 +79,7 @@ PLPackage* plLoadFFPackage( const char* path ) {
 		}
 	}
 	else {
-		plDestroyPackage( package );
+		PlDestroyPackage( package );
 		package = NULL;
 	}
 	

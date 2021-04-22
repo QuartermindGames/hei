@@ -27,12 +27,12 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include "platform_private.h"
+#include "pl_private.h"
 
 #include <PL/platform_console.h>
 #include <PL/platform_model.h>
 
-#define ModelLog(...) plLogMessage(LOG_LEVEL_MODEL, __VA_ARGS__)
+#define ModelLog(...) PlLogMessage(LOG_LEVEL_MODEL, __VA_ARGS__)
 
 PL_EXTERN_C
 

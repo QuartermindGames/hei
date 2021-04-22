@@ -81,7 +81,7 @@ support.
 #define PL_EXTERN_C_END
 #endif
 
-#include "platform_system.h"
+#include "pl_system.h"
 
 #if !defined( NDEBUG )
 #include <assert.h>
@@ -217,30 +217,30 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PL_EXTERN PLFunctionResult plInitialize( int argc, char **argv );
-PL_EXTERN PLFunctionResult plInitializeSubSystems( unsigned int subsystems );
-PL_EXTERN void plShutdown( void );
+PL_EXTERN PLFunctionResult PlInitialize( int argc, char **argv );
+PL_EXTERN PLFunctionResult PlInitializeSubSystems( unsigned int subsystems );
+PL_EXTERN void PlShutdown( void );
 
 /******************************************************************/
 /* ERROR HANDLING */
 
-PL_EXTERN void plClearError( void );                             // Resets the error message to "null", so you can ensure you have the correct message from the library.
+PL_EXTERN void PlClearError( void );                             // Resets the error message to "null", so you can ensure you have the correct message from the library.
 
-PL_EXTERN PLFunctionResult plGetFunctionResult( void );
-PL_EXTERN const char *plGetResultString( PLFunctionResult result );
-PL_EXTERN const char *plGetError( void );// Returns the last recorded error.
+PL_EXTERN PLFunctionResult PlGetFunctionResult( void );
+PL_EXTERN const char *PlGetResultString( PLFunctionResult result );
+PL_EXTERN const char *PlGetError( void );// Returns the last recorded error.
 
 PL_EXTERN void plReportError( PLFunctionResult result, const char *function, const char *message, ... );
 #define plReportErrorF( type, ... ) plReportError( type, PL_FUNCTION, __VA_ARGS__ )
-#define plReportBasicError( type ) plReportErrorF( ( type ), plGetResultString( ( type ) ) )
+#define plReportBasicError( type ) plReportErrorF( ( type ), PlGetResultString( ( type ) ) )
 
 /******************************************************************/
 
-PL_EXTERN const char *plGenerateUniqueIdentifier( char *dest, size_t destLength );
+PL_EXTERN const char *PlGenerateUniqueIdentifier( char *dest, size_t destLength );
 
 // CL Arguments
-PL_EXTERN const char *plGetCommandLineArgumentValue( const char *arg );
-PL_EXTERN bool plHasCommandLineArgument( const char *arg );
+PL_EXTERN const char *PlGetCommandLineArgumentValue( const char *arg );
+PL_EXTERN bool PlHasCommandLineArgument( const char *arg );
 
 //////////////////////////////////////////////////////////////////
 
@@ -248,34 +248,30 @@ PL_EXTERN void pl_crc32( const void *data, size_t n_bytes, uint32_t *crc );
 
 //////////////////////////////////////////////////////////////////
 
-bool plIsSubSystemActive( unsigned int subsystem );
+bool PlIsSubSystemActive( unsigned int subsystem );
 
 //////////////////////////////////////////////////////////////////
 
 /* standard headers */
-#include <PL/platform_string.h>
-#include <PL/platform_memory.h>
+#include <plcore/pl_string.h>
+#include <plcore/pl_memory.h>
 
-PL_EXTERN const char *plGetFormattedTime( void );
-PL_EXTERN time_t plStringToTime( const char *ts );
+PL_EXTERN const char *PlGetFormattedTime( void );
+PL_EXTERN time_t PlStringToTime( const char *ts );
 
 //////////////////////////////////////////////////////////////////
 
-PL_EXTERN bool plIsRunning( void );
-
-PL_EXTERN double plGetDeltaTime( void );
-
-PL_EXTERN PLLibrary *plLoadLibrary( const char *path, bool appendPath );
-PL_EXTERN void *plGetLibraryProcedure( PLLibrary *library, const char *procedureName );
-PL_EXTERN void plUnloadLibrary( PLLibrary *library );
+PL_EXTERN PLLibrary *PlLoadLibrary( const char *path, bool appendPath );
+PL_EXTERN void *PlGetLibraryProcedure( PLLibrary *library, const char *procedureName );
+PL_EXTERN void PlUnloadLibrary( PLLibrary *library );
 
 /**
  * Plugin Interface
  **/
 
-PL_EXTERN bool plRegisterPlugin( const char *path );
-PL_EXTERN void plRegisterPlugins( const char *pluginDir );
-PL_EXTERN void plInitializePlugins( void );
+PL_EXTERN bool PlRegisterPlugin( const char *path );
+PL_EXTERN void PlRegisterPlugins( const char *pluginDir );
+PL_EXTERN void PlInitializePlugins( void );
 
 #endif
 

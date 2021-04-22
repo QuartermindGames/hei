@@ -27,10 +27,10 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include <PL/platform.h>
-#include <PL/platform_console.h>
-#include <PL/platform_package.h>
-#include <PL/platform_image.h>
+#include <plcore/pl.h>
+#include <plcore/pl_console.h>
+#include <plcore/pl_package.h>
+#include <plcore/pl_image.h>
 
 typedef uint16_t PLPluginInterfaceVersion[ 2 ];
 
@@ -153,7 +153,7 @@ typedef struct PLPluginExportTable {
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */
-#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 2
+#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 3
 #define PL_PLUGIN_INTERFACE_VERSION_MINOR 0
 
 #define PL_PLUGIN_QUERY_FUNCTION "PLQueryPlugin"
@@ -162,7 +162,10 @@ typedef struct PLPluginExportTable {
 typedef const PLPluginDescription *( *PLPluginQueryFunction )( PLPluginInterfaceVersion interfaceVersion );
 typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *functionTable );
 
-/* 2021-03-29;
+/* 2021-04-22
+ * - Removed some functions from the default interface
+ *
+ * 2021-03-29;
  * - changed how version is queried and introduced minor
  * - plugins can now push log messages
  * - plugins can now create and execute commands via console api

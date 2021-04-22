@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_physics.h>
+#include <plcore/pl_physics.h>
 
 #include <float.h>
 
@@ -73,12 +73,12 @@ PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertic
 }
 #endif
 
-PLVector3 plGetAABBAbsOrigin( const PLCollisionAABB *bounds, PLVector3 origin ) {
+PLVector3 PlGetAabbAbsOrigin( const PLCollisionAABB *bounds, PLVector3 origin ) {
 	PLVector3 absOrigin = PLVector3( ( bounds->mins.x + bounds->maxs.x ) / 2, ( bounds->mins.y + bounds->maxs.y ) / 2, ( bounds->mins.z + bounds->maxs.z ) / 2 );
 	return plAddVector3( origin, absOrigin );
 }
 
-bool plIsAABBIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB *bBounds ) {
+bool PlIsAabbIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB *bBounds ) {
 	PLVector3 aMax = plAddVector3( aBounds->maxs, aBounds->origin );
 	PLVector3 aMin = plAddVector3( aBounds->mins, aBounds->origin );
 	PLVector3 bMax = plAddVector3( bBounds->maxs, bBounds->origin );
@@ -93,7 +93,7 @@ bool plIsAABBIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB
 	        aMin.z > bMax.z );
 }
 
-bool plIsPointIntersectingAABB( const PLCollisionAABB *bounds, PLVector3 point ) {
+bool PlIsPointIntersectingAabb( const PLCollisionAABB *bounds, PLVector3 point ) {
 	PLVector3 max = plAddVector3( bounds->maxs, bounds->origin );
 	PLVector3 min = plAddVector3( bounds->mins, bounds->origin );
 
@@ -106,14 +106,14 @@ bool plIsPointIntersectingAABB( const PLCollisionAABB *bounds, PLVector3 point )
 	        point.z < min.z );
 }
 
-bool plIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere ) {
+bool PlIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere ) {
 	PLVector3 difference = plSubtractVector3( aSphere->origin, bSphere->origin );
 	float distance = plVector3Length( difference );
 	float sum_radius = aSphere->radius + bSphere->radius;
 	return distance < sum_radius;
 }
 
-PLCollision plIsSphereIntersectingPlane( const PLCollisionSphere *sphere, const PLCollisionPlane *plane ) {
+PLCollision PlIsSphereIntersectingPlane( const PLCollisionSphere *sphere, const PLCollisionPlane *plane ) {
 	PLCollision collision;
 	memset( &collision, 0, sizeof( PLCollision ) );
 

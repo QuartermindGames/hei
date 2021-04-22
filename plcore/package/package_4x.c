@@ -94,7 +94,7 @@ PLPackage* plLoadLSTPackage( const char* path ) {
 		uint32_t data_length;
 	} index;
 
-	package = plCreatePackageHandle( path, num_indices, NULL );
+	package = PlCreatePackageHandle( path, num_indices, NULL );
 	for ( unsigned int i = 0; i < num_indices; ++i ) {
 		if ( plIsEndOfFile( fh ) != 0 ) {
 			printf( "Unexpected end of package in %s, ignoring!\n", path );
@@ -127,7 +127,7 @@ PLPackage* plLoadLSTPackage( const char* path ) {
 	ABORT:
 
 	if ( package != NULL ) {
-		plDestroyPackage( package );
+		PlDestroyPackage( package );
 	}
 
 	plCloseFile( fh );

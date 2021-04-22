@@ -24,7 +24,7 @@ SOFTWARE.
 
 #pragma once
 
-#include <PL/platform.h>
+#include <plcore/pl.h>
 
 #if defined( _MSC_VER )
 #pragma warning( disable : 4204 )
@@ -53,20 +53,18 @@ extern int LOG_LEVEL_LOW, LOG_LEVEL_MEDIUM, LOG_LEVEL_HIGH, LOG_LEVEL_DEBUG;
 extern int LOG_LEVEL_FILESYSTEM;
 extern int LOG_LEVEL_MODEL;
 
-void plLogMessage( int level, const char *msg, ... );
-
-#define Print( ... ) plLogMessage( LOG_LEVEL_LOW, __VA_ARGS__ )
-#define PrintWarning( ... ) plLogMessage( LOG_LEVEL_MEDIUM, __VA_ARGS__ )
-#define PrintError( ... ) plLogMessage( LOG_LEVEL_HIGH, __VA_ARGS__ )
+#define Print( ... ) PlLogMessage( LOG_LEVEL_LOW, __VA_ARGS__ )
+#define PrintWarning( ... ) PlLogMessage( LOG_LEVEL_MEDIUM, __VA_ARGS__ )
+#define PrintError( ... ) PlLogMessage( LOG_LEVEL_HIGH, __VA_ARGS__ )
 #ifdef _DEBUG
 #define debug_printf( ... ) printf( __VA_ARGS__ )
-#define DebugPrint( ... ) plLogMessage( LOG_LEVEL_DEBUG, __VA_ARGS__ )
+#define DebugPrint( ... ) PlLogMessage( LOG_LEVEL_DEBUG, __VA_ARGS__ )
 #else
 #define debug_printf( ... )
 #define DebugPrint( ... ) Print( __VA_ARGS__ )
 #endif
 
-#define FunctionStart() plClearError()
+#define FunctionStart() PlClearError()
 
 /* * * * * * * * * * * * * * * * * * * */
 /* Sub Systems                         */
@@ -74,14 +72,14 @@ void plLogMessage( int level, const char *msg, ... );
 PLFunctionResult PlgInitGraphics( void );
 void PlgShutdownGraphics( void );
 
-PLFunctionResult plInitFileSystem( void );
-void plShutdownFileSystem( void );
+PLFunctionResult PlInitFileSystem( void );
+void PlShutdownFileSystem( void );
 
-PLFunctionResult plInitConsole( void );
-void plShutdownConsole( void );
+PLFunctionResult PlInitConsole( void );
+void PlShutdownConsole( void );
 
-void _plInitPackageSubSystem( void );
-void _plInitModelSubSystem( void );
+void PlInitPackageSubSystem( void );
+void PlInitModelSubSystem( void );
 
 /* * * * * * * * * * * * * * * * * * * */
 

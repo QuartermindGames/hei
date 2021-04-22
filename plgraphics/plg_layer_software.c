@@ -55,7 +55,7 @@ static void SWClearBuffers( unsigned int buffers ) {
 /**********************************************************/
 /** camera **/
 
-static uint8_t *SWCreateDisplayBuffer( PLViewport *viewport ) {
+static uint8_t *SWCreateDisplayBuffer( PLGViewport *viewport ) {
 	pl_free( viewport->buffer );
 	viewport->buffer = ( uint8_t * ) pl_malloc( SWGetDisplayBufferSize( viewport ) );
 	viewport->oldW = viewport->w;
@@ -69,7 +69,7 @@ static void SWCreateCamera( PLGCamera *camera ) {
 		return;
 	}
 
-	PLViewport *viewport = &camera->viewport;
+	PLGViewport *viewport = &camera->viewport;
 	if ( viewport->buffer != NULL ) {
 		/* only update the display buffer if the target size has changed */
 		if ( viewport->oldH != viewport->h && viewport->oldW != viewport->w ) {
@@ -98,7 +98,7 @@ static void SWSetupCamera( PLGCamera *camera ) {
 /**********************************************************/
 
 static void SWDrawPixel( int x, int y, PLColour colour ) {
-	PLViewport *viewport = gfx_state.current_viewport;
+	PLGViewport *viewport = gfx_state.current_viewport;
 	if ( viewport->buffer == NULL ) {
 		return;
 	}
@@ -113,7 +113,7 @@ static void SWDrawPixel( int x, int y, PLColour colour ) {
 }
 
 static void SWDrawLine( const PLGVertex *start, const PLGVertex *end ) {
-	PLViewport *viewport = gfx_state.current_viewport;
+	PLGViewport *viewport = gfx_state.current_viewport;
 	if ( viewport->buffer == NULL ) {
 		return;
 	}

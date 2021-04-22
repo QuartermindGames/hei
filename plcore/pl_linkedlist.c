@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform.h>
+#include <plcore/pl.h>
 
 typedef struct PLLinkedListNode {
 	struct PLLinkedListNode *next;

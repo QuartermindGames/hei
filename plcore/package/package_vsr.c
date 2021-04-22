@@ -122,7 +122,7 @@ PLPackage* plLoadVSRPackage( const char* path ) {
 
 	plCloseFile( fp );
 
-	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
+	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
 		pl_free( directories );
 		pl_free( strings );
 		return NULL;
@@ -130,7 +130,7 @@ PLPackage* plLoadVSRPackage( const char* path ) {
 
 	/* now create our package handle */
 
-	PLPackage* package = plCreatePackageHandle( path, chunk_directory.num_indices, NULL );
+	PLPackage* package = PlCreatePackageHandle( path, chunk_directory.num_indices, NULL );
 	for ( unsigned int i = 0; i < package->table_size; ++i ) {
 		PLPackageIndex* index = &package->table[ i ];
 		index->offset = directories[ i ].offset;
@@ -141,8 +141,8 @@ PLPackage* plLoadVSRPackage( const char* path ) {
 	pl_free( directories );
 	pl_free( strings );
 
-	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
-		plDestroyPackage( package );
+	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
+		PlDestroyPackage( package );
 		package = NULL;
 	}
 

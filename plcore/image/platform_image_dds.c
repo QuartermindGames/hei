@@ -24,7 +24,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
-#include <PL/platform_image.h>
+
+#include <plcore/pl_image.h>
 
 struct DDSPixelFormat {
   uint32_t size;

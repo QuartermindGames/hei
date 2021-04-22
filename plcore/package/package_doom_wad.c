@@ -111,12 +111,12 @@ PLPackage *plLoadWADPackage( const char *path ) {
 
 	/* yay, we're finally done - now to setup the package object */
 
-	PLPackage *package = plCreatePackageHandle( path, numLumps, NULL );
+	PLPackage *package = PlCreatePackageHandle( path, numLumps, NULL );
 	for( unsigned int i = 0; i < package->table_size; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
 		index->offset = indices[ i ].offset;
 		index->fileSize = indices[ i ].size;
-		strncpy( index->fileName, indices[ i ].name, sizeof( indices[ i ].name ) );
+		strncpy( index->fileName, indices[ i ].name, sizeof( index->fileName ) );
 		index->fileName[ 8 ] = '\0';
 	}
 

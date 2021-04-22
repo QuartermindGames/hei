@@ -109,26 +109,26 @@ static void ClearBoundBuffers( void ) {
 
 static void GL_TranslateTextureFilterFormat( PLGTextureFilter filterMode, unsigned int *min, unsigned int *mag ) {
 	switch ( filterMode ) {
-		case PL_TEXTURE_FILTER_LINEAR:
+		case PLG_TEXTURE_FILTER_LINEAR:
 			*min = *mag = GL_LINEAR;
 			break;
 		default:
-		case PL_TEXTURE_FILTER_NEAREST:
+		case PLG_TEXTURE_FILTER_NEAREST:
 			*min = *mag = GL_NEAREST;
 			break;
-		case PL_TEXTURE_FILTER_MIPMAP_LINEAR:
+		case PLG_TEXTURE_FILTER_MIPMAP_LINEAR:
 			*min = GL_LINEAR_MIPMAP_LINEAR;
 			*mag = GL_LINEAR;
 			break;
-		case PL_TEXTURE_FILTER_MIPMAP_LINEAR_NEAREST:
+		case PLG_TEXTURE_FILTER_MIPMAP_LINEAR_NEAREST:
 			*min = GL_LINEAR_MIPMAP_NEAREST;
 			*mag = GL_LINEAR;
 			break;
-		case PL_TEXTURE_FILTER_MIPMAP_NEAREST:
+		case PLG_TEXTURE_FILTER_MIPMAP_NEAREST:
 			*min = GL_NEAREST_MIPMAP_NEAREST;
 			*mag = GL_NEAREST;
 			break;
-		case PL_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR:
+		case PLG_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR:
 			*min = GL_NEAREST_MIPMAP_LINEAR;
 			*mag = GL_NEAREST;
 			break;
@@ -472,8 +472,8 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 
 	unsigned int min, mag;
 	GL_TranslateTextureFilterFormat( texture->filter, &min, &mag );
-	if ( texture->filter == PL_TEXTURE_FILTER_LINEAR || texture->filter == PL_TEXTURE_FILTER_NEAREST ) {
-		texture->flags |= PL_TEXTURE_FLAG_NOMIPS;
+	if ( texture->filter == PLG_TEXTURE_FILTER_LINEAR || texture->filter == PLG_TEXTURE_FILTER_NEAREST ) {
+		texture->flags |= PLG_TEXTURE_FLAG_NOMIPS;
 	}
 
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag );
@@ -513,7 +513,7 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 		}
 	}
 
-	if ( levels == 1 && !( texture->flags & PL_TEXTURE_FLAG_NOMIPS ) ) {
+	if ( levels == 1 && !( texture->flags & PLG_TEXTURE_FLAG_NOMIPS ) ) {
 		glGenerateMipmap( GL_TEXTURE_2D );
 	}
 }

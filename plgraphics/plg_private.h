@@ -36,7 +36,7 @@ extern "C" {
 
 #if !defined( NDEBUG )
 extern int LOG_LEVEL_GRAPHICS;
-#define GfxLog( ... ) plLogMessage( LOG_LEVEL_GRAPHICS, __VA_ARGS__ )
+#define GfxLog( ... ) PlLogMessage( LOG_LEVEL_GRAPHICS, __VA_ARGS__ )
 #else
 #define GfxLog( ... )
 #endif
@@ -91,7 +91,7 @@ typedef struct GfxState {
 
 	////////////////////////////////////////
 
-	PLViewport *current_viewport;
+	PLGViewport *current_viewport;
 
 	bool mode_debug;
 } GfxState;

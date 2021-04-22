@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <PL/platform_console.h>
-#include <PL/platform_filesystem.h>
+#include <plcore/pl_console.h>
+#include <plcore/pl_filesystem.h>
 
-#include "platform_private.h"
+#include "pl_private.h"
 
 #include <errno.h>
 #if defined( _WIN32 )
@@ -44,17 +44,17 @@ static PLConsoleCommand **_pl_commands = NULL;
 static size_t _pl_num_commands = 0;
 static size_t _pl_commands_size = 512;
 
-void plRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( unsigned int argc, char *argv[] ),
+void PlRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( unsigned int argc, char *argv[] ),
                                const char *description ) {
 	FunctionStart();
 
 	if ( name == NULL || name[ 0 ] == '\0' ) {
-		plReportErrorF( PL_RESULT_COMMAND_NAME, plGetResultString( PL_RESULT_COMMAND_NAME ) );
+		plReportErrorF( PL_RESULT_COMMAND_NAME, PlGetResultString( PL_RESULT_COMMAND_NAME ) );
 		return;
 	}
 
 	if ( CallbackFunction == NULL ) {
-		plReportErrorF( PL_RESULT_COMMAND_FUNCTION, plGetResultString( PL_RESULT_COMMAND_FUNCTION ) );
+		plReportErrorF( PL_RESULT_COMMAND_FUNCTION, PlGetResultString( PL_RESULT_COMMAND_FUNCTION ) );
 		return;
 	}
 
@@ -89,12 +89,12 @@ void plRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( uns
 	}
 }
 
-void plGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds ) {
+void PlGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds ) {
 	*cmds = _pl_commands;
 	*num_cmds = _pl_num_commands;
 }
 
-PLConsoleCommand *plGetConsoleCommand( const char *name ) {
+PLConsoleCommand *PlGetConsoleCommand( const char *name ) {
 	for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
 		if ( pl_strcasecmp( name, ( *cmd )->cmd ) == 0 ) {
 			return ( *cmd );
@@ -109,7 +109,7 @@ static PLConsoleVariable **_pl_variables = NULL;
 static size_t _pl_num_variables = 0;
 static size_t _pl_variables_size = 512;
 
-PLConsoleVariable *plRegisterConsoleVariable( const char *name, const char *def, PLVariableType type,
+PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *def, PLVariableType type,
                                               void ( *CallbackFunction )( const PLConsoleVariable *variable ),
                                               const char *desc ) {
 	FunctionStart();
@@ -149,7 +149,7 @@ PLConsoleVariable *plRegisterConsoleVariable( const char *name, const char *def,
 		snprintf( out->default_value, sizeof( out->default_value ), "%s", def );
 		snprintf( out->description, sizeof( out->description ), "%s", desc );
 
-		plSetConsoleVariable( out, out->default_value );
+		PlSetConsoleVariable( out, out->default_value );
 
 		// Ensure the callback is only called afterwards
 		if ( CallbackFunction != NULL ) {
@@ -162,12 +162,12 @@ PLConsoleVariable *plRegisterConsoleVariable( const char *name, const char *def,
 	return out;
 }
 
-void plGetConsoleVariables( PLConsoleVariable ***vars, size_t *num_vars ) {
+void PlGetConsoleVariables( PLConsoleVariable ***vars, size_t *num_vars ) {
 	*vars = _pl_variables;
 	*num_vars = _pl_num_variables;
 }
 
-PLConsoleVariable *plGetConsoleVariable( const char *name ) {
+PLConsoleVariable *PlGetConsoleVariable( const char *name ) {
 	for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
 		if ( pl_strcasecmp( name, ( *var )->var ) == 0 ) {
 			return ( *var );
@@ -176,8 +176,8 @@ PLConsoleVariable *plGetConsoleVariable( const char *name ) {
 	return NULL;
 }
 
-const char *plGetConsoleVariableValue( const char *name ) {
-	PLConsoleVariable *var = plGetConsoleVariable( name );
+const char *PlGetConsoleVariableValue( const char *name ) {
+	PLConsoleVariable *var = PlGetConsoleVariable( name );
 	if ( var == NULL ) {
 		return NULL;
 	}
@@ -185,8 +185,8 @@ const char *plGetConsoleVariableValue( const char *name ) {
 	return var->value;
 }
 
-const char *plGetConsoleVariableDefaultValue( const char *name ) {
-	PLConsoleVariable *var = plGetConsoleVariable( name );
+const char *PlGetConsoleVariableDefaultValue( const char *name ) {
+	PLConsoleVariable *var = PlGetConsoleVariable( name );
 	if ( var == NULL ) {
 		return NULL;
 	}
@@ -195,7 +195,7 @@ const char *plGetConsoleVariableDefaultValue( const char *name ) {
 }
 
 // Set console variable, with sanity checks...
-void plSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
+void PlSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
 	plAssert( var );
 	switch ( var->type ) {
 		default: {
@@ -240,14 +240,14 @@ void plSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
 	}
 }
 
-void plSetConsoleVariableByName( const char *name, const char *value ) {
-	PLConsoleVariable *var = plGetConsoleVariable( name );
+void PlSetConsoleVariableByName( const char *name, const char *value ) {
+	PLConsoleVariable *var = PlGetConsoleVariable( name );
 	if ( var == NULL ) {
 		Print( "Failed to find console variable \"%s\"!\n", name );
 		return;
 	}
 
-	plSetConsoleVariable( var, value );
+	PlSetConsoleVariable( var, value );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -281,7 +281,7 @@ IMPLEMENT_COMMAND( colour, "Changes the colour of the current console." ) {
 IMPLEMENT_COMMAND( time, "Prints out the current time." ) {
 	plUnused( argv );
 	plUnused( argc );
-	Print( "%s\n", plGetFormattedTime() );
+	Print( "%s\n", PlGetFormattedTime() );
 }
 
 IMPLEMENT_COMMAND( mem, "Prints out current memory usage." ) {
@@ -315,14 +315,14 @@ IMPLEMENT_COMMAND( help, "Returns information regarding specified command or var
 		return;
 	}
 
-	PLConsoleVariable *var = plGetConsoleVariable( argv[ 1 ] );
+	PLConsoleVariable *var = PlGetConsoleVariable( argv[ 1 ] );
 	if ( var != NULL ) {
 		Print( " %-20s : %-5s / %-15s : %-20s\n",
 		       var->var, var->value, var->default_value, var->description );
 		return;
 	}
 
-	PLConsoleCommand *cmd = plGetConsoleCommand( argv[ 1 ] );
+	PLConsoleCommand *cmd = PlGetConsoleCommand( argv[ 1 ] );
 	if ( cmd != NULL ) {
 		Print( " %-20s : %-20s\n", cmd->cmd, cmd->description );
 		return;
@@ -336,7 +336,7 @@ IMPLEMENT_COMMAND( help, "Returns information regarding specified command or var
 void ( *ConsoleOutputCallback )( int level, const char *msg );
 
 static void InitializeDefaultLogLevels( void );
-PLFunctionResult plInitConsole( void ) {
+PLFunctionResult PlInitConsole( void ) {
 	ConsoleOutputCallback = NULL;
 
 	if ( ( _pl_commands = ( PLConsoleCommand ** ) pl_malloc( sizeof( PLConsoleCommand * ) * _pl_commands_size ) ) == NULL ) {
@@ -359,7 +359,7 @@ PLFunctionResult plInitConsole( void ) {
 	        echo_var,
 	};
 	for ( unsigned int i = 0; i < plArrayElements( base_commands ); ++i ) {
-		plRegisterConsoleCommand( base_commands[ i ].cmd, base_commands[ i ].Callback, base_commands[ i ].description );
+		PlRegisterConsoleCommand( base_commands[ i ].cmd, base_commands[ i ].Callback, base_commands[ i ].description );
 	}
 
 	/* initialize our internal log levels here
@@ -369,7 +369,7 @@ PLFunctionResult plInitConsole( void ) {
 	return PL_RESULT_SUCCESS;
 }
 
-void plShutdownConsole( void ) {
+void PlShutdownConsole( void ) {
 	if ( _pl_commands ) {
 		for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
 			// todo, should we return here; assume it's the end?
@@ -397,7 +397,7 @@ void plShutdownConsole( void ) {
 	ConsoleOutputCallback = NULL;
 }
 
-void plSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg ) ) {
+void PlSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg ) ) {
 	ConsoleOutputCallback = Callback;
 }
 
@@ -406,7 +406,7 @@ void plSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg 
 /**
  * Takes a string and returns a list of possible options.
  */
-const char **plAutocompleteConsoleString( const char *string, unsigned int *numElements ) {
+const char **PlAutocompleteConsoleString( const char *string, unsigned int *numElements ) {
 #define MAX_AUTO_OPTIONS 16
 	static const char *options[ MAX_AUTO_OPTIONS ];
 	unsigned int c = 0;
@@ -433,13 +433,13 @@ const char **plAutocompleteConsoleString( const char *string, unsigned int *numE
 	return options;
 }
 
-void plParseConsoleString( const char *string ) {
+void PlParseConsoleString( const char *string ) {
 	if ( string == NULL || string[ 0 ] == '\0' ) {
 		DebugPrint( "Invalid string passed to ParseConsoleString!\n" );
 		return;
 	}
 
-	plLogMessage( LOG_LEVEL_LOW, string );
+	PlLogMessage( LOG_LEVEL_LOW, string );
 
 	static char **argv = NULL;
 	if ( argv == NULL ) {
@@ -469,17 +469,17 @@ void plParseConsoleString( const char *string ) {
 	PLConsoleVariable *var;
 	PLConsoleCommand *cmd;
 
-	if ( ( var = plGetConsoleVariable( argv[ 0 ] ) ) != NULL ) {
+	if ( ( var = PlGetConsoleVariable( argv[ 0 ] ) ) != NULL ) {
 		// todo, should the var not be set by defacto here?
 
 		if ( argc > 1 ) {
-			plSetConsoleVariable( var, argv[ 1 ] );
+			PlSetConsoleVariable( var, argv[ 1 ] );
 		} else {
 			Print( "    %s\n", var->var );
 			Print( "    %s\n", var->description );
 			Print( "    %-10s : %s\n", var->value, var->default_value );
 		}
-	} else if ( ( cmd = plGetConsoleCommand( argv[ 0 ] ) ) != NULL ) {
+	} else if ( ( cmd = PlGetConsoleCommand( argv[ 0 ] ) ) != NULL ) {
 		if ( cmd->Callback != NULL ) {
 			cmd->Callback( argc, argv );
 		} else {
@@ -515,18 +515,18 @@ int LOG_LEVEL_MODEL = 0;
 static void InitializeDefaultLogLevels( void ) {
 	memset( levels, 0, sizeof( LogLevel ) * MAX_LOG_LEVELS );
 
-	LOG_LEVEL_LOW = plAddLogLevel( "libplatform", ( PLColour ){ 255, 255, 255, 255 }, true );
-	LOG_LEVEL_MEDIUM = plAddLogLevel( "libplatform/warning", ( PLColour ){ 255, 255, 0, 255 }, true );
-	LOG_LEVEL_HIGH = plAddLogLevel( "libplatform/error", ( PLColour ){ 255, 0, 0, 255 }, true );
-	LOG_LEVEL_DEBUG = plAddLogLevel( "libplatform/debug", ( PLColour ){ 255, 255, 255, 255 },
+	LOG_LEVEL_LOW = PlAddLogLevel( "libplatform", ( PLColour ){ 255, 255, 255, 255 }, true );
+	LOG_LEVEL_MEDIUM = PlAddLogLevel( "libplatform/warning", ( PLColour ){ 255, 255, 0, 255 }, true );
+	LOG_LEVEL_HIGH = PlAddLogLevel( "libplatform/error", ( PLColour ){ 255, 0, 0, 255 }, true );
+	LOG_LEVEL_DEBUG = PlAddLogLevel( "libplatform/debug", ( PLColour ){ 255, 255, 255, 255 },
 #if !defined( NDEBUG )
 	                                 true
 #else
 	                                 false
 #endif
 	);
-	LOG_LEVEL_FILESYSTEM = plAddLogLevel( "libplatform/filesystem", ( PLColour ){ 0, 255, 255, 255 }, true );
-	LOG_LEVEL_MODEL = plAddLogLevel( "libplatform/model", ( PLColour ){ 0, 255, 255, 255 }, true );
+	LOG_LEVEL_FILESYSTEM = PlAddLogLevel( "libplatform/filesystem", ( PLColour ){ 0, 255, 255, 255 }, true );
+	LOG_LEVEL_MODEL = PlAddLogLevel( "libplatform/model", ( PLColour ){ 0, 255, 255, 255 }, true );
 }
 
 /**
@@ -560,7 +560,7 @@ static int GetNextFreeLogLevel( void ) {
 
 static char logOutputPath[ PL_SYSTEM_MAX_PATH ] = { '\0' };
 
-void plSetupLogOutput( const char *path ) {
+void PlSetupLogOutput( const char *path ) {
 	if ( path == NULL || path[ 0 ] == '\0' ) {
 		return;
 	}
@@ -571,7 +571,7 @@ void plSetupLogOutput( const char *path ) {
 	}
 }
 
-int plAddLogLevel( const char *prefix, PLColour colour, bool status ) {
+int PlAddLogLevel( const char *prefix, PLColour colour, bool status ) {
 	int i = GetNextFreeLogLevel();
 	if ( i == -1 ) {
 		return -1;
@@ -587,21 +587,21 @@ int plAddLogLevel( const char *prefix, PLColour colour, bool status ) {
 
 	char var[ 32 ];
 	snprintf( var, sizeof( var ), "log.%s", prefix );
-	l->var = plRegisterConsoleVariable( var, status ? "1" : "0", pl_bool_var, NULL, "Console output level." );
+	l->var = PlRegisterConsoleVariable( var, status ? "1" : "0", pl_bool_var, NULL, "Console output level." );
 
 	return i;
 }
 
-void plSetLogLevelStatus( int id, bool status ) {
+void PlSetLogLevelStatus( int id, bool status ) {
 	LogLevel *l = GetLogLevelForId( id );
 	if ( l == NULL ) {
 		return;
 	}
 
-	plSetConsoleVariable( l->var, status ? "1" : "0" );
+	PlSetConsoleVariable( l->var, status ? "1" : "0" );
 }
 
-void plLogMessage( int id, const char *msg, ... ) {
+void PlLogMessage( int id, const char *msg, ... ) {
 	LogLevel *l = GetLogLevelForId( id );
 	if ( l == NULL || !l->var->b_value ) {
 		return;
@@ -612,9 +612,9 @@ void plLogMessage( int id, const char *msg, ... ) {
 	// add the prefix to the start
 	int c = 0;
 	if ( l->prefix[ 0 ] != '\0' ) {
-		c = snprintf( buf, sizeof( buf ), "[%s] %s: ", plGetFormattedTime(), l->prefix );
+		c = snprintf( buf, sizeof( buf ), "[%s] %s: ", PlGetFormattedTime(), l->prefix );
 	} else {
-		c = snprintf( buf, sizeof( buf ), "[%s]: ", plGetFormattedTime() );
+		c = snprintf( buf, sizeof( buf ), "[%s]: ", PlGetFormattedTime() );
 	}
 
 	va_list args;

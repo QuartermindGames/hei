@@ -1,4 +1,4 @@
-#[[
+/*
 MIT License
 
 Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
@@ -20,28 +20,31 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-]]
+*/
 
-project(opengl_plugin)
+#pragma once
 
-add_library(
-        opengl_plugin SHARED
-        opengl.c
-        plugin.c
-        plugin.h)
+#include <plcore/pl.h>
 
-function(build_glew)
-    set(BUILD_UTILS OFF CACHE BOOL "utilities")
-    add_subdirectory(3rdparty/glew-2.2.0/build/cmake/)
-endfunction()
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-if (WIN32 OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    build_glew()
-    target_link_libraries(opengl_plugin glew_s)
-    target_include_directories(opengl_plugin PRIVATE
-            3rdparty/glew-2.2.0/include/)
-else ()
-    target_link_libraries(opengl_plugin GLEW GL)
-endif ()
+typedef struct PLVector3 PLVector3;
 
-target_include_directories(opengl_plugin PRIVATE ../../plcore/include/ ../../plgraphics/include/)
+#if !defined( PL_COMPILE_PLUGIN )
+
+extern bool PlIsEndOfLine( const char **p );
+extern void PlSkipWhitespace( const char **p );
+extern void PlSkipLine( const char **p );
+extern const char *PlParseEnclosedString( const char **p, char *dest, size_t size );
+extern const char *PlParseToken( const char **p, char *dest, size_t size );
+extern int PlParseInteger( const char **p, bool *status );
+extern float PlParseFloat( const char **p, bool *status );
+extern PLVector3 PlParseVector( const char **p, bool *status );
+
+#endif /* !defined( PL_COMPILE_PLUGIN ) */
+
+#ifdef __cplusplus
+};
+#endif

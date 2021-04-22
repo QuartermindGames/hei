@@ -62,7 +62,7 @@ PLPackage* plLoadMADPackage( const char* path ) {
 	PLPackage* package = NULL;
 
 	size_t file_size = plGetLocalFileSize( path );
-	if ( plGetFunctionResult() != PL_RESULT_SUCCESS ) {
+	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
 		goto FAILED;
 	}
 
@@ -102,7 +102,7 @@ PLPackage* plLoadMADPackage( const char* path ) {
 	}
 
 	/* Allocate the basic package structure now we know how many files are in the archive. */
-	package = plCreatePackageHandle( path, num_indices, NULL );
+	package = PlCreatePackageHandle( path, num_indices, NULL );
 
 	/* Rewind the file handle and populate package->table with the metadata from the headers. */
 
@@ -128,7 +128,7 @@ PLPackage* plLoadMADPackage( const char* path ) {
 
 	FAILED:
 
-	plDestroyPackage( package );
+	    PlDestroyPackage( package );
 
 	plCloseFile( fh );
 

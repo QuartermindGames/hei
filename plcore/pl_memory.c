@@ -31,7 +31,7 @@ For more information, please refer to <http://unlicense.org>
 #include <psapi.h>
 #endif
 
-#include "platform_private.h"
+#include "pl_private.h"
 
 static void *MemoryCountAlloc( size_t num, size_t size ) {
 	void *buf = calloc( num, size );
@@ -63,7 +63,7 @@ void ( *pl_free )( void *ptr ) = free;
 /**
  * Returns the total amount of system memory in bytes.
  */
-uint64_t plGetTotalSystemMemory( void ) {
+uint64_t PlGetTotalSystemMemory( void ) {
 #if defined( __linux__ )
 	long pages = sysconf( _SC_PHYS_PAGES );
 	long pageSize = sysconf( _SC_PAGE_SIZE );
@@ -81,7 +81,7 @@ uint64_t plGetTotalSystemMemory( void ) {
 /**
  * Returns the total amount of available system memory in bytes.
  */
-uint64_t plGetTotalAvailableSystemMemory( void ) {
+uint64_t PlGetTotalAvailableSystemMemory( void ) {
 #if defined( __linux__ )
 	long pages = sysconf( _SC_AVPHYS_PAGES );
 	long pageSize = sysconf( _SC_PAGE_SIZE );
@@ -99,7 +99,7 @@ uint64_t plGetTotalAvailableSystemMemory( void ) {
 /**
  * Returns the memory usage of the current process in bytes.
  */
-uint64_t plGetCurrentMemoryUsage( void ) {
+uint64_t PlGetCurrentMemoryUsage( void ) {
 #if defined( __linux__ )
 	return 0; /* todo */
 #elif defined( _WIN32 )

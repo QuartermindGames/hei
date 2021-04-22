@@ -34,8 +34,7 @@ GfxState gfx_state;
 /*	TODO:
 - Add somewhere we can store tracking
 data for each of these functions
-- Do this in another thread if possible
-- Display that data as an overlay
+- Display that data as an overlay?
 */
 #define GRAPHICS_TRACK()                    \
 	{                                       \
@@ -282,15 +281,6 @@ PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
 
     return PL_RESULT_SUCCESS;
 }
-#endif
-
-#if defined( __GNUC__ ) || defined( __GNUG__ )
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
-#endif
-
-#if defined( __GNUC__ ) || defined( __GNUG__ )
-#pragma GCC diagnostic pop
 #endif
 
 /*===========================

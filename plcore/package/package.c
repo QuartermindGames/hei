@@ -25,7 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "platform_private.h"
+#include "pl_private.h"
 #include "package_private.h"
 #include "filesystem_private.h"
 
@@ -66,7 +66,7 @@ static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 /**
  * Allocate a new package handle.
  */
-PLPackage *plCreatePackageHandle( const char *path, unsigned int tableSize, uint8_t*(*OpenFile)( PLFile *filePtr, PLPackageIndex *index ) ) {
+PLPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, uint8_t*(*OpenFile)( PLFile *filePtr, PLPackageIndex *index ) ) {
 	PLPackage *package = pl_malloc( sizeof( PLPackage ) );
 
 	if ( OpenFile == NULL ) {
@@ -85,7 +85,7 @@ PLPackage *plCreatePackageHandle( const char *path, unsigned int tableSize, uint
 
 /* Unloads package from memory
  */
-void plDestroyPackage( PLPackage* package ) {
+void PlDestroyPackage( PLPackage* package ) {
 	if ( package == NULL ) {
 		return;
 	}
@@ -108,8 +108,8 @@ typedef struct PLPackageLoader {
 static PLPackageLoader package_loaders[MAX_OBJECT_INTERFACES];
 static unsigned int num_package_loaders = 0;
 
-void _plInitPackageSubSystem( void ) {
-	plClearPackageLoaders();
+void PlInitPackageSubSystem( void ) {
+	PlClearPackageLoaders();
 }
 
 #if 0 /* todo */
@@ -118,39 +118,39 @@ void plQuerySupportedPackages(char **array, unsigned int *size) {
 }
 #endif
 
-void plClearPackageLoaders( void ) {
+void PlClearPackageLoaders( void ) {
 	memset( package_loaders, 0, sizeof( PLPackageLoader ) * MAX_OBJECT_INTERFACES );
 	num_package_loaders = 0;
 }
 
-void plRegisterPackageLoader( const char* ext, PLPackage* (* LoadFunction)( const char* path ) ) {
+void PlRegisterPackageLoader( const char* ext, PLPackage* (* LoadFunction)( const char* path ) ) {
 	package_loaders[ num_package_loaders ].ext = ext;
 	package_loaders[ num_package_loaders ].LoadFunction = LoadFunction;
 	num_package_loaders++;
 }
 
-void plRegisterStandardPackageLoaders( void ) {
+void PlRegisterStandardPackageLoaders( void ) {
 	/* outwars */
-	plRegisterPackageLoader( "ff", plLoadFFPackage );
+	PlRegisterPackageLoader( "ff", plLoadFFPackage );
 	/* hogs of war */
-	plRegisterPackageLoader( "mad", plLoadMADPackage );
-	plRegisterPackageLoader( "mtd", plLoadMADPackage );
+	PlRegisterPackageLoader( "mad", plLoadMADPackage );
+	PlRegisterPackageLoader( "mtd", plLoadMADPackage );
 	/* iron storm */
-	plRegisterPackageLoader( "lst", plLoadLSTPackage );
+	PlRegisterPackageLoader( "lst", plLoadLSTPackage );
 	/* starfox adventures */
-	plRegisterPackageLoader( "tab", plLoadTABPackage );
+	PlRegisterPackageLoader( "tab", plLoadTABPackage );
 	/* sentient */
-	plRegisterPackageLoader( "vsr", plLoadVSRPackage );
+	PlRegisterPackageLoader( "vsr", plLoadVSRPackage );
 	/* doom */
-	plRegisterPackageLoader( "wad", plLoadWADPackage );
+	PlRegisterPackageLoader( "wad", plLoadWADPackage );
 	/* eradicator */
-	plRegisterPackageLoader( "rid", plLoadRIDBPackage );
-	plRegisterPackageLoader( "rim", plLoadRIDBPackage );
+	PlRegisterPackageLoader( "rid", plLoadRIDBPackage );
+	PlRegisterPackageLoader( "rim", plLoadRIDBPackage );
 	/* mortyr */
-	plRegisterPackageLoader( "hal", plLoadAPUKPackage );
+	PlRegisterPackageLoader( "hal", plLoadAPUKPackage );
 }
 
-PLPackage* plLoadPackage( const char* path ) {
+PLPackage*PlLoadPackage( const char* path ) {
 	FunctionStart();
 
 	if ( !plFileExists( path ) ) {
@@ -184,7 +184,7 @@ PLPackage* plLoadPackage( const char* path ) {
 	return NULL;
 }
 
-PLFile* plLoadPackageFile( PLPackage* package, const char* path ) {
+PLFile*PlLoadPackageFile( PLPackage* package, const char* path ) {
 	if ( package->internal.LoadFile == NULL ) {
 		plReportErrorF( PL_RESULT_FILEREAD, "package has not been initialized, no LoadFile function assigned, aborting" );
 		return NULL;
@@ -221,20 +221,20 @@ PLFile* plLoadPackageFile( PLPackage* package, const char* path ) {
 	return NULL;
 }
 
-PLFile *plLoadPackageFileByIndex( PLPackage *package, unsigned int index ) {
+PLFile *PlLoadPackageFileByIndex( PLPackage *package, unsigned int index ) {
 	if ( index >= package->table_size ) {
 		plReportBasicError( PL_RESULT_INVALID_PARM2 );
 		return NULL;
 	}
 
-	return plLoadPackageFile( package, package->table[ index ].fileName );
+	return PlLoadPackageFile( package, package->table[ index ].fileName );
 }
 
-const char *plGetPackagePath( const PLPackage *package ) {
+const char *PlGetPackagePath( const PLPackage *package ) {
 	return package->path;
 }
 
-const char *plGetPackageFileName( const PLPackage *package, unsigned int index ) {
+const char *PlGetPackageFileName( const PLPackage *package, unsigned int index ) {
 	if ( index >= package->table_size ) {
 		plReportBasicError( PL_RESULT_INVALID_PARM2 );
 		return NULL;
@@ -243,11 +243,11 @@ const char *plGetPackageFileName( const PLPackage *package, unsigned int index )
 	return package->table[ index ].fileName;
 }
 
-unsigned int plGetPackageTableSize( const PLPackage *package ) {
+unsigned int PlGetPackageTableSize( const PLPackage *package ) {
 	return package->table_size;
 }
 
-unsigned int plGetPackageTableIndex( const PLPackage *package, const char *indexName ) {
+unsigned int PlGetPackageTableIndex( const PLPackage *package, const char *indexName ) {
 	FunctionStart();
 
 	for ( unsigned int i = 0; i < package->table_size; ++i ) {

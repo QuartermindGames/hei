@@ -38,7 +38,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#include <PL/platform_string.h>
+#include <plcore/pl_string.h>
 
 /*
  * Find the first occurrence of find in s, ignore case.

@@ -27,9 +27,10 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include "platform_private.h"
-#include <PL/platform_filesystem.h>
-#include <PL/platform_package.h>
+#include "pl_private.h"
+
+#include <plcore/pl_filesystem.h>
+#include <plcore/pl_package.h>
 
 #define PLPACKAGE_VERSION_MAJOR     1
 #define PLPACKAGE_VERSION_MINOR     0

@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform_filesystem.h>
-#include <PL/platform_image.h>
-#include <PL/platform_math.h>
+#include <plcore/pl_filesystem.h>
+#include <plcore/pl_image.h>
+#include <plcore/pl_math.h>
 
 #include <errno.h>
 #include <filesystem_private.h>
@@ -196,7 +196,7 @@ PLImage *plLoadImage( const char *path ) {
 
 bool plWriteImage( const PLImage *image, const char *path ) {
 	if ( plIsEmptyString( path ) ) {
-		plReportErrorF( PL_RESULT_FILEPATH, plGetResultString( PL_RESULT_FILEPATH ) );
+		plReportErrorF( PL_RESULT_FILEPATH, PlGetResultString( PL_RESULT_FILEPATH ) );
 		return false;
 	}
 
@@ -227,7 +227,7 @@ bool plWriteImage( const PLImage *image, const char *path ) {
 		}
 	}
 
-	plReportErrorF( PL_RESULT_FILETYPE, plGetResultString( PL_RESULT_FILETYPE ) );
+	plReportErrorF( PL_RESULT_FILETYPE, PlGetResultString( PL_RESULT_FILETYPE ) );
 	return false;
 }
 

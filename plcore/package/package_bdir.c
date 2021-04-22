@@ -114,7 +114,7 @@ PLPackage *plLoadRIDBPackage( const char *path ) {
 
 	/* yay, we're finally done - now to setup the package object */
 
-	PLPackage *package = plCreatePackageHandle( path, numLumps, NULL );
+	PLPackage *package = PlCreatePackageHandle( path, numLumps, NULL );
 	for( unsigned int i = 0; i < package->table_size; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
 		index->offset = indices[ i ].offset;

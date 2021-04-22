@@ -28,95 +28,93 @@ SOFTWARE.
 
 // Texture Environment Modes
 typedef enum PLGTextureEnvironmentMode {
-    PL_TEXTUREMODE_ADD,
-    PL_TEXTUREMODE_MODULATE,
-    PL_TEXTUREMODE_DECAL,
-    PL_TEXTUREMODE_BLEND,
-    PL_TEXTUREMODE_REPLACE,
-    PL_TEXTUREMODE_COMBINE
+	PLG_TEXTUREMODE_ADD,
+	PLG_TEXTUREMODE_MODULATE,
+	PLG_TEXTUREMODE_DECAL,
+	PLG_TEXTUREMODE_BLEND,
+	PLG_TEXTUREMODE_REPLACE,
+	PLG_TEXTUREMODE_COMBINE
 } PLGTextureEnvironmentMode;
 
 typedef enum PLGTextureClamp {
-    PL_TEXTURE_CLAMP_CLAMP,
-    PL_TEXTURE_CLAMP_WRAP,
+	PLG_TEXTURE_CLAMP_CLAMP,
+	PLG_TEXTURE_CLAMP_WRAP,
 } PLGTextureClamp;
 
 typedef enum PLGTextureFilter {
-    PL_TEXTURE_FILTER_MIPMAP_NEAREST,
-    PL_TEXTURE_FILTER_MIPMAP_LINEAR,
-    PL_TEXTURE_FILTER_MIPMAP_LINEAR_NEAREST,
-    PL_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR,
-    PL_TEXTURE_FILTER_NEAREST,                  // Nearest
-    PL_TEXTURE_FILTER_LINEAR                    // Linear
+	PLG_TEXTURE_FILTER_MIPMAP_NEAREST,
+	PLG_TEXTURE_FILTER_MIPMAP_LINEAR,
+	PLG_TEXTURE_FILTER_MIPMAP_LINEAR_NEAREST,
+	PLG_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR,
+	PLG_TEXTURE_FILTER_NEAREST,// Nearest
+	PLG_TEXTURE_FILTER_LINEAR  // Linear
 } PLGTextureFilter;
 
 typedef enum PLGTextureTarget {
-    PL_TEXTURE_1D,
-    PL_TEXTURE_2D,
-    PL_TEXTURE_3D
+	PLG_TEXTURE_1D,
+	PLG_TEXTURE_2D,
+	PLG_TEXTURE_3D
 } PLGTextureTarget;
 
-enum PLTextureFlag {
-    PL_TEXTURE_FLAG_PRESERVE    = (1 << 1),
-    PL_TEXTURE_FLAG_NOMIPS      = (1 << 2),
+enum PLGTextureFlag {
+	PLG_TEXTURE_FLAG_PRESERVE = ( 1 << 1 ),
+	PLG_TEXTURE_FLAG_NOMIPS = ( 1 << 2 ),
 };
 
 typedef struct PLGTextureMappingUnit {
-    bool active;
+	bool active;
 
-    unsigned int current_texture;
-    unsigned int current_capabilities;
+	unsigned int current_texture;
+	unsigned int current_capabilities;
 
 	PLGTextureEnvironmentMode current_envmode;
 } PLGTextureMappingUnit;
 
 typedef struct PLGTexture {
-    struct {
-        unsigned int id;
-    } internal;
+	struct {
+		unsigned int id;
+	} internal;
 
-    unsigned int flags;
+	unsigned int flags;
 
-    unsigned int x, y;
-    unsigned int w, h;
+	unsigned int x, y;
+	unsigned int w, h;
 
-    size_t size;
-    unsigned int levels;
-    unsigned int crc;
+	size_t size;
+	unsigned int levels;
+	unsigned int crc;
 
-    char name[64];
+	char name[ 64 ];
 	char path[ PL_SYSTEM_MAX_PATH ];
 
 	PLGTextureFilter filter;
 
-    PLImageFormat format;
-    PLDataFormat storage;
-    PLColourFormat pixel;
+	PLImageFormat format;
+	PLDataFormat storage;
+	PLColourFormat pixel;
 } PLGTexture;
 
 PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PL_EXTERN PLGTexture *plCreateTexture(void);
-PL_EXTERN PLGTexture *plLoadTextureFromImage(const char *path, PLGTextureFilter filter_mode);
-PL_EXTERN void plDestroyTexture( PLGTexture *texture);
+PL_EXTERN PLGTexture *PlgCreateTexture( void );
+PL_EXTERN PLGTexture *PlgLoadTextureFromImage( const char *path, PLGTextureFilter filter_mode );
+PL_EXTERN void PlgDestroyTexture( PLGTexture *texture );
 
 //PL_EXTERN PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload);
-PL_EXTERN bool plUploadTextureImage( PLGTexture *texture, const PLImage *upload);
+PL_EXTERN bool PlgUploadTextureImage( PLGTexture *texture, const PLImage *upload );
 
-PL_EXTERN unsigned int plGetMaxTextureSize(void);
-PL_EXTERN unsigned int plGetMaxTextureUnits(void);
-PL_EXTERN unsigned int plGetMaxTextureAnistropy(void);
+PL_EXTERN unsigned int PlgGetMaxTextureSize( void );
+PL_EXTERN unsigned int PlgGetMaxTextureUnits( void );
+PL_EXTERN unsigned int PlgGetMaxTextureAnistropy( void );
 
-PL_EXTERN void plSetTextureAnisotropy( PLGTexture *texture, unsigned int amount);
+PL_EXTERN void PlgSetTextureAnisotropy( PLGTexture *texture, unsigned int amount );
 
-PL_EXTERN void plSetTexture( PLGTexture *texture, unsigned int tmu);
-PL_EXTERN void plSetTextureUnit(unsigned int target);
-PL_EXTERN void plSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode);
-PL_EXTERN void plSetTextureFlags( PLGTexture *texture, unsigned int flags);
-
-PL_EXTERN const char *plPrintTextureMemoryUsage(void);
+PL_EXTERN void PlgSetTexture( PLGTexture *texture, unsigned int tmu );
+PL_EXTERN void PlgSetTextureUnit( unsigned int target );
+PL_EXTERN void PlgSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode );
+PL_EXTERN void PlgSetTextureFlags( PLGTexture *texture, unsigned int flags );
 
 #endif /* !defined( PL_COMPILE_PLUGIN ) */
 

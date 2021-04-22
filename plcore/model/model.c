@@ -38,7 +38,7 @@ typedef struct ModelLoader {
 static ModelLoader model_interfaces[MAX_OBJECT_INTERFACES];
 static unsigned int num_model_loaders = 0;
 
-void _plInitModelSubSystem(void) {
+void PlInitModelSubSystem(void) {
     plClearModelLoaders();
 }
 

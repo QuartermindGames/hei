@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/platform_model.h>
 #include <PL/platform_console.h>
 
-#include "platform_private.h"
+#include "pl_private.h"
 #include "model_private.h"
 
 enum {

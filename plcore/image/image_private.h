@@ -27,9 +27,9 @@ For more information, please refer to <http://unlicense.org>
 
 #pragma once
 
-#include "platform_private.h"
+#include "pl_private.h"
 
-#include <PL/platform_image.h>
+#include <plcore/pl_image.h>
 
 PLImage *plLoad3dfImage( const char *path );
 PLImage *plLoadFtxImage( const char *path );

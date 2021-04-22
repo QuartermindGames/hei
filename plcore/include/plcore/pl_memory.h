@@ -1,4 +1,4 @@
-#[[
+/*
 MIT License
 
 Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
@@ -20,28 +20,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-]]
+*/
 
-project(opengl_plugin)
+#pragma once
 
-add_library(
-        opengl_plugin SHARED
-        opengl.c
-        plugin.c
-        plugin.h)
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-function(build_glew)
-    set(BUILD_UTILS OFF CACHE BOOL "utilities")
-    add_subdirectory(3rdparty/glew-2.2.0/build/cmake/)
-endfunction()
+extern void *(*pl_malloc)(size_t size);
+extern void *(*pl_calloc)(size_t num, size_t size);
+extern void *(*pl_realloc)(void* ptr, size_t newSize);
+extern void (*pl_free)(void* ptr);
 
-if (WIN32 OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    build_glew()
-    target_link_libraries(opengl_plugin glew_s)
-    target_include_directories(opengl_plugin PRIVATE
-            3rdparty/glew-2.2.0/include/)
-else ()
-    target_link_libraries(opengl_plugin GLEW GL)
-endif ()
+extern uint64_t PlGetTotalSystemMemory( void );
+extern uint64_t PlGetTotalAvailableSystemMemory( void );
+extern uint64_t PlGetCurrentMemoryUsage( void );
 
-target_include_directories(opengl_plugin PRIVATE ../../plcore/include/ ../../plgraphics/include/)
+#ifdef __cplusplus
+};
+#endif
