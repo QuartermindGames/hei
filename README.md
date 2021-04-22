@@ -6,7 +6,7 @@ A collection of relatively small utility libraries written in C11 that can be us
 perhaps more ideally games.
 Includes APIs for dealing with images, graphics, models, IO and much more.
 
-Originally developed created around 2014/2015 as a support library for another game, it's since found
+Originally created around 2014/2015 as a support library for another game, it's since found
 a new life supporting both the [Yin Game Engine](https://www.hogsy.me/p/yin.html) and [OpenHoW](https://github.com/TalonBraveInfo/OpenHoW) projects.
 
 **Keep in mind this is likely far from the most efficient library in the world. If performance is a big
