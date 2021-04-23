@@ -39,6 +39,10 @@
 *.db-shm
 *.db-wal
 *.tlog
+
 /build
+/.idea/
+/cmake-build-debug/
 
 plcore/3rdparty/glew-2.2.0/glew.pc
+
