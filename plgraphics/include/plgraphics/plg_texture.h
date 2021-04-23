@@ -24,7 +24,7 @@ SOFTWARE.
 
 #pragma once
 
-#include <PL/platform_image.h>
+#include <plcore/pl_image.h>
 
 // Texture Environment Modes
 typedef enum PLGTextureEnvironmentMode {

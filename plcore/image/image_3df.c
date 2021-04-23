@@ -1,28 +1,25 @@
 /*
-This is free and unencumbered software released into the public domain.
+MIT License
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-For more information, please refer to <http://unlicense.org>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
 #include "image_private.h"
@@ -50,43 +47,43 @@ static PLImage *FD3_ReadFile( PLFile *file ) {
 	char buf[ 64 ];
 
 	/* identifier */
-	if ( plReadString( file, buf, sizeof( buf ) ) == NULL ) {
+	if ( PlReadString( file, buf, sizeof( buf ) ) == NULL ) {
 		return NULL;
 	}
 	if ( strncmp( buf, "3df ", 4 ) != 0 ) {
-		plReportErrorF( PL_RESULT_FILETYPE, "invalid identifier, expected \"3df \"" );
+		PlReportErrorF( PL_RESULT_FILETYPE, "invalid identifier, expected \"3df \"" );
 		return NULL;
 	}
 
 	/* image format */
-	plReadString( file, buf, sizeof( buf ) );
+	PlReadString( file, buf, sizeof( buf ) );
 	PLImageFormat dataFormat = FD3_GetImageFormat( buf );
 	if ( dataFormat == PL_IMAGEFORMAT_UNKNOWN ) {
-		plReportErrorF( PL_RESULT_IMAGEFORMAT, "unsupported image format, \"%s\"", buf );
+		PlReportErrorF( PL_RESULT_IMAGEFORMAT, "unsupported image format, \"%s\"", buf );
 		return NULL;
 	}
 
 	/* lod */
-	if ( plReadString( file, buf, sizeof( buf ) ) == NULL ) {
+	if ( PlReadString( file, buf, sizeof( buf ) ) == NULL ) {
 		return NULL;
 	}
 	int w, h;
 	if ( sscanf( buf, "lod range: %d %d\n", &w, &h ) != 2 ) {
-		plReportErrorF( PL_RESULT_FILEREAD, "failed to read lod range" );
+		PlReportErrorF( PL_RESULT_FILEREAD, "failed to read lod range" );
 		return NULL;
 	}
 	if ( w <= 0 || h <= 0 || w > 256 || h > 256 ) {
-		plReportBasicError( PL_RESULT_IMAGERESOLUTION );
+		PlReportBasicError( PL_RESULT_IMAGERESOLUTION );
 		return NULL;
 	}
 
 	/* aspect */
-	if ( plReadString( file, buf, sizeof( buf ) ) == NULL ) {
+	if ( PlReadString( file, buf, sizeof( buf ) ) == NULL ) {
 		return NULL;
 	}
 	int x, y;
 	if ( sscanf( buf, "aspect ratio: %d %d\n", &x, &y ) != 2 ) {
-		plReportErrorF( PL_RESULT_FILEREAD, "failed to read aspect ratio" );
+		PlReportErrorF( PL_RESULT_FILEREAD, "failed to read aspect ratio" );
 		return NULL;
 	}
 
@@ -113,30 +110,30 @@ static PLImage *FD3_ReadFile( PLFile *file ) {
 			w = w / 8;
 			break;
 		default:
-			plReportErrorF( PL_RESULT_FAIL, "unexpected aspect-ratio: %dx%d", x, y );
+			PlReportErrorF( PL_RESULT_FAIL, "unexpected aspect-ratio: %dx%d", x, y );
 			return NULL;
 	}
 
 	/* now we can load the actual data in */
-	size_t srcSize = plGetImageSize( dataFormat, w, h );
+	size_t srcSize = PlGetImageSize( dataFormat, w, h );
 	uint8_t *srcBuf = pl_malloc( srcSize );
-	if ( plReadFile( file, srcBuf, sizeof( char ), srcSize ) != srcSize ) {
+	if ( PlReadFile( file, srcBuf, sizeof( char ), srcSize ) != srcSize ) {
 		pl_free( srcBuf );
 		return NULL;
 	}
 
 	/* convert it... */
-	size_t dstSize = plGetImageSize( PL_IMAGEFORMAT_RGBA8, w, h );
+	size_t dstSize = PlGetImageSize( PL_IMAGEFORMAT_RGBA8, w, h );
 	uint8_t *dstBuf = pl_malloc( dstSize );
 	if ( dataFormat != PL_IMAGEFORMAT_RGBA8 ) {
-		switch( dataFormat ) {
+		switch ( dataFormat ) {
 			case PL_IMAGEFORMAT_RGB5A1: {
 				uint8_t *dstPos = dstBuf;
-                for ( size_t i = 0; i < srcSize; i += 2 ) {
-					dstPos[ PL_RED ]    = ( ( srcBuf[ i ] & 124 ) << 1 );
-					dstPos[ PL_GREEN ]  = ( ( srcBuf[ i ] & 3 ) << 6 ) | ( ( srcBuf[ i + 1 ] & 224 ) >> 2 );
-					dstPos[ PL_BLUE ]   = ( ( srcBuf[ i + 1 ] & 31 ) << 3 );
-					dstPos[ PL_ALPHA ]  = ( srcBuf[ i ] & 128 ) ? 0 : 255;
+				for ( size_t i = 0; i < srcSize; i += 2 ) {
+					dstPos[ PL_RED ] = ( ( srcBuf[ i ] & 124 ) << 1 );
+					dstPos[ PL_GREEN ] = ( ( srcBuf[ i ] & 3 ) << 6 ) | ( ( srcBuf[ i + 1 ] & 224 ) >> 2 );
+					dstPos[ PL_BLUE ] = ( ( srcBuf[ i + 1 ] & 31 ) << 3 );
+					dstPos[ PL_ALPHA ] = ( srcBuf[ i ] & 128 ) ? 0 : 255;
 					dstPos += 4;
 				}
 
@@ -147,11 +144,10 @@ static PLImage *FD3_ReadFile( PLFile *file ) {
 				pl_free( dstBuf );
 				dstBuf = srcBuf;
 				break;
-
 		}
 	}
 
-	PLImage *image = plCreateImage( dstBuf, w, h, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+	PLImage *image = PlCreateImage( dstBuf, w, h, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
 	/* no longer need this */
 	pl_free( dstBuf );
@@ -159,15 +155,15 @@ static PLImage *FD3_ReadFile( PLFile *file ) {
 	return image;
 }
 
-PLImage *plLoad3dfImage( const char *path ) {
-	PLFile *file = plOpenFile( path, false );
+PLImage *PlLoad3dfImage( const char *path ) {
+	PLFile *file = PlOpenFile( path, false );
 	if ( file == NULL ) {
 		return NULL;
 	}
 
 	PLImage *image = FD3_ReadFile( file );
 
-	plCloseFile( file );
+	PlCloseFile( file );
 
 	return image;
 }

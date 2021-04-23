@@ -75,14 +75,14 @@ PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertic
 
 PLVector3 PlGetAabbAbsOrigin( const PLCollisionAABB *bounds, PLVector3 origin ) {
 	PLVector3 absOrigin = PLVector3( ( bounds->mins.x + bounds->maxs.x ) / 2, ( bounds->mins.y + bounds->maxs.y ) / 2, ( bounds->mins.z + bounds->maxs.z ) / 2 );
-	return plAddVector3( origin, absOrigin );
+	return PlAddVector3( origin, absOrigin );
 }
 
 bool PlIsAabbIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB *bBounds ) {
-	PLVector3 aMax = plAddVector3( aBounds->maxs, aBounds->origin );
-	PLVector3 aMin = plAddVector3( aBounds->mins, aBounds->origin );
-	PLVector3 bMax = plAddVector3( bBounds->maxs, bBounds->origin );
-	PLVector3 bMin = plAddVector3( bBounds->mins, bBounds->origin );
+	PLVector3 aMax = PlAddVector3( aBounds->maxs, aBounds->origin );
+	PLVector3 aMin = PlAddVector3( aBounds->mins, aBounds->origin );
+	PLVector3 bMax = PlAddVector3( bBounds->maxs, bBounds->origin );
+	PLVector3 bMin = PlAddVector3( bBounds->mins, bBounds->origin );
 
 	return !(
 	        aMax.x < bMin.x ||
@@ -94,8 +94,8 @@ bool PlIsAabbIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB
 }
 
 bool PlIsPointIntersectingAabb( const PLCollisionAABB *bounds, PLVector3 point ) {
-	PLVector3 max = plAddVector3( bounds->maxs, bounds->origin );
-	PLVector3 min = plAddVector3( bounds->mins, bounds->origin );
+	PLVector3 max = PlAddVector3( bounds->maxs, bounds->origin );
+	PLVector3 min = PlAddVector3( bounds->mins, bounds->origin );
 
 	return !(
 	        point.x > max.x ||
@@ -107,8 +107,8 @@ bool PlIsPointIntersectingAabb( const PLCollisionAABB *bounds, PLVector3 point )
 }
 
 bool PlIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere ) {
-	PLVector3 difference = plSubtractVector3( aSphere->origin, bSphere->origin );
-	float distance = plVector3Length( difference );
+	PLVector3 difference = PlSubtractVector3( aSphere->origin, bSphere->origin );
+	float distance = PlVector3Length( difference );
 	float sum_radius = aSphere->radius + bSphere->radius;
 	return distance < sum_radius;
 }
@@ -118,13 +118,13 @@ PLCollision PlIsSphereIntersectingPlane( const PLCollisionSphere *sphere, const 
 	memset( &collision, 0, sizeof( PLCollision ) );
 
 	PLVector3 pDist;
-	pDist = plSubtractVector3( sphere->origin, plane->origin );
+	pDist = PlSubtractVector3( sphere->origin, plane->origin );
 
 	/* distance from the sphere to the plane */
-	float distance = plVector3DotProduct( plane->normal, pDist ) - ( sphere->radius * 2.0f );
+	float distance = PlVector3DotProduct( plane->normal, pDist ) - ( sphere->radius * 2.0f );
 
 	collision.contactNormal = plane->normal;
-	collision.contactPoint = plScaleVector3f( plSubtractVector3( sphere->origin, plane->normal ), distance );
+	collision.contactPoint = PlScaleVector3F( PlSubtractVector3( sphere->origin, plane->normal ), distance );
 	collision.penetration = -distance;
 
 	return collision;

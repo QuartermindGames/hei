@@ -24,8 +24,8 @@ SOFTWARE.
 
 #pragma once
 
-#include <PL/platform_physics.h>
-#include <PL/platform_image.h>
+#include <plcore/pl_physics.h>
+#include <plcore/pl_image.h>
 
 enum {
 	PLG_CAMERA_MODE_PERSPECTIVE,

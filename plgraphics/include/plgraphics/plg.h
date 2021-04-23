@@ -24,8 +24,8 @@ SOFTWARE.
 
 #pragma once
 
-#include <PL/platform.h>
-#include <PL/platform_math.h>
+#include <plcore/pl.h>
+#include <plcore/pl_math.h>
 
 #include <plgraphics/plg_mesh.h>
 #include <plgraphics/plg_texture.h>

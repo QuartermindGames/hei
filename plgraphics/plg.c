@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <PL/platform_console.h>
-#include <PL/platform_image.h>
+#include <plcore/pl_console.h>
+#include <plcore/pl_image.h>
 
 #include "plg_private.h"
 
@@ -56,7 +56,7 @@ int LOG_LEVEL_GRAPHICS = 0;
 PLFunctionResult PlgInitGraphics( void ) {
 	memset( &gfx_state, 0, sizeof( GfxState ) );
 
-	LOG_LEVEL_GRAPHICS = plAddLogLevel( "plgraphics", ( PLColour ){ 0, 255, 255, 255 },
+	LOG_LEVEL_GRAPHICS = PlAddLogLevel( "plgraphics", ( PLColour ){ 0, 255, 255, 255 },
 #if !defined( NDEBUG )
 	                                    true
 #else
@@ -156,7 +156,7 @@ void PlgBlitFrameBuffers( PLGFrameBuffer *src_buffer, unsigned int src_w, unsign
 }
 
 void PlgSetClearColour( PLColour rgba ) {
-	if ( plCompareColour( rgba, gfx_state.current_clearcolour ) ) {
+	if ( PlCompareColour( rgba, gfx_state.current_clearcolour ) ) {
 		return;
 	}
 
@@ -304,7 +304,7 @@ static unsigned int numGraphicsModes = 0;
 
 void PlgRegisterDriver( const char *description, const PLGDriverInterface *interface ) {
 	if ( numGraphicsModes >= MAX_GRAPHICS_MODES ) {
-		plReportBasicError( PL_RESULT_MEMORY_EOA );
+		PlReportBasicError( PL_RESULT_MEMORY_EOA );
 		return;
 	}
 
@@ -345,12 +345,12 @@ void PlgSetDriver( const char *mode ) {
 	}
 
 	if ( interface == NULL ) {
-		plReportErrorF( PL_RESULT_GRAPHICSINIT, "invalid graphics interface \"%s\" selected", mode );
+		PlReportErrorF( PL_RESULT_GRAPHICSINIT, "invalid graphics interface \"%s\" selected", mode );
 		return;
 	}
 
 	if ( gfx_state.interface != NULL && interface == gfx_state.interface ) {
-		plReportErrorF( PL_RESULT_GRAPHICSINIT, "chosen interface \"%s\" is already active", mode );
+		PlReportErrorF( PL_RESULT_GRAPHICSINIT, "chosen interface \"%s\" is already active", mode );
 		return;
 	}
 

@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include "plg_private.h"
 
-#include <PL/pl_parse.h>
+#include <plcore/pl_parse.h>
 
 /* shader implementation */
 
@@ -81,7 +81,7 @@ void plDestroyShaderStage( PLGShaderStage *stage ) {
  * @param length the length of the buffer.
  */
 void PlgCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length ) {
-	plClearError();
+	PlClearError();
 
 	CallGfxFunction( CompileShaderStage, stage, buf, length );
 }
@@ -97,7 +97,7 @@ PLGShaderStage *PlgParseShaderStage( PLGShaderStageType type, const char *buf, s
 	}
 
 	PlgCompileShaderStage( stage, buf, length );
-	if ( plGetFunctionResult() == PL_RESULT_SHADER_COMPILE ) {
+	if ( PlGetFunctionResult() == PL_RESULT_SHADER_COMPILE ) {
 		plDestroyShaderStage( stage );
 		return NULL;
 	}
@@ -117,26 +117,26 @@ PLGShaderStage *PlgParseShaderStage( PLGShaderStageType type, const char *buf, s
  * @return The new shader stage on success, otherwise a null pointer.
  */
 PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type ) {
-	PLFile *fp = plOpenFile( path, false );
+	PLFile *fp = PlOpenFile( path, false );
 	if ( fp == NULL ) {
-		plReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", path );
+		PlReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", path );
 		return NULL;
 	}
 
-	size_t length = plGetFileSize( fp );
+	size_t length = PlGetFileSize( fp );
 	char *buf = pl_malloc( length + 1 );
 	if ( buf == NULL ) {
 		return NULL;
 	}
 
-	size_t rlen = plReadFile( fp, buf, length, 1 );
+	size_t rlen = PlReadFile( fp, buf, length, 1 );
 	if ( rlen != 1 ) {
 		GfxLog( "Failed to read in entirety of %s (%d)!\n"
 		        "Continuing anyway but expect issues...",
 		        path, rlen );
 	}
 	buf[ length ] = '\0';
-	plCloseFile( fp );
+	PlCloseFile( fp );
 
 	PLGShaderStage *stage = PlgParseShaderStage( type, buf, length );
 	pl_free( buf );
@@ -208,7 +208,7 @@ void PlgAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stage ) {
 bool PlgRegisterShaderStageFromMemory( PLGShaderProgram *program, const char *buffer, size_t length,
                                       PLGShaderStageType type ) {
 	if ( program->num_stages >= PLG_MAX_SHADER_TYPES ) {
-		plReportErrorF( PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
+		PlReportErrorF( PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
 		             program->num_stages );
 		return false;
 	}
@@ -225,7 +225,7 @@ bool PlgRegisterShaderStageFromMemory( PLGShaderProgram *program, const char *bu
 
 bool PlgRegisterShaderStageFromDisk( PLGShaderProgram *program, const char *path, PLGShaderStageType type ) {
 	if ( program->num_stages >= PLG_MAX_SHADER_TYPES ) {
-		plReportErrorF( PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
+		PlReportErrorF( PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
 		             program->num_stages );
 		return false;
 	}

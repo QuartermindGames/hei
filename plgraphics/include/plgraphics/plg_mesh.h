@@ -24,7 +24,7 @@ SOFTWARE.
 
 #pragma once
 
-#include <PL/platform_math.h>
+#include <plcore/pl_math.h>
 
 #ifdef __cplusplus
 extern "C" {

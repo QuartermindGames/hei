@@ -42,15 +42,15 @@ PLLibrary *PlLoadLibrary( const char *path, bool appendPath ) {
 	}
 
 	/* check that it actually exists first, since Windows doesn't give a very verbose message for these cases */
-	if ( !plLocalFileExists( sysPath ) ) {
-		plReportErrorF( PL_RESULT_FILEPATH, "failed to find library, \"%s\"", sysPath );
+	if ( !PlLocalFileExists( sysPath ) ) {
+		PlReportErrorF( PL_RESULT_FILEPATH, "failed to find library, \"%s\"", sysPath );
 		return NULL;
 	}
 
 #if defined( WIN32 )
 	HMODULE libraryHandle = LoadLibrary( sysPath );
 	if ( libraryHandle == NULL ) {
-		plReportErrorF( PL_RESULT_INVALID_PARM1, "failed to load library (%d)", GetLastError() );
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "failed to load library (%d)", GetLastError() );
 	}
 #else /* unix */
 	void *libraryHandle = dlopen( sysPath, RTLD_LAZY );
@@ -68,7 +68,7 @@ void *PlGetLibraryProcedure( PLLibrary *library, const char *procedureName ) {
 #if defined( WIN32 )
 	myProcedure = GetProcAddress( ( HMODULE ) library, procedureName );
 	if ( myProcedure == NULL ) {
-		plReportErrorF( PL_RESULT_INVALID_PARM2, "failed to find procedure (%d)", GetLastError() );
+		PlReportErrorF( PL_RESULT_INVALID_PARM2, "failed to find procedure (%d)", GetLastError() );
 	}
 #else /* unix */
 	myProcedure = dlsym( library, procedureName );
@@ -83,7 +83,7 @@ void *PlGetLibraryProcedure( PLLibrary *library, const char *procedureName ) {
 void PlUnloadLibrary( PLLibrary *library ) {
 #if defined( WIN32 )
 	if ( !FreeLibrary( ( HMODULE ) library ) ) {
-		plReportErrorF( PL_RESULT_INVALID_PARM1, "failed to unload library (%d)", GetLastError() );
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "failed to unload library (%d)", GetLastError() );
 	}
 #else /* unix */
 	if ( dlclose( library ) != 0 ) {

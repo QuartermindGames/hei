@@ -27,8 +27,6 @@ For more information, please refer to <http://unlicense.org>
 
 #include "plg_private.h"
 
-#include <PL/platform_console.h>
-
 void _InitTextures( void ) {
 	gfx_state.tmu = ( PLGTextureMappingUnit * ) pl_calloc( PlgGetMaxTextureUnits(), sizeof( PLGTextureMappingUnit ) );
 	for ( unsigned int i = 0; i < PlgGetMaxTextureUnits(); i++ ) {
@@ -40,7 +38,7 @@ void _InitTextures( void ) {
 	memset( gfx_state.textures, 0, sizeof( PLGTexture * ) * gfx_state.max_textures );
 	gfx_state.num_textures = 0;
 
-	plRegisterConsoleVariable( NULL, NULL, pl_float_var, 0, NULL );
+	PlRegisterConsoleVariable( NULL, NULL, pl_float_var, 0, NULL );
 }
 
 void PlgShutdownTextures( void ) {
@@ -97,7 +95,7 @@ void PlgDestroyTexture( PLGTexture *texture ) {
  * Automatically loads in an image and uploads it as a texture.
  */
 PLGTexture *PlgLoadTextureFromImage( const char *path, PLGTextureFilter filter_mode ) {
-	PLImage *image = plLoadImage( path );
+	PLImage *image = PlLoadImage( path );
 	if ( image == NULL ) {
 		return NULL;
 	}
@@ -112,7 +110,7 @@ PLGTexture *PlgLoadTextureFromImage( const char *path, PLGTextureFilter filter_m
 		PlgUploadTextureImage( texture, image );
 	}
 
-	plDestroyImage( image );
+	PlDestroyImage( image );
 
 	return texture;
 }
@@ -252,7 +250,7 @@ bool PlgUploadTextureImage( PLGTexture *texture, const PLImage *upload ) {
 		texture->filter = PLG_TEXTURE_FILTER_NEAREST;
 	}
 
-	const char *file_name = plGetFileName( upload->path );
+	const char *file_name = PlGetFileName( upload->path );
 	if ( file_name == NULL || file_name[ 0 ] == '\0' ) {
 		strncpy( texture->name, "null", sizeof( texture->name ) );
 	} else {

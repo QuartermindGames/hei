@@ -85,9 +85,9 @@ void PlgGeneratePolygonFaceNormal( PLGPolygon *polygon ) {
 		        polygon->vertices[ b ].position,
 		        polygon->vertices[ c ].position );
 
-		normals[ a ] = plAddVector3( normals[ a ], normal );
-		normals[ b ] = plAddVector3( normals[ b ], normal );
-		normals[ c ] = plAddVector3( normals[ c ], normal );
+		normals[ a ] = PlAddVector3( normals[ a ], normal );
+		normals[ b ] = PlAddVector3( normals[ b ], normal );
+		normals[ c ] = PlAddVector3( normals[ c ], normal );
 	}
 
 	polygon->normal = normals[ 0 ];
@@ -98,7 +98,7 @@ void PlgGeneratePolygonFaceNormal( PLGPolygon *polygon ) {
 
 void PlgAddPolygonVertex( PLGPolygon *polygon, const PLGVertex *vertex ) {
 	if( polygon->numVertices >= PLG_POLYGON_MAX_SIDES ) {
-		plReportErrorF( PL_RESULT_INVALID_PARM2, "reached maximum number of polygon sides (%d)", PLG_POLYGON_MAX_SIDES );
+		PlReportErrorF( PL_RESULT_INVALID_PARM2, "reached maximum number of polygon sides (%d)", PLG_POLYGON_MAX_SIDES );
 		return;
 	}
 
@@ -116,7 +116,7 @@ void PlgAddPolygonVertex( PLGPolygon *polygon, const PLGVertex *vertex ) {
 
 void PlgRemovePolygonVertex( PLGPolygon *polygon, unsigned int vertIndex ) {
 	if( vertIndex >= polygon->numVertices ) {
-		plReportErrorF( PL_RESULT_INVALID_PARM2, "invalid vertex index (%d)", polygon->numVertices );
+		PlReportErrorF( PL_RESULT_INVALID_PARM2, "invalid vertex index (%d)", polygon->numVertices );
 		return;
 	}
 
@@ -139,7 +139,7 @@ unsigned int PlgGetNumOfPolygonVertices( const PLGPolygon *polygon ) {
 
 PLGVertex *PlgGetPolygonVertex( PLGPolygon *polygon, unsigned int vertIndex ) {
 	if( vertIndex >= polygon->numVertices ) {
-		plReportErrorF( PL_RESULT_INVALID_PARM2, "invalid vertex index, %d", vertIndex );
+		PlReportErrorF( PL_RESULT_INVALID_PARM2, "invalid vertex index, %d", vertIndex );
 		return NULL;
 	}
 
@@ -173,7 +173,7 @@ unsigned int PlgGetNumOfPolygonTriangles( const PLGPolygon *polygon ) {
 unsigned int *PlgConvertPolygonToTriangles( const PLGPolygon *polygon, unsigned int *numTriangles ) {
 	*numTriangles = PlgGetNumOfPolygonTriangles( polygon );
 	if ( *numTriangles == 0 ) {
-		plReportErrorF( PL_RESULT_INVALID_PARM1, "invalid polygon" );
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "invalid polygon" );
 		return NULL;
 	}
 

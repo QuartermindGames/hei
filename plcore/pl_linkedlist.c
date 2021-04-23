@@ -40,11 +40,11 @@ typedef struct PLLinkedList {
 	unsigned int numNodes;
 } PLLinkedList;
 
-PLLinkedList *plCreateLinkedList( void ) {
+PLLinkedList *PlCreateLinkedList( void ) {
 	return pl_calloc( 1, sizeof( PLLinkedList ) );
 }
 
-PLLinkedListNode *plInsertLinkedListNode( PLLinkedList *list, void *userPtr ) {
+PLLinkedListNode *PlInsertLinkedListNode( PLLinkedList *list, void *userPtr ) {
 	PLLinkedListNode *node = pl_malloc( sizeof( PLLinkedListNode ) );
 	if( list->root == NULL ) {
 		list->root = node;
@@ -65,19 +65,19 @@ PLLinkedListNode *plInsertLinkedListNode( PLLinkedList *list, void *userPtr ) {
 	return node;
 }
 
-PLLinkedListNode *plGetNextLinkedListNode( PLLinkedListNode *node ) {
+PLLinkedListNode *PlGetNextLinkedListNode( PLLinkedListNode *node ) {
 	return node->next;
 }
 
-PLLinkedListNode *plGetPrevLinkedListNode( PLLinkedListNode *node ) {
+PLLinkedListNode *PlGetPrevLinkedListNode( PLLinkedListNode *node ) {
 	return node->prev;
 }
 
-PLLinkedListNode *plGetFirstNode( PLLinkedList *list ) {
+PLLinkedListNode *PlGetFirstNode( PLLinkedList *list ) {
 	return list->root;
 }
 
-void *plGetLinkedListNodeUserData( PLLinkedListNode *node ) {
+void *PlGetLinkedListNodeUserData( PLLinkedListNode *node ) {
 	return node->userPtr;
 }
 
@@ -85,7 +85,7 @@ void *plGetLinkedListNodeUserData( PLLinkedListNode *node ) {
  * Destroys the specified node and removes it from the list.
  * Keep in mind this does not free any user data!
  */
-void plDestroyLinkedListNode( PLLinkedList *list, PLLinkedListNode *node ) {
+void PlDestroyLinkedListNode( PLLinkedList *list, PLLinkedListNode *node ) {
 	if( node->prev != NULL ) {
 		node->prev->next = node->next;
 	}
@@ -107,24 +107,24 @@ void plDestroyLinkedListNode( PLLinkedList *list, PLLinkedListNode *node ) {
 	pl_free( node );
 }
 
-void plDestroyLinkedListNodes( PLLinkedList *list ) {
-	while( list->root != NULL ) { plDestroyLinkedListNode( list, list->root ); }
+void PlDestroyLinkedListNodes( PLLinkedList *list ) {
+	while( list->root != NULL ) { PlDestroyLinkedListNode( list, list->root ); }
 	list->numNodes = 0;
 }
 
-void plDestroyLinkedList( PLLinkedList *list ) {
+void PlDestroyLinkedList( PLLinkedList *list ) {
 	if ( list == NULL ) {
 		return;
 	}
 
-	plDestroyLinkedListNodes( list );
+	PlDestroyLinkedListNodes( list );
 	pl_free( list );
 }
 
-unsigned int plGetNumLinkedListNodes( PLLinkedList *list ) {
+unsigned int PlGetNumLinkedListNodes( PLLinkedList *list ) {
 	return list->numNodes;
 }
 
-PLLinkedList *plGetLinkedListNodeContainer( PLLinkedListNode *node ) {
+PLLinkedList *PlGetLinkedListNodeContainer( PLLinkedListNode *node ) {
 	return node->listParent;
 }

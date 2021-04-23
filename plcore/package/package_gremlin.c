@@ -1,28 +1,25 @@
 /*
-This is free and unencumbered software released into the public domain.
+MIT License
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-For more information, please refer to <http://unlicense.org>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
 #include "package_private.h"
@@ -44,24 +41,24 @@ For more information, please refer to <http://unlicense.org>
  * Thanks to solemnwarning for his help on this one!
  */
 
-PL_PACKED_STRUCT_START(MADIndex)
-	char file[16];
+PL_PACKED_STRUCT_START( MADIndex )
+char file[ 16 ];
 
-	uint32_t offset;
-	uint32_t length;
-PL_PACKED_STRUCT_END(MADIndex)
+uint32_t offset;
+uint32_t length;
+PL_PACKED_STRUCT_END( MADIndex )
 
-PLPackage* plLoadMADPackage( const char* path ) {
+PLPackage *PlLoadMadPackage( const char *path ) {
 	FunctionStart();
 
-	PLFile* fh = plOpenFile( path, false );
+	PLFile *fh = PlOpenFile( path, false );
 	if ( fh == NULL ) {
 		return NULL;
 	}
 
-	PLPackage* package = NULL;
+	PLPackage *package = NULL;
 
-	size_t file_size = plGetLocalFileSize( path );
+	size_t file_size = PlGetLocalFileSize( path );
 	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
 		goto FAILED;
 	}
@@ -75,7 +72,7 @@ PLPackage* plLoadMADPackage( const char* path ) {
 
 	while ( ( num_indices + 1 ) * sizeof( MADIndex ) <= data_begin ) {
 		MADIndex index;
-		if ( plReadFile( fh, &index, sizeof( MADIndex ), 1 ) != 1 ) {
+		if ( PlReadFile( fh, &index, sizeof( MADIndex ), 1 ) != 1 ) {
 			/* EOF, or read error */
 			goto FAILED;
 		}
@@ -83,14 +80,14 @@ PLPackage* plLoadMADPackage( const char* path ) {
 		// ensure the file name is valid...
 		for ( unsigned int i = 0; i < 16; ++i ) {
 			if ( isprint( index.file[ i ] ) == 0 && index.file[ i ] != '\0' ) {
-				plReportErrorF( PL_RESULT_FILEREAD, "received invalid filename for index" );
+				PlReportErrorF( PL_RESULT_FILEREAD, "received invalid filename for index" );
 				goto FAILED;
 			}
 		}
 
 		if ( index.offset >= file_size || ( uint64_t ) ( index.offset ) + ( uint64_t ) ( index.length ) > file_size ) {
 			/* File offset/length falls beyond end of file */
-			plReportErrorF( PL_RESULT_FILEREAD, "file offset/length falls beyond end of file" );
+			PlReportErrorF( PL_RESULT_FILEREAD, "file offset/length falls beyond end of file" );
 			goto FAILED;
 		}
 
@@ -106,13 +103,13 @@ PLPackage* plLoadMADPackage( const char* path ) {
 
 	/* Rewind the file handle and populate package->table with the metadata from the headers. */
 
-	plRewindFile( fh );
+	PlRewindFile( fh );
 
 	for ( unsigned int i = 0; i < num_indices; ++i ) {
 		MADIndex index;
-		if ( plReadFile( fh, &index, sizeof( MADIndex ), 1 ) != 1 ) {
+		if ( PlReadFile( fh, &index, sizeof( MADIndex ), 1 ) != 1 ) {
 			/* EOF, or read error */
-			plReportErrorF( PL_RESULT_FILEREAD, "failed to read MAD index %d", i );
+			PlReportErrorF( PL_RESULT_FILEREAD, "failed to read MAD index %d", i );
 			goto FAILED;
 		}
 
@@ -122,15 +119,15 @@ PLPackage* plLoadMADPackage( const char* path ) {
 		package->table[ i ].offset = index.offset;
 	}
 
-	plCloseFile( fh );
+	PlCloseFile( fh );
 
 	return package;
 
-	FAILED:
+FAILED:
 
-	    PlDestroyPackage( package );
+	PlDestroyPackage( package );
 
-	plCloseFile( fh );
+	PlCloseFile( fh );
 
 	return NULL;
 }

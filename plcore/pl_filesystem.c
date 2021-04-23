@@ -112,11 +112,11 @@ IMPLEMENT_COMMAND( fsExtractPkg, "Extract the contents of a package." ) {
 
 		char pkgPath[ PL_SYSTEM_MAX_PATH ];
 		memset( pkgPath, 0, sizeof( pkgPath ) );
-		strncpy( pkgPath, file->path, strlen( file->path ) - strlen( plGetFileName( file->path ) ) );
+		strncpy( pkgPath, file->path, strlen( file->path ) - strlen( PlGetFileName( file->path ) ) );
 
 		char outPath[ PL_SYSTEM_MAX_PATH ];
 		snprintf( outPath, sizeof( outPath ), "extracted/%s", pkgPath );
-		if ( !plCreatePath( outPath ) ) {
+		if ( !PlCreatePath( outPath ) ) {
 			PrintWarning( "Failed to create path, \"%s\"!\nPL: %s\n", outPath, PlGetError() );
 			break;
 		}
@@ -128,7 +128,7 @@ IMPLEMENT_COMMAND( fsExtractPkg, "Extract the contents of a package." ) {
 			PrintWarning( "Failed to write file to destination, \"%s\"!\n", outPath );
 			break;
 		}
-		fwrite( plGetFileData( file ), sizeof( uint8_t ), plGetFileSize( file ), fout );
+		fwrite( PlGetFileData( file ), sizeof( uint8_t ), PlGetFileSize( file ), fout );
 		fclose( fout );
 
 		Print( "Wrote \"%s\"\n", outPath );
@@ -210,7 +210,7 @@ IMPLEMENT_COMMAND( fsUnmount, "Unmount the specified directory." ) {
 	PLFileSystemMount* location = fs_mount_root;
 	while ( location != NULL ) {
 		if ( strcasecmp( argv[ 1 ], location->path ) == 0 ) {
-			plClearMountedLocation( location );
+			PlClearMountedLocation( location );
 			Print( "Done!\n" );
 			return;
 		}
@@ -231,7 +231,7 @@ IMPLEMENT_COMMAND( fsMount, "Mount the specified directory." ) {
 		return;
 	}
 
-	plMountLocation( path );
+	PlMountLocation( path );
 }
 
 static void _plRegisterFSCommands( void ) {
@@ -247,7 +247,7 @@ static void _plRegisterFSCommands( void ) {
 	}
 }
 
-void plClearMountedLocation( PLFileSystemMount* location ) {
+void PlClearMountedLocation( PLFileSystemMount* location ) {
 	if ( location->type == FS_MOUNT_PACKAGE ) {
 		PlDestroyPackage( location->pkg );
 		location->pkg = NULL;
@@ -274,8 +274,8 @@ void plClearMountedLocation( PLFileSystemMount* location ) {
 /**
  * Clear all of the mounted locations
  */
-void plClearMountedLocations( void ) {
-	while ( fs_mount_root != NULL ) { plClearMountedLocation( fs_mount_root ); }
+void PlClearMountedLocations( void ) {
+	while ( fs_mount_root != NULL ) { PlClearMountedLocation( fs_mount_root ); }
 }
 
 static void _plInsertMountLocation( PLFileSystemMount* location ) {
@@ -291,9 +291,9 @@ static void _plInsertMountLocation( PLFileSystemMount* location ) {
 	location->next = NULL;
 }
 
-PLFileSystemMount* plMountLocalLocation( const char* path ) {
+PLFileSystemMount*PlMountLocalLocation( const char* path ) {
 	PLFileSystemMount* location = pl_malloc( sizeof( PLFileSystemMount ) );
-	if ( plLocalPathExists( path ) ) { /* attempt to mount it as a path */
+	if ( PlLocalPathExists( path ) ) { /* attempt to mount it as a path */
 		_plInsertMountLocation( location );
 		location->type = FS_MOUNT_DIR;
 		snprintf( location->path, sizeof( location->path ), "%s", path );
@@ -326,21 +326,21 @@ PLFileSystemMount* plMountLocalLocation( const char* path ) {
 
 	pl_free( location );
 
-	plReportErrorF( 0, "failed to mount location, %s", path );
+	PlReportErrorF( 0, "failed to mount location, %s", path );
 	return NULL;
 }
 
 /**
  * Mount the given location. On failure returns -1.
  */
-PLFileSystemMount* plMountLocation( const char* path ) {
+PLFileSystemMount*PlMountLocation( const char* path ) {
 	if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
 		path += sizeof( FS_LOCAL_HINT );
-		return plMountLocalLocation( path );
+		return PlMountLocalLocation( path );
 	}
 
 	PLFileSystemMount* location = pl_malloc( sizeof( PLFileSystemMount ) );
-	if ( plPathExists( path ) ) { /* attempt to mount it as a path */
+	if ( PlPathExists( path ) ) { /* attempt to mount it as a path */
 		_plInsertMountLocation( location );
 		location->type = FS_MOUNT_DIR;
 		snprintf( location->path, sizeof( location->path ), "%s", path );
@@ -363,7 +363,7 @@ PLFileSystemMount* plMountLocation( const char* path ) {
 
 	pl_free( location );
 
-	plReportErrorF( 0, "failed to mount location, %s", path );
+	PlReportErrorF( 0, "failed to mount location, %s", path );
 	return NULL;
 }
 
@@ -372,24 +372,24 @@ PLFileSystemMount* plMountLocation( const char* path ) {
 PLFunctionResult PlInitFileSystem( void ) {
 	_plRegisterFSCommands();
 
-	plClearMountedLocations();
+	PlClearMountedLocations();
 	return PL_RESULT_SUCCESS;
 }
 
 void PlShutdownFileSystem( void ) {
-	plClearMountedLocations();
+	PlClearMountedLocations();
 }
 
 // Checks whether a file has been modified or not.
-bool plIsFileModified( time_t oldtime, const char* path ) {
+bool PlIsFileModified( time_t oldtime, const char* path ) {
 	if ( !oldtime ) {
-		plReportErrorF( PL_RESULT_FILEERR, "invalid time, skipping check" );
+		PlReportErrorF( PL_RESULT_FILEERR, "invalid time, skipping check" );
 		return false;
 	}
 
 	struct stat attributes;
 	if ( stat( path, &attributes ) == -1 ) {
-		plReportErrorF( PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror( errno ) );
+		PlReportErrorF( PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror( errno ) );
 		return false;
 	}
 
@@ -400,8 +400,8 @@ bool plIsFileModified( time_t oldtime, const char* path ) {
 	return false;
 }
 
-bool plIsEndOfFile( const PLFile* ptr ) {
-	return ( plGetFileOffset( ptr ) == plGetFileSize( ptr ) );
+bool PlIsEndOfFile( const PLFile* ptr ) {
+	return ( PlGetFileOffset( ptr ) == PlGetFileSize( ptr ) );
 }
 
 /**
@@ -409,28 +409,28 @@ bool plIsEndOfFile( const PLFile* ptr ) {
  * @param path
  * @return Modification time in seconds. returns 0 upon fail.
  */
-time_t plGetLocalFileTimeStamp( const char* path ) {
+time_t PlGetLocalFileTimeStamp( const char* path ) {
 	struct stat attributes;
 	if ( stat( path, &attributes ) == -1 ) {
-		plReportErrorF( PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror( errno ) );
+		PlReportErrorF( PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror( errno ) );
 		return 0;
 	}
 
 	return attributes.st_mtime;
 }
 
-time_t plGetFileTimeStamp( PLFile *ptr ) {
+time_t PlGetFileTimeStamp( PLFile *ptr ) {
 	/* timestamp defaults to -1 for files loaded locally */
 	if( ptr->timeStamp < 0 ) {
-		plGetLocalFileTimeStamp( ptr->path );
+		PlGetLocalFileTimeStamp( ptr->path );
 	}
 
 	return ptr->timeStamp;
 }
 
 // Creates a folder at the given path.
-bool plCreateDirectory( const char* path ) {
-	if ( plLocalPathExists( path ) ) {
+bool PlCreateDirectory( const char* path ) {
+	if ( PlLocalPathExists( path ) ) {
 		return true;
 	}
 
@@ -438,15 +438,15 @@ bool plCreateDirectory( const char* path ) {
 		return true;
 	}
 
-	plReportErrorF( PL_RESULT_FILEERR, "%s", strerror( errno ) );
+	PlReportErrorF( PL_RESULT_FILEERR, "%s", strerror( errno ) );
 
 	return false;
 }
 
-bool plCreatePath( const char* path ) {
+bool PlCreatePath( const char* path ) {
 	size_t length = strlen( path );
 	if( length >= PL_SYSTEM_MAX_PATH ) {
-		plReportErrorF( PL_RESULT_INVALID_PARM1, "path is greater that maximum supported path length, %d vs %d",
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "path is greater that maximum supported path length, %d vs %d",
 					 length, PL_SYSTEM_MAX_PATH );
 		return false;
 	}
@@ -458,17 +458,17 @@ bool plCreatePath( const char* path ) {
 		if ( i != 0 &&
 			( path[ i ] == '\\' || path[ i ] == '/' ) &&
 			( path[ i - 1 ] != '\\' && path[ i - 1 ] != '/' ) ) {
-			if ( !plCreateDirectory( dir_path ) ) {
+			if ( !PlCreateDirectory( dir_path ) ) {
 				return false;
 			}
 		}
 	}
 
-	return plCreateDirectory( dir_path );
+	return PlCreateDirectory( dir_path );
 }
 
 // Returns the extension for the file.
-const char* plGetFileExtension( const char* in ) {
+const char*PlGetFileExtension( const char* in ) {
 	const char* s = strrchr( in, '.' );
 	if ( !s || s == in ) {
 		return "";
@@ -478,7 +478,7 @@ const char* plGetFileExtension( const char* in ) {
 }
 
 // Strips the extension from the filename.
-void plStripExtension( char* dest, size_t length, const char* in ) {
+void PlStripExtension( char* dest, size_t length, const char* in ) {
 	if ( plIsEmptyString( in ) ) {
 		*dest = 0;
 		return;
@@ -500,7 +500,7 @@ void plStripExtension( char* dest, size_t length, const char* in ) {
  * @param path
  * @return
  */
-const char* plGetFileName( const char* path ) {
+const char*PlGetFileName( const char* path ) {
 	const char* lslash;
 	if ( ( lslash = strrchr( path, '/' ) ) == NULL ) {
 		lslash = strrchr( path, '\\' );
@@ -517,7 +517,7 @@ const char* plGetFileName( const char* path ) {
  *
  * @param out
  */
-char* plGetUserName( char* out, size_t n ) {
+char*PlGetUserName( char* out, size_t n ) {
 #ifdef _WIN32
 	char user_string[PL_SYSTEM_MAX_USERNAME];
 	ULONG size = PL_SYSTEM_MAX_USERNAME;
@@ -542,9 +542,9 @@ char* plGetUserName( char* out, size_t n ) {
  * @param n Length of the buffer.
  * @return Pointer to the output, will return NULL on error.
  */
-char* plGetApplicationDataDirectory( const char* app_name, char* out, size_t n ) {
+char*PlGetApplicationDataDirectory( const char* app_name, char* out, size_t n ) {
 	if ( plIsEmptyString( app_name ) ) {
-		plReportErrorF( PL_RESULT_FILEPATH, "invalid app name" );
+		PlReportErrorF( PL_RESULT_FILEPATH, "invalid app name" );
 		return NULL;
 	}
 
@@ -601,7 +601,7 @@ static void _plScanLocalDirectory( const PLFileSystemMount* mount, FSScanInstanc
 			struct stat st;
 			if ( stat( filestring, &st ) == 0 ) {
 				if ( S_ISREG( st.st_mode ) ) {
-					if ( extension == NULL || pl_strcasecmp( plGetFileExtension( entry->d_name ), extension ) == 0 ) {
+					if ( extension == NULL || pl_strcasecmp( PlGetFileExtension( entry->d_name ), extension ) == 0 ) {
 						if ( mount == NULL ) {
 							Function( filestring, userData );
 							continue;
@@ -646,7 +646,7 @@ static void _plScanLocalDirectory( const PLFileSystemMount* mount, FSScanInstanc
 
 		closedir( directory );
 	} else {
-		plReportErrorF( PL_RESULT_FILEPATH, "opendir failed!" );
+		PlReportErrorF( PL_RESULT_FILEPATH, "opendir failed!" );
 	}
 #else
 	// TODO: Win32 implementation
@@ -661,7 +661,7 @@ static void _plScanLocalDirectory( const PLFileSystemMount* mount, FSScanInstanc
  * @param Function callback function to deal with the file.
  * @param recursive if true, also scans the contents of each sub-directory.
  */
-void plScanDirectory( const char* path, const char* extension, void (* Function)( const char*, void* ), bool recursive, void *userData ) {
+void PlScanDirectory( const char* path, const char* extension, void (* Function)( const char*, void* ), bool recursive, void *userData ) {
 	if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
 		_plScanLocalDirectory( NULL, NULL, path + sizeof( FS_LOCAL_HINT ), extension, Function, recursive, userData );
 		return;
@@ -701,28 +701,28 @@ void plScanDirectory( const char* path, const char* extension, void (* Function)
 	}
 }
 
-const char* plGetWorkingDirectory( void ) {
+const char*PlGetWorkingDirectory( void ) {
 	static char out[PL_SYSTEM_MAX_PATH] = { '\0' };
 	if ( getcwd( out, PL_SYSTEM_MAX_PATH ) == NULL ) {
 		/* The MSDN documentation for getcwd() is gone, but it proooobably uses
 		 * errno and friends.
 		 */
-		plReportErrorF( PL_RESULT_SYSERR, "%s", strerror( errno ) );
+		PlReportErrorF( PL_RESULT_SYSERR, "%s", strerror( errno ) );
 		return NULL;
 	}
 	return out;
 }
 
-void plSetWorkingDirectory( const char* path ) {
+void PlSetWorkingDirectory( const char* path ) {
 	if ( chdir( path ) != 0 ) {
-		plReportErrorF( PL_RESULT_SYSERR, "%s", strerror( errno ) );
+		PlReportErrorF( PL_RESULT_SYSERR, "%s", strerror( errno ) );
 	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 // FILE I/O
 
-bool plLocalFileExists( const char* path ) {
+bool PlLocalFileExists( const char* path ) {
 	struct stat buffer;
 	return ( bool ) ( stat( path, &buffer ) == 0 );
 }
@@ -732,12 +732,12 @@ bool plLocalFileExists( const char* path ) {
  * @param path
  * @return False if the file wasn't accessible.
  */
-bool plFileExists( const char* path ) {
+bool PlFileExists( const char* path ) {
     if ( fs_mount_root == NULL ) {
-        return plLocalFileExists( path );
+        return PlLocalFileExists( path );
     } else if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
 		path += sizeof( FS_LOCAL_HINT );
-		return plLocalFileExists( path );
+		return PlLocalFileExists( path );
 	}
 
 	PLFileSystemMount* location = fs_mount_root;
@@ -746,13 +746,13 @@ bool plFileExists( const char* path ) {
 			/* todo: don't allow path to search outside of mounted path */
 			char buf[PL_SYSTEM_MAX_PATH + 1];
 			snprintf( buf, sizeof( buf ), "%s/%s", location->path, path );
-			if ( plLocalFileExists( buf ) ) {
+			if ( PlLocalFileExists( buf ) ) {
 				return true;
 			}
 		} else {
 			PLFile* fp = PlLoadPackageFile( location->pkg, path );
 			if ( fp != NULL ) {
-				plCloseFile( fp );
+				PlCloseFile( fp );
 				return true;
 			}
 		}
@@ -763,7 +763,7 @@ bool plFileExists( const char* path ) {
 	return false;
 }
 
-bool plLocalPathExists( const char* path ) {
+bool PlLocalPathExists( const char* path ) {
 #if defined(_MSC_VER)
 	DWORD fa = GetFileAttributes(path);
 	if (fa & FILE_ATTRIBUTE_DIRECTORY) {
@@ -780,12 +780,12 @@ bool plLocalPathExists( const char* path ) {
 	return false;
 }
 
-bool plPathExists( const char* path ) {
+bool PlPathExists( const char* path ) {
     if ( fs_mount_root == NULL ) {
-        return plLocalPathExists( path );
+        return PlLocalPathExists( path );
     } else if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
 		path += sizeof( FS_LOCAL_HINT );
-		return plLocalPathExists( path );
+		return PlLocalPathExists( path );
 	}
 
 	PLFileSystemMount* location = fs_mount_root;
@@ -794,7 +794,7 @@ bool plPathExists( const char* path ) {
 			/* todo: don't allow path to search outside of mounted path */
 			char buf[PL_SYSTEM_MAX_PATH + 1];
 			snprintf( buf, sizeof( buf ), "%s/%s", location->path, path );
-			if ( plLocalPathExists( buf ) ) {
+			if ( PlLocalPathExists( buf ) ) {
 				return true;
 			}
 		} else {
@@ -817,8 +817,8 @@ bool plPathExists( const char* path ) {
  * @param path Path to the file you want to delete.
  * @return True on success and false on fail.
  */
-bool plDeleteFile( const char* path ) {
-	if ( !plLocalFileExists( path ) ) {
+bool PlDeleteFile( const char* path ) {
+	if ( !PlLocalFileExists( path ) ) {
 		return true;
 	}
 
@@ -827,7 +827,7 @@ bool plDeleteFile( const char* path ) {
 		return true;
 	}
 
-	plReportErrorF( PL_RESULT_FILEREAD, strerror( errno ) );
+	PlReportErrorF( PL_RESULT_FILEREAD, strerror( errno ) );
 	return false;
 }
 
@@ -838,16 +838,16 @@ bool plDeleteFile( const char* path ) {
  * @param length Length of the data buffer.
  * @return True on success and false on fail.
  */
-bool plWriteFile( const char* path, const uint8_t* buf, size_t length ) {
+bool PlWriteFile( const char* path, const uint8_t* buf, size_t length ) {
 	FILE* fp = fopen( path, "wb" );
 	if ( fp == NULL ) {
-		plReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", path );
+		PlReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", path );
 		return false;
 	}
 
 	bool result = true;
 	if ( fwrite( buf, sizeof( char ), length, fp ) != length ) {
-		plReportErrorF( PL_RESULT_FILEWRITE, "failed to write entirety of file" );
+		PlReportErrorF( PL_RESULT_FILEWRITE, "failed to write entirety of file" );
 		result = false;
 	}
 
@@ -856,29 +856,29 @@ bool plWriteFile( const char* path, const uint8_t* buf, size_t length ) {
 	return result;
 }
 
-bool plCopyFile( const char* path, const char* dest ) {
+bool PlCopyFile( const char* path, const char* dest ) {
 	// read in the original
-	PLFile* original = plOpenFile( path, true );
+	PLFile* original = PlOpenFile( path, true );
 	if ( original == NULL ) {
-		plReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", path );
+		PlReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", path );
 		return false;
 	}
 
 	// write out the copy
 	FILE* copy = fopen( dest, "wb" );
 	if ( copy == NULL ) {
-		plReportErrorF( PL_RESULT_FILEWRITE, "failed to open %s for write", dest );
+		PlReportErrorF( PL_RESULT_FILEWRITE, "failed to open %s for write", dest );
 		goto BAIL;
 	}
 
 	if ( fwrite( original->data, 1, original->size, copy ) != original->size ) {
-		plReportErrorF( PL_RESULT_FILEWRITE, "failed to write out %d bytes for %s", original->size, path );
+		PlReportErrorF( PL_RESULT_FILEWRITE, "failed to write out %d bytes for %s", original->size, path );
 		goto BAIL;
 	}
 
 	_pl_fclose( copy );
 
-	plCloseFile( original );
+	PlCloseFile( original );
 	return true;
 
 	BAIL:
@@ -887,14 +887,14 @@ bool plCopyFile( const char* path, const char* dest ) {
 		_pl_fclose( copy );
 	}
 
-	plCloseFile( original );
+	PlCloseFile( original );
 	return false;
 }
 
-size_t plGetLocalFileSize( const char* path ) {
+size_t PlGetLocalFileSize( const char* path ) {
 	struct stat buf;
 	if ( stat( path, &buf ) != 0 ) {
-		plReportErrorF( PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror( errno ) );
+		PlReportErrorF( PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror( errno ) );
 		return 0;
 	}
 
@@ -903,16 +903,16 @@ size_t plGetLocalFileSize( const char* path ) {
 
 ///////////////////////////////////////////
 
-PLFile* plOpenLocalFile( const char* path, bool cache ) {
+PLFile*PlOpenLocalFile( const char* path, bool cache ) {
 	FILE* fp = fopen( path, "rb" );
 	if ( fp == NULL ) {
-		plReportErrorF( PL_RESULT_FILEREAD, strerror( errno ) );
+		PlReportErrorF( PL_RESULT_FILEREAD, strerror( errno ) );
 		return NULL;
 	}
 
 	PLFile* ptr = pl_calloc( 1, sizeof( PLFile ) );
 	snprintf( ptr->path, sizeof( ptr->path ), "%s", path );
-	ptr->size = plGetLocalFileSize( path );
+	ptr->size = PlGetLocalFileSize( path );
 
 	if ( cache ) {
 		ptr->data = pl_malloc( ptr->size * sizeof( uint8_t ) );
@@ -937,17 +937,17 @@ PLFile* plOpenLocalFile( const char* path, bool cache ) {
  * @param cache Whether or not to cache the entire file into memory.
  * @return Returns handle to the file instance.
  */
-PLFile* plOpenFile( const char* path, bool cache ) {
+PLFile*PlOpenFile( const char* path, bool cache ) {
 	if ( plIsEmptyString( path ) ) {
-		plReportBasicError( PL_RESULT_FILEPATH );
+		PlReportBasicError( PL_RESULT_FILEPATH );
 		return NULL;
 	}
 
 	if ( fs_mount_root == NULL ) {
-	    return plOpenLocalFile( path, cache );
+	    return PlOpenLocalFile( path, cache );
 	} else if ( strncmp( FS_LOCAL_HINT, path, sizeof( FS_LOCAL_HINT ) ) == 0 ) {
 		path += sizeof( FS_LOCAL_HINT );
-		return plOpenLocalFile( path, cache );
+		return PlOpenLocalFile( path, cache );
 	}
 
 	char buf[PL_SYSTEM_MAX_PATH + 1];
@@ -957,7 +957,7 @@ PLFile* plOpenFile( const char* path, bool cache ) {
 		if ( location->type == FS_MOUNT_DIR ) {
 			/* todo: don't allow path to search outside of mounted path */
 			snprintf( buf, sizeof( buf ), "%s/%s", location->path, path );
-			fp = plOpenLocalFile( buf, cache );
+			fp = PlOpenLocalFile( buf, cache );
 		} else {
 			fp = PlLoadPackageFile( location->pkg, path );
 		}
@@ -975,7 +975,7 @@ PLFile* plOpenFile( const char* path, bool cache ) {
 	return NULL;
 }
 
-void plCloseFile( PLFile* ptr ) {
+void PlCloseFile( PLFile* ptr ) {
 	if ( ptr == NULL ) {
 		return;
 	}
@@ -993,11 +993,11 @@ void plCloseFile( PLFile* ptr ) {
  * @param ptr Pointer to file handle.
  * @return Full path to the current file.
  */
-const char* plGetFilePath( const PLFile* ptr ) {
+const char*PlGetFilePath( const PLFile* ptr ) {
 	return ptr->path;
 }
 
-const uint8_t* plGetFileData( const PLFile* ptr ) {
+const uint8_t*PlGetFileData( const PLFile* ptr ) {
 	return ptr->data;
 }
 
@@ -1006,9 +1006,9 @@ const uint8_t* plGetFileData( const PLFile* ptr ) {
  * @param ptr Pointer to file handle.
  * @return Number of bytes within file.
  */
-size_t plGetFileSize( const PLFile* ptr ) {
+size_t PlGetFileSize( const PLFile* ptr ) {
 	if ( ptr->fptr != NULL ) {
-		return plGetLocalFileSize( ptr->path );
+		return PlGetLocalFileSize( ptr->path );
 	}
 
 	return ptr->size;
@@ -1019,7 +1019,7 @@ size_t plGetFileSize( const PLFile* ptr ) {
  * @param ptr Pointer to the file handle.
  * @return Number of bytes into the file.
  */
-size_t plGetFileOffset( const PLFile* ptr ) {
+size_t PlGetFileOffset( const PLFile* ptr ) {
 	if ( ptr->fptr != NULL ) {
 		return ftell( ptr->fptr );
 	}
@@ -1027,10 +1027,10 @@ size_t plGetFileOffset( const PLFile* ptr ) {
 	return ptr->pos - ptr->data;
 }
 
-size_t plReadFile( PLFile* ptr, void* dest, size_t size, size_t count ) {
+size_t PlReadFile( PLFile* ptr, void* dest, size_t size, size_t count ) {
 	/* bail early if size is 0 to avoid division by 0 */
 	if ( size == 0 ) {
-		plReportBasicError( PL_RESULT_FILESIZE );
+		PlReportBasicError( PL_RESULT_FILESIZE );
 		return 0;
 	}
 
@@ -1040,7 +1040,7 @@ size_t plReadFile( PLFile* ptr, void* dest, size_t size, size_t count ) {
 
 	/* ensure that the read is valid */
 	size_t length = size * count;
-	size_t posn = plGetFileOffset( ptr );
+	size_t posn = PlGetFileOffset( ptr );
 	if ( posn + length >= ptr->size ) {
 		/* out of bounds, truncate it */
 		length = ptr->size - posn;
@@ -1051,8 +1051,8 @@ size_t plReadFile( PLFile* ptr, void* dest, size_t size, size_t count ) {
 	return length / size;
 }
 
-char plReadInt8( PLFile* ptr, bool* status ) {
-	if ( plGetFileOffset( ptr ) >= ptr->size ) {
+char PlReadInt8( PLFile* ptr, bool* status ) {
+	if ( PlGetFileOffset( ptr ) >= ptr->size ) {
 		if ( status != NULL ) {
 			*status = false;
 		}
@@ -1072,7 +1072,7 @@ char plReadInt8( PLFile* ptr, bool* status ) {
 
 static int64_t ReadSizedInteger( PLFile* ptr, size_t size, bool big_endian, bool* status ) {
 	int64_t n;
-	if ( plReadFile( ptr, &n, size, 1 ) != 1 ) {
+	if ( PlReadFile( ptr, &n, size, 1 ) != 1 ) {
 		if ( status != NULL ) {
 			*status = false;
 		}
@@ -1101,21 +1101,21 @@ static int64_t ReadSizedInteger( PLFile* ptr, size_t size, bool big_endian, bool
 	return n;
 }
 
-int16_t plReadInt16( PLFile* ptr, bool big_endian, bool* status ) {
+int16_t PlReadInt16( PLFile* ptr, bool big_endian, bool* status ) {
 	return (int16_t)ReadSizedInteger( ptr, sizeof( int16_t ), big_endian, status );
 }
 
-int32_t plReadInt32( PLFile* ptr, bool big_endian, bool* status ) {
+int32_t PlReadInt32( PLFile* ptr, bool big_endian, bool* status ) {
 	return (int32_t)ReadSizedInteger( ptr, sizeof( int32_t ), big_endian, status );
 }
 
-int64_t plReadInt64( PLFile* ptr, bool big_endian, bool* status ) {
+int64_t PlReadInt64( PLFile* ptr, bool big_endian, bool* status ) {
 	return ReadSizedInteger( ptr, sizeof( int64_t ), big_endian, status );
 }
 
-char* plReadString( PLFile* ptr, char* str, size_t size ) {
+char*PlReadString( PLFile* ptr, char* str, size_t size ) {
 	if ( size == 0 ) {
-		plReportBasicError( PL_RESULT_INVALID_PARM3 );
+		PlReportBasicError( PL_RESULT_INVALID_PARM3 );
 		return NULL;
 	}
 
@@ -1124,7 +1124,7 @@ char* plReadString( PLFile* ptr, char* str, size_t size ) {
 	}
 
 	if ( ptr->pos >= ptr->data + ptr->size ) {
-		plReportBasicError( PL_RESULT_FILEREAD );
+		PlReportBasicError( PL_RESULT_FILEREAD );
 		return NULL;
 	}
 
@@ -1145,22 +1145,22 @@ char* plReadString( PLFile* ptr, char* str, size_t size ) {
 	return str;
 }
 
-bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek ) {
+bool PlFileSeek( PLFile* ptr, long int pos, PLFileSeek seek ) {
 	if ( ptr->fptr != NULL ) {
 		int err = fseek( ptr->fptr, pos, seek );
 		if ( err != 0 ) {
-			plReportErrorF( PL_RESULT_FILEREAD, "failed to seek file (%s)", GetLastError_strerror( GetLastError() ) );
+			PlReportErrorF( PL_RESULT_FILEREAD, "failed to seek file (%s)", GetLastError_strerror( GetLastError() ) );
 			return false;
 		}
 
 		return true;
 	}
 
-	size_t posn = plGetFileOffset( ptr );
+	size_t posn = PlGetFileOffset( ptr );
 	switch ( seek ) {
 		case PL_SEEK_CUR:
 			if ( posn + pos > ptr->size || pos < -( ( signed long ) posn ) ) {
-				plReportBasicError( PL_RESULT_INVALID_PARM2 );
+				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
 			ptr->pos += pos;
@@ -1168,7 +1168,7 @@ bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek ) {
 
 		case PL_SEEK_SET:
 			if ( pos > ( signed long ) ptr->size || pos < 0 ) {
-				plReportBasicError( PL_RESULT_INVALID_PARM2 );
+				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
 			ptr->pos = &ptr->data[ pos ];
@@ -1176,21 +1176,21 @@ bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek ) {
 
 		case PL_SEEK_END:
 			if ( pos <= -( ( signed long ) ptr->size ) ) {
-				plReportBasicError( PL_RESULT_INVALID_PARM2 );
+				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
 			ptr->pos = &ptr->data[ ptr->size - pos ];
 			break;
 
 		default:
-			plReportBasicError( PL_RESULT_INVALID_PARM3 );
+			PlReportBasicError( PL_RESULT_INVALID_PARM3 );
 			return false;
 	}
 
 	return true;
 }
 
-void plRewindFile( PLFile* ptr ) {
+void PlRewindFile( PLFile* ptr ) {
 	if ( ptr->fptr != NULL ) {
 		rewind( ptr->fptr );
 		return;

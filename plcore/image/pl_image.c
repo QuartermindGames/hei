@@ -1,37 +1,33 @@
 /*
-This is free and unencumbered software released into the public domain.
+MIT License
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-For more information, please refer to <http://unlicense.org>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_image.h>
-#include <plcore/pl_math.h>
 
 #include <errno.h>
-#include <filesystem_private.h>
 
+#include "filesystem_private.h"
 #include "image_private.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -44,7 +40,7 @@ For more information, please refer to <http://unlicense.org>
 #include "stb_image.h"
 
 static PLImage *LoadStbImage( const char *path ) {
-	PLFile *file = plOpenFile( path, true );
+	PLFile *file = PlOpenFile( path, true );
 	if ( file == NULL ) {
 		return NULL;
 	}
@@ -52,10 +48,10 @@ static PLImage *LoadStbImage( const char *path ) {
 	int x, y, component;
 	unsigned char *data = stbi_load_from_memory( file->data, ( int ) file->size, &x, &y, &component, 4 );
 
-	plCloseFile( file );
+	PlCloseFile( file );
 
 	if ( data == NULL ) {
-		plReportErrorF( PL_RESULT_FILEREAD, "failed to read in image (%s)", stbi_failure_reason() );
+		PlReportErrorF( PL_RESULT_FILEREAD, "failed to read in image (%s)", stbi_failure_reason() );
 		return NULL;
 	}
 
@@ -64,7 +60,7 @@ static PLImage *LoadStbImage( const char *path ) {
 	image->format = PL_IMAGEFORMAT_RGBA8;
 	image->width = ( unsigned int ) x;
 	image->height = ( unsigned int ) y;
-	image->size = plGetImageSize( image->format, image->width, image->height );
+	image->size = PlGetImageSize( image->format, image->width, image->height );
 	image->levels = 1;
 	image->data = pl_calloc( image->levels, sizeof( uint8_t * ) );
 	image->data[ 0 ] = data;
@@ -84,9 +80,9 @@ typedef struct PLImageLoader {
 static PLImageLoader imageLoaders[ MAX_IMAGE_LOADERS ];
 static unsigned int numImageLoaders = 0;
 
-void plRegisterImageLoader( const char *extension, PLImage *( *LoadImage )( const char *path ) ) {
+void PlRegisterImageLoader( const char *extension, PLImage *( *LoadImage )( const char *path ) ) {
 	if ( numImageLoaders >= MAX_IMAGE_LOADERS ) {
-		plReportBasicError( PL_RESULT_MEMORY_EOA );
+		PlReportBasicError( PL_RESULT_MEMORY_EOA );
 		return;
 	}
 
@@ -96,7 +92,7 @@ void plRegisterImageLoader( const char *extension, PLImage *( *LoadImage )( cons
 	numImageLoaders++;
 }
 
-void plRegisterStandardImageLoaders( unsigned int flags ) {
+void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	typedef struct SImageLoader {
 		unsigned int flag;
 		const char *extension;
@@ -113,9 +109,10 @@ void plRegisterStandardImageLoaders( unsigned int flags ) {
 	        { PL_IMAGE_FILEFORMAT_HDR, "hdr", LoadStbImage },
 	        { PL_IMAGE_FILEFORMAT_PIC, "pic", LoadStbImage },
 	        { PL_IMAGE_FILEFORMAT_PNM, "pnm", LoadStbImage },
-	        { PL_IMAGE_FILEFORMAT_FTX, "ftx", plLoadFtxImage },
-	        { PL_IMAGE_FILEFORMAT_3DF, "3df", plLoad3dfImage },
-	        { PL_IMAGE_FILEFORMAT_TIM, "tim", plLoadTimImage },
+	        { PL_IMAGE_FILEFORMAT_FTX, "ftx", PlLoadFtxImage },
+	        { PL_IMAGE_FILEFORMAT_3DF, "3df", PlLoad3dfImage },
+	        { PL_IMAGE_FILEFORMAT_TIM, "tim", PlLoadTimImage },
+	        { PL_IMAGE_FILEFORMAT_SWL, "swl", PlLoadSwlImage },
 	};
 
 	for ( unsigned int i = 0; i < plArrayElements( loaderList ); ++i ) {
@@ -123,15 +120,15 @@ void plRegisterStandardImageLoaders( unsigned int flags ) {
 			continue;
 		}
 
-		plRegisterImageLoader( loaderList[ i ].extension, loaderList[ i ].LoadFunction );
+		PlRegisterImageLoader( loaderList[ i ].extension, loaderList[ i ].LoadFunction );
 	}
 }
 
-void plClearImageLoaders( void ) {
+void PlClearImageLoaders( void ) {
 	numImageLoaders = 0;
 }
 
-PLImage *plCreateImage( uint8_t *buf, unsigned int w, unsigned int h, PLColourFormat col, PLImageFormat dat ) {
+PLImage *PlCreateImage( uint8_t *buf, unsigned int w, unsigned int h, PLColourFormat col, PLImageFormat dat ) {
 	PLImage *image = pl_malloc( sizeof( PLImage ) );
 	if ( image == NULL ) {
 		return NULL;
@@ -141,18 +138,18 @@ PLImage *plCreateImage( uint8_t *buf, unsigned int w, unsigned int h, PLColourFo
 	image->height = h;
 	image->colour_format = col;
 	image->format = dat;
-	image->size = plGetImageSize( image->format, image->width, image->height );
+	image->size = PlGetImageSize( image->format, image->width, image->height );
 	image->levels = 1;
 
 	image->data = pl_calloc( image->levels, sizeof( uint8_t * ) );
 	if ( image->data == NULL ) {
-		plDestroyImage( image );
+		PlDestroyImage( image );
 		return NULL;
 	}
 
 	image->data[ 0 ] = pl_calloc( image->size, sizeof( uint8_t ) );
 	if ( image->data[ 0 ] == NULL ) {
-		plDestroyImage( image );
+		PlDestroyImage( image );
 		return NULL;
 	}
 
@@ -163,22 +160,22 @@ PLImage *plCreateImage( uint8_t *buf, unsigned int w, unsigned int h, PLColourFo
 	return image;
 }
 
-void plDestroyImage( PLImage *image ) {
+void PlDestroyImage( PLImage *image ) {
 	if ( image == NULL ) {
 		return;
 	}
 
-	plFreeImage( image );
+	PlFreeImage( image );
 	free( image );
 }
 
-PLImage *plLoadImage( const char *path ) {
-	if ( !plFileExists( path ) ) {
-		plReportBasicError( PL_RESULT_FILEPATH );
+PLImage *PlLoadImage( const char *path ) {
+	if ( !PlFileExists( path ) ) {
+		PlReportBasicError( PL_RESULT_FILEPATH );
 		return NULL;
 	}
 
-	const char *extension = plGetFileExtension( path );
+	const char *extension = PlGetFileExtension( path );
 	for ( unsigned int i = 0; i < numImageLoaders; ++i ) {
 		if ( pl_strcasecmp( extension, imageLoaders[ i ].extension ) == 0 ) {
 			PLImage *image = imageLoaders[ i ].LoadImage( path );
@@ -189,24 +186,24 @@ PLImage *plLoadImage( const char *path ) {
 		}
 	}
 
-	plReportBasicError( PL_RESULT_UNSUPPORTED );
+	PlReportBasicError( PL_RESULT_UNSUPPORTED );
 
 	return NULL;
 }
 
-bool plWriteImage( const PLImage *image, const char *path ) {
+bool PlWriteImage( const PLImage *image, const char *path ) {
 	if ( plIsEmptyString( path ) ) {
-		plReportErrorF( PL_RESULT_FILEPATH, PlGetResultString( PL_RESULT_FILEPATH ) );
+		PlReportErrorF( PL_RESULT_FILEPATH, PlGetResultString( PL_RESULT_FILEPATH ) );
 		return false;
 	}
 
-	int comp = ( int ) plGetNumberOfColourChannels( image->colour_format );
+	int comp = ( int ) PlGetNumberOfColourChannels( image->colour_format );
 	if ( comp == 0 ) {
-		plReportErrorF( PL_RESULT_IMAGEFORMAT, "invalid colour format" );
+		PlReportErrorF( PL_RESULT_IMAGEFORMAT, "invalid colour format" );
 		return false;
 	}
 
-	const char *extension = plGetFileExtension( path );
+	const char *extension = PlGetFileExtension( path );
 	if ( !plIsEmptyString( extension ) ) {
 		if ( !pl_strncasecmp( extension, "bmp", 3 ) ) {
 			if ( stbi_write_bmp( path, ( int ) image->width, ( int ) image->height, comp, image->data[ 0 ] ) == 1 ) {
@@ -227,12 +224,12 @@ bool plWriteImage( const PLImage *image, const char *path ) {
 		}
 	}
 
-	plReportErrorF( PL_RESULT_FILETYPE, PlGetResultString( PL_RESULT_FILETYPE ) );
+	PlReportErrorF( PL_RESULT_FILETYPE, PlGetResultString( PL_RESULT_FILETYPE ) );
 	return false;
 }
 
 // Returns the number of samples per-pixel depending on the colour format.
-unsigned int plGetNumberOfColourChannels( PLColourFormat format ) {
+unsigned int PlGetNumberOfColourChannels( PLColourFormat format ) {
 	switch ( format ) {
 		case PL_COLOURFORMAT_ABGR:
 		case PL_COLOURFORMAT_ARGB:
@@ -251,7 +248,7 @@ unsigned int plGetNumberOfColourChannels( PLColourFormat format ) {
 }
 
 static bool RGB8toRGBA8( PLImage *image ) {
-	size_t size = plGetImageSize( PL_IMAGEFORMAT_RGBA8, image->width, image->height );
+	size_t size = PlGetImageSize( PL_IMAGEFORMAT_RGBA8, image->width, image->height );
 	if ( size == 0 ) {
 		return false;
 	}
@@ -314,7 +311,7 @@ static uint8_t *ImageDataRGB5A1toRGBA8( const uint8_t *src, size_t n_pixels ) {
 	return dst;
 }
 
-bool plConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
+bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
 	if ( image->format == new_format ) {
 		return true;
 	}
@@ -343,7 +340,7 @@ bool plConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
 
 						pl_free( levels );
 
-						plReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate memory for image data" );
+						PlReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate memory for image data" );
 						return false;
 					}
 
@@ -371,16 +368,16 @@ bool plConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
 			break;
 	}
 
-	plReportErrorF( PL_RESULT_IMAGEFORMAT, "unsupported image format conversion" );
+	PlReportErrorF( PL_RESULT_IMAGEFORMAT, "unsupported image format conversion" );
 	return false;
 }
 
-unsigned int plGetImageSize( PLImageFormat format, unsigned int width, unsigned int height ) {
+unsigned int PlGetImageSize( PLImageFormat format, unsigned int width, unsigned int height ) {
 	switch ( format ) {
 		case PL_IMAGEFORMAT_RGB_DXT1:
 			return ( width * height ) >> 1;
 		default: {
-			unsigned int bytes = plImageBytesPerPixel( format );
+			unsigned int bytes = PlImageBytesPerPixel( format );
 			return width * height * bytes;
 		}
 	}
@@ -390,7 +387,7 @@ unsigned int plGetImageSize( PLImageFormat format, unsigned int width, unsigned 
  *
  * If the format doesn't have a predictable size or the size isn't a multiple
  * of one byte, returns ZERO. */
-unsigned int plImageBytesPerPixel( PLImageFormat format ) {
+unsigned int PlImageBytesPerPixel( PLImageFormat format ) {
 	switch ( format ) {
 		case PL_IMAGEFORMAT_RGBA4:
 		case PL_IMAGEFORMAT_RGB5A1:
@@ -411,8 +408,8 @@ unsigned int plImageBytesPerPixel( PLImageFormat format ) {
 	}
 }
 
-void plInvertImageColour( PLImage *image ) {
-	unsigned int num_colours = plGetNumberOfColourChannels( image->colour_format );
+void PlInvertImageColour( PLImage *image ) {
+	unsigned int num_colours = PlGetNumberOfColourChannels( image->colour_format );
 	switch ( image->format ) {
 		case PL_IMAGEFORMAT_RGB8:
 		case PL_IMAGEFORMAT_RGBA8: {
@@ -428,11 +425,11 @@ void plInvertImageColour( PLImage *image ) {
 			break;
 	}
 
-	plReportErrorF( PL_RESULT_IMAGEFORMAT, "unsupported image format" );
+	PlReportErrorF( PL_RESULT_IMAGEFORMAT, "unsupported image format" );
 }
 
 /* utility function */
-void plGenerateStipplePattern( PLImage *image, unsigned int depth ) {
+void PlGenerateStipplePattern( PLImage *image, unsigned int depth ) {
 #if 0
     unsigned int p = 0;
     unsigned int num_colours = plGetSamplesPerPixel(image->colour_format);
@@ -456,22 +453,22 @@ void plGenerateStipplePattern( PLImage *image, unsigned int depth ) {
 #endif
 }
 
-void plReplaceImageColour( PLImage *image, PLColour target, PLColour dest ) {
-	unsigned int num_colours = plGetNumberOfColourChannels( image->colour_format );
+void PlReplaceImageColour( PLImage *image, PLColour target, PLColour dest ) {
+	unsigned int num_colours = PlGetNumberOfColourChannels( image->colour_format );
 	switch ( image->format ) {
 		case PL_IMAGEFORMAT_RGB8:
 		case PL_IMAGEFORMAT_RGBA8: {
 			for ( unsigned int i = 0; i < image->size; i += num_colours ) {
 				uint8_t *pixel = &image->data[ 0 ][ i ];
 				if ( num_colours == 4 ) {
-					if ( plCompareColour( PLColour( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ], pixel[ 3 ] ), target ) ) {
+					if ( PlCompareColour( PLColour( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ], pixel[ 3 ] ), target ) ) {
 						pixel[ 0 ] = dest.r;
 						pixel[ 1 ] = dest.g;
 						pixel[ 2 ] = dest.b;
 						pixel[ 3 ] = dest.a;
 					}
 				} else {
-					if ( plCompareColour( PLColourRGB( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ] ), target ) ) {
+					if ( PlCompareColour( PLColourRGB( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ] ), target ) ) {
 						pixel[ 0 ] = dest.r;
 						pixel[ 1 ] = dest.g;
 						pixel[ 2 ] = dest.b;
@@ -484,10 +481,10 @@ void plReplaceImageColour( PLImage *image, PLColour target, PLColour dest ) {
 			break;
 	}
 
-	plReportErrorF( PL_RESULT_IMAGEFORMAT, "unsupported image format" );
+	PlReportErrorF( PL_RESULT_IMAGEFORMAT, "unsupported image format" );
 }
 
-void plFreeImage( PLImage *image ) {
+void PlFreeImage( PLImage *image ) {
 	FunctionStart();
 
 	if ( image == NULL || image->data == NULL ) {
@@ -501,21 +498,21 @@ void plFreeImage( PLImage *image ) {
 	pl_free( image->data );
 }
 
-bool plImageIsPowerOfTwo( const PLImage *image ) {
-	if ( ( ( image->width == 0 ) || ( image->height == 0 ) ) || ( !plIsPowerOfTwo( image->width ) || !plIsPowerOfTwo( image->height ) ) ) {
+bool PlImageIsPowerOfTwo( const PLImage *image ) {
+	if ( ( ( image->width == 0 ) || ( image->height == 0 ) ) || ( !PlIsPowerOfTwo( image->width ) || !PlIsPowerOfTwo( image->height ) ) ) {
 		return false;
 	}
 
 	return true;
 }
 
-bool plFlipImageVertical( PLImage *image ) {
+bool PlFlipImageVertical( PLImage *image ) {
 	unsigned int width = image->width;
 	unsigned int height = image->height;
 
-	unsigned int bytes_per_pixel = plImageBytesPerPixel( image->format );
+	unsigned int bytes_per_pixel = PlImageBytesPerPixel( image->format );
 	if ( bytes_per_pixel == 0 ) {
-		plReportErrorF( PL_RESULT_IMAGEFORMAT, "cannot flip images in this format" );
+		PlReportErrorF( PL_RESULT_IMAGEFORMAT, "cannot flip images in this format" );
 		return false;
 	}
 
@@ -540,7 +537,7 @@ bool plFlipImageVertical( PLImage *image ) {
 		height /= 2;
 	}
 
-	free( swap );
+	pl_free( swap );
 
 	return true;
 }
@@ -549,7 +546,7 @@ bool plFlipImageVertical( PLImage *image ) {
  * Returns a list of file extensions representing all
  * the formats supported by the image loader.
  */
-const char **plGetSupportedImageFormats( unsigned int *numElements ) {
+const char **PlGetSupportedImageFormats( unsigned int *numElements ) {
 	static const char *imageFormats[ MAX_IMAGE_LOADERS ];
 	for ( unsigned int i = 0; i < numImageLoaders; ++i ) {
 		imageFormats[ i ] = imageLoaders[ i ].extension;

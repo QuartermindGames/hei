@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <PL/platform_console.h>
-
 #include "plg_private.h"
 
 /**
@@ -50,8 +48,8 @@ void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertice
         }
 
 		/* why the weird multiplication at the end here? to roughly match previous scaling values */
-        vertices[ i ].st[ 0 ].x = ( plVector3Index( vertices[ i ].position, x ) + textureOffset.x ) / ( textureScale.x * 500.0f );
-        vertices[ i ].st[ 0 ].y = ( plVector3Index( vertices[ i ].position, y ) + textureOffset.y ) / ( textureScale.y * 500.0f );
+        vertices[ i ].st[ 0 ].x = ( PlVector3Index( vertices[ i ].position, x ) + textureOffset.x ) / ( textureScale.x * 500.0f );
+        vertices[ i ].st[ 0 ].y = ( PlVector3Index( vertices[ i ].position, y ) + textureOffset.y ) / ( textureScale.y * 500.0f );
 	}
 }
 
@@ -67,9 +65,9 @@ void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, un
 			        vertices[ b ].position,
 			        vertices[ c ].position );
 
-			vertices[ a ].normal = plAddVector3( vertices[ a ].normal, normal );
-			vertices[ b ].normal = plAddVector3( vertices[ b ].normal, normal );
-			vertices[ c ].normal = plAddVector3( vertices[ c ].normal, normal );
+			vertices[ a ].normal = PlAddVector3( vertices[ a ].normal, normal );
+			vertices[ b ].normal = PlAddVector3( vertices[ b ].normal, normal );
+			vertices[ c ].normal = PlAddVector3( vertices[ c ].normal, normal );
 		}
 
 		return;
@@ -81,7 +79,7 @@ void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, un
 PLVector3 PlgGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3 c ) {
 	PLVector3 x = PLVector3( c.x - b.x, c.y - b.y, c.z - b.z );
 	PLVector3 y = PLVector3( a.x - b.x, a.y - b.y, a.z - b.z );
-	return plNormalizeVector3( plVector3CrossProduct( x, y ) );
+	return PlNormalizeVector3( PlVector3CrossProduct( x, y ) );
 }
 
 void PlgGenerateMeshNormals( PLGMesh *mesh, bool perFace ) {
@@ -102,17 +100,17 @@ void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, con
 		PLGVertex *c = &vertices[ indices[ 2 ] ];
 
 		/* edges of the triangle, aka, position delta */
-		PLVector3 deltaPos1 = plSubtractVector3( b->position, a->position );
-		PLVector3 deltaPos2 = plSubtractVector3( c->position, a->position );
+		PLVector3 deltaPos1 = PlSubtractVector3( b->position, a->position );
+		PLVector3 deltaPos2 = PlSubtractVector3( c->position, a->position );
 
 		/* uv delta */
-		PLVector2 deltaUV1 = plSubtractVector2( &b->st[ 0 ], &a->st[ 0 ] );
-		PLVector2 deltaUV2 = plSubtractVector2( &c->st[ 0 ], &a->st[ 0 ] );
+		PLVector2 deltaUV1 = PlSubtractVector2( &b->st[ 0 ], &a->st[ 0 ] );
+		PLVector2 deltaUV2 = PlSubtractVector2( &c->st[ 0 ], &a->st[ 0 ] );
 
 		/* now actually compute the tangent and bitangent */
 		float r = 1.0f / ( deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x );
-		PLVector3 tangent = plScaleVector3f( plSubtractVector3( plScaleVector3f( deltaPos1, deltaUV2.y ), plScaleVector3f( deltaPos2, deltaUV1.y ) ), r );
-		PLVector3 bitangent = plScaleVector3f( plSubtractVector3( plScaleVector3f( deltaPos2, deltaUV1.x ), plScaleVector3f( deltaPos1, deltaUV2.x ) ), r );
+		PLVector3 tangent = PlScaleVector3F( PlSubtractVector3( PlScaleVector3F( deltaPos1, deltaUV2.y ), PlScaleVector3F( deltaPos2, deltaUV1.y ) ), r );
+		PLVector3 bitangent = PlScaleVector3F( PlSubtractVector3( PlScaleVector3F( deltaPos2, deltaUV1.x ), PlScaleVector3F( deltaPos1, deltaUV2.x ) ), r );
 
 		a->tangent = b->tangent = c->tangent = tangent;
 		a->bitangent = b->bitangent = c->bitangent = bitangent;
@@ -121,17 +119,17 @@ void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, con
 
 /* software implementation of gouraud shading */
 void plApplyMeshLighting( PLGMesh *mesh, const PLGLight *light, PLVector3 position ) {
-	PLVector3 distvec = plSubtractVector3( position, light->position );
-	float distance = ( plByteToFloat( light->colour.a ) - plVector3Length( distvec ) ) / 100.f;
+	PLVector3 distvec = PlSubtractVector3( position, light->position );
+	float distance = ( PlByteToFloat( light->colour.a ) - PlVector3Length( distvec ) ) / 100.f;
 	for ( unsigned int i = 0; i < mesh->num_verts; i++ ) {
 		PLVector3 normal = mesh->vertices[ i ].normal;
 		float angle = ( distance * ( ( normal.x * distvec.x ) + ( normal.y * distvec.y ) + ( normal.z * distvec.z ) ) );
 		if ( angle < 0 ) {
-			plClearColour( &mesh->vertices[ i ].colour );
+			PlClearColour( &mesh->vertices[ i ].colour );
 		} else {
-			mesh->vertices[ i ].colour.r = light->colour.r * plFloatToByte( angle );
-			mesh->vertices[ i ].colour.g = light->colour.g * plFloatToByte( angle );
-			mesh->vertices[ i ].colour.b = light->colour.b * plFloatToByte( angle );
+			mesh->vertices[ i ].colour.r = light->colour.r * PlFloatToByte( angle );
+			mesh->vertices[ i ].colour.g = light->colour.g * PlFloatToByte( angle );
+			mesh->vertices[ i ].colour.b = light->colour.b * PlFloatToByte( angle );
 		}
 		//GfxLog("light angle is %f\n", angle);
 	}
@@ -233,7 +231,7 @@ void PlgClearMeshTriangles( PLGMesh *mesh ) {
 
 void PlgScaleMesh( PLGMesh *mesh, PLVector3 scale ) {
 	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
-		mesh->vertices[ i ].position = plScaleVector3( mesh->vertices[ i ].position, scale );
+		mesh->vertices[ i ].position = PlScaleVector3( mesh->vertices[ i ].position, scale );
 	}
 }
 

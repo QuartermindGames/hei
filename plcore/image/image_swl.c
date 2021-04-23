@@ -1,28 +1,25 @@
 /*
-This is free and unencumbered software released into the public domain.
+MIT License
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-For more information, please refer to <http://unlicense.org>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
 #include "image_private.h"
@@ -35,30 +32,30 @@ typedef struct SWLHeader {
 	uint32_t height;
 } SWLHeader;
 
-PLImage *plReadSwlImage( PLFile *fin ) {
+static PLImage *ReadSwlImage( PLFile *fin ) {
 	SWLHeader header;
-	if ( plReadFile( fin, &header, sizeof( header ), 1 ) != 1 ) {
+	if ( PlReadFile( fin, &header, sizeof( header ), 1 ) != 1 ) {
 		return NULL;
 	}
 
 	if ( header.width > 512 || header.width == 0 ||
 	     header.height > 512 || header.height == 0 ) {
-		plReportBasicError( PL_RESULT_IMAGERESOLUTION );
+		PlReportBasicError( PL_RESULT_IMAGERESOLUTION );
 		return NULL;
 	}
 
 	struct {
 		uint8_t r, g, b, a;
 	} palette[ 256 ];
-	if ( plReadFile( fin, palette, 4, 256 ) != 256 ) {
-		plReportBasicError( PL_RESULT_FILEREAD );
+	if ( PlReadFile( fin, palette, 4, 256 ) != 256 ) {
+		PlReportBasicError( PL_RESULT_FILEREAD );
 		return false;
 	}
 
 	/* according to sources, this is a collection of misc data that's
    * specific to SiN itself, so we'll skip it. */
-	if ( !plFileSeek( fin, 0x4D4, PL_SEEK_SET ) ) {
-		plReportBasicError( PL_RESULT_FILEREAD );
+	if ( !PlFileSeek( fin, 0x4D4, PL_SEEK_SET ) ) {
+		PlReportBasicError( PL_RESULT_FILEREAD );
 		return false;
 	}
 
@@ -68,7 +65,7 @@ PLImage *plReadSwlImage( PLFile *fin ) {
 	out->levels = 4;
 	out->colour_format = PL_COLOURFORMAT_RGBA;
 	out->format = PL_IMAGEFORMAT_RGBA8;
-	out->size = plGetImageSize( out->format, out->width, out->height );
+	out->size = PlGetImageSize( out->format, out->width, out->height );
 
 	unsigned int mip_w = out->width;
 	unsigned int mip_h = out->height;
@@ -80,15 +77,15 @@ PLImage *plReadSwlImage( PLFile *fin ) {
 
 		size_t buf_size = mip_w * mip_h;
 		uint8_t *buf = pl_malloc( buf_size );
-		if ( plReadFile( fin, buf, 1, buf_size ) != buf_size ) {
-			plDestroyImage( out );
+		if ( PlReadFile( fin, buf, 1, buf_size ) != buf_size ) {
+			PlDestroyImage( out );
 			pl_free( buf );
 			return false;
 		}
 
 		out->data = pl_calloc( out->levels, sizeof( uint8_t * ) );
 
-		size_t level_size = plGetImageSize( out->format, mip_w, mip_h );
+		size_t level_size = PlGetImageSize( out->format, mip_w, mip_h );
 		out->data[ i ] = pl_calloc( level_size, sizeof( uint8_t ) );
 
 		/* now we fill in the buf we just allocated,
@@ -112,15 +109,15 @@ PLImage *plReadSwlImage( PLFile *fin ) {
 	return out;
 }
 
-PLImage *plLoadSwlImage( const char *path ) {
-	PLFile *file = plOpenFile( path, false );
+PLImage *PlLoadSwlImage( const char *path ) {
+	PLFile *file = PlOpenFile( path, false );
 	if ( file == NULL ) {
 		return NULL;
 	}
 
-	PLImage *image = plReadSwlImage( file );
+	PLImage *image = ReadSwlImage( file );
 
-	plCloseFile( file );
+	PlCloseFile( file );
 
 	return image;
 }

@@ -24,11 +24,28 @@ SOFTWARE.
 
 #pragma once
 
-#include "pl_private.h"
+#include <plcore/pl.h>
 
-#include <plcore/pl_image.h>
+PL_EXTERN_C
 
-PLImage *PlLoad3dfImage( const char *path );
-PLImage *PlLoadFtxImage( const char *path );
-PLImage *PlLoadTimImage( const char *path );
-PLImage *PlLoadSwlImage( const char *path );
+typedef struct PLLinkedList PLLinkedList;
+typedef struct PLLinkedListNode PLLinkedListNode;
+
+PLLinkedList *PlCreateLinkedList( void );
+
+PLLinkedListNode *PlInsertLinkedListNode( PLLinkedList *list, void *userPtr );
+
+void PlDestroyLinkedList( PLLinkedList *list );
+void PlDestroyLinkedListNode( PLLinkedList *list, PLLinkedListNode *node );
+void PlDestroyLinkedListNodes( PLLinkedList *list );
+
+PLLinkedListNode *PlGetNextLinkedListNode( PLLinkedListNode *node );
+PLLinkedListNode *PlGetPrevLinkedListNode( PLLinkedListNode *node );
+PLLinkedListNode *PlGetFirstNode( PLLinkedList *list );
+void *PlGetLinkedListNodeUserData( PLLinkedListNode *node );
+
+unsigned int PlGetNumLinkedListNodes( PLLinkedList *list );
+
+PLLinkedList *PlGetLinkedListNodeContainer( PLLinkedListNode *node );
+
+PL_EXTERN_C_END

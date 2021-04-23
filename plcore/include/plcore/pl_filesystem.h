@@ -1,41 +1,38 @@
 /*
-This is free and unencumbered software released into the public domain.
+MIT License
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-For more information, please refer to <http://unlicense.org>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
 #pragma once
 
 #include "pl.h"
 
-#define plBytesToKilobytes(a)   ((double)((a)) / 1000)
-#define plBytesToMegabytes(a)   (plBytesToKilobytes(a) / 1000)
-#define plBytesToGigabytes(a)   (plBytesToMegabytes(a) / 1000)
+#define PlBytesToKilobytes( a ) ( ( double ) ( ( a ) ) / 1000 )
+#define PlBytesToMegabytes( a ) ( PlBytesToKilobytes( a ) / 1000 )
+#define PlBytesToGigabytes( a ) ( PlBytesToMegabytes( a ) / 1000 )
 
-#define plBytesToKibibytes(a)   ((double)((a)) / 1024)
-#define plBytesToMebibytes(a)   (plBytesToKibibytes(a) / 1024)
-#define plBytesToGibibytes(a)   (plBytesToMebibytes(a) / 1024)
+#define PlBytesToKibibytes( a ) ( ( double ) ( ( a ) ) / 1024 )
+#define PlBytesToMebibytes( a ) ( PlBytesToKibibytes( a ) / 1024 )
+#define PlBytesToGibibytes( a ) ( PlBytesToMebibytes( a ) / 1024 )
 
 typedef struct PLFile PLFile;
 
@@ -45,7 +42,9 @@ typedef enum PLFileSeek {
 	PL_SEEK_CUR = SEEK_CUR,
 	PL_SEEK_END = SEEK_END
 #else
-	PL_SEEK_SET, PL_SEEK_CUR, PL_SEEK_END
+	PL_SEEK_SET,
+	PL_SEEK_CUR,
+	PL_SEEK_END
 #endif
 } PLFileSeek;
 
@@ -55,69 +54,69 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PL_EXTERN char *plGetUserName(char *out, size_t n);
+PL_EXTERN char *PlGetUserName( char *out, size_t n );
 
-PL_EXTERN const char* plGetWorkingDirectory( void );
-PL_EXTERN void plSetWorkingDirectory( const char* path );
+PL_EXTERN const char *PlGetWorkingDirectory( void );
+PL_EXTERN void PlSetWorkingDirectory( const char *path );
 
-PL_EXTERN char* plGetApplicationDataDirectory( const char* app_name, char* out, size_t n );
+PL_EXTERN char *PlGetApplicationDataDirectory( const char *app_name, char *out, size_t n );
 
-PL_EXTERN void plStripExtension( char* dest, size_t length, const char* in );
+PL_EXTERN void PlStripExtension( char *dest, size_t length, const char *in );
 
-PL_EXTERN const char* plGetFileExtension( const char* in );
-PL_EXTERN const char* plGetFileName( const char* path );
+PL_EXTERN const char *PlGetFileExtension( const char *in );
+PL_EXTERN const char *PlGetFileName( const char *path );
 
-PL_EXTERN bool plLocalFileExists( const char* path );
-PL_EXTERN bool plFileExists( const char* path );
-PL_EXTERN bool plLocalPathExists( const char* path );
-PL_EXTERN bool plPathExists( const char* path );
+PL_EXTERN bool PlLocalFileExists( const char *path );
+PL_EXTERN bool PlFileExists( const char *path );
+PL_EXTERN bool PlLocalPathExists( const char *path );
+PL_EXTERN bool PlPathExists( const char *path );
 
-PL_EXTERN void plScanDirectory( const char* path, const char* extension, void (* Function)( const char*, void* ), bool recursive, void *userData );
+PL_EXTERN void PlScanDirectory( const char *path, const char *extension, void ( *Function )( const char *, void * ), bool recursive, void *userData );
 
-PL_EXTERN bool plCreateDirectory( const char* path );
-PL_EXTERN bool plCreatePath( const char* path );
+PL_EXTERN bool PlCreateDirectory( const char *path );
+PL_EXTERN bool PlCreatePath( const char *path );
 
 // File I/O ...
 
-PL_EXTERN PLFile* plOpenLocalFile( const char* path, bool cache );
-PL_EXTERN PLFile* plOpenFile( const char* path, bool cache );
-PL_EXTERN void plCloseFile( PLFile* ptr );
+PL_EXTERN PLFile *PlOpenLocalFile( const char *path, bool cache );
+PL_EXTERN PLFile *PlOpenFile( const char *path, bool cache );
+PL_EXTERN void PlCloseFile( PLFile *ptr );
 
-PL_EXTERN bool plCopyFile( const char* path, const char* dest );
-PL_EXTERN bool plWriteFile( const char* path, const uint8_t* buf, size_t length );
-PL_EXTERN bool plDeleteFile( const char* path );
+PL_EXTERN bool PlCopyFile( const char *path, const char *dest );
+PL_EXTERN bool PlWriteFile( const char *path, const uint8_t *buf, size_t length );
+PL_EXTERN bool PlDeleteFile( const char *path );
 
-PL_EXTERN bool plIsFileModified( time_t oldtime, const char* path );
-PL_EXTERN bool plIsEndOfFile( const PLFile* ptr );
+PL_EXTERN bool PlIsFileModified( time_t oldtime, const char *path );
+PL_EXTERN bool PlIsEndOfFile( const PLFile *ptr );
 
-PL_EXTERN time_t plGetLocalFileTimeStamp( const char *path );
-PL_EXTERN size_t plGetLocalFileSize( const char *path );
+PL_EXTERN time_t PlGetLocalFileTimeStamp( const char *path );
+PL_EXTERN size_t PlGetLocalFileSize( const char *path );
 
-PL_EXTERN const char* plGetFilePath( const PLFile* ptr );
-PL_EXTERN const uint8_t* plGetFileData( const PLFile* ptr );
-PL_EXTERN time_t plGetFileTimeStamp( PLFile *ptr );
-PL_EXTERN size_t plGetFileSize( const PLFile* ptr );
-PL_EXTERN size_t plGetFileOffset( const PLFile* ptr );
+PL_EXTERN const char *PlGetFilePath( const PLFile *ptr );
+PL_EXTERN const uint8_t *PlGetFileData( const PLFile *ptr );
+PL_EXTERN time_t PlGetFileTimeStamp( PLFile *ptr );
+PL_EXTERN size_t PlGetFileSize( const PLFile *ptr );
+PL_EXTERN size_t PlGetFileOffset( const PLFile *ptr );
 
-PL_EXTERN size_t plReadFile( PLFile* ptr, void* dest, size_t size, size_t count );
+PL_EXTERN size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count );
 
-PL_EXTERN char plReadInt8( PLFile* ptr, bool* status );
-PL_EXTERN int16_t plReadInt16( PLFile* ptr, bool big_endian, bool* status );
-PL_EXTERN int32_t plReadInt32( PLFile* ptr, bool big_endian, bool* status );
-PL_EXTERN int64_t plReadInt64(PLFile* ptr, bool big_endian, bool* status);
+PL_EXTERN char PlReadInt8( PLFile *ptr, bool *status );
+PL_EXTERN int16_t PlReadInt16( PLFile *ptr, bool big_endian, bool *status );
+PL_EXTERN int32_t PlReadInt32( PLFile *ptr, bool big_endian, bool *status );
+PL_EXTERN int64_t PlReadInt64( PLFile *ptr, bool big_endian, bool *status );
 
-PL_EXTERN char* plReadString(PLFile* ptr, char* str, size_t size);
+PL_EXTERN char *PlReadString( PLFile *ptr, char *str, size_t size );
 
-PL_EXTERN bool plFileSeek( PLFile* ptr, long int pos, PLFileSeek seek );
-PL_EXTERN void plRewindFile( PLFile* ptr );
+PL_EXTERN bool PlFileSeek( PLFile *ptr, long int pos, PLFileSeek seek );
+PL_EXTERN void PlRewindFile( PLFile *ptr );
 
 /** FS Mounting **/
 
-PL_EXTERN PLFileSystemMount* plMountLocalLocation( const char* path );
-PL_EXTERN PLFileSystemMount* plMountLocation( const char* path );
+PL_EXTERN PLFileSystemMount *PlMountLocalLocation( const char *path );
+PL_EXTERN PLFileSystemMount *PlMountLocation( const char *path );
 
-PL_EXTERN void plClearMountedLocation( PLFileSystemMount* location );
-PL_EXTERN void plClearMountedLocations( void );
+PL_EXTERN void PlClearMountedLocation( PLFileSystemMount *location );
+PL_EXTERN void PlClearMountedLocations( void );
 
 /****/
 

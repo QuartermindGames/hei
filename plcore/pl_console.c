@@ -49,12 +49,12 @@ void PlRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( uns
 	FunctionStart();
 
 	if ( name == NULL || name[ 0 ] == '\0' ) {
-		plReportErrorF( PL_RESULT_COMMAND_NAME, PlGetResultString( PL_RESULT_COMMAND_NAME ) );
+		PlReportErrorF( PL_RESULT_COMMAND_NAME, PlGetResultString( PL_RESULT_COMMAND_NAME ) );
 		return;
 	}
 
 	if ( CallbackFunction == NULL ) {
-		plReportErrorF( PL_RESULT_COMMAND_FUNCTION, PlGetResultString( PL_RESULT_COMMAND_FUNCTION ) );
+		PlReportErrorF( PL_RESULT_COMMAND_FUNCTION, PlGetResultString( PL_RESULT_COMMAND_FUNCTION ) );
 		return;
 	}
 
@@ -63,7 +63,7 @@ void PlRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( uns
 		PLConsoleCommand **old_mem = _pl_commands;
 		_pl_commands = ( PLConsoleCommand ** ) realloc( _pl_commands, ( _pl_commands_size += 128 ) * sizeof( PLConsoleCommand ) );
 		if ( !_pl_commands ) {
-			plReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes",
+			PlReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes",
 			             _pl_commands_size * sizeof( PLConsoleCommand ) );
 			_pl_commands = old_mem;
 			_pl_commands_size -= 128;
@@ -125,7 +125,7 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *def,
 		PLConsoleVariable **old_mem = _pl_variables;
 		_pl_variables = ( PLConsoleVariable ** ) realloc( _pl_variables, ( _pl_variables_size += 128 ) * sizeof( PLConsoleVariable ) );
 		if ( _pl_variables == NULL ) {
-			plReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes",
+			PlReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes",
 			             _pl_variables_size * sizeof( PLConsoleVariable ) );
 			_pl_variables = old_mem;
 			_pl_variables_size -= 128;
@@ -137,7 +137,7 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *def,
 	if ( _pl_num_variables < _pl_variables_size ) {
 		_pl_variables[ _pl_num_variables ] = ( PLConsoleVariable * ) pl_malloc( sizeof( PLConsoleVariable ) );
 		if ( _pl_variables[ _pl_num_variables ] == NULL ) {
-			plReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for ConsoleCommand, %d",
+			PlReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for ConsoleCommand, %d",
 			             sizeof( PLConsoleVariable ) );
 			return NULL;
 		}
@@ -256,7 +256,7 @@ void PlSetConsoleVariableByName( const char *name, const char *value ) {
 IMPLEMENT_COMMAND( pwd, "Print current working directory." ) {
 	plUnused( argv );
 	plUnused( argc );
-	Print( "%s\n", plGetWorkingDirectory() );
+	Print( "%s\n", PlGetWorkingDirectory() );
 }
 
 IMPLEMENT_COMMAND( echo, "Prints out string to console." ) {
@@ -535,7 +535,7 @@ static void InitializeDefaultLogLevels( void ) {
  */
 static LogLevel *GetLogLevelForId( int id ) {
 	if ( id >= MAX_LOG_LEVELS ) {
-		plReportErrorF( PL_RESULT_MEMORY_EOA, "failed to find slot for log level %d", id );
+		PlReportErrorF( PL_RESULT_MEMORY_EOA, "failed to find slot for log level %d", id );
 		return NULL;
 	}
 
@@ -566,7 +566,7 @@ void PlSetupLogOutput( const char *path ) {
 	}
 
 	strncpy( logOutputPath, path, sizeof( logOutputPath ) );
-	if ( plFileExists( logOutputPath ) ) {
+	if ( PlFileExists( logOutputPath ) ) {
 		unlink( logOutputPath );
 	}
 }
@@ -646,7 +646,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 			if ( file != NULL ) {
 				if ( fwrite( buf, sizeof( char ), size, file ) != size ) {
 					avoid_recursion = true;
-					plReportErrorF( PL_RESULT_FILEERR, "failed to write to log, %s\n%s", logOutputPath, strerror( errno ) );
+					PlReportErrorF( PL_RESULT_FILEERR, "failed to write to log, %s\n%s", logOutputPath, strerror( errno ) );
 				}
 				fclose( file );
 				return;
@@ -654,7 +654,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 
 			// todo, needs to be more appropriate; return details on exact issue
 			avoid_recursion = true;
-			plReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", logOutputPath );
+			PlReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", logOutputPath );
 		}
 	}
 }

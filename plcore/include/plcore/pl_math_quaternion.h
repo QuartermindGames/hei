@@ -1,28 +1,25 @@
 /*
-This is free and unencumbered software released into the public domain.
+MIT License
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-For more information, please refer to <http://unlicense.org>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
 #pragma once
@@ -46,7 +43,7 @@ typedef struct PLQuaternion {
 
 #endif
 
-PL_INLINE static PLQuaternion plMultiplyQuaternion( const PLQuaternion* q, const PLQuaternion* q2 ) {
+PL_INLINE static PLQuaternion PlMultiplyQuaternion( const PLQuaternion* q, const PLQuaternion* q2 ) {
 	return PLQuaternion
 	(
 		( q->x * q2->w ) + ( q->w * q2->x ) + ( q->y * q2->z ) - ( q->z * q2->y ),
@@ -56,7 +53,7 @@ PL_INLINE static PLQuaternion plMultiplyQuaternion( const PLQuaternion* q, const
 	);
 }
 
-PL_INLINE static PLQuaternion plMultiplyQuaternion3fv( const PLQuaternion* q, const PLVector3* v ) {
+PL_INLINE static PLQuaternion PlMultiplyQuaternion3FV( const PLQuaternion* q, const PLVector3* v ) {
 	return PLQuaternion
 	(
 		( q->w * v->x ) + ( q->y * v->z ) - ( q->z * v->y ),
@@ -66,43 +63,43 @@ PL_INLINE static PLQuaternion plMultiplyQuaternion3fv( const PLQuaternion* q, co
 	);
 }
 
-PL_INLINE static PLQuaternion plScaleQuaternion( const PLQuaternion* q, float a ) {
+PL_INLINE static PLQuaternion PlScaleQuaternion( const PLQuaternion* q, float a ) {
 	return PLQuaternion( q->x * a, q->y * a, q->z * a, q->w * a );
 }
 
-PL_INLINE static PLQuaternion plAddQuaternion( const PLQuaternion* q, const PLQuaternion* q2 ) {
+PL_INLINE static PLQuaternion PlAddQuaternion( const PLQuaternion* q, const PLQuaternion* q2 ) {
 	return PLQuaternion( q->x + q2->x, q->y + q2->y, q->z + q2->z, q->w + q2->w );
 }
 
-PL_INLINE static PLQuaternion plAddQuaternionf( const PLQuaternion* q, float a ) {
+PL_INLINE static PLQuaternion PlAddQuaternionF( const PLQuaternion* q, float a ) {
 	return PLQuaternion( q->x + a, q->y + a, q->z + a, q->z + a );
 }
 
-PL_INLINE static PLQuaternion plInverseQuaternion( const PLQuaternion* q ) {
+PL_INLINE static PLQuaternion PlInverseQuaternion( const PLQuaternion* q ) {
 	return PLQuaternion( -q->x, -q->y, -q->z, q->w );
 }
 
-PL_INLINE static float plQuaternionLength( const PLQuaternion* q ) {
+PL_INLINE static float PlQuaternionLength( const PLQuaternion* q ) {
 	return sqrtf( q->x * q->x + q->y * q->y + q->z * q->z + q->w * q->w );
 }
 
-PL_INLINE static PLQuaternion plNormalizeQuaternion( const PLQuaternion* q ) {
-	float l = plQuaternionLength( q );
+PL_INLINE static PLQuaternion PlNormalizeQuaternion( const PLQuaternion* q ) {
+	float l = PlQuaternionLength( q );
 	if ( l > 0 ) {
 		float i = 1 / l;
-		return plScaleQuaternion( q, i );
+		return PlScaleQuaternion( q, i );
 	}
 
 	return *q;
 }
 
-PL_INLINE static const char* plPrintQuaternion( const PLQuaternion* q ) {
+PL_INLINE static const char*PlPrintQuaternion( const PLQuaternion* q ) {
 	static char s[32] = { '\0' };
 	snprintf( s, 32, "%i %i %i %i", ( int ) q->x, ( int ) q->y, ( int ) q->z, ( int ) q->w );
 	return s;
 }
 
-PL_INLINE static void plComputeQuaternionW( PLQuaternion* q ) {
+PL_INLINE static void PlComputeQuaternionW( PLQuaternion* q ) {
 	float t = 1.f - ( q->x * q->x ) - ( q->y * q->y ) - ( q->z * q->z );
 	if ( t < 0 ) {
 		q->w = 0;
@@ -112,10 +109,10 @@ PL_INLINE static void plComputeQuaternionW( PLQuaternion* q ) {
 }
 
 /* pulled from here: http://tfc.duke.free.fr/coding/md5-specs-en.html */
-PL_INLINE static PLQuaternion plRotateQuaternionPoint( const PLQuaternion* q, const PLVector3* point ) {
-	PLQuaternion b = plInverseQuaternion( q );
-	b = plNormalizeQuaternion( &b );
+PL_INLINE static PLQuaternion PlRotateQuaternionPoint( const PLQuaternion* q, const PLVector3* point ) {
+	PLQuaternion b = PlInverseQuaternion( q );
+	b = PlNormalizeQuaternion( &b );
 
-	PLQuaternion a = plMultiplyQuaternion3fv( q, point );
-	return plMultiplyQuaternion( &a, &b );
+	PLQuaternion a = PlMultiplyQuaternion3FV( q, point );
+	return PlMultiplyQuaternion( &a, &b );
 }

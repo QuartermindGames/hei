@@ -26,7 +26,7 @@ For more information, please refer to <http://unlicense.org>
 */
 
 #include <plcore/pl_filesystem.h>
-#include <plcore/pl_llist.h>
+#include <plcore/pl_linkedlist.h>
 #include <plcore/pl_parse.h>
 #include <plcore/pl_image.h>
 
@@ -101,7 +101,7 @@ PLFunctionResult PlInitialize(int argc, char **argv) {
     memset(&pl_arguments, 0, sizeof(PLArguments));
     pl_arguments.num_arguments = (unsigned int)argc;
     if(!plIsEmptyString(argv[0])) {
-        pl_arguments.exe_name = plGetFileName(argv[0]);
+        pl_arguments.exe_name = PlGetFileName( argv[ 0 ] );
     }
 
     for(unsigned int i = 0; i < pl_arguments.num_arguments; i++) {
@@ -298,7 +298,7 @@ const char *PlGetError(void) {
     return loc_error;
 }
 
-void plReportError( PLFunctionResult result, const char *function, const char *message, ... ) {
+void PlReportError( PLFunctionResult result, const char *function, const char *message, ... ) {
 	va_list args;
 	va_start( args, message );
 
@@ -437,44 +437,44 @@ static PLLinkedList *plugins;
 static unsigned int numPlugins;
 
 static PLPluginExportTable exportTable = {
-        .ReportError = plReportError,
+        .ReportError = PlReportError,
         .GetError = PlGetError,
 
-        .LocalFileExists = plLocalFileExists,
-        .FileExists = plFileExists,
-        .LocalPathExists = plLocalPathExists,
-        .PathExists = plPathExists,
-        .ScanDirectory = plScanDirectory,
-        .CreateDirectory = plCreateDirectory,
-        .CreatePath = plCreatePath,
-        .OpenLocalFile = plOpenLocalFile,
-        .OpenFile = plOpenFile,
-        .CloseFile = plCloseFile,
-        .IsEndOfFile = plIsEndOfFile,
-        .GetFilePath = plGetFilePath,
-        .GetFileData = plGetFileData,
-        .GetFileSize = plGetFileSize,
-        .GetFileOffset = plGetFileOffset,
-        .ReadFile = plReadFile,
-        .ReadInt8 = plReadInt8,
-        .ReadInt16 = plReadInt16,
-        .ReadInt32 = plReadInt32,
-        .ReadInt64 = plReadInt64,
-        .ReadString = plReadString,
-        .FileSeek = plFileSeek,
-        .RewindFile = plRewindFile,
+        .LocalFileExists = PlLocalFileExists,
+        .FileExists = PlFileExists,
+        .LocalPathExists = PlLocalPathExists,
+        .PathExists = PlPathExists,
+        .ScanDirectory = PlScanDirectory,
+        .CreateDirectory = PlCreateDirectory,
+        .CreatePath = PlCreatePath,
+        .OpenLocalFile = PlOpenLocalFile,
+        .OpenFile = PlOpenFile,
+        .CloseFile = PlCloseFile,
+        .IsEndOfFile = PlIsEndOfFile,
+        .GetFilePath = PlGetFilePath,
+        .GetFileData = PlGetFileData,
+        .GetFileSize = PlGetFileSize,
+        .GetFileOffset = PlGetFileOffset,
+        .ReadFile = PlReadFile,
+        .ReadInt8 = PlReadInt8,
+        .ReadInt16 = PlReadInt16,
+        .ReadInt32 = PlReadInt32,
+        .ReadInt64 = PlReadInt64,
+        .ReadString = PlReadString,
+        .FileSeek = PlFileSeek,
+        .RewindFile = PlRewindFile,
 
         .RegisterPackageLoader = PlRegisterPackageLoader,
-        .RegisterImageLoader = plRegisterImageLoader,
+        .RegisterImageLoader = PlRegisterImageLoader,
 
-        .CreateImage = plCreateImage,
-        .DestroyImage = plDestroyImage,
-        .ConvertPixelFormat = plConvertPixelFormat,
-        .InvertImageColour = plInvertImageColour,
-        .ReplaceImageColour = plReplaceImageColour,
-        .FlipImageVertical = plFlipImageVertical,
-        .GetNumberOfColourChannels = plGetNumberOfColourChannels,
-        .GetImageSize = plGetImageSize,
+        .CreateImage = PlCreateImage,
+        .DestroyImage = PlDestroyImage,
+        .ConvertPixelFormat = PlConvertPixelFormat,
+        .InvertImageColour = PlInvertImageColour,
+        .ReplaceImageColour = PlReplaceImageColour,
+        .FlipImageVertical = PlFlipImageVertical,
+        .GetNumberOfColourChannels = PlGetNumberOfColourChannels,
+        .GetImageSize = PlGetImageSize,
 
 		.CreatePackageHandle = PlCreatePackageHandle,
         .GetPackagePath = PlGetPackagePath,
@@ -528,7 +528,7 @@ bool PlRegisterPlugin( const char *path ) {
 			        PL_PLUGIN_INTERFACE_VERSION_MINOR } );
 			if ( description != NULL ) {
 				if ( description->interfaceVersion[ 0 ] != PL_PLUGIN_INTERFACE_VERSION_MAJOR ) {
-					plReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "Unsupported interface version!\n" );
+					PlReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "Unsupported interface version!\n" );
 				} else {
 					DebugPrint( "Found plugin (%s)\n", description->description );
 				}
@@ -544,14 +544,14 @@ bool PlRegisterPlugin( const char *path ) {
 	DebugPrint( "Success, adding \"%s\" to plugins list\n", path );
 
 	if ( plugins == NULL ) {
-		plugins = plCreateLinkedList();
+		plugins = PlCreateLinkedList();
 	}
 
 	PLPlugin *plugin = pl_malloc( sizeof( PLPlugin ) );
 	snprintf( plugin->pluginPath, sizeof( plugin->pluginPath ), "%s", path );
 	plugin->initFunction = InitializePlugin;
 	plugin->libPtr = library;
-	plugin->node = plInsertLinkedListNode( plugins, plugin );
+	plugin->node = PlInsertLinkedListNode( plugins, plugin );
 
 	numPlugins++;
 
@@ -586,14 +586,14 @@ static void RegisterScannedPlugin( const char *path, void *unused ) {
 void PlRegisterPlugins( const char *pluginDir ) {
 	PlClearError();
 
-	if ( !plPathExists( pluginDir ) ) {
-		plReportBasicError( PL_RESULT_INVALID_PARM1 );
+	if ( !PlPathExists( pluginDir ) ) {
+		PlReportBasicError( PL_RESULT_INVALID_PARM1 );
 		return;
 	}
 
 	Print( "Scanning for plugins in \"%s\"\n", pluginDir );
 
-	plScanDirectory( pluginDir, NULL, RegisterScannedPlugin, false, NULL );
+	PlScanDirectory( pluginDir, NULL, RegisterScannedPlugin, false, NULL );
 
 	Print( "Done, %d plugins loaded.\n", numPlugins );
 }
@@ -607,9 +607,9 @@ void PlInitializePlugins( void ) {
 		return;
 	}
 
-	PLLinkedListNode *node = plGetFirstNode( plugins );
+	PLLinkedListNode *node = PlGetFirstNode( plugins );
 	while ( node != NULL ) {
-		PLPlugin *plugin = ( PLPlugin * ) plGetLinkedListNodeUserData( node );
+		PLPlugin *plugin = ( PLPlugin * ) PlGetLinkedListNodeUserData( node );
 
 		exportTable.MAlloc = pl_malloc;
 		exportTable.CAlloc = pl_calloc;
@@ -618,6 +618,6 @@ void PlInitializePlugins( void ) {
 
 		plugin->initFunction( &exportTable );
 
-		node = plGetNextLinkedListNode( node );
+		node = PlGetNextLinkedListNode( node );
 	}
 }

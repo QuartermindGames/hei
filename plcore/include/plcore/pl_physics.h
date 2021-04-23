@@ -121,7 +121,7 @@ PL_INLINE static bool PlTestLineIntersection( float dst1, float dst2, const PLVe
 	}
 
 	for ( unsigned int i = 0; i < 3; ++i ) {
-		plVector3Index( hit, i ) = plVector3Index( lineStart, i ) + ( plVector3Index( lineEnd, i ) - plVector3Index( lineStart, i ) ) * ( -dst1 / ( dst2 - dst1 ) );
+		PlVector3Index( hit, i ) = PlVector3Index( lineStart, i ) + ( PlVector3Index( lineEnd, i ) - PlVector3Index( lineStart, i ) ) * ( -dst1 / ( dst2 - dst1 ) );
 	}
 
 	return true;
@@ -172,9 +172,9 @@ PLCollision PlIsSphereIntersectingPlane( const PLCollisionSphere *sphere, const 
 
 /* https://github.com/erich666/GraphicsGems/blob/master/gemsii/intersect/intsph.c */
 PL_INLINE static bool PlIsRayIntersectingSphere( const PLCollisionSphere *sphere, const PLCollisionRay *ray, float *enterDistance, float *leaveDistance ) {
-	PLVector3 d = plSubtractVector3( ray->origin, sphere->origin );
-	float u = plVector3DotProduct( d, d ) - sphere->radius * sphere->radius;
-	float bsq = plVector3DotProduct( d, ray->direction );
+	PLVector3 d = PlSubtractVector3( ray->origin, sphere->origin );
+	float u = PlVector3DotProduct( d, d ) - sphere->radius * sphere->radius;
+	float bsq = PlVector3DotProduct( d, ray->direction );
 	float disc = bsq * bsq - u;
 
 	if ( disc >= 0.0f ) {
@@ -189,8 +189,8 @@ PL_INLINE static bool PlIsRayIntersectingSphere( const PLCollisionSphere *sphere
 
 /* https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c */
 PL_INLINE static bool PlIsRayIntersectingAabb( const PLCollisionAABB *bounds, const PLCollisionRay *ray, PLVector3 *hitPoint ) {
-	PLVector3 max = plAddVector3( bounds->maxs, bounds->origin );
-	PLVector3 min = plAddVector3( bounds->mins, bounds->origin );
+	PLVector3 max = PlAddVector3( bounds->maxs, bounds->origin );
+	PLVector3 min = PlAddVector3( bounds->mins, bounds->origin );
 
 	/* Find candidate planes */
 
@@ -203,13 +203,13 @@ PL_INLINE static bool PlIsRayIntersectingAabb( const PLCollisionAABB *bounds, co
 	bool isInside = true;
 
 	for ( unsigned int i = 0; i < 3; ++i ) {
-		if ( plVector3Index( ray->origin, i ) < plVector3Index( min, i ) ) {
+		if ( PlVector3Index( ray->origin, i ) < PlVector3Index( min, i ) ) {
 			hitQuadrant[ i ] = left;
-			plVector3Index( candidatePlane, i ) = plVector3Index( min, i );
+			PlVector3Index( candidatePlane, i ) = PlVector3Index( min, i );
 			isInside = false;
-		} else if ( plVector3Index( ray->origin, i ) > plVector3Index( max, i ) ) {
+		} else if ( PlVector3Index( ray->origin, i ) > PlVector3Index( max, i ) ) {
 			hitQuadrant[ i ] = right;
-			plVector3Index( candidatePlane, i ) = plVector3Index( max, i );
+			PlVector3Index( candidatePlane, i ) = PlVector3Index( max, i );
 			isInside = false;
 		} else {
 			hitQuadrant[ i ] = middle;
@@ -225,35 +225,35 @@ PL_INLINE static bool PlIsRayIntersectingAabb( const PLCollisionAABB *bounds, co
 	/* Calculate T distances to candidate planes */
 	PLVector3 maxT;
 	for ( unsigned int i = 0; i < 3; ++i ) {
-		if ( hitQuadrant[ i ] != middle && plVector3Index( ray->direction, i ) != 0.0f ) {
-			plVector3Index( maxT, i ) = ( plVector3Index( candidatePlane, i ) - plVector3Index( ray->origin, i ) ) / plVector3Index( ray->direction, i );
+		if ( hitQuadrant[ i ] != middle && PlVector3Index( ray->direction, i ) != 0.0f ) {
+			PlVector3Index( maxT, i ) = ( PlVector3Index( candidatePlane, i ) - PlVector3Index( ray->origin, i ) ) / PlVector3Index( ray->direction, i );
 		} else {
-			plVector3Index( maxT, i ) = -1.0f;
+			PlVector3Index( maxT, i ) = -1.0f;
 		}
 	}
 
 	/* Get largest of the maxT's for final choice of intersection */
 	unsigned int whichPlane = 0;
 	for ( unsigned int i = 1; i < 3; ++i ) {
-		if ( plVector3Index( maxT, whichPlane ) < plVector3Index( maxT, i ) ) {
+		if ( PlVector3Index( maxT, whichPlane ) < PlVector3Index( maxT, i ) ) {
 			whichPlane = i;
 		}
 	}
 
 	/* Check final candidate actually inside box */
 
-	if ( plVector3Index( maxT, whichPlane ) < 0.0f ) {
+	if ( PlVector3Index( maxT, whichPlane ) < 0.0f ) {
 		return false;
 	}
 
 	for ( unsigned int i = 0; i < 3; ++i ) {
 		if ( whichPlane != i ) {
-			plVector3Index( hitPoint, i ) = plVector3Index( ray->origin, i ) + plVector3Index( maxT, whichPlane ) * plVector3Index( ray->direction, i );
-			if ( plVector3Index( hitPoint, i ) < plVector3Index( min, i ) || plVector3Index( hitPoint, i ) > plVector3Index( max, i ) ) {
+			PlVector3Index( hitPoint, i ) = PlVector3Index( ray->origin, i ) + PlVector3Index( maxT, whichPlane ) * PlVector3Index( ray->direction, i );
+			if ( PlVector3Index( hitPoint, i ) < PlVector3Index( min, i ) || PlVector3Index( hitPoint, i ) > PlVector3Index( max, i ) ) {
 				return false;
 			}
 		} else {
-			plVector3Index( hitPoint, i ) = plVector3Index( candidatePlane, i );
+			PlVector3Index( hitPoint, i ) = PlVector3Index( candidatePlane, i );
 		}
 	}
 
