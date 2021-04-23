@@ -14,6 +14,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-unused-function")
 
 add_subdirectory(plcore)
 add_subdirectory(plgraphics)
+add_subdirectory(plmodel)
+
 add_subdirectory(tests)
 
 add_subdirectory(examples/pcmd)

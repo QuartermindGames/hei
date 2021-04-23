@@ -1,34 +1,28 @@
 /*
-This is free and unencumbered software released into the public domain.
+MIT License
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-For more information, please refer to <http://unlicense.org>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
-#include "pl_private.h"
-
-#include <PL/platform_filesystem.h>
-#include <PL/platform_model.h>
+#include "plm_private.h"
 
 /*
 	UNREAL 3D Animated Model Format
@@ -97,68 +91,68 @@ static int CompareTriangles( const void *a, const void *b ) {
 	return 0;
 }
 
-static PLModel *ReadU3DModelData( PLFile *data_ptr, PLFile *anim_ptr ) {
+static PLMModel *ReadU3DModelData( PLFile *data_ptr, PLFile *anim_ptr ) {
 	U3DAnimationHeader anim_hdr;
-	if ( plReadFile( anim_ptr, &anim_hdr, sizeof( U3DAnimationHeader ), 1 ) != 1 ) {
+	if ( PlReadFile( anim_ptr, &anim_hdr, sizeof( U3DAnimationHeader ), 1 ) != 1 ) {
 		return NULL;
 	}
 
 	/* validate animation header */
 
 	if ( anim_hdr.size == 0 ) {
-		ReportError( PL_RESULT_FILEREAD, "incorrect animation hdr size for \"%s\"", plGetFilePath( anim_ptr ) );
+		PlReportErrorF( PL_RESULT_FILEREAD, "incorrect animation hdr size for \"%s\"", PlGetFilePath( anim_ptr ) );
 		return NULL;
 	} else if ( anim_hdr.frames == 0 ) {
-		ReportError( PL_RESULT_FILEREAD, "invalid number of frames for \"%s\"", plGetFilePath( anim_ptr ) );
+		PlReportErrorF( PL_RESULT_FILEREAD, "invalid number of frames for \"%s\"", PlGetFilePath( anim_ptr ) );
 		return NULL;
 	}
 
 	U3DDataHeader data_hdr;
-	if ( plReadFile( data_ptr, &data_hdr, sizeof( U3DDataHeader ), 1 ) != 1 ) {
+	if ( PlReadFile( data_ptr, &data_hdr, sizeof( U3DDataHeader ), 1 ) != 1 ) {
 		return NULL;
 	}
 
 	/* validate data header */
 
 	if ( data_hdr.numverts == 0 ) {
-		ReportError( PL_RESULT_FILEREAD, "no vertices in model, \"%s\"", plGetFilePath( data_ptr ) );
+		PlReportErrorF( PL_RESULT_FILEREAD, "no vertices in model, \"%s\"", PlGetFilePath( data_ptr ) );
 		return NULL;
 	} else if ( data_hdr.numpolys == 0 ) {
-		ReportError( PL_RESULT_FILEREAD, "no polygons in model, \"%s\"", plGetFilePath( data_ptr ) );
+		PlReportErrorF( PL_RESULT_FILEREAD, "no polygons in model, \"%s\"", PlGetFilePath( data_ptr ) );
 		return NULL;
 	} else if ( data_hdr.frame > anim_hdr.frames ) {
-		ReportError( PL_RESULT_FILEREAD, "invalid frame specified in model, \"%s\"", plGetFilePath( data_ptr ) );
+		PlReportErrorF( PL_RESULT_FILEREAD, "invalid frame specified in model, \"%s\"", PlGetFilePath( data_ptr ) );
 		return NULL;
 	}
 
 	/* skip unused header data */
-	plFileSeek( data_ptr, 12, PL_SEEK_CUR );
+	PlFileSeek( data_ptr, 12, PL_SEEK_CUR );
 
 	/* read all the triangle data from the data file */
 	U3DTriangle *triangles = pl_calloc( data_hdr.numpolys, sizeof( U3DTriangle ) );
-	plReadFile( data_ptr, triangles, sizeof( U3DTriangle ), data_hdr.numpolys );
-	plCloseFile( data_ptr );
+	PlReadFile( data_ptr, triangles, sizeof( U3DTriangle ), data_hdr.numpolys );
+	PlCloseFile( data_ptr );
 
 	/* sort triangles by texture id */
 	qsort( triangles, data_hdr.numpolys, sizeof( U3DTriangle ), CompareTriangles );
 
 	/* read in all of the animation data from the anim file */
 	U3DVertex *vertices = pl_calloc( ( size_t ) data_hdr.numverts * anim_hdr.frames, sizeof( U3DVertex ) );
-	plReadFile( anim_ptr, vertices, sizeof( U3DVertex ), ( size_t ) data_hdr.numverts * anim_hdr.frames );
-	plCloseFile( anim_ptr );
+	PlReadFile( anim_ptr, vertices, sizeof( U3DVertex ), ( size_t ) data_hdr.numverts * anim_hdr.frames );
+	PlCloseFile( anim_ptr );
 
-	PLModel *model_ptr = pl_calloc( 1, sizeof( PLModel ) );
-	model_ptr->type = PL_MODELTYPE_VERTEX;
-	model_ptr->internal.vertex_data.animations = pl_calloc( anim_hdr.frames, sizeof( PLVertexAnimationFrame ) );
+	PLMModel *model_ptr = pl_calloc( 1, sizeof( PLMModel ) );
+	model_ptr->type = PLM_MODELTYPE_VERTEX;
+	model_ptr->internal.vertex_data.animations = pl_calloc( anim_hdr.frames, sizeof( PLMVertexAnimationFrame ) );
 
 	for ( unsigned int i = 0; i < anim_hdr.frames; ++i ) {
-		PLVertexAnimationFrame *frame = &model_ptr->internal.vertex_data.animations[ i ];
+		PLMVertexAnimationFrame *frame = &model_ptr->internal.vertex_data.animations[ i ];
 	}
 
 	pl_free( triangles );
 	pl_free( vertices );
 
-	plGenerateModelBounds( model_ptr );
+	PlmGenerateModelBounds( model_ptr );
 
 	return NULL;
 }
@@ -167,7 +161,7 @@ static PLModel *ReadU3DModelData( PLFile *data_ptr, PLFile *anim_ptr ) {
  * Load U3D model from local path.
  * @param path Path to the U3D Data file.
  */
-PLModel *plLoadU3DModel( const char *path ) {
+PLMModel *PlmLoadU3DModel( const char *path ) {
 	char anim_path[ PL_SYSTEM_MAX_PATH ];
 	snprintf( anim_path, sizeof( anim_path ), "%s", path );
 	char *p_ext = strstr( anim_path, "Data" );
@@ -180,26 +174,26 @@ PLModel *plLoadU3DModel( const char *path ) {
 		}
 	}
 
-	if ( !plFileExists( anim_path ) ) {
-		ReportError( PL_RESULT_FILEPATH, "failed to find anim companion for \"%s\" at \"%s\"", path, anim_path );
+	if ( !PlFileExists( anim_path ) ) {
+		PlReportErrorF( PL_RESULT_FILEPATH, "failed to find anim companion for \"%s\" at \"%s\"", path, anim_path );
 		return NULL;
 	}
 
-	PLFile *anim_ptr = plOpenFile( anim_path, false );
-	PLFile *data_ptr = plOpenFile( path, false );
+	PLFile *anim_ptr = PlOpenFile( anim_path, false );
+	PLFile *data_ptr = PlOpenFile( path, false );
 
-	PLModel *model_ptr = NULL;
+	PLMModel *model_ptr = NULL;
 	if ( anim_ptr != NULL && data_ptr != NULL ) {
 		model_ptr = ReadU3DModelData( data_ptr, anim_ptr );
 	}
 
-	plCloseFile( data_ptr );
-	plCloseFile( anim_ptr );
+	PlCloseFile( data_ptr );
+	PlCloseFile( anim_ptr );
 
 	return model_ptr;
 }
 
-bool plWriteU3DModel( PLModel *ptr, const char *path ) {
+bool plWriteU3DModel( PLMModel *ptr, const char *path ) {
 	return false;
 }
 

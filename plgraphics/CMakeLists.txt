@@ -14,7 +14,5 @@ add_library(plgraphics SHARED
         plg_texture.c
         polygon.c)
 
-target_include_directories(plgraphics PRIVATE ../plcore/include/)
 target_include_directories(plgraphics PUBLIC include/)
-
 target_link_libraries(plgraphics plcore)
