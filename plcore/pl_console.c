@@ -534,7 +534,7 @@ static void InitializeDefaultLogLevels( void ) {
  * internal one.
  */
 static LogLevel *GetLogLevelForId( int id ) {
-	if ( id >= MAX_LOG_LEVELS ) {
+	if ( id < 0 || id >= MAX_LOG_LEVELS ) {
 		PlReportErrorF( PL_RESULT_MEMORY_EOA, "failed to find slot for log level %d", id );
 		return NULL;
 	}

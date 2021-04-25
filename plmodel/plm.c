@@ -24,9 +24,6 @@ SOFTWARE.
 
 #include "plm_private.h"
 
-#include <plcore/pl_filesystem.h>
-#include <plgraphics/plg_mesh.h>
-
 /* PLATFORM MODEL LOADER */
 
 typedef struct ModelLoader {
@@ -38,7 +35,7 @@ typedef struct ModelLoader {
 static ModelLoader model_interfaces[ MAX_OBJECT_INTERFACES ];
 static unsigned int num_model_loaders = 0;
 
-int LOG_LEVEL_MODEL = 0;
+int LOG_LEVEL_MODEL = -1;
 
 void PlmInitialize( void ) {
 	PlmClearModelLoaders();
@@ -98,13 +95,9 @@ bool PlmWriteModel( const char *path, PLMModel *model, PLMModelOutputType type )
 }
 
 void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char *path ) ) {
-	if ( num_model_loaders == ( unsigned int ) ( -1 ) ) {
-		for ( size_t i = 0; i < plArrayElements( model_interfaces ); ++i, ++num_model_loaders ) {
-			if ( model_interfaces[ i ].ext == NULL && model_interfaces[ i ].LoadFunction == NULL ) {
-				num_model_loaders++;
-				break;
-			}
-		}
+	if ( num_model_loaders >= MAX_OBJECT_INTERFACES ) {
+		PlReportBasicError( PL_RESULT_MEMORY_EOA );
+		return;
 	}
 
 	model_interfaces[ num_model_loaders ].ext = ext;

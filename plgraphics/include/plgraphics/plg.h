@@ -31,7 +31,7 @@ SOFTWARE.
 #include <plgraphics/plg_texture.h>
 #include <plgraphics/plg_framebuffer.h>
 
-typedef struct PLGDriverInterface PLGDriverInterface;
+typedef struct PLGDriverImportTable PLGDriverImportTable;
 
 typedef enum PLGCullMode {
 	PLG_CULL_NONE, /* disables backface culling */
@@ -291,10 +291,6 @@ PL_EXTERN void PlgSetBlendMode( PLGBlend a, PLGBlend b );
 PL_EXTERN void PlgSetDepthBufferMode( unsigned int mode );
 PL_EXTERN void PlgSetDepthMask( bool enable );
 
-PL_EXTERN void PlgRegisterDriver( const char *description, const PLGDriverInterface *interface );
-PL_EXTERN const char **PlgGetAvailableDriverInterfaces( unsigned int *numModes );
-PL_EXTERN void PlgSetDriver( const char *mode );
-
 /* stencil operations */
 
 PL_EXTERN void PlgStencilFunction( PLGStencilTestFunction function, int reference, unsigned int mask );
@@ -306,101 +302,4 @@ PL_EXTERN void PlgDisableGraphicsState( PLGDrawState state );
 
 #endif
 
-#define PLG_INTERFACE_VERSION_MAJOR 1
-#define PLG_INTERFACE_VERSION_MINOR 0
-
 PL_EXTERN_C_END
-
-typedef struct PLGDriverDescription {
-	const char *renderer;
-	const char *vendor;
-	const char *version;
-} PLGDriverDescription;
-
-typedef struct PLGDriverInterface {
-	uint16_t version[ 2 ];
-
-	const PLGDriverDescription *( *Initialize )( void );
-	void ( *Shutdown )( void );
-
-	// Debug
-	void ( *InsertDebugMarker )( const char *msg );
-	void ( *PushDebugGroupMarker )( const char *msg );
-	void ( *PopDebugGroupMarker )( void );
-
-	/* hw information */
-
-	bool ( *SupportsHWShaders )( void );
-
-	void ( *GetMaxTextureUnits )( unsigned int *num_units );
-	void ( *GetMaxTextureSize )( unsigned int *s );
-
-	/******************************************/
-
-	/* generic state management */
-	void ( *EnableState )( PLGDrawState state );
-	void ( *DisableState )( PLGDrawState state );
-
-	void ( *SetBlendMode )( PLGBlend a, PLGBlend b );
-	void ( *SetCullMode )( PLGCullMode mode );
-
-	void ( *SetClearColour )( PLColour rgba );
-	void ( *ClearBuffers )( unsigned int buffers );
-
-	void ( *DrawPixel )( int x, int y, PLColour colour );
-
-	void ( *SetDepthBufferMode )( unsigned int mode );
-	void ( *SetDepthMask )( bool enable );
-
-	// Mesh
-	void ( *CreateMesh )( PLGMesh *mesh );
-	void ( *UploadMesh )( PLGMesh *mesh, PLGShaderProgram *program );
-	void ( *DrawMesh )( PLGMesh *mesh, PLGShaderProgram *program );
-	void ( *DrawInstancedMesh )( PLGMesh *mesh, PLGShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount );
-	void ( *DeleteMesh )( PLGMesh *mesh );
-
-	// Framebuffer
-	void ( *CreateFrameBuffer )( PLGFrameBuffer *buffer );
-	void ( *DeleteFrameBuffer )( PLGFrameBuffer *buffer );
-	void ( *BindFrameBuffer )( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget targetBinding );
-	PLGTexture *( *GetFrameBufferTextureAttachment )( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter );
-	void ( *BlitFrameBuffers )( PLGFrameBuffer *srcBuffer,
-	                            unsigned int srcW,
-	                            unsigned int srcH,
-	                            PLGFrameBuffer *dstBuffer,
-	                            unsigned int dstW,
-	                            unsigned int dstH,
-	                            bool linear );
-
-	// Texture
-	void ( *CreateTexture )( PLGTexture *texture );
-	void ( *DeleteTexture )( PLGTexture *texture );
-	void ( *BindTexture )( const PLGTexture *texture );
-	void ( *UploadTexture )( PLGTexture *texture, const PLImage *upload );
-	void ( *SwizzleTexture )( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a );
-	void ( *SetTextureAnisotropy )( PLGTexture *texture, uint32_t value );
-	void ( *ActiveTexture )( unsigned int target );
-
-	// Camera
-	/* todo: simplify/remove this interface */
-	void ( *CreateCamera )( PLGCamera *camera );
-	void ( *DestroyCamera )( PLGCamera *camera );
-	void ( *SetupCamera )( PLGCamera *camera );
-	///////////////////////////////////////////
-
-	// Shaders
-	/* todo: simplify this interface */
-	void ( *CreateShaderProgram )( PLGShaderProgram *program );
-	void ( *DestroyShaderProgram )( PLGShaderProgram *program );
-	void ( *AttachShaderStage )( PLGShaderProgram *program, PLGShaderStage *stage );
-	void ( *DetachShaderStage )( PLGShaderProgram *program, PLGShaderStage *stage );
-	void ( *LinkShaderProgram )( PLGShaderProgram *program );
-	void ( *SetShaderProgram )( PLGShaderProgram *program );
-	void ( *CreateShaderStage )( PLGShaderStage *stage );
-	void ( *DestroyShaderStage )( PLGShaderStage *stage );
-	void ( *CompileShaderStage )( PLGShaderStage *stage, const char *buf, size_t length );
-	void ( *SetShaderUniformValue )( PLGShaderProgram *program, int slot, const void *value, bool transpose );
-
-	// Stencil operations
-	void ( *StencilFunction )( PLGStencilTestFunction function, int reference, unsigned int mask );
-} PLGDriverInterface;

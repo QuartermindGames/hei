@@ -157,7 +157,7 @@ typedef struct PLPluginExportTable {
 #define PL_PLUGIN_INIT_FUNCTION "PLInitializePlugin"
 
 typedef const PLPluginDescription *( *PLPluginQueryFunction )( PLPluginInterfaceVersion interfaceVersion );
-typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *functionTable );
+typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *exportTable );
 
 /* 2021-04-22
  * - Removed some functions from the default interface

@@ -24,15 +24,13 @@ SOFTWARE.
 
 #pragma once
 
+#include <plcore/pl_console.h>
+
 #include <plgraphics/plg.h>
 #include <plgraphics/plg_texture.h>
 #include <plgraphics/plg_camera.h>
 
-#include <plcore/pl_console.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+PL_EXTERN_C
 
 #if !defined( NDEBUG )
 extern int LOG_LEVEL_GRAPHICS;
@@ -42,7 +40,7 @@ extern int LOG_LEVEL_GRAPHICS;
 #endif
 
 typedef struct GfxState {
-	const PLGDriverInterface *interface;
+	const PLGDriverImportTable *interface;
 
 	PLGCullMode current_cullmode;
 
@@ -125,6 +123,4 @@ PL_EXTERN GfxState gfx_state;
 
 void _plBindTexture( const PLGTexture *texture );
 
-#ifdef __cplusplus
-};
-#endif
+PL_EXTERN_C_END

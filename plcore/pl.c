@@ -501,12 +501,14 @@ static PLPluginExportTable exportTable = {
         .ParseFloat = PlParseFloat,
 };
 
+const PLPluginExportTable *PlGetExportTable( void ) {
+	return &exportTable;
+}
+
 /**
  * Attempts to load the given plugin and validate it.
  */
 bool PlRegisterPlugin( const char *path ) {
-	PlClearError();
-
 	DebugPrint( "Registering plugin: \"%s\"\n", path );
 
 	PLLibrary *library = PlLoadLibrary( path, false );

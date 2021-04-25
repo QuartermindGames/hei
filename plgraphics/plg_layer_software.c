@@ -151,7 +151,7 @@ static bool SWSupportsHWShaders( void ) {
 }
 
 void PlgInitSoftwareGraphicsLayer( void ) {
-	PLGDriverInterface swGraphicsInterface = {
+	PLGDriverImportTable swGraphicsInterface = {
 		.version = { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR },
 
 		.CreateCamera = SWCreateCamera,

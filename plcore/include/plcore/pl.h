@@ -229,6 +229,7 @@ PL_EXTERN void PlUnloadLibrary( PLLibrary *library );
  * Plugin Interface
  **/
 
+PL_EXTERN const struct PLPluginExportTable *PlGetExportTable( void );
 PL_EXTERN bool PlRegisterPlugin( const char *path );
 PL_EXTERN void PlRegisterPlugins( const char *pluginDir );
 PL_EXTERN void PlInitializePlugins( void );

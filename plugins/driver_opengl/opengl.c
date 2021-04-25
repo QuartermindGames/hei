@@ -1,28 +1,25 @@
 /*
-This is free and unencumbered software released into the public domain.
+MIT License
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-For more information, please refer to <http://unlicense.org>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
 #include "plugin.h"
@@ -30,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 #include <plgraphics/plg.h>
 #include <plgraphics/plg_camera.h>
 
-#include <PL/pl_parse.h>
+#include <plcore/pl_parse.h>
 
 #include <GL/glew.h>
 
@@ -54,7 +51,7 @@ static int gl_version_major = 0;
 static int gl_version_minor = 0;
 
 #define GLVersion( maj, min ) ( ( ( maj ) == gl_version_major && ( min ) <= gl_version_minor ) || ( maj ) < gl_version_major )
-#define GLLog( ... ) gInterface->LogMessage( glLogLevel, __VA_ARGS__ )
+#define GLLog( ... ) gInterface->core->LogMessage( glLogLevel, __VA_ARGS__ )
 
 unsigned int gl_num_extensions = 0;
 
@@ -153,10 +150,10 @@ static void GLGetMaxTextureSize( unsigned int *s ) {
 
 static void GLSetClearColour( PLColour rgba ) {
 	glClearColor(
-	        plByteToFloat( rgba.r ),
-	        plByteToFloat( rgba.g ),
-	        plByteToFloat( rgba.b ),
-	        plByteToFloat( rgba.a ) );
+	        PlByteToFloat( rgba.r ),
+	        PlByteToFloat( rgba.g ),
+	        PlByteToFloat( rgba.b ),
+	        PlByteToFloat( rgba.a ) );
 }
 
 static void GLClearBuffers( unsigned int buffers ) {
@@ -554,7 +551,7 @@ static void GLSwizzleTexture( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t
 		        TranslateColourChannel( a ) };
 		glTexParameteriv( GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle );
 	} else {
-		gInterface->ReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "missing software implementation" );
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "missing software implementation" );
 	}
 }
 
@@ -992,7 +989,7 @@ static char *InsertString( const char *string, char **buf, size_t *bufSize, size
 	*bufSize += strLength;
 	if ( *bufSize >= *maxBufSize ) {
 		*maxBufSize = *bufSize + strLength;
-		*buf = gInterface->ReAlloc( *buf, *maxBufSize );
+		*buf = gInterface->core->ReAlloc( *buf, *maxBufSize );
 	}
 
 	/* now copy it into our buffer */
@@ -1010,7 +1007,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 	/* setup the destination buffer */
 	size_t actualLength = 0;
 	size_t maxLength = *length;
-	char *dstBuffer = gInterface->CAlloc( maxLength, sizeof( char ) );
+	char *dstBuffer = gInterface->core->CAlloc( maxLength, sizeof( char ) );
 	char *dstPos = dstBuffer;
 
 	/* built-ins */
@@ -1059,7 +1056,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 
 		if ( srcPos[ 0 ] == '/' && srcPos[ 1 ] == '/' ) {
 			srcPos += 2;
-			gInterface->SkipLine( &srcPos );
+			gInterface->core->SkipLine( &srcPos );
 			continue;
 		}
 
@@ -1067,36 +1064,36 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 			srcPos++;
 
 			char token[ 32 ];
-			gInterface->ParseToken( &srcPos, token, sizeof( token ) );
+			gInterface->core->ParseToken( &srcPos, token, sizeof( token ) );
 			if ( strcmp( token, "include" ) == 0 ) {
-				gInterface->SkipWhitespace( &srcPos );
+				gInterface->core->SkipWhitespace( &srcPos );
 
 				/* pull the path - needs to be enclosed otherwise this'll fail */
 				char path[ PL_SYSTEM_MAX_PATH ];
-				gInterface->ParseEnclosedString( &srcPos, path, sizeof( path ) );
+				gInterface->core->ParseEnclosedString( &srcPos, path, sizeof( path ) );
 
-				PLFile *file = gInterface->OpenFile( path, true );
+				PLFile *file = gInterface->core->OpenFile( path, true );
 				if ( file != NULL ) {
 					/* allocate a temporary buffer */
-					size_t incLength = gInterface->GetFileSize( file );
-					char *incBuf = gInterface->MAlloc( incLength );
-					memcpy( incBuf, gInterface->GetFileData( file ), incLength );
+					size_t incLength = gInterface->core->GetFileSize( file );
+					char *incBuf = gInterface->core->MAlloc( incLength );
+					memcpy( incBuf, gInterface->core->GetFileData( file ), incLength );
 
 					/* close the current file, to avoid recursively opening files
 					 * and hitting any limits */
-					gInterface->CloseFile( file );
+					gInterface->core->CloseFile( file );
 
 					/* now throw it into the pre-processor */
 					incBuf = GLPreProcessGLSLShader( incBuf, &incLength, type, false );
 
 					/* and finally, push it into our destination */
 					dstPos = InsertString( incBuf, &dstBuffer, &actualLength, &maxLength );
-					gInterface->Free( incBuf );
+					gInterface->core->Free( incBuf );
 				} else {
-					GLLog( "Failed to load include \"%s\": %s\n", gInterface->GetError() );
+					GLLog( "Failed to load include \"%s\": %s\n", gInterface->core->GetError() );
 				}
 
-				gInterface->SkipLine( &srcPos );
+				gInterface->core->SkipLine( &srcPos );
 				continue;
 			}
 		}
@@ -1105,7 +1102,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 			++maxLength;
 
 			char *oldDstBuffer = dstBuffer;
-			dstBuffer = gInterface->ReAlloc( dstBuffer, maxLength );
+			dstBuffer = gInterface->core->ReAlloc( dstBuffer, maxLength );
 
 			dstPos = dstBuffer + ( dstPos - oldDstBuffer );
 		}
@@ -1114,7 +1111,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 	}
 
 	/* free the original buffer that was passed in */
-	gInterface->Free( buf );
+	gInterface->core->Free( buf );
 
 	/* resize and update buf to match */
 	*length = actualLength;
@@ -1155,23 +1152,23 @@ static void GLCreateShaderStage( PLGShaderStage *stage ) {
 
 	GLenum type = TranslateShaderStageType( stage->type );
 	if ( type == SHADER_INVALID_TYPE ) {
-		gInterface->ReportError( PL_RESULT_INVALID_SHADER_TYPE, "%u", type );
+		gInterface->core->ReportError( PL_RESULT_INVALID_SHADER_TYPE, "%u", type );
 		return;
 	}
 
 	if ( type == GL_GEOMETRY_SHADER && !GLVersion( 3, 0 ) ) {
-		gInterface->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, "%s", GetGLShaderStageDescriptor( type ) );
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, "%s", GetGLShaderStageDescriptor( type ) );
 		return;
 	}
 
 	if ( type == GL_COMPUTE_SHADER && !GLVersion( 4, 3 ) ) {
-		gInterface->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, "%s", GetGLShaderStageDescriptor( type ) );
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, "%s", GetGLShaderStageDescriptor( type ) );
 		return;
 	}
 
 	stage->internal.id = glCreateShader( type );
 	if ( stage->internal.id == 0 ) {
-		gInterface->ReportError( PL_RESULT_INVALID_SHADER_TYPE, "%u", type );
+		gInterface->core->ReportError( PL_RESULT_INVALID_SHADER_TYPE, "%u", type );
 		return;
 	}
 }
@@ -1204,7 +1201,7 @@ static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t
 	}
 
 	/* shove this here for now... */
-	char *mbuf = gInterface->MAlloc( length );
+	char *mbuf = gInterface->core->MAlloc( length );
 	memcpy( mbuf, buf, length );
 	mbuf = GLPreProcessGLSLShader( mbuf, &length, stage->type, true );
 	buf = mbuf;
@@ -1220,15 +1217,15 @@ static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t
 		int s_length;
 		glGetShaderiv( stage->internal.id, GL_INFO_LOG_LENGTH, &s_length );
 		if ( s_length > 1 ) {
-			char *log = gInterface->CAlloc( ( size_t ) s_length, sizeof( char ) );
+			char *log = gInterface->core->CAlloc( ( size_t ) s_length, sizeof( char ) );
 			glGetShaderInfoLog( stage->internal.id, s_length, NULL, log );
 			GLLog( " COMPILE ERROR:\n%s\n", log );
-			gInterface->ReportError( PL_RESULT_SHADER_COMPILE, "%s", log );
-			gInterface->Free( log );
+			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, "%s", log );
+			gInterface->core->Free( log );
 		}
 	}
 
-	gInterface->Free( mbuf );
+	gInterface->core->Free( mbuf );
 }
 
 static void GLSetShaderUniformValue( PLGShaderProgram *program, int slot, const void *value, bool transpose ) {
@@ -1314,7 +1311,7 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 
 	GLLog( "Found %u uniforms in shader\n", program->num_uniforms );
 
-	program->uniforms = gInterface->CAlloc( ( size_t ) program->num_uniforms, sizeof( *program->uniforms ) );
+	program->uniforms = gInterface->core->CAlloc( ( size_t ) program->num_uniforms, sizeof( *program->uniforms ) );
 	unsigned int registered = 0;
 	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
 		int maxUniformNameLength;
@@ -1411,12 +1408,12 @@ static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 		int s_length;
 		glGetProgramiv( program->internal.id, GL_INFO_LOG_LENGTH, &s_length );
 		if ( s_length > 1 ) {
-			char *log = gInterface->CAlloc( ( size_t ) s_length, sizeof( char ) );
+			char *log = gInterface->core->CAlloc( ( size_t ) s_length, sizeof( char ) );
 			glGetProgramInfoLog( program->internal.id, s_length, NULL, log );
 			GLLog( " LINK ERROR:\n%s\n", log );
-			gInterface->Free( log );
+			gInterface->core->Free( log );
 
-			gInterface->ReportError( PL_RESULT_SHADER_COMPILE, "%s", log );
+			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, "%s", log );
 		} else {
 			GLLog( " UNKNOWN LINK ERROR!\n" );
 		}
@@ -1550,7 +1547,7 @@ const PLGDriverDescription *GLInitialize( void ) {
 	glewExperimental = true;
 	GLenum err = glewInit();
 	if ( err != GLEW_OK ) {
-		gInterface->ReportError( PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", glewGetErrorString( err ) );
+		gInterface->core->ReportError( PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", glewGetErrorString( err ) );
 		return NULL;
 	}
 
@@ -1622,7 +1619,7 @@ void GLShutdown( void ) {
 #endif
 }
 
-PLGDriverInterface graphicsInterface = {
+PLGDriverImportTable graphicsInterface = {
         .version = { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR },
 
         .Initialize = GLInitialize,

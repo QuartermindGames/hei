@@ -1,9 +1,9 @@
 #[[ Copyright (C) 2021 Mark E Sowden <markelswo@gmail.com> ]]
 
-project(vulkan_plugin)
+project(vulkan_driver)
 
 add_library(
-        vulkan_plugin SHARED
+        vulkan_driver SHARED
         vulkan.c
         plugin.c
         plugin.h)
@@ -25,6 +25,6 @@ target_link_libraries(platform Vulkan_LIBRARY)
 target_include_directories(platform PRIVATE ${Vulkan_INCLUDE_DIR})
 
 target_include_directories(
-        vulkan_plugin PRIVATE
+        vulkan_driver PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/../../plcore/include/"
 )

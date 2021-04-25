@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ]]
 
-project(opengl_plugin)
+project(opengl_driver)
 
 add_library(
-        opengl_plugin SHARED
+        opengl_driver SHARED
         opengl.c
         plugin.c
         plugin.h)
@@ -37,11 +37,11 @@ endfunction()
 
 if (WIN32 OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     build_glew()
-    target_link_libraries(opengl_plugin glew_s)
-    target_include_directories(opengl_plugin PRIVATE
+    target_link_libraries(opengl_driver glew_s)
+    target_include_directories(opengl_driver PRIVATE
             3rdparty/glew-2.2.0/include/)
 else ()
-    target_link_libraries(opengl_plugin GLEW GL)
+    target_link_libraries(opengl_driver GLEW GL)
 endif ()
 
-target_include_directories(opengl_plugin PRIVATE ../../plcore/include/ ../../plgraphics/include/)
+target_include_directories(opengl_driver PRIVATE ../../plcore/include/ ../../plgraphics/include/)
