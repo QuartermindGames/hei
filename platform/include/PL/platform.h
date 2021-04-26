@@ -83,6 +83,8 @@ support.
 
 #include "platform_system.h"
 
+typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
+
 #if !defined(NDEBUG)
 #   include <assert.h>
 
@@ -99,7 +101,7 @@ support.
 #define PL_STRINGIFY(num)   #num
 #define PL_TOSTRING( A )    PL_STRINGIFY( A )
 
-#define PL_BITFLAG( A, B ) A = ( 1 << B )
+#define PL_BITFLAG( A, B ) A = ( 1U << B )
 
 #ifndef offsetof
 #   define pl_offsetof(a, b)    ((size_t)&(((a*)0)->b))
@@ -164,8 +166,8 @@ typedef enum {
 //////////////////////////////////////////////////////////////////
 
 enum {
-	PL_BITFLAG( PL_SUBSYSTEM_GRAPHICS, 0 ),
-	PL_BITFLAG( PL_SUBSYSTEM_IO, 1 ),
+	PL_BITFLAG( PL_SUBSYSTEM_GRAPHICS, 0U ),
+	PL_BITFLAG( PL_SUBSYSTEM_IO, 1U ),
 };
 
 #if defined(PL_INTERNAL)
