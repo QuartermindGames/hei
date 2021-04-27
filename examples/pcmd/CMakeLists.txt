@@ -29,4 +29,4 @@ project( pcmd )
 
 add_executable( pcmd main.c )
 
-target_link_libraries( pcmd platform )
+target_link_libraries( pcmd plcore )

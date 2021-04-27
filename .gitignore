@@ -29,7 +29,9 @@
 *.app
 
 # Assorted files
+
 /bin/pl_graphics.log
+
 *.pdb
 *.ilk
 *.ipch
@@ -39,6 +41,10 @@
 *.db-shm
 *.db-wal
 *.tlog
-/build
+*.exp
 
-platform/3rdparty/glew-2.2.0/glew.pc
+/build
+/.idea/
+/cmake-build-debug/
+
+plcore/3rdparty/glew-2.2.0/glew.pc
