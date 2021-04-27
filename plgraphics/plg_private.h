@@ -34,7 +34,7 @@ PL_EXTERN_C
 
 #if !defined( NDEBUG )
 extern int LOG_LEVEL_GRAPHICS;
-#define GfxLog( ... ) PlLogMessage( LOG_LEVEL_GRAPHICS, __VA_ARGS__ )
+#define GfxLog( ... ) PlLogWFunction( LOG_LEVEL_GRAPHICS, __VA_ARGS__ )
 #else
 #define GfxLog( ... )
 #endif

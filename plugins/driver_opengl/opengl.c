@@ -104,7 +104,7 @@ static void ClearBoundBuffers( void ) {
 }
 #endif
 
-static void GL_TranslateTextureFilterFormat( PLGTextureFilter filterMode, unsigned int *min, unsigned int *mag ) {
+static void GL_TranslateTextureFilterFormat( PLGTextureFilter filterMode, int *min, int *mag ) {
 	switch ( filterMode ) {
 		case PLG_TEXTURE_FILTER_LINEAR:
 			*min = *mag = GL_LINEAR;
@@ -346,7 +346,7 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 
 	GLBindTexture( texture );
 
-	unsigned int glComponent;
+	int glComponent;
 	unsigned int glType;
 	unsigned int glAttachment;
 	switch ( component ) {
@@ -364,7 +364,7 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 
 	glTexImage2D( GL_TEXTURE_2D, 0, glComponent, buffer->width, buffer->height, 0, glComponent, glType, NULL );
 
-	unsigned int min, mag;
+	int min, mag;
 	GL_TranslateTextureFilterFormat( filter, &min, &mag );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag );
@@ -467,7 +467,7 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 
-	unsigned int min, mag;
+	int min, mag;
 	GL_TranslateTextureFilterFormat( texture->filter, &min, &mag );
 	if ( texture->filter == PLG_TEXTURE_FILTER_LINEAR || texture->filter == PLG_TEXTURE_FILTER_NEAREST ) {
 		texture->flags |= PLG_TEXTURE_FLAG_NOMIPS;
@@ -485,7 +485,7 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 	unsigned int colour_format = TranslateImageColourFormat( upload->colour_format );
 	unsigned int storage_format = TranslateStorageFormat( texture->storage );
 
-	for ( unsigned int i = 0; i < levels; ++i ) {
+	for ( int i = 0; i < levels; ++i ) {
 		GLsizei w = texture->w / ( unsigned int ) pow( 2, i );
 		GLsizei h = texture->h / ( unsigned int ) pow( 2, i );
 		if ( IsCompressedImageFormat( upload->format ) ) {
@@ -805,22 +805,22 @@ static void GLSetupCamera( PLGCamera *camera ) {
 #define SHADER_INVALID_TYPE ( ( uint32_t ) 0 - 1 )
 
 static const char *uniformDescriptors[ PLG_MAX_UNIFORM_TYPES ] = {
-		[PLG_INVALID_UNIFORM] = "invalid",
-		[PLG_UNIFORM_FLOAT] = "float",
-		[PLG_UNIFORM_INT] = "int",
-		[PLG_UNIFORM_UINT] = "uint",
-		[PLG_UNIFORM_BOOL] = "bool",
-		[PLG_UNIFORM_DOUBLE] = "double",
-		[PLG_UNIFORM_SAMPLER1D] = "sampler1D",
-		[PLG_UNIFORM_SAMPLER2D] = "sampler2D",
-		[PLG_UNIFORM_SAMPLER3D] = "sampler3D",
-		[PLG_UNIFORM_SAMPLERCUBE] = "samplerCube",
-		[PLG_UNIFORM_SAMPLER1DSHADOW] = "sampler1DShadow",
-		[PLG_UNIFORM_VEC2] = "vec2",
-		[PLG_UNIFORM_VEC3] = "vec3",
-		[PLG_UNIFORM_VEC4] = "vec4",
-		[PLG_UNIFORM_MAT3] = "mat3",
-		[PLG_UNIFORM_MAT4] = "mat4",
+        [PLG_INVALID_UNIFORM] = "invalid",
+        [PLG_UNIFORM_FLOAT] = "float",
+        [PLG_UNIFORM_INT] = "int",
+        [PLG_UNIFORM_UINT] = "uint",
+        [PLG_UNIFORM_BOOL] = "bool",
+        [PLG_UNIFORM_DOUBLE] = "double",
+        [PLG_UNIFORM_SAMPLER1D] = "sampler1D",
+        [PLG_UNIFORM_SAMPLER2D] = "sampler2D",
+        [PLG_UNIFORM_SAMPLER3D] = "sampler3D",
+        [PLG_UNIFORM_SAMPLERCUBE] = "samplerCube",
+        [PLG_UNIFORM_SAMPLER1DSHADOW] = "sampler1DShadow",
+        [PLG_UNIFORM_VEC2] = "vec2",
+        [PLG_UNIFORM_VEC3] = "vec3",
+        [PLG_UNIFORM_VEC4] = "vec4",
+        [PLG_UNIFORM_MAT3] = "mat3",
+        [PLG_UNIFORM_MAT4] = "mat4",
 };
 
 static PLGShaderUniformType GLConvertGLUniformType( unsigned int type ) {
@@ -1152,23 +1152,23 @@ static void GLCreateShaderStage( PLGShaderStage *stage ) {
 
 	GLenum type = TranslateShaderStageType( stage->type );
 	if ( type == SHADER_INVALID_TYPE ) {
-		gInterface->core->ReportError( PL_RESULT_INVALID_SHADER_TYPE, "%u", type );
+		gInterface->core->ReportError( PL_RESULT_INVALID_SHADER_TYPE, PL_FUNCTION, "%u", type );
 		return;
 	}
 
 	if ( type == GL_GEOMETRY_SHADER && !GLVersion( 3, 0 ) ) {
-		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, "%s", GetGLShaderStageDescriptor( type ) );
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, PL_FUNCTION, "%s", GetGLShaderStageDescriptor( type ) );
 		return;
 	}
 
 	if ( type == GL_COMPUTE_SHADER && !GLVersion( 4, 3 ) ) {
-		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, "%s", GetGLShaderStageDescriptor( type ) );
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, PL_FUNCTION, "%s", GetGLShaderStageDescriptor( type ) );
 		return;
 	}
 
 	stage->internal.id = glCreateShader( type );
 	if ( stage->internal.id == 0 ) {
-		gInterface->core->ReportError( PL_RESULT_INVALID_SHADER_TYPE, "%u", type );
+		gInterface->core->ReportError( PL_RESULT_INVALID_SHADER_TYPE, PL_FUNCTION, "%u", type );
 		return;
 	}
 }
@@ -1422,7 +1422,7 @@ static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 	}
 
 	program->is_linked = true;
-	
+
 	RegisterShaderProgramData( program );
 }
 
@@ -1543,25 +1543,19 @@ static void MessageCallback(
 }
 #endif
 
-const PLGDriverDescription *GLInitialize( void ) {
+void GLInitialize( void ) {
 	glewExperimental = true;
 	GLenum err = glewInit();
 	if ( err != GLEW_OK ) {
-		gInterface->core->ReportError( PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", glewGetErrorString( err ) );
-		return NULL;
+		gInterface->core->ReportError( PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", ( char * ) glewGetErrorString( err ) );
+		return;
 	}
-
-	// Get any information that will be presented later.
-	static PLGDriverDescription description;
-	memset( &description, 0, sizeof( PLGDriverDescription ) );
-	description.renderer = ( const char * ) glGetString( GL_RENDERER );
-	description.vendor = ( const char * ) glGetString( GL_VENDOR );
-	description.version = ( const char * ) glGetString( GL_VERSION );
 
 	memset( &gl_capabilities, 0, sizeof( gl_capabilities ) );
 
-	gl_version_major = ( description.version[ 0 ] - '0' );
-	gl_version_minor = ( description.version[ 2 ] - '0' );
+	const char *version = ( const char * ) glGetString( GL_VERSION );
+	gl_version_major = ( version[ 0 ] - '0' );
+	gl_version_minor = ( version[ 2 ] - '0' );
 
 	if ( GLVersion( 3, 0 ) ) {
 		int minor, major;
@@ -1576,9 +1570,9 @@ const PLGDriverDescription *GLInitialize( void ) {
 	}
 
 	GLLog( " OpenGL %d.%d\n", gl_version_major, gl_version_minor );
-	GLLog( "  renderer:   %s\n", description.renderer );
-	GLLog( "  vendor:     %s\n", description.vendor );
-	GLLog( "  version:    %s\n", description.version );
+	GLLog( "  renderer:   %s\n", ( const char * ) glGetString( GL_RENDERER ) );
+	GLLog( "  vendor:     %s\n", ( const char * ) glGetString( GL_VENDOR ) );
+	GLLog( "  version:    %s\n", version );
 	//GLLog( "  extensions:\n" );
 
 	glGetIntegerv( GL_NUM_EXTENSIONS, ( GLint * ) ( &gl_num_extensions ) );
@@ -1606,8 +1600,6 @@ const PLGDriverDescription *GLInitialize( void ) {
 	/* in OpenGL, multisample is automatically enabled per spec */
 	gfx_state.current_capabilities[ PL_GFX_STATE_MULTISAMPLE ] = true;
 #endif
-
-	return &description;
 }
 
 void GLShutdown( void ) {
@@ -1620,8 +1612,6 @@ void GLShutdown( void ) {
 }
 
 PLGDriverImportTable graphicsInterface = {
-        .version = { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR },
-
         .Initialize = GLInitialize,
         .Shutdown = GLShutdown,
 

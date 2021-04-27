@@ -29,7 +29,6 @@ add_library(plgraphics SHARED
         plg_camera.c
         plg_draw.c
         plg_driver_interface.c
-        plg_layer_glide.c
         plg_layer_software.c
         plg_light.c
         plg_mesh.c

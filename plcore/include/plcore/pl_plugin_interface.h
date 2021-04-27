@@ -152,11 +152,11 @@ typedef struct PLPluginExportTable {
 /* be absolutely sure to change this whenever the API is updated! */
 #define PL_PLUGIN_INTERFACE_VERSION_MAJOR 3
 #define PL_PLUGIN_INTERFACE_VERSION_MINOR 0
+#define PL_PLUGIN_INTERFACE_VERSION ( uint16_t[ 2 ] ){ PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
 
 #define PL_PLUGIN_QUERY_FUNCTION "PLQueryPlugin"
+typedef const PLPluginDescription *( *PLPluginQueryFunction )( void );
 #define PL_PLUGIN_INIT_FUNCTION "PLInitializePlugin"
-
-typedef const PLPluginDescription *( *PLPluginQueryFunction )( PLPluginInterfaceVersion interfaceVersion );
 typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *exportTable );
 
 /* 2021-04-22

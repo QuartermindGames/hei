@@ -25,9 +25,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include "plg_private.h"
-
 #include <plcore/pl_parse.h>
+#include <plgraphics/plg_driver_interface.h>
+
+#include "plg_private.h"
 
 /* shader implementation */
 

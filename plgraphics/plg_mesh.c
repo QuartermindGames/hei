@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <plgraphics/plg_driver_interface.h>
+
 #include "plg_private.h"
 
 /**

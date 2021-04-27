@@ -24,25 +24,27 @@ SOFTWARE.
 
 #include "plugin.h"
 
-static PLPluginDescription pluginDesc = {
+static PLGDriverDescription pluginDesc = {
+        .identifier = "opengl3",
         .description = "OpenGL Graphics Driver.",
-        .pluginVersion = { 0, 0, 1 },
-        .interfaceVersion = { PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
+        .driverVersion = { 0, 1, 0 },
+        .coreInterfaceVersion = { PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR },
+        .graphicsInterfaceVersion = { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR },
 };
 
 const PLGDriverExportTable *gInterface = NULL;
 
-PL_EXPORT const PLPluginDescription *QueryGraphicsDriver( unsigned int interfaceVersion ) {
+PL_EXPORT const PLGDriverDescription *QueryGraphicsDriver( void ) {
 	return &pluginDesc;
 }
 
 int glLogLevel;
 
-PL_EXPORT void InitializeDriver( const PLPluginExportTable *functionTable ) {
+PL_EXPORT const PLGDriverImportTable *InitializeDriver( const PLGDriverExportTable *functionTable ) {
 	gInterface = functionTable;
 
-	glLogLevel = gInterface->AddLogLevel( "plugin/opengl", PLColourRGB( 255, 255, 255 ), true );
+	glLogLevel = gInterface->core->AddLogLevel( "plugin/opengl", PLColourRGB( 255, 255, 255 ), true );
 
-	extern PLGGraphicsInterface graphicsInterface;
-	gInterface->RegisterGraphicsMode( "opengl", &graphicsInterface );
+	extern PLGDriverImportTable graphicsInterface;
+	return &graphicsInterface;
 }

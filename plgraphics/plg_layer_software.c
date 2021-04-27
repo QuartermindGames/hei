@@ -25,6 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#include <plgraphics/plg_driver_interface.h>
+
 #include "plg_private.h"
 
 /* todo:
@@ -148,21 +150,4 @@ static void SWDrawMesh( PLGMesh *mesh ) {
 
 static bool SWSupportsHWShaders( void ) {
 	return false;
-}
-
-void PlgInitSoftwareGraphicsLayer( void ) {
-	PLGDriverImportTable swGraphicsInterface = {
-		.version = { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR },
-
-		.CreateCamera = SWCreateCamera,
-		.DestroyCamera = SWDestroyCamera,
-		.SetupCamera = SWSetupCamera,
-
-		.ClearBuffers = SWClearBuffers,
-		.SetClearColour = SWSetClearColour,
-
-		.SupportsHWShaders = SWSupportsHWShaders,
-		.DrawPixel = SWDrawPixel,
-		.DrawMesh = SWDrawMesh,
-	};
 }

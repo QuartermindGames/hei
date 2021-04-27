@@ -24,6 +24,7 @@ SOFTWARE.
 
 #include <plcore/pl_console.h>
 #include <plcore/pl_image.h>
+#include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
 

@@ -53,12 +53,12 @@ extern int LOG_LEVEL_LOW, LOG_LEVEL_MEDIUM, LOG_LEVEL_HIGH, LOG_LEVEL_DEBUG;
 extern int LOG_LEVEL_FILESYSTEM;
 extern int LOG_LEVEL_MODEL;
 
-#define Print( ... ) PlLogMessage( LOG_LEVEL_LOW, __VA_ARGS__ )
-#define PrintWarning( ... ) PlLogMessage( LOG_LEVEL_MEDIUM, __VA_ARGS__ )
-#define PrintError( ... ) PlLogMessage( LOG_LEVEL_HIGH, __VA_ARGS__ )
-#ifdef _DEBUG
+#define Print( ... ) PlLogWFunction( LOG_LEVEL_LOW, __VA_ARGS__ )
+#define PrintWarning( ... ) PlLogWFunction( LOG_LEVEL_MEDIUM, __VA_ARGS__ )
+#define PrintError( ... ) PlLogWFunction( LOG_LEVEL_HIGH, __VA_ARGS__ )
+#if !defined( NDEBUG )
 #define debug_printf( ... ) printf( __VA_ARGS__ )
-#define DebugPrint( ... ) PlLogMessage( LOG_LEVEL_DEBUG, __VA_ARGS__ )
+#define DebugPrint( ... ) PlLogWFunction( LOG_LEVEL_DEBUG, __VA_ARGS__ )
 #else
 #define debug_printf( ... )
 #define DebugPrint( ... ) Print( __VA_ARGS__ )

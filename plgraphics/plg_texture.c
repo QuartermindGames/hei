@@ -25,6 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
+#include <plgraphics/plg_driver_interface.h>
+
 #include "plg_private.h"
 
 void _InitTextures( void ) {

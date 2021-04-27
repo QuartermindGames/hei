@@ -242,7 +242,7 @@ static bool VTF_ValidateFile( PLFile *file, VTFHeader *out ) {
 		return false;
 	}
 
-	if ( !( plIsPowerOfTwo( out->width ) && plIsPowerOfTwo( out->height ) ) ) {
+	if ( !( PlIsPowerOfTwo( out->width ) && PlIsPowerOfTwo( out->height ) ) ) {
 		gInterface->ReportError( PL_RESULT_IMAGERESOLUTION, PL_FUNCTION, "invalid resolution: %dx%d", out->width, out->height );
 		return false;
 	}

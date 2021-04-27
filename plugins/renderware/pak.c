@@ -33,11 +33,11 @@ static PLPackage *PAK_ReadFile( PLFile *file ) {
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
 		snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ), "%s", indices[ i ].fileName );
 
+#if 0 /* this appears to be wrong, sadly, so for now just dump the compressed file */
 		/* extract the flag from the end of the index */
 		uint8_t flag = ( indices[ i ].lflag & 0xFF000000 ) >> 24;
 		indices[ i ].lflag &= 0xFFFFFF;
 
-#if 0 /* this appears to be wrong, sadly, so for now just dump the compressed file */
 		if ( flag == 0x80 ) { /* indicates the file is compressed */
 			package->table[ i ].compressedSize = indices[ i ].lflag;
 			package->table[ i ].compressionType = PL_COMPRESSION_ZLIB;

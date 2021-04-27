@@ -25,57 +25,90 @@ SOFTWARE.
 	DRIVER INTERFACE
 ===========================*/
 
+#include <plcore/pl_linkedlist.h>
 #include <plgraphics/plg_driver_interface.h>
-#include "plg_private.h"
 
-static PLGDriverExportTable exportTable = {
-        .version = { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR },
-        .CreateTexture = PlgCreateTexture,
-        .DestroyTexture = PlgDestroyTexture,
-        .GetMaxTextureAnistropy = PlgGetMaxTextureAnistropy,
-        .GetMaxTextureSize = PlgGetMaxTextureSize,
-        .GetMaxTextureUnits = PlgGetMaxTextureUnits,
-        .SetTexture = PlgSetTexture,
-        .SetTextureAnisotropy = PlgSetTextureAnisotropy,
-        .SetTextureEnvironmentMode = PlgSetTextureEnvironmentMode,
-        .SetTextureFlags = PlgSetTextureFlags,
-};
+#include "plg_private.h"
 
 #define DRIVER_EXTENSION "_driver"
 
-#define MAX_GRAPHICS_MODES 32
+#define MAX_GRAPHICS_MODES 16
 
-typedef struct GraphicsMode {
-	const char *description;
+typedef struct PLGDriver {
+	char identifier[ 32 ];
+	char description[ 64 ];
+
+	PLLibrary *libPtr; /* library handle */
 	const PLGDriverImportTable *interface;
-} GraphicsMode;
-static GraphicsMode graphicsModes[ MAX_GRAPHICS_MODES ];
-static unsigned int numGraphicsModes = 0;
+	PLGDriverInitializationFunction initFunction; /* initialization function */
+} PLGDriver;
 
-bool PlgRegisterDriverPlugin( const char *path ) {
+static PLGDriver drivers[ MAX_GRAPHICS_MODES ];
+static unsigned int numDrivers = 0;
+
+static PLGDriverExportTable exportTable = {
+		.CreateTexture = PlgCreateTexture,
+		.DestroyTexture = PlgDestroyTexture,
+		.GetMaxTextureAnistropy = PlgGetMaxTextureAnistropy,
+		.GetMaxTextureSize = PlgGetMaxTextureSize,
+		.GetMaxTextureUnits = PlgGetMaxTextureUnits,
+		.SetTexture = PlgSetTexture,
+		.SetTextureAnisotropy = PlgSetTextureAnisotropy,
+		.SetTextureEnvironmentMode = PlgSetTextureEnvironmentMode,
+		.SetTextureFlags = PlgSetTextureFlags,
+};
+
+bool PlgRegisterDriver( const char *path ) {
+	PlClearError();
+
+	GfxLog( "Registering driver: \"%s\"\n", path );
+
 	PLLibrary *library = PlLoadLibrary( path, false );
 	if ( library == NULL ) {
 		return false;
 	}
 
-
-}
-
-void PlgRegisterDriver( const char *description, const PLGDriverImportTable *interface ) {
-	if ( numGraphicsModes >= MAX_GRAPHICS_MODES ) {
-		PlReportBasicError( PL_RESULT_MEMORY_EOA );
-		return;
+	const PLGDriverDescription *description;
+	PLGDriverInitializationFunction InitializeDriver;
+	PLGDriverQueryFunction RegisterDriver = ( PLGDriverQueryFunction ) PlGetLibraryProcedure( library, PLG_DRIVER_QUERY_FUNCTION );
+	if ( RegisterDriver != NULL ) {
+		InitializeDriver = ( PLGDriverInitializationFunction ) PlGetLibraryProcedure( library, PLG_DRIVER_INIT_FUNCTION );
+		if ( InitializeDriver != NULL ) {
+			/* now fetch the driver description */
+			description = RegisterDriver();
+			if ( description != NULL ) {
+				if ( description->coreInterfaceVersion[ 0 ] != PL_PLUGIN_INTERFACE_VERSION_MAJOR ) {
+					PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported core interface version" );
+				} else if ( description->graphicsInterfaceVersion[ 0 ] != PLG_INTERFACE_VERSION_MAJOR ) {
+					PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported graphics interface version" );
+				}
+			} else {
+				PlReportErrorF( PL_RESULT_FAIL, "failed to fetch driver description" );
+			}
+		}
 	}
 
-	graphicsModes[ numGraphicsModes ].description = description;
-	graphicsModes[ numGraphicsModes ].interface = interface;
-	numGraphicsModes++;
+	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
+		PlUnloadLibrary( library );
+		return false;
+	}
+
+	GfxLog( "Success, adding \"%s\" to drivers list\n", path );
+
+	PLGDriver *driver = &drivers[ numDrivers++ ];
+	snprintf( driver->description, sizeof( driver->description ), "%s", description->description );
+	snprintf( driver->identifier, sizeof( driver->identifier ), "%s", description->identifier );
+	driver->interface = NULL;
+	driver->initFunction = InitializeDriver;
+	driver->libPtr = library;
+
+	return true;
 }
 
 /**
  * Private callback when scanning for plugins.
  */
-static void RegisterScannedPlugin( const char *path, void *unused ) {
+static void RegisterScannedDriver( const char *path, void *unused ) {
 	plUnused( unused );
 
 	/* validate it's actually a plugin */
@@ -95,7 +128,7 @@ static void RegisterScannedPlugin( const char *path, void *unused ) {
 }
 
 void PlgScanForDrivers( const char *path ) {
-	PlScanDirectory( path, NULL, RegisterScannedPlugin, false, NULL );
+	PlScanDirectory( path, NULL, RegisterScannedDriver, false, NULL );
 }
 
 /**
@@ -105,27 +138,27 @@ void PlgScanForDrivers( const char *path ) {
 const char **PlgGetAvailableDriverInterfaces( unsigned int *numModes ) {
 	static unsigned int cachedModes = 0;
 	static const char *descriptors[ MAX_GRAPHICS_MODES ];
-	if ( cachedModes != numGraphicsModes ) {
-		for ( unsigned int i = 0; i < numGraphicsModes; ++i ) {
-			descriptors[ i ] = graphicsModes[ i ].description;
+	if ( cachedModes != numDrivers ) {
+		for ( unsigned int i = 0; i < numDrivers; ++i ) {
+			descriptors[ i ] = drivers[ i ].identifier;
 		}
 	}
-	*numModes = numGraphicsModes;
+	*numModes = numDrivers;
 	cachedModes = *numModes;
 
 	return descriptors;
 }
 
 void PlgSetDriver( const char *mode ) {
-	GfxLog( "Initializing graphics abstraction layer...\n" );
+	GfxLog( "Attempting mode \"%s\"...\n", mode );
 
 	const PLGDriverImportTable *interface = NULL;
-	for ( unsigned int i = 0; i < numGraphicsModes; ++i ) {
-		if ( pl_strcasecmp( mode, graphicsModes[ i ].description ) != 0 ) {
+	for ( unsigned int i = 0; i < numDrivers; ++i ) {
+		if ( pl_strcasecmp( mode, drivers[ i ].identifier ) != 0 ) {
 			continue;
 		}
 
-		interface = graphicsModes[ i ].interface;
+		interface = drivers[ i ].initFunction( &exportTable );
 		break;
 	}
 
@@ -142,4 +175,6 @@ void PlgSetDriver( const char *mode ) {
 	gfx_state.interface = interface;
 
 	CallGfxFunction( Initialize );
+
+	GfxLog( "Mode \"%s\" initialized!\n", mode );
 }

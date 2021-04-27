@@ -27,9 +27,7 @@ SOFTWARE.
 #include <plcore/pl.h>
 #include <plcore/pl_math.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+PL_EXTERN_C
 
 /* todo: make this structure private */
 typedef struct PLConsoleVariable {
@@ -102,8 +100,8 @@ extern int PlAddLogLevel( const char *prefix, PLColour colour, bool status );
 extern void PlSetLogLevelStatus( int id, bool status );
 extern void PlLogMessage( int id, const char *msg, ... );
 
+#define PlLogWFunction( ID, FORMAT, ... ) PlLogMessage( ( ID ), "(%s)" FORMAT, PL_FUNCTION, ## __VA_ARGS__ )
+
 #endif /* !defined( PL_COMPILE_PLUGIN ) */
 
-#ifdef __cplusplus
-};
-#endif
+PL_EXTERN_C_END

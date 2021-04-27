@@ -40,11 +40,19 @@ PL_EXTERN_C
 
 #define PLG_INTERFACE_VERSION_MAJOR 1
 #define PLG_INTERFACE_VERSION_MINOR 0
+#define PLG_INTERFACE_VERSION ( uint16_t[ 2 ] ){ PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR }
+
+typedef struct PLGDriverDescription {
+	uint16_t coreInterfaceVersion[ 2 ];
+	uint16_t graphicsInterfaceVersion[ 2 ];
+
+	const char *identifier; /* 'opengl3' */
+	unsigned int driverVersion[ 3 ]; /* major, minor and patch */
+	const char *description; /* 'OpenGL 3.3 Graphics Driver' */
+} PLGDriverDescription;
 
 typedef struct PLGDriverExportTable {
 	const PLPluginExportTable *core;
-
-	uint16_t version[ 2 ];
 
 	/* plg_texture */
 	PLGTexture *( *CreateTexture )( void );
@@ -60,7 +68,7 @@ typedef struct PLGDriverExportTable {
 } PLGDriverExportTable;
 
 typedef struct PLGDriverImportTable {
-	const PLPluginDescription *( *Initialize )( void );
+	void ( *Initialize )( void );
 	void ( *Shutdown )( void );
 
 	// Debug
@@ -94,7 +102,7 @@ typedef struct PLGDriverImportTable {
 
 	// Mesh
 	void ( *CreateMesh )( PLGMesh *mesh );
-	void ( *UploadMesh )( PLGMesh *mesh, PLGShaderProgram *program );
+	void ( *UploadMesh )( PLGMesh *mesh, PLGShaderProgram *program ); /* todo: deprecate? */
 	void ( *DrawMesh )( PLGMesh *mesh, PLGShaderProgram *program );
 	void ( *DrawInstancedMesh )( PLGMesh *mesh, PLGShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount );
 	void ( *DeleteMesh )( PLGMesh *mesh );
@@ -126,6 +134,7 @@ typedef struct PLGDriverImportTable {
 	void ( *CreateCamera )( PLGCamera *camera );
 	void ( *DestroyCamera )( PLGCamera *camera );
 	void ( *SetupCamera )( PLGCamera *camera );
+
 	///////////////////////////////////////////
 
 	// Shaders
@@ -145,13 +154,12 @@ typedef struct PLGDriverImportTable {
 	void ( *StencilFunction )( PLGStencilTestFunction function, int reference, unsigned int mask );
 } PLGDriverImportTable;
 
-#define PLG_DRIVER_QUERY_FUNCTION "QueryGraphicsDriver"
-typedef const PLPluginDescription *( *PLGPluginQueryFunction )( uint16_t interfaceVersion[ 2 ] );
-#define PLG_DRIVER_INIT_FUNCTION "InitializeGraphicsDriver"
-typedef void ( *PLGPluginInitializationFunction )( const PLGDriverExportTable *exportTable );
-
 #if !defined( PL_COMPILE_PLUGIN )
-PL_EXTERN void PlgRegisterDriver( const char *description, const PLGDriverImportTable *interface );
+#define PLG_DRIVER_QUERY_FUNCTION "QueryGraphicsDriver"
+typedef const PLGDriverDescription *( *PLGDriverQueryFunction )( void );
+#define PLG_DRIVER_INIT_FUNCTION "InitializeGraphicsDriver"
+typedef const PLGDriverImportTable *( *PLGDriverInitializationFunction )( const PLGDriverExportTable *exportTable );
+
 PL_EXTERN const char **PlgGetAvailableDriverInterfaces( unsigned int *numModes );
 PL_EXTERN void PlgSetDriver( const char *mode );
 #endif

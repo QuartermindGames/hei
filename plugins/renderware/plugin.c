@@ -10,7 +10,7 @@ static PLPluginDescription pluginDesc = {
 
 const PLPluginExportTable *gInterface = NULL;
 
-PL_EXPORT const PLPluginDescription *PLQueryPlugin( unsigned int interfaceVersion ) {
+PL_EXPORT const PLPluginDescription *PLQueryPlugin( void ) {
 	return &pluginDesc;
 }
 
