@@ -628,9 +628,9 @@ void PlLogMessage( int id, const char *msg, ... ) {
 
 #if defined( _WIN32 )
 	OutputDebugString( buf );
-#else
-	printf( "%s", buf );
 #endif
+
+	printf( "%s", buf );
 
 	// todo, decide how we're going to pass it to the console/log
 

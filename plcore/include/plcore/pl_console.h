@@ -100,7 +100,7 @@ extern int PlAddLogLevel( const char *prefix, PLColour colour, bool status );
 extern void PlSetLogLevelStatus( int id, bool status );
 extern void PlLogMessage( int id, const char *msg, ... );
 
-#define PlLogWFunction( ID, FORMAT, ... ) PlLogMessage( ( ID ), "(%s)" FORMAT, PL_FUNCTION, ## __VA_ARGS__ )
+#define PlLogWFunction( ID, FORMAT, ... ) PlLogMessage( ( ID ), "(%s) " FORMAT, PL_FUNCTION, ## __VA_ARGS__ )
 
 #endif /* !defined( PL_COMPILE_PLUGIN ) */
 
