@@ -648,8 +648,34 @@ static void _plScanLocalDirectory( const PLFileSystemMount* mount, FSScanInstanc
 	} else {
 		PlReportErrorF( PL_RESULT_FILEPATH, "opendir failed!" );
 	}
-#else
-	// TODO: Win32 implementation
+#else /* assumed win32 impl */
+	if( extension == NULL ) {
+		extension = "*";
+	}
+
+	char selectorPath[ PL_SYSTEM_MAX_PATH ];
+	snprintf( selectorPath, sizeof( selectorPath ), PathEndsInSlash( path ) ? "%s*.%s" : "%s/*.%s", path, extension );
+
+	WIN32_FIND_DATA ffd;
+	HANDLE find = FindFirstFile( selectorPath, &ffd );
+	if( find == INVALID_HANDLE_VALUE ) {
+		return;
+	}
+
+	do {
+		snprintf( selectorPath, sizeof( selectorPath ), PathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, ffd.cFileName );
+	
+		if( ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) {
+			if( recursive && !( strcmp( ffd.cFileName, "." ) == 0 || strcmp( ffd.cFileName, ".." ) == 0 ) ) {
+				_plScanLocalDirectory( mount, fileList, selectorPath, extension, Function, recursive, userData );
+			}
+			continue;
+		}
+
+		Function( selectorPath, userData );
+	} while( FindNextFile( find, &ffd ) != FALSE );
+
+	FindClose( find );
 #endif
 }
 

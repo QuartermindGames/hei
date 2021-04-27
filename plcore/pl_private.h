@@ -51,7 +51,6 @@ SOFTWARE.
 
 extern int LOG_LEVEL_LOW, LOG_LEVEL_MEDIUM, LOG_LEVEL_HIGH, LOG_LEVEL_DEBUG;
 extern int LOG_LEVEL_FILESYSTEM;
-extern int LOG_LEVEL_MODEL;
 
 #define Print( FORMAT, ... ) PlLogWFunction( LOG_LEVEL_LOW, FORMAT, __VA_ARGS__ )
 #define PrintWarning( FORMAT, ... ) PlLogWFunction( LOG_LEVEL_MEDIUM, FORMAT, __VA_ARGS__ )

@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ]]
 
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.16)
 
 project(PlatformLibrary)
 
@@ -52,6 +52,10 @@ add_subdirectory(examples/pcmd)
 if (PL_BUILD_PLUGINS)
     add_subdirectory(plugins/driver_opengl/)
     #add_subdirectory(plugins/driver_vulkan/)
+
+    #if(exists "${CMAKE_SOURCE_DIR}/plugins/driver_glide/")
+    #    add_subdirectory(plugins/driver_glide/)
+    #endif()
 
     add_subdirectory(plugins/valve/)
     add_subdirectory(plugins/renderware/)

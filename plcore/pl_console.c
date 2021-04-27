@@ -508,25 +508,22 @@ int LOG_LEVEL_LOW = 0;
 int LOG_LEVEL_MEDIUM = 0;
 int LOG_LEVEL_HIGH = 0;
 int LOG_LEVEL_DEBUG = 0;
-
 int LOG_LEVEL_FILESYSTEM = 0;
-int LOG_LEVEL_MODEL = 0;
 
 static void InitializeDefaultLogLevels( void ) {
 	memset( levels, 0, sizeof( LogLevel ) * MAX_LOG_LEVELS );
 
-	LOG_LEVEL_LOW = PlAddLogLevel( "libplatform", ( PLColour ){ 255, 255, 255, 255 }, true );
-	LOG_LEVEL_MEDIUM = PlAddLogLevel( "libplatform/warning", ( PLColour ){ 255, 255, 0, 255 }, true );
-	LOG_LEVEL_HIGH = PlAddLogLevel( "libplatform/error", ( PLColour ){ 255, 0, 0, 255 }, true );
-	LOG_LEVEL_DEBUG = PlAddLogLevel( "libplatform/debug", ( PLColour ){ 255, 255, 255, 255 },
+	LOG_LEVEL_LOW = PlAddLogLevel( "plcore", ( PLColour ){ 255, 255, 255, 255 }, true );
+	LOG_LEVEL_MEDIUM = PlAddLogLevel( "plcore/warning", ( PLColour ){ 255, 255, 0, 255 }, true );
+	LOG_LEVEL_HIGH = PlAddLogLevel( "plcore/error", ( PLColour ){ 255, 0, 0, 255 }, true );
+	LOG_LEVEL_DEBUG = PlAddLogLevel( "plcore/debug", ( PLColour ){ 255, 255, 255, 255 },
 #if !defined( NDEBUG )
 	                                 true
 #else
 	                                 false
 #endif
 	);
-	LOG_LEVEL_FILESYSTEM = PlAddLogLevel( "libplatform/filesystem", ( PLColour ){ 0, 255, 255, 255 }, true );
-	LOG_LEVEL_MODEL = PlAddLogLevel( "libplatform/model", ( PLColour ){ 0, 255, 255, 255 }, true );
+	LOG_LEVEL_FILESYSTEM = PlAddLogLevel( "plcore/filesystem", ( PLColour ){ 0, 255, 255, 255 }, true );
 }
 
 /**
