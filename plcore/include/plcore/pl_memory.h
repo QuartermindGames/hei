@@ -28,10 +28,10 @@ SOFTWARE.
 extern "C" {
 #endif
 
-extern void *(*pl_malloc)(size_t size);
-extern void *(*pl_calloc)(size_t num, size_t size);
-extern void *(*pl_realloc)(void* ptr, size_t newSize);
-extern void (*pl_free)(void* ptr);
+PL_DLL void *(*pl_malloc)(size_t size);
+PL_DLL void *(*pl_calloc)(size_t num, size_t size);
+PL_DLL void *(*pl_realloc)(void* ptr, size_t newSize);
+PL_DLL void (*pl_free)(void* ptr);
 
 extern uint64_t PlGetTotalSystemMemory( void );
 extern uint64_t PlGetTotalAvailableSystemMemory( void );

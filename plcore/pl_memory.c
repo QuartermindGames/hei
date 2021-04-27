@@ -55,10 +55,10 @@ static void *MemoryReAlloc( void *ptr, size_t newSize ) {
 	return buf;
 }
 
-void *( *pl_malloc )( size_t size ) = MemoryAlloc;
-void *( *pl_calloc )( size_t num, size_t size ) = MemoryCountAlloc;
-void *( *pl_realloc )( void *ptr, size_t newSize ) = MemoryReAlloc;
-void ( *pl_free )( void *ptr ) = free;
+PL_DLL void *( *pl_malloc )( size_t size ) = MemoryAlloc;
+PL_DLL void *( *pl_calloc )( size_t num, size_t size ) = MemoryCountAlloc;
+PL_DLL void *( *pl_realloc )( void *ptr, size_t newSize ) = MemoryReAlloc;
+PL_DLL void ( *pl_free )( void *ptr ) = free;
 
 /**
  * Returns the total amount of system memory in bytes.

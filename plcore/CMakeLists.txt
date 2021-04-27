@@ -33,13 +33,14 @@ if (PL_COMPILE_STATIC)
             ${PLATFORM_IMAGE_FILES}
             ${PLATFORM_PACKAGE_FILES})
 else ()
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     add_library(plcore SHARED
             ${PLATFORM_SOURCE_FILES}
             ${PLATFORM_IMAGE_FILES}
             ${PLATFORM_PACKAGE_FILES})
 endif ()
 
-target_compile_options(plcore PUBLIC -DPL_INTERNAL)
+target_compile_options(plcore PRIVATE -DPL_INTERNAL)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(plcore PUBLIC -fPIC)
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")

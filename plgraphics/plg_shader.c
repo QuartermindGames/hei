@@ -311,7 +311,7 @@ int PlgGetShaderUniformSlot( PLGShaderProgram *program, const char *name ) {
 		return -1;
 	}
 
-	for ( int i = 0; i < prg->num_uniforms; ++i ) {
+	for ( unsigned int i = 0; i < prg->num_uniforms; ++i ) {
 		if ( prg->uniforms[ i ].name == NULL ) {
 			continue;
 		}
@@ -449,7 +449,7 @@ void PlgSetShaderUniformToDefault( PLGShaderProgram *program, const char *name )
 }
 
 void PlgSetShaderUniformsToDefault( PLGShaderProgram *program ) {
-	for ( int i = 0; i < program->num_uniforms; ++i ) {
+	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
 		PlgSetShaderUniformToDefaultByIndex( program, i );
 	}
 }
