@@ -28,20 +28,25 @@ For more information, please refer to <http://unlicense.org>
 #include <PL/pl_parse.h>
 #include <PL/platform_math.h>
 
-bool plIsEndOfLine( const char **p ) {
-    if ( *( *p ) == '\n' || *( *p ) == '\r' ) {
-        return true;
-    }
+bool PlIsWhitespace( const char **p ) {
+	return ( *( *p ) == ' ' || *( *p ) == '\t' );
+}
 
-    return false;
+bool plIsEndOfLine( const char **p ) {
+	return ( *( *p ) == '\n' || *( *p ) == '\r' );
 }
 
 void plSkipWhitespace( const char **p ) {
-	while ( *( *p ) == ' ' || *( *p ) == '\t' ) ( *p )++;
-	if ( *( *p ) == ' ' || *( *p ) == '\t' ) ++( *p );
+	if ( !PlIsWhitespace( p ) ) {
+		return;
+	}
+
+	do {
+        ( *p )++;
+	} while( PlIsWhitespace( p ) );
 }
 
-#define NOT_TERMINATING_CHAR( P ) ( (P) != '\0' && (P) != '\n' && (P) != '\r' )
+#define NOT_TERMINATING_CHAR( P ) ( ( P ) != '\0' && ( P ) != '\n' && ( P ) != '\r' )
 
 void plSkipLine( const char **p ) {
 	while ( NOT_TERMINATING_CHAR( *( *p ) ) ) ( *p )++;
@@ -58,10 +63,10 @@ const char *plParseEnclosedString( const char **p, char *dest, size_t size ) {
 
 	size_t i = 0;
 	while ( NOT_TERMINATING_CHAR( *( *p ) ) ) {
-		if ( !isEnclosed && *( *p ) == ' ' ) {
+		if ( !isEnclosed && ( *( *p ) == ' ' || *( *p ) == '\t' || *( *p ) == '\n' || *( *p ) == '\r' ) ) {
 			break;
 		} else if ( isEnclosed && *( *p ) == '\"' ) {
-            ( *p )++;
+			( *p )++;
 			break;
 		}
 
