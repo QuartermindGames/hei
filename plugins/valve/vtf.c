@@ -238,23 +238,23 @@ static bool VTF_ValidateFile( PLFile *file, VTFHeader *out ) {
 	
 #define VTF_VERSION( maj, min ) ( ( ( ( maj ) ) == out->version[ 1 ] && ( min ) <= out->version[ 0 ] ) || ( maj ) < out->version[ 0 ] )
 	if ( VTF_VERSION( 7, 5 ) ) {
-		gInterface->ReportError( PL_RESULT_FILEVERSION, "invalid version: %d.%d", out->version[ 1 ], out->version[ 0 ] );
+		gInterface->ReportError( PL_RESULT_FILEVERSION, PL_FUNCTION, "invalid version: %d.%d", out->version[ 1 ], out->version[ 0 ] );
 		return false;
 	}
 
-	if ( !( plIsPowerOfTwo( out->width ) && plIsPowerOfTwo( out->height ) ) ) {
-		gInterface->ReportError( PL_RESULT_IMAGERESOLUTION, "invalid resolution: %dx%d", out->width, out->height );
+	if ( !( PlIsPowerOfTwo( out->width ) && PlIsPowerOfTwo( out->height ) ) ) {
+		gInterface->ReportError( PL_RESULT_IMAGERESOLUTION, PL_FUNCTION, "invalid resolution: %dx%d", out->width, out->height );
 		return false;
 	}
 
 	if ( out->lowresimageformat != VTF_FORMAT_DXT1 ) {
-		gInterface->ReportError( PL_RESULT_IMAGEFORMAT, "invalid texture format for lowresimage in VTF" );
+		gInterface->ReportError( PL_RESULT_IMAGEFORMAT, PL_FUNCTION, "invalid texture format for lowresimage in VTF" );
 		return false;
 	}
 
 	if ( ( out->lowresimagewidth > 16 ) || ( out->lowresimageheight > 16 ) ||
 			( out->lowresimagewidth > out->width ) || ( out->lowresimageheight > out->height ) ) {
-		gInterface->ReportError( PL_RESULT_IMAGERESOLUTION, "invalid resolution: %dx%d", out->width, out->height );
+		gInterface->ReportError( PL_RESULT_IMAGERESOLUTION, PL_FUNCTION, "invalid resolution: %dx%d", out->width, out->height );
 		return false;
 	}
 

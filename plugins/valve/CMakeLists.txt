@@ -14,5 +14,5 @@ set_target_properties(
 )
 target_include_directories(
         valve_plugin PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../platform/include/"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../plcore/include/"
 )

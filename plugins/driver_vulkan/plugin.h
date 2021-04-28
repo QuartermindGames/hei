@@ -3,7 +3,7 @@
 #pragma once
 
 #define PL_COMPILE_PLUGIN 1
-#include <PL/pl_plugin_interface.h>
+#include <plcore/pl_plugin_interface.h>
 
 extern const PLPluginExportTable *gInterface;
 

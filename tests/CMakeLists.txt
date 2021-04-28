@@ -31,4 +31,4 @@ file(GLOB TEST_SOURCE_FILES *.c *.h)
 
 add_executable(tests ${TEST_SOURCE_FILES})
 
-target_link_libraries(tests platform)
+target_link_libraries(tests plcore)
