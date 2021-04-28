@@ -24,19 +24,17 @@ SOFTWARE.
 
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <plcore/pl.h>
 
-PL_DLL void *(*pl_malloc)(size_t size);
-PL_DLL void *(*pl_calloc)(size_t num, size_t size);
-PL_DLL void *(*pl_realloc)(void* ptr, size_t newSize);
-PL_DLL void (*pl_free)(void* ptr);
+PL_EXTERN_C
+
+extern PL_DLL void *(*pl_malloc)(size_t size);
+extern PL_DLL void *(*pl_calloc)(size_t num, size_t size);
+extern PL_DLL void *(*pl_realloc)(void* ptr, size_t newSize);
+extern PL_DLL void (*pl_free)(void* ptr);
 
 extern uint64_t PlGetTotalSystemMemory( void );
 extern uint64_t PlGetTotalAvailableSystemMemory( void );
 extern uint64_t PlGetCurrentMemoryUsage( void );
 
-#ifdef __cplusplus
-};
-#endif
+PL_EXTERN_C_END
