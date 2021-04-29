@@ -68,9 +68,6 @@ extern int LOG_LEVEL_FILESYSTEM;
 /* * * * * * * * * * * * * * * * * * * */
 /* Sub Systems                         */
 
-PLFunctionResult PlgInitGraphics( void );
-void PlgShutdownGraphics( void );
-
 PLFunctionResult PlInitFileSystem( void );
 void PlShutdownFileSystem( void );
 

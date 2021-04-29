@@ -87,14 +87,14 @@ typedef struct PLColour {
 	PLColour( int c, int c2, int c3, int c4 = 255 ) : PLColour( ( uint8_t ) c, ( uint8_t ) c2, ( uint8_t ) c3, ( uint8_t ) c4 ) {
 	}
 
-	PLColour( float c, float c2, float c3, float c4 = 1 ) : r( plFloatToByte( c ) ),
-	                                                        g( plFloatToByte( c2 ) ),
-	                                                        b( plFloatToByte( c3 ) ),
-	                                                        a( plFloatToByte( c4 ) ) {
+	PLColour( float c, float c2, float c3, float c4 = 1 ) : r( PlFloatToByte( c ) ),
+	                                                        g( PlFloatToByte( c2 ) ),
+	                                                        b( PlFloatToByte( c3 ) ),
+	                                                        a( PlFloatToByte( c4 ) ) {
 	}
 
 	PL_INLINE PLVector4 ToVec4() const {
-		return { plByteToFloat( r ), plByteToFloat( g ), plByteToFloat( b ), plByteToFloat( a ) };
+		return { PlByteToFloat( r ), PlByteToFloat( g ), PlByteToFloat( b ), PlByteToFloat( a ) };
 	}
 
 	PL_INLINE void operator*=( const PLColour &v ) {
@@ -105,10 +105,10 @@ typedef struct PLColour {
 	}
 
 	PL_INLINE void operator*=( float c ) {
-		r *= plFloatToByte( c );
-		g *= plFloatToByte( c );
-		b *= plFloatToByte( c );
-		a *= plFloatToByte( c );
+		r *= PlFloatToByte( c );
+		g *= PlFloatToByte( c );
+		b *= PlFloatToByte( c );
+		a *= PlFloatToByte( c );
 	}
 
 	PL_INLINE void operator*=( uint8_t c ) {
@@ -126,10 +126,10 @@ typedef struct PLColour {
 	}
 
 	PL_INLINE void operator+=( float c ) {
-		r += plFloatToByte( c );
-		g += plFloatToByte( c );
-		b += plFloatToByte( c );
-		a += plFloatToByte( c );
+		r += PlFloatToByte( c );
+		g += PlFloatToByte( c );
+		b += PlFloatToByte( c );
+		a += PlFloatToByte( c );
 	}
 
 	PL_INLINE void operator-=( const PLColour &v ) {
@@ -140,10 +140,10 @@ typedef struct PLColour {
 	}
 
 	PL_INLINE void operator-=( float c ) {
-		r -= plFloatToByte( c );
-		g -= plFloatToByte( c );
-		b -= plFloatToByte( c );
-		a -= plFloatToByte( c );
+		r -= PlFloatToByte( c );
+		g -= PlFloatToByte( c );
+		b -= PlFloatToByte( c );
+		a -= PlFloatToByte( c );
 	}
 
 	PL_INLINE void operator/=( const PLColour &v ) {
@@ -165,7 +165,7 @@ typedef struct PLColour {
 	}
 
 	PL_INLINE PLColour operator-( float c ) const {
-		return { r - plFloatToByte( c ), g - plFloatToByte( c ), b - plFloatToByte( c ), a - plFloatToByte( c ) };
+		return { r - PlFloatToByte( c ), g - PlFloatToByte( c ), b - PlFloatToByte( c ), a - PlFloatToByte( c ) };
 	}
 
 	PL_INLINE PLColour operator-( uint8_t c ) const {
@@ -185,7 +185,7 @@ typedef struct PLColour {
 	}
 
 	PL_INLINE PLColour operator+( float c ) const {
-		return { r + plFloatToByte( c ), g + plFloatToByte( c ), b + plFloatToByte( c ), a + plFloatToByte( c ) };
+		return { r + PlFloatToByte( c ), g + PlFloatToByte( c ), b + PlFloatToByte( c ), a + PlFloatToByte( c ) };
 	}
 
 	PL_INLINE PLColour operator/( const PLColour &v ) const {
@@ -193,7 +193,7 @@ typedef struct PLColour {
 	}
 
 	PL_INLINE PLColour operator/( float c ) const {
-		return PLColour( r / plFloatToByte( c ), g / plFloatToByte( c ), b / plFloatToByte( c ), a / plFloatToByte( c ) );
+		return PLColour( r / PlFloatToByte( c ), g / PlFloatToByte( c ), b / PlFloatToByte( c ), a / PlFloatToByte( c ) );
 	}
 
 	PL_INLINE PLColour operator/( uint8_t c ) const {

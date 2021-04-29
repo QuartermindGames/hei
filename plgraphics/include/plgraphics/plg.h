@@ -233,6 +233,9 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
+PLFunctionResult PlgInitializeGraphics( void );
+void PlgShutdownGraphics( void );
+
 //PL_EXTERN PLShaderStage *plCreateShaderStage(PLShaderStageType type);
 PL_EXTERN PLGShaderStage *PlgParseShaderStage( PLGShaderStageType type, const char *buf, size_t length );
 PL_EXTERN PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type );

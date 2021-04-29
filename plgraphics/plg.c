@@ -54,7 +54,7 @@ void _InitTextures( void );// platform_graphics_texture
 
 int LOG_LEVEL_GRAPHICS = 0;
 
-PLFunctionResult PlgInitGraphics( void ) {
+PLFunctionResult PlgInitializeGraphics( void ) {
 	memset( &gfx_state, 0, sizeof( GfxState ) );
 
 	LOG_LEVEL_GRAPHICS = PlAddLogLevel( "plgraphics", ( PLColour ){ 0, 255, 255, 255 },

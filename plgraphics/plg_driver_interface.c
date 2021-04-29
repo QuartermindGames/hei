@@ -47,15 +47,15 @@ static PLGDriver drivers[ MAX_GRAPHICS_MODES ];
 static unsigned int numDrivers = 0;
 
 static PLGDriverExportTable exportTable = {
-		.CreateTexture = PlgCreateTexture,
-		.DestroyTexture = PlgDestroyTexture,
-		.GetMaxTextureAnistropy = PlgGetMaxTextureAnistropy,
-		.GetMaxTextureSize = PlgGetMaxTextureSize,
-		.GetMaxTextureUnits = PlgGetMaxTextureUnits,
-		.SetTexture = PlgSetTexture,
-		.SetTextureAnisotropy = PlgSetTextureAnisotropy,
-		.SetTextureEnvironmentMode = PlgSetTextureEnvironmentMode,
-		.SetTextureFlags = PlgSetTextureFlags,
+        .CreateTexture = PlgCreateTexture,
+        .DestroyTexture = PlgDestroyTexture,
+        .GetMaxTextureAnistropy = PlgGetMaxTextureAnistropy,
+        .GetMaxTextureSize = PlgGetMaxTextureSize,
+        .GetMaxTextureUnits = PlgGetMaxTextureUnits,
+        .SetTexture = PlgSetTexture,
+        .SetTextureAnisotropy = PlgSetTextureAnisotropy,
+        .SetTextureEnvironmentMode = PlgSetTextureEnvironmentMode,
+        .SetTextureFlags = PlgSetTextureFlags,
 };
 
 bool PlgRegisterDriver( const char *path ) {
@@ -109,7 +109,7 @@ bool PlgRegisterDriver( const char *path ) {
  * Private callback when scanning for plugins.
  */
 static void RegisterScannedDriver( const char *path, void *unused ) {
-	plUnused( unused );
+	PlUnused( unused );
 
 	/* validate it's actually a plugin */
 	size_t length = strlen( path );
@@ -149,7 +149,7 @@ const char **PlgGetAvailableDriverInterfaces( unsigned int *numModes ) {
 	return descriptors;
 }
 
-void PlgSetDriver( const char *mode ) {
+PLFunctionResult PlgSetDriver( const char *mode ) {
 	GfxLog( "Attempting mode \"%s\"...\n", mode );
 
 	const PLGDriverImportTable *interface = NULL;
@@ -164,12 +164,12 @@ void PlgSetDriver( const char *mode ) {
 
 	if ( interface == NULL ) {
 		PlReportErrorF( PL_RESULT_GRAPHICSINIT, "invalid graphics interface \"%s\" selected", mode );
-		return;
+		return PL_RESULT_GRAPHICSINIT;
 	}
 
 	if ( gfx_state.interface != NULL && interface == gfx_state.interface ) {
 		PlReportErrorF( PL_RESULT_GRAPHICSINIT, "chosen interface \"%s\" is already active", mode );
-		return;
+		return PL_RESULT_GRAPHICSINIT;
 	}
 
 	gfx_state.interface = interface;
@@ -177,4 +177,6 @@ void PlgSetDriver( const char *mode ) {
 	CallGfxFunction( Initialize );
 
 	GfxLog( "Mode \"%s\" initialized!\n", mode );
+
+	return PL_RESULT_SUCCESS;
 }

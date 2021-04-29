@@ -117,11 +117,11 @@ typedef struct PLMatrix4 {
 	}
 
 	PL_INLINE PLMatrix4 Translate( const PLVector3 &position ) {
-		return *this *= plTranslateMatrix4( position );
+		return *this *= PlTranslateMatrix4( position );
 	}
 
 	PL_INLINE PLMatrix4 Rotate( float angle, const PLVector3 &axis ) {
-		return *this *= plRotateMatrix4( angle, axis );
+		return *this *= PlRotateMatrix4( angle, axis );
 	}
 
 	PL_INLINE void Clear() {
@@ -129,27 +129,27 @@ typedef struct PLMatrix4 {
 	}
 
 	PL_INLINE PLVector3 GetAngle() {
-		return plGetMatrix4Angle( this );
+		return PlGetMatrix4Angle( this );
 	}
 
 	PL_INLINE PLVector3 GetTranslation() {
-		return plGetMatrix4Translation( this );
+		return PlGetMatrix4Translation( this );
 	}
 
 	PL_INLINE PLMatrix4 operator+( PLMatrix4 m2 ) const {
-		return plAddMatrix4( *this, m2 );
+		return PlAddMatrix4( *this, m2 );
 	}
 
 	PL_INLINE PLMatrix4 operator-( PLMatrix4 m2 ) const {
-		return plSubtractMatrix4( *this, m2 );
+		return PlSubtractMatrix4( *this, m2 );
 	}
 
 	PL_INLINE PLMatrix4 operator*( PLVector3 v ) const {
-		return plScaleMatrix4( *this, v );
+		return PlScaleMatrix4( *this, v );
 	}
 
 	PL_INLINE PLMatrix4 operator*( PLMatrix4 m2 ) const {
-		return plMultiplyMatrix4( *this, m2 );
+		return PlMultiplyMatrix4( *this, m2 );
 	}
 
 	PL_INLINE PLMatrix4 &operator*=( PLMatrix4 m2 ) {

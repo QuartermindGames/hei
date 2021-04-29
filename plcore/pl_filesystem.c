@@ -177,8 +177,8 @@ IMPLEMENT_COMMAND( fsLstPkg, "List all the files in a particular package." ) {
 }
 
 IMPLEMENT_COMMAND( fsListMounted, "Lists all of the mounted directories." ) {
-	plUnused( argv );
-	plUnused( argc );
+	PlUnused( argv );
+	PlUnused( argc );
 
 	if ( fs_mount_root == NULL ) {
 		Print( "No locations mounted\n" );
