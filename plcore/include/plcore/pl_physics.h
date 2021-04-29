@@ -70,12 +70,7 @@ typedef struct PLCollision {
 	( PLCollisionPlane ) { ( ORIGIN ), ( NORMAL ) }
 #endif
 
-typedef struct PLGVertex PLGVertex;
-
-#if 0
-PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertices, bool absolute );
-#endif
-
+PLCollisionAABB PlGenerateAabbFromCoords( const PLVector3 *vertices, unsigned int numVertices, bool absolute );
 PLVector3 PlGetAabbAbsOrigin( const PLCollisionAABB *bounds, PLVector3 origin );
 
 bool PlIsAabbIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB *bBounds );

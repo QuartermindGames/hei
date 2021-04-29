@@ -335,6 +335,23 @@ void PlgDrawInstancedMesh( PLGMesh *mesh, const PLMatrix4 *transforms, unsigned 
 	CallGfxFunction( DrawInstancedMesh, mesh, gfx_state.current_program, transforms, instanceCount );
 }
 
+PLCollisionAABB PlgGenerateAabbFromVertices( const PLGVertex *vertices, unsigned int numVertices, bool absolute ) {
+    PLVector3 *vvertices = pl_malloc( sizeof( PLVector3 ) * numVertices );
+    for ( unsigned int i = 0; i < numVertices; ++i ) {
+        vvertices[ i ] = vertices[ i ].position;
+    }
+
+    PLCollisionAABB bounds = PlGenerateAabbFromCoords( vvertices, numVertices, absolute );
+
+    pl_free( vvertices );
+
+    return bounds;
+}
+
+PLCollisionAABB PlgGenerateAabbFromMesh( const PLGMesh *mesh, bool absolute ) {
+	return PlgGenerateAabbFromVertices( mesh->vertices, mesh->num_verts, absolute );
+}
+
 /* primitive types */
 
 #if defined(PL_USE_GRAPHICS)    /* todo: move these... */

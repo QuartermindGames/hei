@@ -26,9 +26,7 @@ SOFTWARE.
 
 #include <plcore/pl_math.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+PL_EXTERN_C
 
 typedef enum PLGMeshPrimitive {
 	PLG_MESH_LINES,
@@ -135,6 +133,9 @@ PL_EXTERN unsigned int PlgAddMeshTriangle( PLGMesh *mesh, unsigned int x, unsign
 PL_EXTERN void PlgUploadMesh( PLGMesh *mesh );
 PL_EXTERN void PlgDrawMesh( PLGMesh *mesh );
 
+PLCollisionAABB PlgGenerateAabbFromVertices( const PLGVertex *vertices, unsigned int numVertices, bool absolute );
+PLCollisionAABB PlgGenerateAabbFromMesh( const PLGMesh *mesh, bool absolute );
+
 PL_EXTERN void PlgGenerateMeshNormals( PLGMesh *mesh, bool perFace );
 PL_EXTERN void PlgGenerateMeshTangentBasis( PLGMesh *mesh );
 
@@ -146,6 +147,4 @@ PL_EXTERN PLVector3 PlgGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3
 
 #endif
 
-#ifdef __cplusplus
-};
-#endif
+PL_EXTERN_C_END
