@@ -68,12 +68,12 @@ void *PlGetLibraryProcedure( PLLibrary *library, const char *procedureName ) {
 #if defined( WIN32 )
 	myProcedure = GetProcAddress( ( HMODULE ) library, procedureName );
 	if ( myProcedure == NULL ) {
-		PlReportErrorF( PL_RESULT_INVALID_PARM2, "failed to find procedure (%d)", GetLastError() );
+		PlReportErrorF( PL_RESULT_INVALID_PARM2, "failed to find procedure \"%s\" (%d)", procedureName, GetLastError() );
 	}
 #else /* unix */
 	myProcedure = dlsym( library, procedureName );
 	if ( myProcedure == NULL ) {
-		PlReportErrorF( PL_RESULT_INVALID_PARM2, "failed to find procedure (%s)", dlerror() );
+		PlReportErrorF( PL_RESULT_INVALID_PARM2, "failed to find procedure \"%s\" (%s)", procedureName, dlerror() );
 	}
 #endif
 
