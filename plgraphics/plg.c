@@ -285,14 +285,6 @@ PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
 #endif
 
 /*===========================
-	UTILITY FUNCTIONS
-===========================*/
-
-void PlgDrawPixel( int x, int y, PLColour colour ) {
-	CallGfxFunction( DrawPixel, x, y, colour );
-}
-
-/*===========================
 	STENCIL OPERATIONS
 ===========================*/
 
