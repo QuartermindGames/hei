@@ -25,8 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform.h>
-#include <PL/platform_console.h>
+#include <plcore/pl.h>
+#include <plcore/pl_console.h>
 
 enum {
 	TEST_RETURN_SUCCESS,
@@ -47,13 +47,13 @@ void CB_test_cmd( unsigned int argc, char **argv ) {
 }
 
 FUNC_TEST( RegisterConsoleCommand )
-    plRegisterConsoleCommand( "test_cmd", CB_test_cmd, "testing" );
-    PLConsoleCommand *cmd = plGetConsoleCommand( "test_cmd" );
+    PlRegisterConsoleCommand( "test_cmd", CB_test_cmd, "testing" );
+    PLConsoleCommand *cmd = PlGetConsoleCommand( "test_cmd" );
     if ( cmd == NULL ) {
 	    printf( "test_cmd was not registered!\n" );
 	    return TEST_RETURN_FAILURE;
     }
-    plParseConsoleString( "test_cmd" );
+    PlParseConsoleString( "test_cmd" );
     if ( !test_cmd_called ) {
 	    printf( "Failed to call \"test_cmd\" command!\n" );
 	    return TEST_RETURN_FAILURE;
@@ -64,7 +64,7 @@ FUNC_TEST_END()
 FUNC_TEST( GetConsoleCommands )
     PLConsoleCommand **cmds;
     size_t numCmds;
-    plGetConsoleCommands( &cmds, &numCmds );
+    PlGetConsoleCommands( &cmds, &numCmds );
     if ( numCmds < 1 ) {
 	    printf( "Did not receive any commands!\n" );
 	    return TEST_RETURN_FAILURE;
@@ -88,7 +88,7 @@ FUNC_TEST( GetConsoleCommands )
 FUNC_TEST_END()
 
 FUNC_TEST( GetConsoleCommand )
-    const PLConsoleCommand *cmd = plGetConsoleCommand( "test_cmd" );
+    const PLConsoleCommand *cmd = PlGetConsoleCommand( "test_cmd" );
     if ( cmd == NULL ) {
 	    printf( "Failed to get test_cmd!\n" );
 	    return TEST_RETURN_FAILURE;

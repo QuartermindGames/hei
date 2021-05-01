@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/platform.h>
-#include <PL/platform_console.h>
-#include <PL/platform_image.h>
+#include <plcore/pl.h>
+#include <plcore/pl_console.h>
+#include <plcore/pl_image.h>
 
 /**
  * Command line utility to interface with the platform lib.
@@ -36,35 +36,35 @@ For more information, please refer to <http://unlicense.org>
 #define Error( ... ) fprintf( stderr, __VA_ARGS__ )
 
 static void ConvertImage( const char *path, const char *destination ) {
-	PLImage *image = plLoadImage( path );
+	PLImage *image = PlLoadImage( path );
 	if ( image == NULL ) {
-		printf( "Failed to load \"%s\"! (%s)\n", path, plGetError() );
+		printf( "Failed to load \"%s\"! (%s)\n", path, PlGetError() );
 		return;
 	}
 
 	/* ensure it's a valid format before we write it out */
-	plConvertPixelFormat( image, PL_IMAGEFORMAT_RGBA8 );
+	PlConvertPixelFormat( image, PL_IMAGEFORMAT_RGBA8 );
 
-	if ( plWriteImage( image, destination ) ) {
+	if ( PlWriteImage( image, destination ) ) {
 		printf( "Wrote \"%s\"\n", destination );
 	} else {
-		printf( "Failed to write \"%s\"! (%s)\n", destination, plGetError() );
+		printf( "Failed to write \"%s\"! (%s)\n", destination, PlGetError() );
 	}
 
-	plDestroyImage( image );
+	PlDestroyImage( image );
 }
 
 static void ConvertImageCallback( const char *path, void *userData ) {
 	char *outDir = ( char * ) userData;
 
-	if ( !plCreateDirectory( outDir ) ) {
-		Error( "Error: %s\n", plGetError() );
+	if ( !PlCreateDirectory( outDir ) ) {
+		Error( "Error: %s\n", PlGetError() );
 		return;
 	}
 
-	const char *fileName = plGetFileName( path );
+	const char *fileName = PlGetFileName( path );
 	if ( fileName == NULL ) {
-		Error( "Error: %s\n", plGetError() );
+		Error( "Error: %s\n", PlGetError() );
 		return;
 	}
 
@@ -99,7 +99,7 @@ static void Cmd_IMGBulkConvert( unsigned int argc, char **argv ) {
 		snprintf( outDir, sizeof( outDir ), "out/" );
 	}
 
-	plScanDirectory( argv[ 1 ], argv[ 2 ], ConvertImageCallback, false, outDir );
+	PlScanDirectory( argv[ 1 ], argv[ 2 ], ConvertImageCallback, false, outDir );
 
 	printf( "Done!\n" );
 }
@@ -120,30 +120,30 @@ int main( int argc, char **argv ) {
 	/* no buffering stdout! */
 	setvbuf( stdout, NULL, _IONBF, 0 );
 
-	plInitialize( argc, argv );
-	plInitializeSubSystems( PL_SUBSYSTEM_IO );
+	PlInitialize( argc, argv );
+	PlInitializeSubSystems( PL_SUBSYSTEM_IO );
 
-	plRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
+	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
 
-	plRegisterPlugins( "./" );
+	PlRegisterPlugins( "./" );
 
 	/* register all our custom console commands */
-	plRegisterConsoleCommand( "exit", Cmd_Exit, "Exit the application." );
-	plRegisterConsoleCommand( "quit", Cmd_Exit, "Exit the application." );
-	plRegisterConsoleCommand( "img_convert", Cmd_IMGConvert,
+	PlRegisterConsoleCommand( "exit", Cmd_Exit, "Exit the application." );
+	PlRegisterConsoleCommand( "quit", Cmd_Exit, "Exit the application." );
+	PlRegisterConsoleCommand( "img_convert", Cmd_IMGConvert,
 	                          "Convert the given image.\n"
 	                          "Usage: img_convert ./image.bmp [./out.png]" );
-	plRegisterConsoleCommand( "img_bulkconvert", Cmd_IMGBulkConvert,
+	PlRegisterConsoleCommand( "img_bulkconvert", Cmd_IMGBulkConvert,
 	                          "Bulk convert images in the given directory.\n"
 	                          "Usage: img_bulkconvert ./path bmp [./outpath]" );
 
-	plInitializePlugins();
+	PlInitializePlugins();
 
 	/* allow us to just push a command via the command line if we want */
-	const char *arg = plGetCommandLineArgumentValue( "-cmd" );
+	const char *arg = PlGetCommandLineArgumentValue( "-cmd" );
 	if ( arg != NULL ) {
-		plParseConsoleString( arg );
-		plShutdown();
+		PlParseConsoleString( arg );
+		PlShutdown();
 		return EXIT_SUCCESS;
 	}
 
@@ -162,12 +162,12 @@ int main( int argc, char **argv ) {
 			}
 		}
 
-		plParseConsoleString( cmdLine );
+		PlParseConsoleString( cmdLine );
 
 		memset( cmdLine, 0, sizeof( cmdLine ) );
 	}
 
-	plShutdown();
+	PlShutdown();
 
 	return EXIT_SUCCESS;
 }

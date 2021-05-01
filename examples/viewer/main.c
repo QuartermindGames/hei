@@ -221,10 +221,6 @@ int main( int argc, char **argv ) {
 
 	plSetClearColour( PLColour( 0, 0, 128, 255 ) );
 
-	plSetupConsole( 1 );
-	plShowConsole( true );
-	plSetConsoleColour( 1, PLColour( 128, 0, 0, 128 ) );
-
 	mainCamera = plCreateCamera();
 	if ( mainCamera == NULL ) {
 		PRINT_ERROR( "Failed to create camera!\n" );

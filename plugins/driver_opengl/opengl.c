@@ -1,35 +1,33 @@
 /*
-This is free and unencumbered software released into the public domain.
+MIT License
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-For more information, please refer to <http://unlicense.org>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
 #include "plugin.h"
 
-#include <PL/pl_graphics.h>
-#include <PL/pl_graphics_camera.h>
-#include <PL/pl_parse.h>
+#include <plgraphics/plg.h>
+#include <plgraphics/plg_camera.h>
+
+#include <plcore/pl_parse.h>
 
 #include <GL/glew.h>
 
@@ -53,7 +51,7 @@ static int gl_version_major = 0;
 static int gl_version_minor = 0;
 
 #define GLVersion( maj, min ) ( ( ( maj ) == gl_version_major && ( min ) <= gl_version_minor ) || ( maj ) < gl_version_major )
-#define GLLog( ... ) gInterface->LogMessage( glLogLevel, __VA_ARGS__ )
+#define GLLog( ... ) gInterface->core->LogMessage( glLogLevel, __VA_ARGS__ )
 
 unsigned int gl_num_extensions = 0;
 
@@ -106,28 +104,28 @@ static void ClearBoundBuffers( void ) {
 }
 #endif
 
-static void GL_TranslateTextureFilterFormat( PLTextureFilter filterMode, unsigned int *min, unsigned int *mag ) {
+static void GL_TranslateTextureFilterFormat( PLGTextureFilter filterMode, int *min, int *mag ) {
 	switch ( filterMode ) {
-		case PL_TEXTURE_FILTER_LINEAR:
+		case PLG_TEXTURE_FILTER_LINEAR:
 			*min = *mag = GL_LINEAR;
 			break;
 		default:
-		case PL_TEXTURE_FILTER_NEAREST:
+		case PLG_TEXTURE_FILTER_NEAREST:
 			*min = *mag = GL_NEAREST;
 			break;
-		case PL_TEXTURE_FILTER_MIPMAP_LINEAR:
+		case PLG_TEXTURE_FILTER_MIPMAP_LINEAR:
 			*min = GL_LINEAR_MIPMAP_LINEAR;
 			*mag = GL_LINEAR;
 			break;
-		case PL_TEXTURE_FILTER_MIPMAP_LINEAR_NEAREST:
+		case PLG_TEXTURE_FILTER_MIPMAP_LINEAR_NEAREST:
 			*min = GL_LINEAR_MIPMAP_NEAREST;
 			*mag = GL_LINEAR;
 			break;
-		case PL_TEXTURE_FILTER_MIPMAP_NEAREST:
+		case PLG_TEXTURE_FILTER_MIPMAP_NEAREST:
 			*min = GL_NEAREST_MIPMAP_NEAREST;
 			*mag = GL_NEAREST;
 			break;
-		case PL_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR:
+		case PLG_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR:
 			*min = GL_NEAREST_MIPMAP_LINEAR;
 			*mag = GL_NEAREST;
 			break;
@@ -152,18 +150,18 @@ static void GLGetMaxTextureSize( unsigned int *s ) {
 
 static void GLSetClearColour( PLColour rgba ) {
 	glClearColor(
-	        plByteToFloat( rgba.r ),
-	        plByteToFloat( rgba.g ),
-	        plByteToFloat( rgba.b ),
-	        plByteToFloat( rgba.a ) );
+	        PlByteToFloat( rgba.r ),
+	        PlByteToFloat( rgba.g ),
+	        PlByteToFloat( rgba.b ),
+	        PlByteToFloat( rgba.a ) );
 }
 
 static void GLClearBuffers( unsigned int buffers ) {
 	// Rather ugly, but translate it over to GL.
 	unsigned int glclear = 0;
-	if ( buffers & PL_BUFFER_COLOUR ) glclear |= GL_COLOR_BUFFER_BIT;
-	if ( buffers & PL_BUFFER_DEPTH ) glclear |= GL_DEPTH_BUFFER_BIT;
-	if ( buffers & PL_BUFFER_STENCIL ) glclear |= GL_STENCIL_BUFFER_BIT;
+	if ( buffers & PLG_BUFFER_COLOUR ) glclear |= GL_COLOR_BUFFER_BIT;
+	if ( buffers & PLG_BUFFER_DEPTH ) glclear |= GL_DEPTH_BUFFER_BIT;
+	if ( buffers & PLG_BUFFER_STENCIL ) glclear |= GL_STENCIL_BUFFER_BIT;
 	glClear( glclear );
 }
 
@@ -173,11 +171,11 @@ static void GLSetDepthBufferMode( unsigned int mode ) {
 			GLLog( "Unknown depth buffer mode, %d\n", mode );
 			break;
 
-		case PL_DEPTHBUFFER_DISABLE:
+		case PLG_DEPTHBUFFER_DISABLE:
 			glDisable( GL_DEPTH_TEST );
 			break;
 
-		case PL_DEPTHBUFFER_ENABLE:
+		case PLG_DEPTHBUFFER_ENABLE:
 			glEnable( GL_DEPTH_TEST );
 			break;
 	}
@@ -189,36 +187,36 @@ static void GLSetDepthMask( bool enable ) {
 
 /////////////////////////////////////////////////////////////
 
-static unsigned int TranslateBlendFunc( PLBlend blend ) {
+static unsigned int TranslateBlendFunc( PLGBlend blend ) {
 	switch ( blend ) {
 		default:
-		case PL_BLEND_ONE:
+		case PLG_BLEND_ONE:
 			return GL_ONE;
-		case PL_BLEND_ZERO:
+		case PLG_BLEND_ZERO:
 			return GL_ZERO;
-		case PL_BLEND_SRC_COLOR:
+		case PLG_BLEND_SRC_COLOR:
 			return GL_SRC_COLOR;
-		case PL_BLEND_ONE_MINUS_SRC_COLOR:
+		case PLG_BLEND_ONE_MINUS_SRC_COLOR:
 			return GL_ONE_MINUS_SRC_COLOR;
-		case PL_BLEND_SRC_ALPHA:
+		case PLG_BLEND_SRC_ALPHA:
 			return GL_SRC_ALPHA;
-		case PL_BLEND_ONE_MINUS_SRC_ALPHA:
+		case PLG_BLEND_ONE_MINUS_SRC_ALPHA:
 			return GL_ONE_MINUS_SRC_ALPHA;
-		case PL_BLEND_DST_ALPHA:
+		case PLG_BLEND_DST_ALPHA:
 			return GL_DST_ALPHA;
-		case PL_BLEND_ONE_MINUS_DST_ALPHA:
+		case PLG_BLEND_ONE_MINUS_DST_ALPHA:
 			return GL_ONE_MINUS_DST_ALPHA;
-		case PL_BLEND_DST_COLOR:
+		case PLG_BLEND_DST_COLOR:
 			return GL_DST_COLOR;
-		case PL_BLEND_ONE_MINUS_DST_COLOR:
+		case PLG_BLEND_ONE_MINUS_DST_COLOR:
 			return GL_ONE_MINUS_DST_COLOR;
-		case PL_BLEND_SRC_ALPHA_SATURATE:
+		case PLG_BLEND_SRC_ALPHA_SATURATE:
 			return GL_SRC_ALPHA_SATURATE;
 	}
 }
 
-static void GLSetBlendMode( PLBlend a, PLBlend b ) {
-	if ( a == PL_BLEND_NONE && b == PL_BLEND_NONE ) {
+static void GLSetBlendMode( PLGBlend a, PLGBlend b ) {
+	if ( a == PLG_BLEND_NONE && b == PLG_BLEND_NONE ) {
 		glDisable( GL_BLEND );
 	} else {
 		glEnable( GL_BLEND );
@@ -227,19 +225,19 @@ static void GLSetBlendMode( PLBlend a, PLBlend b ) {
 	glBlendFunc( TranslateBlendFunc( a ), TranslateBlendFunc( b ) );
 }
 
-static void GLSetCullMode( PLCullMode mode ) {
-	if ( mode == PL_CULL_NONE ) {
+static void GLSetCullMode( PLGCullMode mode ) {
+	if ( mode == PLG_CULL_NONE ) {
 		glDisable( GL_CULL_FACE );
 	} else {
 		glEnable( GL_CULL_FACE );
 		glCullFace( GL_BACK );
 		switch ( mode ) {
 			default:
-			case PL_CULL_NEGATIVE:
+			case PLG_CULL_NEGATIVE:
 				glFrontFace( GL_CW );
 				break;
 
-			case PL_CULL_POSTIVE:
+			case PLG_CULL_POSTIVE:
 				glFrontFace( GL_CCW );
 				break;
 		}
@@ -250,61 +248,61 @@ static void GLSetCullMode( PLCullMode mode ) {
 /////////////////////////////////////////////////////////////
 // Framebuffer
 
-static unsigned int TranslateFrameBufferBinding( PLFBOTarget targetBinding ) {
+static unsigned int TranslateFrameBufferBinding( PLGFrameBufferObjectTarget targetBinding ) {
 	switch ( targetBinding ) {
-		case PL_FRAMEBUFFER_DEFAULT:
+		case PLG_FRAMEBUFFER_DEFAULT:
 			return GL_FRAMEBUFFER;
-		case PL_FRAMEBUFFER_DRAW:
+		case PLG_FRAMEBUFFER_DRAW:
 			return GL_DRAW_FRAMEBUFFER;
-		case PL_FRAMEBUFFER_READ:
+		case PLG_FRAMEBUFFER_READ:
 			return GL_READ_FRAMEBUFFER;
 		default:
 			return 0;
 	}
 }
 
-static void GLCreateFrameBuffer( PLFrameBuffer *buffer ) {
+static void GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
 	glGenFramebuffers( 1, &buffer->fbo );
 	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, buffer->fbo );
 
-	if ( buffer->flags & PL_BUFFER_COLOUR ) {
-		glGenRenderbuffers( 1, &buffer->renderBuffers[ PL_RENDERBUFFER_COLOUR ] );
-		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_COLOUR ] );
+	if ( buffer->flags & PLG_BUFFER_COLOUR ) {
+		glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
+		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
 		glRenderbufferStorage( GL_RENDERBUFFER, GL_RGBA, buffer->width, buffer->height );
-		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_COLOUR ] );
+		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
 	}
 
-	if ( buffer->flags & PL_BUFFER_DEPTH ) {
-		glGenRenderbuffers( 1, &buffer->renderBuffers[ PL_RENDERBUFFER_DEPTH ] );
-		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_DEPTH ] );
+	if ( buffer->flags & PLG_BUFFER_DEPTH ) {
+		glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
+		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
 		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, buffer->width, buffer->height );
-		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_DEPTH ] );
+		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
 	}
 
-	if ( buffer->flags & PL_BUFFER_STENCIL ) {
-		glGenRenderbuffers( 1, &buffer->renderBuffers[ PL_RENDERBUFFER_STENCIL ] );
-		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_STENCIL ] );
+	if ( buffer->flags & PLG_BUFFER_STENCIL ) {
+		glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
+		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
 		glRenderbufferStorage( GL_RENDERBUFFER, GL_STENCIL, buffer->width, buffer->height );
-		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PL_RENDERBUFFER_STENCIL ] );
+		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
 	}
 }
 
-static void GLDeleteFrameBuffer( PLFrameBuffer *buffer ) {
+static void GLDeleteFrameBuffer( PLGFrameBuffer *buffer ) {
 	if ( buffer ) {
 		glDeleteFramebuffers( 1, &buffer->fbo );
-		if ( buffer->renderBuffers[ PL_RENDERBUFFER_COLOUR ] ) {
-			glDeleteRenderbuffers( 1, &buffer->renderBuffers[ PL_RENDERBUFFER_COLOUR ] );
+		if ( buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] ) {
+			glDeleteRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
 		}
-		if ( buffer->renderBuffers[ PL_RENDERBUFFER_DEPTH ] ) {
-			glDeleteRenderbuffers( 1, &buffer->renderBuffers[ PL_RENDERBUFFER_DEPTH ] );
+		if ( buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) {
+			glDeleteRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
 		}
-		if ( buffer->renderBuffers[ PL_RENDERBUFFER_STENCIL ] ) {
-			glDeleteRenderbuffers( 1, &buffer->renderBuffers[ PL_RENDERBUFFER_STENCIL ] );
+		if ( buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] ) {
+			glDeleteRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
 		}
 	}
 }
 
-static void GLBindFrameBuffer( PLFrameBuffer *buffer, PLFBOTarget target_binding ) {
+static void GLBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget target_binding ) {
 	GLuint binding = TranslateFrameBufferBinding( target_binding );
 	if ( buffer ) {
 		glBindFramebuffer( binding, buffer->fbo );
@@ -313,10 +311,10 @@ static void GLBindFrameBuffer( PLFrameBuffer *buffer, PLFBOTarget target_binding
 	}
 }
 
-static void GLBlitFrameBuffers( PLFrameBuffer *src_buffer,
+static void GLBlitFrameBuffers( PLGFrameBuffer *src_buffer,
                                 unsigned int src_w,
                                 unsigned int src_h,
-                                PLFrameBuffer *dst_buffer,
+                                PLGFrameBuffer *dst_buffer,
                                 unsigned int dst_w,
                                 unsigned int dst_h,
                                 bool linear ) {
@@ -335,10 +333,10 @@ static void GLBlitFrameBuffers( PLFrameBuffer *src_buffer,
 	glBlitFramebuffer( 0, 0, src_w, src_h, 0, 0, dst_w, dst_h, GL_COLOR_BUFFER_BIT, linear ? GL_LINEAR : GL_NEAREST );
 }
 
-static void GLBindTexture( const PLTexture *texture );
+static void GLBindTexture( const PLGTexture *texture );
 
-static PLTexture *GLGetFrameBufferTextureAttachment( PLFrameBuffer *buffer, unsigned int component, PLTextureFilter filter ) {
-	PLTexture *texture = gInterface->CreateTexture();
+static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter ) {
+	PLGTexture *texture = gInterface->CreateTexture();
 	if ( texture == NULL ) {
 		return NULL;
 	}
@@ -348,16 +346,16 @@ static PLTexture *GLGetFrameBufferTextureAttachment( PLFrameBuffer *buffer, unsi
 
 	GLBindTexture( texture );
 
-	unsigned int glComponent;
+	int glComponent;
 	unsigned int glType;
 	unsigned int glAttachment;
 	switch ( component ) {
-		case PL_BUFFER_DEPTH:
+		case PLG_BUFFER_DEPTH:
 			glComponent = GL_DEPTH_COMPONENT;
 			glType = GL_FLOAT;
 			glAttachment = GL_DEPTH_ATTACHMENT;
 			break;
-		case PL_BUFFER_COLOUR:
+		case PLG_BUFFER_COLOUR:
 			glComponent = GL_RGBA;
 			glType = GL_UNSIGNED_BYTE;
 			glAttachment = GL_COLOR_ATTACHMENT0;
@@ -366,7 +364,7 @@ static PLTexture *GLGetFrameBufferTextureAttachment( PLFrameBuffer *buffer, unsi
 
 	glTexImage2D( GL_TEXTURE_2D, 0, glComponent, buffer->width, buffer->height, 0, glComponent, glType, NULL );
 
-	unsigned int min, mag;
+	int min, mag;
 	GL_TranslateTextureFilterFormat( filter, &min, &mag );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag );
@@ -433,15 +431,15 @@ static unsigned int TranslateImageColourFormat( PLColourFormat format ) {
 	}
 }
 
-static void GLCreateTexture( PLTexture *texture ) {
+static void GLCreateTexture( PLGTexture *texture ) {
 	glGenTextures( 1, &texture->internal.id );
 }
 
-static void GLDeleteTexture( PLTexture *texture ) {
+static void GLDeleteTexture( PLGTexture *texture ) {
 	glDeleteTextures( 1, &texture->internal.id );
 }
 
-static void GLBindTexture( const PLTexture *texture ) {
+static void GLBindTexture( const PLGTexture *texture ) {
 	if ( texture == NULL ) {
 		glBindTexture( GL_TEXTURE_2D, 0 );
 		return;
@@ -462,17 +460,17 @@ static bool IsCompressedImageFormat( PLImageFormat format ) {
 	}
 }
 
-static void GLUploadTexture( PLTexture *texture, const PLImage *upload ) {
+static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 	/* was originally GL_CLAMP; deprecated in GL3+, though some drivers
 	 * still seem to accept it anyway except for newer Intel GPUs apparently */
 	/* todo: make this configurable */
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 
-	unsigned int min, mag;
+	int min, mag;
 	GL_TranslateTextureFilterFormat( texture->filter, &min, &mag );
-	if ( texture->filter == PL_TEXTURE_FILTER_LINEAR || texture->filter == PL_TEXTURE_FILTER_NEAREST ) {
-		texture->flags |= PL_TEXTURE_FLAG_NOMIPS;
+	if ( texture->filter == PLG_TEXTURE_FILTER_LINEAR || texture->filter == PLG_TEXTURE_FILTER_NEAREST ) {
+		texture->flags |= PLG_TEXTURE_FLAG_NOMIPS;
 	}
 
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag );
@@ -487,7 +485,7 @@ static void GLUploadTexture( PLTexture *texture, const PLImage *upload ) {
 	unsigned int colour_format = TranslateImageColourFormat( upload->colour_format );
 	unsigned int storage_format = TranslateStorageFormat( texture->storage );
 
-	for ( unsigned int i = 0; i < levels; ++i ) {
+	for ( int i = 0; i < levels; ++i ) {
 		GLsizei w = texture->w / ( unsigned int ) pow( 2, i );
 		GLsizei h = texture->h / ( unsigned int ) pow( 2, i );
 		if ( IsCompressedImageFormat( upload->format ) ) {
@@ -512,12 +510,12 @@ static void GLUploadTexture( PLTexture *texture, const PLImage *upload ) {
 		}
 	}
 
-	if ( levels == 1 && !( texture->flags & PL_TEXTURE_FLAG_NOMIPS ) ) {
+	if ( levels == 1 && !( texture->flags & PLG_TEXTURE_FLAG_NOMIPS ) ) {
 		glGenerateMipmap( GL_TEXTURE_2D );
 	}
 }
 
-static void GLSetTextureAnisotropy( PLTexture *texture, uint32_t value ) {
+static void GLSetTextureAnisotropy( PLGTexture *texture, uint32_t value ) {
 	GLBindTexture( texture );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, ( int ) value );
 }
@@ -543,7 +541,7 @@ static int TranslateColourChannel( int channel ) {
 	}
 }
 
-static void GLSwizzleTexture( PLTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
+static void GLSwizzleTexture( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
 	GLBindTexture( texture );
 	if ( GLVersion( 3, 3 ) ) {
 		int swizzle[] = {
@@ -553,7 +551,7 @@ static void GLSwizzleTexture( PLTexture *texture, uint8_t r, uint8_t g, uint8_t 
 		        TranslateColourChannel( a ) };
 		glTexParameteriv( GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle );
 	} else {
-		gInterface->ReportError( PL_RESULT_UNSUPPORTED, "missing software implementation" );
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "missing software implementation" );
 	}
 }
 
@@ -561,23 +559,23 @@ static void GLSwizzleTexture( PLTexture *texture, uint8_t r, uint8_t g, uint8_t 
 // Mesh
 
 typedef struct MeshTranslatePrimitive {
-	PLMeshPrimitive mode;
+	PLGMeshPrimitive mode;
 	unsigned int target;
 	const char *name;
 } MeshTranslatePrimitive;
 
 static MeshTranslatePrimitive primitives[] = {
-        { PL_MESH_LINES, GL_LINES, "LINES" },
-        { PL_MESH_LINE_LOOP, GL_LINE_LOOP, "LINE_LOOP" },
-        { PL_MESH_POINTS, GL_POINTS, "POINTS" },
-        { PL_MESH_TRIANGLES, GL_TRIANGLES, "TRIANGLES" },
-        { PL_MESH_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN" },
-        { PL_MESH_TRIANGLE_FAN_LINE, GL_LINES, "TRIANGLE_FAN_LINE" },
-        { PL_MESH_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP" },
-        { PL_MESH_QUADS, GL_TRIANGLES, "QUADS" }// todo, translate
+        { PLG_MESH_LINES, GL_LINES, "LINES" },
+        { PLG_MESH_LINE_LOOP, GL_LINE_LOOP, "LINE_LOOP" },
+        { PLG_MESH_POINTS, GL_POINTS, "POINTS" },
+        { PLG_MESH_TRIANGLES, GL_TRIANGLES, "TRIANGLES" },
+        { PLG_MESH_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN" },
+        { PLG_MESH_TRIANGLE_FAN_LINE, GL_LINES, "TRIANGLE_FAN_LINE" },
+        { PLG_MESH_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP" },
+        { PLG_MESH_QUADS, GL_TRIANGLES, "QUADS" }// todo, translate
 };
 
-static unsigned int TranslatePrimitiveMode( PLMeshPrimitive mode ) {
+static unsigned int TranslatePrimitiveMode( PLGMeshPrimitive mode ) {
 	for ( unsigned int i = 0; i < plArrayElements( primitives ); i++ ) {
 		if ( mode == primitives[ i ].mode )
 			return primitives[ i ].target;
@@ -587,13 +585,13 @@ static unsigned int TranslatePrimitiveMode( PLMeshPrimitive mode ) {
 	return primitives[ 0 ].target;
 }
 
-static unsigned int TranslateDrawMode( PLMeshDrawMode mode ) {
+static unsigned int TranslateDrawMode( PLGMeshDrawMode mode ) {
 	switch ( mode ) {
-		case PL_DRAW_DYNAMIC:
+		case PLG_DRAW_DYNAMIC:
 			return GL_DYNAMIC_DRAW;
-		case PL_DRAW_STATIC:
+		case PLG_DRAW_STATIC:
 			return GL_STATIC_DRAW;
-		case PL_DRAW_STREAM:
+		case PLG_DRAW_STREAM:
 			return GL_STREAM_DRAW;
 		default:
 			return 0;
@@ -605,7 +603,7 @@ enum {
 	BUFFER_ELEMENT_DATA,
 };
 
-static void GLCreateMesh( PLMesh *mesh ) {
+static void GLCreateMesh( PLGMesh *mesh ) {
 	if ( !GLVersion( 2, 0 ) ) {
 		return;
 	}
@@ -619,7 +617,7 @@ static void GLCreateMesh( PLMesh *mesh ) {
 	}
 }
 
-static void GLUploadMesh( PLMesh *mesh, PLShaderProgram *program ) {
+static void GLUploadMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 	if ( program == NULL ) {
 		return;
 	}
@@ -629,39 +627,39 @@ static void GLUploadMesh( PLMesh *mesh, PLShaderProgram *program ) {
 
 	//Write the current CPU vertex data into the VBO
 	unsigned int drawMode = TranslateDrawMode( mesh->mode );
-	glBufferData( GL_ARRAY_BUFFER, sizeof( PLVertex ) * mesh->num_verts, &mesh->vertices[ 0 ], drawMode );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( PLGVertex ) * mesh->num_verts, &mesh->vertices[ 0 ], drawMode );
 
 	//Point to the different substreams of the interleaved BVO
 	//Args: Index, Size, Type, (Normalized), Stride, StartPtr
 
 	if ( program->internal.v_position != -1 ) {
 		glEnableVertexAttribArray( program->internal.v_position );
-		glVertexAttribPointer( program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof( PLVertex ), ( const GLvoid * ) pl_offsetof( PLVertex, position ) );
+		glVertexAttribPointer( program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, position ) );
 	}
 
 	if ( program->internal.v_normal != -1 ) {
 		glEnableVertexAttribArray( program->internal.v_normal );
-		glVertexAttribPointer( program->internal.v_normal, 3, GL_FLOAT, GL_FALSE, sizeof( PLVertex ), ( const GLvoid * ) pl_offsetof( PLVertex, normal ) );
+		glVertexAttribPointer( program->internal.v_normal, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, normal ) );
 	}
 
 	if ( program->internal.v_uv != -1 ) {
 		glEnableVertexAttribArray( program->internal.v_uv );
-		glVertexAttribPointer( program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof( PLVertex ), ( const GLvoid * ) pl_offsetof( PLVertex, st ) );
+		glVertexAttribPointer( program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, st ) );
 	}
 
 	if ( program->internal.v_colour != -1 ) {
 		glEnableVertexAttribArray( program->internal.v_colour );
-		glVertexAttribPointer( program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( PLVertex ), ( const GLvoid * ) pl_offsetof( PLVertex, colour ) );
+		glVertexAttribPointer( program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, colour ) );
 	}
 
 	if ( program->internal.v_tangent != -1 ) {
 		glEnableVertexAttribArray( program->internal.v_tangent );
-		glVertexAttribPointer( program->internal.v_tangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLVertex ), ( const GLvoid * ) pl_offsetof( PLVertex, tangent ) );
+		glVertexAttribPointer( program->internal.v_tangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, tangent ) );
 	}
 
 	if ( program->internal.v_bitangent != -1 ) {
 		glEnableVertexAttribArray( program->internal.v_bitangent );
-		glVertexAttribPointer( program->internal.v_bitangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLVertex ), ( const GLvoid * ) pl_offsetof( PLVertex, bitangent ) );
+		glVertexAttribPointer( program->internal.v_bitangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, bitangent ) );
 	}
 
 	if ( mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] != 0 ) {
@@ -670,7 +668,7 @@ static void GLUploadMesh( PLMesh *mesh, PLShaderProgram *program ) {
 	}
 }
 
-static void GLDeleteMesh( PLMesh *mesh ) {
+static void GLDeleteMesh( PLGMesh *mesh ) {
 	if ( !GLVersion( 2, 0 ) ) {
 		return;
 	}
@@ -679,7 +677,7 @@ static void GLDeleteMesh( PLMesh *mesh ) {
 	glDeleteBuffers( 1, &mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] );
 }
 
-static void GLDrawInstancedMesh( PLMesh *mesh, PLShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount ) {
+static void GLDrawInstancedMesh( PLGMesh *mesh, PLGShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount ) {
 	if ( program == NULL ) {
 		GLLog( "no shader assigned!\n" );
 		return;
@@ -705,7 +703,7 @@ static void GLDrawInstancedMesh( PLMesh *mesh, PLShaderProgram *program, const P
 	}
 }
 
-static void GLDrawMesh( PLMesh *mesh, PLShaderProgram *program ) {
+static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 	if ( program == NULL ) {
 		GLLog( "No shader assigned!\n" );
 		return;
@@ -715,7 +713,7 @@ static void GLDrawMesh( PLMesh *mesh, PLShaderProgram *program ) {
 	if ( !GLVersion( 2, 0 ) ) {
 		/* todo... */
 		for ( unsigned int i = 0; i < program->num_stages; ++i ) {
-			PLShaderStage *stage = program->stages[ i ];
+			PLGShaderStage *stage = program->stages[ i ];
 			if ( stage->SWFallback == NULL ) {
 				continue;
 			}
@@ -726,14 +724,14 @@ static void GLDrawMesh( PLMesh *mesh, PLShaderProgram *program ) {
 			glBegin( mode );
 			if ( mode == GL_TRIANGLES ) {
 				for ( unsigned int j = 0; j < mesh->num_indices; ++j ) {
-					PLVertex *vertex = &mesh->vertices[ mesh->indices[ j ] ];
+					PLGVertex *vertex = &mesh->vertices[ mesh->indices[ j ] ];
 					glVertex3f( vertex->position.x, vertex->position.y, vertex->position.z );
 					glNormal3f( vertex->normal.x, vertex->normal.y, vertex->normal.z );
 					glColor4b( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a );
 				}
 			} else {
 				for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
-					PLVertex *vertex = &mesh->vertices[ j ];
+					PLGVertex *vertex = &mesh->vertices[ j ];
 					glVertex3f( vertex->position.x, vertex->position.y, vertex->position.z );
 					glNormal3f( vertex->normal.x, vertex->normal.y, vertex->normal.z );
 					glColor4b( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a );
@@ -776,15 +774,15 @@ enum {
 	VIEWPORT_RENDERBUFFER_COLOUR,
 };
 
-static void GLCreateCamera( PLCamera *camera ) {
+static void GLCreateCamera( PLGCamera *camera ) {
 	plAssert( camera );
 }
 
-static void GLDestroyCamera( PLCamera *camera ) {
+static void GLDestroyCamera( PLGCamera *camera ) {
 	plAssert( camera );
 }
 
-static void GLSetupCamera( PLCamera *camera ) {
+static void GLSetupCamera( PLGCamera *camera ) {
 	plAssert( camera );
 
 	if ( camera->viewport.auto_scale && GLVersion( 3, 0 ) ) {
@@ -806,76 +804,76 @@ static void GLSetupCamera( PLCamera *camera ) {
 
 #define SHADER_INVALID_TYPE ( ( uint32_t ) 0 - 1 )
 
-static const char *uniformDescriptors[ PL_MAX_UNIFORM_TYPES ] = {
-		[PL_INVALID_UNIFORM] = "invalid",
-		[PL_UNIFORM_FLOAT] = "float",
-		[PL_UNIFORM_INT] = "int",
-		[PL_UNIFORM_UINT] = "uint",
-		[PL_UNIFORM_BOOL] = "bool",
-		[PL_UNIFORM_DOUBLE] = "double",
-		[PL_UNIFORM_SAMPLER1D] = "sampler1D",
-		[PL_UNIFORM_SAMPLER2D] = "sampler2D",
-		[PL_UNIFORM_SAMPLER3D] = "sampler3D",
-		[PL_UNIFORM_SAMPLERCUBE] = "samplerCube",
-		[PL_UNIFORM_SAMPLER1DSHADOW] = "sampler1DShadow",
-		[PL_UNIFORM_VEC2] = "vec2",
-		[PL_UNIFORM_VEC3] = "vec3",
-		[PL_UNIFORM_VEC4] = "vec4",
-		[PL_UNIFORM_MAT3] = "mat3",
-		[PL_UNIFORM_MAT4] = "mat4",
+static const char *uniformDescriptors[ PLG_MAX_UNIFORM_TYPES ] = {
+        [PLG_INVALID_UNIFORM] = "invalid",
+        [PLG_UNIFORM_FLOAT] = "float",
+        [PLG_UNIFORM_INT] = "int",
+        [PLG_UNIFORM_UINT] = "uint",
+        [PLG_UNIFORM_BOOL] = "bool",
+        [PLG_UNIFORM_DOUBLE] = "double",
+        [PLG_UNIFORM_SAMPLER1D] = "sampler1D",
+        [PLG_UNIFORM_SAMPLER2D] = "sampler2D",
+        [PLG_UNIFORM_SAMPLER3D] = "sampler3D",
+        [PLG_UNIFORM_SAMPLERCUBE] = "samplerCube",
+        [PLG_UNIFORM_SAMPLER1DSHADOW] = "sampler1DShadow",
+        [PLG_UNIFORM_VEC2] = "vec2",
+        [PLG_UNIFORM_VEC3] = "vec3",
+        [PLG_UNIFORM_VEC4] = "vec4",
+        [PLG_UNIFORM_MAT3] = "mat3",
+        [PLG_UNIFORM_MAT4] = "mat4",
 };
 
-static PLShaderUniformType GLConvertGLUniformType( unsigned int type ) {
+static PLGShaderUniformType GLConvertGLUniformType( unsigned int type ) {
 	switch ( type ) {
 		case GL_FLOAT:
-			return PL_UNIFORM_FLOAT;
+			return PLG_UNIFORM_FLOAT;
 		case GL_FLOAT_VEC2:
-			return PL_UNIFORM_VEC2;
+			return PLG_UNIFORM_VEC2;
 		case GL_FLOAT_VEC3:
-			return PL_UNIFORM_VEC3;
+			return PLG_UNIFORM_VEC3;
 		case GL_FLOAT_VEC4:
-			return PL_UNIFORM_VEC4;
+			return PLG_UNIFORM_VEC4;
 		case GL_FLOAT_MAT3:
-			return PL_UNIFORM_MAT3;
+			return PLG_UNIFORM_MAT3;
 		case GL_FLOAT_MAT4:
-			return PL_UNIFORM_MAT4;
+			return PLG_UNIFORM_MAT4;
 
 		case GL_DOUBLE:
-			return PL_UNIFORM_DOUBLE;
+			return PLG_UNIFORM_DOUBLE;
 
 		case GL_INT:
-			return PL_UNIFORM_INT;
+			return PLG_UNIFORM_INT;
 		case GL_UNSIGNED_INT:
-			return PL_UNIFORM_UINT;
+			return PLG_UNIFORM_UINT;
 
 		case GL_BOOL:
-			return PL_UNIFORM_BOOL;
+			return PLG_UNIFORM_BOOL;
 
 		case GL_SAMPLER_1D:
-			return PL_UNIFORM_SAMPLER1D;
+			return PLG_UNIFORM_SAMPLER1D;
 		case GL_SAMPLER_1D_SHADOW:
-			return PL_UNIFORM_SAMPLER1DSHADOW;
+			return PLG_UNIFORM_SAMPLER1DSHADOW;
 		case GL_SAMPLER_2D:
-			return PL_UNIFORM_SAMPLER2D;
+			return PLG_UNIFORM_SAMPLER2D;
 		case GL_SAMPLER_2D_SHADOW:
-			return PL_UNIFORM_SAMPLER2DSHADOW;
+			return PLG_UNIFORM_SAMPLER2DSHADOW;
 
 		default: {
 			GLLog( "Unhandled GLSL data type, \"%u\"!\n", type );
-			return PL_INVALID_UNIFORM;
+			return PLG_INVALID_UNIFORM;
 		}
 	}
 }
 
-static GLenum TranslateShaderStageType( PLShaderStageType type ) {
+static GLenum TranslateShaderStageType( PLGShaderStageType type ) {
 	switch ( type ) {
-		case PL_SHADER_TYPE_VERTEX:
+		case PLG_SHADER_TYPE_VERTEX:
 			return GL_VERTEX_SHADER;
-		case PL_SHADER_TYPE_COMPUTE:
+		case PLG_SHADER_TYPE_COMPUTE:
 			return GL_COMPUTE_SHADER;
-		case PL_SHADER_TYPE_FRAGMENT:
+		case PLG_SHADER_TYPE_FRAGMENT:
 			return GL_FRAGMENT_SHADER;
-		case PL_SHADER_TYPE_GEOMETRY:
+		case PLG_SHADER_TYPE_GEOMETRY:
 			return GL_GEOMETRY_SHADER;
 		default:
 			return SHADER_INVALID_TYPE;
@@ -897,40 +895,40 @@ static const char *GetGLShaderStageDescriptor( GLenum type ) {
 	}
 }
 
-static GLenum TranslateShaderUniformType( PLShaderUniformType type ) {
+static GLenum TranslateShaderUniformType( PLGShaderUniformType type ) {
 	switch ( type ) {
-		case PL_UNIFORM_BOOL:
+		case PLG_UNIFORM_BOOL:
 			return GL_BOOL;
-		case PL_UNIFORM_DOUBLE:
+		case PLG_UNIFORM_DOUBLE:
 			return GL_DOUBLE;
-		case PL_UNIFORM_FLOAT:
+		case PLG_UNIFORM_FLOAT:
 			return GL_FLOAT;
-		case PL_UNIFORM_INT:
+		case PLG_UNIFORM_INT:
 			return GL_INT;
-		case PL_UNIFORM_UINT:
+		case PLG_UNIFORM_UINT:
 			return GL_UNSIGNED_INT;
 
-		case PL_UNIFORM_SAMPLER1D:
+		case PLG_UNIFORM_SAMPLER1D:
 			return GL_SAMPLER_1D;
-		case PL_UNIFORM_SAMPLER1DSHADOW:
+		case PLG_UNIFORM_SAMPLER1DSHADOW:
 			return GL_SAMPLER_1D_SHADOW;
-		case PL_UNIFORM_SAMPLER2D:
+		case PLG_UNIFORM_SAMPLER2D:
 			return GL_SAMPLER_2D;
-		case PL_UNIFORM_SAMPLER2DSHADOW:
+		case PLG_UNIFORM_SAMPLER2DSHADOW:
 			return GL_SAMPLER_2D_SHADOW;
-		case PL_UNIFORM_SAMPLER3D:
+		case PLG_UNIFORM_SAMPLER3D:
 			return GL_SAMPLER_3D;
-		case PL_UNIFORM_SAMPLERCUBE:
+		case PLG_UNIFORM_SAMPLERCUBE:
 			return GL_SAMPLER_CUBE;
 
-		case PL_UNIFORM_VEC2:
+		case PLG_UNIFORM_VEC2:
 			return GL_FLOAT_VEC2;
-		case PL_UNIFORM_VEC3:
+		case PLG_UNIFORM_VEC3:
 			return GL_FLOAT_VEC3;
-		case PL_UNIFORM_VEC4:
+		case PLG_UNIFORM_VEC4:
 			return GL_FLOAT_VEC4;
 
-		case PL_UNIFORM_MAT3:
+		case PLG_UNIFORM_MAT3:
 			return GL_FLOAT_MAT3;
 
 		default:
@@ -941,38 +939,38 @@ static GLenum TranslateShaderUniformType( PLShaderUniformType type ) {
 static unsigned int TranslateGLShaderUniformType( GLenum type ) {
 	switch ( type ) {
 		case GL_BOOL:
-			return PL_UNIFORM_BOOL;
+			return PLG_UNIFORM_BOOL;
 		case GL_DOUBLE:
-			return PL_UNIFORM_DOUBLE;
+			return PLG_UNIFORM_DOUBLE;
 		case GL_FLOAT:
-			return PL_UNIFORM_FLOAT;
+			return PLG_UNIFORM_FLOAT;
 		case GL_INT:
-			return PL_UNIFORM_INT;
+			return PLG_UNIFORM_INT;
 		case GL_UNSIGNED_INT:
-			return PL_UNIFORM_UINT;
+			return PLG_UNIFORM_UINT;
 
 		case GL_SAMPLER_1D:
-			return PL_UNIFORM_SAMPLER1D;
+			return PLG_UNIFORM_SAMPLER1D;
 		case GL_SAMPLER_1D_SHADOW:
-			return PL_UNIFORM_SAMPLER1DSHADOW;
+			return PLG_UNIFORM_SAMPLER1DSHADOW;
 		case GL_SAMPLER_2D:
-			return PL_UNIFORM_SAMPLER2D;
+			return PLG_UNIFORM_SAMPLER2D;
 		case GL_SAMPLER_2D_SHADOW:
-			return PL_UNIFORM_SAMPLER2DSHADOW;
+			return PLG_UNIFORM_SAMPLER2DSHADOW;
 		case GL_SAMPLER_3D:
-			return PL_UNIFORM_SAMPLER3D;
+			return PLG_UNIFORM_SAMPLER3D;
 		case GL_SAMPLER_CUBE:
-			return PL_UNIFORM_SAMPLERCUBE;
+			return PLG_UNIFORM_SAMPLERCUBE;
 
 		case GL_FLOAT_VEC2:
-			return PL_UNIFORM_VEC2;
+			return PLG_UNIFORM_VEC2;
 		case GL_FLOAT_VEC3:
-			return PL_UNIFORM_VEC3;
+			return PLG_UNIFORM_VEC3;
 		case GL_FLOAT_VEC4:
-			return PL_UNIFORM_VEC4;
+			return PLG_UNIFORM_VEC4;
 
 		case GL_FLOAT_MAT3:
-			return PL_UNIFORM_MAT3;
+			return PLG_UNIFORM_MAT3;
 
 		default:
 			return SHADER_INVALID_TYPE;
@@ -991,7 +989,7 @@ static char *InsertString( const char *string, char **buf, size_t *bufSize, size
 	*bufSize += strLength;
 	if ( *bufSize >= *maxBufSize ) {
 		*maxBufSize = *bufSize + strLength;
-		*buf = gInterface->ReAlloc( *buf, *maxBufSize );
+		*buf = gInterface->core->ReAlloc( *buf, *maxBufSize );
 	}
 
 	/* now copy it into our buffer */
@@ -1005,11 +1003,11 @@ static char *InsertString( const char *string, char **buf, size_t *bufSize, size
  * and handle any pre-processor commands.
  * todo: this is dumb... rewrite it
  */
-static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageType type, bool head ) {
+static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageType type, bool head ) {
 	/* setup the destination buffer */
 	size_t actualLength = 0;
 	size_t maxLength = *length;
-	char *dstBuffer = gInterface->CAlloc( maxLength, sizeof( char ) );
+	char *dstBuffer = gInterface->core->CAlloc( maxLength, sizeof( char ) );
 	char *dstPos = dstBuffer;
 
 	/* built-ins */
@@ -1019,13 +1017,13 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageTyp
 		insert( "uniform mat4 pl_model;" );
 		insert( "uniform mat4 pl_view;" );
 		insert( "uniform mat4 pl_proj;" );
-		if ( type == PL_SHADER_TYPE_VERTEX ) {
+		if ( type == PLG_SHADER_TYPE_VERTEX ) {
 			insert( "in vec3 pl_vposition;" );
 			insert( "in vec3 pl_vnormal;" );
 			insert( "in vec2 pl_vuv;" );
 			insert( "in vec4 pl_vcolour;" );
 			insert( "in vec3 pl_vtangent, pl_vbitangent;" );
-		} else if ( type == PL_SHADER_TYPE_FRAGMENT ) {
+		} else if ( type == PLG_SHADER_TYPE_FRAGMENT ) {
 			insert( "out vec4 pl_frag;" );
 		}
 	}
@@ -1058,7 +1056,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageTyp
 
 		if ( srcPos[ 0 ] == '/' && srcPos[ 1 ] == '/' ) {
 			srcPos += 2;
-			gInterface->SkipLine( &srcPos );
+			gInterface->core->SkipLine( &srcPos );
 			continue;
 		}
 
@@ -1066,36 +1064,36 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageTyp
 			srcPos++;
 
 			char token[ 32 ];
-			gInterface->ParseToken( &srcPos, token, sizeof( token ) );
+			gInterface->core->ParseToken( &srcPos, token, sizeof( token ) );
 			if ( strcmp( token, "include" ) == 0 ) {
-				gInterface->SkipWhitespace( &srcPos );
+				gInterface->core->SkipWhitespace( &srcPos );
 
 				/* pull the path - needs to be enclosed otherwise this'll fail */
 				char path[ PL_SYSTEM_MAX_PATH ];
-				gInterface->ParseEnclosedString( &srcPos, path, sizeof( path ) );
+				gInterface->core->ParseEnclosedString( &srcPos, path, sizeof( path ) );
 
-				PLFile *file = gInterface->OpenFile( path, true );
+				PLFile *file = gInterface->core->OpenFile( path, true );
 				if ( file != NULL ) {
 					/* allocate a temporary buffer */
-					size_t incLength = gInterface->GetFileSize( file );
-					char *incBuf = gInterface->MAlloc( incLength );
-					memcpy( incBuf, gInterface->GetFileData( file ), incLength );
+					size_t incLength = gInterface->core->GetFileSize( file );
+					char *incBuf = gInterface->core->MAlloc( incLength );
+					memcpy( incBuf, gInterface->core->GetFileData( file ), incLength );
 
 					/* close the current file, to avoid recursively opening files
 					 * and hitting any limits */
-					gInterface->CloseFile( file );
+					gInterface->core->CloseFile( file );
 
 					/* now throw it into the pre-processor */
 					incBuf = GLPreProcessGLSLShader( incBuf, &incLength, type, false );
 
 					/* and finally, push it into our destination */
 					dstPos = InsertString( incBuf, &dstBuffer, &actualLength, &maxLength );
-					gInterface->Free( incBuf );
+					gInterface->core->Free( incBuf );
 				} else {
-					GLLog( "Failed to load include \"%s\": %s\n", gInterface->GetError() );
+					GLLog( "Failed to load include \"%s\": %s\n", gInterface->core->GetError() );
 				}
 
-				gInterface->SkipLine( &srcPos );
+				gInterface->core->SkipLine( &srcPos );
 				continue;
 			}
 		}
@@ -1104,7 +1102,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageTyp
 			++maxLength;
 
 			char *oldDstBuffer = dstBuffer;
-			dstBuffer = gInterface->ReAlloc( dstBuffer, maxLength );
+			dstBuffer = gInterface->core->ReAlloc( dstBuffer, maxLength );
 
 			dstPos = dstBuffer + ( dstPos - oldDstBuffer );
 		}
@@ -1113,7 +1111,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageTyp
 	}
 
 	/* free the original buffer that was passed in */
-	gInterface->Free( buf );
+	gInterface->core->Free( buf );
 
 	/* resize and update buf to match */
 	*length = actualLength;
@@ -1121,7 +1119,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLShaderStageTyp
 	return dstBuffer;
 }
 
-static void GLCreateShaderProgram( PLShaderProgram *program ) {
+static void GLCreateShaderProgram( PLGShaderProgram *program ) {
 	if ( !GLVersion( 2, 0 ) ) {
 		GLLog( "HW shaders unsupported on platform, relying on SW fallback\n" );
 		return;
@@ -1134,7 +1132,7 @@ static void GLCreateShaderProgram( PLShaderProgram *program ) {
 	}
 }
 
-static void GLDestroyShaderProgram( PLShaderProgram *program ) {
+static void GLDestroyShaderProgram( PLGShaderProgram *program ) {
 	if ( program->internal.id == 0 ) {
 		return;
 	}
@@ -1146,7 +1144,7 @@ static void GLDestroyShaderProgram( PLShaderProgram *program ) {
 	program->internal.id = 0;
 }
 
-static void GLCreateShaderStage( PLShaderStage *stage ) {
+static void GLCreateShaderStage( PLGShaderStage *stage ) {
 	if ( !GLVersion( 2, 0 ) ) {
 		GLLog( "HW shaders unsupported on platform, relying on SW fallback\n" );
 		return;
@@ -1154,28 +1152,28 @@ static void GLCreateShaderStage( PLShaderStage *stage ) {
 
 	GLenum type = TranslateShaderStageType( stage->type );
 	if ( type == SHADER_INVALID_TYPE ) {
-		gInterface->ReportError( PL_RESULT_INVALID_SHADER_TYPE, "%u", type );
+		gInterface->core->ReportError( PL_RESULT_INVALID_SHADER_TYPE, PL_FUNCTION, "%u", type );
 		return;
 	}
 
 	if ( type == GL_GEOMETRY_SHADER && !GLVersion( 3, 0 ) ) {
-		gInterface->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, "%s", GetGLShaderStageDescriptor( type ) );
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, PL_FUNCTION, "%s", GetGLShaderStageDescriptor( type ) );
 		return;
 	}
 
 	if ( type == GL_COMPUTE_SHADER && !GLVersion( 4, 3 ) ) {
-		gInterface->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, "%s", GetGLShaderStageDescriptor( type ) );
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, PL_FUNCTION, "%s", GetGLShaderStageDescriptor( type ) );
 		return;
 	}
 
 	stage->internal.id = glCreateShader( type );
 	if ( stage->internal.id == 0 ) {
-		gInterface->ReportError( PL_RESULT_INVALID_SHADER_TYPE, "%u", type );
+		gInterface->core->ReportError( PL_RESULT_INVALID_SHADER_TYPE, PL_FUNCTION, "%u", type );
 		return;
 	}
 }
 
-static void GLDestroyShaderStage( PLShaderStage *stage ) {
+static void GLDestroyShaderStage( PLGShaderStage *stage ) {
 	if ( !GLVersion( 2, 0 ) ) {
 		return;
 	}
@@ -1189,7 +1187,7 @@ static void GLDestroyShaderStage( PLShaderStage *stage ) {
 	stage->internal.id = 0;
 }
 
-static void GLAttachShaderStage( PLShaderProgram *program, PLShaderStage *stage ) {
+static void GLAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stage ) {
 	if ( !GLVersion( 2, 0 ) ) {
 		return;
 	}
@@ -1197,13 +1195,13 @@ static void GLAttachShaderStage( PLShaderProgram *program, PLShaderStage *stage 
 	glAttachShader( program->internal.id, stage->internal.id );
 }
 
-static void GLCompileShaderStage( PLShaderStage *stage, const char *buf, size_t length ) {
+static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length ) {
 	if ( !GLVersion( 2, 0 ) ) {
 		return;
 	}
 
 	/* shove this here for now... */
-	char *mbuf = gInterface->MAlloc( length );
+	char *mbuf = gInterface->core->MAlloc( length );
 	memcpy( mbuf, buf, length );
 	mbuf = GLPreProcessGLSLShader( mbuf, &length, stage->type, true );
 	buf = mbuf;
@@ -1219,56 +1217,56 @@ static void GLCompileShaderStage( PLShaderStage *stage, const char *buf, size_t 
 		int s_length;
 		glGetShaderiv( stage->internal.id, GL_INFO_LOG_LENGTH, &s_length );
 		if ( s_length > 1 ) {
-			char *log = gInterface->CAlloc( ( size_t ) s_length, sizeof( char ) );
+			char *log = gInterface->core->CAlloc( ( size_t ) s_length, sizeof( char ) );
 			glGetShaderInfoLog( stage->internal.id, s_length, NULL, log );
 			GLLog( " COMPILE ERROR:\n%s\n", log );
-			gInterface->ReportError( PL_RESULT_SHADER_COMPILE, "%s", log );
-			gInterface->Free( log );
+			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, "%s", log );
+			gInterface->core->Free( log );
 		}
 	}
 
-	gInterface->Free( mbuf );
+	gInterface->core->Free( mbuf );
 }
 
-static void GLSetShaderUniformValue( PLShaderProgram *program, int slot, const void *value, bool transpose ) {
+static void GLSetShaderUniformValue( PLGShaderProgram *program, int slot, const void *value, bool transpose ) {
 	switch ( program->uniforms[ slot ].type ) {
-		case PL_UNIFORM_FLOAT:
+		case PLG_UNIFORM_FLOAT:
 			glUniform1f( program->uniforms[ slot ].slot, *( float * ) value );
 			break;
-		case PL_UNIFORM_SAMPLER2D:
-		case PL_UNIFORM_INT:
+		case PLG_UNIFORM_SAMPLER2D:
+		case PLG_UNIFORM_INT:
 			glUniform1i( program->uniforms[ slot ].slot, *( int * ) value );
 			break;
-		case PL_UNIFORM_UINT:
+		case PLG_UNIFORM_UINT:
 			glUniform1ui( program->uniforms[ slot ].slot, *( unsigned int * ) value );
 			break;
-		case PL_UNIFORM_BOOL:
+		case PLG_UNIFORM_BOOL:
 			glUniform1i( program->uniforms[ slot ].slot, *( bool * ) value );
 			break;
-		case PL_UNIFORM_DOUBLE:
+		case PLG_UNIFORM_DOUBLE:
 			glUniform1d( program->uniforms[ slot ].slot, *( double * ) value );
 			break;
-		case PL_UNIFORM_VEC2: {
+		case PLG_UNIFORM_VEC2: {
 			PLVector2 vec2 = *( PLVector2 * ) value;
 			glUniform2f( program->uniforms[ slot ].slot, vec2.x, vec2.y );
 			break;
 		}
-		case PL_UNIFORM_VEC3: {
+		case PLG_UNIFORM_VEC3: {
 			PLVector3 vec3 = *( PLVector3 * ) value;
 			glUniform3f( program->uniforms[ slot ].slot, vec3.x, vec3.y, vec3.z );
 			break;
 		}
-		case PL_UNIFORM_VEC4: {
+		case PLG_UNIFORM_VEC4: {
 			PLVector4 vec4 = *( PLVector4 * ) value;
 			glUniform4f( program->uniforms[ slot ].slot, vec4.x, vec4.y, vec4.z, vec4.w );
 			break;
 		}
-		case PL_UNIFORM_MAT3: {
+		case PLG_UNIFORM_MAT3: {
 			PLMatrix3 mat3 = *( PLMatrix3 * ) value;
 			glUniformMatrix3fv( program->uniforms[ slot ].slot, 1, transpose ? GL_TRUE : GL_FALSE, mat3.m );
 			break;
 		}
-		case PL_UNIFORM_MAT4: {
+		case PLG_UNIFORM_MAT4: {
 			PLMatrix4 mat4 = *( PLMatrix4 * ) value;
 			glUniformMatrix4fv( program->uniforms[ slot ].slot, 1, transpose ? GL_TRUE : GL_FALSE, mat4.m );
 			break;
@@ -1278,8 +1276,8 @@ static void GLSetShaderUniformValue( PLShaderProgram *program, int slot, const v
 	}
 }
 
-static void GLSetShaderUniformMatrix4( PLShaderProgram *program, int slot, PLMatrix4 value, bool transpose ) {
-	plUnused( program );
+static void GLSetShaderUniformMatrix4( PLGShaderProgram *program, int slot, PLMatrix4 value, bool transpose ) {
+	PlUnused( program );
 
 	if ( !GLVersion( 2, 0 ) ) {
 		return;
@@ -1289,7 +1287,7 @@ static void GLSetShaderUniformMatrix4( PLShaderProgram *program, int slot, PLMat
 	glUniformMatrix4fv( loc, 1, transpose ? GL_TRUE : GL_FALSE, value.m );
 }
 
-static void RegisterShaderProgramData( PLShaderProgram *program ) {
+static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 	if ( program->uniforms != NULL ) {
 		GLLog( "Uniforms have already been initialised!\n" );
 		return;
@@ -1313,7 +1311,7 @@ static void RegisterShaderProgramData( PLShaderProgram *program ) {
 
 	GLLog( "Found %u uniforms in shader\n", program->num_uniforms );
 
-	program->uniforms = gInterface->CAlloc( ( size_t ) program->num_uniforms, sizeof( *program->uniforms ) );
+	program->uniforms = gInterface->core->CAlloc( ( size_t ) program->num_uniforms, sizeof( *program->uniforms ) );
 	unsigned int registered = 0;
 	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
 		int maxUniformNameLength;
@@ -1339,35 +1337,35 @@ static void RegisterShaderProgramData( PLShaderProgram *program ) {
 
 		/* fetch it's current value, assume it's the default */
 		switch ( program->uniforms[ i ].type ) {
-			case PL_UNIFORM_FLOAT:
+			case PLG_UNIFORM_FLOAT:
 				glGetUniformfv( program->internal.id, i, &program->uniforms[ i ].defaultFloat );
 				break;
-			case PL_UNIFORM_SAMPLER2D:
-			case PL_UNIFORM_INT:
+			case PLG_UNIFORM_SAMPLER2D:
+			case PLG_UNIFORM_INT:
 				glGetUniformiv( program->internal.id, i, &program->uniforms[ i ].defaultInt );
 				break;
-			case PL_UNIFORM_UINT:
+			case PLG_UNIFORM_UINT:
 				glGetUniformuiv( program->internal.id, i, &program->uniforms[ i ].defaultUInt );
 				break;
-			case PL_UNIFORM_BOOL:
+			case PLG_UNIFORM_BOOL:
 				glGetUniformiv( program->internal.id, i, ( GLint * ) &program->uniforms[ i ].defaultBool );
 				break;
-			case PL_UNIFORM_DOUBLE:
+			case PLG_UNIFORM_DOUBLE:
 				glGetUniformdv( program->internal.id, i, &program->uniforms[ i ].defaultDouble );
 				break;
-			case PL_UNIFORM_VEC2:
+			case PLG_UNIFORM_VEC2:
 				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec2 );
 				break;
-			case PL_UNIFORM_VEC3:
+			case PLG_UNIFORM_VEC3:
 				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec3 );
 				break;
-			case PL_UNIFORM_VEC4:
+			case PLG_UNIFORM_VEC4:
 				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec4 );
 				break;
-			case PL_UNIFORM_MAT3:
+			case PLG_UNIFORM_MAT3:
 				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultMat3 );
 				break;
-			case PL_UNIFORM_MAT4:
+			case PLG_UNIFORM_MAT4:
 				glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultMat4 );
 				break;
 			default:
@@ -1384,7 +1382,7 @@ static void RegisterShaderProgramData( PLShaderProgram *program ) {
 	}
 }
 
-static void GLSetShaderProgram( PLShaderProgram *program ) {
+static void GLSetShaderProgram( PLGShaderProgram *program ) {
 	if ( !GLVersion( 2, 0 ) ) {
 		return;
 	}
@@ -1397,7 +1395,7 @@ static void GLSetShaderProgram( PLShaderProgram *program ) {
 	glUseProgram( id );
 }
 
-static void GLLinkShaderProgram( PLShaderProgram *program ) {
+static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 	if ( !GLVersion( 2, 0 ) ) {
 		return;
 	}
@@ -1410,12 +1408,12 @@ static void GLLinkShaderProgram( PLShaderProgram *program ) {
 		int s_length;
 		glGetProgramiv( program->internal.id, GL_INFO_LOG_LENGTH, &s_length );
 		if ( s_length > 1 ) {
-			char *log = gInterface->CAlloc( ( size_t ) s_length, sizeof( char ) );
+			char *log = gInterface->core->CAlloc( ( size_t ) s_length, sizeof( char ) );
 			glGetProgramInfoLog( program->internal.id, s_length, NULL, log );
 			GLLog( " LINK ERROR:\n%s\n", log );
-			gInterface->Free( log );
+			gInterface->core->Free( log );
 
-			gInterface->ReportError( PL_RESULT_SHADER_COMPILE, "%s", log );
+			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, "%s", log );
 		} else {
 			GLLog( " UNKNOWN LINK ERROR!\n" );
 		}
@@ -1424,46 +1422,46 @@ static void GLLinkShaderProgram( PLShaderProgram *program ) {
 	}
 
 	program->is_linked = true;
-	
+
 	RegisterShaderProgramData( program );
 }
 
 /////////////////////////////////////////////////////////////
 // Generic State Management
 
-unsigned int TranslateGraphicsState( PLGraphicsState state ) {
+unsigned int TranslateGraphicsState( PLGDrawState state ) {
 	switch ( state ) {
 		default:
 			GLLog( "Unhandled graphics state, %d!\n", state );
 			return 0;
-		case PL_GFX_STATE_FOG:
+		case PLG_GFX_STATE_FOG:
 			if ( GLVersion( 3, 0 ) ) {
 				return 0;
 			}
 			return GL_FOG;
-		case PL_GFX_STATE_ALPHATEST:
+		case PLG_GFX_STATE_ALPHATEST:
 			if ( GLVersion( 3, 0 ) ) {
 				return 0;
 			}
 			return GL_ALPHA_TEST;
-		case PL_GFX_STATE_BLEND:
+		case PLG_GFX_STATE_BLEND:
 			return GL_BLEND;
-		case PL_GFX_STATE_DEPTHTEST:
+		case PLG_GFX_STATE_DEPTHTEST:
 			return GL_DEPTH_TEST;
-		case PL_GFX_STATE_STENCILTEST:
+		case PLG_GFX_STATE_STENCILTEST:
 			return GL_STENCIL_TEST;
-		case PL_GFX_STATE_MULTISAMPLE:
+		case PLG_GFX_STATE_MULTISAMPLE:
 			return GL_MULTISAMPLE;
-		case PL_GFX_STATE_SCISSORTEST:
+		case PLG_GFX_STATE_SCISSORTEST:
 			return GL_SCISSOR_TEST;
-		case PL_GFX_STATE_ALPHATOCOVERAGE:
+		case PLG_GFX_STATE_ALPHATOCOVERAGE:
 			return GL_SAMPLE_ALPHA_TO_COVERAGE;
-		case PL_GFX_STATE_DEPTH_CLAMP:
+		case PLG_GFX_STATE_DEPTH_CLAMP:
 			return GL_DEPTH_CLAMP;
 	}
 }
 
-void GLEnableState( PLGraphicsState state ) {
+void GLEnableState( PLGDrawState state ) {
 	unsigned int gl_state = TranslateGraphicsState( state );
 	if ( !gl_state ) {
 		/* probably unsupported */
@@ -1473,7 +1471,7 @@ void GLEnableState( PLGraphicsState state ) {
 	glEnable( gl_state );
 }
 
-void GLDisableState( PLGraphicsState state ) {
+void GLDisableState( PLGDrawState state ) {
 	unsigned int gl_state = TranslateGraphicsState( state );
 	if ( !gl_state ) {
 		/* probably unsupported */
@@ -1496,10 +1494,10 @@ static void MessageCallback(
         GLsizei length,
         const GLchar *message,
         void *param ) {
-	plUnused( source );
-	plUnused( id );
-	plUnused( length );
-	plUnused( param );
+	PlUnused( source );
+	PlUnused( id );
+	PlUnused( length );
+	PlUnused( param );
 
 	const char *s_severity;
 	switch ( severity ) {
@@ -1545,25 +1543,19 @@ static void MessageCallback(
 }
 #endif
 
-const PLGraphicsDescription *GLInitialize( void ) {
+void GLInitialize( void ) {
 	glewExperimental = true;
 	GLenum err = glewInit();
 	if ( err != GLEW_OK ) {
-		gInterface->ReportError( PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", glewGetErrorString( err ) );
-		return NULL;
+		gInterface->core->ReportError( PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", ( char * ) glewGetErrorString( err ) );
+		return;
 	}
-
-	// Get any information that will be presented later.
-	static PLGraphicsDescription description;
-	memset( &description, 0, sizeof( PLGraphicsDescription ) );
-	description.renderer = ( const char * ) glGetString( GL_RENDERER );
-	description.vendor = ( const char * ) glGetString( GL_VENDOR );
-	description.version = ( const char * ) glGetString( GL_VERSION );
 
 	memset( &gl_capabilities, 0, sizeof( gl_capabilities ) );
 
-	gl_version_major = ( description.version[ 0 ] - '0' );
-	gl_version_minor = ( description.version[ 2 ] - '0' );
+	const char *version = ( const char * ) glGetString( GL_VERSION );
+	gl_version_major = ( version[ 0 ] - '0' );
+	gl_version_minor = ( version[ 2 ] - '0' );
 
 	if ( GLVersion( 3, 0 ) ) {
 		int minor, major;
@@ -1578,9 +1570,9 @@ const PLGraphicsDescription *GLInitialize( void ) {
 	}
 
 	GLLog( " OpenGL %d.%d\n", gl_version_major, gl_version_minor );
-	GLLog( "  renderer:   %s\n", description.renderer );
-	GLLog( "  vendor:     %s\n", description.vendor );
-	GLLog( "  version:    %s\n", description.version );
+	GLLog( "  renderer:   %s\n", ( const char * ) glGetString( GL_RENDERER ) );
+	GLLog( "  vendor:     %s\n", ( const char * ) glGetString( GL_VENDOR ) );
+	GLLog( "  version:    %s\n", version );
 	//GLLog( "  extensions:\n" );
 
 	glGetIntegerv( GL_NUM_EXTENSIONS, ( GLint * ) ( &gl_num_extensions ) );
@@ -1608,8 +1600,6 @@ const PLGraphicsDescription *GLInitialize( void ) {
 	/* in OpenGL, multisample is automatically enabled per spec */
 	gfx_state.current_capabilities[ PL_GFX_STATE_MULTISAMPLE ] = true;
 #endif
-
-	return &description;
 }
 
 void GLShutdown( void ) {
@@ -1621,9 +1611,7 @@ void GLShutdown( void ) {
 #endif
 }
 
-PLGraphicsInterface graphicsInterface = {
-        .version = { PL_GRAPHICSINTERFACE_VERSION_MAJOR, PL_GRAPHICSINTERFACE_VERSION_MINOR },
-
+PLGDriverImportTable graphicsInterface = {
         .Initialize = GLInitialize,
         .Shutdown = GLShutdown,
 

@@ -1,0 +1,353 @@
+/*
+MIT License
+
+Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+#include <plgraphics/plg_driver_interface.h>
+
+#include "plg_private.h"
+
+/**
+ * Generate cubic coordinates for the given vertices.
+ */
+void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertices, PLVector2 textureOffset, PLVector2 textureScale ) {
+	if ( textureScale.x == 0.0f || textureScale.y == 0.0f ) {
+		return;
+	}
+
+	unsigned int x, y;
+	for ( unsigned int i = 0; i < numVertices; ++i ) {
+        if ( ( fabsf( vertices[ i ].normal.x ) > fabsf( vertices[ i ].normal.y ) ) &&
+		     ( fabsf( vertices[ i ].normal.x ) > fabsf( vertices[ i ].normal.z ) ) ) {
+			x = ( vertices[ i ].normal.x > 0.0 ) ? 1 : 2;
+			y = ( vertices[ i ].normal.x > 0.0 ) ? 2 : 1;
+		} else if ( ( fabsf( vertices[ i ].normal.z ) > fabsf( vertices[ i ].normal.x ) ) &&
+		            ( fabsf( vertices[ i ].normal.z ) > fabsf( vertices[ i ].normal.y ) ) ) {
+			x = ( vertices[ i ].normal.z > 0.0 ) ? 0 : 1;
+			y = ( vertices[ i ].normal.z > 0.0 ) ? 1 : 0;
+		} else {
+            x = ( vertices[ i ].normal.y > 0.0 ) ? 2 : 0;
+            y = ( vertices[ i ].normal.y > 0.0 ) ? 0 : 2;
+        }
+
+		/* why the weird multiplication at the end here? to roughly match previous scaling values */
+        vertices[ i ].st[ 0 ].x = ( PlVector3Index( vertices[ i ].position, x ) + textureOffset.x ) / ( textureScale.x * 500.0f );
+        vertices[ i ].st[ 0 ].y = ( PlVector3Index( vertices[ i ].position, y ) + textureOffset.y ) / ( textureScale.y * 500.0f );
+	}
+}
+
+void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, unsigned int *indices, unsigned int numTriangles, bool perFace ) {
+	if ( perFace ) {
+		for ( unsigned int i = 0, idx = 0; i < numTriangles; ++i, idx += 3 ) {
+			unsigned int a = indices[ idx ];
+			unsigned int b = indices[ idx + 1 ];
+			unsigned int c = indices[ idx + 2 ];
+
+			PLVector3 normal = PlgGenerateVertexNormal(
+			        vertices[ a ].position,
+			        vertices[ b ].position,
+			        vertices[ c ].position );
+
+			vertices[ a ].normal = PlAddVector3( vertices[ a ].normal, normal );
+			vertices[ b ].normal = PlAddVector3( vertices[ b ].normal, normal );
+			vertices[ c ].normal = PlAddVector3( vertices[ c ].normal, normal );
+		}
+
+		return;
+	}
+
+	/* todo: normal generation per vertex */
+}
+
+PLVector3 PlgGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3 c ) {
+	PLVector3 x = PLVector3( c.x - b.x, c.y - b.y, c.z - b.z );
+	PLVector3 y = PLVector3( a.x - b.x, a.y - b.y, a.z - b.z );
+	return PlNormalizeVector3( PlVector3CrossProduct( x, y ) );
+}
+
+void PlgGenerateMeshNormals( PLGMesh *mesh, bool perFace ) {
+	plAssert( mesh );
+
+	PlgGenerateVertexNormals( mesh->vertices, mesh->num_verts, mesh->indices, mesh->num_triangles, perFace );
+}
+
+void PlgGenerateMeshTangentBasis( PLGMesh *mesh ) {
+	PlgGenerateTangentBasis( mesh->vertices, mesh->num_verts, mesh->indices, mesh->num_triangles );
+}
+
+/* based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#computing-the-tangents-and-bitangents */
+void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles ) {
+	for ( unsigned int i = 0; i < numTriangles; i++, indices += 3 ) {
+		PLGVertex *a = &vertices[ indices[ 0 ] ];
+		PLGVertex *b = &vertices[ indices[ 1 ] ];
+		PLGVertex *c = &vertices[ indices[ 2 ] ];
+
+		/* edges of the triangle, aka, position delta */
+		PLVector3 deltaPos1 = PlSubtractVector3( b->position, a->position );
+		PLVector3 deltaPos2 = PlSubtractVector3( c->position, a->position );
+
+		/* uv delta */
+		PLVector2 deltaUV1 = PlSubtractVector2( &b->st[ 0 ], &a->st[ 0 ] );
+		PLVector2 deltaUV2 = PlSubtractVector2( &c->st[ 0 ], &a->st[ 0 ] );
+
+		/* now actually compute the tangent and bitangent */
+		float r = 1.0f / ( deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x );
+		PLVector3 tangent = PlScaleVector3F( PlSubtractVector3( PlScaleVector3F( deltaPos1, deltaUV2.y ), PlScaleVector3F( deltaPos2, deltaUV1.y ) ), r );
+		PLVector3 bitangent = PlScaleVector3F( PlSubtractVector3( PlScaleVector3F( deltaPos2, deltaUV1.x ), PlScaleVector3F( deltaPos1, deltaUV2.x ) ), r );
+
+		a->tangent = b->tangent = c->tangent = tangent;
+		a->bitangent = b->bitangent = c->bitangent = bitangent;
+	}
+}
+
+/* software implementation of gouraud shading */
+void plApplyMeshLighting( PLGMesh *mesh, const PLGLight *light, PLVector3 position ) {
+	PLVector3 distvec = PlSubtractVector3( position, light->position );
+	float distance = ( PlByteToFloat( light->colour.a ) - PlVector3Length( distvec ) ) / 100.f;
+	for ( unsigned int i = 0; i < mesh->num_verts; i++ ) {
+		PLVector3 normal = mesh->vertices[ i ].normal;
+		float angle = ( distance * ( ( normal.x * distvec.x ) + ( normal.y * distvec.y ) + ( normal.z * distvec.z ) ) );
+		if ( angle < 0 ) {
+			PlClearColour( &mesh->vertices[ i ].colour );
+		} else {
+			mesh->vertices[ i ].colour.r = light->colour.r * PlFloatToByte( angle );
+			mesh->vertices[ i ].colour.g = light->colour.g * PlFloatToByte( angle );
+			mesh->vertices[ i ].colour.b = light->colour.b * PlFloatToByte( angle );
+		}
+		//GfxLog("light angle is %f\n", angle);
+	}
+
+#if 0
+	/*
+	x = Object->Vertices_normalStat[count].x;
+	y = Object->Vertices_normalStat[count].y;
+	z = Object->Vertices_normalStat[count].z;
+
+	angle = (LightDist*((x * Object->Spotlight.x) + (y * Object->Spotlight.y) + (z * Object->Spotlight.z) ));
+	if (angle<0 )
+	{
+	Object->Vertices_screen[count].r = 0;
+	Object->Vertices_screen[count].b = 0;
+	Object->Vertices_screen[count].g = 0;
+	}
+	else
+	{
+	Object->Vertices_screen[count].r = Object->Vertices_local[count].r * angle;
+	Object->Vertices_screen[count].b = Object->Vertices_local[count].b * angle;
+	Object->Vertices_screen[count].g = Object->Vertices_local[count].g * angle;
+	}
+	*/
+#endif
+}
+
+PLGMesh *PlgCreateMesh( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts ) {
+	return PlgCreateMeshInit( primitive, mode, num_tris, num_verts, NULL, NULL );
+}
+
+PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
+                          const unsigned int *indicies, const PLGVertex *vertices ) {
+	plAssert( numVerts );
+
+	PLGMesh *mesh = ( PLGMesh * ) pl_calloc( 1, sizeof( PLGMesh ) );
+	if ( mesh == NULL ) {
+		return NULL;
+	}
+
+	mesh->primitive = primitive;
+	mesh->mode = mode;
+
+	if ( numTriangles > 0 ) {
+		mesh->num_triangles = numTriangles;
+		if ( mesh->primitive == PLG_MESH_TRIANGLES ) {
+			mesh->maxIndices = mesh->num_indices = mesh->num_triangles * 3;
+			if ( ( mesh->indices = pl_calloc( mesh->maxIndices, sizeof( unsigned int ) ) ) == NULL ) {
+				PlgDestroyMesh( mesh );
+				return NULL;
+			}
+
+			if ( indicies != NULL ) {
+				memcpy( mesh->indices, indicies, mesh->num_indices * sizeof( unsigned int ) );
+			}
+		}
+	}
+
+	mesh->maxVertices = mesh->num_verts = numVerts;
+	mesh->vertices = ( PLGVertex * ) pl_calloc( mesh->maxVertices, sizeof( PLGVertex ) );
+	if ( mesh->vertices == NULL ) {
+		PlgDestroyMesh( mesh );
+		return NULL;
+	}
+
+	if ( vertices != NULL ) {
+		memcpy( mesh->vertices, vertices, sizeof( PLGVertex ) * mesh->num_verts );
+	}
+
+	CallGfxFunction( CreateMesh, mesh );
+
+	return mesh;
+}
+
+void PlgDestroyMesh( PLGMesh *mesh ) {
+	if ( mesh == NULL ) {
+		return;
+	}
+
+	CallGfxFunction( DeleteMesh, mesh );
+
+	pl_free( mesh->vertices );
+	pl_free( mesh->indices );
+	pl_free( mesh );
+}
+
+void PlgClearMesh( PLGMesh *mesh ) {
+	PlgClearMeshVertices( mesh );
+	PlgClearMeshTriangles( mesh );
+}
+
+void PlgClearMeshVertices( PLGMesh *mesh ) {
+	mesh->num_verts = 0;
+}
+
+void PlgClearMeshTriangles( PLGMesh *mesh ) {
+	mesh->num_triangles = mesh->num_indices = 0;
+}
+
+void PlgScaleMesh( PLGMesh *mesh, PLVector3 scale ) {
+	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
+		mesh->vertices[ i ].position = PlScaleVector3( mesh->vertices[ i ].position, scale );
+	}
+}
+
+void PlgSetMeshTrianglePosition( PLGMesh *mesh, unsigned int *index, unsigned int x, unsigned int y, unsigned int z ) {
+	plAssert( *index < mesh->maxIndices );
+	mesh->indices[ ( *index )++ ] = x;
+	mesh->indices[ ( *index )++ ] = y;
+	mesh->indices[ ( *index )++ ] = z;
+}
+
+void PlgSetMeshVertexPosition( PLGMesh *mesh, unsigned int index, PLVector3 vector ) {
+	plAssert( index < mesh->maxVertices );
+	mesh->vertices[ index ].position = vector;
+}
+
+void PlgSetMeshVertexNormal( PLGMesh *mesh, unsigned int index, PLVector3 vector ) {
+	plAssert( index < mesh->maxVertices );
+	mesh->vertices[ index ].normal = vector;
+}
+
+void PlgSetMeshVertexST( PLGMesh *mesh, unsigned int index, float s, float t ) {
+	plAssert( index < mesh->maxVertices );
+	mesh->vertices[ index ].st[ 0 ] = PLVector2( s, t );
+}
+
+void PlgSetMeshVertexSTv( PLGMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st ) {
+	size += index;
+	if ( size > mesh->num_verts ) {
+		size -= ( size - mesh->num_verts );
+	}
+
+	for ( unsigned int i = index; i < size; i++ ) {
+		mesh->vertices[ i ].st[ unit ].x = st[ 0 ];
+		mesh->vertices[ i ].st[ unit ].y = st[ 1 ];
+	}
+}
+
+void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, PLColour colour ) {
+	plAssert( index < mesh->maxVertices );
+	mesh->vertices[ index ].colour = colour;
+}
+
+void PlgSetMeshUniformColour( PLGMesh *mesh, PLColour colour ) {
+	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
+		mesh->vertices[ i ].colour = colour;
+	}
+}
+
+void PlgSetMeshShaderProgram( PLGMesh *mesh, PLGShaderProgram *program ) {
+	mesh->shader_program = program;
+}
+
+unsigned int PlgAddMeshVertex( PLGMesh *mesh, PLVector3 position, PLVector3 normal, PLColour colour, PLVector2 st ) {
+	unsigned int vertexIndex = mesh->num_verts++;
+	if ( vertexIndex >= mesh->maxVertices ) {
+		mesh->vertices = pl_realloc( mesh->vertices, ( mesh->maxVertices += 16 ) * sizeof( PLGVertex ) );
+	}
+
+	PlgSetMeshVertexPosition( mesh, vertexIndex, position );
+	PlgSetMeshVertexNormal( mesh, vertexIndex, normal );
+	PlgSetMeshVertexColour( mesh, vertexIndex, colour );
+	PlgSetMeshVertexST( mesh, vertexIndex, st.x, st.y );
+
+	return vertexIndex;
+}
+
+unsigned int PlgAddMeshTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, unsigned int z ) {
+	unsigned int triangleIndex = mesh->num_indices;
+
+	mesh->num_indices += 3;
+	if ( mesh->num_indices >= mesh->maxIndices ) {
+		mesh->indices = pl_realloc( mesh->indices, ( mesh->maxIndices += 16 ) * sizeof( unsigned int ) );
+	}
+
+	mesh->indices[ triangleIndex ] = x;
+	mesh->indices[ triangleIndex + 1 ] = y;
+	mesh->indices[ triangleIndex + 2 ] = z;
+
+	mesh->num_triangles++;
+
+	return triangleIndex;
+}
+
+/* todo: combine with Draw? */
+void PlgUploadMesh( PLGMesh *mesh ) {
+	CallGfxFunction( UploadMesh, mesh, gfx_state.current_program );
+}
+
+void PlgDrawMesh( PLGMesh *mesh ) {
+	if ( gfx_state.current_program != NULL ) {
+		PlgSetShaderUniformValue( gfx_state.current_program, "pl_view", gfx_state.view_matrix.m, false );
+		PlgSetShaderUniformValue( gfx_state.current_program, "pl_proj", gfx_state.projection_matrix.m, false );
+	}
+
+	CallGfxFunction( DrawMesh, mesh, gfx_state.current_program );
+}
+
+void PlgDrawInstancedMesh( PLGMesh *mesh, const PLMatrix4 *transforms, unsigned int instanceCount ) {
+	CallGfxFunction( DrawInstancedMesh, mesh, gfx_state.current_program, transforms, instanceCount );
+}
+
+PLCollisionAABB PlgGenerateAabbFromVertices( const PLGVertex *vertices, unsigned int numVertices, bool absolute ) {
+    PLVector3 *vvertices = pl_malloc( sizeof( PLVector3 ) * numVertices );
+    for ( unsigned int i = 0; i < numVertices; ++i ) {
+        vvertices[ i ] = vertices[ i ].position;
+    }
+
+    PLCollisionAABB bounds = PlGenerateAabbFromCoords( vvertices, numVertices, absolute );
+
+    pl_free( vvertices );
+
+    return bounds;
+}
+
+PLCollisionAABB PlgGenerateAabbFromMesh( const PLGMesh *mesh, bool absolute ) {
+	return PlgGenerateAabbFromVertices( mesh->vertices, mesh->num_verts, absolute );
+}
