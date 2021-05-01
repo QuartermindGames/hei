@@ -53,10 +53,6 @@ typedef struct GfxState {
 	// Textures
 
 	PLGTextureMappingUnit *tmu;
-	PLGTexture **textures;
-
-	unsigned int num_textures;
-	unsigned int max_textures;
 
 	// Shader states
 
@@ -121,6 +117,6 @@ typedef struct GfxState {
 
 PL_EXTERN GfxState gfx_state;
 
-void _plBindTexture( const PLGTexture *texture );
+void XPlgInitializeTextures( void );
 
 PL_EXTERN_C_END

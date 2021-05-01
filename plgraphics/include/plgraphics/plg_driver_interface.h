@@ -160,8 +160,11 @@ typedef const PLGDriverDescription *( *PLGDriverQueryFunction )( void );
 #define PLG_DRIVER_INIT_FUNCTION "InitializeGraphicsDriver"
 typedef const PLGDriverImportTable *( *PLGDriverInitializationFunction )( const PLGDriverExportTable *exportTable );
 
+PL_EXTERN bool PlgRegisterDriver( const char *path );
+PL_EXTERN void PlgScanForDrivers( const char *path );
+
 PL_EXTERN const char **PlgGetAvailableDriverInterfaces( unsigned int *numModes );
-PL_EXTERN void PlgSetDriver( const char *mode );
+PL_EXTERN PLFunctionResult PlgSetDriver( const char *mode );
 #endif
 
 PL_EXTERN_C_END

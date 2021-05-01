@@ -55,7 +55,7 @@ PLLibrary *PlLoadLibrary( const char *path, bool appendPath ) {
 #else /* unix */
 	void *libraryHandle = dlopen( sysPath, RTLD_LAZY );
 	if ( libraryHandle == NULL ) {
-		ReportError( PL_RESULT_INVALID_PARM1, "failed to load library (%s)", dlerror() );
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "failed to load library (%s)", dlerror() );
 	}
 #endif
 
@@ -68,12 +68,12 @@ void *PlGetLibraryProcedure( PLLibrary *library, const char *procedureName ) {
 #if defined( WIN32 )
 	myProcedure = GetProcAddress( ( HMODULE ) library, procedureName );
 	if ( myProcedure == NULL ) {
-		PlReportErrorF( PL_RESULT_INVALID_PARM2, "failed to find procedure (%d)", GetLastError() );
+		PlReportErrorF( PL_RESULT_INVALID_PARM2, "failed to find procedure \"%s\" (%d)", procedureName, GetLastError() );
 	}
 #else /* unix */
 	myProcedure = dlsym( library, procedureName );
 	if ( myProcedure == NULL ) {
-		ReportError( PL_RESULT_INVALID_PARM2, "failed to find procedure (%s)", dlerror() );
+		PlReportErrorF( PL_RESULT_INVALID_PARM2, "failed to find procedure \"%s\" (%s)", procedureName, dlerror() );
 	}
 #endif
 
@@ -87,7 +87,7 @@ void PlUnloadLibrary( PLLibrary *library ) {
 	}
 #else /* unix */
 	if ( dlclose( library ) != 0 ) {
-		ReportError( PL_RESULT_INVALID_PARM1, "failed to unload library (%s)", dlerror() );
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "failed to unload library (%s)", dlerror() );
 	}
 #endif
 }

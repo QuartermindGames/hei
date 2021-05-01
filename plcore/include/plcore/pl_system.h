@@ -164,7 +164,7 @@ SOFTWARE.
 #define PL_FUNCTION __FUNCTION__
 
 #define PL_EXPORT __attribute__( ( visibility( "default" ) ) )
-#define PL_IMPORT __attribute__( ( visibility( "hidden" ) ) )
+#define PL_IMPORT
 
 #define PL_DEPRECATED( function ) function __attribute__( ( deprecated ) )
 

@@ -29,36 +29,31 @@ For more information, please refer to <http://unlicense.org>
 
 #include "plg_private.h"
 
-void _InitTextures( void ) {
+static void CheckTMUStates( void ) {
+	if ( gfx_state.tmu != NULL ) {
+		return;
+	}
+
+    gfx_state.tmu = ( PLGTextureMappingUnit * ) pl_calloc( PlgGetMaxTextureUnits(), sizeof( PLGTextureMappingUnit ) );
+    for ( unsigned int i = 0; i < PlgGetMaxTextureUnits(); i++ ) {
+        gfx_state.tmu[ i ].current_envmode = PLG_TEXTUREMODE_REPLACE;
+    }
+}
+
+void XPlgInitializeTextures( void ) {
 	gfx_state.tmu = ( PLGTextureMappingUnit * ) pl_calloc( PlgGetMaxTextureUnits(), sizeof( PLGTextureMappingUnit ) );
 	for ( unsigned int i = 0; i < PlgGetMaxTextureUnits(); i++ ) {
 		gfx_state.tmu[ i ].current_envmode = PLG_TEXTUREMODE_REPLACE;
 	}
-
-	gfx_state.max_textures = 1024;
-	gfx_state.textures = ( PLGTexture ** ) pl_malloc( sizeof( PLGTexture * ) * gfx_state.max_textures );
-	memset( gfx_state.textures, 0, sizeof( PLGTexture * ) * gfx_state.max_textures );
-	gfx_state.num_textures = 0;
-
-	PlRegisterConsoleVariable( NULL, NULL, pl_float_var, 0, NULL );
 }
 
 void PlgShutdownTextures( void ) {
 	if ( gfx_state.tmu ) {
 		pl_free( gfx_state.tmu );
 	}
-
-	if ( gfx_state.textures ) {
-		for ( PLGTexture **texture = gfx_state.textures;
-			  texture < gfx_state.textures + gfx_state.num_textures; ++texture ) {
-			if ( ( *texture ) ) {
-				PlgDestroyTexture( ( *texture ) );
-			}
-		}
-		pl_free( gfx_state.textures );
-	}
 }
 
+/* todo: move into generic GET handler */
 unsigned int PlgGetMaxTextureSize( void ) {
 	if ( gfx_state.hw_maxtexturesize != 0 ) {
 		return gfx_state.hw_maxtexturesize;
@@ -117,17 +112,7 @@ PLGTexture *PlgLoadTextureFromImage( const char *path, PLGTextureFilter filter_m
 	return texture;
 }
 
-/////////////////////////////////////////////////////
-
-PLGTexture *plGetCurrentTexture( unsigned int tmu ) {
-	for ( PLGTexture **texture = gfx_state.textures; texture < gfx_state.textures + gfx_state.num_textures; ++texture ) {
-		if ( gfx_state.tmu[ tmu ].current_texture == ( *texture )->internal.id ) {
-			return ( *texture );
-		}
-	}
-	return NULL;
-}
-
+/* todo: move into generic GET handler */
 unsigned int PlgGetMaxTextureUnits( void ) {
 	if ( gfx_state.hw_maxtextureunits != 0 ) {
 		return gfx_state.hw_maxtextureunits;
@@ -137,40 +122,35 @@ unsigned int PlgGetMaxTextureUnits( void ) {
 	return gfx_state.hw_maxtextureunits;
 }
 
-unsigned int plGetCurrentTextureUnit( void ) {
+unsigned int PlgGetCurrentTextureUnit( void ) {
 	return gfx_state.current_textureunit;
 }
 
-void PlgSetTexture( PLGTexture *texture, unsigned int tmu ) {
-	PlgSetTextureUnit( tmu );
+static void SetTextureUnit( unsigned int target ) {
+    if ( target == gfx_state.current_textureunit ) {
+        return;
+    }
 
-	if ( ( gfx_state.textures[ tmu ] != NULL ) && ( gfx_state.textures[ tmu ] == texture ) ) {
-		return;
-	}
+    if ( target > PlgGetMaxTextureUnits() ) {
+        GfxLog( "Attempted to select a texture image unit beyond what's supported by your hardware! (%i)\n",
+                target );
+        return;
+    }
+
+    CallGfxFunction( ActiveTexture, target );
+
+    gfx_state.current_textureunit = target;
+}
+
+void PlgSetTexture( PLGTexture *texture, unsigned int tmu ) {
+    SetTextureUnit( tmu );
 
 	CallGfxFunction( BindTexture, texture );
 
-	gfx_state.textures[ tmu ] = texture;
-
-	PlgSetTextureUnit( 0 );
+    SetTextureUnit( 0 );
 }
 
-void PlgSetTextureUnit( unsigned int target ) {
-	if ( target == gfx_state.current_textureunit ) {
-		return;
-	}
-
-	if ( target > PlgGetMaxTextureUnits() ) {
-		GfxLog( "Attempted to select a texture image unit beyond what's supported by your hardware! (%i)\n",
-				target );
-		return;
-	}
-
-	CallGfxFunction( ActiveTexture, target );
-
-	gfx_state.current_textureunit = target;
-}
-
+/* todo: move into generic GET handler */
 unsigned int PlgGetMaxTextureAnistropy( void ) {
 	if ( gfx_state.hw_maxtextureanistropy != 0 ) {
 		return gfx_state.hw_maxtextureanistropy;
@@ -190,7 +170,8 @@ void PlgSetTextureAnisotropy( PLGTexture *texture, unsigned int amount ) {
 	CallGfxFunction( SetTextureAnisotropy, texture, amount );
 }
 
-void _plBindTexture( const PLGTexture *texture ) {
+/* todo: kill this, favor SetTexture */
+static void BindTexture( const PLGTexture *texture ) {
 	// allow us to pass null texture instances
 	// as it will give us an opportunity to unbind
 	// them on the GPU upon request
@@ -199,7 +180,7 @@ void _plBindTexture( const PLGTexture *texture ) {
 		id = texture->internal.id;
 	}
 
-	PLGTextureMappingUnit *unit = &gfx_state.tmu[ plGetCurrentTextureUnit() ];
+	PLGTextureMappingUnit *unit = &gfx_state.tmu[ PlgGetCurrentTextureUnit() ];
 	if ( id == unit->current_texture ) {
 		return;
 	}
@@ -214,7 +195,7 @@ void PlgSetTextureFlags( PLGTexture *texture, unsigned int flags ) {
 }
 
 void PlgSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode ) {
-	if ( gfx_state.tmu[ plGetCurrentTextureUnit() ].current_envmode == mode )
+	if ( gfx_state.tmu[ PlgGetCurrentTextureUnit() ].current_envmode == mode )
 		return;
 
 #if defined(PL_MODE_OPENGL) && !defined(PL_MODE_OPENGL_CORE)
@@ -228,7 +209,7 @@ void PlgSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode ) {
 	// todo
 #endif
 
-	gfx_state.tmu[ plGetCurrentTextureUnit() ].current_envmode = mode;
+	gfx_state.tmu[ PlgGetCurrentTextureUnit() ].current_envmode = mode;
 }
 
 /////////////////////
@@ -259,13 +240,13 @@ bool PlgUploadTextureImage( PLGTexture *texture, const PLImage *upload ) {
 		strncpy( texture->name, file_name, sizeof( texture->name ) );
 	}
 
-	_plBindTexture( texture );
+	BindTexture( texture );
 	CallGfxFunction( UploadTexture, texture, upload );
-	_plBindTexture( NULL );
+	BindTexture( NULL );
 
 	return true;
 }
 
-void plSwizzleTexture( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
+void PlgSwizzleTexture( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
 	CallGfxFunction( SwizzleTexture, texture, r, g, b, a );
 }

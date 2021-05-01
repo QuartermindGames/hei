@@ -112,7 +112,6 @@ PL_EXTERN unsigned int PlgGetMaxTextureAnistropy( void );
 PL_EXTERN void PlgSetTextureAnisotropy( PLGTexture *texture, unsigned int amount );
 
 PL_EXTERN void PlgSetTexture( PLGTexture *texture, unsigned int tmu );
-PL_EXTERN void PlgSetTextureUnit( unsigned int target );
 PL_EXTERN void PlgSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode );
 PL_EXTERN void PlgSetTextureFlags( PLGTexture *texture, unsigned int flags );
 

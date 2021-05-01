@@ -29,32 +29,31 @@ For more information, please refer to <http://unlicense.org>
 
 #include <float.h>
 
-#if 0
-PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertices, bool absolute ) {
+PLCollisionAABB PlGenerateAabbFromCoords( const PLVector3 *vertices, unsigned int numVertices, bool absolute ) {
 	PLCollisionAABB bounds;
 	if ( absolute ) {
-		bounds.maxs = ( PLVector3 ){ vertices[ 0 ].position.x, vertices[ 0 ].position.y, vertices[ 0 ].position.z };
-		bounds.mins = ( PLVector3 ){ vertices[ 0 ].position.x, vertices[ 0 ].position.y, vertices[ 0 ].position.z };
+		bounds.maxs = ( PLVector3 ){ vertices[ 0 ].x, vertices[ 0 ].y, vertices[ 0 ].z };
+		bounds.mins = ( PLVector3 ){ vertices[ 0 ].x, vertices[ 0 ].y, vertices[ 0 ].z };
 
 		for ( unsigned int i = 0; i < numVertices; ++i ) {
-			if ( bounds.maxs.x < vertices[ i ].position.x ) { bounds.maxs.x = vertices[ i ].position.x; }
-			if ( bounds.maxs.y < vertices[ i ].position.y ) { bounds.maxs.y = vertices[ i ].position.y; }
-			if ( bounds.maxs.z < vertices[ i ].position.z ) { bounds.maxs.z = vertices[ i ].position.z; }
-			if ( bounds.mins.x > vertices[ i ].position.x ) { bounds.mins.x = vertices[ i ].position.x; }
-			if ( bounds.mins.y > vertices[ i ].position.y ) { bounds.mins.y = vertices[ i ].position.y; }
-			if ( bounds.mins.z > vertices[ i ].position.z ) { bounds.mins.z = vertices[ i ].position.z; }
+			if ( bounds.maxs.x < vertices[ i ].x ) { bounds.maxs.x = vertices[ i ].x; }
+			if ( bounds.maxs.y < vertices[ i ].y ) { bounds.maxs.y = vertices[ i ].y; }
+			if ( bounds.maxs.z < vertices[ i ].z ) { bounds.maxs.z = vertices[ i ].z; }
+			if ( bounds.mins.x > vertices[ i ].x ) { bounds.mins.x = vertices[ i ].x; }
+			if ( bounds.mins.y > vertices[ i ].y ) { bounds.mins.y = vertices[ i ].y; }
+			if ( bounds.mins.z > vertices[ i ].z ) { bounds.mins.z = vertices[ i ].z; }
 		}
 	} else {
 		/* this technically still doesn't, but it's better */
 		float max = FLT_MIN;
 		float min = FLT_MAX;
 		for ( unsigned int i = 0; i < numVertices; ++i ) {
-			if ( vertices[ i ].position.x > max ) { max = vertices[ i ].position.x; }
-			if ( vertices[ i ].position.y > max ) { max = vertices[ i ].position.y; }
-			if ( vertices[ i ].position.z > max ) { max = vertices[ i ].position.z; }
-			if ( vertices[ i ].position.x < min ) { min = vertices[ i ].position.x; }
-			if ( vertices[ i ].position.y < min ) { min = vertices[ i ].position.y; }
-			if ( vertices[ i ].position.z < min ) { min = vertices[ i ].position.z; }
+			if ( vertices[ i ].x > max ) { max = vertices[ i ].x; }
+			if ( vertices[ i ].y > max ) { max = vertices[ i ].y; }
+			if ( vertices[ i ].z > max ) { max = vertices[ i ].z; }
+			if ( vertices[ i ].x < min ) { min = vertices[ i ].x; }
+			if ( vertices[ i ].y < min ) { min = vertices[ i ].y; }
+			if ( vertices[ i ].z < min ) { min = vertices[ i ].z; }
 		}
 
 		if ( min < 0 ) { min *= -1; }
@@ -71,7 +70,6 @@ PLCollisionAABB plGenerateAABB( const PLVertex *vertices, unsigned int numVertic
 
 	return bounds;
 }
-#endif
 
 PLVector3 PlGetAabbAbsOrigin( const PLCollisionAABB *bounds, PLVector3 origin ) {
 	PLVector3 absOrigin = PLVector3( ( bounds->mins.x + bounds->maxs.x ) / 2, ( bounds->mins.y + bounds->maxs.y ) / 2, ( bounds->mins.z + bounds->maxs.z ) / 2 );

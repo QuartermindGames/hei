@@ -88,7 +88,7 @@ support.
 #define plAssert( a )
 #endif
 
-#define plUnused( ... ) ( void ) ( __VA_ARGS__ )
+#define PlUnused( ... ) ( void ) ( __VA_ARGS__ )
 
 #define plArrayElements( a ) ( sizeof( a ) / sizeof( *( a ) ) )// Returns the number of elements within an array.
 #define plIsEmptyString( a ) ( ( ( a )[ 0 ] == '\0' ) || ( ( a )[ 0 ] == ' ' ) )

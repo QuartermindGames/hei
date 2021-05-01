@@ -254,8 +254,8 @@ void PlSetConsoleVariableByName( const char *name, const char *value ) {
 // PRIVATE
 
 IMPLEMENT_COMMAND( pwd, "Print current working directory." ) {
-	plUnused( argv );
-	plUnused( argc );
+	PlUnused( argv );
+	PlUnused( argc );
 	Print( "%s\n", PlGetWorkingDirectory() );
 }
 
@@ -273,25 +273,25 @@ IMPLEMENT_COMMAND(clear, "Clears the console buffer.") {
 #endif
 
 IMPLEMENT_COMMAND( colour, "Changes the colour of the current console." ) {
-	plUnused( argv );
-	plUnused( argc );
+	PlUnused( argv );
+	PlUnused( argc );
 	//console_panes[active_console_pane].
 }
 
 IMPLEMENT_COMMAND( time, "Prints out the current time." ) {
-	plUnused( argv );
-	plUnused( argc );
+	PlUnused( argv );
+	PlUnused( argc );
 	Print( "%s\n", PlGetFormattedTime() );
 }
 
 IMPLEMENT_COMMAND( mem, "Prints out current memory usage." ) {
-	plUnused( argv );
-	plUnused( argc );
+	PlUnused( argv );
+	PlUnused( argc );
 }
 
 IMPLEMENT_COMMAND( cmds, "Produces list of existing commands." ) {
-	plUnused( argv );
-	plUnused( argc );
+	PlUnused( argv );
+	PlUnused( argc );
 	for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
 		Print( " %-20s : %-20s\n", ( *cmd )->cmd, ( *cmd )->description );
 	}
@@ -299,8 +299,8 @@ IMPLEMENT_COMMAND( cmds, "Produces list of existing commands." ) {
 }
 
 IMPLEMENT_COMMAND( vars, "Produces list of existing variables." ) {
-	plUnused( argv );
-	plUnused( argc );
+	PlUnused( argv );
+	PlUnused( argc );
 	for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
 		Print( " %-20s : %-5s / %-15s : %-20s\n",
 		       ( *var )->var, ( *var )->value, ( *var )->default_value, ( *var )->description );

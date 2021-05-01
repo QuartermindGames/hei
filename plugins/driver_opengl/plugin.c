@@ -25,7 +25,7 @@ SOFTWARE.
 #include "plugin.h"
 
 static PLGDriverDescription pluginDesc = {
-        .identifier = "opengl3",
+        .identifier = "opengl",
         .description = "OpenGL Graphics Driver.",
         .driverVersion = { 0, 1, 0 },
         .coreInterfaceVersion = { PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR },
@@ -40,7 +40,7 @@ PL_EXPORT const PLGDriverDescription *QueryGraphicsDriver( void ) {
 
 int glLogLevel;
 
-PL_EXPORT const PLGDriverImportTable *InitializeDriver( const PLGDriverExportTable *functionTable ) {
+PL_EXPORT const PLGDriverImportTable *InitializeGraphicsDriver( const PLGDriverExportTable *functionTable ) {
 	gInterface = functionTable;
 
 	glLogLevel = gInterface->core->AddLogLevel( "plugin/opengl", PLColourRGB( 255, 255, 255 ), true );

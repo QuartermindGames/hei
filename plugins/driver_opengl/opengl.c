@@ -1277,7 +1277,7 @@ static void GLSetShaderUniformValue( PLGShaderProgram *program, int slot, const 
 }
 
 static void GLSetShaderUniformMatrix4( PLGShaderProgram *program, int slot, PLMatrix4 value, bool transpose ) {
-	plUnused( program );
+	PlUnused( program );
 
 	if ( !GLVersion( 2, 0 ) ) {
 		return;
@@ -1494,10 +1494,10 @@ static void MessageCallback(
         GLsizei length,
         const GLchar *message,
         void *param ) {
-	plUnused( source );
-	plUnused( id );
-	plUnused( length );
-	plUnused( param );
+	PlUnused( source );
+	PlUnused( id );
+	PlUnused( length );
+	PlUnused( param );
 
 	const char *s_severity;
 	switch ( severity ) {

@@ -50,11 +50,9 @@ data for each of these functions
 	INITIALIZATION
 ===========================*/
 
-void _InitTextures( void );// platform_graphics_texture
-
 int LOG_LEVEL_GRAPHICS = 0;
 
-PLFunctionResult PlgInitGraphics( void ) {
+PLFunctionResult PlgInitializeGraphics( void ) {
 	memset( &gfx_state, 0, sizeof( GfxState ) );
 
 	LOG_LEVEL_GRAPHICS = PlAddLogLevel( "plgraphics", ( PLColour ){ 0, 255, 255, 255 },
@@ -64,6 +62,8 @@ PLFunctionResult PlgInitGraphics( void ) {
 	                                    false
 #endif
 	);
+
+    XPlgInitializeTextures();
 
 	return PL_RESULT_SUCCESS;
 }
@@ -283,14 +283,6 @@ PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
     return PL_RESULT_SUCCESS;
 }
 #endif
-
-/*===========================
-	UTILITY FUNCTIONS
-===========================*/
-
-void PlgDrawPixel( int x, int y, PLColour colour ) {
-	CallGfxFunction( DrawPixel, x, y, colour );
-}
 
 /*===========================
 	STENCIL OPERATIONS
