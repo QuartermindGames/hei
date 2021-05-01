@@ -124,11 +124,15 @@ static void RegisterScannedDriver( const char *path, void *unused ) {
 		return;
 	}
 
-	PlRegisterPlugin( path );
+	PlgRegisterDriver( path );
 }
 
 void PlgScanForDrivers( const char *path ) {
-	PlScanDirectory( path, NULL, RegisterScannedDriver, false, NULL );
+	GfxLog( "Scanning for drivers in \"%s\"\n", path );
+
+	PlScanDirectory( path, ( PL_SYSTEM_LIBRARY_EXTENSION ) + 1, RegisterScannedDriver, false, NULL );
+
+	GfxLog( "Done, %d graphics drivers loaded.\n", numDrivers );
 }
 
 /**
