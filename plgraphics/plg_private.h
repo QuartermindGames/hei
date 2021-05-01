@@ -121,6 +121,6 @@ typedef struct GfxState {
 
 PL_EXTERN GfxState gfx_state;
 
-void _plBindTexture( const PLGTexture *texture );
+void PlgBindTexture( const PLGTexture *texture );
 
 PL_EXTERN_C_END

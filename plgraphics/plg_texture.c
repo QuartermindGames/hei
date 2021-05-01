@@ -119,7 +119,7 @@ PLGTexture *PlgLoadTextureFromImage( const char *path, PLGTextureFilter filter_m
 
 /////////////////////////////////////////////////////
 
-PLGTexture *plGetCurrentTexture( unsigned int tmu ) {
+PLGTexture *PlgGetCurrentTexture( unsigned int tmu ) {
 	for ( PLGTexture **texture = gfx_state.textures; texture < gfx_state.textures + gfx_state.num_textures; ++texture ) {
 		if ( gfx_state.tmu[ tmu ].current_texture == ( *texture )->internal.id ) {
 			return ( *texture );
@@ -137,7 +137,7 @@ unsigned int PlgGetMaxTextureUnits( void ) {
 	return gfx_state.hw_maxtextureunits;
 }
 
-unsigned int plGetCurrentTextureUnit( void ) {
+unsigned int PlgGetCurrentTextureUnit( void ) {
 	return gfx_state.current_textureunit;
 }
 
@@ -190,7 +190,7 @@ void PlgSetTextureAnisotropy( PLGTexture *texture, unsigned int amount ) {
 	CallGfxFunction( SetTextureAnisotropy, texture, amount );
 }
 
-void _plBindTexture( const PLGTexture *texture ) {
+void PlgBindTexture( const PLGTexture *texture ) {
 	// allow us to pass null texture instances
 	// as it will give us an opportunity to unbind
 	// them on the GPU upon request
@@ -199,7 +199,7 @@ void _plBindTexture( const PLGTexture *texture ) {
 		id = texture->internal.id;
 	}
 
-	PLGTextureMappingUnit *unit = &gfx_state.tmu[ plGetCurrentTextureUnit() ];
+	PLGTextureMappingUnit *unit = &gfx_state.tmu[ PlgGetCurrentTextureUnit() ];
 	if ( id == unit->current_texture ) {
 		return;
 	}
@@ -214,7 +214,7 @@ void PlgSetTextureFlags( PLGTexture *texture, unsigned int flags ) {
 }
 
 void PlgSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode ) {
-	if ( gfx_state.tmu[ plGetCurrentTextureUnit() ].current_envmode == mode )
+	if ( gfx_state.tmu[ PlgGetCurrentTextureUnit() ].current_envmode == mode )
 		return;
 
 #if defined(PL_MODE_OPENGL) && !defined(PL_MODE_OPENGL_CORE)
@@ -228,7 +228,7 @@ void PlgSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode ) {
 	// todo
 #endif
 
-	gfx_state.tmu[ plGetCurrentTextureUnit() ].current_envmode = mode;
+	gfx_state.tmu[ PlgGetCurrentTextureUnit() ].current_envmode = mode;
 }
 
 /////////////////////
@@ -259,13 +259,13 @@ bool PlgUploadTextureImage( PLGTexture *texture, const PLImage *upload ) {
 		strncpy( texture->name, file_name, sizeof( texture->name ) );
 	}
 
-	_plBindTexture( texture );
+	PlgBindTexture( texture );
 	CallGfxFunction( UploadTexture, texture, upload );
-	_plBindTexture( NULL );
+	PlgBindTexture( NULL );
 
 	return true;
 }
 
-void plSwizzleTexture( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
+void PlgSwizzleTexture( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
 	CallGfxFunction( SwizzleTexture, texture, r, g, b, a );
 }
