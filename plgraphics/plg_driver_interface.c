@@ -65,6 +65,7 @@ bool PlgRegisterDriver( const char *path ) {
 
 	PLLibrary *library = PlLoadLibrary( path, false );
 	if ( library == NULL ) {
+		GfxLog( "Failed to load library!\nPL: %s\n", PlGetError() );
 		return false;
 	}
 
@@ -72,24 +73,36 @@ bool PlgRegisterDriver( const char *path ) {
 	PLGDriverInitializationFunction InitializeDriver;
 	PLGDriverQueryFunction RegisterDriver = ( PLGDriverQueryFunction ) PlGetLibraryProcedure( library, PLG_DRIVER_QUERY_FUNCTION );
 	if ( RegisterDriver != NULL ) {
+        /* now fetch the driver description */
+        description = RegisterDriver();
+        if ( description != NULL ) {
+#if !defined( NDEBUG )
+			GfxLog( "\"%s\" :\n"
+			        " identifier = \"%s\"\n"
+			        " description = \"%s\"\n"
+			        " driver version = %d.%d.%d\n",
+			        path,
+			        description->identifier,
+			        description->description,
+			        description->driverVersion[ 0 ],
+			        description->driverVersion[ 1 ],
+			        description->driverVersion[ 2 ] );
+#endif
+            if ( description->coreInterfaceVersion[ 0 ] != PL_PLUGIN_INTERFACE_VERSION_MAJOR ) {
+                PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported core interface version" );
+            } else if ( description->graphicsInterfaceVersion[ 0 ] != PLG_INTERFACE_VERSION_MAJOR ) {
+                PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported graphics interface version" );
+            }
+        } else {
+            PlReportErrorF( PL_RESULT_FAIL, "failed to fetch driver description" );
+        }
+
 		InitializeDriver = ( PLGDriverInitializationFunction ) PlGetLibraryProcedure( library, PLG_DRIVER_INIT_FUNCTION );
-		if ( InitializeDriver != NULL ) {
-			/* now fetch the driver description */
-			description = RegisterDriver();
-			if ( description != NULL ) {
-				if ( description->coreInterfaceVersion[ 0 ] != PL_PLUGIN_INTERFACE_VERSION_MAJOR ) {
-					PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported core interface version" );
-				} else if ( description->graphicsInterfaceVersion[ 0 ] != PLG_INTERFACE_VERSION_MAJOR ) {
-					PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported graphics interface version" );
-				}
-			} else {
-				PlReportErrorF( PL_RESULT_FAIL, "failed to fetch driver description" );
-			}
-		}
 	}
 
 	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
 		PlUnloadLibrary( library );
+        GfxLog( "Failed to load library!\nPL: %s\n", PlGetError() );
 		return false;
 	}
 
@@ -155,6 +168,8 @@ const char **PlgGetAvailableDriverInterfaces( unsigned int *numModes ) {
 
 PLFunctionResult PlgSetDriver( const char *mode ) {
 	GfxLog( "Attempting mode \"%s\"...\n", mode );
+
+	exportTable.core = PlGetExportTable();
 
 	const PLGDriverImportTable *interface = NULL;
 	for ( unsigned int i = 0; i < numDrivers; ++i ) {

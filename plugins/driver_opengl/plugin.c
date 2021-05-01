@@ -40,7 +40,7 @@ PL_EXPORT const PLGDriverDescription *QueryGraphicsDriver( void ) {
 
 int glLogLevel;
 
-PL_EXPORT const PLGDriverImportTable *InitializeDriver( const PLGDriverExportTable *functionTable ) {
+PL_EXPORT const PLGDriverImportTable *InitializeGraphicsDriver( const PLGDriverExportTable *functionTable ) {
 	gInterface = functionTable;
 
 	glLogLevel = gInterface->core->AddLogLevel( "plugin/opengl", PLColourRGB( 255, 255, 255 ), true );
