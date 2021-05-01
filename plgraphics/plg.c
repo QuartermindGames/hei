@@ -50,8 +50,6 @@ data for each of these functions
 	INITIALIZATION
 ===========================*/
 
-void _InitTextures( void );// platform_graphics_texture
-
 int LOG_LEVEL_GRAPHICS = 0;
 
 PLFunctionResult PlgInitializeGraphics( void ) {
@@ -64,6 +62,8 @@ PLFunctionResult PlgInitializeGraphics( void ) {
 	                                    false
 #endif
 	);
+
+    XPlgInitializeTextures();
 
 	return PL_RESULT_SUCCESS;
 }
