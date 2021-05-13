@@ -96,7 +96,7 @@ support.
 #define PL_STRINGIFY( num ) #num
 #define PL_TOSTRING( A ) PL_STRINGIFY( A )
 
-#define PL_BITFLAG( A, B ) A = ( 1 << B )
+#define PL_BITFLAG( A, B ) A = ( 1U << B )
 
 #ifndef offsetof
 #define pl_offsetof( a, b ) ( ( size_t ) & ( ( ( a * ) 0 )->b ) )
