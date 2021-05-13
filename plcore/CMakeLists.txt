@@ -17,8 +17,19 @@ file(
         pl_math_matrix.c
         pl_math_vector.c
         pl_physics.c
-        string/*.c
-        memory/*.*
+
+        string/crc32.c
+        string/itoa.c
+        string/PLStrMisc.c
+        string/strcasecmp.c
+        string/strcasestr.c
+        string/strcnt.c
+        string/strisalnum.c
+        string/strisalpha.c
+        string/strisdigit.c
+        string/strtolower.c
+        string/strtoupper.c
+        string/vscprintf.c
 )
 
 file(GLOB PLATFORM_PACKAGE_FILES

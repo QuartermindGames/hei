@@ -80,6 +80,8 @@ support.
 
 #include <plcore/pl_system.h>
 
+typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
+
 #if !defined( NDEBUG )
 #include <assert.h>
 

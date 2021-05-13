@@ -68,3 +68,5 @@ int pl_vscprintf( const char *format, va_list pArgs );
 
 unsigned int pl_strcnt( const char *s, char c );
 unsigned int pl_strncnt( const char *s, char c, unsigned int n );
+
+char *PlStrInsert( const char *string, char **buf, size_t *bufSize, size_t *maxBufSize );
