@@ -222,6 +222,8 @@ typedef struct PLColour {
 #endif
 } PLColour;
 
+#define PlColourIndex( COLOUR, INDEX ) ( ( uint8_t * ) &( COLOUR ) )[ INDEX ]
+
 PL_INLINE static PLColour PlCreateColour4B( uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
 	PLColour c = { r, g, b, a };
 	return c;

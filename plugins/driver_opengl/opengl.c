@@ -609,11 +609,11 @@ static void GLCreateMesh( PLGMesh *mesh ) {
 	}
 
 	// Create VBO
-	glGenBuffers( 1, &mesh->internal.buffers[ BUFFER_VERTEX_DATA ] );
+	glGenBuffers( 1, &mesh->buffers[ BUFFER_VERTEX_DATA ] );
 
 	// Create the EBO
 	if ( mesh->num_indices > 0 ) {
-		glGenBuffers( 1, &mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] );
+		glGenBuffers( 1, &mesh->buffers[ BUFFER_ELEMENT_DATA ] );
 	}
 }
 
@@ -623,7 +623,7 @@ static void GLUploadMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 	}
 
 	//Bind VBO
-	glBindBuffer( GL_ARRAY_BUFFER, mesh->internal.buffers[ BUFFER_VERTEX_DATA ] );
+	glBindBuffer( GL_ARRAY_BUFFER, mesh->buffers[ BUFFER_VERTEX_DATA ] );
 
 	//Write the current CPU vertex data into the VBO
 	unsigned int drawMode = TranslateDrawMode( mesh->mode );
@@ -662,8 +662,8 @@ static void GLUploadMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 		glVertexAttribPointer( program->internal.v_bitangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, bitangent ) );
 	}
 
-	if ( mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] != 0 ) {
-		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] );
+	if ( mesh->buffers[ BUFFER_ELEMENT_DATA ] != 0 ) {
+		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->buffers[ BUFFER_ELEMENT_DATA ] );
 		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( unsigned int ) * mesh->num_indices, &mesh->indices[ 0 ], drawMode );
 	}
 }
@@ -673,8 +673,8 @@ static void GLDeleteMesh( PLGMesh *mesh ) {
 		return;
 	}
 
-	glDeleteBuffers( 1, &mesh->internal.buffers[ BUFFER_VERTEX_DATA ] );
-	glDeleteBuffers( 1, &mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] );
+	glDeleteBuffers( 1, &mesh->buffers[ BUFFER_VERTEX_DATA ] );
+	glDeleteBuffers( 1, &mesh->buffers[ BUFFER_ELEMENT_DATA ] );
 }
 
 static void GLDrawInstancedMesh( PLGMesh *mesh, PLGShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount ) {
@@ -683,7 +683,7 @@ static void GLDrawInstancedMesh( PLGMesh *mesh, PLGShaderProgram *program, const
 		return;
 	}
 
-	if ( mesh->internal.buffers[ BUFFER_VERTEX_DATA ] == 0 ) {
+	if ( mesh->buffers[ BUFFER_VERTEX_DATA ] == 0 ) {
 		GLLog( "invalid buffer provided, skipping draw!\n" );
 		return;
 	}
@@ -691,8 +691,8 @@ static void GLDrawInstancedMesh( PLGMesh *mesh, PLGShaderProgram *program, const
 	//Ensure VAO/VBO/EBO are bound
 	glBindVertexArray( VAO[ 0 ] );
 
-	glBindBuffer( GL_ARRAY_BUFFER, mesh->internal.buffers[ BUFFER_VERTEX_DATA ] );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] );
+	glBindBuffer( GL_ARRAY_BUFFER, mesh->buffers[ BUFFER_VERTEX_DATA ] );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->buffers[ BUFFER_ELEMENT_DATA ] );
 
 	//draw
 	GLuint mode = TranslatePrimitiveMode( mesh->primitive );
@@ -742,7 +742,7 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 		return;
 	}
 
-	if ( mesh->internal.buffers[ BUFFER_VERTEX_DATA ] == 0 ) {
+	if ( mesh->buffers[ BUFFER_VERTEX_DATA ] == 0 ) {
 		GLLog( "invalid buffer provided, skipping draw!\n" );
 		return;
 	}
@@ -753,8 +753,8 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 		/* todo: fallback for legacy... */
 	}
 
-	glBindBuffer( GL_ARRAY_BUFFER, mesh->internal.buffers[ BUFFER_VERTEX_DATA ] );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->internal.buffers[ BUFFER_ELEMENT_DATA ] );
+	glBindBuffer( GL_ARRAY_BUFFER, mesh->buffers[ BUFFER_VERTEX_DATA ] );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->buffers[ BUFFER_ELEMENT_DATA ] );
 
 	//draw
 	GLuint mode = TranslatePrimitiveMode( mesh->primitive );

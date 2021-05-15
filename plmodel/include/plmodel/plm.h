@@ -102,6 +102,9 @@ typedef struct PLMModel {
 	PLGMesh **meshes;
 	unsigned int numMeshes;
 
+	PLPath *materials;
+	unsigned int numMaterials;
+
 	struct {
 		/* model type data */
 		union {

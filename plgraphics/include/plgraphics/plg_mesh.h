@@ -82,11 +82,12 @@ typedef struct PLGMesh {
 
 	struct PLGShaderProgram *shader_program;
 	PLGTexture *texture;
+	unsigned int materialIndex;
+
 	PLGMeshPrimitive primitive;
 	PLGMeshDrawMode mode;
-	struct {
-		unsigned int buffers[ 32 ];
-	} internal;
+
+	unsigned int buffers[ 32 ];
 } PLGMesh;
 
 typedef struct PLCollisionAABB PLCollisionAABB;
