@@ -247,7 +247,7 @@ unsigned int PlGetPackageTableSize( const PLPackage *package ) {
 int PlGetPackageTableIndex( const PLPackage *package, const char *indexName ) {
 	FunctionStart();
 
-	for ( int i = 0; i < package->table_size; ++i ) {
+	for ( unsigned int i = 0; i < package->table_size; ++i ) {
 		if ( strcmp( indexName, package->table[ i ].fileName ) != 0 ) {
 			continue;
 		}

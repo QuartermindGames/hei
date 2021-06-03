@@ -172,7 +172,7 @@ void PlgSetupCamera( PLGCamera *camera ) {
 		}
 
 		case PLG_CAMERA_MODE_ORTHOGRAPHIC:
-			camera->internal.proj = PlOrtho( 0, camera->viewport.w, camera->viewport.h, 0, camera->near, camera->far );
+			camera->internal.proj = PlOrtho( 0, ( float ) camera->viewport.w, ( float ) camera->viewport.h, 0, camera->near, camera->far );
 			camera->internal.view = PlMatrix4Identity();
 			break;
 

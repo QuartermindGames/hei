@@ -275,7 +275,7 @@ void PlgDrawSimpleLine( PLMatrix4 transform, PLVector3 startPos, PLVector3 endPo
 }
 
 void PlgDrawGrid( PLMatrix4 transform, int x, int y, int w, int h, unsigned int gridSize ) {
-	unsigned int c = 0, r = 0;
+	int c = 0, r = 0;
 	for ( ; r < h + 1; r += gridSize ) {
 		PlgDrawSimpleLine( transform, PLVector3( x, r + y, 0 ), PLVector3( x + w, r + y, 0 ), PLColour( 255, 255, 255, 255 ) );
 

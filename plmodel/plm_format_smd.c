@@ -86,6 +86,8 @@ static SMDNode *SMD_ReadNodes( PLFile *file, unsigned int *numNodes ) {
 
 		curNode++;
 	}
+
+	return nodes;
 }
 
 static PLMModel *SMD_ReadFile( PLFile *file ) {
@@ -96,8 +98,7 @@ static PLMModel *SMD_ReadFile( PLFile *file ) {
 
 	/* expect the version string first */
 	unsigned int version = 0;
-	sscanf( buffer, "version %d\n", &version );
-	if ( version != SMD_VERSION ) {
+	if( sscanf( buffer, "version %d\n", &version ) < 1 || version != SMD_VERSION ) {
 		PlReportBasicError( PL_RESULT_FILEVERSION );
 		return NULL;
 	}

@@ -24,8 +24,6 @@ SOFTWARE.
 
 #pragma once
 
-#include <plcore/pl.h>
-
 PL_EXTERN_C
 
 extern PL_DLL void *(*pl_malloc)(size_t size);
