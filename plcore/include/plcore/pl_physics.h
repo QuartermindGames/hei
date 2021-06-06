@@ -79,12 +79,12 @@ bool PlIsPointIntersectingAabb( const PLCollisionAABB *bounds, PLVector3 point )
 /**
  * Get which side of a line a point is on.
  */
-PL_INLINE static float PlTestPointLinePosition( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd ) {
+inline static float PlTestPointLinePosition( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd ) {
 	float d = ( lineEnd->x - lineStart->x ) * ( position->y - lineStart->y ) - ( lineEnd->y - lineStart->y ) * ( position->x - lineStart->x );
 	return d;
 }
 
-PL_INLINE static bool PlIsPointIntersectingLine( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal, float *intersection ) {
+inline static bool PlIsPointIntersectingLine( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal, float *intersection ) {
 	*intersection = 0.0f;
 
 #if 0
@@ -110,7 +110,7 @@ PL_INLINE static bool PlIsPointIntersectingLine( const PLVector2 *position, cons
 	return ( *intersection <= 1000.0f );
 }
 
-PL_INLINE static bool PlTestLineIntersection( float dst1, float dst2, const PLVector3 *lineStart, const PLVector3 *lineEnd, PLVector3 *hit ) {
+inline static bool PlTestLineIntersection( float dst1, float dst2, const PLVector3 *lineStart, const PLVector3 *lineEnd, PLVector3 *hit ) {
 	if ( ( dst1 * dst2 ) >= 0.0f || dst1 == dst2 ) {
 		return false;
 	}
@@ -126,7 +126,7 @@ PL_INLINE static bool PlTestLineIntersection( float dst1, float dst2, const PLVe
  * Checks whether or not AABB is intersecting with the given line.
  * Currently only works in 2D space (X & Z).
  */
-PL_INLINE static bool PlIsAabbIntersectingLine( const PLCollisionAABB *bounds, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal ) {
+inline static bool PlIsAabbIntersectingLine( const PLCollisionAABB *bounds, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal ) {
 #if 0
 	PLVector2 origin = PLVector2( bounds->origin.x, bounds->origin.z );
 
@@ -151,7 +151,7 @@ PL_INLINE static bool PlIsAabbIntersectingLine( const PLCollisionAABB *bounds, c
 	return false;
 }
 
-PL_INLINE static bool PlIsLineInBox( const PLCollisionAABB *bounds, const PLVector3 *lineStart, const PLVector3 *lineEnd ) {
+inline static bool PlIsLineInBox( const PLCollisionAABB *bounds, const PLVector3 *lineStart, const PLVector3 *lineEnd ) {
 	/* get line midpoint and extent */
 	//	PLVector3 lineMiddle = plScaleVector3f( plAddVector3( *lineStart, *lineEnd ), 0.5f );
 	//	PLVector3 l = plSubtractVector3( *lineStart, lineMiddle );
@@ -166,7 +166,7 @@ bool PlIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollision
 PLCollision PlIsSphereIntersectingPlane( const PLCollisionSphere *sphere, const PLCollisionPlane *plane );
 
 /* https://github.com/erich666/GraphicsGems/blob/master/gemsii/intersect/intsph.c */
-PL_INLINE static bool PlIsRayIntersectingSphere( const PLCollisionSphere *sphere, const PLCollisionRay *ray, float *enterDistance, float *leaveDistance ) {
+inline static bool PlIsRayIntersectingSphere( const PLCollisionSphere *sphere, const PLCollisionRay *ray, float *enterDistance, float *leaveDistance ) {
 	PLVector3 d = PlSubtractVector3( ray->origin, sphere->origin );
 	float u = PlVector3DotProduct( d, d ) - sphere->radius * sphere->radius;
 	float bsq = PlVector3DotProduct( d, ray->direction );
@@ -183,7 +183,7 @@ PL_INLINE static bool PlIsRayIntersectingSphere( const PLCollisionSphere *sphere
 }
 
 /* https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c */
-PL_INLINE static bool PlIsRayIntersectingAabb( const PLCollisionAABB *bounds, const PLCollisionRay *ray, PLVector3 *hitPoint ) {
+inline static bool PlIsRayIntersectingAabb( const PLCollisionAABB *bounds, const PLCollisionRay *ray, PLVector3 *hitPoint ) {
 	PLVector3 max = PlAddVector3( bounds->maxs, bounds->origin );
 	PLVector3 min = PlAddVector3( bounds->mins, bounds->origin );
 

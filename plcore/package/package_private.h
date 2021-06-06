@@ -75,7 +75,7 @@ typedef struct PLPackageIndexHeader {
 
 PL_EXTERN_C
 
-PL_INLINE static void WritePackageHeader( FILE* handle, uint32_t num_indexes ) {
+inline static void WritePackageHeader( FILE* handle, uint32_t num_indexes ) {
 	plAssert( handle );
 	uint8_t identity[4] = { 'P', 'A', 'C', 'K' };
 	fwrite( identity, sizeof( char ), sizeof( identity ), handle );
@@ -87,7 +87,7 @@ PL_INLINE static void WritePackageHeader( FILE* handle, uint32_t num_indexes ) {
 	fwrite( &num_indexes, sizeof( uint32_t ), 1, handle );
 }
 
-PL_INLINE static void WritePackageIndexHeader( FILE* handle, uint16_t type, uint32_t length ) {
+inline static void WritePackageIndexHeader( FILE* handle, uint16_t type, uint32_t length ) {
 	plAssert( handle );
 	fwrite( &type, sizeof( uint16_t ), 1, handle );
 	fwrite( &length, sizeof( uint32_t ), 1, handle );

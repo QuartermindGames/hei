@@ -43,7 +43,7 @@ typedef struct PLQuaternion {
 
 #endif
 
-PL_INLINE static PLQuaternion PlMultiplyQuaternion( const PLQuaternion* q, const PLQuaternion* q2 ) {
+inline static PLQuaternion PlMultiplyQuaternion( const PLQuaternion* q, const PLQuaternion* q2 ) {
 	return PLQuaternion
 	(
 		( q->x * q2->w ) + ( q->w * q2->x ) + ( q->y * q2->z ) - ( q->z * q2->y ),
@@ -53,7 +53,7 @@ PL_INLINE static PLQuaternion PlMultiplyQuaternion( const PLQuaternion* q, const
 	);
 }
 
-PL_INLINE static PLQuaternion PlMultiplyQuaternion3FV( const PLQuaternion* q, const PLVector3* v ) {
+inline static PLQuaternion PlMultiplyQuaternion3FV( const PLQuaternion* q, const PLVector3* v ) {
 	return PLQuaternion
 	(
 		( q->w * v->x ) + ( q->y * v->z ) - ( q->z * v->y ),
@@ -63,27 +63,27 @@ PL_INLINE static PLQuaternion PlMultiplyQuaternion3FV( const PLQuaternion* q, co
 	);
 }
 
-PL_INLINE static PLQuaternion PlScaleQuaternion( const PLQuaternion* q, float a ) {
+inline static PLQuaternion PlScaleQuaternion( const PLQuaternion* q, float a ) {
 	return PLQuaternion( q->x * a, q->y * a, q->z * a, q->w * a );
 }
 
-PL_INLINE static PLQuaternion PlAddQuaternion( const PLQuaternion* q, const PLQuaternion* q2 ) {
+inline static PLQuaternion PlAddQuaternion( const PLQuaternion* q, const PLQuaternion* q2 ) {
 	return PLQuaternion( q->x + q2->x, q->y + q2->y, q->z + q2->z, q->w + q2->w );
 }
 
-PL_INLINE static PLQuaternion PlAddQuaternionF( const PLQuaternion* q, float a ) {
+inline static PLQuaternion PlAddQuaternionF( const PLQuaternion* q, float a ) {
 	return PLQuaternion( q->x + a, q->y + a, q->z + a, q->z + a );
 }
 
-PL_INLINE static PLQuaternion PlInverseQuaternion( const PLQuaternion* q ) {
+inline static PLQuaternion PlInverseQuaternion( const PLQuaternion* q ) {
 	return PLQuaternion( -q->x, -q->y, -q->z, q->w );
 }
 
-PL_INLINE static float PlQuaternionLength( const PLQuaternion* q ) {
+inline static float PlQuaternionLength( const PLQuaternion* q ) {
 	return sqrtf( q->x * q->x + q->y * q->y + q->z * q->z + q->w * q->w );
 }
 
-PL_INLINE static PLQuaternion PlNormalizeQuaternion( const PLQuaternion* q ) {
+inline static PLQuaternion PlNormalizeQuaternion( const PLQuaternion* q ) {
 	float l = PlQuaternionLength( q );
 	if ( l > 0 ) {
 		float i = 1 / l;
@@ -93,13 +93,13 @@ PL_INLINE static PLQuaternion PlNormalizeQuaternion( const PLQuaternion* q ) {
 	return *q;
 }
 
-PL_INLINE static const char*PlPrintQuaternion( const PLQuaternion* q ) {
+inline static const char*PlPrintQuaternion( const PLQuaternion* q ) {
 	static char s[32] = { '\0' };
 	snprintf( s, 32, "%i %i %i %i", ( int ) q->x, ( int ) q->y, ( int ) q->z, ( int ) q->w );
 	return s;
 }
 
-PL_INLINE static void PlComputeQuaternionW( PLQuaternion* q ) {
+inline static void PlComputeQuaternionW( PLQuaternion* q ) {
 	float t = 1.f - ( q->x * q->x ) - ( q->y * q->y ) - ( q->z * q->z );
 	if ( t < 0 ) {
 		q->w = 0;
@@ -109,7 +109,7 @@ PL_INLINE static void PlComputeQuaternionW( PLQuaternion* q ) {
 }
 
 /* pulled from here: http://tfc.duke.free.fr/coding/md5-specs-en.html */
-PL_INLINE static PLQuaternion PlRotateQuaternionPoint( const PLQuaternion* q, const PLVector3* point ) {
+inline static PLQuaternion PlRotateQuaternionPoint( const PLQuaternion* q, const PLVector3* point ) {
 	PLQuaternion b = PlInverseQuaternion( q );
 	b = PlNormalizeQuaternion( &b );
 

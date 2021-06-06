@@ -135,7 +135,6 @@ SOFTWARE.
 #define PL_FARPROC FARPROC
 #define PL_EXTERN extern
 #define PL_CALL __stdcall
-#define PL_INLINE __inline
 
 // MSVC doesn't support __func__
 #define PL_FUNCTION __FUNCTION__// Returns the active function.
@@ -159,7 +158,6 @@ SOFTWARE.
 
 #define PL_EXTERN extern
 #define PL_CALL
-#define PL_INLINE inline
 
 #define PL_FUNCTION __FUNCTION__
 

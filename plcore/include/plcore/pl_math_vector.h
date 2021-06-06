@@ -125,56 +125,56 @@ typedef struct PLVector2 {
 
 extern const PLVector2 pl_vecOrigin2;
 
-PL_INLINE static PLVector2 PlClampVector2( const PLVector2 *v, float min, float max ) {
+inline static PLVector2 PlClampVector2( const PLVector2 *v, float min, float max ) {
 	return PLVector2( PlClamp( min, v->x, max ), PlClamp( min, v->y, max ) );
 }
 
-PL_INLINE static PLVector2 PlAddVector2( PLVector2 v, PLVector2 v2 ) {
+inline static PLVector2 PlAddVector2( PLVector2 v, PLVector2 v2 ) {
 	v.x += v2.x;
 	v.y += v2.y;
 	return v;
 }
 
-PL_INLINE static PLVector2 PlSubtractVector2( const PLVector2 *a, const PLVector2 *b ) {
+inline static PLVector2 PlSubtractVector2( const PLVector2 *a, const PLVector2 *b ) {
 	return PLVector2( a->x - b->x, a->y - b->y );
 }
 
-PL_INLINE static PLVector2 PlScaleVector2( const PLVector2 *v, const PLVector2 *scale ) {
+inline static PLVector2 PlScaleVector2( const PLVector2 *v, const PLVector2 *scale ) {
 	return PLVector2( v->x * scale->x, v->y * scale->y );
 }
 
-PL_INLINE static PLVector2 PlScaleVector2F( const PLVector2 *v, float scale ) {
+inline static PLVector2 PlScaleVector2F( const PLVector2 *v, float scale ) {
 	return PLVector2( v->x * scale, v->y * scale );
 }
 
-PL_INLINE static PLVector2 PlDivideVector2( PLVector2 v, PLVector2 v2 ) {
+inline static PLVector2 PlDivideVector2( PLVector2 v, PLVector2 v2 ) {
 	v.x /= v2.x;
 	v.y /= v2.y;
 	return v;
 }
 
-PL_INLINE static PLVector2 PlDivideVector2F( const PLVector2 *v, float f ) {
+inline static PLVector2 PlDivideVector2F( const PLVector2 *v, float f ) {
 	return PLVector2( v->x / f, v->y / f );
 }
 
-PL_INLINE static bool PlCompareVector2( const PLVector2 *v, const PLVector2 *v2 ) {
+inline static bool PlCompareVector2( const PLVector2 *v, const PLVector2 *v2 ) {
 	return ( ( v->x == v2->x ) && ( v->y == v2->y ) );
 }
 
-PL_INLINE static float PlVector2DotProduct( const PLVector2 *a, const PLVector2 *b ) {
+inline static float PlVector2DotProduct( const PLVector2 *a, const PLVector2 *b ) {
 	return a->x * b->x + a->y * b->y;
 }
 
-PL_INLINE static float PlGetVector2Length( const PLVector2 *v ) {
+inline static float PlGetVector2Length( const PLVector2 *v ) {
 	return sqrtf( PlVector2DotProduct( v, v ) );
 }
 
-PL_INLINE static PLVector2 plNormalizeVector2( const PLVector2 *v ) {
+inline static PLVector2 plNormalizeVector2( const PLVector2 *v ) {
 	float length = PlGetVector2Length( v );
 	return PLVector2( v->x / length, v->y / length );
 }
 
-PL_INLINE static PLVector2 PlComputeLineNormal( const PLVector2 *x, const PLVector2 *y ) {
+inline static PLVector2 PlComputeLineNormal( const PLVector2 *x, const PLVector2 *y ) {
 	PLVector2 v = PLVector2( x->y - y->y, y->x - x->x );
 	return plNormalizeVector2( &v );
 }
@@ -185,144 +185,144 @@ typedef struct PLVector3 {
 	float x, y, z;
 
 #ifdef __cplusplus
-	PL_INLINE PLVector3() : x( 0 ), y( 0 ), z( 0 ) {}
-	PL_INLINE PLVector3( float _x, float _y, float _z ) : x( _x ), y( _y ), z( _z ) {}
-	PL_INLINE explicit PLVector3( const float *v ) {
+	inline PLVector3() : x( 0 ), y( 0 ), z( 0 ) {}
+	inline PLVector3( float _x, float _y, float _z ) : x( _x ), y( _y ), z( _z ) {}
+	inline explicit PLVector3( const float *v ) {
 		x = v[ 0 ];
 		y = v[ 1 ];
 		z = v[ 2 ];
 	}
 
-	PL_INLINE PLVector3 &operator=( PLVector2 v ) {
+	inline PLVector3 &operator=( PLVector2 v ) {
 		x = v.x;
 		y = v.y;
 		return *this;
 	}
 
-	PL_INLINE PLVector3 &operator=( float a ) {
+	inline PLVector3 &operator=( float a ) {
 		x = a;
 		y = a;
 		z = a;
 		return *this;
 	}
 
-	PL_INLINE void operator*=( const PLVector3 &v ) {
+	inline void operator*=( const PLVector3 &v ) {
 		x *= v.x;
 		y *= v.y;
 		z *= v.z;
 	}
 
-	PL_INLINE void operator*=( float a ) {
+	inline void operator*=( float a ) {
 		x *= a;
 		y *= a;
 		z *= a;
 	}
 
-	PL_INLINE void operator+=( PLVector3 a ) {
+	inline void operator+=( PLVector3 a ) {
 		x += a.x;
 		y += a.y;
 		z += a.z;
 	}
 
-	PL_INLINE void operator+=( float a ) {
+	inline void operator+=( float a ) {
 		x += a;
 		y += a;
 		z += a;
 	}
 
-	PL_INLINE bool operator==( const PLVector3 &a ) const {
+	inline bool operator==( const PLVector3 &a ) const {
 		return ( ( x == a.x ) && ( y == a.y ) && ( z == a.z ) );
 	}
 
-	PL_INLINE bool operator==( float f ) const {
+	inline bool operator==( float f ) const {
 		return ( ( x == f ) && ( y == f ) && ( z == f ) );
 	}
 
-	PL_INLINE bool operator!=( const PLVector3 &a ) const {
+	inline bool operator!=( const PLVector3 &a ) const {
 		return !( a == *this );
 	}
 
-	PL_INLINE bool operator!=( float f ) const {
+	inline bool operator!=( float f ) const {
 		return ( ( x != f ) && ( y != f ) && ( z != f ) );
 	}
 
-	PL_INLINE PLVector3 operator*( PLVector3 a ) const {
+	inline PLVector3 operator*( PLVector3 a ) const {
 		return { x * a.x, y * a.y, z * a.z };
 	}
 
-	PL_INLINE PLVector3 operator*( float a ) const {
+	inline PLVector3 operator*( float a ) const {
 		return { x * a, y * a, z * a };
 	}
 
-	PL_INLINE PLVector3 operator-( PLVector3 a ) const {
+	inline PLVector3 operator-( PLVector3 a ) const {
 		return { x - a.x, y - a.y, z - a.z };
 	}
 
-	PL_INLINE PLVector3 operator-( float a ) const {
+	inline PLVector3 operator-( float a ) const {
 		return { x - a, y - a, z - a };
 	}
 
-	PLVector3 PL_INLINE operator-() const {
+	PLVector3 inline operator-() const {
 		return { -x, -y, -z };
 	}
 
-	PLVector3 PL_INLINE operator+( PLVector3 a ) const {
+	PLVector3 inline operator+( PLVector3 a ) const {
 		return { x + a.x, y + a.y, z + a.z };
 	}
 
-	PLVector3 PL_INLINE operator+( float a ) const {
+	PLVector3 inline operator+( float a ) const {
 		return { x + a, y + a, z + a };
 	}
 
-	PLVector3 PL_INLINE operator/( const PLVector3 &a ) const {
+	PLVector3 inline operator/( const PLVector3 &a ) const {
 		return { x / a.x, y / a.y, z / a.z };
 	}
 
-	PLVector3 PL_INLINE operator/( float a ) const {
+	PLVector3 inline operator/( float a ) const {
 		return { x / a, y / a, z / a };
 	}
 
-	PL_INLINE float &operator[]( const unsigned int i ) {
+	inline float &operator[]( const unsigned int i ) {
 		return *( ( &x ) + i );
 	}
 
-	PL_INLINE bool operator>( const PLVector3 &v ) const {
+	inline bool operator>( const PLVector3 &v ) const {
 		return ( x > v.x ) || ( x == v.x && y > v.y ) || ( x == v.x && y == v.y && z > v.z );
 	}
 
-	PL_INLINE bool operator<( const PLVector3 &v ) const {
+	inline bool operator<( const PLVector3 &v ) const {
 		return ( x < v.x ) || ( x == v.x && y < v.y ) || ( x == v.x && y == v.y && z < v.z );
 	}
 
-	PL_INLINE bool operator>=( const PLVector3 &v ) const {
+	inline bool operator>=( const PLVector3 &v ) const {
 		return *this > v || *this == v;
 	}
 
-	PL_INLINE bool operator<=( const PLVector3 &v ) const {
+	inline bool operator<=( const PLVector3 &v ) const {
 		return *this < v || *this == v;
 	}
 
-	PL_INLINE float Length() const {
+	inline float Length() const {
 		return std::sqrt( x * x + y * y + z * z );
 	}
 
-	PL_INLINE float DotProduct( PLVector3 a ) const {
+	inline float DotProduct( PLVector3 a ) const {
 		return ( x * a.x + y * a.y + z * a.z );
 	}
 
-	PL_INLINE PLVector3 CrossProduct( PLVector3 a ) const {
+	inline PLVector3 CrossProduct( PLVector3 a ) const {
 		return { y * a.z - z * a.y, z * a.x - x * a.z, x * a.y - y * a.x };
 	}
 
-	PL_INLINE PLVector3 Normalize() const {
+	inline PLVector3 Normalize() const {
 		return ( *this ) / Length();
 	}
 
-	PL_INLINE float Difference( PLVector3 v ) const {
+	inline float Difference( PLVector3 v ) const {
 		return ( ( *this ) - v ).Length();
 	}
 
-	void PL_INLINE Set( float _x, float _y, float _z ) {
+	void inline Set( float _x, float _y, float _z ) {
 		x = _x;
 		y = _y;
 		z = _z;
@@ -343,103 +343,103 @@ extern const PLVector3 pl_vecOrigin3;
 /* todo: add bound checking to the below implementation??? Or just remove!? */
 #define PlVector3Index( VECTOR, INDEX ) PlVectorIndex( VECTOR, INDEX )
 
-PL_INLINE static PLVector3 PlClampVector3( const PLVector3 *v, float min, float max ) {
+inline static PLVector3 PlClampVector3( const PLVector3 *v, float min, float max ) {
 	return PLVector3(
 	        PlClamp( min, v->x, max ),
 	        PlClamp( min, v->y, max ),
 	        PlClamp( min, v->z, max ) );
 }
 
-PL_INLINE static PLVector3 PlAddVector3( PLVector3 v, PLVector3 v2 ) {
+inline static PLVector3 PlAddVector3( PLVector3 v, PLVector3 v2 ) {
 	v.x += v2.x;
 	v.y += v2.y;
 	v.z += v2.z;
 	return v;
 }
 
-PL_INLINE static PLVector3 PlAddVector3F( PLVector3 v, float f ) {
+inline static PLVector3 PlAddVector3F( PLVector3 v, float f ) {
 	v.x += f;
 	v.y += f;
 	v.z += f;
 	return v;
 }
 
-PL_INLINE static PLVector3 PlSubtractVector3( PLVector3 v, PLVector3 v2 ) {
+inline static PLVector3 PlSubtractVector3( PLVector3 v, PLVector3 v2 ) {
 	v.x -= v2.x;
 	v.y -= v2.y;
 	v.z -= v2.z;
 	return v;
 }
 
-PL_INLINE static PLVector3 PlSubtractVector3F( PLVector3 v, float f ) {
+inline static PLVector3 PlSubtractVector3F( PLVector3 v, float f ) {
 	v.x -= f;
 	v.y -= f;
 	v.z -= f;
 	return v;
 }
 
-PL_INLINE static PLVector3 PlScaleVector3( PLVector3 v, PLVector3 v2 ) {
+inline static PLVector3 PlScaleVector3( PLVector3 v, PLVector3 v2 ) {
 	v.x *= v2.x;
 	v.y *= v2.y;
 	v.z *= v2.z;
 	return v;
 }
 
-PL_INLINE static PLVector3 PlScaleVector3F( PLVector3 v, float f ) {
+inline static PLVector3 PlScaleVector3F( PLVector3 v, float f ) {
 	v.x *= f;
 	v.y *= f;
 	v.z *= f;
 	return v;
 }
 
-PL_INLINE static PLVector3 PlDivideVector3( PLVector3 v, PLVector3 v2 ) {
+inline static PLVector3 PlDivideVector3( PLVector3 v, PLVector3 v2 ) {
 	v.x /= v2.x;
 	v.y /= v2.y;
 	v.z /= v2.z;
 	return v;
 }
 
-PL_INLINE static PLVector3 PlInverseVector3( PLVector3 v ) {
+inline static PLVector3 PlInverseVector3( PLVector3 v ) {
 	v.x = -v.x;
 	v.y = -v.y;
 	v.z = -v.z;
 	return v;
 }
 
-PL_INLINE static bool PlCompareVector3( const PLVector3 *v, const PLVector3 *v2 ) {
+inline static bool PlCompareVector3( const PLVector3 *v, const PLVector3 *v2 ) {
 	return ( ( v->x == v2->x ) && ( v->y == v2->y ) && ( v->z == v2->z ) );
 }
 
-PL_INLINE static PLVector3 PlVector3CrossProduct( PLVector3 v, PLVector3 v2 ) {
+inline static PLVector3 PlVector3CrossProduct( PLVector3 v, PLVector3 v2 ) {
 	return PLVector3(
 	        v.y * v2.z - v.z * v2.y,
 	        v.z * v2.x - v.x * v2.z,
 	        v.x * v2.y - v.y * v2.x );
 }
 
-PL_INLINE static PLVector3 PlVector3Max( PLVector3 v, PLVector3 v2 ) {
+inline static PLVector3 PlVector3Max( PLVector3 v, PLVector3 v2 ) {
 	return PLVector3(
 	        v.x > v2.x ? v.x : v2.x,
 	        v.y > v2.y ? v.y : v2.y,
 	        v.z > v2.z ? v.z : v2.z );
 }
 
-PL_INLINE static PLVector3 PlVector3Min( PLVector3 v, PLVector3 v2 ) {
+inline static PLVector3 PlVector3Min( PLVector3 v, PLVector3 v2 ) {
 	return PLVector3(
 	        v.x < v2.x ? v.x : v2.x,
 	        v.y < v2.y ? v.y : v2.y,
 	        v.z < v2.z ? v.z : v2.z );
 }
 
-PL_INLINE static float PlVector3DotProduct( PLVector3 v, PLVector3 v2 ) {
+inline static float PlVector3DotProduct( PLVector3 v, PLVector3 v2 ) {
 	return ( v.x * v2.x + v.y * v2.y + v.z * v2.z );
 }
 
-PL_INLINE static float PlVector3Length( const PLVector3 v ) {
+inline static float PlVector3Length( const PLVector3 v ) {
 	return sqrtf( v.x * v.x + v.y * v.y + v.z * v.z );
 }
 
-PL_INLINE static PLVector3 PlNormalizeVector3( PLVector3 v ) {
+inline static PLVector3 PlNormalizeVector3( PLVector3 v ) {
 	float length = PlVector3Length( v );
 	if ( length != 0 ) {
 		v.x /= length;
@@ -449,7 +449,7 @@ PL_INLINE static PLVector3 PlNormalizeVector3( PLVector3 v ) {
 	return v;
 }
 
-PL_INLINE static const char *PlPrintVector3( const PLVector3 *v, PLVariableType format ) {
+inline static const char *PlPrintVector3( const PLVector3 *v, PLVariableType format ) {
 	static char s[ 64 ];
 	if ( format == pl_int_var ) snprintf( s, 32, "%i %i %i", ( int ) v->x, ( int ) v->y, ( int ) v->z );
 	else
@@ -457,7 +457,7 @@ PL_INLINE static const char *PlPrintVector3( const PLVector3 *v, PLVariableType 
 	return s;
 }
 
-PL_INLINE static const char *PlPrintVector2( const PLVector2 *v, PLVariableType format ) {
+inline static const char *PlPrintVector2( const PLVector2 *v, PLVariableType format ) {
 	static char s[ 64 ];
 	if ( format == pl_int_var ) snprintf( s, 32, "%i %i", ( int ) v->x, ( int ) v->y );
 	else
@@ -485,7 +485,7 @@ typedef struct PLVector4 {
 
 extern const PLVector4 pl_vecOrigin4;
 
-PL_INLINE static PLVector4 PlAddVector4( PLVector4 v, PLVector4 v2 ) {
+inline static PLVector4 PlAddVector4( PLVector4 v, PLVector4 v2 ) {
 	v.x += v2.x;
 	v.y += v2.y;
 	v.z += v2.z;
@@ -498,14 +498,14 @@ PL_INLINE static PLVector4 PlAddVector4( PLVector4 v, PLVector4 v2 ) {
 /******************************************************************/
 /* Vector Divide */
 
-PL_INLINE static PLVector3 PlDivideVector3F( PLVector3 v, float v2 ) {
+inline static PLVector3 PlDivideVector3F( PLVector3 v, float v2 ) {
 	v.x /= v2;
 	v.y /= v2;
 	v.z /= v2;
 	return v;
 }
 
-PL_INLINE static PLVector4 PlDivideVector4F( PLVector4 v, float v2 ) {
+inline static PLVector4 PlDivideVector4F( PLVector4 v, float v2 ) {
 	v.x /= v2;
 	v.y /= v2;
 	v.z /= v2;
@@ -516,14 +516,14 @@ PL_INLINE static PLVector4 PlDivideVector4F( PLVector4 v, float v2 ) {
 /**
  * Function that works similarly to D3DXPlaneDotCoord.
  */
-PL_INLINE static float PlGetPlaneDotProduct( const PLVector4 *plane, const PLVector3 *vector ) {
+inline static float PlGetPlaneDotProduct( const PLVector4 *plane, const PLVector3 *vector ) {
 	return plane->x * vector->x + plane->y * vector->y + plane->z * vector->z + plane->w * 1.0f;
 }
 
 /**
  * Function that works similarly to D3DXPlaneNormalize.
  */
-PL_INLINE static PLVector4 PlNormalizePlane( PLVector4 plane ) {
+inline static PLVector4 PlNormalizePlane( PLVector4 plane ) {
 	float l = PlVector3Length( PLVector3( plane.x, plane.y, plane.z ) );
 
 	plane.x /= l;

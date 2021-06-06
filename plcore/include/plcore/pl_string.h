@@ -9,7 +9,7 @@
 #include <stdarg.h>
 
 #if 0
-PL_INLINE static void plGetStringExtension(char *out, const char *in, unsigned int length) {
+inline static void plGetStringExtension(char *out, const char *in, unsigned int length) {
     const char *s = strrchr(in, '.');type
     if(!s || s[0] == '\0') {
         return;
@@ -18,7 +18,7 @@ PL_INLINE static void plGetStringExtension(char *out, const char *in, unsigned i
     strncpy(out, s + 1, length);
 }
 
-PL_INLINE static void plStripStringExtension(char *out, const char *in, unsigned int length) {
+inline static void plStripStringExtension(char *out, const char *in, unsigned int length) {
     const char *s = strrchr(in, '.');
     while(in < s) {
         *out++ = *in++;
