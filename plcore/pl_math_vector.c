@@ -27,6 +27,6 @@ For more information, please refer to <http://unlicense.org>
 
 #include <plcore/pl_math.h>
 
-const PLVector2 pl_vecOrigin2 = { 0.0f, 0.0f };
-const PLVector3 pl_vecOrigin3 = { 0.0f, 0.0f, 0.0f };
-const PLVector4 pl_vecOrigin4 = { 0.0f, 0.0f, 0.0f, 0.0f };
+PL_DLL const PLVector2 pl_vecOrigin2 = { 0.0f, 0.0f };
+PL_DLL const PLVector3 pl_vecOrigin3 = { 0.0f, 0.0f, 0.0f };
+PL_DLL const PLVector4 pl_vecOrigin4 = { 0.0f, 0.0f, 0.0f, 0.0f };

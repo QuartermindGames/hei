@@ -105,6 +105,8 @@ typedef struct PLMModel {
 	PLPath *materials;
 	unsigned int numMaterials;
 
+	void *userData; /* for storing material references etc. */
+
 	struct {
 		/* model type data */
 		union {

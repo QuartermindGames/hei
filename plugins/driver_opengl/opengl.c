@@ -485,7 +485,7 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 	unsigned int colour_format = TranslateImageColourFormat( upload->colour_format );
 	unsigned int storage_format = TranslateStorageFormat( texture->storage );
 
-	for ( int i = 0; i < levels; ++i ) {
+	for ( unsigned int i = 0; i < levels; ++i ) {
 		GLsizei w = texture->w / ( unsigned int ) pow( 2, i );
 		GLsizei h = texture->h / ( unsigned int ) pow( 2, i );
 		if ( IsCompressedImageFormat( upload->format ) ) {
@@ -1206,7 +1206,7 @@ static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t
 	mbuf = GLPreProcessGLSLShader( mbuf, &length, stage->type, true );
 	buf = mbuf;
 
-	const GLint glLength = length;
+	const GLint glLength = ( GLint ) length;
 	glShaderSource( stage->internal.id, 1, &buf, &glLength );
 
 	glCompileShader( stage->internal.id );

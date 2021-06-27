@@ -240,6 +240,7 @@ void PlmDestroyModel( PLMModel *model ) {
 	}
 
 	pl_free( model->meshes );
+	pl_free( model->materials );
 
 	if ( model->type == PLM_MODELTYPE_SKELETAL ) {
 		pl_free( model->internal.skeletal_data.bones );

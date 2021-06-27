@@ -123,7 +123,7 @@ typedef struct PLVector2 {
 
 #endif
 
-extern const PLVector2 pl_vecOrigin2;
+extern PL_DLL const PLVector2 pl_vecOrigin2;
 
 inline static PLVector2 PlClampVector2( const PLVector2 *v, float min, float max ) {
 	return PLVector2( PlClamp( min, v->x, max ), PlClamp( min, v->y, max ) );
@@ -337,7 +337,7 @@ typedef struct PLVector3 {
 
 #endif
 
-extern const PLVector3 pl_vecOrigin3;
+extern PL_DLL const PLVector3 pl_vecOrigin3;
 
 #define PlVectorIndex( VECTOR, INDEX ) ( ( float * ) &( VECTOR ) )[ INDEX ]
 /* todo: add bound checking to the below implementation??? Or just remove!? */
@@ -483,7 +483,7 @@ typedef struct PLVector4 {
 
 #endif
 
-extern const PLVector4 pl_vecOrigin4;
+extern PL_DLL const PLVector4 pl_vecOrigin4;
 
 inline static PLVector4 PlAddVector4( PLVector4 v, PLVector4 v2 ) {
 	v.x += v2.x;
