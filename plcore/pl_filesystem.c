@@ -26,6 +26,7 @@
 #include <security.h>
 #include <shlobj.h>
 #include <direct.h>
+#include <io.h>
 
 #if defined( _MSC_VER )
 #if !defined( S_ISREG ) && defined( S_IFMT ) && defined( S_IFREG )
@@ -771,19 +772,22 @@ bool PlFileExists( const char *path ) {
 
 bool PlLocalPathExists( const char *path ) {
 #if defined( _MSC_VER )
-	DWORD fa = GetFileAttributes( path );
-	if ( fa & FILE_ATTRIBUTE_DIRECTORY ) {
-		return true;
-	}
+	errno_t err = _access_s( path, 0 );
+	if ( err != 0 )
+		return false;
+	
+	struct _stat s;
+	_stat( path, &s );
+	return ( s.st_mode & S_IFDIR );
 #else
 	DIR *dir = opendir( path );
 	if ( dir ) {
 		closedir( dir );
 		return true;
 	}
-#endif
 
 	return false;
+#endif
 }
 
 bool PlPathExists( const char *path ) {
