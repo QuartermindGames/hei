@@ -176,29 +176,23 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 	mesh->mode = mode;
 
 	if ( numTriangles > 0 ) {
-		mesh->num_triangles = numTriangles;
 		if ( mesh->primitive == PLG_MESH_TRIANGLES ) {
-			mesh->maxIndices = mesh->num_indices = mesh->num_triangles * 3;
-			if ( ( mesh->indices = pl_calloc( mesh->maxIndices, sizeof( unsigned int ) ) ) == NULL ) {
-				PlgDestroyMesh( mesh );
-				return NULL;
-			}
-
+			unsigned int numIndices = numTriangles * 3; /* todo: this is too assumptious... */
+			mesh->maxIndices = numIndices;
+			mesh->indices = pl_calloc( mesh->maxIndices, sizeof( unsigned int ) );
 			if ( indicies != NULL ) {
-				memcpy( mesh->indices, indicies, mesh->num_indices * sizeof( unsigned int ) );
+				memcpy( mesh->indices, indicies, sizeof( unsigned int ) * numIndices );
+				mesh->num_indices = numIndices;
+                mesh->num_triangles = numTriangles;
 			}
 		}
 	}
 
-	mesh->maxVertices = mesh->num_verts = numVerts;
+	mesh->maxVertices = numVerts;
 	mesh->vertices = ( PLGVertex * ) pl_calloc( mesh->maxVertices, sizeof( PLGVertex ) );
-	if ( mesh->vertices == NULL ) {
-		PlgDestroyMesh( mesh );
-		return NULL;
-	}
-
 	if ( vertices != NULL ) {
-		memcpy( mesh->vertices, vertices, sizeof( PLGVertex ) * mesh->num_verts );
+		memcpy( mesh->vertices, vertices, sizeof( PLGVertex ) * numVerts );
+		mesh->num_verts = numVerts;
 	}
 
 	CallGfxFunction( CreateMesh, mesh );
