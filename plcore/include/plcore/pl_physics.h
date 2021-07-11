@@ -57,16 +57,14 @@ typedef struct PLCollision {
 	float penetration;
 } PLCollision;
 
-#define PLAABB PLCollisionAABB /* for legacy crap, until everything is updated */
-
 #ifndef __cplusplus
-#define PLCollisionRay( ORIGIN, DIRECTION ) \
+#define PlSetupCollisionRay( ORIGIN, DIRECTION ) \
 	( PLCollisionRay ) { ( ORIGIN ), ( DIRECTION ) }
-#define PLCollisionAABB( ORIGIN, MINS, MAXS ) \
+#define PlSetupCollisionAABB( ORIGIN, MINS, MAXS ) \
 	( PLCollisionAABB ) { ( ORIGIN ), ( MINS ), ( MAXS ) }
-#define PLCollisionSphere( ORIGIN, RADIUS ) \
+#define PlSetupCollisionSphere( ORIGIN, RADIUS ) \
 	( PLCollisionSphere ) { ( ORIGIN ), ( RADIUS ) }
-#define PLCollisionPlane( ORIGIN, NORMAL ) \
+#define PlSetupCollisionPlane( ORIGIN, NORMAL ) \
 	( PLCollisionPlane ) { ( ORIGIN ), ( NORMAL ) }
 #endif
 

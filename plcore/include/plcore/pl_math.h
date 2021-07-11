@@ -1,30 +1,14 @@
-/*
-MIT License
-
-Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+/**
+ * Hei Platform Library
+ * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
+ * This software is licensed under MIT. See LICENSE for more details.
+ */
 
 #pragma once
 
 #include <plcore/pl.h>
+
+PL_EXTERN_C
 
 // Base Defines
 
@@ -308,7 +292,16 @@ inline static PLVector4 PlColourToVector4( const PLColour *c ) {
 	float g = PlByteToFloat( c->g );
 	float b = PlByteToFloat( c->b );
 	float a = PlByteToFloat( c->a );
-	return ( PLVector4 ){ r, g, b, a };
+
+	/* reversed: 
+	 * error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax */
+	PLVector4 v;
+	v.x = r;
+	v.y = g;
+	v.z = b;
+	v.w = a;
+
+	return v;
 }
 
 #ifndef __cplusplus
@@ -508,15 +501,20 @@ inline static PLRectangle2D plCreateRectangle(
         PLVector2 xy, PLVector2 wh,
         PLColour ul, PLColour ur,
         PLColour ll, PLColour lr ) {
-	return ( PLRectangle2D ){
-	        xy, wh,
-	        ul, ur,
-	        ll, lr };
+	/* reversed: 
+	 * error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax */
+	PLRectangle2D v;
+	v.xy = xy;
+	v.wh = wh;
+	v.ul = ul;
+	v.ur = ur;
+	v.ll = ll;
+	v.lr = lr;
+	return v;
 }
 
 inline static void PlClearRectangle( PLRectangle2D *r ) {
-	r->xy = r->wh = ( PLVector2 ){ 0, 0 };
-	r->ul = r->ur = r->ll = r->lr = ( PLColour ){ 0, 0, 0, 0 };
+	memset( r, 0, sizeof( PLRectangle2D ) );
 }
 
 inline static void PlSetRectangleUniformColour( PLRectangle2D *r, PLColour colour ) {
@@ -783,6 +781,8 @@ inline static void PlAnglesAxes( PLVector3 angles, PLVector3 *left, PLVector3 *u
 		forward->z = cx * cy;
 	}
 }
+
+PL_EXTERN_C_END
 
 #include <plcore/pl_math_matrix.h>
 #include <plcore/pl_math_quaternion.h>

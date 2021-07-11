@@ -60,7 +60,7 @@ void PlmGenerateModelNormals( PLMModel *model, bool perFace ) {
 }
 
 void PlmGenerateModelBounds( PLMModel *model ) {
-	PLAABB bounds = {
+	PLCollisionAABB bounds = {
 	        PLVector3( 99999, 99999, 99999 ),   /* max */
 	        PLVector3( -99999, -99999, -99999 ) /* min */
 	};

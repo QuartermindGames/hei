@@ -94,7 +94,7 @@ typedef struct PLVector2 {
 	PLVector2 operator-( const PLVector2 &a ) const { return PLVector2( x - a.x, y - a.y ); }
 	PLVector2 operator-( float a ) const { return PLVector2( x - a, y - a ); }
 
-	float Length() { return std::sqrt( x * x + y * y ); }
+	float Length() { return sqrtf( x * x + y * y ); }
 
 	PLVector2 Normalize() {
 		PLVector2 out;
@@ -303,7 +303,7 @@ typedef struct PLVector3 {
 	}
 
 	inline float Length() const {
-		return std::sqrt( x * x + y * y + z * z );
+		return sqrtf( x * x + y * y + z * z );
 	}
 
 	inline float DotProduct( PLVector3 a ) const {

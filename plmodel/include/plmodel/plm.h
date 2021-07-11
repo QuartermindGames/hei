@@ -94,7 +94,7 @@ typedef struct PLMModel {
 
 	/* used for visibility culling */
 	float radius;
-	PLAABB bounds;
+	PLCollisionAABB bounds;
 
 	/* transformations */
 	PLMatrix4 modelMatrix;
