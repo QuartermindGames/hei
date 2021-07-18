@@ -421,7 +421,10 @@ void PlParseConsoleString( const char *string ) {
 		return;
 	}
 
-	PlLogMessage( LOG_LEVEL_LOW, string );
+	char buf[ 1024 ];
+	strcpy( buf, string );
+	strcat( buf, "\n" );
+	PlLogMessage( LOG_LEVEL_LOW, buf );
 
 	static char **argv = NULL;
 	if ( argv == NULL ) {
@@ -586,24 +589,17 @@ void PlLogMessage( int id, const char *msg, ... ) {
 		return;
 	}
 
-	char buf[ 4096 ] = { '\0' };
-
-	// add the prefix to the start
-	int c = 0;
-	if ( l->prefix[ 0 ] != '\0' ) {
-		c = snprintf( buf, sizeof( buf ), "[%s] %s: ", PlGetFormattedTime(), l->prefix );
-	} else {
-		c = snprintf( buf, sizeof( buf ), "[%s]: ", PlGetFormattedTime() );
-	}
-
 	va_list args;
 	va_start( args, msg );
-	c += vsnprintf( buf + c, sizeof( buf ) - c, msg, args );
-	va_end( args );
 
-	if ( buf[ c - 1 ] != '\n' ) {
-		strncat( buf, "\n", sizeof( buf ) - strlen( buf ) - 1 );
-	}
+	int length = pl_vscprintf( msg, args ) + 1;
+	if ( length <= 0 )
+		return;
+
+	char *buf = pl_calloc( length, sizeof( char ) );
+	vsnprintf( buf, length, msg, args );
+
+	va_end( args );
 
 #if defined( _WIN32 )
 	OutputDebugString( buf );
@@ -611,29 +607,42 @@ void PlLogMessage( int id, const char *msg, ... ) {
 
 	printf( "%s", buf );
 
-	// todo, decide how we're going to pass it to the console/log
-
 	if ( ConsoleOutputCallback != NULL ) {
+		// todo: pass back level
 		ConsoleOutputCallback( id, buf );
 	}
 
 	static bool avoid_recursion = false;
 	if ( !avoid_recursion ) {
 		if ( logOutputPath[ 0 ] != '\0' ) {
-			size_t size = strlen( buf );
 			FILE *file = fopen( logOutputPath, "a" );
 			if ( file != NULL ) {
-				if ( fwrite( buf, sizeof( char ), size, file ) != size ) {
+				// add the prefix to the start
+				char prefix[ 128 ];
+				if ( l->prefix[ 0 ] != '\0' ) {
+					snprintf( prefix, sizeof( prefix ), "[%s] %s: ", PlGetFormattedTime(), l->prefix );
+				} else {
+					snprintf( prefix, sizeof( prefix ), "[%s]: ", PlGetFormattedTime() );
+				}
+
+				size_t nl = strlen( prefix ) + length;
+				char *logBuf = pl_calloc( nl, sizeof( char ) );
+				snprintf( logBuf, nl, "%s%s", prefix, buf );
+
+				if ( fwrite( logBuf, sizeof( char ), nl, file ) != nl ) {
 					avoid_recursion = true;
 					PlReportErrorF( PL_RESULT_FILEERR, "failed to write to log, %s\n%s", logOutputPath, strerror( errno ) );
 				}
 				fclose( file );
-				return;
-			}
 
-			// todo, needs to be more appropriate; return details on exact issue
-			avoid_recursion = true;
-			PlReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", logOutputPath );
+				pl_free( logBuf );
+			} else {
+				// todo, needs to be more appropriate; return details on exact issue
+				avoid_recursion = true;
+				PlReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", logOutputPath );
+			}
 		}
 	}
+
+	pl_free( buf );
 }
