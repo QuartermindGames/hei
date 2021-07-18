@@ -177,6 +177,8 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 		mesh->num_verts = numVerts;
 	}
 
+	mesh->isDirty = true;
+
 	CallGfxFunction( CreateMesh, mesh );
 
 	return mesh;
@@ -197,6 +199,7 @@ void PlgDestroyMesh( PLGMesh *mesh ) {
 void PlgClearMesh( PLGMesh *mesh ) {
 	PlgClearMeshVertices( mesh );
 	PlgClearMeshTriangles( mesh );
+	mesh->isDirty = true;
 }
 
 void PlgClearMeshVertices( PLGMesh *mesh ) {

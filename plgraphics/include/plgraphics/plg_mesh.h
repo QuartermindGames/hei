@@ -52,6 +52,8 @@ static inline PLGVertex PlgInitializeVertex( void ) {
 
 typedef struct PLGTexture PLGTexture;
 
+#define PLG_MAX_MESH_BUFFERS 32
+
 typedef struct PLGMesh {
 	PLGVertex *vertices;
 	unsigned int num_verts;
@@ -69,7 +71,9 @@ typedef struct PLGMesh {
 	PLGMeshPrimitive primitive;
 	PLGMeshDrawMode mode;
 
-	unsigned int buffers[ 32 ];
+	bool isDirty;
+
+	unsigned int buffers[ PLG_MAX_MESH_BUFFERS ];
 } PLGMesh;
 
 typedef struct PLCollisionAABB PLCollisionAABB;

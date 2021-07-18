@@ -608,19 +608,14 @@ static void GLCreateMesh( PLGMesh *mesh ) {
 		return;
 	}
 
-	// Create VBO
+	// Create our internal buffers for GL
 	glGenBuffers( 1, &mesh->buffers[ BUFFER_VERTEX_DATA ] );
-
-	// Create the EBO
-	if ( mesh->num_indices > 0 ) {
-		glGenBuffers( 1, &mesh->buffers[ BUFFER_ELEMENT_DATA ] );
-	}
+	glGenBuffers( 1, &mesh->buffers[ BUFFER_ELEMENT_DATA ] );
 }
 
 static void GLUploadMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
-	if ( program == NULL ) {
+	if ( !mesh->isDirty )
 		return;
-	}
 
 	//Bind VBO
 	glBindBuffer( GL_ARRAY_BUFFER, mesh->buffers[ BUFFER_VERTEX_DATA ] );
@@ -632,40 +627,44 @@ static void GLUploadMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 	//Point to the different substreams of the interleaved BVO
 	//Args: Index, Size, Type, (Normalized), Stride, StartPtr
 
-	if ( program->internal.v_position != -1 ) {
-		glEnableVertexAttribArray( program->internal.v_position );
-		glVertexAttribPointer( program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, position ) );
-	}
+	if ( program != NULL ) {
+		if ( program->internal.v_position != -1 ) {
+			glEnableVertexAttribArray( program->internal.v_position );
+			glVertexAttribPointer( program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, position ) );
+		}
 
-	if ( program->internal.v_normal != -1 ) {
-		glEnableVertexAttribArray( program->internal.v_normal );
-		glVertexAttribPointer( program->internal.v_normal, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, normal ) );
-	}
+		if ( program->internal.v_normal != -1 ) {
+			glEnableVertexAttribArray( program->internal.v_normal );
+			glVertexAttribPointer( program->internal.v_normal, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, normal ) );
+		}
 
-	if ( program->internal.v_uv != -1 ) {
-		glEnableVertexAttribArray( program->internal.v_uv );
-		glVertexAttribPointer( program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, st ) );
-	}
+		if ( program->internal.v_uv != -1 ) {
+			glEnableVertexAttribArray( program->internal.v_uv );
+			glVertexAttribPointer( program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, st ) );
+		}
 
-	if ( program->internal.v_colour != -1 ) {
-		glEnableVertexAttribArray( program->internal.v_colour );
-		glVertexAttribPointer( program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, colour ) );
-	}
+		if ( program->internal.v_colour != -1 ) {
+			glEnableVertexAttribArray( program->internal.v_colour );
+			glVertexAttribPointer( program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, colour ) );
+		}
 
-	if ( program->internal.v_tangent != -1 ) {
-		glEnableVertexAttribArray( program->internal.v_tangent );
-		glVertexAttribPointer( program->internal.v_tangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, tangent ) );
-	}
+		if ( program->internal.v_tangent != -1 ) {
+			glEnableVertexAttribArray( program->internal.v_tangent );
+			glVertexAttribPointer( program->internal.v_tangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, tangent ) );
+		}
 
-	if ( program->internal.v_bitangent != -1 ) {
-		glEnableVertexAttribArray( program->internal.v_bitangent );
-		glVertexAttribPointer( program->internal.v_bitangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, bitangent ) );
+		if ( program->internal.v_bitangent != -1 ) {
+			glEnableVertexAttribArray( program->internal.v_bitangent );
+			glVertexAttribPointer( program->internal.v_bitangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, bitangent ) );
+		}
 	}
 
 	if ( mesh->buffers[ BUFFER_ELEMENT_DATA ] != 0 ) {
 		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->buffers[ BUFFER_ELEMENT_DATA ] );
 		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( unsigned int ) * mesh->num_indices, &mesh->indices[ 0 ], drawMode );
 	}
+
+	mesh->isDirty = false;
 }
 
 static void GLDeleteMesh( PLGMesh *mesh ) {
@@ -743,7 +742,10 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 	}
 
 	if ( mesh->buffers[ BUFFER_VERTEX_DATA ] == 0 ) {
-		GLLog( "invalid buffer provided, skipping draw!\n" );
+		GLLog( "invalid vertex buffer provided, skipping draw!\n" );
+		return;
+	} else if (mesh->num_indices > 0 && mesh->buffers[BUFFER_ELEMENT_DATA] == 0) {
+		GLLog( "invalid element buffer provided, skipping draw!\n" );
 		return;
 	}
 
@@ -754,11 +756,12 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 	}
 
 	glBindBuffer( GL_ARRAY_BUFFER, mesh->buffers[ BUFFER_VERTEX_DATA ] );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->buffers[ BUFFER_ELEMENT_DATA ] );
 
 	//draw
 	GLuint mode = TranslatePrimitiveMode( mesh->primitive );
 	if ( mesh->num_indices > 0 ) {
+		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->buffers[ BUFFER_ELEMENT_DATA ] );
+
 		glDrawElements( mode, mesh->num_indices, GL_UNSIGNED_INT, 0 );
 	} else {
 		glDrawArrays( mode, 0, mesh->num_verts );
@@ -1201,13 +1204,12 @@ static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t
 	}
 
 	/* shove this here for now... */
-	char *mbuf = gInterface->core->MAlloc( length );
+	char *mbuf = gInterface->core->MAlloc( length + 1 );
 	memcpy( mbuf, buf, length );
 	mbuf = GLPreProcessGLSLShader( mbuf, &length, stage->type, true );
-	buf = mbuf;
 
 	const GLint glLength = ( GLint ) length;
-	glShaderSource( stage->internal.id, 1, &buf, &glLength );
+	glShaderSource( stage->internal.id, 1, &mbuf, &glLength );
 
 	glCompileShader( stage->internal.id );
 
@@ -1317,7 +1319,7 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 		int maxUniformNameLength;
 		glGetActiveUniformsiv( program->internal.id, 1, &i, GL_UNIFORM_NAME_LENGTH, &maxUniformNameLength );
 
-		GLchar *uniformName = malloc( maxUniformNameLength );
+		GLchar *uniformName = gInterface->core->MAlloc( maxUniformNameLength );
 		GLsizei nameLength;
 
 		GLenum glType;
@@ -1325,7 +1327,7 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 
 		glGetActiveUniform( program->internal.id, i, maxUniformNameLength, &nameLength, &uniformSize, &glType, uniformName );
 		if ( nameLength == 0 ) {
-			free( uniformName );
+			gInterface->core->Free( uniformName );
 
 			GLLog( "No information available for uniform %d!\n", i );
 			continue;

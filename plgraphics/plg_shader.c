@@ -170,7 +170,7 @@ void PlgDestroyShaderProgram( PLGShaderProgram *program, bool free_stages ) {
 
 	/* free uniforms */
 	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
-		free( program->uniforms[ i ].name );
+		pl_free( program->uniforms[ i ].name );
 	}
 	pl_free( program->uniforms );
 
