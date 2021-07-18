@@ -12,6 +12,14 @@
 #include "filesystem_private.h"
 #include "image_private.h"
 
+#define STBI_MALLOC( sz ) pl_malloc( sz )
+#define STBI_REALLOC( p, newsz ) pl_realloc( p, newsz )
+#define STBI_FREE( p ) pl_free( p )
+
+#define STBIW_MALLOC( sz ) pl_malloc( sz )
+#define STBIW_REALLOC( p, newsz ) pl_realloc( p, newsz )
+#define STBIW_FREE( p ) pl_free( p )
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #if defined( STB_IMAGE_WRITE_IMPLEMENTATION )
 #include "stb_image_write.h"
@@ -148,7 +156,7 @@ void PlDestroyImage( PLImage *image ) {
 	}
 
 	PlFreeImage( image );
-	free( image );
+	pl_free( image );
 }
 
 PLImage *PlLoadImage( const char *path ) {

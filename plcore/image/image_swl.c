@@ -41,7 +41,7 @@ static PLImage *ReadSwlImage( PLFile *fin ) {
 		return false;
 	}
 
-	PLImage *out = malloc( sizeof( PLImage ) );
+	PLImage *out = pl_malloc( sizeof( PLImage ) );
 	out->width = header.width;
 	out->height = header.height;
 	out->levels = 4;
