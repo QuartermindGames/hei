@@ -159,7 +159,13 @@ static void BindTexture( const PLGTexture *texture ) {
 		id = texture->internal.id;
 	}
 
-	PLGTextureMappingUnit *unit = &gfx_state.tmu[ PlgGetCurrentTextureUnit() ];
+	unsigned int unitIndex = PlgGetCurrentTextureUnit();
+	if ( unitIndex >= PlgGetMaxTextureUnits() ) {
+		/* todo: should we let user know ... ? */
+		return;
+	}
+
+	PLGTextureMappingUnit *unit = &gfx_state.tmu[ unitIndex ];
 	if ( id == unit->current_texture ) {
 		return;
 	}
