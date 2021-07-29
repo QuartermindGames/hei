@@ -19,17 +19,8 @@ static void CheckTMUStates( void ) {
     }
 }
 
-void XPlgInitializeTextures( void ) {
-	gfx_state.tmu = ( PLGTextureMappingUnit * ) pl_calloc( PlgGetMaxTextureUnits(), sizeof( PLGTextureMappingUnit ) );
-	for ( unsigned int i = 0; i < PlgGetMaxTextureUnits(); i++ ) {
-		gfx_state.tmu[ i ].current_envmode = PLG_TEXTUREMODE_REPLACE;
-	}
-}
-
 void PlgShutdownTextures( void ) {
-	if ( gfx_state.tmu ) {
-		pl_free( gfx_state.tmu );
-	}
+	pl_free( gfx_state.tmu );
 }
 
 /* todo: move into generic GET handler */

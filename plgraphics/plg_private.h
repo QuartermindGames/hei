@@ -117,6 +117,4 @@ typedef struct GfxState {
 
 PL_EXTERN GfxState gfx_state;
 
-void XPlgInitializeTextures( void );
-
 PL_EXTERN_C_END

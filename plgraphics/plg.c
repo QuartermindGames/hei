@@ -45,8 +45,6 @@ PLFunctionResult PlgInitializeGraphics( void ) {
 #endif
 	);
 
-    XPlgInitializeTextures();
-
 	return PL_RESULT_SUCCESS;
 }
 
