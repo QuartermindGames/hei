@@ -165,7 +165,7 @@ void PlgEnableGraphicsState( PLGDrawState state ) {
 
 	CallGfxFunction( EnableState, state );
 
-	gfx_state.current_capabilities[ state ] = false;
+	gfx_state.current_capabilities[ state ] = true;
 }
 
 void PlgDisableGraphicsState( PLGDrawState state ) {
@@ -175,7 +175,7 @@ void PlgDisableGraphicsState( PLGDrawState state ) {
 
 	CallGfxFunction( DisableState, state );
 
-	gfx_state.current_capabilities[ state ] = true;
+	gfx_state.current_capabilities[ state ] = false;
 }
 
 /*===========================
