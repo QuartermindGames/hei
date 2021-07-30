@@ -1466,6 +1466,10 @@ unsigned int TranslateGraphicsState( PLGDrawState state ) {
 void GLEnableState( PLGDrawState state ) {
 	unsigned int gl_state = TranslateGraphicsState( state );
 	if ( !gl_state ) {
+		if ( state == PLG_GFX_STATE_WIREFRAME ) {
+            glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		}
+
 		/* probably unsupported */
 		return;
 	}
@@ -1476,6 +1480,10 @@ void GLEnableState( PLGDrawState state ) {
 void GLDisableState( PLGDrawState state ) {
 	unsigned int gl_state = TranslateGraphicsState( state );
 	if ( !gl_state ) {
+        if ( state == PLG_GFX_STATE_WIREFRAME ) {
+            glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+        }
+
 		/* probably unsupported */
 		return;
 	}
