@@ -1433,9 +1433,7 @@ static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 
 unsigned int TranslateGraphicsState( PLGDrawState state ) {
 	switch ( state ) {
-		default:
-			GLLog( "Unhandled graphics state, %d!\n", state );
-			return 0;
+		default:break;
 		case PLG_GFX_STATE_FOG:
 			if ( GLVersion( 3, 0 ) ) {
 				return 0;
@@ -1461,6 +1459,8 @@ unsigned int TranslateGraphicsState( PLGDrawState state ) {
 		case PLG_GFX_STATE_DEPTH_CLAMP:
 			return GL_DEPTH_CLAMP;
 	}
+
+	return 0;
 }
 
 void GLEnableState( PLGDrawState state ) {
