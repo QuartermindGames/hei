@@ -1010,7 +1010,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 	/* setup the destination buffer */
 	size_t actualLength = 0;
 	size_t maxLength = *length;
-	char *dstBuffer = gInterface->core->CAlloc( maxLength, sizeof( char ) );
+	char *dstBuffer = gInterface->core->MAlloc( maxLength + 1 );
 	char *dstPos = dstBuffer;
 
 	/* built-ins */
@@ -1032,7 +1032,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 	}
 
 	const char *srcPos = buf;
-	char *srcEnd = buf + *length;
+	const char *srcEnd = buf + *length;
 	while ( srcPos < srcEnd ) {
 		if ( *srcPos == '\0' ) {
 			break;
@@ -1105,8 +1105,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 			++maxLength;
 
 			char *oldDstBuffer = dstBuffer;
-			dstBuffer = gInterface->core->ReAlloc( dstBuffer, maxLength );
-
+			dstBuffer = gInterface->core->ReAlloc( dstBuffer, maxLength + 1 );
 			dstPos = dstBuffer + ( dstPos - oldDstBuffer );
 		}
 
@@ -1118,6 +1117,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 
 	/* resize and update buf to match */
 	*length = actualLength;
+	dstBuffer[ *length ] = '\0';
 
 	return dstBuffer;
 }
@@ -1204,13 +1204,12 @@ static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t
 	}
 
 	/* shove this here for now... */
-	char *mbuf = gInterface->core->MAlloc( length + 1 );
-	memcpy( mbuf, buf, length );
-	mbuf = GLPreProcessGLSLShader( mbuf, &length, stage->type, true );
+	char *temp = gInterface->core->MAlloc( length + 1 );
+	memcpy( temp, buf, length );
 
-	const GLint glLength = ( GLint ) length;
-	glShaderSource( stage->internal.id, 1, &mbuf, &glLength );
+	temp = GLPreProcessGLSLShader( temp, &length, stage->type, true );
 
+	glShaderSource( stage->internal.id, 1, &temp, &length );
 	glCompileShader( stage->internal.id );
 
 	int status;
@@ -1227,7 +1226,7 @@ static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t
 		}
 	}
 
-	gInterface->core->Free( mbuf );
+	gInterface->core->Free( temp );
 }
 
 static void GLSetShaderUniformValue( PLGShaderProgram *program, int slot, const void *value, bool transpose ) {
