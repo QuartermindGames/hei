@@ -138,7 +138,7 @@ typedef struct MDLAniHeader { /* should be 44 bytes */
 	uint32_t u1;              /* ... */
 } MDLAniHeader;
 
-PLMModel *LoadAnimatedRequiemModel( PLFile *fp ) {
+static PLMModel *LoadAnimatedRequiemModel( PLFile *fp ) {
 	PlRewindFile( fp );
 
 	/* now read in the header */
@@ -153,7 +153,7 @@ PLMModel *LoadAnimatedRequiemModel( PLFile *fp ) {
 	return NULL;
 }
 
-PLMModel *LoadStaticRequiemModel( PLFile *fp ) {
+static PLMModel *LoadStaticRequiemModel( PLFile *fp ) {
 	PlRewindFile( fp );
 
 	// check which flags have been set for this particular mesh
@@ -280,7 +280,7 @@ PLMModel *LoadStaticRequiemModel( PLFile *fp ) {
 	unsigned int cur_index = 0;
 	for ( unsigned int i = 0; i < num_polygons; ++i ) {
 		if ( polygons[ i ].num_indices == 4 ) {// quad
-			assert( ( cur_index + 6 ) <= mesh->num_indices );
+			plAssert( ( cur_index + 6 ) <= mesh->num_indices );
 			// first triangle
 			mesh->indices[ cur_index++ ] = polygons[ i ].indices[ 0 ];
 			mesh->indices[ cur_index++ ] = polygons[ i ].indices[ 1 ];
@@ -290,7 +290,7 @@ PLMModel *LoadStaticRequiemModel( PLFile *fp ) {
 			mesh->indices[ cur_index++ ] = polygons[ i ].indices[ 0 ];
 			mesh->indices[ cur_index++ ] = polygons[ i ].indices[ 2 ];
 		} else if ( polygons[ i ].num_indices == 3 ) {// triangle
-			assert( ( cur_index + polygons[ i ].num_indices ) <= mesh->num_indices );
+            plAssert( ( cur_index + polygons[ i ].num_indices ) <= mesh->num_indices );
 			for ( unsigned int j = 0; j < polygons[ i ].num_indices; ++j ) {
 				mesh->indices[ cur_index++ ] = polygons[ i ].indices[ j ];
 			}
