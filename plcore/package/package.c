@@ -143,7 +143,7 @@ PLPackage *PlLoadPackage( const char *path ) {
 			break;
 		}
 
-		if ( !plIsEmptyString( ext ) && !plIsEmptyString( package_loaders[ i ].ext ) ) {
+		if ( !PL_INVALID_STRING( ext ) && !PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
 			if ( pl_strncasecmp( ext, package_loaders[ i ].ext, sizeof( package_loaders[ i ].ext ) ) == 0 ) {
 				PLPackage *package = package_loaders[ i ].LoadFunction( path );
 				if ( package != NULL ) {
@@ -151,7 +151,7 @@ PLPackage *PlLoadPackage( const char *path ) {
 					return package;
 				}
 			}
-		} else if ( plIsEmptyString( ext ) && plIsEmptyString( package_loaders[ i ].ext ) ) {
+		} else if ( PL_INVALID_STRING( ext ) && PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
 			PLPackage *package = package_loaders[ i ].LoadFunction( path );
 			if ( package != NULL ) {
 				strncpy( package->path, path, sizeof( package->path ) );

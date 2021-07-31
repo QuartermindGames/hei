@@ -77,16 +77,12 @@ PLFunctionResult PlInitialize( int argc, char **argv ) {
 
 	memset( &pl_arguments, 0, sizeof( PLArguments ) );
 	pl_arguments.num_arguments = ( unsigned int ) argc;
-	if ( !plIsEmptyString( argv[ 0 ] ) ) {
-		pl_arguments.exe_name = PlGetFileName( argv[ 0 ] );
-	}
+	if ( pl_arguments.num_arguments > 0 ) {
+        pl_arguments.exe_name = PlGetFileName( argv[ 0 ] );
 
-	for ( unsigned int i = 0; i < pl_arguments.num_arguments; i++ ) {
-		if ( plIsEmptyString( argv[ i ] ) ) {
-			continue;
-		}
-
-		pl_arguments.arguments[ i ] = argv[ i ];
+        for ( unsigned int i = 0; i < pl_arguments.num_arguments; i++ ) {
+            pl_arguments.arguments[ i ] = argv[ i ];
+        }
 	}
 
 	PlInitPackageSubSystem();
@@ -97,7 +93,7 @@ PLFunctionResult PlInitialize( int argc, char **argv ) {
 }
 
 PLFunctionResult PlInitializeSubSystems( unsigned int subsystems ) {
-	for ( unsigned int i = 0; i < plArrayElements( pl_subsystems ); i++ ) {
+	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( pl_subsystems ); i++ ) {
 		if ( !pl_subsystems[ i ].active && ( subsystems & pl_subsystems[ i ].subsystem ) ) {
 			if ( pl_subsystems[ i ].InitFunction ) {
 				PLFunctionResult out = pl_subsystems[ i ].InitFunction();
@@ -138,7 +134,7 @@ bool PlHasCommandLineArgument( const char *arg ) {
 
 // Returns result for a single command line argument.
 const char *PlGetCommandLineArgumentValue( const char *arg ) {
-	if ( plIsEmptyString( arg ) ) {
+	if ( arg == NULL || *arg == '\0' ) {
 		return NULL;
 	}
 
@@ -148,18 +144,11 @@ const char *PlGetCommandLineArgumentValue( const char *arg ) {
 
 	for ( unsigned int i = 0; i < pl_arguments.num_arguments; i++ ) {
 		if ( strcmp( pl_arguments.arguments[ i ], arg ) == 0 ) {
-			// check the string is valid before passing it back
-
 			if ( i + 1 >= pl_arguments.num_arguments ) {
 				return NULL;
 			}
 
-			const char *ret = pl_arguments.arguments[ i + 1 ];
-			if ( plIsEmptyString( ret ) ) {
-				return NULL;
-			}
-
-			return ret;
+			return pl_arguments.arguments[ i + 1 ];
 		}
 	}
 
@@ -167,7 +156,7 @@ const char *PlGetCommandLineArgumentValue( const char *arg ) {
 }
 
 bool _plIsSubSystemActive( unsigned int subsystem ) {
-	for ( unsigned int i = 0; i < plArrayElements( pl_subsystems ); i++ ) {
+	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( pl_subsystems ); i++ ) {
 		if ( pl_subsystems[ i ].subsystem == subsystem ) {
 			return pl_subsystems[ i ].active;
 		}
@@ -177,7 +166,7 @@ bool _plIsSubSystemActive( unsigned int subsystem ) {
 }
 
 void PlShutdown( void ) {
-	for ( unsigned int i = 0; i < plArrayElements( pl_subsystems ); i++ ) {
+	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( pl_subsystems ); i++ ) {
 		if ( !pl_subsystems[ i ].active ) {
 			continue;
 		}
@@ -255,7 +244,7 @@ const char *PlGenerateUniqueIdentifier( char *dest, size_t destLength ) {
 	};
 
 	for ( unsigned int i = 0; i < destLength; ++i ) {
-		dest[ i ] = dataPool[ rand() % plArrayElements( dataPool ) ];
+		dest[ i ] = dataPool[ rand() % PL_ARRAY_ELEMENTS( dataPool ) ];
 	}
 
 	return dest;

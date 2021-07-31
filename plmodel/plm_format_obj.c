@@ -202,7 +202,7 @@ bool plWriteObjModel( PLMModel *model, const char *path ) {
 			}
 			fprintf( fp, "# %d vertices\n", mesh->num_verts );
 
-			if ( mesh->texture != NULL && !plIsEmptyString( mesh->texture->name ) ) {
+			if ( mesh->texture != NULL && mesh->texture->name[ 0 ] != '\0' ) {
 				fprintf( fp, "usemtl %s\n", mesh->texture->name );
 			}
 
