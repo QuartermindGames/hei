@@ -80,7 +80,7 @@ void PlmGenerateModelBounds( PLMModel *model ) {
 }
 
 bool PlmWriteModel( const char *path, PLMModel *model, PLMModelOutputType type ) {
-	if ( plIsEmptyString( path ) ) {
+	if ( path == NULL || *path == '\0' ) {
 		PlReportBasicError( PL_RESULT_FILEPATH );
 		return false;
 	}
@@ -118,7 +118,7 @@ void PlmRegisterStandardModelLoaders( unsigned int flags ) {
 	        { PLM_MODEL_FILEFORMAT_OBJ, "obj", PlmLoadObjModel },
 	};
 
-	for ( unsigned int i = 0; i < plArrayElements( loaderList ); ++i ) {
+	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
 		if ( flags != PLM_MODEL_FILEFORMAT_ALL && !( flags & loaderList[ i ].flag ) ) {
 			continue;
 		}
@@ -144,12 +144,12 @@ PLMModel *PlmLoadModel( const char *path ) {
 			break;
 		}
 
-		if ( !plIsEmptyString( model_interfaces[ i ].ext ) ) {
+		if ( !PL_INVALID_STRING( model_interfaces[ i ].ext ) ) {
 			if ( pl_strncasecmp( extension, model_interfaces[ i ].ext, sizeof( model_interfaces[ i ].ext ) ) == 0 ) {
 				PLMModel *model = model_interfaces[ i ].LoadFunction( path );
 				if ( model != NULL ) {
 					const char *name = PlGetFileName( path );
-					if ( !plIsEmptyString( name ) ) {
+					if ( !PL_INVALID_STRING( name ) ) {
 						size_t nme_len = strlen( name );
 						size_t ext_len = strlen( extension );
 						strncpy( model->name, name, nme_len - ( ext_len + 1 ) );
