@@ -105,7 +105,7 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	        { PL_IMAGE_FILEFORMAT_SWL, "swl", PlLoadSwlImage },
 	};
 
-	for ( unsigned int i = 0; i < plArrayElements( loaderList ); ++i ) {
+	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
 		if ( flags != PL_IMAGE_FILEFORMAT_ALL && !( flags & loaderList[ i ].flag ) ) {
 			continue;
 		}
@@ -182,7 +182,7 @@ PLImage *PlLoadImage( const char *path ) {
 }
 
 bool PlWriteImage( const PLImage *image, const char *path ) {
-	if ( plIsEmptyString( path ) ) {
+	if ( path != NULL && *path == '\0' ) {
 		PlReportErrorF( PL_RESULT_FILEPATH, PlGetResultString( PL_RESULT_FILEPATH ) );
 		return false;
 	}
@@ -194,7 +194,7 @@ bool PlWriteImage( const PLImage *image, const char *path ) {
 	}
 
 	const char *extension = PlGetFileExtension( path );
-	if ( !plIsEmptyString( extension ) ) {
+	if ( extension != NULL && *extension != '\0' ) {
 		if ( !pl_strncasecmp( extension, "bmp", 3 ) ) {
 			if ( stbi_write_bmp( path, ( int ) image->width, ( int ) image->height, comp, image->data[ 0 ] ) == 1 ) {
 				return true;

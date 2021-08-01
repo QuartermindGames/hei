@@ -63,6 +63,11 @@ inline static PLQuaternion PlInverseQuaternion( const PLQuaternion* q ) {
 	return PLQuaternion( -q->x, -q->y, -q->z, q->w );
 }
 
+inline static float PlQuaternionDotProduct(const PLQuaternion* q, const PLQuaternion* q2) {
+	/* todo: revisit... */
+	return acosf( q->x * q2->x + q->y * q2->y + q->z * q2->z + q->w * q2->w );
+}
+
 inline static float PlQuaternionLength( const PLQuaternion* q ) {
 	return sqrtf( q->x * q->x + q->y * q->y + q->z * q->z + q->w * q->w );
 }

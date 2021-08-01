@@ -74,8 +74,9 @@ typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
 
 #define PlUnused( ... ) ( void ) ( __VA_ARGS__ )
 
-#define plArrayElements( a ) ( sizeof( a ) / sizeof( *( a ) ) )// Returns the number of elements within an array.
-#define plIsEmptyString( a ) ( ( ( a )[ 0 ] == '\0' ) || ( ( a )[ 0 ] == ' ' ) )
+#define PL_ARRAY_ELEMENTS( a ) ( sizeof( a ) / sizeof( *( a ) ) )// Returns the number of elements within an array.
+#define PL_MAX_ARRAY_INDEX( a ) ( int ) ( PL_ARRAY_ELEMENTS( a ) - 1 )
+#define PL_INVALID_STRING( a ) ( a == NULL || *a == '\0' )
 
 #define PL_STRINGIFY( num ) #num
 #define PL_TOSTRING( A ) PL_STRINGIFY( A )

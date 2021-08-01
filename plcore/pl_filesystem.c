@@ -223,7 +223,7 @@ static void _plRegisterFSCommands( void ) {
 	        fsUnmount_var,
 	        fsMount_var,
 	};
-	for ( unsigned int i = 0; i < plArrayElements( fsCommands ); ++i ) {
+	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( fsCommands ); ++i ) {
 		PlRegisterConsoleCommand( fsCommands[ i ].cmd, fsCommands[ i ].Callback, fsCommands[ i ].description );
 	}
 }
@@ -460,7 +460,7 @@ const char *PlGetFileExtension( const char *in ) {
 
 // Strips the extension from the filename.
 void PlStripExtension( char *dest, size_t length, const char *in ) {
-	if ( plIsEmptyString( in ) ) {
+	if ( PL_INVALID_STRING( in ) ) {
 		*dest = 0;
 		return;
 	}
@@ -524,7 +524,7 @@ char *PlGetUserName( char *out, size_t n ) {
  * @return Pointer to the output, will return NULL on error.
  */
 char *PlGetApplicationDataDirectory( const char *app_name, char *out, size_t n ) {
-	if ( plIsEmptyString( app_name ) ) {
+	if ( PL_INVALID_STRING( app_name ) ) {
 		PlReportErrorF( PL_RESULT_FILEPATH, "invalid app name" );
 		return NULL;
 	}
@@ -958,7 +958,7 @@ PLFile *PlOpenLocalFile( const char *path, bool cache ) {
  * @return Returns handle to the file instance.
  */
 PLFile *PlOpenFile( const char *path, bool cache ) {
-	if ( plIsEmptyString( path ) ) {
+	if ( PL_INVALID_STRING( path ) ) {
 		PlReportBasicError( PL_RESULT_FILEPATH );
 		return NULL;
 	}

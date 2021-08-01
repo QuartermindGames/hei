@@ -340,7 +340,7 @@ PLFunctionResult PlInitConsole( void ) {
 	        pwd_var,
 	        echo_var,
 	};
-	for ( unsigned int i = 0; i < plArrayElements( base_commands ); ++i ) {
+	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( base_commands ); ++i ) {
 		PlRegisterConsoleCommand( base_commands[ i ].cmd, base_commands[ i ].Callback, base_commands[ i ].description );
 	}
 
