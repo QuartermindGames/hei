@@ -208,6 +208,24 @@ typedef struct PLColour {
 
 #define PlColourIndex( COLOUR, INDEX ) ( ( uint8_t * ) &( COLOUR ) )[ INDEX ]
 
+typedef struct PLColourF32 {
+	float r, g, b, a;
+} PLColourF32;
+static inline PLColour PlColourF32ToU8( const PLColourF32 *in ) {
+	return ( PLColour ){
+	        PlFloatToByte( in->r ),
+	        PlFloatToByte( in->g ),
+	        PlFloatToByte( in->b ),
+	        PlFloatToByte( in->a ) };
+}
+static inline PLColourF32 PlColourU8ToF32( const PLColour *in ) {
+	return ( PLColourF32 ){
+	        PlByteToFloat( in->r ),
+	        PlByteToFloat( in->g ),
+	        PlByteToFloat( in->b ),
+	        PlByteToFloat( in->a ) };
+}
+
 inline static PLColour PlCreateColour4B( uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
 	PLColour c = { r, g, b, a };
 	return c;
@@ -244,11 +262,19 @@ inline static bool PlCompareColour( PLColour c, PLColour c2 ) {
 	return ( ( c.r == c2.r ) && ( c.g == c2.g ) && ( c.b == c2.b ) && ( c.a == c2.a ) );
 }
 
-inline static void PlCopyColour( PLColour *c, PLColour c2 ) {
-	c->r = c2.r;
-	c->g = c2.g;
-	c->b = c2.b;
-	c->a = c2.a;
+inline static PLColour PlAddColour( const PLColour *c, PLColour *c2 ) {
+	return ( PLColour ){
+	        c->r + c2->r,
+	        c->g + c2->g,
+	        c->b + c2->b,
+	        c->a + c2->a };
+}
+inline static PLColourF32 PlAddColourF32( const PLColourF32 *c, const PLColourF32 *c2 ) {
+	return ( PLColourF32 ){
+	        c->r + c2->r,
+	        c->g + c2->g,
+	        c->b + c2->b,
+	        c->a + c2->a };
 }
 
 inline static void PlMultiplyColour( PLColour *c, PLColour c2 ) {
@@ -304,8 +330,17 @@ inline static PLVector4 PlColourToVector4( const PLColour *c ) {
 	return v;
 }
 
+#define PlColourU8( R, G, B, A ) \
+	( PLColour ) { R, G, B, A }
+
+#define PlColourF32( R, G, B, A ) \
+	( PLColourF32 ) { R, G, B, A }
+#define PlColourF32RGB( R, G, B ) \
+	( PLColourF32 ) { R, G, B, 1.0f }
+
 #ifndef __cplusplus
 
+/* todo: deprecate */
 #define PLColour( r, g, b, a ) \
 	( PLColour ) { r, g, b, a }
 
