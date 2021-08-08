@@ -1103,8 +1103,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 		}
 
 		if ( ++actualLength > maxLength ) {
-			++maxLength;
-
+			maxLength += 256;
 			char *oldDstBuffer = dstBuffer;
 			dstBuffer = gInterface->core->ReAlloc( dstBuffer, maxLength + 1 );
 			dstPos = dstBuffer + ( dstPos - oldDstBuffer );
