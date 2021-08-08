@@ -206,7 +206,8 @@ typedef struct PLColour {
 #endif
 } PLColour;
 
-#define PlColourIndex( COLOUR, INDEX ) ( ( uint8_t * ) &( COLOUR ) )[ INDEX ]
+#define PlColourIndex( COLOUR, INDEX ) 		( ( uint8_t * ) &( COLOUR ) )[ INDEX ]
+#define PlColourF32Index( COLOUR, INDEX ) 	( ( float * ) &( COLOUR ) )[ INDEX ]
 
 typedef struct PLColourF32 {
 	float r, g, b, a;
