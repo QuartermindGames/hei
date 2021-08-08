@@ -992,7 +992,7 @@ static char *InsertString( const char *string, char **buf, size_t *bufSize, size
 	*bufSize += strLength;
 	if ( *bufSize >= *maxBufSize ) {
 		*maxBufSize = *bufSize + strLength;
-		*buf = gInterface->core->ReAlloc( *buf, *maxBufSize );
+		*buf = gInterface->core->ReAlloc( *buf, *maxBufSize + 1 );
 	}
 
 	/* now copy it into our buffer */
