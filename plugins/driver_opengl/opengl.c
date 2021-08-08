@@ -599,9 +599,12 @@ static unsigned int TranslateDrawMode( PLGMeshDrawMode mode ) {
 }
 
 enum {
-	BUFFER_VERTEX_DATA,
+	BUFFER_VERTEX_DATA = 0,
 	BUFFER_ELEMENT_DATA,
+
+	MAX_GPU_MESH_BUFFERS
 };
+static_assert( MAX_GPU_MESH_BUFFERS < PLG_MAX_MESH_BUFFERS, "Invalid MAX_GL_BUFFERS size!" );
 
 static void GLCreateMesh( PLGMesh *mesh ) {
 	if ( !GLVersion( 2, 0 ) ) {
@@ -609,8 +612,7 @@ static void GLCreateMesh( PLGMesh *mesh ) {
 	}
 
 	// Create our internal buffers for GL
-	glGenBuffers( 1, &mesh->buffers[ BUFFER_VERTEX_DATA ] );
-	glGenBuffers( 1, &mesh->buffers[ BUFFER_ELEMENT_DATA ] );
+	glGenBuffers( MAX_GPU_MESH_BUFFERS, mesh->buffers );
 }
 
 static void GLUploadMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
@@ -672,8 +674,7 @@ static void GLDeleteMesh( PLGMesh *mesh ) {
 		return;
 	}
 
-	glDeleteBuffers( 1, &mesh->buffers[ BUFFER_VERTEX_DATA ] );
-	glDeleteBuffers( 1, &mesh->buffers[ BUFFER_ELEMENT_DATA ] );
+	glDeleteBuffers( MAX_GPU_MESH_BUFFERS, mesh->buffers );
 }
 
 static void GLDrawInstancedMesh( PLGMesh *mesh, PLGShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount ) {
@@ -1209,7 +1210,7 @@ static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t
 
 	temp = GLPreProcessGLSLShader( temp, &length, stage->type, true );
 
-	glShaderSource( stage->internal.id, 1, &temp, &length );
+	glShaderSource( stage->internal.id, 1, (const GLchar**) &temp, (GLint*) &length );
 	glCompileShader( stage->internal.id );
 
 	int status;
@@ -1284,8 +1285,7 @@ static void GLSetShaderUniformMatrix4( PLGShaderProgram *program, int slot, PLMa
 		return;
 	}
 
-	GLuint loc = ( GLuint ) slot;
-	glUniformMatrix4fv( loc, 1, transpose ? GL_TRUE : GL_FALSE, value.m );
+	glUniformMatrix4fv( slot, 1, transpose ? GL_TRUE : GL_FALSE, value.m );
 }
 
 static void RegisterShaderProgramData( PLGShaderProgram *program ) {

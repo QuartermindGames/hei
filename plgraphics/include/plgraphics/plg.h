@@ -164,7 +164,7 @@ typedef struct PLGShaderStage {
 typedef struct PLGShaderProgram {
 	struct {
 		char *name;
-		unsigned int slot;
+		int slot;
 		PLGShaderUniformType type;
 
 		union {
