@@ -624,41 +624,12 @@ static void GLUploadMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 
 	//Write the current CPU vertex data into the VBO
 	unsigned int drawMode = TranslateDrawMode( mesh->mode );
-	glBufferData( GL_ARRAY_BUFFER, sizeof( PLGVertex ) * mesh->num_verts, &mesh->vertices[ 0 ], drawMode );
+	glBufferData( GL_ARRAY_BUFFER, ( GLsizei ) ( sizeof( PLGVertex ) * mesh->num_verts ), &mesh->vertices[ 0 ], drawMode );
 
 	//Point to the different substreams of the interleaved BVO
 	//Args: Index, Size, Type, (Normalized), Stride, StartPtr
 
 	if ( program != NULL ) {
-		if ( program->internal.v_position != -1 ) {
-			glEnableVertexAttribArray( program->internal.v_position );
-			glVertexAttribPointer( program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, position ) );
-		}
-
-		if ( program->internal.v_normal != -1 ) {
-			glEnableVertexAttribArray( program->internal.v_normal );
-			glVertexAttribPointer( program->internal.v_normal, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, normal ) );
-		}
-
-		if ( program->internal.v_uv != -1 ) {
-			glEnableVertexAttribArray( program->internal.v_uv );
-			glVertexAttribPointer( program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, st ) );
-		}
-
-		if ( program->internal.v_colour != -1 ) {
-			glEnableVertexAttribArray( program->internal.v_colour );
-			glVertexAttribPointer( program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, colour ) );
-		}
-
-		if ( program->internal.v_tangent != -1 ) {
-			glEnableVertexAttribArray( program->internal.v_tangent );
-			glVertexAttribPointer( program->internal.v_tangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, tangent ) );
-		}
-
-		if ( program->internal.v_bitangent != -1 ) {
-			glEnableVertexAttribArray( program->internal.v_bitangent );
-			glVertexAttribPointer( program->internal.v_bitangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, bitangent ) );
-		}
 	}
 
 	if ( mesh->buffers[ BUFFER_ELEMENT_DATA ] != 0 ) {
@@ -727,14 +698,14 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 					PLGVertex *vertex = &mesh->vertices[ mesh->indices[ j ] ];
 					glVertex3f( vertex->position.x, vertex->position.y, vertex->position.z );
 					glNormal3f( vertex->normal.x, vertex->normal.y, vertex->normal.z );
-					glColor4b( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a );
+					glColor4ub( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a );
 				}
 			} else {
 				for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
 					PLGVertex *vertex = &mesh->vertices[ j ];
 					glVertex3f( vertex->position.x, vertex->position.y, vertex->position.z );
 					glNormal3f( vertex->normal.x, vertex->normal.y, vertex->normal.z );
-					glColor4b( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a );
+					glColor4ub( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a );
 				}
 			}
 			glEnd();
@@ -745,7 +716,7 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 	if ( mesh->buffers[ BUFFER_VERTEX_DATA ] == 0 ) {
 		GLLog( "invalid vertex buffer provided, skipping draw!\n" );
 		return;
-	} else if (mesh->num_indices > 0 && mesh->buffers[BUFFER_ELEMENT_DATA] == 0) {
+	} else if ( mesh->num_indices > 0 && mesh->buffers[ BUFFER_ELEMENT_DATA ] == 0 ) {
 		GLLog( "invalid element buffer provided, skipping draw!\n" );
 		return;
 	}
@@ -758,11 +729,35 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 
 	glBindBuffer( GL_ARRAY_BUFFER, mesh->buffers[ BUFFER_VERTEX_DATA ] );
 
+	if ( program->internal.v_position != -1 ) {
+		glEnableVertexAttribArray( program->internal.v_position );
+		glVertexAttribPointer( program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, position ) );
+	}
+	if ( program->internal.v_normal != -1 ) {
+		glEnableVertexAttribArray( program->internal.v_normal );
+		glVertexAttribPointer( program->internal.v_normal, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, normal ) );
+	}
+	if ( program->internal.v_uv != -1 ) {
+		glEnableVertexAttribArray( program->internal.v_uv );
+		glVertexAttribPointer( program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, st ) );
+	}
+	if ( program->internal.v_colour != -1 ) {
+		glEnableVertexAttribArray( program->internal.v_colour );
+		glVertexAttribPointer( program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, colour ) );
+	}
+	if ( program->internal.v_tangent != -1 ) {
+		glEnableVertexAttribArray( program->internal.v_tangent );
+		glVertexAttribPointer( program->internal.v_tangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, tangent ) );
+	}
+	if ( program->internal.v_bitangent != -1 ) {
+		glEnableVertexAttribArray( program->internal.v_bitangent );
+		glVertexAttribPointer( program->internal.v_bitangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, bitangent ) );
+	}
+
 	//draw
 	GLuint mode = TranslatePrimitiveMode( mesh->primitive );
 	if ( mesh->num_indices > 0 ) {
 		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->buffers[ BUFFER_ELEMENT_DATA ] );
-
 		glDrawElements( mode, mesh->num_indices, GL_UNSIGNED_INT, 0 );
 	} else {
 		glDrawArrays( mode, 0, mesh->num_verts );
@@ -1209,7 +1204,7 @@ static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t
 
 	temp = GLPreProcessGLSLShader( temp, &length, stage->type, true );
 
-	glShaderSource( stage->internal.id, 1, (const GLchar**) &temp, (GLint*) &length );
+	glShaderSource( stage->internal.id, 1, ( const GLchar ** ) &temp, ( GLint * ) &length );
 	glCompileShader( stage->internal.id );
 
 	int status;
@@ -1431,7 +1426,8 @@ static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 
 unsigned int TranslateGraphicsState( PLGDrawState state ) {
 	switch ( state ) {
-		default:break;
+		default:
+			break;
 		case PLG_GFX_STATE_FOG:
 			if ( GLVersion( 3, 0 ) ) {
 				return 0;
@@ -1465,7 +1461,7 @@ void GLEnableState( PLGDrawState state ) {
 	unsigned int gl_state = TranslateGraphicsState( state );
 	if ( !gl_state ) {
 		if ( state == PLG_GFX_STATE_WIREFRAME ) {
-            glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		}
 
 		/* probably unsupported */
@@ -1478,9 +1474,9 @@ void GLEnableState( PLGDrawState state ) {
 void GLDisableState( PLGDrawState state ) {
 	unsigned int gl_state = TranslateGraphicsState( state );
 	if ( !gl_state ) {
-        if ( state == PLG_GFX_STATE_WIREFRAME ) {
-            glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-        }
+		if ( state == PLG_GFX_STATE_WIREFRAME ) {
+			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		}
 
 		/* probably unsupported */
 		return;
