@@ -629,9 +629,6 @@ static void GLUploadMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 	//Point to the different substreams of the interleaved BVO
 	//Args: Index, Size, Type, (Normalized), Stride, StartPtr
 
-	if ( program != NULL ) {
-	}
-
 	if ( mesh->buffers[ BUFFER_ELEMENT_DATA ] != 0 ) {
 		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->buffers[ BUFFER_ELEMENT_DATA ] );
 		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( unsigned int ) * mesh->num_indices, &mesh->indices[ 0 ], drawMode );
