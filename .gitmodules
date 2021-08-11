@@ -1,3 +1,6 @@
 [submodule "plugins/driver_glide"]
 	path = plugins/driver_glide
 	url = https://github.com/OldTimes-Software/driver_glide.git
+[submodule "plugins/driver_d3d12"]
+	path = plugins/driver_d3d12
+	url = https://github.com/OldTimes-Software/driver_d3d12.git
