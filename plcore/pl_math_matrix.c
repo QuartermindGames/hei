@@ -8,7 +8,68 @@
 
 #include <plcore/pl_math.h>
 
-/* Matrix Stack, sorta mirrors OpenGL behaviour */
+/****************************************
+ ****************************************/
+ 
+PLMatrix4 PlRotateMatrix4( float angle, const PLVector3 *axis ) {
+	float s = sinf( angle );
+	float c = cosf( angle );
+	float t = 1.0f - c;
+
+	PLVector3 tv = PlVector3( t * axis->x, t * axis->y, t * axis->z );
+	PLVector3 sv = PlVector3( s * axis->x, s * axis->y, s * axis->z );
+
+	PLMatrix4 m;
+
+	m.pl_m4pos( 0, 0 ) = tv.x * axis->x + c;
+	m.pl_m4pos( 1, 0 ) = tv.x * axis->y + sv.z;
+	m.pl_m4pos( 2, 0 ) = tv.x * axis->z - sv.y;
+
+	m.pl_m4pos( 0, 1 ) = tv.x * axis->y - sv.z;
+	m.pl_m4pos( 1, 1 ) = tv.y * axis->y + c;
+	m.pl_m4pos( 2, 1 ) = tv.y * axis->z + sv.x;
+
+	m.pl_m4pos( 0, 2 ) = tv.x * axis->z + sv.y;
+	m.pl_m4pos( 1, 2 ) = tv.y * axis->z - sv.x;
+	m.pl_m4pos( 2, 2 ) = tv.z * axis->z + c;
+
+	m.pl_m4pos( 3, 0 ) = 0;
+	m.pl_m4pos( 3, 1 ) = 0;
+	m.pl_m4pos( 3, 2 ) = 0;
+	m.pl_m4pos( 0, 3 ) = 0;
+	m.pl_m4pos( 1, 3 ) = 0;
+	m.pl_m4pos( 2, 3 ) = 0;
+	m.pl_m4pos( 3, 3 ) = 1.0f;
+
+	return m;
+}
+
+PLVector3 PlGetMatrix4Translation( const PLMatrix4 *m ) {
+	return PlVector3( m->pl_m4pos( 0, 3 ), m->pl_m4pos( 1, 3 ), m->pl_m4pos( 2, 3 ) );
+}
+
+PLVector3 PlGetMatrix4Angle( const PLMatrix4 *m ) {
+	PLVector3 out = PlVector3( 0, 0, 0 );
+	out.y = PlRadiansToDegrees( asinf( m->m[ 8 ] ) );
+	if ( m->m[ 10 ] < 0 ) {
+		if ( out.y >= 0 ) {
+			out.y = 180.f - out.y;
+		} else {
+			out.y = -180.f - out.y;
+		}
+	}
+	if ( m->m[ 0 ] > -PL_EPSILON && m->m[ 0 ] < PL_EPSILON ) {
+		out.x = PlRadiansToDegrees( atan2f( m->m[ 1 ], m->m[ 5 ] ) );
+	} else {
+		out.z = PlRadiansToDegrees( atan2f( -m->m[ 4 ], m->m[ 0 ] ) );
+		out.x = PlRadiansToDegrees( atan2f( -m->m[ 9 ], m->m[ 10 ] ) );
+	}
+	return out;
+}
+
+/****************************************
+ * Matrix Stack, sorta mirrors OpenGL behaviour
+ ****************************************/
 
 #define MAX_STACK_SIZE 64
 static PLMatrix4 stacks[ PL_NUM_MATRIX_MODES ][ MAX_STACK_SIZE ];
