@@ -77,16 +77,9 @@ static PLMatrixMode curMatrixMode = PL_MODELVIEW_MATRIX;
 static unsigned int curStackSlot[ PL_NUM_MATRIX_MODES ];
 
 /**
- * Returns a pointer to the current matrix stack.
- */
-PLMatrix4 *PlGetMatrix( PLMatrixMode mode ) {
-	return &stacks[ mode ][ curStackSlot[ mode ] ];
-}
-
-/**
  * Private function that initializes all of the matrix stacks.
  */
-void _plInitializeMatrixStacks( void ) {
+void PlInitializeMatrixStacks_( void ) {
 	/* make sure all of the slots default to 0 */
 	memset( curStackSlot, 0, sizeof( unsigned int ) * PL_NUM_MATRIX_MODES );
 
@@ -94,6 +87,13 @@ void _plInitializeMatrixStacks( void ) {
 	for ( unsigned int i = 0; i < PL_NUM_MATRIX_MODES; ++i ) {
 		stacks[ i ][ 0 ] = PlMatrix4Identity();
 	}
+}
+
+/**
+ * Returns a pointer to the current matrix stack.
+ */
+PLMatrix4 *PlGetMatrix( PLMatrixMode mode ) {
+	return &stacks[ mode ][ curStackSlot[ mode ] ];
 }
 
 void PlMatrixMode( PLMatrixMode mode ) {
@@ -120,7 +120,7 @@ void PlMultiMatrix( const PLMatrix4 *matrix ) {
 }
 
 void PlRotateMatrix( float angle, float x, float y, float z ) {
-	PLMatrix4 rotation = PlRotateMatrix4( angle, PLVector3( x, y, z ) );
+	PLMatrix4 rotation = PlRotateMatrix4( angle, &PlVector3( x, y, z ) );
 	PlMultiMatrix( &rotation );
 }
 

@@ -69,6 +69,8 @@ typedef struct PLArguments {
 
 PLArguments pl_arguments;
 
+void PlInitializeMatrixStacks_( void );
+
 PLFunctionResult PlInitialize( int argc, char **argv ) {
 	static bool is_initialized = false;
 	if ( !is_initialized ) {
@@ -86,6 +88,7 @@ PLFunctionResult PlInitialize( int argc, char **argv ) {
 	}
 
 	PlInitPackageSubSystem();
+	PlInitializeMatrixStacks_();
 
 	is_initialized = true;
 
