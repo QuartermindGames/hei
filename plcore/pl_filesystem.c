@@ -170,8 +170,15 @@ IMPLEMENT_COMMAND( fsListMounted, "Lists all of the mounted directories." ) {
 	PLFileSystemMount *location = fs_mount_root;
 	while ( location != NULL ) {
 		numLocations++;
-		Print( " (%d) %s : %s\n", numLocations, location->path,
-		       location->type == FS_MOUNT_DIR ? "DIRECTORY" : "PACKAGE" );
+
+		/* this sucks... */
+		const char *path;
+		if ( location->type == FS_MOUNT_PACKAGE )
+			path = location->pkg->path;
+		else
+			path = location->path;
+
+		Print( " (%d) %-20s : %-20s\n", numLocations, path, location->type == FS_MOUNT_DIR ? "DIRECTORY" : "PACKAGE" );
 		location = location->next;
 	}
 	Print( "%d locations mounted\n", numLocations );
