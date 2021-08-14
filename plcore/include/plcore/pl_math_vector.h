@@ -72,6 +72,7 @@ PLVector3 PlInverseVector3( PLVector3 v );
 
 float PlVector2DotProduct( const PLVector2 *a, const PLVector2 *b );
 float PlVector3DotProduct( PLVector3 v, PLVector3 v2 );
+float PlGetPlaneDotProduct( const PLVector4 *plane, const PLVector3 *vector );
 
 PLVector3 PlVector3CrossProduct( PLVector3 v, PLVector3 v2 );
 
