@@ -798,6 +798,22 @@ static PLFileSystemMount *PlGetMountLocationForPath_( const char *path ) {
 	return NULL;
 }
 
+static const char *PlVirtualToLocalPath_( PLFileSystemMount *mount, const char *path, char *dest, size_t size ) {
+	if ( mount == NULL || mount->type == FS_MOUNT_PACKAGE ) {
+		snprintf( dest, size, "%s", path );
+	} else {
+		const char *fmt;
+		if ( *path == '\\' || *path == '/' )
+			fmt = "%s%s";
+		else
+			fmt = "%s/%s";
+
+		snprintf( dest, size, fmt, mount->path, path );
+	}
+
+	return dest;
+}
+
 /**
  * Transform the given path to the direct path
  * relative to anything mounted under the VFS.
@@ -864,8 +880,8 @@ bool PlLocalPathExists( const char *path ) {
 }
 
 bool PlPathExists( const char *path ) {
-	PLFileSystemMount *location = PlGetMountLocationForPath_( path );
-	if ( location == NULL )
+	PLFileSystemMount *mount = PlGetMountLocationForPath_( path );
+	if ( mount == NULL )
 		return PlLocalPathExists( path );
 
 	return true;
@@ -997,21 +1013,15 @@ PLFile *PlOpenLocalFile( const char *path, bool cache ) {
  * @return Returns handle to the file instance.
  */
 PLFile *PlOpenFile( const char *path, bool cache ) {
-	PLFileSystemMount *location = PlGetMountLocationForPath_( path );
-	if ( location != NULL && location->type == FS_MOUNT_PACKAGE ) {
-		return PlLoadPackageFile( location->pkg, path );
+	PLFileSystemMount *mount = PlGetMountLocationForPath_( path );
+	if ( mount != NULL && mount->type == FS_MOUNT_PACKAGE ) {
+		return PlLoadPackageFile( mount->pkg, path );
 	}
 
-	char buf[ VFS_MAX_PATH ];
-	const char *vpath = PlResolveVirtualPath_( path, buf, sizeof( buf ) );
-	if ( vpath == NULL ) {
-		PlReportBasicError( PL_RESULT_FILEPATH );
-		return NULL;
-	}
+	char buf[ PL_SYSTEM_MAX_PATH ];
+	PlVirtualToLocalPath_( mount, path, buf, sizeof( buf ) );
 
-	/* the above will have reported an error */
-
-	return PlOpenLocalFile( vpath, cache );
+	return PlOpenLocalFile( buf, cache );
 }
 
 void PlCloseFile( PLFile *ptr ) {
