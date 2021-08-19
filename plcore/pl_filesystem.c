@@ -834,13 +834,13 @@ bool PlLocalFileExists( const char *path ) {
  * @return False if the file wasn't accessible.
  */
 bool PlFileExists( const char *path ) {
-	char buf[ VFS_MAX_PATH ];
-	const char *vpath = PlResolveVirtualPath_( path, buf, sizeof( buf ) );
-	if ( vpath == NULL ) {
+	PLFile *file = PlOpenFile( path, false );
+	if ( file == NULL ) {
 		return false;
 	}
 
-	return PlLocalFileExists( vpath );
+	PlCloseFile( file );
+	return true;
 }
 
 bool PlLocalPathExists( const char *path ) {
