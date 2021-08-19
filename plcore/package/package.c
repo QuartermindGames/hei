@@ -132,11 +132,6 @@ void PlRegisterStandardPackageLoaders( void ) {
 PLPackage *PlLoadPackage( const char *path ) {
 	FunctionStart();
 
-	if ( !PlFileExists( path ) ) {
-		PlReportErrorF( PL_RESULT_FILEREAD, "failed to load package, \"%s\"", path );
-		return NULL;
-	}
-
 	const char *ext = PlGetFileExtension( path );
 	for ( unsigned int i = 0; i < num_package_loaders; ++i ) {
 		if ( package_loaders[ i ].LoadFunction == NULL ) {
@@ -145,16 +140,16 @@ PLPackage *PlLoadPackage( const char *path ) {
 
 		if ( !PL_INVALID_STRING( ext ) && !PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
 			if ( pl_strncasecmp( ext, package_loaders[ i ].ext, sizeof( package_loaders[ i ].ext ) ) == 0 ) {
-				PLPackage *package = package_loaders[ i ].LoadFunction( path );
+			    PLPackage *package = package_loaders[ i ].LoadFunction( path );
 				if ( package != NULL ) {
-					strncpy( package->path, path, sizeof( package->path ) );
+				    strncpy( package->path, path, sizeof( package->path ) );
 					return package;
 				}
 			}
 		} else if ( PL_INVALID_STRING( ext ) && PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
-			PLPackage *package = package_loaders[ i ].LoadFunction( path );
+		    PLPackage *package = package_loaders[ i ].LoadFunction( path );
 			if ( package != NULL ) {
-				strncpy( package->path, path, sizeof( package->path ) );
+			    strncpy( package->path, path, sizeof( package->path ) );
 				return package;
 			}
 		}

@@ -51,3 +51,5 @@ typedef struct PLFile {
 	time_t		timeStamp;
 	void		*fptr;
 } PLFile;
+
+const char *PlResolveVirtualPath_( const char *path, char *dest, size_t size );

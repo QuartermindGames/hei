@@ -43,6 +43,8 @@ PL_EXTERN void PlSetWorkingDirectory( const char *path );
 
 PL_EXTERN char *PlGetApplicationDataDirectory( const char *app_name, char *out, size_t n );
 
+PL_EXTERN bool PlPathEndsInSlash( const char *p );
+
 PL_EXTERN void PlStripExtension( char *dest, size_t length, const char *in );
 
 PL_EXTERN const char *PlGetFileExtension( const char *in );
