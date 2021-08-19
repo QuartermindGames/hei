@@ -1072,7 +1072,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 				if ( file != NULL ) {
 					/* allocate a temporary buffer */
 					size_t incLength = gInterface->core->GetFileSize( file );
-					char *incBuf = gInterface->core->MAlloc( incLength );
+					char *incBuf = gInterface->core->MAlloc( incLength + 1 );
 					memcpy( incBuf, gInterface->core->GetFileData( file ), incLength );
 
 					/* close the current file, to avoid recursively opening files
