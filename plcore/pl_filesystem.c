@@ -641,7 +641,7 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 	}
 
 	char selectorPath[ PL_SYSTEM_MAX_PATH ];
-	snprintf( selectorPath, sizeof( selectorPath ), PathEndsInSlash( path ) ? "%s*.%s" : "%s/*.%s", path, extension );
+	snprintf( selectorPath, sizeof( selectorPath ), PlPathEndsInSlash( path ) ? "%s*.%s" : "%s/*.%s", path, extension );
 
 	WIN32_FIND_DATA ffd;
 	HANDLE find = FindFirstFile( selectorPath, &ffd );
@@ -650,7 +650,7 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 	}
 
 	do {
-		snprintf( selectorPath, sizeof( selectorPath ), PathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, ffd.cFileName );
+		snprintf( selectorPath, sizeof( selectorPath ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, ffd.cFileName );
 
 		if ( ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) {
 			if ( recursive && !( strcmp( ffd.cFileName, "." ) == 0 || strcmp( ffd.cFileName, ".." ) == 0 ) ) {
