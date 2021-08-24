@@ -64,6 +64,7 @@ typedef struct PLGMesh {
 	unsigned int maxIndices;
 	unsigned int num_triangles;
 
+	/* todo: consider throwing out the below */
 	struct PLGShaderProgram *shader_program;
 	PLGTexture *texture;
 	unsigned int materialIndex;
