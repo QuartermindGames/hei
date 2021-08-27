@@ -1162,6 +1162,40 @@ int64_t PlReadInt64( PLFile *ptr, bool big_endian, bool *status ) {
 	return ReadSizedInteger( ptr, sizeof( int64_t ), big_endian, status );
 }
 
+float PlReadFloat32( PLFile *ptr, bool big_endian, bool *status ) {
+	float f;
+	if ( PlReadFile( ptr, &f, sizeof( float ), 1 ) != 1 ) {
+		if ( status != NULL ) *status = false;
+		return 0.0f;
+	}
+
+	/* not entirely sure how well this'd work, if at all */
+	if ( big_endian ) {
+		f = be32toh( ( float ) f );
+	}
+
+	if ( status != NULL ) *status = true;
+
+	return f;
+}
+
+double PlReadFloat64( PLFile *ptr, bool big_endian, bool *status ) {
+	double d;
+	if ( PlReadFile( ptr, &d, sizeof( double ), 1 ) != 1 ) {
+		if ( status != NULL ) *status = false;
+		return 0.0;
+	}
+
+	/* not entirely sure how well this'd work, if at all */
+	if ( big_endian ) {
+		d = be64toh( ( double ) d );
+	}
+
+	if ( status != NULL ) *status = true;
+
+	return d;
+}
+
 char *PlReadString( PLFile *ptr, char *str, size_t size ) {
 	if ( size == 0 ) {
 		PlReportBasicError( PL_RESULT_INVALID_PARM3 );

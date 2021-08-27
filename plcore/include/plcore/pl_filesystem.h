@@ -89,6 +89,9 @@ PL_EXTERN int16_t PlReadInt16( PLFile *ptr, bool big_endian, bool *status );
 PL_EXTERN int32_t PlReadInt32( PLFile *ptr, bool big_endian, bool *status );
 PL_EXTERN int64_t PlReadInt64( PLFile *ptr, bool big_endian, bool *status );
 
+PL_EXTERN float PlReadFloat32( PLFile *ptr, bool big_endian, bool *status );
+PL_EXTERN double PlReadFloat64( PLFile *ptr, bool big_endian, bool *status );
+
 PL_EXTERN char *PlReadString( PLFile *ptr, char *str, size_t size );
 
 PL_EXTERN bool PlFileSeek( PLFile *ptr, long int pos, PLFileSeek seek );
