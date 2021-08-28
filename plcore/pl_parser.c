@@ -85,7 +85,7 @@ const char *PlParseToken( const char **p, char *dest, size_t size ) {
 }
 
 int PlParseInteger( const char **p, bool *status ) {
-	*status = false;
+	if ( status != NULL ) *status = false;
 
 	char num[ 64 ] = { '\0' };
 	if ( !PlParseToken( p, num, sizeof( num ) ) ) {
@@ -95,13 +95,13 @@ int PlParseInteger( const char **p, bool *status ) {
 	int v = strtol( num, NULL, 10 );
 	/* todo: validate strtol succeeded! */
 
-	*status = true;
+	if ( status != NULL ) *status = true;
 
 	return v;
 }
 
 float PlParseFloat( const char **p, bool *status ) {
-	*status = false;
+	if ( status != NULL ) *status = false;
 
 	char num[ 64 ];
 	if ( !PlParseToken( p, num, sizeof( num ) ) ) {
@@ -111,7 +111,7 @@ float PlParseFloat( const char **p, bool *status ) {
 	float v = strtof( num, NULL );
 	/* todo: validate strtof succeeded! */
 
-	*status = true;
+	if ( status != NULL ) *status = true;
 
 	return v;
 }
