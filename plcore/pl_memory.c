@@ -69,7 +69,7 @@ uint64_t PlGetTotalAvailableSystemMemory( void ) {
 	MEMORYSTATUSEX stat;
 	stat.dwLength = sizeof( stat );
 	GlobalMemoryStatusEx( &stat );
-	return stat.ullAvailPageFile;
+	return stat.ullAvailPhys;
 #else
 #error "Missing implementation!"
 #endif
@@ -84,7 +84,7 @@ uint64_t PlGetCurrentMemoryUsage( void ) {
 #elif defined( _WIN32 )
 	PROCESS_MEMORY_COUNTERS pmc;
 	GetProcessMemoryInfo( GetCurrentProcess(), &pmc, sizeof( pmc ) );
-	return pmc.PagefileUsage;
+	return pmc.WorkingSetSize;
 #else
 #error "Missing implementation!"
 #endif
