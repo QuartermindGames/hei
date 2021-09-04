@@ -43,6 +43,7 @@ PLLinkedListNode *PlGetNextLinkedListNode( PLLinkedListNode *node );
 PLLinkedListNode *PlGetPrevLinkedListNode( PLLinkedListNode *node );
 PLLinkedListNode *PlGetFirstNode( PLLinkedList *list );
 void *PlGetLinkedListNodeUserData( PLLinkedListNode *node );
+void PlSetLinkedListNodeUserData( PLLinkedListNode *node, void *userPtr );
 
 unsigned int PlGetNumLinkedListNodes( PLLinkedList *list );
 

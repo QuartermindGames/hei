@@ -60,6 +60,11 @@ void *PlGetLinkedListNodeUserData( PLLinkedListNode *node ) {
 	return node->userPtr;
 }
 
+void PlSetLinkedListNodeUserData( PLLinkedListNode *node, void *userPtr )
+{
+	node->userPtr = userPtr;
+}
+
 /**
  * Destroys the specified node and removes it from the list.
  * Keep in mind this does not free any user data!
