@@ -17,20 +17,20 @@
 static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 	FunctionStart();
 
-	size_t size = ( pi->compressionType != PL_COMPRESSION_NONE ) ? pi->compressedSize : pi->fileSize;
 	if ( !PlFileSeek( fh, ( signed ) pi->offset, PL_SEEK_SET ) ) {
 		return NULL;
 	}
 
+	size_t size = ( pi->compressionType != PL_COMPRESSION_NONE ) ? pi->compressedSize : pi->fileSize;
 	uint8_t *dataPtr = pl_malloc( size );
-	if ( PlReadFile( fh, dataPtr, size, 1 ) != 1 ) {
+	if ( PlReadFile( fh, dataPtr, sizeof( uint8_t ), size ) != size ) {
 		pl_free( dataPtr );
 		return NULL;
 	}
 
 	if ( pi->compressionType == PL_COMPRESSION_ZLIB ) {
 		uint8_t *decompressedPtr = pl_malloc( pi->fileSize );
-		unsigned long uncompressedLength;
+		unsigned long uncompressedLength = pi->fileSize;
 		int status = mz_uncompress( decompressedPtr, &uncompressedLength, dataPtr, pi->compressedSize );
 
 		pl_free( dataPtr );
