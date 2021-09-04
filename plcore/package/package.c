@@ -18,8 +18,12 @@ static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 	FunctionStart();
 
 	size_t size = ( pi->compressionType != PL_COMPRESSION_NONE ) ? pi->compressedSize : pi->fileSize;
+	if ( !PlFileSeek( fh, ( signed ) pi->offset, PL_SEEK_SET ) ) {
+		return NULL;
+	}
+
 	uint8_t *dataPtr = pl_malloc( size );
-	if ( !PlFileSeek( fh, ( signed ) pi->offset, PL_SEEK_SET ) || PlReadFile( fh, dataPtr, size, 1 ) != 1 ) {
+	if ( PlReadFile( fh, dataPtr, size, 1 ) != 1 ) {
 		pl_free( dataPtr );
 		return NULL;
 	}
@@ -34,7 +38,7 @@ static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 
 		if ( status != MZ_OK ) {
 			pl_free( dataPtr );
-			PlReportErrorF( PL_RESULT_FILEREAD, "failed to decompress buffer" );
+			PlReportErrorF( PL_RESULT_FILEREAD, "failed to decompress buffer (%s)", mz_error( status ) );
 			return NULL;
 		}
 	}
