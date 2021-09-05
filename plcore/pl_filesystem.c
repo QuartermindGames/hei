@@ -1171,7 +1171,7 @@ float PlReadFloat32( PLFile *ptr, bool big_endian, bool *status ) {
 
 	/* not entirely sure how well this'd work, if at all */
 	if ( big_endian ) {
-		f = be32toh( ( float ) f );
+		f = ( float ) be32toh( ( uint32_t ) f );
 	}
 
 	if ( status != NULL ) *status = true;
@@ -1188,7 +1188,7 @@ double PlReadFloat64( PLFile *ptr, bool big_endian, bool *status ) {
 
 	/* not entirely sure how well this'd work, if at all */
 	if ( big_endian ) {
-		d = be64toh( ( double ) d );
+		d = ( double ) be64toh( ( uint64_t ) d );
 	}
 
 	if ( status != NULL ) *status = true;
