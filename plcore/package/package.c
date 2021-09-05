@@ -30,8 +30,8 @@ static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 
 	if ( pi->compressionType == PL_COMPRESSION_ZLIB ) {
 		uint8_t *decompressedPtr = pl_malloc( pi->fileSize );
-		unsigned long uncompressedLength = pi->fileSize;
-		int status = mz_uncompress( decompressedPtr, &uncompressedLength, dataPtr, pi->compressedSize );
+		mz_ulong uncompressedLength = ( mz_ulong ) pi->fileSize;
+		int status = mz_uncompress( decompressedPtr, &uncompressedLength, dataPtr, ( mz_ulong ) pi->compressedSize );
 
 		pl_free( dataPtr );
 		dataPtr = decompressedPtr;
