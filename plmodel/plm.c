@@ -60,23 +60,25 @@ void PlmGenerateModelNormals( PLMModel *model, bool perFace ) {
 }
 
 void PlmGenerateModelBounds( PLMModel *model ) {
-	PLCollisionAABB bounds = {
-	        PLVector3( 99999, 99999, 99999 ),   /* max */
-	        PLVector3( -99999, -99999, -99999 ) /* min */
-	};
-	for ( unsigned int i = 0; i < model->numMeshes; ++i ) {
-		PLGMesh *mesh = model->meshes[ i ];
-		for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
-			PLGVertex *vertex = &mesh->vertices[ j ];
-			if ( vertex->position.x < bounds.mins.x ) bounds.mins.x = vertex->position.x;
-			if ( vertex->position.x > bounds.maxs.x ) bounds.maxs.x = vertex->position.x;
-			if ( vertex->position.y < bounds.mins.y ) bounds.mins.y = vertex->position.y;
-			if ( vertex->position.y > bounds.maxs.y ) bounds.maxs.y = vertex->position.y;
-			if ( vertex->position.z < bounds.mins.z ) bounds.mins.z = vertex->position.z;
-			if ( vertex->position.z > bounds.maxs.z ) bounds.maxs.z = vertex->position.z;
-		}
+	PLCollisionAABB b1;
+	memset( &b1, 0, sizeof( PLCollisionAABB ) );
+
+	for ( unsigned int i = 0; i < model->numMeshes; ++i )
+	{
+		PLCollisionAABB b2 = PlgGenerateAabbFromMesh( model->meshes[ i ], false );
+		if ( b2.mins.x < b1.mins.x ) b1.mins.x = b2.mins.x;
+		if ( b2.mins.y < b1.mins.y ) b1.mins.y = b2.mins.y;
+		if ( b2.mins.z < b1.mins.z ) b1.mins.z = b2.mins.z;
+		if ( b2.maxs.x > b1.maxs.x ) b1.maxs.x = b2.maxs.x;
+		if ( b2.maxs.y > b1.maxs.y ) b1.maxs.y = b2.maxs.y;
+		if ( b2.maxs.z > b1.maxs.z ) b1.maxs.z = b2.maxs.z;
 	}
-	model->bounds = bounds;
+
+	/* abs origin is the middle of the bounding volume (wherever it is) and origin is the transformative point */
+	b1.absOrigin = PLVector3( ( b1.mins.x + b1.maxs.x ) / 2, ( b1.mins.y + b1.maxs.y ) / 2, ( b1.mins.z + b1.maxs.z ) / 2 );
+	b1.origin = pl_vecOrigin3;
+
+	model->bounds = b1;
 }
 
 bool PlmWriteModel( const char *path, PLMModel *model, PLMModelOutputType type ) {
