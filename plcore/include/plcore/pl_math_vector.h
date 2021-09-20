@@ -217,7 +217,7 @@ namespace hei {
 			z = v[ 2 ];
 		}
 
-		inline Vector3 &operator=( Vector2 v ) {
+		inline Vector3 &operator=( const Vector2 &v ) {
 			x = v.x;
 			y = v.y;
 			return *this;
