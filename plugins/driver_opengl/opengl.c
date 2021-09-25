@@ -1010,17 +1010,19 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 #define insert( str ) dstPos = InsertString( ( str ), &dstBuffer, &actualLength, &maxLength )
 	if ( head ) {
 		insert( "#version 150 core\n" );//OpenGL 3.2 == GLSL 150
-		insert( "uniform mat4 pl_model;" );
-		insert( "uniform mat4 pl_view;" );
-		insert( "uniform mat4 pl_proj;" );
+		insert( "uniform mat4 pl_model;\n" );
+		insert( "uniform mat4 pl_view;\n" );
+		insert( "uniform mat4 pl_proj;\n" );
 		if ( type == PLG_SHADER_TYPE_VERTEX ) {
-			insert( "in vec3 pl_vposition;" );
-			insert( "in vec3 pl_vnormal;" );
-			insert( "in vec2 pl_vuv;" );
-			insert( "in vec4 pl_vcolour;" );
-			insert( "in vec3 pl_vtangent, pl_vbitangent;" );
+			insert( "in vec3 pl_vposition;\n" );
+			insert( "in vec3 pl_vnormal;\n" );
+			insert( "in vec2 pl_vuv;\n" );
+			insert( "in vec4 pl_vcolour;\n" );
+			insert( "in vec3 pl_vtangent, pl_vbitangent;\n" );
+			insert( "#define PLG_COMPILE_VERTEX 1\n" );
 		} else if ( type == PLG_SHADER_TYPE_FRAGMENT ) {
-			insert( "out vec4 pl_frag;" );
+			insert( "out vec4 pl_frag;\n" );
+			insert( "#define PLG_COMPILE_FRAGMENT 1\n" );
 		}
 	}
 
@@ -1031,32 +1033,8 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 			break;
 		}
 
-		if ( *srcPos == '\n' || *srcPos == '\r' || *srcPos == '\t' ) {
-			srcPos++;
-			continue;
-		}
-
-		if ( srcPos[ 0 ] == ' ' && srcPos[ 1 ] == ' ' ) {
-			srcPos += 2;
-			while ( *srcPos == ' ' ) { ++srcPos; }
-			continue;
-		}
-
-		/* skip comments */
-		if ( srcPos[ 0 ] == '/' && srcPos[ 1 ] == '*' ) {
-			srcPos += 2;
-			while ( !( srcPos[ 0 ] == '*' && srcPos[ 1 ] == '/' ) ) srcPos++;
-			srcPos += 2;
-			continue;
-		}
-
-		if ( srcPos[ 0 ] == '/' && srcPos[ 1 ] == '/' ) {
-			srcPos += 2;
-			gInterface->core->SkipLine( &srcPos );
-			continue;
-		}
-
 		if ( *srcPos == '#' ) {
+			const char *p = srcPos;
 			srcPos++;
 
 			char token[ 32 ];
@@ -1092,6 +1070,9 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 				gInterface->core->SkipLine( &srcPos );
 				continue;
 			}
+
+			/* we didn't need to do anything, so restore our position */
+			srcPos = p;
 		}
 
 		if ( ++actualLength > maxLength ) {
