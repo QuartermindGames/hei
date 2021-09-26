@@ -1282,7 +1282,7 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 	}
 	program->num_uniforms = ( unsigned int ) num_uniforms;
 
-	GLLog( "Found %u uniforms in shader\n", program->num_uniforms );
+	//GLLog( "Found %u uniforms in shader\n", program->num_uniforms );
 
 	program->uniforms = gInterface->core->CAlloc( ( size_t ) program->num_uniforms, sizeof( *program->uniforms ) );
 	unsigned int registered = 0;
@@ -1345,7 +1345,7 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 				break;
 		}
 
-		GLLog( " %4d (%20s) %s\n", i, program->uniforms[ i ].name, uniformDescriptors[ program->uniforms[ i ].type ] );
+		//GLLog( " %4d (%20s) %s\n", i, program->uniforms[ i ].name, uniformDescriptors[ program->uniforms[ i ].type ] );
 
 		registered++;
 	}
