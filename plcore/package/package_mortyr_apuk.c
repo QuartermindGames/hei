@@ -62,7 +62,7 @@ PLPackage *PlLoadApukPackage( const char *path ) {
 		return NULL;
 	}
 
-	FileIndex *indices = pl_malloc( sizeof( FileIndex ) * numFiles );
+	FileIndex *indices = PlMAllocA( sizeof( FileIndex ) * numFiles );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
 		indices[ i ].size = PlReadInt32( filePtr, false, &status );
 		indices[ i ].offset = PlReadInt32( filePtr, false, &status );
@@ -77,7 +77,7 @@ PLPackage *PlLoadApukPackage( const char *path ) {
 	PlCloseFile( filePtr );
 
 	if ( !status ) {
-		pl_free( indices );
+		PlFree( indices );
 		return NULL;
 	}
 
@@ -91,7 +91,7 @@ PLPackage *PlLoadApukPackage( const char *path ) {
 		strncpy( index->fileName, indices[ i ].name, sizeof( index->fileName ) );
 	}
 
-	pl_free( indices );
+	PlFree( indices );
 
 	return package;
 }

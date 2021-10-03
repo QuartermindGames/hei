@@ -985,7 +985,7 @@ static char *InsertString( const char *string, char **buf, size_t *bufSize, size
 	*bufSize += strLength;
 	if ( *bufSize >= *maxBufSize ) {
 		*maxBufSize = *bufSize + strLength;
-		*buf = gInterface->core->ReAlloc( *buf, *maxBufSize + 1 );
+		*buf = gInterface->core->ReAlloc( *buf, *maxBufSize + 1, true );
 	}
 
 	/* now copy it into our buffer */
@@ -1003,7 +1003,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 	/* setup the destination buffer */
 	size_t actualLength = 0;
 	size_t maxLength = *length;
-	char *dstBuffer = gInterface->core->MAlloc( maxLength + 1 );
+	char *dstBuffer = gInterface->core->MAlloc( maxLength + 1, true );
 	char *dstPos = dstBuffer;
 
 	/* built-ins */
@@ -1050,7 +1050,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 				if ( file != NULL ) {
 					/* allocate a temporary buffer */
 					size_t incLength = gInterface->core->GetFileSize( file );
-					char *incBuf = gInterface->core->MAlloc( incLength + 1 );
+					char *incBuf = gInterface->core->MAlloc( incLength + 1, true );
 					memcpy( incBuf, gInterface->core->GetFileData( file ), incLength );
 
 					/* close the current file, to avoid recursively opening files
@@ -1078,7 +1078,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 		if ( ++actualLength > maxLength ) {
 			maxLength += 256;
 			char *oldDstBuffer = dstBuffer;
-			dstBuffer = gInterface->core->ReAlloc( dstBuffer, maxLength + 1 );
+			dstBuffer = gInterface->core->ReAlloc( dstBuffer, maxLength + 1, true );
 			dstPos = dstBuffer + ( dstPos - oldDstBuffer );
 		}
 
@@ -1177,7 +1177,7 @@ static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t
 	}
 
 	/* shove this here for now... */
-	char *temp = gInterface->core->MAlloc( length + 1 );
+	char *temp = gInterface->core->MAlloc( length + 1, true );
 	memcpy( temp, buf, length );
 
 	temp = GLPreProcessGLSLShader( temp, &length, stage->type, true );
@@ -1191,7 +1191,7 @@ static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t
 		int s_length;
 		glGetShaderiv( stage->internal.id, GL_INFO_LOG_LENGTH, &s_length );
 		if ( s_length > 1 ) {
-			char *log = gInterface->core->CAlloc( ( size_t ) s_length, sizeof( char ) );
+			char *log = gInterface->core->CAlloc( ( size_t ) s_length, sizeof( char ), true );
 			glGetShaderInfoLog( stage->internal.id, s_length, NULL, log );
 			GLLog( " COMPILE ERROR:\n%s\n", log );
 			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, "%s", log );
@@ -1284,13 +1284,13 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 
 	//GLLog( "Found %u uniforms in shader\n", program->num_uniforms );
 
-	program->uniforms = gInterface->core->CAlloc( ( size_t ) program->num_uniforms, sizeof( *program->uniforms ) );
+	program->uniforms = gInterface->core->CAlloc( ( size_t ) program->num_uniforms, sizeof( *program->uniforms ), true );
 	unsigned int registered = 0;
 	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
 		int maxUniformNameLength;
 		glGetActiveUniformsiv( program->internal.id, 1, &i, GL_UNIFORM_NAME_LENGTH, &maxUniformNameLength );
 
-		GLchar *uniformName = gInterface->core->MAlloc( maxUniformNameLength );
+		GLchar *uniformName = gInterface->core->MAlloc( maxUniformNameLength, true );
 		GLsizei nameLength;
 
 		GLenum glType;
@@ -1381,7 +1381,7 @@ static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 		int s_length;
 		glGetProgramiv( program->internal.id, GL_INFO_LOG_LENGTH, &s_length );
 		if ( s_length > 1 ) {
-			char *log = gInterface->core->CAlloc( ( size_t ) s_length, sizeof( char ) );
+			char *log = gInterface->core->CAlloc( ( size_t ) s_length, sizeof( char ), true );
 			glGetProgramInfoLog( program->internal.id, s_length, NULL, log );
 			GLLog( " LINK ERROR:\n%s\n", log );
 			gInterface->core->Free( log );

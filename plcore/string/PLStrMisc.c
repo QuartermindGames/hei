@@ -17,7 +17,7 @@ char *PlStrInsert( const char *string, char **buf, size_t *bufSize, size_t *maxB
 	*bufSize += strLength;
 	if ( *bufSize >= *maxBufSize ) {
 		*maxBufSize = *bufSize + strLength;
-		*buf = pl_realloc( *buf, *maxBufSize );
+		*buf = PlReAllocA( *buf, *maxBufSize );
 	}
 
 	/* now copy it into our buffer */

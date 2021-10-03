@@ -77,7 +77,7 @@ static VkPhysicalDevice VK_SelectPhysicalDevice( void ) {
 
 	GfxLog( "Found %d graphics devices, selecting appropriate device...\n", numDevices );
 
-	VkPhysicalDevice *physicalDevices = pl_malloc( sizeof( VkPhysicalDevice ) * numDevices );
+	VkPhysicalDevice *physicalDevices = PlMAllocA( sizeof( VkPhysicalDevice ) * numDevices );
 	vkEnumeratePhysicalDevices( vk_instance, &numDevices, physicalDevices );
 
 	VkPhysicalDeviceProperties properties;
@@ -103,7 +103,7 @@ static VkPhysicalDevice VK_SelectPhysicalDevice( void ) {
 	PRINT_VAR_INTEGER( properties.deviceID );
 	PRINT_VAR_INTEGER( properties.vendorID );
 
-	pl_free( physicalDevices );
+	PlFree( physicalDevices );
 
 	return vk_physicalDevice;
 }
@@ -147,7 +147,7 @@ void plInitVulkan( void ) {
 
 	/* query vulkan extensions */
 	vkEnumerateInstanceExtensionProperties( NULL, &vk_numExtensions, NULL );
-	vk_extensionProperties = pl_malloc( sizeof( VkExtensionProperties ) * vk_numExtensions );
+	vk_extensionProperties = PlMAllocA( sizeof( VkExtensionProperties ) * vk_numExtensions );
 	vkEnumerateInstanceExtensionProperties( NULL, &vk_numExtensions, vk_extensionProperties );
 	GfxLog( "  extensions:\n" );
 	for( unsigned int i = 0; i < vk_numExtensions; ++i ) {
@@ -156,7 +156,7 @@ void plInitVulkan( void ) {
 }
 
 void plShutdownVulkan( void ) {
-	pl_free( vk_extensionProperties );
+	PlFree( vk_extensionProperties );
 	vk_numExtensions = 0;
 
 	if ( vk_instance != NULL ) {

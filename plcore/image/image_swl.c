@@ -41,7 +41,7 @@ static PLImage *ReadSwlImage( PLFile *fin ) {
 		return false;
 	}
 
-	PLImage *out = pl_malloc( sizeof( PLImage ) );
+	PLImage *out = PlMAlloc( sizeof( PLImage ), true );
 	out->width = header.width;
 	out->height = header.height;
 	out->levels = 4;
@@ -58,17 +58,17 @@ static PLImage *ReadSwlImage( PLFile *fin ) {
 		}
 
 		size_t buf_size = mip_w * mip_h;
-		uint8_t *buf = pl_malloc( buf_size );
+		uint8_t *buf = PlMAllocA( buf_size );
 		if ( PlReadFile( fin, buf, 1, buf_size ) != buf_size ) {
 			PlDestroyImage( out );
-			pl_free( buf );
+			PlFree( buf );
 			return false;
 		}
 
-		out->data = pl_calloc( out->levels, sizeof( uint8_t * ) );
+		out->data = PlCAllocA( out->levels, sizeof( uint8_t * ) );
 
 		size_t level_size = PlGetImageSize( out->format, mip_w, mip_h );
-		out->data[ i ] = pl_calloc( level_size, sizeof( uint8_t ) );
+		out->data[ i ] = PlCAllocA( level_size, sizeof( uint8_t ) );
 
 		/* now we fill in the buf we just allocated,
      * by using the palette */
@@ -85,7 +85,7 @@ static PLImage *ReadSwlImage( PLFile *fin ) {
 			out->data[ i ][ k + 3 ] = 255; /*(uint8_t) (255 - palette[buf[j]].a);*/
 		}
 
-		pl_free( buf );
+		PlFree( buf );
 	}
 
 	return out;

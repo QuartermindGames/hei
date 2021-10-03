@@ -57,8 +57,8 @@ bool PlLoadSentientTxtrImage( PLFile *ptr, PLImage *out ) {
 	out->format = PL_IMAGEFORMAT_RGB8;
 	out->size = PlGetImageSize( out->format, out->width, out->height );
 	out->levels = 1;
-	out->data = pl_calloc( out->levels, sizeof( uint8_t * ) );
-	out->data[ 0 ] = pl_calloc( out->size, sizeof( uint8_t ) );
+	out->data = PlCAllocA( out->levels, sizeof( uint8_t * ) );
+	out->data[ 0 ] = PlCAllocA( out->size, sizeof( uint8_t ) );
 	PlReadFile( ptr, out->data[ 0 ], 1, out->size );
 	return true;
 }

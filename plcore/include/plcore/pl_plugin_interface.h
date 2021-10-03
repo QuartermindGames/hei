@@ -46,9 +46,9 @@ typedef struct PLPluginExportTable {
 	void ( *ReportError )( PLFunctionResult resultType, const char *function, const char *message, ... );
 	const char *( *GetError )( void );
 
-	void *( *MAlloc )( size_t size );
-	void *( *CAlloc )( size_t num, size_t size );
-	void *( *ReAlloc )( void *ptr, size_t newSize );
+	void *( *MAlloc )( size_t size, bool abortOnFail );
+	void *( *CAlloc )( size_t num, size_t size, bool abortOnFail );
+	void *( *ReAlloc )( void *ptr, size_t newSize, bool abortOnFail );
 	void ( *Free )( void *ptr );
 
 	/**
@@ -150,7 +150,7 @@ typedef struct PLPluginExportTable {
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */
-#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 3
+#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 4
 #define PL_PLUGIN_INTERFACE_VERSION_MINOR 0
 #define PL_PLUGIN_INTERFACE_VERSION ( uint16_t[ 2 ] ){ PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
 
@@ -159,7 +159,10 @@ typedef const PLPluginDescription *( *PLPluginQueryFunction )( void );
 #define PL_PLUGIN_INIT_FUNCTION "PLInitializePlugin"
 typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *exportTable );
 
-/* 2021-04-22
+/* 2021-10-03
+ * - Memory allocation functions now take an 'abortOnFail' parameter
+ *
+ * 2021-04-22
  * - Removed some functions from the default interface
  *
  * 2021-03-29;

@@ -20,11 +20,11 @@ typedef struct PLLinkedList {
 } PLLinkedList;
 
 PLLinkedList *PlCreateLinkedList( void ) {
-	return pl_calloc( 1, sizeof( PLLinkedList ) );
+	return PlCAllocA( 1, sizeof( PLLinkedList ) );
 }
 
 PLLinkedListNode *PlInsertLinkedListNode( PLLinkedList *list, void *userPtr ) {
-	PLLinkedListNode *node = pl_malloc( sizeof( PLLinkedListNode ) );
+	PLLinkedListNode *node = PlMAlloc( sizeof( PLLinkedListNode ), true );
 	if( list->root == NULL ) {
 		list->root = node;
 	}
@@ -88,7 +88,7 @@ void PlDestroyLinkedListNode( PLLinkedList *list, PLLinkedListNode *node ) {
 
 	list->numNodes--;
 
-	pl_free( node );
+	PlFree( node );
 }
 
 void PlDestroyLinkedListNodes( PLLinkedList *list ) {
@@ -102,7 +102,7 @@ void PlDestroyLinkedList( PLLinkedList *list ) {
 	}
 
 	PlDestroyLinkedListNodes( list );
-	pl_free( list );
+	PlFree( list );
 }
 
 unsigned int PlGetNumLinkedListNodes( PLLinkedList *list ) {

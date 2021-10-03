@@ -60,10 +60,10 @@ PLPackage *PlLoadRidbPackage( const char *path ) {
 
 	PlFileSeek( filePtr, tableOffset, PL_SEEK_SET );
 
-	BdirIndex *indices = pl_malloc( tableSize );
+	BdirIndex *indices = PlMAllocA( tableSize );
 	for ( unsigned int i = 0; i < numLumps; ++i ) {
 #define cleanup()       \
-	pl_free( indices ); \
+	PlFree( indices ); \
 	PlCloseFile( filePtr )
 		if ( PlReadFile( filePtr, indices[ i ].name, 1, 12 ) != 12 ) {
 			cleanup();
@@ -89,7 +89,7 @@ PLPackage *PlLoadRidbPackage( const char *path ) {
 	PlCloseFile( filePtr );
 
 	if ( !status ) {
-		pl_free( indices );
+		PlFree( indices );
 		return NULL;
 	}
 
@@ -103,7 +103,7 @@ PLPackage *PlLoadRidbPackage( const char *path ) {
 		strncpy( index->fileName, indices[ i ].name, sizeof( index->fileName ) );
 	}
 
-	pl_free( indices );
+	PlFree( indices );
 
 	return package;
 }

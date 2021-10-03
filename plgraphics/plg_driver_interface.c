@@ -180,10 +180,10 @@ PLFunctionResult PlgSetDriver( const char *mode ) {
 
 	GfxLog( "Mode \"%s\" initialized!\n", mode );
 
-	pl_free( gfx_state.tmu );
+	PlFree( gfx_state.tmu );
 
 	unsigned int numUnits = PlgGetMaxTextureUnits();
-    gfx_state.tmu = ( PLGTextureMappingUnit * ) pl_calloc( numUnits, sizeof( PLGTextureMappingUnit ) );
+    gfx_state.tmu = ( PLGTextureMappingUnit * ) PlCAllocA( numUnits, sizeof( PLGTextureMappingUnit ) );
     for ( unsigned int i = 0; i < numUnits; i++ ) {
         gfx_state.tmu[ i ].current_envmode = PLG_TEXTUREMODE_REPLACE;
     }

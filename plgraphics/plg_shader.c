@@ -22,11 +22,7 @@
  * @return the new shader stage.
  */
 static PLGShaderStage *CreateShaderStage( PLGShaderStageType type ) {
-	PLGShaderStage *stage = pl_calloc( 1, sizeof( PLGShaderStage ) );
-	if ( stage == NULL ) {
-		return NULL;
-	}
-
+	PLGShaderStage *stage = PlCAllocA( 1, sizeof( PLGShaderStage ) );
 	stage->type = type;
 
 	CallGfxFunction( CreateShaderStage, stage );
@@ -104,7 +100,7 @@ PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type ) 
 	}
 
 	size_t length = PlGetFileSize( fp );
-	char *buf = pl_malloc( length + 1 );
+	char *buf = PlMAlloc( length + 1, false );
 	if ( buf == NULL ) {
 		return NULL;
 	}
@@ -119,7 +115,7 @@ PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type ) 
 	PlCloseFile( fp );
 
 	PLGShaderStage *stage = PlgParseShaderStage( type, buf, length );
-	pl_free( buf );
+	PlFree( buf );
 	return stage;
 }
 
@@ -133,12 +129,7 @@ PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type ) 
  * @return the new shader program.
  */
 PLGShaderProgram *PlgCreateShaderProgram( void ) {
-	PLGShaderProgram *program = pl_calloc( 1, sizeof( PLGShaderProgram ) );
-	if ( program == NULL ) {
-		return NULL;
-	}
-
-	memset( program, 0, sizeof( PLGShaderProgram ) );
+	PLGShaderProgram *program = PlCAllocA( 1, sizeof( PLGShaderProgram ) );
 
 	CallGfxFunction( CreateShaderProgram, program );
 
@@ -161,7 +152,7 @@ void PlgDestroyShaderProgram( PLGShaderProgram *program, bool free_stages ) {
 		if ( program->stages[ i ] != NULL ) {
 			CallGfxFunction( DetachShaderStage, program, program->stages[ i ] );
 			if ( free_stages ) {
-				pl_free( program->stages[ i ] );
+				PlFree( program->stages[ i ] );
 			}
 		}
 	}
@@ -170,12 +161,12 @@ void PlgDestroyShaderProgram( PLGShaderProgram *program, bool free_stages ) {
 
 	/* free uniforms */
 	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
-		pl_free( program->uniforms[ i ].name );
+		PlFree( program->uniforms[ i ].name );
 	}
-	pl_free( program->uniforms );
+	PlFree( program->uniforms );
 
-	pl_free( program->attributes );
-	pl_free( program );
+	PlFree( program->attributes );
+	PlFree( program );
 }
 
 void PlgAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stage ) {

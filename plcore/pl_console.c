@@ -54,7 +54,7 @@ void PlRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( uns
 	}
 
 	if ( _pl_num_commands < _pl_commands_size ) {
-		_pl_commands[ _pl_num_commands ] = ( PLConsoleCommand * ) pl_malloc( sizeof( PLConsoleCommand ) );
+		_pl_commands[ _pl_num_commands ] = ( PLConsoleCommand * ) PlMAllocA( sizeof( PLConsoleCommand ) );
 		if ( !_pl_commands[ _pl_num_commands ] ) {
 			return;
 		}
@@ -117,7 +117,7 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *def,
 
 	PLConsoleVariable *out = NULL;
 	if ( _pl_num_variables < _pl_variables_size ) {
-		_pl_variables[ _pl_num_variables ] = ( PLConsoleVariable * ) pl_malloc( sizeof( PLConsoleVariable ) );
+		_pl_variables[ _pl_num_variables ] = ( PLConsoleVariable * ) PlMAllocA( sizeof( PLConsoleVariable ) );
 		if ( _pl_variables[ _pl_num_variables ] == NULL ) {
 			PlReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for ConsoleCommand, %d",
 			             sizeof( PLConsoleVariable ) );
@@ -321,11 +321,11 @@ static void InitializeDefaultLogLevels( void );
 PLFunctionResult PlInitConsole( void ) {
 	ConsoleOutputCallback = NULL;
 
-	if ( ( _pl_commands = ( PLConsoleCommand ** ) pl_malloc( sizeof( PLConsoleCommand * ) * _pl_commands_size ) ) == NULL ) {
+	if ( ( _pl_commands = ( PLConsoleCommand ** ) PlMAllocA( sizeof( PLConsoleCommand * ) * _pl_commands_size ) ) == NULL ) {
 		return PL_RESULT_MEMORY_ALLOCATION;
 	}
 
-	if ( ( _pl_variables = ( PLConsoleVariable ** ) pl_malloc( sizeof( PLConsoleVariable * ) * _pl_variables_size ) ) == NULL ) {
+	if ( ( _pl_variables = ( PLConsoleVariable ** ) PlMAllocA( sizeof( PLConsoleVariable * ) * _pl_variables_size ) ) == NULL ) {
 		return PL_RESULT_MEMORY_ALLOCATION;
 	}
 
@@ -359,9 +359,9 @@ void PlShutdownConsole( void ) {
 				continue;
 			}
 
-			pl_free( ( *cmd ) );
+			PlFree( ( *cmd ) );
 		}
-		pl_free( _pl_commands );
+		PlFree( _pl_commands );
 	}
 
 	if ( _pl_variables ) {
@@ -371,9 +371,9 @@ void PlShutdownConsole( void ) {
 				continue;
 			}
 
-			pl_free( ( *var ) );
+			PlFree( ( *var ) );
 		}
-		pl_free( _pl_variables );
+		PlFree( _pl_variables );
 	}
 
 	ConsoleOutputCallback = NULL;
@@ -428,11 +428,11 @@ void PlParseConsoleString( const char *string ) {
 
 	static char **argv = NULL;
 	if ( argv == NULL ) {
-		if ( ( argv = ( char ** ) pl_malloc( sizeof( char * ) * CONSOLE_MAX_ARGUMENTS ) ) == NULL ) {
+		if ( ( argv = ( char ** ) PlMAllocA( sizeof( char * ) * CONSOLE_MAX_ARGUMENTS ) ) == NULL ) {
 			return;
 		}
 		for ( char **arg = argv; arg < argv + CONSOLE_MAX_ARGUMENTS; ++arg ) {
-			( *arg ) = ( char * ) pl_malloc( sizeof( char ) * 1024 );
+			( *arg ) = ( char * ) PlMAllocA( sizeof( char ) * 1024 );
 			if ( ( *arg ) == NULL ) {
 				break;// continue to our doom... ?
 			}
@@ -596,7 +596,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 	if ( length <= 0 )
 		return;
 
-	char *buf = pl_calloc( length, sizeof( char ) );
+	char *buf = PlCAllocA( length, sizeof( char ) );
 	vsnprintf( buf, length, msg, args );
 
 	va_end( args );
@@ -626,7 +626,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 				}
 
 				size_t nl = strlen( prefix ) + length;
-				char *logBuf = pl_calloc( nl, sizeof( char ) );
+				char *logBuf = PlCAllocA( nl, sizeof( char ) );
 				snprintf( logBuf, nl, "%s%s", prefix, buf );
 
 				if ( fwrite( logBuf, sizeof( char ), nl, file ) != nl ) {
@@ -635,7 +635,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 				}
 				fclose( file );
 
-				pl_free( logBuf );
+				PlFree( logBuf );
 			} else {
 				// todo, needs to be more appropriate; return details on exact issue
 				avoid_recursion = true;
@@ -644,5 +644,5 @@ void PlLogMessage( int id, const char *msg, ... ) {
 		}
 	}
 
-	pl_free( buf );
+	PlFree( buf );
 }

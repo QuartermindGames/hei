@@ -7,7 +7,7 @@
 #include "plg_private.h"
 
 PLGLight * plCreateLight( PLGLightType type, PLColour colour) {
-	PLGLight * light = ( PLGLight *)pl_malloc(sizeof( PLGLight ));
+	PLGLight * light = ( PLGLight *)PlMAllocA(sizeof( PLGLight ));
     if(light == NULL) {
         return NULL;
     }
@@ -26,7 +26,7 @@ void plDestroyLight( PLGLight *light) {
     }
 
     gfx_state.num_lights--;
-    pl_free(light);
+	PlFree(light);
 }
 
 void plDrawLight( PLGLight * light) {

@@ -275,7 +275,7 @@ void PlClearMountedLocation( PLFileSystemMount *location ) {
 		fs_mount_ceiling = location->prev;
 	}
 
-	pl_free( location );
+	PlFree( location );
 }
 
 /**
@@ -300,7 +300,7 @@ static void PlInsertMountLocation_( PLFileSystemMount *location ) {
 
 PLFileSystemMount *PlMountLocalLocation( const char *path ) {
 	if ( PlLocalPathExists( path ) ) { /* attempt to mount it as a path */
-		PLFileSystemMount *location = pl_malloc( sizeof( PLFileSystemMount ) );
+		PLFileSystemMount *location = PlMAllocA( sizeof( PLFileSystemMount ) );
 		PlInsertMountLocation_( location );
 		location->type = FS_MOUNT_DIR;
 		snprintf( location->path, sizeof( location->path ), "%s", path );
@@ -326,7 +326,7 @@ PLFileSystemMount *PlMountLocalLocation( const char *path ) {
 
 	PLPackage *pkg = PlLoadPackage( path );
 	if ( pkg != NULL ) {
-		PLFileSystemMount *location = pl_malloc( sizeof( PLFileSystemMount ) );
+		PLFileSystemMount *location = PlMAllocA( sizeof( PLFileSystemMount ) );
 		PlInsertMountLocation_( location );
 		location->type = FS_MOUNT_PACKAGE;
 		location->pkg = pkg;
@@ -620,7 +620,7 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 						Function( filePath, userData );
 
 						// Tack it onto the list
-						cur = pl_calloc( 1, sizeof( FSScanInstance ) );
+						cur = PlCAllocA( 1, sizeof( FSScanInstance ) );
 						strncpy( cur->path, filePath, sizeof( cur->path ) );
 						cur->next = *fileList;
 						*fileList = cur;
@@ -723,7 +723,7 @@ void PlScanDirectory( const char *path, const char *extension, void ( *Function 
 	while ( current != NULL ) {
 		FSScanInstance *prev = current;
 		current = current->next;
-		pl_free( prev );
+		PlFree( prev );
 	}
 }
 
@@ -985,12 +985,12 @@ PLFile *PlOpenLocalFile( const char *path, bool cache ) {
 		return NULL;
 	}
 
-	PLFile *ptr = pl_calloc( 1, sizeof( PLFile ) );
+	PLFile *ptr = PlCAllocA( 1, sizeof( PLFile ) );
 	snprintf( ptr->path, sizeof( ptr->path ), "%s", path );
 	ptr->size = PlGetLocalFileSize( path );
 
 	if ( cache ) {
-		ptr->data = pl_malloc( ptr->size * sizeof( uint8_t ) );
+		ptr->data = PlMAllocA( ptr->size * sizeof( uint8_t ) );
 		ptr->pos = ptr->data;
 		if ( fread( ptr->data, sizeof( uint8_t ), ptr->size, fp ) != ptr->size ) {
 			FSLog( "Failed to read complete file (%s)!\n", path );
@@ -1033,8 +1033,8 @@ void PlCloseFile( PLFile *ptr ) {
 		_pl_fclose( ptr->fptr );
 	}
 
-	pl_free( ptr->data );
-	pl_free( ptr );
+	PlFree( ptr->data );
+	PlFree( ptr );
 }
 
 /**

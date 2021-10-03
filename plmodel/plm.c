@@ -170,7 +170,7 @@ PLMModel *PlmLoadModel( const char *path ) {
 }
 
 static PLMModel *CreateModel( PLMModelType type, PLGMesh **meshes, unsigned int numMeshes ) {
-	PLMModel *model = pl_malloc( sizeof( PLMModel ) );
+	PLMModel *model = PlMAllocA( sizeof( PLMModel ) );
 	if ( model == NULL ) {
 		return NULL;
 	}
@@ -184,12 +184,12 @@ static PLMModel *CreateModel( PLMModelType type, PLGMesh **meshes, unsigned int 
 }
 
 static PLMModel *CreateBasicModel( PLMModelType type, PLGMesh *mesh ) {
-	PLGMesh **meshes = pl_malloc( sizeof( PLGMesh * ) );
+	PLGMesh **meshes = PlMAllocA( sizeof( PLGMesh * ) );
 	meshes[ 0 ] = mesh;
 
 	PLMModel *model = CreateModel( type, meshes, 1 );
 	if ( model == NULL ) {
-		pl_free( meshes );
+		PlFree( meshes );
 		return NULL;
 	}
 
@@ -241,14 +241,14 @@ void PlmDestroyModel( PLMModel *model ) {
 		PlgDestroyMesh( model->meshes[ i ] );
 	}
 
-	pl_free( model->meshes );
-	pl_free( model->materials );
+	PlFree( model->meshes );
+	PlFree( model->materials );
 
 	if ( model->type == PLM_MODELTYPE_SKELETAL ) {
-		pl_free( model->internal.skeletal_data.bones );
+		PlFree( model->internal.skeletal_data.bones );
 	}
 
-	pl_free( model );
+	PlFree( model );
 }
 
 #if 0 /* todo: move */

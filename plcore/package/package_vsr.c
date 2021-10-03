@@ -67,7 +67,7 @@ PLPackage *PlLoadVsrPackage( const char *path ) {
 	if ( strncmp( chunk_header.header.identifier, "1RSV", 4 ) == 0 ) {
 		PlReadFile( fp, &chunk_directory, sizeof( VSRDirectoryChunk ), 1 );
 		if ( strncmp( chunk_directory.header.identifier, "CRID", 4 ) == 0 ) {
-			directories = pl_malloc( sizeof( VSRDirectoryIndex ) * chunk_directory.num_indices );
+			directories = PlMAllocA( sizeof( VSRDirectoryIndex ) * chunk_directory.num_indices );
 			PlReadFile( fp, directories, sizeof( VSRDirectoryIndex ), chunk_directory.num_indices );
 
 			/* skip VSRN chunk, seems to be unused? */
@@ -80,7 +80,7 @@ PLPackage *PlLoadVsrPackage( const char *path ) {
 
 				/* fuck this, let's do this the lazy way */
 				PlFileSeek( fp, sizeof( uint32_t ) * chunk_strings.num_indices, PL_SEEK_CUR );
-				strings = pl_calloc( sizeof( VSRStringIndex ), chunk_strings.num_indices );
+				strings = PlCAllocA( sizeof( VSRStringIndex ), chunk_strings.num_indices );
 				for ( unsigned int i = 0; i < chunk_strings.num_indices; ++i ) {
 					for ( unsigned int j = 0; j < 256; ++j ) {
 						strings[ i ].file_name[ j ] = PlReadInt8( fp, NULL );
@@ -102,8 +102,8 @@ PLPackage *PlLoadVsrPackage( const char *path ) {
 	PlCloseFile( fp );
 
 	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
-		pl_free( directories );
-		pl_free( strings );
+		PlFree( directories );
+		PlFree( strings );
 		return NULL;
 	}
 
@@ -117,8 +117,8 @@ PLPackage *PlLoadVsrPackage( const char *path ) {
 		strncpy( index->fileName, strings[ i ].file_name, sizeof( index->fileName ) );
 	}
 
-	pl_free( directories );
-	pl_free( strings );
+	PlFree( directories );
+	PlFree( strings );
 
 	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
 		PlDestroyPackage( package );

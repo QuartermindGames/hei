@@ -535,10 +535,10 @@ static PLPluginExportTable exportTable = {
 };
 
 const PLPluginExportTable *PlGetExportTable( void ) {
-	exportTable.MAlloc = pl_malloc;
-	exportTable.CAlloc = pl_calloc;
-	exportTable.ReAlloc = pl_realloc;
-	exportTable.Free = pl_free;
+	exportTable.MAlloc = PlMAlloc;
+	exportTable.CAlloc = PlCAlloc;
+	exportTable.ReAlloc = PlReAlloc;
+	exportTable.Free = PlFree;
 	return &exportTable;
 }
 
@@ -585,7 +585,7 @@ bool PlRegisterPlugin( const char *path ) {
 		plugins = PlCreateLinkedList();
 	}
 
-	PLPlugin *plugin = pl_malloc( sizeof( PLPlugin ) );
+	PLPlugin *plugin = PlMAllocA( sizeof( PLPlugin ) );
 	plugin->initFunction = InitializePlugin;
 	plugin->libPtr = library;
 	plugin->node = PlInsertLinkedListNode( plugins, plugin );

@@ -32,20 +32,20 @@ PLImage *PlLoadFtxImage( const char *path ) {
 	}
 
 	unsigned int size = header.width * header.height * 4;
-	uint8_t *buffer = pl_malloc( size );
+	uint8_t *buffer = PlMAlloc( size, true );
 	size_t rSize = PlReadFile( file, buffer, sizeof( uint8_t ), size );
 
 	PlCloseFile( file );
 
 	if ( rSize != size ) {
-		pl_free( buffer );
+		PlFree( buffer );
 		return NULL;
 	}
 
 	PLImage *image = PlCreateImage( buffer, header.width, header.height, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
 	/* create image makes a copy of the buffer */
-	pl_free( buffer );
+	PlFree( buffer );
 
 	return image;
 }

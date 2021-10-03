@@ -12,13 +12,13 @@
 #include "filesystem_private.h"
 #include "image_private.h"
 
-#define STBI_MALLOC( sz ) pl_malloc( sz )
-#define STBI_REALLOC( p, newsz ) pl_realloc( p, newsz )
-#define STBI_FREE( p ) pl_free( p )
+#define STBI_MALLOC( sz ) PlMAllocA( sz )
+#define STBI_REALLOC( p, newsz ) PlReAllocA( p, newsz )
+#define STBI_FREE( p ) PlFree( p )
 
-#define STBIW_MALLOC( sz ) pl_malloc( sz )
-#define STBIW_REALLOC( p, newsz ) pl_realloc( p, newsz )
-#define STBIW_FREE( p ) pl_free( p )
+#define STBIW_MALLOC( sz ) PlMAllocA( sz )
+#define STBIW_REALLOC( p, newsz ) PlReAllocA( p, newsz )
+#define STBIW_FREE( p ) PlFree( p )
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #if defined( STB_IMAGE_WRITE_IMPLEMENTATION )
@@ -45,14 +45,14 @@ static PLImage *LoadStbImage( const char *path ) {
 		return NULL;
 	}
 
-	PLImage *image = pl_calloc( 1, sizeof( PLImage ) );
+	PLImage *image = PlCAllocA( 1, sizeof( PLImage ) );
 	image->colour_format = PL_COLOURFORMAT_RGBA;
 	image->format = PL_IMAGEFORMAT_RGBA8;
 	image->width = ( unsigned int ) x;
 	image->height = ( unsigned int ) y;
 	image->size = PlGetImageSize( image->format, image->width, image->height );
 	image->levels = 1;
-	image->data = pl_calloc( image->levels, sizeof( uint8_t * ) );
+	image->data = PlCAllocA( image->levels, sizeof( uint8_t * ) );
 	image->data[ 0 ] = data;
 
 	return image;
@@ -119,7 +119,7 @@ void PlClearImageLoaders( void ) {
 }
 
 PLImage *PlCreateImage( uint8_t *buf, unsigned int w, unsigned int h, PLColourFormat col, PLImageFormat dat ) {
-	PLImage *image = pl_malloc( sizeof( PLImage ) );
+	PLImage *image = PlMAlloc( sizeof( PLImage ), false );
 	if ( image == NULL ) {
 		return NULL;
 	}
@@ -131,13 +131,13 @@ PLImage *PlCreateImage( uint8_t *buf, unsigned int w, unsigned int h, PLColourFo
 	image->size = PlGetImageSize( image->format, image->width, image->height );
 	image->levels = 1;
 
-	image->data = pl_calloc( image->levels, sizeof( uint8_t * ) );
+	image->data = PlCAlloc( image->levels, sizeof( uint8_t * ), false );
 	if ( image->data == NULL ) {
 		PlDestroyImage( image );
 		return NULL;
 	}
 
-	image->data[ 0 ] = pl_calloc( image->size, sizeof( uint8_t ) );
+	image->data[ 0 ] = PlCAlloc( image->size, sizeof( uint8_t ), false );
 	if ( image->data[ 0 ] == NULL ) {
 		PlDestroyImage( image );
 		return NULL;
@@ -156,7 +156,7 @@ void PlDestroyImage( PLImage *image ) {
 	}
 
 	PlFreeImage( image );
-	pl_free( image );
+	PlFree( image );
 }
 
 PLImage *PlLoadImage( const char *path ) {
@@ -252,7 +252,7 @@ static bool RGB8toRGBA8( PLImage *image ) {
 	size_t num_pixels = image->size / 3;
 
 	RGB8 *src = ( RGB8 * ) image->data[ 0 ];
-	RGBA8 *dst = pl_malloc( size );
+	RGBA8 *dst = PlMAllocA( size );
 	for ( size_t i = 0; i < num_pixels; ++i ) {
 		dst->r = src->r;
 		dst->g = src->g;
@@ -262,7 +262,7 @@ static bool RGB8toRGBA8( PLImage *image ) {
 		src++;
 	}
 
-	pl_free( image->data[ 0 ] );
+	PlFree( image->data[ 0 ] );
 
 	image->data[ 0 ] = ( uint8_t * ) ( &dst[ 0 ] );
 	image->size = size;
@@ -275,7 +275,7 @@ static bool RGB8toRGBA8( PLImage *image ) {
 #define scale_5to8( i ) ( ( ( ( double ) ( i ) ) / 31 ) * 255 )
 
 static uint8_t *ImageDataRGB5A1toRGBA8( const uint8_t *src, size_t n_pixels ) {
-	uint8_t *dst = pl_malloc( n_pixels * 4 );
+	uint8_t *dst = PlMAlloc( n_pixels * 4, false );
 	if ( dst == NULL ) {
 		return NULL;
 	}
@@ -313,7 +313,7 @@ bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
 
 		case PL_IMAGEFORMAT_RGB5A1: {
 			if ( new_format == PL_IMAGEFORMAT_RGBA8 ) {
-				uint8_t **levels = pl_calloc( image->levels, sizeof( uint8_t * ) );
+				uint8_t **levels = PlCAllocA( image->levels, sizeof( uint8_t * ) );
 
 				/* Make a new copy of each detail level in the new format. */
 
@@ -325,10 +325,10 @@ bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
 					if ( levels[ l ] == NULL ) {
 						/* Memory allocation failed, ditch any buffers we've created so far. */
 						for ( unsigned int m = 0; m < l; ++m ) {
-							pl_free( levels[ m ] );
+							PlFree( levels[ m ] );
 						}
 
-						pl_free( levels );
+						PlFree( levels );
 
 						PlReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate memory for image data" );
 						return false;
@@ -341,10 +341,10 @@ bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
 				/* Now that all levels have been converted, free and replace the old buffers. */
 
 				for ( unsigned int l = 0; l < image->levels; ++l ) {
-					pl_free( image->data[ l ] );
+					PlFree( image->data[ l ] );
 				}
 
-				pl_free( image->data );
+				PlFree( image->data );
 				image->data = levels;
 
 				image->format = new_format;
@@ -482,10 +482,10 @@ void PlFreeImage( PLImage *image ) {
 	}
 
 	for ( unsigned int levels = 0; levels < image->levels; ++levels ) {
-		pl_free( image->data[ levels ] );
+		PlFree( image->data[ levels ] );
 	}
 
-	pl_free( image->data );
+	PlFree( image->data );
 }
 
 bool PlImageIsPowerOfTwo( const PLImage *image ) {
@@ -508,7 +508,7 @@ bool PlFlipImageVertical( PLImage *image ) {
 
 	unsigned int bytes_per_row = width * bytes_per_pixel;
 
-	unsigned char *swap = pl_malloc( bytes_per_row );
+	unsigned char *swap = PlMAlloc( bytes_per_row, false );
 	if ( swap == NULL ) {
 		return false;
 	}
@@ -527,7 +527,7 @@ bool PlFlipImageVertical( PLImage *image ) {
 		height /= 2;
 	}
 
-	pl_free( swap );
+	PlFree( swap );
 
 	return true;
 }

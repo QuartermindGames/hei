@@ -22,22 +22,22 @@ static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 	}
 
 	size_t size = ( pi->compressionType != PL_COMPRESSION_NONE ) ? pi->compressedSize : pi->fileSize;
-	uint8_t *dataPtr = pl_malloc( size );
+	uint8_t *dataPtr = PlMAllocA( size );
 	if ( PlReadFile( fh, dataPtr, sizeof( uint8_t ), size ) != size ) {
-		pl_free( dataPtr );
+		PlFree( dataPtr );
 		return NULL;
 	}
 
 	if ( pi->compressionType == PL_COMPRESSION_ZLIB ) {
-		uint8_t *decompressedPtr = pl_malloc( pi->fileSize );
+		uint8_t *decompressedPtr = PlMAllocA( pi->fileSize );
 		mz_ulong uncompressedLength = ( mz_ulong ) pi->fileSize;
 		int status = mz_uncompress( decompressedPtr, &uncompressedLength, dataPtr, ( mz_ulong ) pi->compressedSize );
 
-		pl_free( dataPtr );
+		PlFree( dataPtr );
 		dataPtr = decompressedPtr;
 
 		if ( status != MZ_OK ) {
-			pl_free( dataPtr );
+			PlFree( dataPtr );
 			PlReportErrorF( PL_RESULT_FILEREAD, "failed to decompress buffer (%s)", mz_error( status ) );
 			return NULL;
 		}
@@ -50,7 +50,10 @@ static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
  * Allocate a new package handle.
  */
 PLPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, uint8_t *( *OpenFile )( PLFile *filePtr, PLPackageIndex *index ) ) {
-	PLPackage *package = pl_malloc( sizeof( PLPackage ) );
+	PLPackage *package = PlMAlloc( sizeof( PLPackage ), false );
+	if ( package == NULL ) {
+		return NULL;
+	}
 
 	if ( OpenFile == NULL ) {
 		package->internal.LoadFile = LoadGenericPackageFile;
@@ -59,7 +62,7 @@ PLPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, uint
 	}
 
 	package->table_size = tableSize;
-	package->table = pl_calloc( tableSize, sizeof( PLPackageIndex ) );
+	package->table = PlCAllocA( tableSize, sizeof( PLPackageIndex ) );
 
 	snprintf( package->path, sizeof( package->path ), "%s", path );
 
@@ -73,8 +76,8 @@ void PlDestroyPackage( PLPackage *package ) {
 		return;
 	}
 
-	pl_free( package->table );
-	pl_free( package );
+	PlFree( package->table );
+	PlFree( package );
 }
 #if 0// todo
 void plWritePackage(PLPackage *package) {
@@ -183,7 +186,7 @@ PLFile *PlLoadPackageFile( PLPackage *package, const char *path ) {
 
 		uint8_t *dataPtr = package->internal.LoadFile( packageFile, &( package->table[ i ] ) );
 		if ( dataPtr != NULL ) {
-			file = pl_malloc( sizeof( PLFile ) );
+			file = PlMAllocA( sizeof( PLFile ) );
 			snprintf( file->path, sizeof( file->path ), "%s", package->table[ i ].fileName );
 			file->size = package->table[ i ].fileSize;
 			file->data = dataPtr;

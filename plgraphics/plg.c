@@ -92,7 +92,7 @@ PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned i
 		return NULL;
 	}
 
-	PLGFrameBuffer *buffer = ( PLGFrameBuffer * ) pl_malloc( sizeof( PLGFrameBuffer ) );
+	PLGFrameBuffer *buffer = ( PLGFrameBuffer * ) PlMAllocA( sizeof( PLGFrameBuffer ) );
 	if ( !buffer ) {
 		return NULL;
 	}
@@ -113,7 +113,7 @@ void PlgDestroyFrameBuffer( PLGFrameBuffer *buffer ) {
 
 	CallGfxFunction( DeleteFrameBuffer, buffer );
 
-	pl_free( buffer );
+	PlFree( buffer );
 }
 
 PLGTexture *PlgGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter ) {

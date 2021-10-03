@@ -58,10 +58,10 @@ PLPackage *PlLoadWadPackage( const char *path ) {
 
 	PlFileSeek( filePtr, tableOffset, PL_SEEK_SET );
 
-	WadIndex *indices = pl_malloc( tableSize );
+	WadIndex *indices = PlMAllocA( tableSize );
 	for ( unsigned int i = 0; i < numLumps; ++i ) {
 #define cleanup()       \
-	pl_free( indices ); \
+	PlFree( indices ); \
 	PlCloseFile( filePtr )
 		indices[ i ].offset = PlReadInt32( filePtr, false, &status );
 		if ( indices[ i ].offset >= tableOffset ) {
@@ -86,7 +86,7 @@ PLPackage *PlLoadWadPackage( const char *path ) {
 	PlCloseFile( filePtr );
 
 	if ( !status ) {
-		pl_free( indices );
+		PlFree( indices );
 		return NULL;
 	}
 
@@ -101,7 +101,7 @@ PLPackage *PlLoadWadPackage( const char *path ) {
 		index->fileName[ 8 ] = '\0';
 	}
 
-	pl_free( indices );
+	PlFree( indices );
 
 	return package;
 }
