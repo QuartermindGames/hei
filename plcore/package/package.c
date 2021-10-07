@@ -18,7 +18,7 @@
 
 typedef struct BlstUser {
 	uint8_t *buffer;
-	unsigned int length;
+	unsigned int maxLength, length;
 } BlstUser;
 
 static unsigned int BlstCbIn( void *how, unsigned char **buf ) {
@@ -33,6 +33,9 @@ static unsigned int BlstCbIn( void *how, unsigned char **buf ) {
 
 static int BlstCbOut( void *how, unsigned char *buf, unsigned int len ) {
 	BlstUser *user = ( BlstUser * ) how;
+	if ( user->length >= user->maxLength ) {
+		return 1;
+	}
 	memcpy( user->buffer + user->length, buf, len );
 	user->length += len;
 	return 0;
@@ -78,6 +81,7 @@ static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 			         out = {
 			                 .buffer = decompressedPtr,
 			                 .length = 0,
+			                 .maxLength = uncompressedLength,
 			         };
 			int status = blast( BlstCbIn, &in, BlstCbOut, &out, NULL, NULL );
 
