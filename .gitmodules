@@ -4,3 +4,6 @@
 [submodule "plugins/driver_d3d12"]
 	path = plugins/driver_d3d12
 	url = https://github.com/OldTimes-Software/driver_d3d12.git
+[submodule "plcore/3rdparty/zlib"]
+	path = plcore/3rdparty/zlib
+	url = https://github.com/madler/zlib.git
