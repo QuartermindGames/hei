@@ -9,7 +9,8 @@
 PL_EXTERN_C
 
 /* lower-level function pointers
- * these point to the standard C functions by default */
+ * these point to the standard C functions by default
+ * DO NOT USE DIRECTLY, use *Alloc and *Free functions instead! */
 extern PL_DLL void *( *pl_malloc )( size_t size );
 extern PL_DLL void *( *pl_calloc )( size_t num, size_t size );
 extern PL_DLL void *( *pl_realloc )( void *ptr, size_t newSize );

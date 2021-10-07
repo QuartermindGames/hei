@@ -36,8 +36,13 @@ static PLPackage *ParseOPKPackage( PLFile *file ) {
 	for ( int32_t i = 0; i < numFiles; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
 		int32_t nameLength = PlReadInt32( file, false, NULL );
-		assert( nameLength < sizeof( index->fileName ) );
-		if ( nameLength <= 0 || PlReadFile( file, index->fileName, sizeof( char ), nameLength ) != nameLength ) {
+		if ( nameLength >= sizeof( index->fileName ) || nameLength <= 0 ) {
+			PlReportErrorF( PL_RESULT_FILEREAD, "invalid index name length, %d", i );
+			PlDestroyPackage( package );
+			return NULL;
+		}
+
+		if ( PlReadFile( file, index->fileName, sizeof( char ), nameLength ) != nameLength ) {
 			PlReportErrorF( PL_RESULT_FILEREAD, "failed to read in file name for index %d", i );
 			PlDestroyPackage( package );
 			return NULL;

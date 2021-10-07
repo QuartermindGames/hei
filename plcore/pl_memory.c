@@ -29,6 +29,9 @@ static size_t totalRAMUsage = 0;
 
 PL_DLL PLMemoryAbortCallbackT pl_memory_abort_cb = NULL;
 
+/**
+ * Allocates the desired number of bytes, otherwise calls abort on fail if requested.
+ */
 void *PlCAlloc( size_t num, size_t size, bool abortOnFail ) {
 	size_t totalSize = num * size;
 #if defined( TRACK_MEMORY )
@@ -68,10 +71,17 @@ void *PlCAlloc( size_t num, size_t size, bool abortOnFail ) {
 	return buf;
 }
 
+/**
+ * Allocates the desired number of bytes, otherwise calls abort on fail if requested.
+ * Keep in mind that the allocated buffer will be zero'd.
+ */
 void *PlMAlloc( size_t size, bool abortOnFail ) {
 	return PlCAlloc( 1, size, abortOnFail );
 }
 
+/**
+ * Allocates the desired number of bytes, otherwise calls abort on fail if requested.
+ */
 void *PlReAlloc( void *ptr, size_t newSize, bool abortOnFail ) {
 	char *buf = ptr;
 	if ( buf == NULL ) {
