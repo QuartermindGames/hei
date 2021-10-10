@@ -24,6 +24,8 @@ SOFTWARE.
 
 project(plcore)
 
+add_subdirectory(3rdparty/zlib/)
+
 option(PL_COMPILE_STATIC "Compile as static library" ON)
 
 add_definitions("-D_DEBUG")
@@ -55,13 +57,16 @@ file(
         string/strtolower.c
         string/strtoupper.c
         string/vscprintf.c
+
+        3rdparty/zlib/contrib/blast/blast.c
 )
 
 file(GLOB PLATFORM_PACKAGE_FILES
         package/*.c
-        package/miniz/miniz.c)
-
-file(GLOB PLATFORM_IMAGE_FILES image/*.*)
+        )
+file(GLOB PLATFORM_IMAGE_FILES
+        image/*.*
+        )
 
 if (PL_COMPILE_STATIC)
     add_library(plcore STATIC
@@ -83,6 +88,8 @@ elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
     target_compile_options(plcore PUBLIC -D_CRT_SECURE_NO_WARNINGS /W3)
 endif ()
 
+target_link_libraries(plcore zlibstatic)
+
 # Platform specific libraries should be provided here
 if (UNIX)
     target_link_libraries(plcore dl m)
@@ -98,4 +105,8 @@ set_property(TARGET plcore PROPERTY C_STANDARD_REQUIRED 11)
 target_include_directories(plcore PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/
         ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_include_directories(plcore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(plcore PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        # https://github.com/madler/zlib/issues/133 *shrug*
+        "${CMAKE_CURRENT_BINARY_DIR}/3rdparty/zlib/"
+        )

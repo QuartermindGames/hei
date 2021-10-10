@@ -86,5 +86,6 @@ PLPackage *PlLoadFfPackage( const char *path );
 PLPackage *PlLoadWadPackage( const char *path );
 PLPackage *PlLoadRidbPackage( const char *path );
 PLPackage *PlLoadApukPackage( const char *path );
+PLPackage *PlLoadOPKPackage( const char *path );
 
 PL_EXTERN_C_END

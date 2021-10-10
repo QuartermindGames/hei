@@ -8,7 +8,38 @@
 #include "package_private.h"
 #include "filesystem_private.h"
 
-#include "miniz/miniz.h"
+#include "../3rdparty/zlib/zlib.h"
+#include "../3rdparty/zlib/deflate.h"
+#include "../3rdparty/zlib/contrib/blast/blast.h"
+
+/****************************************
+ * Generic Loader
+ ****************************************/
+
+typedef struct BlstUser {
+	uint8_t *buffer;
+	unsigned int maxLength, length;
+} BlstUser;
+
+static unsigned int BlstCbIn( void *how, unsigned char **buf ) {
+	BlstUser *user = ( BlstUser * ) how;
+	if ( user->buffer == NULL ) {
+		return 0;
+	}
+
+	*buf = user->buffer;
+	return user->length;
+}
+
+static int BlstCbOut( void *how, unsigned char *buf, unsigned int len ) {
+	BlstUser *user = ( BlstUser * ) how;
+	if ( user->length >= user->maxLength ) {
+		return 1;
+	}
+	memcpy( user->buffer + user->length, buf, len );
+	user->length += len;
+	return 0;
+}
 
 /**
  * Generic loader for package files, since this is unlikely to change
@@ -28,23 +59,70 @@ static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 		return NULL;
 	}
 
-	if ( pi->compressionType == PL_COMPRESSION_ZLIB ) {
+	if ( pi->compressionType != PL_COMPRESSION_NONE ) {
 		uint8_t *decompressedPtr = PlMAllocA( pi->fileSize );
-		mz_ulong uncompressedLength = ( mz_ulong ) pi->fileSize;
-		int status = mz_uncompress( decompressedPtr, &uncompressedLength, dataPtr, ( mz_ulong ) pi->compressedSize );
+		unsigned long uncompressedLength = ( unsigned long ) pi->fileSize;
+		if ( pi->compressionType == PL_COMPRESSION_ZLIB ) {
+			int status = uncompress( decompressedPtr, &uncompressedLength, dataPtr, ( unsigned long ) pi->compressedSize );
 
-		PlFree( dataPtr );
-		dataPtr = decompressedPtr;
-
-		if ( status != MZ_OK ) {
 			PlFree( dataPtr );
-			PlReportErrorF( PL_RESULT_FILEREAD, "failed to decompress buffer (%s)", mz_error( status ) );
-			return NULL;
+			dataPtr = decompressedPtr;
+
+			if ( status != Z_OK ) {
+				PlFree( dataPtr );
+				PlReportErrorF( PL_RESULT_FILEREAD, "failed to decompress buffer (%s)", zError( status ) );
+				return NULL;
+			}
+		} else if ( pi->compressionType == PL_COMPRESSION_IMPLODE ) {
+			BlstUser in = {
+			                 .buffer = dataPtr,
+			                 .length = size,
+			         },
+			         out = {
+			                 .buffer = decompressedPtr,
+			                 .length = 0,
+			                 .maxLength = uncompressedLength,
+			         };
+			int status = blast( BlstCbIn, &in, BlstCbOut, &out, NULL, NULL );
+
+			PlFree( dataPtr );
+			dataPtr = decompressedPtr;
+
+			if ( status != 0 ) {
+				const char *errmsg;
+				switch ( status ) {
+					case 2:
+						errmsg = "ran out of input before completing decompression";
+						break;
+					case 1:
+						errmsg = "output error before completing decompression";
+						break;
+					case -1:
+						errmsg = "literal flag not zero or one";
+						break;
+					case -2:
+						errmsg = "dictionary size not in 4..6";
+						break;
+					case -3:
+						errmsg = "distance is too far back";
+						break;
+					default:
+						errmsg = "unknown error when decompressing buffer";
+						break;
+				}
+
+				PlFree( dataPtr );
+				PlReportErrorF( PL_RESULT_FILEREAD, "%s (%d)", errmsg, status );
+				return NULL;
+			}
 		}
 	}
 
 	return dataPtr;
 }
+
+/****************************************
+ ****************************************/
 
 /**
  * Allocate a new package handle.
@@ -134,6 +212,8 @@ void PlRegisterStandardPackageLoaders( void ) {
 	PlRegisterPackageLoader( "rim", PlLoadRidbPackage );
 	/* mortyr */
 	PlRegisterPackageLoader( "hal", PlLoadApukPackage );
+	/* outcast */
+	PlRegisterPackageLoader( "opk", PlLoadOPKPackage );
 }
 
 PLPackage *PlLoadPackage( const char *path ) {
@@ -147,16 +227,16 @@ PLPackage *PlLoadPackage( const char *path ) {
 
 		if ( !PL_INVALID_STRING( ext ) && !PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
 			if ( pl_strncasecmp( ext, package_loaders[ i ].ext, sizeof( package_loaders[ i ].ext ) ) == 0 ) {
-			    PLPackage *package = package_loaders[ i ].LoadFunction( path );
+				PLPackage *package = package_loaders[ i ].LoadFunction( path );
 				if ( package != NULL ) {
-				    strncpy( package->path, path, sizeof( package->path ) );
+					strncpy( package->path, path, sizeof( package->path ) );
 					return package;
 				}
 			}
 		} else if ( PL_INVALID_STRING( ext ) && PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
-		    PLPackage *package = package_loaders[ i ].LoadFunction( path );
+			PLPackage *package = package_loaders[ i ].LoadFunction( path );
 			if ( package != NULL ) {
-			    strncpy( package->path, path, sizeof( package->path ) );
+				strncpy( package->path, path, sizeof( package->path ) );
 				return package;
 			}
 		}
