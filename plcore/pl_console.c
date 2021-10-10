@@ -315,7 +315,7 @@ IMPLEMENT_COMMAND( help, "Returns information regarding specified command or var
 
 //////////////////////////////////////////////
 
-void ( *ConsoleOutputCallback )( int level, const char *msg );
+void ( *ConsoleOutputCallback )( int level, const char *msg, PLColour colour );
 
 static void InitializeDefaultLogLevels( void );
 PLFunctionResult PlInitConsole( void ) {
@@ -379,7 +379,7 @@ void PlShutdownConsole( void ) {
 	ConsoleOutputCallback = NULL;
 }
 
-void PlSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg ) ) {
+void PlSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg, PLColour colour ) ) {
 	ConsoleOutputCallback = Callback;
 }
 
@@ -609,7 +609,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 
 	if ( ConsoleOutputCallback != NULL ) {
 		// todo: pass back level
-		ConsoleOutputCallback( id, buf );
+		ConsoleOutputCallback( id, buf, l->colour );
 	}
 
 	static bool avoid_recursion = false;
