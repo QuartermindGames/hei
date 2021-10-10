@@ -416,15 +416,16 @@ const char **PlAutocompleteConsoleString( const char *string, unsigned int *numE
 }
 
 void PlParseConsoleString( const char *string ) {
-	if ( string == NULL || string[ 0 ] == '\0' ) {
+	if ( string == NULL || *string == '\0' ) {
 		DebugPrint( "Invalid string passed to ParseConsoleString!\n" );
 		return;
 	}
 
-	char buf[ 1024 ];
-	strcpy( buf, string );
-	strcat( buf, "\n" );
+	size_t l = strlen( string ) + 2;
+	char *buf = PlMAllocA( l );
+	snprintf( buf, l, "%s\n", string );
 	PlLogMessage( LOG_LEVEL_LOW, buf );
+	PlFree( buf );
 
 	static char **argv = NULL;
 	if ( argv == NULL ) {
