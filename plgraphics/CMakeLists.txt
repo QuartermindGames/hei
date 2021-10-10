@@ -23,10 +23,11 @@ SOFTWARE.
 ]]
 
 project(plgraphics)
+option(PLG_COMPILE_STATIC "Compile as static library" ON)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-add_library(plgraphics SHARED
+file(GLOB PLG_SOURCE_FILES
         plg.c
         plg_camera.c
         plg_draw.c
@@ -36,7 +37,14 @@ add_library(plgraphics SHARED
         plg_mesh.c
         plg_shader.c
         plg_texture.c
-        polygon.c)
+        polygon.c
+        )
+
+if (PLG_COMPILE_STATIC)
+    add_library(plgraphics STATIC ${PLG_SOURCE_FILES})
+else ()
+    add_library(plgraphics SHARED ${PLG_SOURCE_FILES})
+endif ()
 
 target_include_directories(plgraphics PUBLIC include/)
 target_link_libraries(plgraphics plcore)
