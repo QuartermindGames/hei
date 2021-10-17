@@ -140,10 +140,10 @@ void PlgDrawFilledRectangle( const PLRectangle2D *rectangle ) {
 
 	SetupRectangleMesh( mesh, rectangle->xy.x, rectangle->xy.y, rectangle->wh.x, rectangle->wh.y, PLColour( 255, 255, 255, 255 ) );
 
-	PlgSetMeshVertexColour( mesh, 0, rectangle->ll );
-	PlgSetMeshVertexColour( mesh, 1, rectangle->ul );
-	PlgSetMeshVertexColour( mesh, 2, rectangle->lr );
-	PlgSetMeshVertexColour( mesh, 3, rectangle->ur );
+	PlgSetMeshVertexColour( mesh, 0, rectangle->ul );
+	PlgSetMeshVertexColour( mesh, 1, rectangle->ll );
+	PlgSetMeshVertexColour( mesh, 2, rectangle->ur );
+	PlgSetMeshVertexColour( mesh, 3, rectangle->lr );
 
 	PlMatrixMode( PL_MODELVIEW_MATRIX );
 	PlPushMatrix();
