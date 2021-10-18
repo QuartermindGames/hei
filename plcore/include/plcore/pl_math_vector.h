@@ -111,6 +111,10 @@ namespace hei {
 			x = a;
 			y = b;
 		}
+		Vector2( const PLVector2 &v ) {
+			x = v.x;
+			y = v.y;
+		}
 		Vector2() {
 			x = 0.0f;
 			y = 0.0f;
