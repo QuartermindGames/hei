@@ -8,14 +8,7 @@
 
 #include <plcore/pl.h>
 #include <plcore/pl_filesystem.h>
-
-typedef enum PLCompressionType {
-	PL_COMPRESSION_NONE,
-	PL_COMPRESSION_ZLIB,
-	PL_COMPRESSION_IMPLODE,
-
-	PL_MAX_COMPRESSION_FORMATS
-} PLCompressionType;
+#include <plcore/pl_compression.h>
 
 typedef struct PLPackageIndex {
 	size_t offset;
