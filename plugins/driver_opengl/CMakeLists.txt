@@ -44,4 +44,7 @@ else ()
     target_link_libraries(opengl_driver GLEW GL)
 endif ()
 
-target_include_directories(opengl_driver PRIVATE ../../plcore/include/ ../../plgraphics/include/)
+target_include_directories(opengl_driver PRIVATE
+        ../../plcore/include/
+        ../../plgraphics/include/
+        )
