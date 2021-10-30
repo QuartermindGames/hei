@@ -41,7 +41,7 @@ static LRESULT WindowCallbackProcedure( HWND windowHandle, unsigned int msg, WPA
 	return 0;
 }
 
-PLWindow *plCreateWindow( int w, int h, const char *title ) {
+PLWindow *PlCreateWindow( int w, int h, const char *title ) {
 	HINSTANCE instance = GetModuleHandle( NULL );
 	if( instance == NULL ) {
 		ReportError( PL_RESULT_FAIL, "failed to fetch valid module handle" );
@@ -89,7 +89,7 @@ PLWindow *plCreateWindow( int w, int h, const char *title ) {
 	return window;
 }
 
-void plDestroyWindow( PLWindow *windowPtr ) {
+void PlDestroyWindow( PLWindow *windowPtr ) {
 	if( windowPtr == NULL ) {
 		return;
 	}
@@ -101,7 +101,7 @@ void plDestroyWindow( PLWindow *windowPtr ) {
 	}
 }
 
-void plGetWindowPosition( PLWindow *windowPtr, int *x, int *y ) {
+void PlGetWindowPosition( PLWindow *windowPtr, int *x, int *y ) {
 	*x = 0; *y = 0;
 
 	RECT position;
@@ -114,6 +114,6 @@ void plGetWindowPosition( PLWindow *windowPtr, int *x, int *y ) {
 	*y = position.top;
 }
 
-void plSwapWindow( PLWindow *windowPtr ) {
+void PlSwapWindow( PLWindow *windowPtr ) {
 	SwapBuffers( windowPtr->deviceContext );
 }
