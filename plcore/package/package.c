@@ -8,9 +8,8 @@
 #include "package_private.h"
 #include "filesystem_private.h"
 
-#include "../3rdparty/zlib/zlib.h"
-#include "../3rdparty/zlib/deflate.h"
-#include "../3rdparty/zlib/contrib/blast/blast.h"
+#include "../3rdparty/miniz/miniz.h"
+#include "../3rdparty/blast/blast.h"
 
 /****************************************
  * Generic Loader
