@@ -18,4 +18,6 @@ typedef enum PLCompressionType {
 
 PL_EXTERN_C
 
+void *PlDeflateCompression( const void *data, unsigned long length, unsigned long *outLength );
+
 PL_EXTERN_C_END

@@ -31,6 +31,7 @@ add_definitions("-D_DEBUG")
 file(
         GLOB PLATFORM_SOURCE_FILES
         pl.c
+        pl_compression.c
         pl_console.c
         pl_filesystem.c
         pl_memory.c
