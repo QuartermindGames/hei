@@ -115,6 +115,8 @@ static void Cmd_Exit( unsigned int argc, char **argv ) {
 	isRunning = false;
 }
 
+PLPackage *PAK_LoadFile( const char *path ); /* ftactics.c */
+
 #define MAX_COMMAND_LENGTH 256
 static char cmdLine[ MAX_COMMAND_LENGTH ];
 int main( int argc, char **argv ) {
@@ -126,6 +128,8 @@ int main( int argc, char **argv ) {
 
 	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
 	PlRegisterStandardPackageLoaders();
+
+	PlRegisterPackageLoader( "pak", PAK_LoadFile );
 
 	PlRegisterPlugins( "./" );
 

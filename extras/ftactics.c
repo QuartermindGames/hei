@@ -1,6 +1,8 @@
 /* Copyright (C) 2021 Mark E Sowden <markelswo@gmail.com> */
 
-#include "plugin.h"
+#include <plcore/pl.h>
+#include <plcore/pl_filesystem.h>
+#include <plcore/pl_package.h>
 
 /* This outline is probably specific to Future Tactics,
  * which is based on RenderWare but appears to use it's
@@ -16,20 +18,20 @@ static PLPackage *PAK_ReadFile( PLFile *file ) {
 	bool status;
 
 	/* first we're provided with an indication of how many files are in the package */
-	unsigned int numFiles = gInterface->ReadInt32( file, false, &status );
+	unsigned int numFiles = PlReadInt32( file, false, &status );
 	if ( !status ) {
 		return NULL;
 	}
 
-	PakIndex *indices = gInterface->CAlloc( numFiles, sizeof( PakIndex ) );
+	PakIndex *indices = PlCAllocA( numFiles, sizeof( PakIndex ) );
 	if ( indices == NULL ) {
 		return NULL;
 	}
 
-	gInterface->ReadFile( file, indices, sizeof( PakIndex ), numFiles );
+	PlReadFile( file, indices, sizeof( PakIndex ), numFiles );
 
-	const char *path = gInterface->GetFilePath( file );
-	PLPackage *package = gInterface->CreatePackageHandle( path, numFiles, NULL );
+	const char *path = PlGetFilePath( file );
+	PLPackage *package = PlCreatePackageHandle( path, numFiles, NULL );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
 		snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ), "%s", indices[ i ].fileName );
 
@@ -58,20 +60,20 @@ static PLPackage *PAK_ReadFile( PLFile *file ) {
 		package->table[ i ].offset = indices[ i ].offset;
 	}
 
-	gInterface->Free( indices );
+	PlFree( indices );
 
 	return package;
 }
 
 PLPackage *PAK_LoadFile( const char *path ) {
-	PLFile *file = gInterface->OpenFile( path, false );
+	PLFile *file = PlOpenFile( path, false );
 	if ( file == NULL ) {
 		return NULL;
 	}
 
 	PLPackage *package = PAK_ReadFile( file );
 
-	gInterface->CloseFile( file );
+	PlCloseFile( file );
 
 	return package;
 }

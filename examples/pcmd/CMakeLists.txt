@@ -27,6 +27,9 @@ For more information, please refer to <http://unlicense.org>
 
 project( pcmd )
 
-add_executable( pcmd main.c )
+add_executable( pcmd
+        main.c
+        ../../extras/ftactics.c
+        )
 
 target_link_libraries( pcmd plcore )
