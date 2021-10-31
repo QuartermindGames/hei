@@ -63,15 +63,23 @@ void PlgCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t lengt
 }
 
 /**
+ * Sets out what definitions should be applied when compiling the shader stage.
+ */
+void PlgSetShaderStageDefinitions( PLGShaderStage *stage, const char definitions[][ PLG_MAX_DEFINITION_LENGTH ], unsigned int numDefinitions ) {
+	if ( numDefinitions > PLG_MAX_DEFINITIONS ) {
+		numDefinitions = PLG_MAX_DEFINITIONS;
+	}
+
+	stage->numDefinitions = numDefinitions;
+	memcpy( stage->definitions, definitions, PLG_MAX_DEFINITION_LENGTH * numDefinitions );
+}
+
+/**
  * This actually parses _and_ compiles the given stage.
  * Returns NULL on fail.
  */
 PLGShaderStage *PlgParseShaderStage( PLGShaderStageType type, const char *buf, size_t length ) {
 	PLGShaderStage *stage = CreateShaderStage( type );
-	if ( stage == NULL ) {
-		return NULL;
-	}
-
 	PlgCompileShaderStage( stage, buf, length );
 	if ( PlGetFunctionResult() == PL_RESULT_SHADER_COMPILE ) {
 		plDestroyShaderStage( stage );
@@ -229,11 +237,7 @@ PLGShaderProgram *PlgGetCurrentShaderProgram( void ) {
  * @return true if the program is equal to that currently enabled.
  */
 bool PlgIsShaderProgramEnabled( PLGShaderProgram *program ) {
-	if ( gfx_state.current_program == program ) {
-		return true;
-	}
-
-	return false;
+	return ( gfx_state.current_program == program );
 }
 
 bool PlgLinkShaderProgram( PLGShaderProgram *program ) {

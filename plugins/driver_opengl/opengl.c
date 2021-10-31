@@ -999,7 +999,7 @@ static char *InsertString( const char *string, char **buf, size_t *bufSize, size
  * and handle any pre-processor commands.
  * todo: this is dumb... rewrite it
  */
-static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageType type, bool head ) {
+static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *length, bool head ) {
 	/* setup the destination buffer */
 	size_t actualLength = 0;
 	size_t maxLength = *length;
@@ -1013,16 +1013,21 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 		insert( "uniform mat4 pl_model;\n" );
 		insert( "uniform mat4 pl_view;\n" );
 		insert( "uniform mat4 pl_proj;\n" );
-		if ( type == PLG_SHADER_TYPE_VERTEX ) {
+		if ( stage->type == PLG_SHADER_TYPE_VERTEX ) {
 			insert( "in vec3 pl_vposition;\n" );
 			insert( "in vec3 pl_vnormal;\n" );
 			insert( "in vec2 pl_vuv;\n" );
 			insert( "in vec4 pl_vcolour;\n" );
 			insert( "in vec3 pl_vtangent, pl_vbitangent;\n" );
 			insert( "#define PLG_COMPILE_VERTEX 1\n" );
-		} else if ( type == PLG_SHADER_TYPE_FRAGMENT ) {
+		} else if ( stage->type == PLG_SHADER_TYPE_FRAGMENT ) {
 			insert( "out vec4 pl_frag;\n" );
 			insert( "#define PLG_COMPILE_FRAGMENT 1\n" );
+		}
+		for ( unsigned int i = 0; i < stage->numDefinitions; ++i ) {
+			char line[ 32 ];
+			snprintf( line, sizeof( line ), "#define %s 1\n", stage->definitions[ i ] );
+			insert( line );
 		}
 	}
 
@@ -1058,7 +1063,7 @@ static char *GLPreProcessGLSLShader( char *buf, size_t *length, PLGShaderStageTy
 					gInterface->core->CloseFile( file );
 
 					/* now throw it into the pre-processor */
-					incBuf = GLPreProcessGLSLShader( incBuf, &incLength, type, false );
+					incBuf = GLPreProcessGLSLShader( stage, incBuf, &incLength, false );
 
 					/* and finally, push it into our destination */
 					dstPos = InsertString( incBuf, &dstBuffer, &actualLength, &maxLength );
@@ -1180,7 +1185,7 @@ static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t
 	char *temp = gInterface->core->MAlloc( length + 1, true );
 	memcpy( temp, buf, length );
 
-	temp = GLPreProcessGLSLShader( temp, &length, stage->type, true );
+	temp = GLPreProcessGLSLShader( stage, temp, &length, true );
 
 	glShaderSource( stage->internal.id, 1, ( const GLchar ** ) &temp, ( GLint * ) &length );
 	glCompileShader( stage->internal.id );

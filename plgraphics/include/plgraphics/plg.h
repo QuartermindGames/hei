@@ -148,6 +148,9 @@ typedef enum PLGShaderUniformType {
 
 typedef struct PLGShaderProgram PLGShaderProgram;
 
+#define PLG_MAX_DEFINITION_LENGTH 16
+#define PLG_MAX_DEFINITIONS 16
+
 typedef struct PLGShaderStage {
 	PLGShaderStageType type;
 
@@ -159,6 +162,9 @@ typedef struct PLGShaderStage {
 	struct {
 		unsigned int id;
 	} internal;
+
+	unsigned int numDefinitions;
+	char definitions[ PLG_MAX_DEFINITIONS ][ PLG_MAX_DEFINITION_LENGTH ];
 } PLGShaderStage;
 
 typedef struct PLGShaderProgram {
@@ -223,6 +229,8 @@ void PlgShutdownGraphics( void );
 PL_EXTERN PLGShaderStage *PlgParseShaderStage( PLGShaderStageType type, const char *buf, size_t length );
 PL_EXTERN PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type );
 PL_EXTERN void PlgCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length );
+
+PL_EXTERN void PlgSetShaderStageDefinitions( PLGShaderStage *stage, const char definitions[][ PLG_MAX_DEFINITION_LENGTH ], unsigned int numDefinitions );
 
 PL_EXTERN void PlgAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stage );
 PL_EXTERN bool PlgRegisterShaderStageFromMemory( PLGShaderProgram *program, const char *buffer, size_t length,
