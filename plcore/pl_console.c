@@ -46,7 +46,7 @@ void PlRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( uns
 		_pl_commands = ( PLConsoleCommand ** ) realloc( _pl_commands, ( _pl_commands_size += 128 ) * sizeof( PLConsoleCommand ) );
 		if ( !_pl_commands ) {
 			PlReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes",
-			             _pl_commands_size * sizeof( PLConsoleCommand ) );
+			                _pl_commands_size * sizeof( PLConsoleCommand ) );
 			_pl_commands = old_mem;
 			_pl_commands_size -= 128;
 			return;
@@ -108,7 +108,7 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *def,
 		_pl_variables = ( PLConsoleVariable ** ) realloc( _pl_variables, ( _pl_variables_size += 128 ) * sizeof( PLConsoleVariable ) );
 		if ( _pl_variables == NULL ) {
 			PlReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate %d bytes",
-			             _pl_variables_size * sizeof( PLConsoleVariable ) );
+			                _pl_variables_size * sizeof( PLConsoleVariable ) );
 			_pl_variables = old_mem;
 			_pl_variables_size -= 128;
 			return NULL;
@@ -120,7 +120,7 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *def,
 		_pl_variables[ _pl_num_variables ] = ( PLConsoleVariable * ) PlMAllocA( sizeof( PLConsoleVariable ) );
 		if ( _pl_variables[ _pl_num_variables ] == NULL ) {
 			PlReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "failed to allocate memory for ConsoleCommand, %d",
-			             sizeof( PLConsoleVariable ) );
+			                sizeof( PLConsoleVariable ) );
 			return NULL;
 		}
 
@@ -180,31 +180,30 @@ const char *PlGetConsoleVariableDefaultValue( const char *name ) {
 void PlSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
 	plAssert( var );
 	switch ( var->type ) {
-		default: {
-			Print( "Unknown variable type %d, failed to set!\n", var->type );
-		}
+		default:
+			PrintWarning( "Unknown variable type %d, failed to set!\n", var->type );
 			return;
 
-		case pl_int_var: {
+		case pl_int_var:
 			if ( pl_strisdigit( value ) != -1 ) {
-				Print( "Unknown argument type %s, failed to set!\n", value );
+				PrintWarning( "Unknown argument type %s, failed to set!\n", value );
 				return;
 			}
 
 			var->i_value = ( int ) strtol( value, NULL, 10 );
-		} break;
+			break;
 
-		case pl_string_var: {
+		case pl_string_var:
 			var->s_value = &var->value[ 0 ];
-		} break;
+			break;
 
-		case pl_float_var: {
+		case pl_float_var:
 			var->f_value = strtof( value, NULL );
-		} break;
+			break;
 
-		case pl_bool_var: {
+		case pl_bool_var:
 			if ( pl_strisalnum( value ) == -1 ) {
-				Print( "Unknown argument type %s, failed to set!\n", value );
+				PrintWarning( "Unknown argument type %s, failed to set!\n", value );
 				return;
 			}
 
@@ -213,7 +212,7 @@ void PlSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
 			} else {
 				var->b_value = false;
 			}
-		} break;
+			break;
 	}
 
 	strncpy( var->value, value, sizeof( var->value ) );

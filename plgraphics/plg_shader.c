@@ -21,7 +21,7 @@
  * @param type the type of shader stage.
  * @return the new shader stage.
  */
-static PLGShaderStage *CreateShaderStage( PLGShaderStageType type ) {
+PLGShaderStage *PlgCreateShaderStage( PLGShaderStageType type ) {
 	PLGShaderStage *stage = PlCAllocA( 1, sizeof( PLGShaderStage ) );
 	stage->type = type;
 
@@ -36,7 +36,7 @@ static PLGShaderStage *CreateShaderStage( PLGShaderStageType type ) {
  *
  * @param stage stage we're deleting.
  */
-void plDestroyShaderStage( PLGShaderStage *stage ) {
+void PlgDestroyShaderStage( PLGShaderStage *stage ) {
 	if ( stage == NULL ) {
 		return;
 	}
@@ -79,10 +79,10 @@ void PlgSetShaderStageDefinitions( PLGShaderStage *stage, const char definitions
  * Returns NULL on fail.
  */
 PLGShaderStage *PlgParseShaderStage( PLGShaderStageType type, const char *buf, size_t length ) {
-	PLGShaderStage *stage = CreateShaderStage( type );
+	PLGShaderStage *stage = PlgCreateShaderStage( type );
 	PlgCompileShaderStage( stage, buf, length );
 	if ( PlGetFunctionResult() == PL_RESULT_SHADER_COMPILE ) {
-		plDestroyShaderStage( stage );
+		PlgDestroyShaderStage( stage );
 		return NULL;
 	}
 
