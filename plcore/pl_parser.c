@@ -26,7 +26,7 @@ bool PlIsEndOfLine( const char *p ) {
 
 bool PlIsWhitespace( const char *p ) {
 	/* don't treat line end as whitespace */
-	if ( *p == '\r' || *p == '\n' ) {
+	if ( PlIsEndOfLine( p ) ) {
 		return false;
 	}
 
