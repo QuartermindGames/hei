@@ -185,7 +185,7 @@ const char *PlParseLine( const char **p, char *dest, size_t size ) {
 		dest[ i ] = ( *p )[ i ];
 	}
 
-	( *p ) += length;
+	( *p ) += length + PlGetLineEndType( ( *p ) + length );
 
 	dest[ i ] = '\0';
 	return dest;
