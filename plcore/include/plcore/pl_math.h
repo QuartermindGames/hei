@@ -65,16 +65,16 @@ typedef struct PLColour {
 #ifdef __cplusplus
 namespace hei {
 	struct Colour : PLColour {
-		Colour() : Colour( 255, 255, 255, 255 ) {
-		}
+		Colour() : Colour( 255, 255, 255, 255 ) {}
 		Colour( uint8_t c, uint8_t c2, uint8_t c3, uint8_t c4 = 255 ) {
 			r = c;
 			g = c2;
 			b = c3;
 			a = c4;
 		}
-		Colour( int c, int c2, int c3, int c4 = 255 ) : Colour( ( uint8_t ) c, ( uint8_t ) c2, ( uint8_t ) c3, ( uint8_t ) c4 ) {
-		}
+
+		Colour( int c, int c2, int c3, int c4 = 255 ) : Colour( ( uint8_t ) c, ( uint8_t ) c2, ( uint8_t ) c3, ( uint8_t ) c4 ) {}
+		Colour( float c, float c2, float c3, float c4 = 1.0f ) : Colour( PlFloatToByte( c ), PlFloatToByte( c2 ), PlFloatToByte( c3 ), PlFloatToByte( c4 ) ) {}
 
 		inline PLVector4 ToVec4() const {
 			return { PlByteToFloat( r ), PlByteToFloat( g ), PlByteToFloat( b ), PlByteToFloat( a ) };
