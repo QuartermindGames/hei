@@ -2,7 +2,7 @@
 
 ![Logo](resources/logo.png)
 
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTalonBraveInfo%2Fplatform.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FTalonBraveInfo%2Fplatform?ref=badge_shield) [![CodeFactor](https://www.codefactor.io/repository/github/oldtimes-software/platform/badge)](https://www.codefactor.io/repository/github/oldtimes-software/platform)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTalonBraveInfo%2Fplatform.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FTalonBraveInfo%2Fplatform?ref=badge_shield) [![CodeFactor](https://www.codefactor.io/repository/github/oldtimes-software/hei/badge)](https://www.codefactor.io/repository/github/oldtimes-software/hei)
 
 </div>
 
