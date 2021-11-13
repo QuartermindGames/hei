@@ -20,7 +20,9 @@
 
 /* description of what's been allocated, for debugging */
 #if defined( TRACK_MEMORY )
+#define MAGIC "PLAH"
 typedef struct PLAllocHeader {
+	char magic[ 4 ];
 	char id[ 32 ]; /* unique identifier */
 	size_t length; /* allocated size in bytes */
 } PLAllocHeader;
@@ -54,6 +56,7 @@ void *PlCAlloc( size_t num, size_t size, bool abortOnFail ) {
 
 #if defined( TRACK_MEMORY )
 	PLAllocHeader *header = ( PLAllocHeader * ) buf;
+	strcpy( header->magic, MAGIC );
 	PlGenerateUniqueIdentifier( header->id, sizeof( header->id ) - 1 );
 	header->length = totalSize;
 
@@ -89,8 +92,13 @@ void *PlReAlloc( void *ptr, size_t newSize, bool abortOnFail ) {
 	}
 
 #if defined( TRACK_MEMORY )
+	bool isTracked = true;
 	buf -= sizeof( PLAllocHeader );
-	newSize += sizeof( PLAllocHeader ); /* maybe... ? */
+	if ( buf != NULL && strncmp( ( ( PLAllocHeader * ) buf )->magic, MAGIC, 4 ) == 0 ) {
+		newSize += sizeof( PLAllocHeader ); /* maybe... ? */
+	} else {
+		isTracked = false;
+	}
 #endif
 
 	buf = pl_realloc( buf, newSize );
@@ -108,20 +116,22 @@ void *PlReAlloc( void *ptr, size_t newSize, bool abortOnFail ) {
 	}
 
 #if defined( TRACK_MEMORY )
-	PLAllocHeader *header = ( PLAllocHeader * ) buf;
-	size_t oldLength = header->length;
-	header->length = newSize;
+	if ( isTracked ) {
+		PLAllocHeader *header = ( PLAllocHeader * ) buf;
+		size_t oldLength = header->length;
+		header->length = newSize;
 
-	totalRAMUsage -= oldLength;
-	totalRAMUsage += newSize;
+		totalRAMUsage -= oldLength;
+		totalRAMUsage += newSize;
 
 #ifdef DEBUG_MEMORY
-	printf( "REALLOC: " COM_FMT_uint64 " bytes (%s)\t\t | TOTAL: " COM_FMT_double "mb\n",
-	        header->length, header->id,
-	        PlBytesToMegabytes( totalRAMUsage ) );
+		printf( "REALLOC: " COM_FMT_uint64 " bytes (%s)\t\t | TOTAL: " COM_FMT_double "mb\n",
+		        header->length, header->id,
+		        PlBytesToMegabytes( totalRAMUsage ) );
 #endif
 
-	buf += sizeof( PLAllocHeader );
+		buf += sizeof( PLAllocHeader );
+	}
 #endif
 
 	return buf;
@@ -133,14 +143,17 @@ void PlFree( void *ptr ) {
 	if ( buf != NULL ) {
 		buf -= sizeof( PLAllocHeader );
 		PLAllocHeader *header = ( PLAllocHeader * ) buf;
-		assert( header != NULL );
-		if ( header != NULL ) {
+		if ( header != NULL && ( strncmp( header->magic, MAGIC, 4 ) == 0 ) ) {
 			totalRAMUsage -= header->length;
 #ifdef DEBUG_MEMORY
 			printf( "FREE: %p | " COM_FMT_uint64 " bytes (%s)\t\t | TOTAL: " COM_FMT_double "mb\n",
 			        ptr, header->length, header->id,
 			        PlBytesToMegabytes( totalRAMUsage ) );
 #endif
+		} else {
+			/* not allocated by us,
+			 * someone is mixing crap likely */
+			buf = ptr;
 		}
 	}
 #endif
