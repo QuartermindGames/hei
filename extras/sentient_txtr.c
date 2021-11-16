@@ -4,7 +4,7 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
-#include "image_private.h"
+#include <plcore/pl_image.h>
 
 /* Sentient's TXTR format */
 
@@ -33,7 +33,7 @@ static bool SentientTxtrFormatCheck( PLFile *ptr ) {
 	return true;
 }
 
-bool PlLoadSentientTxtrImage( PLFile *ptr, PLImage *out ) {
+bool Sentient_TXTR_LoadFile( PLFile *ptr, PLImage *out ) {
 	PlRewindFile( ptr );
 	PlFileSeek( ptr, 4, PL_SEEK_CUR );
 
