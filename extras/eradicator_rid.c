@@ -4,19 +4,17 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
-#include "package_private.h"
+#include <plcore/pl_package.h>
 
 /* Eradicator's BDIR package format */
 
 typedef struct BdirIndex {
 	char name[ 12 ];
-	uint32_t offset;
-	uint32_t size;
+	int32_t offset;
+	int32_t size;
 } BdirIndex;
 
-PLPackage *PlLoadRidbPackage( const char *path ) {
-	FunctionStart();
-
+PLPackage *Eradicator_RID_LoadFile( const char *path ) {
 	PLFile *filePtr = PlOpenFile( path, false );
 	if ( filePtr == NULL ) {
 		return NULL;
@@ -42,8 +40,8 @@ PLPackage *PlLoadRidbPackage( const char *path ) {
 
 	bool status;
 
-	uint32_t numLumps = PlReadInt32( filePtr, false, &status );
-	uint32_t tableOffset = PlReadInt32( filePtr, false, &status );
+	int32_t numLumps = PlReadInt32( filePtr, false, &status );
+	int32_t tableOffset = PlReadInt32( filePtr, false, &status );
 	size_t tableSize = sizeof( BdirIndex ) * numLumps;
 	if ( tableOffset + tableSize > PlGetFileSize( filePtr ) ) {
 		PlReportErrorF( PL_RESULT_INVALID_PARM1, "invalid table offset" );

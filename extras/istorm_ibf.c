@@ -4,7 +4,7 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
-#include "package_private.h"
+#include <plcore/pl_package.h>
 
 /* 4X Technologies Package Format
  * These come in both an IBF and LST format;
@@ -14,7 +14,7 @@
  * There doesn't appear to be any form of
  * compression used on these packages. */
 
-PLPackage *PlLoadLstPackage( const char *path ) {
+PLPackage *IStorm_LST_LoadFile( const char *path ) {
 	PLFile *fh = PlOpenFile( path, false );
 	if ( fh == NULL ) {
 		return NULL;

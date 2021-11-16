@@ -4,7 +4,7 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
-#include "package_private.h"
+#include <plcore/pl_package.h>
 
 /* Loader for Sentient's VSR package format */
 
@@ -46,9 +46,7 @@ typedef struct VSRHeader {
 } VSRHeader;
 PL_STATIC_ASSERT( sizeof( VSRHeader ) == 32, "needs to be 32 bytes" );
 
-PLPackage *PlLoadVsrPackage( const char *path ) {
-	FunctionStart();
-
+PLPackage *Sentient_VSR_LoadFile( const char *path ) {
 	PLFile *fp = PlOpenFile( path, false );
 	if ( fp == NULL ) {
 		return NULL;

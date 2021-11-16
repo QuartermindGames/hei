@@ -18,7 +18,7 @@ typedef struct PakIndex {
 	uint32_t lflag;
 } PakIndex;
 
-static PLPackage *PAK_ParseFile( PLFile *file ) {
+static PLPackage *FTactics_PAK_ParseFile( PLFile *file ) {
 	bool status;
 
 	/* first we're provided with an indication of how many files are in the package */
@@ -69,13 +69,13 @@ static PLPackage *PAK_ParseFile( PLFile *file ) {
 	return package;
 }
 
-PLPackage *PAK_LoadFile( const char *path ) {
+PLPackage *FTactics_PAK_LoadFile( const char *path ) {
 	PLFile *file = PlOpenFile( path, false );
 	if ( file == NULL ) {
 		return NULL;
 	}
 
-	PLPackage *package = PAK_ParseFile( file );
+	PLPackage *package = FTactics_PAK_ParseFile( file );
 
 	PlCloseFile( file );
 

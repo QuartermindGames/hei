@@ -14,13 +14,6 @@
 PL_EXTERN_C
 
 PLPackage *PlLoadMadPackage( const char *path );
-PLPackage *PlLoadArtPackage( const char *path );
-PLPackage *PlLoadLstPackage( const char *path );
 PLPackage *PlLoadTabPackage( const char *path );
-PLPackage *PlLoadVsrPackage( const char *path );
-PLPackage *PlLoadFfPackage( const char *path );
-PLPackage *PlLoadRidbPackage( const char *path );
-PLPackage *PlLoadApukPackage( const char *path );
-PLPackage *PlLoadOPKPackage( const char *path );
 
 PL_EXTERN_C_END

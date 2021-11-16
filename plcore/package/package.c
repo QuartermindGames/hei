@@ -193,24 +193,11 @@ void PlRegisterPackageLoader( const char *ext, PLPackage *( *LoadFunction )( con
 }
 
 void PlRegisterStandardPackageLoaders( void ) {
-	/* outwars */
-	PlRegisterPackageLoader( "ff", PlLoadFfPackage );
 	/* hogs of war */
 	PlRegisterPackageLoader( "mad", PlLoadMadPackage );
 	PlRegisterPackageLoader( "mtd", PlLoadMadPackage );
-	/* iron storm */
-	PlRegisterPackageLoader( "lst", PlLoadLstPackage );
 	/* starfox adventures */
 	PlRegisterPackageLoader( "tab", PlLoadTabPackage );
-	/* sentient */
-	PlRegisterPackageLoader( "vsr", PlLoadVsrPackage );
-	/* eradicator */
-	PlRegisterPackageLoader( "rid", PlLoadRidbPackage );
-	PlRegisterPackageLoader( "rim", PlLoadRidbPackage );
-	/* mortyr */
-	PlRegisterPackageLoader( "hal", PlLoadApukPackage );
-	/* outcast */
-	PlRegisterPackageLoader( "opk", PlLoadOPKPackage );
 }
 
 PLPackage *PlLoadPackage( const char *path ) {

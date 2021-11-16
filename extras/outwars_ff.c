@@ -4,13 +4,11 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
-#include "package_private.h"
+#include <plcore/pl_package.h>
 
 /* Outwars FF package format */
 
-PLPackage *PlLoadFfPackage( const char *path ) {
-	FunctionStart();
-
+PLPackage *Outwars_FF_LoadFile( const char *path ) {
 	PLFile *fp = PlOpenFile( path, false );
 	if ( fp == NULL ) {
 		return NULL;

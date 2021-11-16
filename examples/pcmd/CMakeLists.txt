@@ -30,8 +30,14 @@ project( pcmd )
 add_executable( pcmd
         main.c
 
-        ../../extras/ftactics.c
-        ../../extras/id_wad.c
+        ../../extras/doom_wad.c
+        ../../extras/eradicator_rid.c
+        ../../extras/ftactics_pak.c
+        ../../extras/istorm_ibf.c
+        ../../extras/mortyr_hal.c
+        ../../extras/outcast_opk.c
+        ../../extras/outwars_ff.c
+        ../../extras/sentient_vsr.c
         )
 
 target_link_libraries( pcmd plcore )

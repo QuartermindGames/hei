@@ -4,11 +4,11 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
-#include "package_private.h"
+#include <plcore/pl_package.h>
 
 /* Outcast OPK format */
 
-static PLPackage *ParseOPKPackage( PLFile *file ) {
+static PLPackage *Outcast_OPK_ParseFile( PLFile *file ) {
 	static const int32_t opkMagic = 0x6e71;
 	int32_t magic = PlReadInt32( file, false, NULL );
 	if ( magic != opkMagic ) {
@@ -58,15 +58,13 @@ static PLPackage *ParseOPKPackage( PLFile *file ) {
 	return package;
 }
 
-PLPackage *PlLoadOPKPackage( const char *path ) {
-	PlClearError();
-
+PLPackage *Outcast_OPK_LoadFile( const char *path ) {
 	PLFile *file = PlOpenFile( path, false );
 	if ( file == NULL ) {
 		return NULL;
 	}
 
-	PLPackage *package = ParseOPKPackage( file );
+	PLPackage *package = Outcast_OPK_ParseFile( file );
 
 	PlCloseFile( file );
 

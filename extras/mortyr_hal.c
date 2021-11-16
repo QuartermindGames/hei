@@ -4,13 +4,11 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
-#include "package_private.h"
+#include <plcore/pl_package.h>
 
 /* Mortyr's APUK package format */
 
-PLPackage *PlLoadApukPackage( const char *path ) {
-	FunctionStart();
-
+PLPackage *Mortyr_HAL_LoadFile( const char *path ) {
 	PLFile *filePtr = PlOpenFile( path, false );
 	if ( filePtr == NULL ) {
 		return NULL;

@@ -115,8 +115,14 @@ static void Cmd_Exit( unsigned int argc, char **argv ) {
 	isRunning = false;
 }
 
-PLPackage *PAK_LoadFile( const char *path ); /* ftactics.c */
-PLPackage *WAD_LoadFile( const char *path ); /* id_wad.c */
+PLPackage *IStorm_LST_LoadFile( const char *path );
+PLPackage *Outcast_OPK_LoadFile( const char *path );
+PLPackage *FTactics_PAK_LoadFile( const char *path );
+PLPackage *Doom_WAD_LoadFile( const char *path );
+PLPackage *Sentient_VSR_LoadFile( const char *path );
+PLPackage *Mortyr_HAL_LoadFile( const char *path );
+PLPackage *Eradicator_RID_LoadFile( const char *path );
+PLPackage *Outwars_FF_LoadFile( const char *path );
 
 #define MAX_COMMAND_LENGTH 256
 static char cmdLine[ MAX_COMMAND_LENGTH ];
@@ -130,8 +136,15 @@ int main( int argc, char **argv ) {
 	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
 	PlRegisterStandardPackageLoaders();
 
-	PlRegisterPackageLoader( "pak", PAK_LoadFile );
-	PlRegisterPackageLoader( "wad", WAD_LoadFile );
+	PlRegisterPackageLoader( "lst", IStorm_LST_LoadFile );
+	PlRegisterPackageLoader( "opk", Outcast_OPK_LoadFile );
+	PlRegisterPackageLoader( "pak", FTactics_PAK_LoadFile );
+	PlRegisterPackageLoader( "wad", Doom_WAD_LoadFile );
+	PlRegisterPackageLoader( "vsr", Sentient_VSR_LoadFile );
+	PlRegisterPackageLoader( "hal", Mortyr_HAL_LoadFile );
+	PlRegisterPackageLoader( "rid", Eradicator_RID_LoadFile );
+	PlRegisterPackageLoader( "rim", Eradicator_RID_LoadFile );
+	PlRegisterPackageLoader( "ff", Outwars_FF_LoadFile );
 
 	PlRegisterPlugins( "./" );
 

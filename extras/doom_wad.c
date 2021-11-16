@@ -16,7 +16,7 @@ typedef struct WadIndex {
 	char name[ 8 ];
 } WadIndex;
 
-static PLPackage *WAD_ParseFile( PLFile *file ) {
+static PLPackage *Doom_WAD_ParseFile( PLFile *file ) {
 	char magic[ 4 ];
 	PlReadFile( file, magic, sizeof( char ), 4 );
 	if ( memcmp( magic, "IWAD", 4 ) != 0 && memcmp( magic, "PWAD", 4 ) != 0 ) {
@@ -79,13 +79,13 @@ static PLPackage *WAD_ParseFile( PLFile *file ) {
 	return package;
 }
 
-PLPackage *WAD_LoadFile( const char *path ) {
+PLPackage *Doom_WAD_LoadFile( const char *path ) {
 	PLFile *file = PlOpenFile( path, false );
 	if ( file == NULL ) {
 		return NULL;
 	}
 
-	PLPackage *package = WAD_ParseFile( file );
+	PLPackage *package = Doom_WAD_ParseFile( file );
 
 	PlCloseFile( file );
 
