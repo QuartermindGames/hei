@@ -34,6 +34,8 @@ data for each of these functions
 
 int LOG_LEVEL_GRAPHICS = 0;
 
+void PlgInitializeInternalMeshes( void ); /* plg_draw.c */
+
 PLFunctionResult PlgInitializeGraphics( void ) {
 	memset( &gfx_state, 0, sizeof( GfxState ) );
 
@@ -45,17 +47,21 @@ PLFunctionResult PlgInitializeGraphics( void ) {
 #endif
 	);
 
+	PlgInitializeInternalMeshes();
+
 	return PL_RESULT_SUCCESS;
 }
 
 void PlgShutdownTextures( void );// platform_graphics_texture
+void PlgClearInternalMeshes( void ); /* plg_draw.c */
 
 void PlgShutdownGraphics( void ) {
 	GRAPHICS_TRACK();
 
-	CallGfxFunction( Shutdown );
-
+	PlgClearInternalMeshes();
 	PlgShutdownTextures();
+
+	CallGfxFunction( Shutdown );
 }
 
 /*===========================
