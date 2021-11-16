@@ -8,7 +8,8 @@
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_package.h>
 
-/* id Software's Doom WAD package format */
+/* id Software's Doom WAD package format
+ * todo: this may possibly be moved back into core */
 
 typedef struct WadIndex {
 	int32_t offset;

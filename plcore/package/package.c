@@ -175,11 +175,20 @@ void PlInitPackageSubSystem( void ) {
 	PlClearPackageLoaders();
 }
 
-#if 0 /* todo */
-void plQuerySupportedPackages(char **array, unsigned int *size) {
-	static char
+/**
+ * Returns a list of file extensions representing all
+ * the formats supported by the package loader.
+ */
+const char **PlGetSupportedPackageFormats( unsigned int *numElements ) {
+	static const char *formats[ MAX_OBJECT_INTERFACES ];
+	for ( unsigned int i = 0; i < num_package_loaders; ++i ) {
+		formats[ i ] = package_loaders[ i ].ext;
+	}
+
+	*numElements = num_package_loaders;
+
+	return formats;
 }
-#endif
 
 void PlClearPackageLoaders( void ) {
 	memset( package_loaders, 0, sizeof( PLPackageLoader ) * MAX_OBJECT_INTERFACES );
