@@ -29,7 +29,9 @@ project( pcmd )
 
 add_executable( pcmd
         main.c
+
         ../../extras/ftactics.c
+        ../../extras/id_wad.c
         )
 
 target_link_libraries( pcmd plcore )

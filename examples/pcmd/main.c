@@ -116,6 +116,7 @@ static void Cmd_Exit( unsigned int argc, char **argv ) {
 }
 
 PLPackage *PAK_LoadFile( const char *path ); /* ftactics.c */
+PLPackage *WAD_LoadFile( const char *path ); /* id_wad.c */
 
 #define MAX_COMMAND_LENGTH 256
 static char cmdLine[ MAX_COMMAND_LENGTH ];
@@ -130,6 +131,7 @@ int main( int argc, char **argv ) {
 	PlRegisterStandardPackageLoaders();
 
 	PlRegisterPackageLoader( "pak", PAK_LoadFile );
+	PlRegisterPackageLoader( "wad", WAD_LoadFile );
 
 	PlRegisterPlugins( "./" );
 

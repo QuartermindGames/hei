@@ -204,8 +204,6 @@ void PlRegisterStandardPackageLoaders( void ) {
 	PlRegisterPackageLoader( "tab", PlLoadTabPackage );
 	/* sentient */
 	PlRegisterPackageLoader( "vsr", PlLoadVsrPackage );
-	/* doom */
-	PlRegisterPackageLoader( "wad", PlLoadWadPackage );
 	/* eradicator */
 	PlRegisterPackageLoader( "rid", PlLoadRidbPackage );
 	PlRegisterPackageLoader( "rim", PlLoadRidbPackage );
