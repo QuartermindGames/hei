@@ -134,7 +134,7 @@
 	}                             \
 	a;                            \
 	__pragma( pack( pop ) )
-#else /* currently assumed to be GCC */
+#else /* currently assumed to be GCC/Clang */
 #define PL_INSTANCE void *
 #define PL_FARPROC void *
 

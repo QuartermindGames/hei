@@ -8,24 +8,7 @@
 
 #include <stdarg.h>
 
-#if 0
-inline static void plGetStringExtension(char *out, const char *in, unsigned int length) {
-    const char *s = strrchr(in, '.');type
-    if(!s || s[0] == '\0') {
-        return;
-    }
-
-    strncpy(out, s + 1, length);
-}
-
-inline static void plStripStringExtension(char *out, const char *in, unsigned int length) {
-    const char *s = strrchr(in, '.');
-    while(in < s) {
-        *out++ = *in++;
-    }
-    *out = 0;
-}
-#endif
+PL_EXTERN_C
 
 char *pl_itoa( int val, char *buf, size_t len, int base );
 
@@ -51,12 +34,13 @@ int pl_vscprintf( const char *format, va_list pArgs );
 unsigned int pl_strcnt( const char *s, char c );
 unsigned int pl_strncnt( const char *s, char c, unsigned int n );
 
-char *PlStrInsert( const char *string, char **buf, size_t *bufSize, size_t *maxBufSize );
+char *pl_strchunksplit( const char *string, unsigned int length, const char *seperator );
+char *pl_strinsert( const char *string, char **buf, size_t *bufSize, size_t *maxBufSize );
 
 /**
  * http://www.cse.yorku.ca/~oz/hash.html#sdbm
  */
-static inline unsigned long PlStrHash_sdbm( const unsigned char *str ) {
+static inline unsigned long pl_strhash_sdbm( const unsigned char *str ) {
 	unsigned long hash = 0;
 	int c;
 	while( ( c = *str++ ) ) {
@@ -65,3 +49,5 @@ static inline unsigned long PlStrHash_sdbm( const unsigned char *str ) {
 
 	return hash;
 }
+
+PL_EXTERN_C_END

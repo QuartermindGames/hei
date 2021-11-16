@@ -46,7 +46,7 @@ file(
 
         string/crc32.c
         string/itoa.c
-        string/PLStrMisc.c
+        string/pl_string.c
         string/strcasecmp.c
         string/strcasestr.c
         string/strcnt.c
