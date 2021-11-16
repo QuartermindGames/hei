@@ -35,10 +35,7 @@
  * SUCH DAMAGE.
  */
 
-#include <ctype.h>
-#include <string.h>
-
-#include <plcore/pl_string.h>
+#include <plcore/pl.h>
 
 /*
  * Find the first occurrence of find in s, ignore case.

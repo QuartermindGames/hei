@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <stdarg.h>
-
 PL_EXTERN_C
 
 char *pl_itoa( int val, char *buf, size_t len, int base );
