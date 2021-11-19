@@ -11,6 +11,8 @@
 #if defined( _WIN32 )
 #include <windows.h>
 #include <psapi.h>
+#elif defined( __linux__ )
+#include <sys/resource.h>
 #endif
 
 #include "pl_private.h"
@@ -217,7 +219,13 @@ uint64_t PlGetTotalAvailableSystemMemory( void ) {
  */
 uint64_t PlGetCurrentMemoryUsage( void ) {
 #if defined( __linux__ )
-	return 0; /* todo */
+	/* this is probably the only thing close to an api
+	 * that provides this info on linux, without having
+	 * to parse shit...but it returns kb and isn't
+	 * supported everywhere... */
+	struct rusage usage;
+	getrusage( RUSAGE_SELF, &usage );
+	return usage.ru_maxrss * 1000;
 #elif defined( _WIN32 )
 	PROCESS_MEMORY_COUNTERS pmc;
 	GetProcessMemoryInfo( GetCurrentProcess(), &pmc, sizeof( pmc ) );
