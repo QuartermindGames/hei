@@ -70,6 +70,14 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *def,
                                               void ( *CallbackFunction )( const PLConsoleVariable *variable ),
                                               const char *desc );
 
+/* fetch and cache console var for trivial lookup */
+#define PL_GET_CVAR( NAME, STORE )                    \
+	static PLConsoleVariable *( STORE ) = NULL;       \
+	if ( ( STORE ) == NULL ) {                        \
+		( STORE ) = PlGetConsoleVariable( ( NAME ) ); \
+		assert( ( STORE ) != NULL );                  \
+	}
+
 #endif /* !defined( PL_COMPILE_PLUGIN ) */
 
 /////////////////////////////////////////////////////////////////////////////////////

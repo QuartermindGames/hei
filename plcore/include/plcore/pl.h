@@ -81,6 +81,8 @@ typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
 #define PL_STRINGIFY( num ) #num
 #define PL_TOSTRING( A ) PL_STRINGIFY( A )
 
+#define PL_MAGIC_TO_NUM( A, B, C, D ) ( ( ( D ) << 24 ) + ( ( C ) << 16 ) + ( ( B ) << 8 ) + ( A ) )
+
 #define PL_BITFLAG( A, B ) A = ( 1U << B )
 
 #ifndef offsetof
