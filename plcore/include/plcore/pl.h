@@ -24,9 +24,6 @@ support.
 #define PL_VERSION_PATCH 0
 
 // PL_IGNORE_SHARED_HEADERS
-// PL_IGNORE_PLATFORM_HEADERS
-// PL_IGNORE_STD_HEADERS
-// PL_IGNORE_VIDEO_HEADERS
 
 #define PL_INCLUDE_STD_BOOL
 
@@ -77,6 +74,9 @@ typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
 #define PL_ARRAY_ELEMENTS( a ) ( sizeof( a ) / sizeof( *( a ) ) )// Returns the number of elements within an array.
 #define PL_MAX_ARRAY_INDEX( a ) ( int ) ( PL_ARRAY_ELEMENTS( a ) - 1 )
 #define PL_INVALID_STRING( a ) ( a == NULL || *a == '\0' )
+
+#define PL_ZERO( DATA, SIZE ) memset( ( DATA ), 0, ( SIZE ) )
+#define PL_ZERO_( DATA )      memset( &( DATA ), 0, sizeof( ( DATA ) ) )
 
 #define PL_STRINGIFY( num ) #num
 #define PL_TOSTRING( A ) PL_STRINGIFY( A )
