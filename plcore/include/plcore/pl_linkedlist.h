@@ -49,4 +49,7 @@ unsigned int PlGetNumLinkedListNodes( PLLinkedList *list );
 
 PLLinkedList *PlGetLinkedListNodeContainer( PLLinkedListNode *node );
 
+typedef void ( *PLLinkedListIteratorCallback )( void *userData, bool *breakEarly );
+void PlIterateLinkedList( PLLinkedList *linkedList, PLLinkedListIteratorCallback callbackHandler );
+
 PL_EXTERN_C_END

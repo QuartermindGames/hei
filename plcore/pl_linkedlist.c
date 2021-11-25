@@ -5,6 +5,7 @@
  */
 
 #include <plcore/pl.h>
+#include <plcore/pl_linkedlist.h>
 
 typedef struct PLLinkedListNode {
 	struct PLLinkedListNode *next;
@@ -111,4 +112,24 @@ unsigned int PlGetNumLinkedListNodes( PLLinkedList *list ) {
 
 PLLinkedList *PlGetLinkedListNodeContainer( PLLinkedListNode *node ) {
 	return node->listParent;
+}
+
+/**
+ * Helper function for iterating through a linked list.
+ */
+void PlIterateLinkedList( PLLinkedList *linkedList, PLLinkedListIteratorCallback callbackHandler )
+{
+	PLLinkedListNode *listNode = PlGetFirstNode( linkedList );
+	while( listNode != NULL )
+	{
+		void *userData = PlGetLinkedListNodeUserData( listNode );
+		listNode = PlGetNextLinkedListNode( listNode );
+
+		bool breakEarly = false;
+		callbackHandler( userData, &breakEarly );
+		if ( breakEarly )
+		{
+			break;
+		}
+	}
 }
