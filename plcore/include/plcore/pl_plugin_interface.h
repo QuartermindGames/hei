@@ -138,7 +138,7 @@ typedef struct PLPluginExportTable {
 	 * SCRIPT API
 	 **/
 
-	bool ( *IsEndOfLine )( const char **p );
+	bool ( *IsEndOfLine )( const char *p );
 
 	void ( *SkipWhitespace )( const char **p );
 	void ( *SkipLine )( const char **p );
