@@ -33,7 +33,6 @@ file(GLOB PLG_SOURCE_FILES
         plg_draw.c
         plg_driver_interface.c
         plg_layer_software.c
-        plg_light.c
         plg_mesh.c
         plg_shader.c
         plg_texture.c

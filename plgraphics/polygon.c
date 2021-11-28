@@ -5,7 +5,6 @@
  */
 
 #include <plgraphics/plg_polygon.h>
-#include "plg_private.h"
 
 typedef struct PLGPolygon {
 	PLGTexture *texture;
