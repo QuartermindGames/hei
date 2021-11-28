@@ -1,9 +1,9 @@
 #[[ Copyright (C) 2021 Mark E Sowden <markelswo@gmail.com> ]]
 
-project(vulkan_driver)
+project(pl_vk_driver)
 
 add_library(
-        vulkan_driver SHARED
+        pl_vk_driver SHARED
         vulkan.c
         plugin.c
         plugin.h)
@@ -18,14 +18,14 @@ if (NOT Vulkan_FOUND)
             "${CMAKE_SOURCE_DIR}/platform/3rdparty/vulkan/Include/")
 endif ()
 
-target_link_libraries(vulkan_driver
+target_link_libraries(pl_vk_driver
         ${Vulkan_LIBRARY}
         )
-target_include_directories(vulkan_driver PRIVATE
+target_include_directories(pl_vk_driver PRIVATE
         ${Vulkan_INCLUDE_DIR}
         )
 
 target_include_directories(
-        vulkan_driver PRIVATE
+        pl_vk_driver PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/../../plcore/include/"
 )

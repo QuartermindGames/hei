@@ -22,17 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ]]
 
-project(d3d12_driver)
+project(pl_d3d12_driver)
 
 add_library(
-        d3d12_driver SHARED
-        d3d12_driver.cpp
+        pl_d3d12_driver SHARED
+        pl_d3d12_driver.cpp
         plugin.c
         plugin.h)
 
-target_link_libraries(d3d12_driver D3d12 d3dcompiler)
+target_link_libraries(pl_d3d12_driver D3d12 d3dcompiler)
 
-target_include_directories(d3d12_driver PRIVATE
+target_include_directories(pl_d3d12_driver PRIVATE
         3rdparty/dxheaders/include/
 
         ../../plcore/include/
