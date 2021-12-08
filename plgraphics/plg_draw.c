@@ -77,6 +77,11 @@ void PlgDrawTexturedRectangle( const PLMatrix4 *transform, float x, float y, flo
 
 	PlgSetTexture( texture, 0 );
 
+	if ( transform == NULL )
+	{
+		transform = PlGetMatrix( PL_MODELVIEW_MATRIX );
+	}
+
 	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", transform, true );
 
 	PlgUploadMesh( mesh );
