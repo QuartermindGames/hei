@@ -367,7 +367,7 @@ unsigned int PlGetImageSize( PLImageFormat format, unsigned int width, unsigned 
 		case PL_IMAGEFORMAT_RGB_DXT1:
 			return ( width * height ) >> 1;
 		default: {
-			unsigned int bytes = PlImageBytesPerPixel( format );
+			unsigned int bytes = PlGetImageFormatPixelSize( format );
 			return width * height * bytes;
 		}
 	}
@@ -377,7 +377,7 @@ unsigned int PlGetImageSize( PLImageFormat format, unsigned int width, unsigned 
  *
  * If the format doesn't have a predictable size or the size isn't a multiple
  * of one byte, returns ZERO. */
-unsigned int PlImageBytesPerPixel( PLImageFormat format ) {
+unsigned int PlGetImageFormatPixelSize( PLImageFormat format ) {
 	switch ( format ) {
 		case PL_IMAGEFORMAT_RGBA4:
 		case PL_IMAGEFORMAT_RGB5A1:
@@ -393,6 +393,30 @@ unsigned int PlImageBytesPerPixel( PLImageFormat format ) {
 		case PL_IMAGEFORMAT_RGBA16:
 		case PL_IMAGEFORMAT_RGBA16F:
 			return 8;
+		default:
+			return 0;
+	}
+}
+
+/**
+ * Returns the number of channels for the given format.
+ */
+unsigned int PlGetNumImageFormatChannels( PLImageFormat format ) {
+	switch ( format ) {
+		case PL_IMAGEFORMAT_RGB4:
+		case PL_IMAGEFORMAT_RGB5:
+		case PL_IMAGEFORMAT_RGB565:
+		case PL_IMAGEFORMAT_RGB8:
+		case PL_IMAGEFORMAT_RGB_DXT1:
+		case PL_IMAGEFORMAT_RGB_FXT1:
+			return 3;
+		case PL_IMAGEFORMAT_RGBA4:
+		case PL_IMAGEFORMAT_RGB5A1:
+		case PL_IMAGEFORMAT_RGBA8:
+		case PL_IMAGEFORMAT_RGBA12:
+		case PL_IMAGEFORMAT_RGBA16:
+		case PL_IMAGEFORMAT_RGBA16F:
+			return 4;
 		default:
 			return 0;
 	}
@@ -500,7 +524,7 @@ bool PlFlipImageVertical( PLImage *image ) {
 	unsigned int width = image->width;
 	unsigned int height = image->height;
 
-	unsigned int bytes_per_pixel = PlImageBytesPerPixel( image->format );
+	unsigned int bytes_per_pixel = PlGetImageFormatPixelSize( image->format );
 	if ( bytes_per_pixel == 0 ) {
 		PlReportErrorF( PL_RESULT_IMAGEFORMAT, "cannot flip images in this format" );
 		return false;
@@ -546,3 +570,8 @@ const char **PlGetSupportedImageFormats( unsigned int *numElements ) {
 
 	return imageFormats;
 }
+
+/* getters */
+unsigned int PlGetImageWidth( const PLImage *image ) { return image->width; }
+unsigned int PlGetImageHeight( const PLImage *image ) { return image->height; }
+PLImageFormat PlGetImageFormat( const PLImage *image ) { return image->format; }

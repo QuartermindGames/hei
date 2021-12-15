@@ -9,11 +9,6 @@
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_math.h>
 
-typedef enum PLDataFormat {
-	PL_UNSIGNED_BYTE,
-	PL_UNSIGNED_INT_8_8_8_8_REV,
-} PLDataFormat;
-
 typedef enum PLImageFormat {
 	PL_IMAGEFORMAT_UNKNOWN,
 
@@ -36,6 +31,7 @@ typedef enum PLImageFormat {
 	PL_IMAGEFORMAT_RGB_FXT1
 } PLImageFormat;
 
+/* todo: deprecate this */
 typedef enum PLColourFormat {
 	PL_COLOURFORMAT_ARGB,
 	PL_COLOURFORMAT_ABGR,
@@ -100,7 +96,6 @@ PL_EXTERN PLImage *PlLoadImage( const char *path );
 PL_EXTERN bool PlWriteImage( const PLImage *image, const char *path );
 
 PL_EXTERN bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format );
-//PL_EXTERN bool plConvertColourFormat( PLImage *image, PLColourFormat newFormat );
 
 PL_EXTERN void PlInvertImageColour( PLImage *image );
 PL_EXTERN void PlReplaceImageColour( PLImage *image, PLColour target, PLColour dest );
@@ -115,9 +110,14 @@ PL_EXTERN void PlFreeImage( PLImage *image );
 
 PL_EXTERN unsigned int PlGetImageSize( PLImageFormat format, unsigned int width, unsigned int height );
 
-unsigned int PlImageBytesPerPixel( PLImageFormat format );
+unsigned int PlGetImageFormatPixelSize( PLImageFormat format );
+unsigned int PlGetNumImageFormatChannels( PLImageFormat format );
 
 PL_EXTERN const char **PlGetSupportedImageFormats( unsigned int *numElements );
+
+unsigned int PlGetImageWidth( const PLImage *image );
+unsigned int PlGetImageHeight( const PLImage *image );
+PLImageFormat PlGetImageFormat( const PLImage *image );
 
 #endif
 
