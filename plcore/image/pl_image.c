@@ -575,3 +575,11 @@ const char **PlGetSupportedImageFormats( unsigned int *numElements ) {
 unsigned int PlGetImageWidth( const PLImage *image ) { return image->width; }
 unsigned int PlGetImageHeight( const PLImage *image ) { return image->height; }
 PLImageFormat PlGetImageFormat( const PLImage *image ) { return image->format; }
+
+const uint8_t *PlGetImageData( const PLImage *image, unsigned int level ) {
+	if ( level >= image->levels ) {
+		return NULL;
+	}
+
+	return image->data[ level ];
+}

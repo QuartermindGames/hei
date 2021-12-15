@@ -118,6 +118,7 @@ PL_EXTERN const char **PlGetSupportedImageFormats( unsigned int *numElements );
 unsigned int PlGetImageWidth( const PLImage *image );
 unsigned int PlGetImageHeight( const PLImage *image );
 PLImageFormat PlGetImageFormat( const PLImage *image );
+const uint8_t *PlGetImageData( const PLImage *image, unsigned int level );
 
 #endif
 
