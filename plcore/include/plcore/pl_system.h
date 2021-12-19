@@ -14,7 +14,7 @@
 
 #if defined( _WIN32 )
 
-#define PL_SYSTEM_NAME "WINDOWS"
+#define PL_SYSTEM_NAME              "WINDOWS"
 #define PL_SYSTEM_LIBRARY_EXTENSION ".dll"
 
 #if 0
@@ -70,10 +70,10 @@
 
 #endif
 
-#define PL_SYSTEM_NAME "LINUX"
+#define PL_SYSTEM_NAME              "LINUX"
 #define PL_SYSTEM_LIBRARY_EXTENSION ".so"
 
-#define PL_SYSTEM_MAX_PATH 256
+#define PL_SYSTEM_MAX_PATH     256
 #define PL_SYSTEM_MAX_USERNAME 32
 
 #elif defined( __APPLE__ )
@@ -84,10 +84,10 @@
 #include <dlfcn.h>
 #endif
 
-#define PL_SYSTEM_NAME "macOS"
+#define PL_SYSTEM_NAME              "macOS"
 #define PL_SYSTEM_LIBRARY_EXTENSION ".so"
 
-#define PL_SYSTEM_MAX_PATH 512
+#define PL_SYSTEM_MAX_PATH     512
 #define PL_SYSTEM_MAX_USERNAME 32
 
 #else
@@ -114,9 +114,9 @@
 
 #if defined( _MSC_VER )
 #define PL_INSTANCE HINSTANCE
-#define PL_FARPROC FARPROC
-#define PL_EXTERN extern
-#define PL_CALL __stdcall
+#define PL_FARPROC  FARPROC
+#define PL_EXTERN   extern
+#define PL_CALL     __stdcall
 
 // MSVC doesn't support __func__
 #define PL_FUNCTION __FUNCTION__// Returns the active function.
@@ -125,6 +125,7 @@
 #define PL_IMPORT __declspec( dllimport )
 
 #define PL_DEPRECATED( function ) __declspec( deprecated ) function
+#define PL_NORETURN( function )   __declspec( noreturn ) function
 
 #define PL_STATIC_ASSERT( a, b ) static_assert( ( a ), b )
 
@@ -134,9 +135,9 @@
 	}                             \
 	a;                            \
 	__pragma( pack( pop ) )
-#else /* currently assumed to be GCC/Clang */
+#elif defined( __GNUC__ ) || defined( __GNUG__ )
 #define PL_INSTANCE void *
-#define PL_FARPROC void *
+#define PL_FARPROC  void *
 
 #define PL_EXTERN extern
 #define PL_CALL
@@ -147,6 +148,7 @@
 #define PL_IMPORT
 
 #define PL_DEPRECATED( function ) function __attribute__( ( deprecated ) )
+#define PL_NORETURN( function )   function __attribute__( ( noreturn ) )
 
 #define PL_STATIC_ASSERT( a, b ) _Static_assert( ( a ), b )
 
@@ -154,4 +156,6 @@
 #define PL_PACKED_STRUCT_END( a ) \
 	}                             \
 	a;
+#else
+#error "Unsupported compiler."
 #endif
