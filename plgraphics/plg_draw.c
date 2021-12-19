@@ -72,20 +72,9 @@ static void SetupRectangleMesh( PLGMesh *mesh, float x, float y, float w, float 
 }
 
 void PlgDrawTexturedRectangle( const PLMatrix4 *transform, float x, float y, float w, float h, PLGTexture *texture ) {
-	PLGMesh *mesh = GetInternalMesh( PLG_MESH_TRIANGLE_STRIP );
-	SetupRectangleMesh( mesh, x, y, w, h, PLColour( 255, 255, 255, 255 ) );
-
 	PlgSetTexture( texture, 0 );
 
-	if ( transform == NULL )
-	{
-		transform = PlGetMatrix( PL_MODELVIEW_MATRIX );
-	}
-
-	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", transform, true );
-
-	PlgUploadMesh( mesh );
-	PlgDrawMesh( mesh );
+	PlgDrawRectangle( transform, x, y, w, h, PLColour( 255, 255, 255, 255 ) );
 
 	PlgSetTexture( NULL, 0 );
 }
@@ -108,6 +97,11 @@ void PlgDrawRectangle( const PLMatrix4 *transform, float x, float y, float w, fl
 	}
 
 	SetupRectangleMesh( mesh, x, y, w, h, colour );
+
+	if ( transform == NULL )
+	{
+		transform = PlGetMatrix( PL_MODELVIEW_MATRIX );
+	}
 
 	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", transform, true );
 
