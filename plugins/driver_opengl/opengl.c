@@ -268,21 +268,21 @@ static void GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
 	if ( buffer->flags & PLG_BUFFER_COLOUR ) {
 		glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_RGBA, buffer->width, buffer->height );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_RGBA, ( int ) buffer->width, ( int ) buffer->height );
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
 	}
 
 	if ( buffer->flags & PLG_BUFFER_DEPTH ) {
 		glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, buffer->width, buffer->height );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, ( int ) buffer->width, ( int ) buffer->height );
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
 	}
 
 	if ( buffer->flags & PLG_BUFFER_STENCIL ) {
 		glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_STENCIL, buffer->width, buffer->height );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_STENCIL, ( int ) buffer->width, ( int ) buffer->height );
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
 	}
 }

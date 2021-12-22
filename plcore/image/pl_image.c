@@ -12,13 +12,13 @@
 #include "filesystem_private.h"
 #include "image_private.h"
 
-#define STBI_MALLOC( sz ) PlMAllocA( sz )
+#define STBI_MALLOC( sz )        PlMAllocA( sz )
 #define STBI_REALLOC( p, newsz ) PlReAllocA( p, newsz )
-#define STBI_FREE( p ) PlFree( p )
+#define STBI_FREE( p )           PlFree( p )
 
-#define STBIW_MALLOC( sz ) PlMAllocA( sz )
+#define STBIW_MALLOC( sz )        PlMAllocA( sz )
 #define STBIW_REALLOC( p, newsz ) PlReAllocA( p, newsz )
-#define STBIW_FREE( p ) PlFree( p )
+#define STBIW_FREE( p )           PlFree( p )
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #if defined( STB_IMAGE_WRITE_IMPLEMENTATION )
@@ -103,6 +103,7 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	        { PL_IMAGE_FILEFORMAT_3DF, "3df", PlLoad3dfImage },
 	        { PL_IMAGE_FILEFORMAT_TIM, "tim", PlLoadTimImage },
 	        { PL_IMAGE_FILEFORMAT_SWL, "swl", PlLoadSwlImage },
+	        { PL_IMAGE_FILEFORMAT_QOI, "qoi", PlLoadQoiImage },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
@@ -209,6 +210,10 @@ bool PlWriteImage( const PLImage *image, const char *path ) {
 			}
 		} else if ( !pl_strncasecmp( extension, "jpg", 3 ) || !pl_strncasecmp( extension, "jpeg", 3 ) ) {
 			if ( stbi_write_jpg( path, ( int ) image->width, ( int ) image->height, comp, image->data[ 0 ], 90 ) == 1 ) {
+				return true;
+			}
+		} else if ( !pl_strncasecmp( extension, "qoi", 3 ) ) {
+			if ( PlWriteQoiImage( image, path ) ) {
 				return true;
 			}
 		}
