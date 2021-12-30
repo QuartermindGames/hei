@@ -181,7 +181,11 @@ static PLImage *ParseDdsImage( PLFile *file ) {
 
 	image.data = PlCAllocA( image.levels, sizeof( uint8_t * ) );
 	for ( unsigned int i = 0; i < image.levels; ++i ) {
-		unsigned int size = ( ( mipW + 3 ) / 4 ) * bytesPerBlock;
+		unsigned int size = ( ( mipW + 3 ) / 4 ) * ( ( mipH + 3 ) / 4 ) * bytesPerBlock;
+		if ( i == 0 ) {
+			image.size = size;
+		}
+
 		image.data[ i ] = PlMAllocA( size );
 		if ( PlReadFile( file, image.data[ i ], sizeof( uint8_t ), size ) != size ) {
 			PlFreeImage( &image );
@@ -194,6 +198,8 @@ static PLImage *ParseDdsImage( PLFile *file ) {
 
 	PLImage *out = PlMAllocA( sizeof( PLImage ) );
 	memcpy( out, &image, sizeof( PLImage ) );
+
+	snprintf( out->path, sizeof( out->path ), "%s", PlGetFilePath( file ) );
 
 	return out;
 }
