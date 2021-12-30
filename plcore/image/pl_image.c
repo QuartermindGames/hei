@@ -22,12 +22,12 @@
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #if defined( STB_IMAGE_WRITE_IMPLEMENTATION )
-#include "stb_image_write.h"
+#	include "stb_image_write.h"
 #endif
 
 #define STB_IMAGE_IMPLEMENTATION
 #if defined( STB_IMAGE_IMPLEMENTATION )
-#include "stb_image.h"
+#	include "stb_image.h"
 
 static PLImage *LoadStbImage( const char *path ) {
 	PLFile *file = PlOpenFile( path, true );
@@ -104,6 +104,7 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	        { PL_IMAGE_FILEFORMAT_TIM, "tim", PlLoadTimImage },
 	        { PL_IMAGE_FILEFORMAT_SWL, "swl", PlLoadSwlImage },
 	        { PL_IMAGE_FILEFORMAT_QOI, "qoi", PlLoadQoiImage },
+	        { PL_IMAGE_FILEFORMAT_DDS, "dds", PlLoadDdsImage },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {

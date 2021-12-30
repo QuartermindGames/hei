@@ -75,7 +75,7 @@ static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 		} else if ( pi->compressionType == PL_COMPRESSION_IMPLODE ) {
 			BlstUser in = {
 			                 .buffer = dataPtr,
-			                 .length = size,
+			                 .length = ( unsigned int ) size,
 			         },
 			         out = {
 			                 .buffer = decompressedPtr,
