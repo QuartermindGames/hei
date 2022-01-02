@@ -422,6 +422,11 @@ unsigned int PlGetNumImageFormatChannels( PLImageFormat format ) {
 	}
 }
 
+bool PlImageHasAlpha( const PLImage *image )
+{
+	return ( PlGetNumImageFormatChannels( image->format ) >= 4 );
+}
+
 void PlInvertImageColour( PLImage *image ) {
 	unsigned int num_colours = PlGetNumberOfColourChannels( image->colour_format );
 	switch ( image->format ) {

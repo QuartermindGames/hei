@@ -113,6 +113,8 @@ PL_EXTERN unsigned int PlGetImageSize( PLImageFormat format, unsigned int width,
 unsigned int PlGetImageFormatPixelSize( PLImageFormat format );
 unsigned int PlGetNumImageFormatChannels( PLImageFormat format );
 
+bool PlImageHasAlpha( const PLImage *image );
+
 PL_EXTERN const char **PlGetSupportedImageFormats( unsigned int *numElements );
 
 unsigned int PlGetImageWidth( const PLImage *image );
