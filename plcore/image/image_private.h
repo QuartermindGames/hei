@@ -14,3 +14,7 @@ PLImage *PlLoad3dfImage( const char *path );
 PLImage *PlLoadFtxImage( const char *path );
 PLImage *PlLoadTimImage( const char *path );
 PLImage *PlLoadSwlImage( const char *path );
+PLImage *PlLoadQoiImage( const char *path );
+PLImage *PlLoadDdsImage( const char *path );
+
+bool PlWriteQoiImage( const PLImage *image, const char *path );

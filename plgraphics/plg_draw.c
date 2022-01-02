@@ -72,15 +72,9 @@ static void SetupRectangleMesh( PLGMesh *mesh, float x, float y, float w, float 
 }
 
 void PlgDrawTexturedRectangle( const PLMatrix4 *transform, float x, float y, float w, float h, PLGTexture *texture ) {
-	PLGMesh *mesh = GetInternalMesh( PLG_MESH_TRIANGLE_STRIP );
-	SetupRectangleMesh( mesh, x, y, w, h, PLColour( 255, 255, 255, 255 ) );
-
 	PlgSetTexture( texture, 0 );
 
-	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", transform, true );
-
-	PlgUploadMesh( mesh );
-	PlgDrawMesh( mesh );
+	PlgDrawRectangle( transform, x, y, w, h, PLColour( 255, 255, 255, 255 ) );
 
 	PlgSetTexture( NULL, 0 );
 }
@@ -103,6 +97,10 @@ void PlgDrawRectangle( const PLMatrix4 *transform, float x, float y, float w, fl
 	}
 
 	SetupRectangleMesh( mesh, x, y, w, h, colour );
+
+	if ( transform == NULL ) {
+		transform = PlGetMatrix( PL_MODELVIEW_MATRIX );
+	}
 
 	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", transform, true );
 
@@ -222,13 +220,15 @@ void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize ) {
 
 	int c = 0, r = 0;
 	for ( ; r < h + 1; r += ( int ) gridSize ) {
-		PlgAddMeshVertex( mesh, PLVector3( x, y + r, 0.0f ), pl_vecOrigin3, PLColour( 255, 255, 255, 255 ), pl_vecOrigin2 );
-		PlgAddMeshVertex( mesh, PLVector3( x + w, r + y, 0 ), pl_vecOrigin3, PLColour( 255, 255, 255, 255 ), pl_vecOrigin2 );
+		PlgAddMeshVertex( mesh, PLVector3( x, y + r, 0.0f ), pl_vecOrigin3, PLColour( 0, 0, 255, 255 ), pl_vecOrigin2 );
+		PlgAddMeshVertex( mesh, PLVector3( x + w, r + y, 0 ), pl_vecOrigin3, PLColour( 0, 0, 255, 255 ), pl_vecOrigin2 );
 		for ( ; c < w + 1; c += ( int ) gridSize ) {
-			PlgAddMeshVertex( mesh, PLVector3( c + x, y, 0 ), pl_vecOrigin3, PLColour( 255, 255, 255, 255 ), pl_vecOrigin2 );
-			PlgAddMeshVertex( mesh, PLVector3( c + x, y + h, 0 ), pl_vecOrigin3, PLColour( 255, 255, 255, 255 ), pl_vecOrigin2 );
+			PlgAddMeshVertex( mesh, PLVector3( c + x, y, 0 ), pl_vecOrigin3, PLColour( 0, 0, 255, 255 ), pl_vecOrigin2 );
+			PlgAddMeshVertex( mesh, PLVector3( c + x, y + h, 0 ), pl_vecOrigin3, PLColour( 0, 0, 255, 255 ), pl_vecOrigin2 );
 		}
 	}
+
+	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", PlGetMatrix( PL_MODELVIEW_MATRIX ), true );
 
 	PlgUploadMesh( mesh );
 	PlgDrawMesh( mesh );
@@ -259,8 +259,8 @@ void PlgDrawPixel( int x, int y, PLColour colour ) {
 
 	/* make sure that the pixel is within the viewport */
 	if ( x > viewport->w || x < 0 || y > viewport->h || y < 0 ) {
-        return;
-    }
+		return;
+	}
 
 	CallGfxFunction( DrawPixel, x, y, colour );
 }

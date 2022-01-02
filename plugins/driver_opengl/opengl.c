@@ -51,7 +51,7 @@ static int gl_version_major = 0;
 static int gl_version_minor = 0;
 
 #define GLVersion( maj, min ) ( ( ( maj ) == gl_version_major && ( min ) <= gl_version_minor ) || ( maj ) < gl_version_major )
-#define GLLog( ... ) gInterface->core->LogMessage( glLogLevel, __VA_ARGS__ )
+#define GLLog( ... )          gInterface->core->LogMessage( glLogLevel, __VA_ARGS__ )
 
 unsigned int gl_num_extensions = 0;
 
@@ -268,21 +268,21 @@ static void GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
 	if ( buffer->flags & PLG_BUFFER_COLOUR ) {
 		glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_RGBA, buffer->width, buffer->height );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_RGBA, ( int ) buffer->width, ( int ) buffer->height );
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
 	}
 
 	if ( buffer->flags & PLG_BUFFER_DEPTH ) {
 		glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, buffer->width, buffer->height );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, ( int ) buffer->width, ( int ) buffer->height );
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
 	}
 
 	if ( buffer->flags & PLG_BUFFER_STENCIL ) {
 		glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_STENCIL, buffer->width, buffer->height );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_STENCIL, ( int ) buffer->width, ( int ) buffer->height );
 		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
 	}
 }
@@ -401,6 +401,11 @@ static unsigned int TranslateImageFormat( PLImageFormat format ) {
 			return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 		case PL_IMAGEFORMAT_RGBA_DXT1:
 			return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+		case PL_IMAGEFORMAT_RGBA_DXT3:
+			return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		case PL_IMAGEFORMAT_RGBA_DXT5:
+			return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+
 		case PL_IMAGEFORMAT_RGB_FXT1:
 			return GL_COMPRESSED_RGB_FXT1_3DFX;
 
@@ -409,26 +414,24 @@ static unsigned int TranslateImageFormat( PLImageFormat format ) {
 	}
 }
 
-static unsigned int TranslateStorageFormat( PLDataFormat format ) {
-	switch ( format ) {
-		case PL_UNSIGNED_BYTE:
-			return GL_UNSIGNED_BYTE;
-		case PL_UNSIGNED_INT_8_8_8_8_REV:
-			return GL_UNSIGNED_INT_8_8_8_8_REV;
-		default:
-			plAssert( 0 );
-			return 0; /* todo */
-	}
+static unsigned int GetStorageFormatForImageFormat( PLImageFormat format ) {
+	return GL_UNSIGNED_BYTE;
 }
 
-static unsigned int TranslateImageColourFormat( PLColourFormat format ) {
+static unsigned int GetColourFormatForImageFormat( PLImageFormat format ) {
 	switch ( format ) {
-		default:
-		case PL_COLOURFORMAT_RGBA:
-			return GL_RGBA;
-		case PL_COLOURFORMAT_RGB:
+		case PL_IMAGEFORMAT_RGB4:
+		case PL_IMAGEFORMAT_RGB5:
+		case PL_IMAGEFORMAT_RGB565:
+		case PL_IMAGEFORMAT_RGB8:
+		case PL_IMAGEFORMAT_RGB_DXT1:
+		case PL_IMAGEFORMAT_RGB_FXT1:
 			return GL_RGB;
+		default:
+			break;
 	}
+
+	return GL_RGBA;
 }
 
 static void GLCreateTexture( PLGTexture *texture ) {
@@ -482,9 +485,6 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 	}
 
 	unsigned int image_format = TranslateImageFormat( upload->format );
-	unsigned int colour_format = TranslateImageColourFormat( upload->colour_format );
-	unsigned int storage_format = TranslateStorageFormat( texture->storage );
-
 	for ( unsigned int i = 0; i < levels; ++i ) {
 		GLsizei w = texture->w / ( unsigned int ) pow( 2, i );
 		GLsizei h = texture->h / ( unsigned int ) pow( 2, i );
@@ -504,8 +504,8 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 			        image_format,
 			        w, h,
 			        0,
-			        colour_format,
-			        storage_format,
+			        GetColourFormatForImageFormat( upload->format ),
+			        GetStorageFormatForImageFormat( upload->format ),
 			        upload->data[ 0 ] );
 		}
 	}

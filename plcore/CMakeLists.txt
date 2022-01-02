@@ -65,7 +65,7 @@ file(GLOB PLATFORM_PACKAGE_FILES
         package/*.c
         )
 file(GLOB PLATFORM_IMAGE_FILES
-        image/*.*
+        image/*.c
         )
 
 if (PL_COMPILE_STATIC)
