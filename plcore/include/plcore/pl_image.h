@@ -136,13 +136,12 @@ PL_EXTERN void PlReplaceImageColour( PLImage *image, PLColour target, PLColour d
 
 PL_EXTERN bool PlFlipImageVertical( PLImage *image );
 
-PL_EXTERN unsigned int PlGetNumberOfColourChannels( PLColourFormat format );
+PL_EXTERN PL_DEPRECATED( unsigned int PlGetNumberOfColourChannels( PLColourFormat format ) );
 
-PL_EXTERN bool PlImageIsPowerOfTwo( const PLImage *image );
+PL_EXTERN PL_DEPRECATED( bool PlImageIsPowerOfTwo( const PLImage *image ) );
 
-PL_EXTERN void PlFreeImage( PLImage *image );
-
-PL_EXTERN unsigned int PlGetImageSize( PLImageFormat format, unsigned int width, unsigned int height );
+PL_EXTERN PL_DEPRECATED( void PlFreeImage( PLImage *image ) );
+PL_EXTERN PL_DEPRECATED( unsigned int PlGetImageSize( PLImageFormat format, unsigned int width, unsigned int height ) );
 
 unsigned int PlGetImageFormatPixelSize( PLImageFormat format );
 unsigned int PlGetNumImageFormatChannels( PLImageFormat format );
@@ -155,6 +154,7 @@ unsigned int PlGetImageWidth( const PLImage *image );
 unsigned int PlGetImageHeight( const PLImage *image );
 PLImageFormat PlGetImageFormat( const PLImage *image );
 const uint8_t *PlGetImageData( const PLImage *image, unsigned int level );
+unsigned int PlGetImageDataSize( const PLImage *image );
 
 #endif
 

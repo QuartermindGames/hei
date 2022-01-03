@@ -594,3 +594,8 @@ const uint8_t *PlGetImageData( const PLImage *image, unsigned int level ) {
 
 	return image->data[ level ];
 }
+
+unsigned int PlGetImageDataSize( const PLImage *image )
+{
+	return PlGetImageSize( image->format, image->width, image->height );
+}
