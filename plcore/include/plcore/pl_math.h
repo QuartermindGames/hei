@@ -66,6 +66,7 @@ typedef struct PLColour {
 namespace hei {
 	struct Colour : PLColour {
 		Colour() : Colour( 255, 255, 255, 255 ) {}
+		Colour( const uint8_t c[] ) : Colour( c[ 0 ], c[ 1 ], c[ 2 ], c[ 3 ] ) {}
 		Colour( uint8_t c, uint8_t c2, uint8_t c3, uint8_t c4 = 255 ) {
 			r = c;
 			g = c2;
