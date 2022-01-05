@@ -43,6 +43,7 @@ file(
         pl_math_matrix.c
         pl_math_vector.c
         pl_physics.c
+        pl_timer.c
 
         string/crc32.c
         string/itoa.c
