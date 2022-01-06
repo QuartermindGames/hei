@@ -636,36 +636,5 @@ int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
 	return size;
 }
 
-void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
-	FILE *f = fopen(filename, "rb");
-	int size, bytes_read;
-	void *pixels, *data;
-
-	if (!f) {
-		return NULL;
-	}
-
-	fseek(f, 0, SEEK_END);
-	size = ftell(f);
-	if (size <= 0) {
-		fclose(f);
-		return NULL;
-	}
-	fseek(f, 0, SEEK_SET);
-
-	data = QOI_MALLOC(size);
-	if (!data) {
-		fclose(f);
-		return NULL;
-	}
-
-	bytes_read = fread(data, 1, size, f);
-	fclose(f);
-
-	pixels = qoi_decode(data, bytes_read, desc, channels);
-	QOI_FREE(data);
-	return pixels;
-}
-
 #endif /* QOI_NO_STDIO */
 #endif /* QOI_IMPLEMENTATION */
