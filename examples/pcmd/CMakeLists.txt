@@ -33,6 +33,7 @@ add_executable( pcmd
         ../../extras/doom_wad.c
         ../../extras/eradicator_rid.c
         ../../extras/ftactics_pak.c
+        #../../extras/galleon_pkg.c
         ../../extras/istorm_ibf.c
         ../../extras/mortyr_hal.c
         ../../extras/outcast_opk.c

@@ -1,23 +1,29 @@
-/* Copyright (C) 2020 Mark E Sowden <markelswo@gmail.com> */
+/**
+ * Hei Platform Library
+ * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
+ * This software is licensed under MIT. See LICENSE for more details.
+ */
 
-#include "plugin.h"
+#include <plcore/pl.h>
+#include <plcore/pl_filesystem.h>
+#include <plcore/pl_package.h>
 
 /* some information pulled from
  * http://wiki.xentax.com/index.php/Galleon_-_Island_Of_Mystery_(XBox)
  * should handle packages from both the retail game and prototype */
 
-#define PKG_MAGIC "CRSR"
+#define PKG_MAGIC   PL_MAGIC_TO_NUM( 'C', 'R', 'S', 'R' )
 #define PKG_MAX_DIR 64
 
 /* terminators indicate different things,
  * only two of these are documented but
  * there are others as well */
 #define PKG_TERM_NEW_EXTENSION 130
-#define PKG_TERM_END_FILENAME 129
-#define PKG_TERM_END_TABLE 255
+#define PKG_TERM_END_FILENAME  129
+#define PKG_TERM_END_TABLE     255
 
 typedef struct PkgHeader {
-	char magic[ 4 ];
+	uint32_t magic; /* CRSR */
 	uint16_t version; /* ? */
 	uint16_t unknown;
 	uint32_t length;
@@ -37,56 +43,54 @@ static PLPackage *PKG_ReadFile( PLFile *file ) {
 
 	/* first load in the header */
 	PkgHeader header;
-	if ( gInterface->ReadFile( file, header.magic, sizeof( char ), 4 ) != 4 ) {
-		return NULL;
-	}
-	header.version = gInterface->ReadInt16( file, false, &status );
-	header.unknown = gInterface->ReadInt16( file, false, &status );
-	header.length = gInterface->ReadInt32( file, false, &status );
-	header.unused = gInterface->ReadInt32( file, false, &status );
-	header.startOffset = gInterface->ReadInt32( file, false, &status );
+	header.magic = PlReadInt32( file, false, &status );
+	header.version = PlReadInt16( file, false, &status );
+	header.unknown = PlReadInt16( file, false, &status );
+	header.length = PlReadInt32( file, false, &status );
+	header.unused = PlReadInt32( file, false, &status );
+	header.startOffset = PlReadInt32( file, false, &status );
 	if ( !status ) {
 		return NULL;
 	}
 
 	/* verify it */
-	if ( strncmp( PKG_MAGIC, header.magic, 4 ) != 0 ) {
-		gInterface->ReportError( PL_RESULT_FILETYPE, "magic was \"%s\", expected \"%s\"", header.magic, PKG_MAGIC );
+	if ( header.magic != PKG_MAGIC ) {
+		PlReportError( PL_RESULT_FILETYPE, "magic was \"%s\", expected \"%s\"", header.magic, PKG_MAGIC );
 		return NULL;
 	}
 
 	/* read in the directory name */
-	uint16_t dirLength = gInterface->ReadInt16( file, false, &status );
+	uint16_t dirLength = PlReadInt16( file, false, &status );
 	if ( !status ) {
 		return NULL;
 	} else if ( dirLength >= PKG_MAX_DIR ) {
-		gInterface->ReportError( PL_RESULT_FILETYPE, "unexpected directory length (%d vs max %d)", dirLength, PKG_MAX_DIR );
+		PlReportError( PL_RESULT_FILETYPE, "unexpected directory length (%d vs max %d)", dirLength, PKG_MAX_DIR );
 		return NULL;
 	}
 	/* was originally gonna allocate a buffer instead, but don't currently think
 	 * this is necessary - if we hit the limit above, i'll switch this over */
 	char dirName[ 64 ];
-	if ( gInterface->ReadFile( file, dirName, sizeof( char ), dirLength ) != dirLength ) {
+	if ( PlReadFile( file, dirName, sizeof( char ), dirLength ) != dirLength ) {
 		return NULL;
 	}
 
 	unsigned int maxFiles = 2048;
-	PkgIndex *fileTable = gInterface->MAlloc( sizeof( PkgIndex ) * maxFiles );
+	PkgIndex *fileTable = PlMAlloc( sizeof( PkgIndex ) * maxFiles, true );
 	unsigned int numFiles = 0;
 
 	char fileExtension[ 16 ];
 	uint8_t rule;
-	while( ( rule = gInterface->ReadInt8( file, &status ) ) != PKG_TERM_END_TABLE ) {
+	while ( ( rule = PlReadInt8( file, &status ) ) != PKG_TERM_END_TABLE ) {
 		if ( !status ) {
-			gInterface->Free( fileTable );
+			PlFree( fileTable );
 			return NULL;
 		}
 
 		if ( numFiles >= maxFiles ) {
 			maxFiles += 16;
-			fileTable = gInterface->ReAlloc( fileTable, sizeof( PkgIndex ) * maxFiles );
+			fileTable = PlReAlloc( fileTable, sizeof( PkgIndex ) * maxFiles, true );
 		}
-		
+
 		PkgIndex *curIndex = &fileTable[ numFiles ];
 		memset( curIndex, 0, sizeof( PkgIndex ) );
 
@@ -97,7 +101,7 @@ static PLPackage *PKG_ReadFile( PLFile *file ) {
 			strncpy( curIndex->fileName, lastFile->fileName, curIndex->fileNameLength );
 		}
 		for ( ; curIndex->fileNameLength < sizeof( curIndex->fileName ); ++curIndex->fileNameLength ) {
-			uint8_t c = gInterface->ReadInt8( file, &status );
+			uint8_t c = PlReadInt8( file, &status );
 			if ( c == PKG_TERM_END_FILENAME ) {
 				break;
 			}
@@ -108,7 +112,6 @@ static PLPackage *PKG_ReadFile( PLFile *file ) {
 
 		/* now check for and read in the extension */
 		if ( numFiles == 0 ) {
-
 		}
 
 		/* documentation on xentax says that terminator is indicated
@@ -121,14 +124,14 @@ static PLPackage *PKG_ReadFile( PLFile *file ) {
 }
 
 PLPackage *PKG_LoadFile( const char *path ) {
-	PLFile *file = gInterface->OpenFile( path, false );
+	PLFile *file = PlOpenFile( path, false );
 	if ( file == NULL ) {
 		return NULL;
 	}
 
 	PLPackage *package = PKG_ReadFile( file );
 
-	gInterface->CloseFile( file );
+	PlCloseFile( file );
 
 	return package;
 }
