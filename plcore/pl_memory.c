@@ -9,10 +9,10 @@
 
 #include <stdlib.h>
 #if defined( _WIN32 )
-#include <windows.h>
-#include <psapi.h>
+#	include <windows.h>
+#	include <psapi.h>
 #elif defined( __linux__ )
-#include <sys/resource.h>
+#	include <sys/resource.h>
 #endif
 
 #include "pl_private.h"
@@ -22,9 +22,9 @@
 
 /* description of what's been allocated, for debugging */
 #if defined( TRACK_MEMORY )
-#define MAGIC "PLAH"
+#	define MAGIC PL_MAGIC_TO_NUM( 'P', 'L', 'M', 'B' )
 typedef struct PLAllocHeader {
-	char magic[ 4 ];
+	uint32_t magic;
 	char id[ 32 ]; /* unique identifier */
 	size_t length; /* allocated size in bytes */
 } PLAllocHeader;
@@ -58,17 +58,17 @@ void *PlCAlloc( size_t num, size_t size, bool abortOnFail ) {
 
 #if defined( TRACK_MEMORY )
 	PLAllocHeader *header = ( PLAllocHeader * ) buf;
-	strcpy( header->magic, MAGIC );
+	header->magic = MAGIC;
 	PlGenerateUniqueIdentifier( header->id, sizeof( header->id ) - 1 );
 	header->length = totalSize;
 
 	totalRAMUsage += totalSize;
 
-#ifdef DEBUG_MEMORY
+#	ifdef DEBUG_MEMORY
 	printf( "ALLOC: " COM_FMT_uint64 " bytes (%s)\t\t | TOTAL: " COM_FMT_double "mb\n",
 	        header->length, header->id,
 	        PlBytesToMegabytes( totalRAMUsage ) );
-#endif
+#	endif
 
 	buf += sizeof( PLAllocHeader );
 #endif
@@ -96,7 +96,7 @@ void *PlReAlloc( void *ptr, size_t newSize, bool abortOnFail ) {
 #if defined( TRACK_MEMORY )
 	bool isTracked = true;
 	buf -= sizeof( PLAllocHeader );
-	if ( buf != NULL && strncmp( ( ( PLAllocHeader * ) buf )->magic, MAGIC, 4 ) == 0 ) {
+	if ( ( buf != NULL ) && ( ( ( PLAllocHeader * ) buf )->magic == MAGIC ) ) {
 		newSize += sizeof( PLAllocHeader ); /* maybe... ? */
 	} else {
 		isTracked = false;
@@ -126,11 +126,11 @@ void *PlReAlloc( void *ptr, size_t newSize, bool abortOnFail ) {
 		totalRAMUsage -= oldLength;
 		totalRAMUsage += newSize;
 
-#ifdef DEBUG_MEMORY
+#	ifdef DEBUG_MEMORY
 		printf( "REALLOC: " COM_FMT_uint64 " bytes (%s)\t\t | TOTAL: " COM_FMT_double "mb\n",
 		        header->length, header->id,
 		        PlBytesToMegabytes( totalRAMUsage ) );
-#endif
+#	endif
 
 		buf += sizeof( PLAllocHeader );
 	}
@@ -145,13 +145,13 @@ void PlFree( void *ptr ) {
 	if ( buf != NULL ) {
 		buf -= sizeof( PLAllocHeader );
 		PLAllocHeader *header = ( PLAllocHeader * ) buf;
-		if ( header != NULL && ( strncmp( header->magic, MAGIC, 4 ) == 0 ) ) {
+		if ( ( header != NULL ) && (header->magic == MAGIC) ) {
 			totalRAMUsage -= header->length;
-#ifdef DEBUG_MEMORY
+#	ifdef DEBUG_MEMORY
 			printf( "FREE: %p | " COM_FMT_uint64 " bytes (%s)\t\t | TOTAL: " COM_FMT_double "mb\n",
 			        ptr, header->length, header->id,
 			        PlBytesToMegabytes( totalRAMUsage ) );
-#endif
+#	endif
 		} else {
 			/* not allocated by us,
 			 * someone is mixing crap likely */
@@ -182,7 +182,7 @@ size_t PlGetTotalAllocatedMemory( void ) {
  * Returns the total amount of system memory in bytes.
  */
 uint64_t PlGetTotalSystemMemory( void ) {
-#if defined( __linux__ )
+#if defined( __linux__ ) || defined( __APPLE__ )
 	long pages = sysconf( _SC_PHYS_PAGES );
 	long pageSize = sysconf( _SC_PAGE_SIZE );
 	return pages * pageSize;
@@ -192,7 +192,7 @@ uint64_t PlGetTotalSystemMemory( void ) {
 	GlobalMemoryStatusEx( &stat );
 	return stat.ullTotalPageFile;
 #else
-#error "Missing implementation!"
+#	error "Missing implementation!"
 #endif
 }
 
@@ -200,8 +200,13 @@ uint64_t PlGetTotalSystemMemory( void ) {
  * Returns the total amount of available system memory in bytes.
  */
 uint64_t PlGetTotalAvailableSystemMemory( void ) {
-#if defined( __linux__ )
+#if defined( __linux__ ) || defined( __APPLE__ )
+	/* unfortunately, on OSX, we don't have AVPHYS_PAGES... */
+#	if defined( __APPLE__ )
+	long pages = sysconf( _SC_PHYS_PAGES );
+#	else
 	long pages = sysconf( _SC_AVPHYS_PAGES );
+#	endif
 	long pageSize = sysconf( _SC_PAGE_SIZE );
 	return pages * pageSize;
 #elif defined( _WIN32 )
@@ -210,7 +215,7 @@ uint64_t PlGetTotalAvailableSystemMemory( void ) {
 	GlobalMemoryStatusEx( &stat );
 	return stat.ullAvailPhys;
 #else
-#error "Missing implementation!"
+#	error "Missing implementation!"
 #endif
 }
 
@@ -218,7 +223,7 @@ uint64_t PlGetTotalAvailableSystemMemory( void ) {
  * Returns the memory usage of the current process in bytes.
  */
 uint64_t PlGetCurrentMemoryUsage( void ) {
-#if defined( __linux__ )
+#if defined( __linux__ ) || defined( __APPLE__ )
 	/* this is probably the only thing close to an api
 	 * that provides this info on linux, without having
 	 * to parse shit...but it returns kb and isn't
@@ -231,6 +236,6 @@ uint64_t PlGetCurrentMemoryUsage( void ) {
 	GetProcessMemoryInfo( GetCurrentProcess(), &pmc, sizeof( pmc ) );
 	return pmc.WorkingSetSize;
 #else
-#error "Missing implementation!"
+#	error "Missing implementation!"
 #endif
 }
