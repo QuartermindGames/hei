@@ -64,7 +64,8 @@ static PLImage *LoadStbImage( const char *path ) {
 
 typedef struct PLImageLoader {
 	const char *extension;
-	PLImage *( *LoadImage )( const char *path );
+	PLImage *( *LoadFile )( const char *path );
+	PLImage *( *ParseFile )( PLFile *file );
 } PLImageLoader;
 
 static PLImageLoader imageLoaders[ MAX_IMAGE_LOADERS ];
@@ -77,7 +78,7 @@ void PlRegisterImageLoader( const char *extension, PLImage *( *LoadImage )( cons
 	}
 
 	imageLoaders[ numImageLoaders ].extension = extension;
-	imageLoaders[ numImageLoaders ].LoadImage = LoadImage;
+	imageLoaders[ numImageLoaders ].LoadFile = LoadImage;
 
 	numImageLoaders++;
 }
@@ -161,6 +162,10 @@ void PlDestroyImage( PLImage *image ) {
 	PlFree( image );
 }
 
+/**
+ * Load an image by it's given pass.
+ * Returns null on fail.
+ */
 PLImage *PlLoadImage( const char *path ) {
 	if ( !PlFileExists( path ) ) {
 		PlReportBasicError( PL_RESULT_FILEPATH );
@@ -170,7 +175,19 @@ PLImage *PlLoadImage( const char *path ) {
 	const char *extension = PlGetFileExtension( path );
 	for ( unsigned int i = 0; i < numImageLoaders; ++i ) {
 		if ( pl_strcasecmp( extension, imageLoaders[ i ].extension ) == 0 ) {
-			PLImage *image = imageLoaders[ i ].LoadImage( path );
+			PLImage *image = NULL;
+			/* try loading it by just loading the file directly first */
+			if ( imageLoaders[ i ].ParseFile != NULL ) {
+				PLFile *file = PlOpenFile( path, false );
+				if ( file != NULL ) {
+					image = imageLoaders[ i ].ParseFile( file );
+					PlCloseFile( file );
+				}
+			}
+			/* see if it has a specific loader by path */
+			else if ( imageLoaders[ i ].LoadFile != NULL ) {
+				image = imageLoaders[ i ].LoadFile( path );
+			}
 			if ( image != NULL ) {
 				strncpy( image->path, path, sizeof( image->path ) );
 				return image;
@@ -179,6 +196,31 @@ PLImage *PlLoadImage( const char *path ) {
 	}
 
 	PlReportBasicError( PL_RESULT_UNSUPPORTED );
+
+	return NULL;
+}
+
+/**
+ * Load an image by it's virtual file handle.
+ */
+PLImage *PlParseImage( PLFile *file ) {
+	const char *extension = PlGetFileExtension( file->path );
+	for ( unsigned int i = 0; i < numImageLoaders; ++i ) {
+		if ( extension != NULL && pl_strcasecmp( extension, imageLoaders[ i ].extension ) != 0 ) {
+			continue;
+		}
+
+		if ( imageLoaders[ i ].ParseFile == NULL ) {
+			continue;
+		}
+
+		PLImage *image = imageLoaders[ i ].ParseFile( file );
+		if ( image == NULL ) {
+			continue;
+		}
+
+		return image;
+	}
 
 	return NULL;
 }
@@ -428,8 +470,7 @@ unsigned int PlGetNumImageFormatChannels( PLImageFormat format ) {
 	}
 }
 
-bool PlImageHasAlpha( const PLImage *image )
-{
+bool PlImageHasAlpha( const PLImage *image ) {
 	return ( PlGetNumImageFormatChannels( image->format ) >= 4 );
 }
 
@@ -595,7 +636,6 @@ const uint8_t *PlGetImageData( const PLImage *image, unsigned int level ) {
 	return image->data[ level ];
 }
 
-unsigned int PlGetImageDataSize( const PLImage *image )
-{
+unsigned int PlGetImageDataSize( const PLImage *image ) {
 	return PlGetImageSize( image->format, image->width, image->height );
 }
