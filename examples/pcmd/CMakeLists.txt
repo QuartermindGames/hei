@@ -30,6 +30,7 @@ project( pcmd )
 add_executable( pcmd
         main.c
 
+        ../../extras/core/core_package_clu.c
         ../../extras/doom_wad.c
         ../../extras/eradicator_rid.c
         ../../extras/ftactics_pak.c
