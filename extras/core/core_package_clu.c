@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Copyright © 2020-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
+/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
 
 #include <plcore/pl.h>
 #include <plcore/pl_filesystem.h>
@@ -9,9 +9,6 @@
  *
  * Usages:
  * 	- Herdy Gerdy (2002, PS2)
- *
- * Features:
- *  - Hashed filenames
  *
  * Notes:
  * 	Levels use the original level name as the description,
