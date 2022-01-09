@@ -84,9 +84,9 @@ static PLFileSystemMount *fs_mount_ceiling = NULL;
 
 static_assert( sizeof( VFS_LOCAL_HINT ) < VFS_MAX_HINT, "Local hint is larger than maximum hint length, please adjust limit!" );
 
-IMPLEMENT_COMMAND( fsExtractPkg, "Extract the contents of a package." ) {
+IMPLEMENT_COMMAND( pkgext, "Extract the contents of a package." ) {
 	if ( argc == 1 ) {
-		Print( "%s", fsExtractPkg_var.description );
+		Print( "%s", pkgext_var.description );
 		return;
 	}
 
@@ -137,9 +137,9 @@ IMPLEMENT_COMMAND( fsExtractPkg, "Extract the contents of a package." ) {
 	PlDestroyPackage( pkg );
 }
 
-IMPLEMENT_COMMAND( fsLstPkg, "List all the files in a particular package." ) {
+IMPLEMENT_COMMAND( pkglst, "List all the files in a particular package." ) {
 	if ( argc == 1 ) {
-		Print( "%s", fsLstPkg_var.description );
+		Print( "%s", pkglst_var.description );
 		return;
 	}
 
@@ -176,7 +176,7 @@ IMPLEMENT_COMMAND( fsLstPkg, "List all the files in a particular package." ) {
 	PlDestroyPackage( pkg );
 }
 
-IMPLEMENT_COMMAND( fsListMounted, "Lists all of the mounted directories." ) {
+IMPLEMENT_COMMAND( lstmnt, "Lists all of the mounted directories." ) {
 	PlUnused( argv );
 	PlUnused( argc );
 
@@ -203,9 +203,9 @@ IMPLEMENT_COMMAND( fsListMounted, "Lists all of the mounted directories." ) {
 	Print( "%d locations mounted\n", numLocations );
 }
 
-IMPLEMENT_COMMAND( fsUnmount, "Unmount the specified directory." ) {
+IMPLEMENT_COMMAND( unmnt, "Unmount the specified directory." ) {
 	if ( argc == 1 ) {
-		Print( "%s", fsUnmount_var.description );
+		Print( "%s", unmnt_var.description );
 		return;
 	}
 
@@ -226,9 +226,9 @@ IMPLEMENT_COMMAND( fsUnmount, "Unmount the specified directory." ) {
 	Print( "Failed to find location: \"%s\"!\n", argv[ 1 ] );
 }
 
-IMPLEMENT_COMMAND( fsMount, "Mount the specified directory." ) {
+IMPLEMENT_COMMAND( mnt, "Mount the specified directory." ) {
 	if ( argc == 1 ) {
-		Print( "%s", fsMount_var.description );
+		Print( "%s", mnt_var.description );
 		return;
 	}
 
@@ -243,11 +243,11 @@ IMPLEMENT_COMMAND( fsMount, "Mount the specified directory." ) {
 
 static void PlRegisterFSCommands_( void ) {
 	PLConsoleCommand fsCommands[] = {
-	        fsExtractPkg_var,
-	        fsLstPkg_var,
-	        fsListMounted_var,
-	        fsUnmount_var,
-	        fsMount_var,
+	        pkgext_var,
+	        pkglst_var,
+	        lstmnt_var,
+	        unmnt_var,
+	        mnt_var,
 	};
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( fsCommands ); ++i ) {
 		PlRegisterConsoleCommand( fsCommands[ i ].cmd, fsCommands[ i ].Callback, fsCommands[ i ].description );
