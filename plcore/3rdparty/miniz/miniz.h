@@ -407,7 +407,6 @@ typedef int intf;
 typedef void *voidpf;
 typedef uLong uLongf;
 typedef void *voidp;
-typedef void *const voidpc;
 #define Z_NULL 0
 #define Z_NO_FLUSH MZ_NO_FLUSH
 #define Z_PARTIAL_FLUSH MZ_PARTIAL_FLUSH
