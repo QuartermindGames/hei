@@ -127,6 +127,7 @@ PL_EXTERN PLImage *PlCreateImage( uint8_t *buf, unsigned int w, unsigned int h, 
 PL_EXTERN void PlDestroyImage( PLImage *image );
 
 PL_EXTERN PLImage *PlLoadImage( const char *path );
+PL_EXTERN PLImage *PlParseImage( PLFile *file );
 PL_EXTERN bool PlWriteImage( const PLImage *image, const char *path );
 
 PL_EXTERN bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format );
