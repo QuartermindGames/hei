@@ -127,10 +127,7 @@ static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
  * Allocate a new package handle.
  */
 PLPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, uint8_t *( *OpenFile )( PLFile *filePtr, PLPackageIndex *index ) ) {
-	PLPackage *package = PlMAlloc( sizeof( PLPackage ), false );
-	if ( package == NULL ) {
-		return NULL;
-	}
+	PLPackage *package = PlMAllocA( sizeof( PLPackage ) );
 
 	if ( OpenFile == NULL ) {
 		package->internal.LoadFile = LoadGenericPackageFile;
