@@ -51,11 +51,6 @@ static uint32_t GenerateCoreHash( const char *string ) {
 	uint32_t hash = 0;
 	char c;
 	while ( ( c = *string ) != '\0' ) {
-		c = ( char ) tolower( c );
-		if ( c == '\\' ) {
-			c = '/';
-		}
-
 		hash += ( hash << 7 ) + ( hash << 1 ) + ( uint32_t ) c;
 		string++;
 	}
