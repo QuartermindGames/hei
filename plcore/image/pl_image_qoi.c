@@ -12,18 +12,9 @@
 #define QOI_IMPLEMENTATION
 #include "3rdparty/qoi.h"
 
-PLImage *PlLoadQoiImage( const char *path ) {
-	PlClearError();
-
-	PLFile *file = PlOpenFile( path, true );
-	if ( file == NULL ) {
-		return NULL;
-	}
-
+PLImage *PlParseQoiImage( PLFile *file ) {
 	qoi_desc desc;
 	uint8_t *dstBuf = qoi_decode( PlGetFileData( file ), ( int ) PlGetFileSize( file ), &desc, 0 );
-
-	PlCloseFile( file );
 
 	if ( dstBuf == NULL ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "failed to decode qoi image" );

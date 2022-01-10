@@ -14,12 +14,7 @@ typedef struct FtxHeader {
 	uint32_t alpha;
 } FtxHeader;
 
-PLImage *PlLoadFtxImage( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
-		return NULL;
-	}
-
+PLImage *PlParseFtxImage( PLFile *file ) {
 	FtxHeader header;
 	bool status;
 	header.width = PlReadInt32( file, false, &status );
@@ -27,15 +22,12 @@ PLImage *PlLoadFtxImage( const char *path ) {
 	header.alpha = PlReadInt32( file, false, &status );
 
 	if ( !status ) {
-		PlCloseFile( file );
 		return NULL;
 	}
 
 	unsigned int size = header.width * header.height * 4;
 	uint8_t *buffer = PlMAlloc( size, true );
 	size_t rSize = PlReadFile( file, buffer, sizeof( uint8_t ), size );
-
-	PlCloseFile( file );
 
 	if ( rSize != size ) {
 		PlFree( buffer );

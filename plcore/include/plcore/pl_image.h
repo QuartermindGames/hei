@@ -119,7 +119,7 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PL_EXTERN void PlRegisterImageLoader( const char *extension, PLImage *( *LoadImage )( const char *path ) );
+PL_EXTERN void PlRegisterImageLoader( const char *extension, PLImage *( *ParseFile )( PLFile *path ) );
 PL_EXTERN void PlRegisterStandardImageLoaders( unsigned int flags );
 PL_EXTERN void PlClearImageLoaders( void );
 
@@ -138,8 +138,6 @@ PL_EXTERN void PlReplaceImageColour( PLImage *image, PLColour target, PLColour d
 PL_EXTERN bool PlFlipImageVertical( PLImage *image );
 
 PL_EXTERN PL_DEPRECATED( unsigned int PlGetNumberOfColourChannels( PLColourFormat format ) );
-
-PL_EXTERN PL_DEPRECATED( bool PlImageIsPowerOfTwo( const PLImage *image ) );
 
 PL_EXTERN PL_DEPRECATED( void PlFreeImage( PLImage *image ) );
 PL_EXTERN PL_DEPRECATED( unsigned int PlGetImageSize( PLImageFormat format, unsigned int width, unsigned int height ) );

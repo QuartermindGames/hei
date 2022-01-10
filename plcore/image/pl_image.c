@@ -29,17 +29,9 @@
 #if defined( STB_IMAGE_IMPLEMENTATION )
 #	include "stb_image.h"
 
-static PLImage *LoadStbImage( const char *path ) {
-	PLFile *file = PlOpenFile( path, true );
-	if ( file == NULL ) {
-		return NULL;
-	}
-
+static PLImage *LoadStbImage( PLFile *file ) {
 	int x, y, component;
 	unsigned char *data = stbi_load_from_memory( file->data, ( int ) file->size, &x, &y, &component, 4 );
-
-	PlCloseFile( file );
-
 	if ( data == NULL ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "failed to read in image (%s)", stbi_failure_reason() );
 		return NULL;
@@ -64,21 +56,22 @@ static PLImage *LoadStbImage( const char *path ) {
 
 typedef struct PLImageLoader {
 	const char *extension;
-	PLImage *( *LoadFile )( const char *path );
 	PLImage *( *ParseFile )( PLFile *file );
 } PLImageLoader;
 
 static PLImageLoader imageLoaders[ MAX_IMAGE_LOADERS ];
 static unsigned int numImageLoaders = 0;
 
-void PlRegisterImageLoader( const char *extension, PLImage *( *LoadImage )( const char *path ) ) {
+void PlRegisterImageLoader( const char *extension, PLImage *( *ParseFile )( PLFile *file ) ) {
 	if ( numImageLoaders >= MAX_IMAGE_LOADERS ) {
 		PlReportBasicError( PL_RESULT_MEMORY_EOA );
 		return;
 	}
 
+	assert( ParseFile != NULL );
+
 	imageLoaders[ numImageLoaders ].extension = extension;
-	imageLoaders[ numImageLoaders ].LoadFile = LoadImage;
+	imageLoaders[ numImageLoaders ].ParseFile = ParseFile;
 
 	numImageLoaders++;
 }
@@ -87,7 +80,7 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	typedef struct SImageLoader {
 		unsigned int flag;
 		const char *extension;
-		PLImage *( *LoadFunction )( const char *path );
+		PLImage *( *LoadFunction )( PLFile *file );
 	} SImageLoader;
 
 	static const SImageLoader loaderList[] = {
@@ -100,12 +93,12 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	        { PL_IMAGE_FILEFORMAT_HDR, "hdr", LoadStbImage },
 	        { PL_IMAGE_FILEFORMAT_PIC, "pic", LoadStbImage },
 	        { PL_IMAGE_FILEFORMAT_PNM, "pnm", LoadStbImage },
-	        { PL_IMAGE_FILEFORMAT_FTX, "ftx", PlLoadFtxImage },
-	        { PL_IMAGE_FILEFORMAT_3DF, "3df", PlLoad3dfImage },
-	        { PL_IMAGE_FILEFORMAT_TIM, "tim", PlLoadTimImage },
-	        { PL_IMAGE_FILEFORMAT_SWL, "swl", PlLoadSwlImage },
-	        { PL_IMAGE_FILEFORMAT_QOI, "qoi", PlLoadQoiImage },
-	        { PL_IMAGE_FILEFORMAT_DDS, "dds", PlLoadDdsImage },
+	        { PL_IMAGE_FILEFORMAT_FTX, "ftx", PlParseFtxImage },
+	        { PL_IMAGE_FILEFORMAT_3DF, "3df", PlParse3dfImage },
+	        { PL_IMAGE_FILEFORMAT_TIM, "tim", PlParseTimImage },
+	        { PL_IMAGE_FILEFORMAT_SWL, "swl", PlParseSwlImage },
+	        { PL_IMAGE_FILEFORMAT_QOI, "qoi", PlParseQoiImage },
+	        { PL_IMAGE_FILEFORMAT_DDS, "dds", PlParseDdsImage },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
@@ -174,25 +167,23 @@ PLImage *PlLoadImage( const char *path ) {
 
 	const char *extension = PlGetFileExtension( path );
 	for ( unsigned int i = 0; i < numImageLoaders; ++i ) {
-		if ( pl_strcasecmp( extension, imageLoaders[ i ].extension ) == 0 ) {
-			PLImage *image = NULL;
-			/* try loading it by just loading the file directly first */
-			if ( imageLoaders[ i ].ParseFile != NULL ) {
-				PLFile *file = PlOpenFile( path, false );
-				if ( file != NULL ) {
-					image = imageLoaders[ i ].ParseFile( file );
-					PlCloseFile( file );
-				}
-			}
-			/* see if it has a specific loader by path */
-			else if ( imageLoaders[ i ].LoadFile != NULL ) {
-				image = imageLoaders[ i ].LoadFile( path );
-			}
-			if ( image != NULL ) {
-				strncpy( image->path, path, sizeof( image->path ) );
-				return image;
-			}
+		if ( pl_strcasecmp( extension, imageLoaders[ i ].extension ) != 0 ) {
+			continue;
 		}
+
+		PLImage *image = NULL;
+		PLFile *file = PlOpenFile( path, false );
+		if ( file != NULL ) {
+			image = imageLoaders[ i ].ParseFile( file );
+			PlCloseFile( file );
+		}
+
+		if ( image == NULL ) {
+			continue;
+		}
+
+		strncpy( image->path, path, sizeof( image->path ) );
+		return image;
 	}
 
 	PlReportBasicError( PL_RESULT_UNSUPPORTED );
@@ -207,10 +198,6 @@ PLImage *PlParseImage( PLFile *file ) {
 	const char *extension = PlGetFileExtension( file->path );
 	for ( unsigned int i = 0; i < numImageLoaders; ++i ) {
 		if ( extension != NULL && pl_strcasecmp( extension, imageLoaders[ i ].extension ) != 0 ) {
-			continue;
-		}
-
-		if ( imageLoaders[ i ].ParseFile == NULL ) {
 			continue;
 		}
 
@@ -562,14 +549,6 @@ void PlFreeImage( PLImage *image ) {
 	}
 
 	PlFree( image->data );
-}
-
-bool PlImageIsPowerOfTwo( const PLImage *image ) {
-	if ( ( ( image->width == 0 ) || ( image->height == 0 ) ) || ( !PlIsPowerOfTwo( image->width ) || !PlIsPowerOfTwo( image->height ) ) ) {
-		return false;
-	}
-
-	return true;
 }
 
 bool PlFlipImageVertical( PLImage *image ) {

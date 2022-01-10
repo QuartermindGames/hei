@@ -14,7 +14,7 @@ typedef struct SWLHeader {
 	uint32_t height;
 } SWLHeader;
 
-static PLImage *ReadSwlImage( PLFile *fin ) {
+PLImage *PlParseSwlImage( PLFile *fin ) {
 	SWLHeader header;
 	if ( PlReadFile( fin, &header, sizeof( header ), 1 ) != 1 ) {
 		return NULL;
@@ -35,7 +35,7 @@ static PLImage *ReadSwlImage( PLFile *fin ) {
 	}
 
 	/* according to sources, this is a collection of misc data that's
-   * specific to SiN itself, so we'll skip it. */
+   	 * specific to SiN itself, so we'll skip it. */
 	if ( !PlFileSeek( fin, 0x4D4, PL_SEEK_SET ) ) {
 		PlReportBasicError( PL_RESULT_FILEREAD );
 		return false;
@@ -71,7 +71,7 @@ static PLImage *ReadSwlImage( PLFile *fin ) {
 		out->data[ i ] = PlCAllocA( level_size, sizeof( uint8_t ) );
 
 		/* now we fill in the buf we just allocated,
-     * by using the palette */
+    	 * by using the palette */
 		for ( size_t j = 0, k = 0; j < buf_size; ++j, k += 4 ) {
 			out->data[ i ][ k ] = palette[ buf[ j ] ].r;
 			out->data[ i ][ k + 1 ] = palette[ buf[ j ] ].g;
@@ -89,17 +89,4 @@ static PLImage *ReadSwlImage( PLFile *fin ) {
 	}
 
 	return out;
-}
-
-PLImage *PlLoadSwlImage( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
-		return NULL;
-	}
-
-	PLImage *image = ReadSwlImage( file );
-
-	PlCloseFile( file );
-
-	return image;
 }
