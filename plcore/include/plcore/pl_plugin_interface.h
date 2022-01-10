@@ -95,7 +95,7 @@ typedef struct PLPluginExportTable {
 	PLPackage *( *CreatePackageHandle )( const char *path, unsigned int tableSize, uint8_t* ( *OpenFile )( PLFile *filePtr, PLPackageIndex *index ) );
 
 	void ( *RegisterPackageLoader )( const char *extension, PLPackage *( *LoadFunction )( const char *path ) );
-	void ( *RegisterImageLoader )( const char *extension, PLImage *( *LoadFunction )( const char *path ) );
+	void ( *RegisterImageLoader )( const char *extension, PLImage *( *LoadFunction )( PLFile *file ) );
 
 	const char *( *GetPackagePath )( const PLPackage *package );
 	unsigned int ( *GetPackageTableSize )( const PLPackage *package );
@@ -150,7 +150,7 @@ typedef struct PLPluginExportTable {
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */
-#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 4
+#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 5
 #define PL_PLUGIN_INTERFACE_VERSION_MINOR 0
 #define PL_PLUGIN_INTERFACE_VERSION ( uint16_t[ 2 ] ){ PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
 
@@ -159,7 +159,10 @@ typedef const PLPluginDescription *( *PLPluginQueryFunction )( void );
 #define PL_PLUGIN_INIT_FUNCTION "PLInitializePlugin"
 typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *exportTable );
 
-/* 2021-10-03
+/* 2022-01-10
+ * - RegisterImageLoader now takes a File handle
+ *
+ * 2021-10-03
  * - Memory allocation functions now take an 'abortOnFail' parameter
  *
  * 2021-04-22
