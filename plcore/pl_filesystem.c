@@ -8,8 +8,8 @@
 #include <sys/types.h>
 #include <errno.h>
 #if !defined( _MSC_VER )
-#include <unistd.h>
-#include <dirent.h>
+#	include <unistd.h>
+#	include <dirent.h>
 #endif
 
 #include <plcore/pl_console.h>
@@ -19,25 +19,25 @@
 #include "pl_private.h"
 
 #if defined( _WIN32 )
-#include "3rdparty/portable_endian.h"
+#	include "3rdparty/portable_endian.h"
 
 /*  this is required by secext.h */
-#define SECURITY_WIN32
-#include <security.h>
-#include <shlobj.h>
-#include <direct.h>
-#include <io.h>
+#	define SECURITY_WIN32
+#	include <security.h>
+#	include <ShlObj.h>
+#	include <direct.h>
+#	include <io.h>
 
-#if defined( _MSC_VER )
-#if !defined( S_ISREG ) && defined( S_IFMT ) && defined( S_IFREG )
-#define S_ISREG( m ) ( ( ( m ) &S_IFMT ) == S_IFREG )
-#endif
-#endif
+#	if defined( _MSC_VER )
+#		if !defined( S_ISREG ) && defined( S_IFMT ) && defined( S_IFREG )
+#			define S_ISREG( m ) ( ( ( m ) &S_IFMT ) == S_IFREG )
+#		endif
+#	endif
 #else
-#if defined( __APPLE__ )
-#include "3rdparty/portable_endian.h"
-#endif
-#include <pwd.h>
+#	if defined( __APPLE__ )
+#		include "3rdparty/portable_endian.h"
+#	endif
+#	include <pwd.h>
 #endif
 
 /*	File System	*/
@@ -79,8 +79,8 @@ static PLFileSystemMount *fs_mount_root = NULL;
 static PLFileSystemMount *fs_mount_ceiling = NULL;
 
 #define VFS_LOCAL_HINT "local://"
-#define VFS_MAX_HINT 16
-#define VFS_MAX_PATH ( ( PL_SYSTEM_MAX_PATH + VFS_MAX_HINT ) + 1 )
+#define VFS_MAX_HINT   16
+#define VFS_MAX_PATH   ( ( PL_SYSTEM_MAX_PATH + VFS_MAX_HINT ) + 1 )
 
 static_assert( sizeof( VFS_LOCAL_HINT ) < VFS_MAX_HINT, "Local hint is larger than maximum hint length, please adjust limit!" );
 
@@ -978,6 +978,30 @@ size_t PlGetLocalFileSize( const char *path ) {
 
 ///////////////////////////////////////////
 
+/**
+ * Creates a virtual file handle from the given buffer.
+ * If 'isOwner' is true, the file handle takes ownership of the buffer and frees it.
+ */
+PLFile *PlCreateFileFromMemory( const char *path, void *buf, size_t bufSize, PLFileMemoryBufferType bufType ) {
+	PLFile *file = PlMAllocA( sizeof( PLFile ) );
+
+	if ( bufType == PL_FILE_MEMORYBUFFERTYPE_COPY ) {
+		file->data = PlMAllocA( bufSize );
+		memcpy( file->data, buf, bufSize );
+	} else {
+		if ( bufType == PL_FILE_MEMORYBUFFERTYPE_UNMANAGED ) {
+			file->isUnmanaged = true;
+		}
+		file->data = buf;
+	}
+	file->pos = file->data;
+	file->size = bufSize;
+
+	snprintf( file->path, sizeof( file->path ), "%s", path );
+
+	return file;
+}
+
 PLFile *PlOpenLocalFile( const char *path, bool cache ) {
 	FILE *fp = fopen( path, "rb" );
 	if ( fp == NULL ) {
@@ -1033,7 +1057,9 @@ void PlCloseFile( PLFile *ptr ) {
 		_pl_fclose( ptr->fptr );
 	}
 
-	PlFree( ptr->data );
+	if ( !ptr->isUnmanaged ) {
+		PlFree( ptr->data );
+	}
 	PlFree( ptr );
 }
 

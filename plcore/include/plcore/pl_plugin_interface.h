@@ -65,6 +65,7 @@ typedef struct PLPluginExportTable {
 	bool ( *CreateDirectory )( const char *path );
 	bool ( *CreatePath )( const char *path );
 
+	PLFile *( *CreateFileFromMemory )( const char *path, void *buf, size_t bufSize, PLFileMemoryBufferType bufType );
 	PLFile *( *OpenLocalFile )( const char *path, bool cache );
 	PLFile *( *OpenFile )( const char *path, bool cache );
 	void ( *CloseFile )( PLFile *file );
