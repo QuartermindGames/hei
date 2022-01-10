@@ -30,8 +30,20 @@
 #	include "stb_image.h"
 
 static PLImage *LoadStbImage( PLFile *file ) {
+	size_t s = PlGetFileSize( file );
+	if ( s >= INT32_MAX ) {
+		PlReportBasicError( PL_RESULT_FILESIZE );
+		return NULL;
+	}
+
+	void *tmp = PlMAllocA( s );
+	PlReadFile( file, tmp, sizeof( char ), s );
+
 	int x, y, component;
-	unsigned char *data = stbi_load_from_memory( file->data, ( int ) file->size, &x, &y, &component, 4 );
+	unsigned char *data = stbi_load_from_memory( tmp, ( int ) s, &x, &y, &component, 4 );
+
+	PlFree( tmp );
+
 	if ( data == NULL ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "failed to read in image (%s)", stbi_failure_reason() );
 		return NULL;
