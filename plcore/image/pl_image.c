@@ -27,6 +27,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #if defined( STB_IMAGE_IMPLEMENTATION )
+#	define STB_IMAGE_WRITE_STATIC
 #	include "stb_image.h"
 
 static PLImage *LoadStbImage( PLFile *file ) {
