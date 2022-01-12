@@ -30,32 +30,20 @@ PLImage *Core_HGT_ParseImage( PLFile *file ) {
 		return NULL;
 	}
 
-	/* load the rest of the file into a temporary buffer, as it's just a bmp */
-	unsigned int bufSize = PlGetFileSize( file ) - HGT_HEADER_SIZE;
-	void *buf = PlMAllocA( bufSize );
-	if ( PlReadFile( file, buf, sizeof( char ), bufSize ) != bufSize ) {
+	/* load the file into a memory, as it's just a bmp */
+	const void *buf = PlCacheFile( file );
+	if ( buf == NULL ) {
 		return NULL;
 	}
 
-	const char *path = PlGetFilePath( file );
-	if ( path == NULL ) {
-		path = "tmp";
-	}
-
-	/* provide an alt path so we can basically hint to the
-	 * ParseImage function that it's a bmp and then create
-	 * a temporary file handle for it... in future we should
-	 * really just pass the current file's buffer instead
-	 * of allocating another, but this will require some
-	 * work... */
-
+	/* create a temporary file handle, so we can pass it back to our ParseImage function */
 	PLPath tmpPath;
-	snprintf( tmpPath, sizeof( PLPath ), "%s.bmp", path );
-	PLFile *tmp = PlCreateFileFromMemory( tmpPath, buf, bufSize, PL_FILE_MEMORYBUFFERTYPE_OWNER );
+	const char *path = PlGetFilePath( file );
+	snprintf( tmpPath, sizeof( PLPath ), "%s.bmp", ( path != NULL ) ? path : "tmp" );
+	PLFile *tmp = PlCreateFileFromMemory( tmpPath, ( void * ) buf, ( PlGetFileSize( file ) - HGT_HEADER_SIZE ), PL_FILE_MEMORYBUFFERTYPE_UNMANAGED );
 
 	PLImage *image = PlParseImage( tmp );
 
-	/* as the file has ownership, this will free the buffer */
 	PlCloseFile( tmp );
 
 	return image;

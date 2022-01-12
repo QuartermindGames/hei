@@ -104,6 +104,8 @@ PL_EXTERN char *PlReadString( PLFile *ptr, char *str, size_t size );
 PL_EXTERN bool PlFileSeek( PLFile *ptr, long int pos, PLFileSeek seek );
 PL_EXTERN void PlRewindFile( PLFile *ptr );
 
+PL_EXTERN const void *PlCacheFile( PLFile *file );
+
 /** FS Mounting **/
 
 PL_EXTERN PLFileSystemMount *PlMountLocalLocation( const char *path );

@@ -1307,3 +1307,40 @@ void PlRewindFile( PLFile *ptr ) {
 
 	ptr->pos = ptr->data;
 }
+
+/**
+ * If the file is being streamed from disk, cache
+ * it into memory. This will also attempt to retain
+ * the original offset into the file.
+ * Returns pointer to position relative to read
+ * location, or null on fail.
+ */
+const void *PlCacheFile( PLFile *file ) {
+	/* make sure it's not already cached */
+	if ( file->fptr == NULL ) {
+		return NULL;
+	}
+
+	size_t p = PlGetFileOffset( file );
+	size_t s = PlGetFileSize( file );
+
+	/* jump back to the start */
+	PlRewindFile( file );
+
+	/* allocate the new buffer and attempt to read in the whole thing */
+	file->data = PlMAllocA( s );
+	if ( PlReadFile( file, file->data, sizeof( char ), s ) != s ) {
+		/* seek back and restore where we were */
+		PlFileSeek( file, ( long ) p, PL_SEEK_SET );
+		PlFree( file->data );
+		return NULL;
+	}
+
+	/* close the original file handle we had */
+	_pl_fclose( file->fptr );
+
+	/* match pos with where we originally were, so it's like nothing changed */
+	file->pos = file->data + p;
+
+	return file->pos;
+}

@@ -89,6 +89,8 @@ typedef struct PLPluginExportTable {
 	bool ( *FileSeek )( PLFile *file, long int pos, PLFileSeek seek );
 	void ( *RewindFile )( PLFile *file );
 
+	const void *( *CacheFile )( PLFile *file );
+
 	/**
  	 * PLUGIN API
  	 **/
@@ -151,7 +153,7 @@ typedef struct PLPluginExportTable {
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */
-#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 5
+#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 6
 #define PL_PLUGIN_INTERFACE_VERSION_MINOR 0
 #define PL_PLUGIN_INTERFACE_VERSION ( uint16_t[ 2 ] ){ PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
 
@@ -160,7 +162,10 @@ typedef const PLPluginDescription *( *PLPluginQueryFunction )( void );
 #define PL_PLUGIN_INIT_FUNCTION "PLInitializePlugin"
 typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *exportTable );
 
-/* 2022-01-10
+/* 2022-01-12
+ * - Expose CacheFile functionality
+ *
+ * 2022-01-10
  * - RegisterImageLoader now takes a File handle
  *
  * 2021-10-03

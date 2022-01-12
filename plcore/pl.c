@@ -497,6 +497,7 @@ static PLPluginExportTable exportTable = {
         .ReadString = PlReadString,
         .FileSeek = PlFileSeek,
         .RewindFile = PlRewindFile,
+        .CacheFile = PlCacheFile,
 
         .RegisterPackageLoader = PlRegisterPackageLoader,
         .RegisterImageLoader = PlRegisterImageLoader,
