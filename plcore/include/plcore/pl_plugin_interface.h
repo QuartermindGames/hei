@@ -147,11 +147,15 @@ typedef struct PLPluginExportTable {
 	const char *( *ParseToken )( const char **p, char *dest, size_t size );
 	int ( *ParseInteger )( const char **p, bool *status );
 	float ( *ParseFloat )( const char **p, bool *status );
+
+	/** v4.1 ************************************************/
+
+	void ( *GenerateChecksumCRC32 )( const void *buf, uint32_t bufSize, uint32_t *crc );
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */
 #define PL_PLUGIN_INTERFACE_VERSION_MAJOR 4
-#define PL_PLUGIN_INTERFACE_VERSION_MINOR 0
+#define PL_PLUGIN_INTERFACE_VERSION_MINOR 1
 #define PL_PLUGIN_INTERFACE_VERSION ( uint16_t[ 2 ] ){ PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
 
 #define PL_PLUGIN_QUERY_FUNCTION "PLQueryPlugin"
