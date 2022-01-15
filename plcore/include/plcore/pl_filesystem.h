@@ -30,6 +30,11 @@ typedef enum PLFileSeek {
 #endif
 } PLFileSeek;
 
+typedef enum PLFileSystemMountType {
+	PL_FS_MOUNT_DIR,
+	PL_FS_MOUNT_PACKAGE,
+} PLFileSystemMountType;
+
 typedef struct PLFileSystemMount PLFileSystemMount;
 
 PL_EXTERN_C
@@ -104,6 +109,9 @@ PL_EXTERN PLFileSystemMount *PlMountLocation( const char *path );
 
 PL_EXTERN void PlClearMountedLocation( PLFileSystemMount *location );
 PL_EXTERN void PlClearMountedLocations( void );
+
+PL_EXTERN PLFileSystemMountType PlGetMountLocationType( const PLFileSystemMount *fileSystemMount );
+PL_EXTERN const char *PlGetMountLocationPath( const PLFileSystemMount *fileSystemMount );
 
 /****/
 
