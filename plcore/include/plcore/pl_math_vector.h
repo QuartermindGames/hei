@@ -23,19 +23,19 @@ typedef struct PLVector4 {
 	( PLVector2 ) { x, y }
 #endif
 #define PlVector2( X, Y ) \
-	( PLVector2 ) { X, Y }
+    ( PLVector2 ) { X, Y }
 #ifndef __cplusplus /* todo: deprecate */
 #define PLVector3( x, y, z ) \
 	( PLVector3 ) { ( float ) x, ( float ) y, ( float ) z }
 #endif
 #define PlVector3( X, Y, Z ) \
-	( PLVector3 ) { X, Y, Z }
+    ( PLVector3 ) { X, Y, Z }
 #ifndef __cplusplus /* todo: deprecate */
 #define PLVector4( x, y, z, w ) \
 	( PLVector4 ) { ( float ) x, ( float ) y, ( float ) z, ( float ) w }
 #endif
 #define PlVector4( X, Y, Z, W ) \
-	( PLVector4 ) { X, Y, Z, W }
+    ( PLVector4 ) { X, Y, Z, W }
 
 #define PlVectorIndex( VECTOR, INDEX ) ( ( float * ) &( VECTOR ) )[ INDEX ]
 /* todo: add bound checking to the below implementation??? Or just remove!? */
@@ -215,13 +215,10 @@ namespace hei {
 			_y = y;
 			_z = z;
 		}
-		inline explicit Vector3( const float *v ) {
-			x = v[ 0 ];
-			y = v[ 1 ];
-			z = v[ 2 ];
-		}
+		inline Vector3( const PLVector3 &v ) : Vector3( v.x, v.y, v.z ) {}
+		inline explicit Vector3( const float *v ) : Vector3( v[ 0 ], v[ 1 ], v[ 2 ] ) {}
 
-		inline Vector3 &operator=( const Vector2 &v ) {
+		inline Vector3 &operator=( const PLVector3 &v ) {
 			x = v.x;
 			y = v.y;
 			return *this;
@@ -234,7 +231,7 @@ namespace hei {
 			return *this;
 		}
 
-		inline void operator*=( const Vector3 &v ) {
+		inline void operator*=( const PLVector3 &v ) {
 			x *= v.x;
 			y *= v.y;
 			z *= v.z;
@@ -246,7 +243,7 @@ namespace hei {
 			z *= a;
 		}
 
-		inline void operator+=( Vector3 a ) {
+		inline void operator+=( const PLVector3 &a ) {
 			x += a.x;
 			y += a.y;
 			z += a.z;
