@@ -211,9 +211,9 @@ namespace hei {
 			x = y = z = 0.0f;
 		}
 		inline Vector3( float _x, float _y, float _z ) {
-			_x = x;
-			_y = y;
-			_z = z;
+			x = _x;
+			y = _y;
+			z = _z;
 		}
 		inline Vector3( const PLVector3 &v ) : Vector3( v.x, v.y, v.z ) {}
 		inline explicit Vector3( const float *v ) : Vector3( v[ 0 ], v[ 1 ], v[ 2 ] ) {}
