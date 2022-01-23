@@ -216,6 +216,8 @@ IMPLEMENT_COMMAND( unmnt, "Unmount the specified directory." ) {
 			Print( "Done!\n" );
 			return;
 		}
+
+		location = location->next;
 	}
 
 	Print( "Failed to find location: \"%s\"!\n", argv[ 1 ] );
@@ -576,10 +578,15 @@ typedef struct FSScanInstance {
 
 static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance **fileList, const char *path,
                                 const char *extension, void ( *Function )( const char *, void * ), bool recursive, void *userData ) {
+	if ( mount == NULL ) {
+		return;
+	}
+
 #if !defined( _MSC_VER )
 	DIR *directory = opendir( path );
 	if ( directory ) {
 		struct dirent *entry;
+		size_t sl = strlen( mount->path );
 		while ( ( entry = readdir( directory ) ) ) {
 			if ( strcmp( entry->d_name, "." ) == 0 || strcmp( entry->d_name, ".." ) == 0 ) {
 				continue;
@@ -601,12 +608,7 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 							continue;
 						}
 
-						size_t pos = strlen( mount->path );
-						if ( pos >= sizeof( filestring ) ) {
-							PrintWarning( "pos >= %d!\n", pos );
-							continue;
-						}
-						const char *filePath = &filestring[ pos ];
+						const char *filePath = &filestring[ sl ];
 
 						// Ensure it's not already in the list
 						FSScanInstance *cur = *fileList;
@@ -770,6 +772,7 @@ static PLFileSystemMount *PlGetMountLocationForPath_( const char *path ) {
 	}
 #endif
 
+	size_t sl = strlen( path );
 	if ( fs_mount_root != NULL ) {
 		PLFileSystemMount *location = fs_mount_root;
 		while ( location != NULL ) {
@@ -789,8 +792,7 @@ static PLFileSystemMount *PlGetMountLocationForPath_( const char *path ) {
 						 * the way we might expect (take Unreal packages for example),
 						 * so down the line we might want to allow this to be handled
 						 * by the specific package API (i.e. call to GetPackageDirectory?). */
-						size_t s = strlen( path );
-						if ( strncmp( path, location->pkg->table[ i ].fileName, s ) == 0 ) {
+						if ( strncmp( path, location->pkg->table[ i ].fileName, sl ) == 0 ) {
 							return location;
 						}
 					}
