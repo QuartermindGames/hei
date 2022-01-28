@@ -7,7 +7,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
+
 #if !defined( _MSC_VER )
+
 #	include <unistd.h>
 #	include <dirent.h>
 #endif
@@ -19,10 +21,12 @@
 #include "pl_private.h"
 
 #if defined( _WIN32 )
+
 #	include "3rdparty/portable_endian.h"
 
 /*  this is required by secext.h */
 #	define SECURITY_WIN32
+
 #	include <security.h>
 #	include <ShlObj.h>
 #	include <direct.h>
@@ -62,16 +66,11 @@ static void PlNormalizePath_( char *path, size_t length ) {
  * 		- Descriptor for locations; then can use <location>:// to mount from a specific location
  */
 
-typedef enum FSMountType {
-	FS_MOUNT_DIR,
-	FS_MOUNT_PACKAGE,
-} FSMountType;
-
 typedef struct PLFileSystemMount {
-	FSMountType type;
+	PLFileSystemMountType type;
 	union {
-		PLPackage *pkg;                  /* FS_MOUNT_PACKAGE */
-		char path[ PL_SYSTEM_MAX_PATH ]; /* FS_MOUNT_DIR */
+		PLPackage *pkg;                  /* PL_FS_MOUNT_PACKAGE */
+		char path[ PL_SYSTEM_MAX_PATH ]; /* PL_FS_MOUNT_DIR */
 	};
 	struct PLFileSystemMount *next, *prev;
 } PLFileSystemMount;
@@ -192,12 +191,12 @@ IMPLEMENT_COMMAND( lstmnt, "Lists all of the mounted directories." ) {
 
 		/* this sucks... */
 		const char *path;
-		if ( location->type == FS_MOUNT_PACKAGE )
+		if ( location->type == PL_FS_MOUNT_PACKAGE )
 			path = location->pkg->path;
 		else
 			path = location->path;
 
-		Print( " (%d) %-20s : %-20s\n", numLocations, path, location->type == FS_MOUNT_DIR ? "DIRECTORY" : "PACKAGE" );
+		Print( " (%d) %-20s : %-20s\n", numLocations, path, location->type == PL_FS_MOUNT_DIR ? "DIRECTORY" : "PACKAGE" );
 		location = location->next;
 	}
 	Print( "%d locations mounted\n", numLocations );
@@ -255,7 +254,7 @@ static void PlRegisterFSCommands_( void ) {
 }
 
 void PlClearMountedLocation( PLFileSystemMount *location ) {
-	if ( location->type == FS_MOUNT_PACKAGE ) {
+	if ( location->type == PL_FS_MOUNT_PACKAGE ) {
 		PlDestroyPackage( location->pkg );
 		location->pkg = NULL;
 	}
@@ -302,7 +301,7 @@ PLFileSystemMount *PlMountLocalLocation( const char *path ) {
 	if ( PlLocalPathExists( path ) ) { /* attempt to mount it as a path */
 		PLFileSystemMount *location = PlMAllocA( sizeof( PLFileSystemMount ) );
 		PlInsertMountLocation_( location );
-		location->type = FS_MOUNT_DIR;
+		location->type = PL_FS_MOUNT_DIR;
 		snprintf( location->path, sizeof( location->path ), "%s", path );
 
 		PlNormalizePath_( location->path, sizeof( location->path ) );
@@ -328,7 +327,7 @@ PLFileSystemMount *PlMountLocalLocation( const char *path ) {
 	if ( pkg != NULL ) {
 		PLFileSystemMount *location = PlMAllocA( sizeof( PLFileSystemMount ) );
 		PlInsertMountLocation_( location );
-		location->type = FS_MOUNT_PACKAGE;
+		location->type = PL_FS_MOUNT_PACKAGE;
 		location->pkg = pkg;
 
 		Print( "Mounted package %s successfully!\n", path );
@@ -352,6 +351,18 @@ PLFileSystemMount *PlMountLocation( const char *path ) {
 	}
 
 	return PlMountLocalLocation( vpath );
+}
+
+PLFileSystemMountType PlGetMountLocationType( const PLFileSystemMount *fileSystemMount ) {
+	return fileSystemMount->type;
+}
+
+const char *PlGetMountLocationPath( const PLFileSystemMount *fileSystemMount ) {
+	if ( fileSystemMount->type != PL_FS_MOUNT_DIR ) {
+		return NULL;
+	}
+
+	return fileSystemMount->path;
 }
 
 /****/
@@ -579,11 +590,7 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 			}
 
 			char filestring[ PL_SYSTEM_MAX_PATH + 1 ];
-			if ( PlPathEndsInSlash( path ) ) {
-				snprintf( filestring, sizeof( filestring ), "%s%s", path, entry->d_name );
-			} else {
-				snprintf( filestring, sizeof( filestring ), "%s/%s", path, entry->d_name );
-			}
+			snprintf( filestring, sizeof( filestring ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, entry->d_name );
 
 			struct stat st;
 			if ( stat( filestring, &st ) == 0 ) {
@@ -594,11 +601,7 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 							continue;
 						}
 
-						size_t pos = strlen( mount->path );
-						if ( pos >= sizeof( filestring ) ) {
-							PrintWarning( "pos >= %d!\n", pos );
-							continue;
-						}
+						size_t pos = strlen( mount->path ) + 1;
 						const char *filePath = &filestring[ pos ];
 
 						// Ensure it's not already in the list
@@ -696,22 +699,18 @@ void PlScanDirectory( const char *path, const char *extension, void ( *Function 
 		return;
 	}
 
+	PLPath normPath;
+	snprintf( normPath, sizeof( normPath ), "%s", path );
+	PlNormalizePath_( normPath, sizeof( normPath ) );
+
 	FSScanInstance *fileList = NULL;
 	PLFileSystemMount *location = fs_mount_root;
 	while ( location != NULL ) {
-		if ( location->type == FS_MOUNT_PACKAGE ) {
+		if ( location->type == PL_FS_MOUNT_PACKAGE ) {
 			// todo: Only works for directories for now
-		} else if ( location->type == FS_MOUNT_DIR ) {
-			const char *fmt;
-			if ( *path == '\\' || *path == '/' ) {
-				fmt = "%s%s";
-			} else {
-				fmt = "%s/%s";
-			}
-
+		} else if ( location->type == PL_FS_MOUNT_DIR ) {
 			char mounted_path[ PL_SYSTEM_MAX_PATH + 1 ];
-			snprintf( mounted_path, sizeof( mounted_path ), fmt, location->path, path );
-
+			snprintf( mounted_path, sizeof( mounted_path ), "%s/%s", location->path, normPath );
 			ScanLocalDirectory( location, &fileList, mounted_path, extension, Function, recursive, userData );
 		}
 
@@ -776,7 +775,7 @@ static PLFileSystemMount *PlGetMountLocationForPath_( const char *path ) {
 					}
 					break;
 				}
-				case FS_MOUNT_PACKAGE: {
+				case PL_FS_MOUNT_PACKAGE: {
 					for ( unsigned int i = 0; i < location->pkg->table_size; ++i ) {
 						/* packages don't necessarily have the concept of a directory
 						 * the way we might expect (take Unreal packages for example),
@@ -799,7 +798,7 @@ static PLFileSystemMount *PlGetMountLocationForPath_( const char *path ) {
 }
 
 static const char *PlVirtualToLocalPath_( PLFileSystemMount *mount, const char *path, char *dest, size_t size ) {
-	if ( mount == NULL || mount->type == FS_MOUNT_PACKAGE ) {
+	if ( mount == NULL || mount->type == PL_FS_MOUNT_PACKAGE ) {
 		snprintf( dest, size, "%s", path );
 	} else {
 		const char *fmt;
@@ -825,7 +824,7 @@ const char *PlResolveVirtualPath_( const char *path, char *dest, size_t size ) {
 	}
 
 	PLFileSystemMount *mount = PlGetMountLocationForPath_( path );
-	if ( mount == NULL || mount->type == FS_MOUNT_PACKAGE ) {
+	if ( mount == NULL || mount->type == PL_FS_MOUNT_PACKAGE ) {
 		return path;
 	}
 
@@ -1038,7 +1037,7 @@ PLFile *PlOpenLocalFile( const char *path, bool cache ) {
  */
 PLFile *PlOpenFile( const char *path, bool cache ) {
 	PLFileSystemMount *mount = PlGetMountLocationForPath_( path );
-	if ( mount != NULL && mount->type == FS_MOUNT_PACKAGE ) {
+	if ( mount != NULL && mount->type == PL_FS_MOUNT_PACKAGE ) {
 		return PlLoadPackageFile( mount->pkg, path );
 	}
 

@@ -534,6 +534,8 @@ static PLPluginExportTable exportTable = {
         .ParseToken = PlParseToken,
         .ParseInteger = PlParseInteger,
         .ParseFloat = PlParseFloat,
+
+        .GenerateChecksumCRC32 = pl_crc32,
 };
 
 const PLPluginExportTable *PlGetExportTable( void ) {

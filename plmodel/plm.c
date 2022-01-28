@@ -32,7 +32,7 @@ typedef struct ModelLoader {
 } ModelLoader;
 
 #define MAX_OBJECT_INTERFACES 512
-static ModelLoader model_interfaces[ MAX_OBJECT_INTERFACES ];
+static ModelLoader model_interfaces[MAX_OBJECT_INTERFACES];
 static unsigned int num_model_loaders = 0;
 
 int LOG_LEVEL_MODEL = -1;
@@ -42,9 +42,9 @@ void PlmInitialize( void ) {
 
 	LOG_LEVEL_MODEL = PlAddLogLevel( "plmodel", PL_COLOUR_BLUE,
 #if !defined( NDEBUG )
-	                                 true
+                                     true
 #else
-	                                 false
+			false
 #endif
 	);
 }
@@ -63,8 +63,7 @@ void PlmGenerateModelBounds( PLMModel *model ) {
 	PLCollisionAABB b1;
 	memset( &b1, 0, sizeof( PLCollisionAABB ) );
 
-	for ( unsigned int i = 0; i < model->numMeshes; ++i )
-	{
+	for ( unsigned int i = 0; i < model->numMeshes; ++i ) {
 		PLCollisionAABB b2 = PlgGenerateAabbFromMesh( model->meshes[ i ], false );
 		if ( b2.mins.x < b1.mins.x ) b1.mins.x = b2.mins.x;
 		if ( b2.mins.y < b1.mins.y ) b1.mins.y = b2.mins.y;
@@ -114,10 +113,10 @@ void PlmRegisterStandardModelLoaders( unsigned int flags ) {
 		PLMModel *( *LoadFunction )( const char *path );
 	} SModelLoader;
 	static const SModelLoader loaderList[] = {
-	        { PLM_MODEL_FILEFORMAT_CYCLONE, "mdl", PlmLoadRequiemModel },
-	        { PLM_MODEL_FILEFORMAT_HDV, "hdv", PlmLoadHdvModel },
-	        { PLM_MODEL_FILEFORMAT_U3D, "3d", PlmLoadU3DModel },
-	        { PLM_MODEL_FILEFORMAT_OBJ, "obj", PlmLoadObjModel },
+			{ PLM_MODEL_FILEFORMAT_CYCLONE, "mdl", PlmLoadRequiemModel },
+			{ PLM_MODEL_FILEFORMAT_HDV,     "hdv", PlmLoadHdvModel },
+			{ PLM_MODEL_FILEFORMAT_U3D,     "3d",  PlmLoadU3DModel },
+			{ PLM_MODEL_FILEFORMAT_OBJ,     "obj", PlmLoadObjModel },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
@@ -251,36 +250,25 @@ void PlmDestroyModel( PLMModel *model ) {
 	PlFree( model );
 }
 
-#if 0 /* todo: move */
+void PlmDrawModel( PLMModel *model ) {
+	plAssert( model );
 
-#include "graphics/graphics_private.h"
+	/* todo: currently only deals with static... */
 
-void plDrawModel(PLModel *model) {
-    plAssert(model);
+	PLGShaderProgram *old_program = PlgGetCurrentShaderProgram();
+	for ( unsigned int i = 0; i < model->numMeshes; ++i ) {
+		if ( model->meshes[ i ]->shader_program != NULL ) {
+			PlgSetShaderProgram( model->meshes[ i ]->shader_program );
+		}
 
-    /* todo: currently only deals with static... */
+		PlgSetTexture( model->meshes[ i ]->texture, 0 );
 
-    PLModelLod *lod = plGetModelLodLevel(model, model->current_level);
-    if(lod == NULL) {
-        return;
-    }
+		PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", &model->modelMatrix, true );
 
-    PLShaderProgram* old_program = plGetCurrentShaderProgram();
-    for(unsigned int i = 0; i < lod->num_meshes; ++i) {
-        if(lod->meshes[i]->shader_program != NULL) {
-            plSetShaderProgram(lod->meshes[i]->shader_program);
-        }
+		PlgUploadMesh( model->meshes[ i ] );
+		PlgDrawMesh( model->meshes[ i ] );
+	}
 
-        plSetTexture(lod->meshes[i]->texture, 0);
-
-        plSetShaderUniformValue( plGetCurrentShaderProgram(), "pl_model", &model->model_matrix, true );
-
-        plUploadMesh(lod->meshes[i]);
-        plDrawMesh(lod->meshes[i]);
-    }
-
-    plSetShaderProgram(old_program);
-    plSetTexture(NULL, 0);
+	PlgSetShaderProgram( old_program );
+	PlgSetTexture( NULL, 0 );
 }
-
-#endif

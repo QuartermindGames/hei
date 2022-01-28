@@ -102,7 +102,7 @@ void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, con
 }
 
 /* software implementation of gouraud shading */
-void plApplyMeshLighting( PLGMesh *mesh, const PLGLight *light, PLVector3 position ) {
+void PlgApplyMeshLighting( PLGMesh *mesh, const PLGLight *light, PLVector3 position ) {
 	PLVector3 distvec = PlSubtractVector3( position, light->position );
 	float distance = ( PlByteToFloat( light->colour.a ) - PlVector3Length( distvec ) ) / 100.f;
 	for ( unsigned int i = 0; i < mesh->num_verts; i++ ) {

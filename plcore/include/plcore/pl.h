@@ -191,7 +191,7 @@ PL_EXTERN bool PlHasCommandLineArgument( const char *arg );
 
 //////////////////////////////////////////////////////////////////
 
-PL_EXTERN void pl_crc32( const void *data, size_t n_bytes, uint32_t *crc );
+PL_EXTERN void pl_crc32( const void *data, uint32_t n_bytes, uint32_t *crc );
 
 //////////////////////////////////////////////////////////////////
 

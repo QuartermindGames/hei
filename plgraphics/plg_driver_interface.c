@@ -48,7 +48,7 @@ bool PlgRegisterDriver( const char *path ) {
 
 	PLLibrary *library = PlLoadLibrary( path, false );
 	if ( library == NULL ) {
-		GfxLog( "Failed to load library!\nPL: %s\n", PlGetError() );
+		GfxLog( "Failed to load library: %s\n", PlGetError() );
 		return false;
 	}
 
