@@ -120,7 +120,7 @@ static PLImageFormat GetImageFormat( const DDSPixelFormat *pixelFormat ) {
 	return PL_IMAGEFORMAT_UNKNOWN;
 }
 
-static PLImage *ParseDdsImage( PLFile *file ) {
+PLImage *PlParseDdsImage( PLFile *file ) {
 	DDSHeader header;
 	if ( PlReadFile( file, &header, sizeof( DDSHeader ), 1 ) != 1 ) {
 		return NULL;
@@ -202,17 +202,4 @@ static PLImage *ParseDdsImage( PLFile *file ) {
 	snprintf( out->path, sizeof( out->path ), "%s", PlGetFilePath( file ) );
 
 	return out;
-}
-
-PLImage *PlLoadDdsImage( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
-		return NULL;
-	}
-
-	PLImage *image = ParseDdsImage( file );
-
-	PlCloseFile( file );
-
-	return image;
 }

@@ -288,14 +288,8 @@ ERR_CLEANUP:
 	return false;
 }
 
-PLImage *PlLoadTimImage( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
-		return NULL;
-	}
-
+PLImage *PlParseTimImage( PLFile *file ) {
 	if ( !TIM_FormatCheck( file ) ) {
-		PlCloseFile( file );
 		return NULL;
 	}
 
@@ -306,8 +300,6 @@ PLImage *PlLoadTimImage( const char *path ) {
 		PlFree( image );
 		image = NULL;
 	}
-
-	PlCloseFile( file );
 
 	return image;
 }

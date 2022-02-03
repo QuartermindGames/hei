@@ -30,6 +30,12 @@ typedef enum PLFileSeek {
 #endif
 } PLFileSeek;
 
+typedef enum PLFileMemoryBufferType {
+	PL_FILE_MEMORYBUFFERTYPE_COPY,      /* creates a copy of the given input and takes ownership */
+	PL_FILE_MEMORYBUFFERTYPE_OWNER,     /* takes ownership of the input and frees on close */
+	PL_FILE_MEMORYBUFFERTYPE_UNMANAGED, /* doesn't free on close */
+} PLFileMemoryBufferType;
+
 typedef enum PLFileSystemMountType {
 	PL_FS_MOUNT_DIR,
 	PL_FS_MOUNT_PACKAGE,
@@ -67,6 +73,7 @@ PL_EXTERN bool PlCreatePath( const char *path );
 
 // File I/O ...
 
+PL_EXTERN PLFile *PlCreateFileFromMemory( const char *path, void *buf, size_t bufSize, PLFileMemoryBufferType bufType );
 PL_EXTERN PLFile *PlOpenLocalFile( const char *path, bool cache );
 PL_EXTERN PLFile *PlOpenFile( const char *path, bool cache );
 PL_EXTERN void PlCloseFile( PLFile *ptr );
@@ -101,6 +108,8 @@ PL_EXTERN char *PlReadString( PLFile *ptr, char *str, size_t size );
 
 PL_EXTERN bool PlFileSeek( PLFile *ptr, long int pos, PLFileSeek seek );
 PL_EXTERN void PlRewindFile( PLFile *ptr );
+
+PL_EXTERN const void *PlCacheFile( PLFile *file );
 
 /** FS Mounting **/
 

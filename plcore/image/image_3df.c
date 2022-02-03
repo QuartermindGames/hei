@@ -24,7 +24,7 @@ static PLImageFormat FD3_GetImageFormat( const char *formatStr ) {
 	return PL_IMAGEFORMAT_UNKNOWN;
 }
 
-static PLImage *FD3_ReadFile( PLFile *file ) {
+PLImage *PlParse3dfImage( PLFile *file ) {
 	/* read in the header */
 	char buf[ 64 ];
 
@@ -133,19 +133,6 @@ static PLImage *FD3_ReadFile( PLFile *file ) {
 
 	/* no longer need this */
 	PlFree( dstBuf );
-
-	return image;
-}
-
-PLImage *PlLoad3dfImage( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
-		return NULL;
-	}
-
-	PLImage *image = FD3_ReadFile( file );
-
-	PlCloseFile( file );
 
 	return image;
 }

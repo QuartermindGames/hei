@@ -480,6 +480,7 @@ static PLPluginExportTable exportTable = {
         .ScanDirectory = PlScanDirectory,
         .CreateDirectory = PlCreateDirectory,
         .CreatePath = PlCreatePath,
+        .CreateFileFromMemory = PlCreateFileFromMemory,
         .OpenLocalFile = PlOpenLocalFile,
         .OpenFile = PlOpenFile,
         .CloseFile = PlCloseFile,
@@ -496,6 +497,7 @@ static PLPluginExportTable exportTable = {
         .ReadString = PlReadString,
         .FileSeek = PlFileSeek,
         .RewindFile = PlRewindFile,
+        .CacheFile = PlCacheFile,
 
         .RegisterPackageLoader = PlRegisterPackageLoader,
         .RegisterImageLoader = PlRegisterImageLoader,

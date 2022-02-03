@@ -123,7 +123,9 @@ PLPackage *Sentient_VSR_LoadFile( const char *path );
 PLPackage *Mortyr_HAL_LoadFile( const char *path );
 PLPackage *Eradicator_RID_LoadFile( const char *path );
 PLPackage *Outwars_FF_LoadFile( const char *path );
-PLPackage *Core_CLU_LoadFile( const char *path );
+PLPackage *Core_CLU_LoadPackage( const char *path );
+
+PLImage *Core_HGT_ParseImage( PLFile *file );
 
 #define MAX_COMMAND_LENGTH 256
 static char cmdLine[ MAX_COMMAND_LENGTH ];
@@ -146,7 +148,9 @@ int main( int argc, char **argv ) {
 	PlRegisterPackageLoader( "rid", Eradicator_RID_LoadFile );
 	PlRegisterPackageLoader( "rim", Eradicator_RID_LoadFile );
 	PlRegisterPackageLoader( "ff", Outwars_FF_LoadFile );
-	PlRegisterPackageLoader( "clu", Core_CLU_LoadFile );
+	PlRegisterPackageLoader( "clu", Core_CLU_LoadPackage );
+
+	PlRegisterImageLoader( "hgt", Core_HGT_ParseImage );
 
 	PlRegisterPlugins( "./" );
 

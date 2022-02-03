@@ -124,7 +124,7 @@ static PLPackage *ParseCLUFile( PLFile *file ) {
 	return package;
 }
 
-PLPackage *Core_CLU_LoadFile( const char *path ) {
+PLPackage *Core_CLU_LoadPackage( const char *path ) {
 	PLFile *file = PlOpenFile( path, false );
 	if ( file == NULL ) {
 		return NULL;

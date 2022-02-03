@@ -31,6 +31,8 @@ add_executable( pcmd
         main.c
 
         ../../extras/core/core_package_clu.c
+        ../../extras/core/core_loader_hgt.c
+
         ../../extras/doom_wad.c
         ../../extras/eradicator_rid.c
         ../../extras/ftactics_pak.c
