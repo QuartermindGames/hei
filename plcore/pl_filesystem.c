@@ -9,10 +9,8 @@
 #include <errno.h>
 
 #if !defined( _MSC_VER )
-
 #	include <unistd.h>
 #	include <dirent.h>
-
 #endif
 
 #include <plcore/pl_console.h>
@@ -69,10 +67,8 @@ static void PlNormalizePath_( char *path, size_t length ) {
 
 typedef struct PLFileSystemMount {
 	PLFileSystemMountType type;
-	union {
-		PLPackage *pkg;                  /* PL_FS_MOUNT_PACKAGE */
-		char path[ PL_SYSTEM_MAX_PATH ]; /* PL_FS_MOUNT_DIR */
-	};
+	PLPackage *pkg;                  /* PL_FS_MOUNT_PACKAGE */
+	char path[ PL_SYSTEM_MAX_PATH ]; /* PL_FS_MOUNT_DIR */
 	struct PLFileSystemMount *next, *prev;
 } PLFileSystemMount;
 static PLFileSystemMount *fs_mount_root = NULL;
@@ -587,7 +583,6 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 	DIR *directory = opendir( path );
 	if ( directory ) {
 		struct dirent *entry;
-		size_t sl = strlen( mount->path );
 		while ( ( entry = readdir( directory ) ) ) {
 			if ( strcmp( entry->d_name, "." ) == 0 || strcmp( entry->d_name, ".." ) == 0 ) {
 				continue;
@@ -1073,7 +1068,11 @@ size_t PlGetFileSize( const PLFile *ptr ) {
  */
 size_t PlGetFileOffset( const PLFile *ptr ) {
 	if ( ptr->fptr != NULL ) {
+#if defined( PL_SYSTEM_CPU_X64 )
+		return ftello64( ptr->fptr );
+#else
 		return ftell( ptr->fptr );
+#endif
 	}
 
 	return ptr->pos - ptr->data;
@@ -1233,7 +1232,11 @@ char *PlReadString( PLFile *ptr, char *str, size_t size ) {
 
 bool PlFileSeek( PLFile *ptr, long int pos, PLFileSeek seek ) {
 	if ( ptr->fptr != NULL ) {
+#if defined( PL_SYSTEM_CPU_X64 )
+		int err = fseeko64( ptr->fptr, pos, seek );
+#else
 		int err = fseek( ptr->fptr, pos, seek );
+#endif
 		if ( err != 0 ) {
 			PlReportErrorF( PL_RESULT_FILEREAD, "failed to seek file (%s)", GetLastError_strerror( GetLastError() ) );
 			return false;

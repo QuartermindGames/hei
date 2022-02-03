@@ -189,15 +189,15 @@ bool plWriteObjModel( PLMModel *model, const char *path ) {
 		if ( mesh->primitive == PLG_MESH_TRIANGLES ) {
 			fprintf( fp, "o mesh.%0d\n", i );
 			/* print out vertices */
-			for ( unsigned int vi = 0; vi < mesh->num_verts; ++i ) {
+			for ( unsigned int vi = 0; vi < mesh->num_verts; ++vi ) {
 				fprintf( fp, "v %s\n", PlPrintVector3( &mesh->vertices[ vi ].position, pl_float_var ) );
 			}
 			/* print out texture coords */
-			for ( unsigned int vi = 0; vi < mesh->num_verts; ++i ) {
+			for ( unsigned int vi = 0; vi < mesh->num_verts; ++vi ) {
 				fprintf( fp, "vt %s\n", PlPrintVector2( &mesh->vertices[ vi ].st[ 0 ], pl_float_var ) );
 			}
 			/* print out vertex normals */
-			for ( unsigned int vi = 0; vi < mesh->num_verts; ++i ) {
+			for ( unsigned int vi = 0; vi < mesh->num_verts; ++vi ) {
 				fprintf( fp, "vn %s\n", PlPrintVector3( &mesh->vertices[ vi ].normal, pl_float_var ) );
 			}
 			fprintf( fp, "# %d vertices\n", mesh->num_verts );
@@ -206,7 +206,7 @@ bool plWriteObjModel( PLMModel *model, const char *path ) {
 				fprintf( fp, "usemtl %s\n", mesh->texture->name );
 			}
 
-			for ( unsigned int fi = 0; fi < mesh->num_triangles; ++i ) {
+			for ( unsigned int fi = 0; fi < mesh->num_triangles; ++fi ) {
 				fprintf( fp, "f %d/%d/%d\n",
 				         mesh->indices[ fi ],
 				         mesh->indices[ fi ],

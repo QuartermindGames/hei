@@ -83,9 +83,9 @@ bool PlgRegisterDriver( const char *path ) {
 		InitializeDriver = ( PLGDriverInitializationFunction ) PlGetLibraryProcedure( library, PLG_DRIVER_INIT_FUNCTION );
 	}
 
-	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
-		PlUnloadLibrary( library );
+	if ( RegisterDriver == NULL || InitializeDriver == NULL || PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
         GfxLog( "Failed to load library!\nPL: %s\n", PlGetError() );
+		PlUnloadLibrary( library );
 		return false;
 	}
 

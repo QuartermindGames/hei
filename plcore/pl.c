@@ -576,7 +576,7 @@ bool PlRegisterPlugin( const char *path ) {
 		}
 	}
 
-	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
+	if ( RegisterPlugin == NULL || InitializePlugin == NULL || PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
 		PlUnloadLibrary( library );
 		return false;
 	}

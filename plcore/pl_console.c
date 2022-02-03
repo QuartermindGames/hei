@@ -391,11 +391,12 @@ const char **PlAutocompleteConsoleString( const char *string, unsigned int *numE
 #define MAX_AUTO_OPTIONS 16
 	static const char *options[ MAX_AUTO_OPTIONS ];
 	unsigned int c = 0;
+	size_t sl = strlen( string );
 	/* gather all the console variables */
 	for ( unsigned int i = 0; i < _pl_num_variables; ++i ) {
 		if ( c >= MAX_AUTO_OPTIONS ) {
 			break;
-		} else if ( pl_strncasecmp( string, _pl_variables[ i ]->var, strlen( string ) ) != 0 ) {
+		} else if ( pl_strncasecmp( string, _pl_variables[ i ]->var, sl ) != 0 ) {
 			continue;
 		}
 		options[ c++ ] = _pl_variables[ i ]->var;
@@ -404,7 +405,7 @@ const char **PlAutocompleteConsoleString( const char *string, unsigned int *numE
 	for ( unsigned int i = 0; i < _pl_num_commands; ++i ) {
 		if ( c >= MAX_AUTO_OPTIONS ) {
 			break;
-		} else if ( pl_strncasecmp( string, _pl_commands[ i ]->cmd, strlen( string ) ) != 0 ) {
+		} else if ( pl_strncasecmp( string, _pl_commands[ i ]->cmd, sl ) != 0 ) {
 			continue;
 		}
 		options[ c++ ] = _pl_commands[ i ]->cmd;
