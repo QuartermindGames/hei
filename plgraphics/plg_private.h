@@ -34,9 +34,9 @@ PL_EXTERN_C
 
 #if !defined( NDEBUG )
 extern int LOG_LEVEL_GRAPHICS;
-#define GfxLog( FORMAT, ... ) PlLogWFunction( LOG_LEVEL_GRAPHICS, FORMAT, ##__VA_ARGS__ )
+#	define GfxLog( FORMAT, ... ) PlLogWFunction( LOG_LEVEL_GRAPHICS, FORMAT, ##__VA_ARGS__ )
 #else
-#define GfxLog( ... )
+#	define GfxLog( ... )
 #endif
 
 typedef struct GfxState {
@@ -57,6 +57,7 @@ typedef struct GfxState {
 	// Shader states
 
 	PLGShaderProgram *current_program;
+	PLPath shaderCacheLocation; /* where shaders should be cached to, if supported */
 
 	// Hardware / Driver information
 
@@ -111,11 +112,11 @@ typedef struct GfxState {
 ///////////////////////////////////////////////////////
 
 #if 1
-#define UseBufferScaling( a )                                   \
-	( ( a )->viewport.r_w != 0 && ( a )->viewport.r_h != 0 ) && \
-	        ( ( a )->viewport.r_w != ( a )->viewport.w && ( a )->viewport.r_h != ( a )->viewport.h )
+#	define UseBufferScaling( a )                                   \
+		( ( a )->viewport.r_w != 0 && ( a )->viewport.r_h != 0 ) && \
+		        ( ( a )->viewport.r_w != ( a )->viewport.w && ( a )->viewport.r_h != ( a )->viewport.h )
 #else /* for debugging purposes */
-#define UseBufferScaling( a ) 0
+#	define UseBufferScaling( a ) 0
 #endif
 
 ///////////////////////////////////////////////////////

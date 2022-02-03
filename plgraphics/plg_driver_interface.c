@@ -39,6 +39,8 @@ static PLGDriverExportTable exportTable = {
         .SetTextureAnisotropy = PlgSetTextureAnisotropy,
         .SetTextureEnvironmentMode = PlgSetTextureEnvironmentMode,
         .SetTextureFlags = PlgSetTextureFlags,
+
+        .GetShaderCacheLocation = PlgGetShaderCacheLocation,
 };
 
 bool PlgRegisterDriver( const char *path ) {

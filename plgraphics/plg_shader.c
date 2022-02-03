@@ -123,6 +123,8 @@ PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type ) 
 	PlCloseFile( fp );
 
 	PLGShaderStage *stage = PlgParseShaderStage( type, buf, length );
+	snprintf( stage->path, sizeof( stage->path ), "%s", path );
+
 	PlFree( buf );
 	return stage;
 }
@@ -177,6 +179,37 @@ void PlgDestroyShaderProgram( PLGShaderProgram *program, bool free_stages ) {
 	PlFree( program );
 }
 
+void PlgSetShaderProgramId( PLGShaderProgram *program, const char *id ) {
+	snprintf( program->id, sizeof( program->id ), "%s", id );
+}
+
+void PlgClearShaderProgramId( PLGShaderProgram *program ) {
+	*program->id = '\0';
+}
+
+const char *PlgGetShaderProgramId( PLGShaderProgram *program ) {
+	return program->id;
+}
+
+void PlgSetShaderCacheLocation( const char *path ) {
+	const char *c = &path[ strlen( path ) - 1 ];
+	if ( *c == '\\' || *c == '/' ) {
+		c = "%s";
+	} else {
+		c = "/%s";
+	}
+
+	snprintf( gfx_state.shaderCacheLocation, sizeof( gfx_state.shaderCacheLocation ), c, path );
+}
+
+void PlgClearShaderCacheLocation( const char *path ) {
+	*gfx_state.shaderCacheLocation = '\0';
+}
+
+const char *PlgGetShaderCacheLocation( void ) {
+	return gfx_state.shaderCacheLocation;
+}
+
 void PlgAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stage ) {
 	plAssert( program != NULL );
 	plAssert( stage != NULL );
@@ -185,10 +218,10 @@ void PlgAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stage ) {
 }
 
 bool PlgRegisterShaderStageFromMemory( PLGShaderProgram *program, const char *buffer, size_t length,
-                                      PLGShaderStageType type ) {
+                                       PLGShaderStageType type ) {
 	if ( program->num_stages >= PLG_MAX_SHADER_TYPES ) {
 		PlReportErrorF( PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
-		             program->num_stages );
+		                program->num_stages );
 		return false;
 	}
 
@@ -205,7 +238,7 @@ bool PlgRegisterShaderStageFromMemory( PLGShaderProgram *program, const char *bu
 bool PlgRegisterShaderStageFromDisk( PLGShaderProgram *program, const char *path, PLGShaderStageType type ) {
 	if ( program->num_stages >= PLG_MAX_SHADER_TYPES ) {
 		PlReportErrorF( PL_RESULT_MEMORY_EOA, "reached maximum number of available shader stage slots (%u)",
-		             program->num_stages );
+		                program->num_stages );
 		return false;
 	}
 

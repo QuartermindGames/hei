@@ -1373,6 +1373,66 @@ static void GLSetShaderProgram( PLGShaderProgram *program ) {
 	glUseProgram( id );
 }
 
+#define SHADER_CACHE_MAGIC PL_MAGIC_TO_NUM( 'G', 'L', 'S', 'B' )
+
+typedef struct ShaderCacheHeader {
+	uint32_t magic;
+	uint32_t checksum;
+	uint32_t format;
+	uint32_t length;
+} ShaderCacheHeader;
+
+static void CacheShaderProgram( PLGShaderProgram *program ) {
+	const char *cacheLocation = gInterface->GetShaderCacheLocation();
+	if ( *cacheLocation == '\0' ) {
+		return;
+	}
+
+	if ( !GLVersion( 4, 1 ) && !GLEW_ARB_get_program_binary ) {
+		GLLog( "Shader cache unsupported, skipping.\n" );
+		return;
+	}
+
+	if ( *program->id == '\0' ) {
+		GLLog( "No valid ID provided for program, skipping caching.\n" );
+		return;
+	}
+
+	PLPath path;
+	snprintf( path, sizeof( path ), "%s%s.glb", cacheLocation, program->id );
+	if ( gInterface->core->LocalFileExists( path ) ) {
+		GLLog( "Program has already been cached, skipping.\n" );
+		return;
+	}
+
+	int length;
+	glGetProgramiv( program->internal.id, GL_PROGRAM_BINARY_LENGTH, &length );
+
+	uint32_t format;
+	void *buf = gInterface->core->MAlloc( length, true );
+	glGetProgramBinary( program->internal.id, length, NULL, &format, buf );
+
+	uint32_t checksum;
+	gInterface->core->GenerateChecksumCRC32( buf, length, &checksum );
+
+	FILE *file = fopen( path, "wb" );
+	if ( file == NULL ) {
+		GLLog( "Failed to open write location: %s\n", path );
+		return;
+	}
+
+	ShaderCacheHeader header;
+	header.magic = SHADER_CACHE_MAGIC;
+	header.checksum = checksum;
+	header.format = format;
+	header.length = length;
+
+	fwrite( &header, sizeof( ShaderCacheHeader ), 1, file );
+	fwrite( buf, sizeof( char ), length, file );
+
+	fclose( file );
+}
+
 static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 	if ( !GLVersion( 2, 0 ) ) {
 		return;
@@ -1390,7 +1450,6 @@ static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 			glGetProgramInfoLog( program->internal.id, s_length, NULL, log );
 			GLLog( " LINK ERROR:\n%s\n", log );
 			gInterface->core->Free( log );
-
 			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, "%s", log );
 		} else {
 			GLLog( " UNKNOWN LINK ERROR!\n" );
@@ -1401,6 +1460,7 @@ static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 
 	program->is_linked = true;
 
+	CacheShaderProgram( program );
 	RegisterShaderProgramData( program );
 }
 
