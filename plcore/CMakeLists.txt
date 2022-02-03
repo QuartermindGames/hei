@@ -92,8 +92,9 @@ endif ()
 
 if (PL_FILESYSTEM_64)
     target_compile_definitions(plcore
-            PRIVATE
+            PUBLIC
             PL_FILESYSTEM_64=1
+            PRIVATE
             __USE_LARGEFILE64=1
             _FILE_OFFSET_BITS=64
             )
@@ -102,9 +103,6 @@ endif ()
 # Platform specific libraries should be provided here
 if (UNIX)
     target_link_libraries(plcore dl m)
-    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-
-    endif ()
 elseif (WIN32)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         target_compile_options(plcore PRIVATE -static -static-libstdc++ -static-libgcc)
