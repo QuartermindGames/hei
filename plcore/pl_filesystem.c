@@ -7,9 +7,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
+
 #if !defined( _MSC_VER )
-#include <unistd.h>
-#include <dirent.h>
+
+#	include <unistd.h>
+#	include <dirent.h>
+
 #endif
 
 #include <plcore/pl_console.h>
@@ -19,25 +22,27 @@
 #include "pl_private.h"
 
 #if defined( _WIN32 )
-#include "3rdparty/portable_endian.h"
+
+#	include "3rdparty/portable_endian.h"
 
 /*  this is required by secext.h */
-#define SECURITY_WIN32
-#include <security.h>
-#include <shlobj.h>
-#include <direct.h>
-#include <io.h>
+#	define SECURITY_WIN32
 
-#if defined( _MSC_VER )
-#if !defined( S_ISREG ) && defined( S_IFMT ) && defined( S_IFREG )
-#define S_ISREG( m ) ( ( ( m ) &S_IFMT ) == S_IFREG )
-#endif
-#endif
+#	include <security.h>
+#	include <shlobj.h>
+#	include <direct.h>
+#	include <io.h>
+
+#	if defined( _MSC_VER )
+#		if !defined( S_ISREG ) && defined( S_IFMT ) && defined( S_IFREG )
+#			define S_ISREG( m ) ( ( ( m ) &S_IFMT ) == S_IFREG )
+#		endif
+#	endif
 #else
-#if defined( __APPLE__ )
-#include "3rdparty/portable_endian.h"
-#endif
-#include <pwd.h>
+#	if defined( __APPLE__ )
+#		include "3rdparty/portable_endian.h"
+#	endif
+#	include <pwd.h>
 #endif
 
 /*	File System	*/
@@ -74,8 +79,8 @@ static PLFileSystemMount *fs_mount_root = NULL;
 static PLFileSystemMount *fs_mount_ceiling = NULL;
 
 #define VFS_LOCAL_HINT "local://"
-#define VFS_MAX_HINT 16
-#define VFS_MAX_PATH ( ( PL_SYSTEM_MAX_PATH + VFS_MAX_HINT ) + 1 )
+#define VFS_MAX_HINT   16
+#define VFS_MAX_PATH   ( ( PL_SYSTEM_MAX_PATH + VFS_MAX_HINT ) + 1 )
 
 static_assert( sizeof( VFS_LOCAL_HINT ) < VFS_MAX_HINT, "Local hint is larger than maximum hint length, please adjust limit!" );
 
@@ -578,10 +583,6 @@ typedef struct FSScanInstance {
 
 static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance **fileList, const char *path,
                                 const char *extension, void ( *Function )( const char *, void * ), bool recursive, void *userData ) {
-	if ( mount == NULL ) {
-		return;
-	}
-
 #if !defined( _MSC_VER )
 	DIR *directory = opendir( path );
 	if ( directory ) {
@@ -593,11 +594,7 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 			}
 
 			char filestring[ PL_SYSTEM_MAX_PATH + 1 ];
-			if ( PlPathEndsInSlash( path ) ) {
-				snprintf( filestring, sizeof( filestring ), "%s%s", path, entry->d_name );
-			} else {
-				snprintf( filestring, sizeof( filestring ), "%s/%s", path, entry->d_name );
-			}
+			snprintf( filestring, sizeof( filestring ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, entry->d_name );
 
 			struct stat st;
 			if ( stat( filestring, &st ) == 0 ) {
@@ -608,7 +605,8 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 							continue;
 						}
 
-						const char *filePath = &filestring[ sl ];
+						size_t pos = strlen( mount->path ) + 1;
+						const char *filePath = &filestring[ pos ];
 
 						// Ensure it's not already in the list
 						FSScanInstance *cur = *fileList;
@@ -705,22 +703,18 @@ void PlScanDirectory( const char *path, const char *extension, void ( *Function 
 		return;
 	}
 
+	PLPath normPath;
+	snprintf( normPath, sizeof( normPath ), "%s", path );
+	PlNormalizePath_( normPath, sizeof( normPath ) );
+
 	FSScanInstance *fileList = NULL;
 	PLFileSystemMount *location = fs_mount_root;
 	while ( location != NULL ) {
 		if ( location->type == PL_FS_MOUNT_PACKAGE ) {
 			// todo: Only works for directories for now
 		} else if ( location->type == PL_FS_MOUNT_DIR ) {
-			const char *fmt;
-			if ( *path == '\\' || *path == '/' ) {
-				fmt = "%s%s";
-			} else {
-				fmt = "%s/%s";
-			}
-
 			char mounted_path[ PL_SYSTEM_MAX_PATH + 1 ];
-			snprintf( mounted_path, sizeof( mounted_path ), fmt, location->path, path );
-
+			snprintf( mounted_path, sizeof( mounted_path ), "%s/%s", location->path, normPath );
 			ScanLocalDirectory( location, &fileList, mounted_path, extension, Function, recursive, userData );
 		}
 
