@@ -12,8 +12,13 @@
 
 // Operating System
 
+#define PL_SYSTEM_OS_WINDOWS 0
+#define PL_SYSTEM_OS_LINUX   1
+#define PL_SYSTEM_OS_MACOS   2
+
 #if defined( _WIN32 )
 #	define PL_SYSTEM_NAME              "WINDOWS"
+#	define PL_SYSTEM_OS                PL_SYSTEM_OS_WINDOWS
 #	define PL_SYSTEM_LIBRARY_EXTENSION ".dll"
 
 #	if 0
@@ -66,6 +71,7 @@
 #	endif
 
 #	define PL_SYSTEM_NAME              "LINUX"
+#	define PL_SYSTEM_OS                PL_SYSTEM_OS_LINUX
 #	define PL_SYSTEM_LIBRARY_EXTENSION ".so"
 
 #	define PL_SYSTEM_MAX_PATH     256
@@ -80,6 +86,7 @@
 #	endif
 
 #	define PL_SYSTEM_NAME              "macOS"
+#	define PL_SYSTEM_OS                PL_SYSTEM_OS_MACOS
 #	define PL_SYSTEM_LIBRARY_EXTENSION ".so"
 
 #	define PL_SYSTEM_MAX_PATH     512
