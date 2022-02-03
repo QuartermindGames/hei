@@ -75,7 +75,7 @@ typedef struct PLPluginExportTable {
 	const char *( *GetFilePath )( const PLFile *file );
 	const uint8_t *( *GetFileData )( const PLFile *file );
 	size_t ( *GetFileSize )( const PLFile *file );
-	size_t ( *GetFileOffset )( const PLFile *file );
+	PLFileOffset ( *GetFileOffset )( const PLFile *file );
 
 	size_t ( *ReadFile )( PLFile *file, void *destination, size_t size, size_t count );
 
@@ -86,7 +86,7 @@ typedef struct PLPluginExportTable {
 
 	char *( *ReadString )( PLFile *file, char *destination, size_t size );
 
-	bool ( *FileSeek )( PLFile *file, long int pos, PLFileSeek seek );
+	bool ( *FileSeek )( PLFile *file, PLFileOffset pos, PLFileSeek seek );
 	void ( *RewindFile )( PLFile *file );
 
 	const void *( *CacheFile )( PLFile *file );
@@ -95,7 +95,7 @@ typedef struct PLPluginExportTable {
  	 * PLUGIN API
  	 **/
 
-	PLPackage *( *CreatePackageHandle )( const char *path, unsigned int tableSize, uint8_t* ( *OpenFile )( PLFile *filePtr, PLPackageIndex *index ) );
+	PLPackage *( *CreatePackageHandle )( const char *path, unsigned int tableSize, uint8_t *( *OpenFile )( PLFile *filePtr, PLPackageIndex *index ) );
 
 	void ( *RegisterPackageLoader )( const char *extension, PLPackage *( *LoadFunction )( const char *path ) );
 	void ( *RegisterImageLoader )( const char *extension, PLImage *( *LoadFunction )( PLFile *file ) );
@@ -117,7 +117,6 @@ typedef struct PLPluginExportTable {
 	void ( *ReplaceImageColour )( PLImage *image, PLColour target, PLColour destination );
 	bool ( *FlipImageVertical )( PLImage *image );
 
-	unsigned int ( *GetNumberOfColourChannels )( PLColourFormat colourFormat );
 	unsigned int ( *GetImageSize )( PLImageFormat format, unsigned int width, unsigned int height );
 
 	/** v2.0 ************************************************/
@@ -159,7 +158,8 @@ typedef struct PLPluginExportTable {
 /* be absolutely sure to change this whenever the API is updated! */
 #define PL_PLUGIN_INTERFACE_VERSION_MAJOR 6
 #define PL_PLUGIN_INTERFACE_VERSION_MINOR 1
-#define PL_PLUGIN_INTERFACE_VERSION ( uint16_t[ 2 ] ){ PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
+#define PL_PLUGIN_INTERFACE_VERSION \
+	( uint16_t[ 2 ] ) { PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
 
 #define PL_PLUGIN_QUERY_FUNCTION "PLQueryPlugin"
 typedef const PLPluginDescription *( *PLPluginQueryFunction )( void );

@@ -25,6 +25,7 @@ SOFTWARE.
 project(plcore)
 
 option(PL_COMPILE_STATIC "Compile as static library" ON)
+option(PL_FILESYSTEM_64 "Use 64-bit interface for file IO" ON)
 
 add_definitions("-D_DEBUG")
 
@@ -89,9 +90,21 @@ elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
     target_compile_options(plcore PUBLIC -D_CRT_SECURE_NO_WARNINGS /W3)
 endif ()
 
+if (PL_FILESYSTEM_64)
+    target_compile_definitions(plcore
+            PRIVATE
+            PL_FILESYSTEM_64=1
+            __USE_LARGEFILE64=1
+            _FILE_OFFSET_BITS=64
+            )
+endif ()
+
 # Platform specific libraries should be provided here
 if (UNIX)
     target_link_libraries(plcore dl m)
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+
+    endif ()
 elseif (WIN32)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         target_compile_options(plcore PRIVATE -static -static-libstdc++ -static-libgcc)
@@ -101,9 +114,10 @@ endif ()
 
 set_property(TARGET plcore PROPERTY C_STANDARD_REQUIRED 11)
 
-target_include_directories(plcore PUBLIC
+target_include_directories(plcore
+        PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/
-        ${CMAKE_SYSTEM_INCLUDE_PATH})
-target_include_directories(plcore PRIVATE
+        ${CMAKE_SYSTEM_INCLUDE_PATH}
+        PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}"
         )

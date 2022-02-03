@@ -43,6 +43,34 @@
 #	include <pwd.h>
 #endif
 
+/* this is gross... but provide a dumb interface so we can
+ * use 64-bit file calls if they're available and we're on
+ * a system that supports it. */
+
+static PLFileOffset pl_ftell( FILE *file ) {
+#ifdef PL_FILESYSTEM_64
+#	if ( PL_SYSTEM_OS == PL_SYSTEM_OS_WINDOWS )
+	return ftello64( file );
+#	else
+	return ftello( file );
+#	endif
+#else
+	return ftell( file );
+#endif
+}
+
+static int pl_fseek( FILE *file, PLFileOffset off, int wence ) {
+#ifdef PL_FILESYSTEM_64
+#	if ( PL_SYSTEM_OS == PL_SYSTEM_OS_WINDOWS )
+	return fseeko64( file, off, wence );
+#	else
+	return fseeko( file, off, wence );
+#	endif
+#else
+	return fseek( file, off, wence );
+#endif
+}
+
 /*	File System	*/
 
 static void PlNormalizePath_( char *path, size_t length ) {
@@ -1092,13 +1120,9 @@ size_t PlGetFileSize( const PLFile *ptr ) {
  * @param ptr Pointer to the file handle.
  * @return Number of bytes into the file.
  */
-size_t PlGetFileOffset( const PLFile *ptr ) {
+PLFileOffset PlGetFileOffset( const PLFile *ptr ) {
 	if ( ptr->fptr != NULL ) {
-#if defined( PL_SYSTEM_CPU_X64 )
-		return ftello64( ptr->fptr );
-#else
-		return ftell( ptr->fptr );
-#endif
+		return pl_ftell( ptr->fptr );
 	}
 
 	return ptr->pos - ptr->data;
@@ -1256,13 +1280,9 @@ char *PlReadString( PLFile *ptr, char *str, size_t size ) {
 	return str;
 }
 
-bool PlFileSeek( PLFile *ptr, long int pos, PLFileSeek seek ) {
+bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 	if ( ptr->fptr != NULL ) {
-#if defined( PL_SYSTEM_CPU_X64 )
-		int err = fseeko64( ptr->fptr, pos, seek );
-#else
-		int err = fseek( ptr->fptr, pos, seek );
-#endif
+		int err = pl_fseek( ptr->fptr, pos, seek );
 		if ( err != 0 ) {
 			PlReportErrorF( PL_RESULT_FILEREAD, "failed to seek file (%s)", GetLastError_strerror( GetLastError() ) );
 			return false;

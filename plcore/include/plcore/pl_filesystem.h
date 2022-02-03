@@ -43,6 +43,12 @@ typedef enum PLFileSystemMountType {
 
 typedef struct PLFileSystemMount PLFileSystemMount;
 
+#ifdef PL_FILESYSTEM_64
+typedef int64_t PLFileOffset;
+#else
+typedef int32_t PLFileOffset;
+#endif
+
 PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
@@ -92,7 +98,7 @@ PL_EXTERN const char *PlGetFilePath( const PLFile *ptr );
 PL_EXTERN const uint8_t *PlGetFileData( const PLFile *ptr );
 PL_EXTERN time_t PlGetFileTimeStamp( PLFile *ptr );
 PL_EXTERN size_t PlGetFileSize( const PLFile *ptr );
-PL_EXTERN size_t PlGetFileOffset( const PLFile *ptr );
+PL_EXTERN PLFileOffset PlGetFileOffset( const PLFile *ptr );
 
 PL_EXTERN size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count );
 
@@ -106,7 +112,7 @@ PL_EXTERN double PlReadFloat64( PLFile *ptr, bool big_endian, bool *status );
 
 PL_EXTERN char *PlReadString( PLFile *ptr, char *str, size_t size );
 
-PL_EXTERN bool PlFileSeek( PLFile *ptr, long int pos, PLFileSeek seek );
+PL_EXTERN bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek );
 PL_EXTERN void PlRewindFile( PLFile *ptr );
 
 PL_EXTERN const void *PlCacheFile( PLFile *file );
