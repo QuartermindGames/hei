@@ -508,7 +508,6 @@ static PLPluginExportTable exportTable = {
         .InvertImageColour = PlInvertImageColour,
         .ReplaceImageColour = PlReplaceImageColour,
         .FlipImageVertical = PlFlipImageVertical,
-        .GetNumberOfColourChannels = PlGetNumberOfColourChannels,
         .GetImageSize = PlGetImageSize,
 
         .CreatePackageHandle = PlCreatePackageHandle,

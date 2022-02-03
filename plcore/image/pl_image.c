@@ -164,7 +164,11 @@ void PlDestroyImage( PLImage *image ) {
 		return;
 	}
 
-	PlFreeImage( image );
+	for ( unsigned int levels = 0; levels < image->levels; ++levels ) {
+		PlFree( image->data[ levels ] );
+	}
+
+	PlFree( image->data );
 	PlFree( image );
 }
 
@@ -231,7 +235,7 @@ bool PlWriteImage( const PLImage *image, const char *path ) {
 		return false;
 	}
 
-	int comp = ( int ) PlGetNumberOfColourChannels( image->colour_format );
+	int comp = ( int ) PlGetNumImageFormatChannels( image->format );
 	if ( comp == 0 ) {
 		PlReportErrorF( PL_RESULT_IMAGEFORMAT, "invalid colour format" );
 		return false;
@@ -264,25 +268,6 @@ bool PlWriteImage( const PLImage *image, const char *path ) {
 
 	PlReportErrorF( PL_RESULT_FILETYPE, PlGetResultString( PL_RESULT_FILETYPE ) );
 	return false;
-}
-
-// Returns the number of samples per-pixel depending on the colour format.
-unsigned int PlGetNumberOfColourChannels( PLColourFormat format ) {
-	switch ( format ) {
-		case PL_COLOURFORMAT_ABGR:
-		case PL_COLOURFORMAT_ARGB:
-		case PL_COLOURFORMAT_BGRA:
-		case PL_COLOURFORMAT_RGBA: {
-			return 4;
-		}
-
-		case PL_COLOURFORMAT_BGR:
-		case PL_COLOURFORMAT_RGB: {
-			return 3;
-		}
-	}
-
-	return 0;
 }
 
 static bool RGB8toRGBA8( PLImage *image ) {
@@ -475,7 +460,7 @@ bool PlImageHasAlpha( const PLImage *image ) {
 }
 
 void PlInvertImageColour( PLImage *image ) {
-	unsigned int num_colours = PlGetNumberOfColourChannels( image->colour_format );
+	unsigned int num_colours = PlGetNumImageFormatChannels( image->format );
 	switch ( image->format ) {
 		case PL_IMAGEFORMAT_RGB8:
 		case PL_IMAGEFORMAT_RGBA8: {
@@ -520,7 +505,7 @@ void PlGenerateStipplePattern( PLImage *image, unsigned int depth ) {
 }
 
 void PlReplaceImageColour( PLImage *image, PLColour target, PLColour dest ) {
-	unsigned int num_colours = PlGetNumberOfColourChannels( image->colour_format );
+	unsigned int num_colours = PlGetNumImageFormatChannels( image->format );
 	switch ( image->format ) {
 		case PL_IMAGEFORMAT_RGB8:
 		case PL_IMAGEFORMAT_RGBA8: {
