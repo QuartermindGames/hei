@@ -1149,7 +1149,7 @@ size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count ) {
 
 	/* ensure that the read is valid */
 	size_t length = size * count;
-	size_t posn = PlGetFileOffset( ptr );
+	PLFileOffset posn = PlGetFileOffset( ptr );
 	if ( posn + length >= ptr->size ) {
 		/* out of bounds, truncate it */
 		length = ptr->size - posn;
@@ -1299,7 +1299,7 @@ bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 		return true;
 	}
 
-	size_t posn = PlGetFileOffset( ptr );
+	PLFileOffset posn = PlGetFileOffset( ptr );
 	switch ( seek ) {
 		case PL_SEEK_CUR:
 			if ( posn + pos > ptr->size || pos < -( ( signed long ) posn ) ) {
@@ -1355,7 +1355,7 @@ const void *PlCacheFile( PLFile *file ) {
 		return NULL;
 	}
 
-	size_t p = PlGetFileOffset( file );
+	PLFileOffset p = PlGetFileOffset( file );
 	size_t s = PlGetFileSize( file );
 
 	/* jump back to the start */
