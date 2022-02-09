@@ -50,7 +50,11 @@
 static PLFileOffset pl_ftell( FILE *file ) {
 #ifdef PL_FILESYSTEM_64
 #	if ( PL_SYSTEM_OS == PL_SYSTEM_OS_WINDOWS )
+#		if defined( _MSC_VER )
+	return _ftelli64( file );
+#		else
 	return ftello64( file );
+#		endif
 #	else
 	return ftello( file );
 #	endif
@@ -62,7 +66,11 @@ static PLFileOffset pl_ftell( FILE *file ) {
 static int pl_fseek( FILE *file, PLFileOffset off, int wence ) {
 #ifdef PL_FILESYSTEM_64
 #	if ( PL_SYSTEM_OS == PL_SYSTEM_OS_WINDOWS )
+#		if defined( _MSC_VER )
+	return _fseeki64( file, off, wence );
+#		else
 	return fseeko64( file, off, wence );
+#		endif
 #	else
 	return fseeko( file, off, wence );
 #	endif
