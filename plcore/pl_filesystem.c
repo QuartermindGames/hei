@@ -687,6 +687,10 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 		return;
 	}
 
+	size_t ml;
+	if ( mount != NULL )
+		ml = strlen( mount->path );
+
 	do {
 		snprintf( selectorPath, sizeof( selectorPath ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, ffd.cFileName );
 
@@ -699,12 +703,7 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 
 		const char *rp = selectorPath;
 		if ( mount != NULL ) {
-			size_t pos = strlen( mount->path );
-			if ( pos >= sizeof( selectorPath ) ) {
-				PrintWarning( "pos >= %d!\n", pos );
-				continue;
-			}
-			rp = &selectorPath[ pos ];
+			rp = &selectorPath[ ml ];
 		}
 
 		Function( rp, userData );

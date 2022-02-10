@@ -140,19 +140,19 @@ PLMModel *PlmLoadModel( const char *path ) {
 	}
 
 	const char *extension = PlGetFileExtension( path );
+	size_t ext_len = strlen( extension );
 	for ( unsigned int i = 0; i < num_model_loaders; ++i ) {
 		if ( model_interfaces[ i ].LoadFunction == NULL ) {
 			break;
 		}
 
 		if ( !PL_INVALID_STRING( model_interfaces[ i ].ext ) ) {
-			if ( pl_strncasecmp( extension, model_interfaces[ i ].ext, sizeof( model_interfaces[ i ].ext ) ) == 0 ) {
+			if ( pl_strcasecmp( extension, model_interfaces[ i ].ext ) == 0 ) {
 				PLMModel *model = model_interfaces[ i ].LoadFunction( path );
 				if ( model != NULL ) {
 					const char *name = PlGetFileName( path );
 					if ( !PL_INVALID_STRING( name ) ) {
 						size_t nme_len = strlen( name );
-						size_t ext_len = strlen( extension );
 						strncpy( model->name, name, nme_len - ( ext_len + 1 ) );
 					} else {
 						snprintf( model->name, sizeof( model->name ), "null" );
