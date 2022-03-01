@@ -463,21 +463,17 @@ static bool IsCompressedImageFormat( PLImageFormat format ) {
 	}
 }
 
+static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter );
 static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
+	GLBindTexture( texture );
+
 	/* was originally GL_CLAMP; deprecated in GL3+, though some drivers
 	 * still seem to accept it anyway except for newer Intel GPUs apparently */
 	/* todo: make this configurable */
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 
-	int min, mag;
-	GL_TranslateTextureFilterFormat( texture->filter, &min, &mag );
-	if ( texture->filter == PLG_TEXTURE_FILTER_LINEAR || texture->filter == PLG_TEXTURE_FILTER_NEAREST ) {
-		texture->flags |= PLG_TEXTURE_FLAG_NOMIPS;
-	}
-
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min );
+	GLSetTextureFilter( texture, texture->filter );
 
 	unsigned int levels = upload->levels;
 	if ( levels == 0 ) {
@@ -518,6 +514,21 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 static void GLSetTextureAnisotropy( PLGTexture *texture, uint32_t value ) {
 	GLBindTexture( texture );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, ( int ) value );
+}
+
+static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter ) {
+	GLBindTexture( texture );
+
+	int min, mag;
+	GL_TranslateTextureFilterFormat( filter, &min, &mag );
+	if ( filter == PLG_TEXTURE_FILTER_LINEAR || filter == PLG_TEXTURE_FILTER_NEAREST ) {
+		texture->flags |= PLG_TEXTURE_FLAG_NOMIPS;
+	}
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min );
+
+	texture->filter = filter;
 }
 
 static void GLActiveTexture( unsigned int target ) {
@@ -1703,6 +1714,7 @@ PLGDriverImportTable graphicsInterface = {
         .SwizzleTexture = GLSwizzleTexture,
         .SetTextureAnisotropy = GLSetTextureAnisotropy,
         .ActiveTexture = GLActiveTexture,
+        .SetTextureFilter = GLSetTextureFilter,
 
         .CreateCamera = GLCreateCamera,
         .DestroyCamera = GLDestroyCamera,
