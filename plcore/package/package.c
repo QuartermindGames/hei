@@ -61,7 +61,7 @@ static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 	if ( pi->compressionType != PL_COMPRESSION_NONE ) {
 		uint8_t *decompressedPtr = PlMAllocA( pi->fileSize );
 		unsigned long uncompressedLength = ( unsigned long ) pi->fileSize;
-		if ( pi->compressionType == PL_COMPRESSION_ZLIB ) {
+		if ( pi->compressionType == PL_COMPRESSION_DEFLATE ) {
 			int status = uncompress( decompressedPtr, &uncompressedLength, dataPtr, ( unsigned long ) pi->compressedSize );
 
 			PlFree( dataPtr );

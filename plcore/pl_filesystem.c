@@ -50,7 +50,11 @@
 static PLFileOffset pl_ftell( FILE *file ) {
 #ifdef PL_FILESYSTEM_64
 #	if ( PL_SYSTEM_OS == PL_SYSTEM_OS_WINDOWS )
+#		if defined( _MSC_VER )
+	return _ftelli64( file );
+#		else
 	return ftello64( file );
+#		endif
 #	else
 	return ftello( file );
 #	endif
@@ -62,7 +66,11 @@ static PLFileOffset pl_ftell( FILE *file ) {
 static int pl_fseek( FILE *file, PLFileOffset off, int wence ) {
 #ifdef PL_FILESYSTEM_64
 #	if ( PL_SYSTEM_OS == PL_SYSTEM_OS_WINDOWS )
+#		if defined( _MSC_VER )
+	return _fseeki64( file, off, wence );
+#		else
 	return fseeko64( file, off, wence );
+#		endif
 #	else
 	return fseeko( file, off, wence );
 #	endif
@@ -1185,7 +1193,7 @@ size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count ) {
 
 	/* ensure that the read is valid */
 	size_t length = size * count;
-	size_t posn = PlGetFileOffset( ptr );
+	PLFileOffset posn = PlGetFileOffset( ptr );
 	if ( posn + length >= ptr->size ) {
 		/* out of bounds, truncate it */
 		length = ptr->size - posn;
@@ -1335,7 +1343,7 @@ bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 		return true;
 	}
 
-	size_t posn = PlGetFileOffset( ptr );
+	PLFileOffset posn = PlGetFileOffset( ptr );
 	switch ( seek ) {
 		case PL_SEEK_CUR:
 			if ( posn + pos > ptr->size || pos < -( ( signed long ) posn ) ) {
@@ -1391,7 +1399,7 @@ const void *PlCacheFile( PLFile *file ) {
 		return NULL;
 	}
 
-	size_t p = PlGetFileOffset( file );
+	PLFileOffset p = PlGetFileOffset( file );
 	size_t s = PlGetFileSize( file );
 
 	/* jump back to the start */
