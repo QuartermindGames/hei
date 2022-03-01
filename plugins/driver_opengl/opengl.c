@@ -263,27 +263,30 @@ static unsigned int TranslateFrameBufferBinding( PLGFrameBufferObjectTarget targ
 
 static void GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
 	glGenFramebuffers( 1, &buffer->fbo );
-	glBindFramebuffer( GL_DRAW_FRAMEBUFFER, buffer->fbo );
+	glBindFramebuffer( GL_FRAMEBUFFER, buffer->fbo );
 
 	if ( buffer->flags & PLG_BUFFER_COLOUR ) {
 		glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
 		glRenderbufferStorage( GL_RENDERBUFFER, GL_RGBA, ( int ) buffer->width, ( int ) buffer->height );
-		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
+		glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
 	}
 
-	if ( buffer->flags & PLG_BUFFER_DEPTH ) {
+	if ( ( buffer->flags & PLG_BUFFER_DEPTH ) && ( buffer->flags & PLG_BUFFER_STENCIL ) ) {
 		glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, ( int ) buffer->width, ( int ) buffer->height );
-		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
-	}
-
-	if ( buffer->flags & PLG_BUFFER_STENCIL ) {
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, ( int ) buffer->width, ( int ) buffer->height );
+		glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
+	} else if ( buffer->flags & PLG_BUFFER_DEPTH ) {
+		glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
+		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, ( int ) buffer->width, ( int ) buffer->height );
+		glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
+	} else if ( buffer->flags & PLG_BUFFER_STENCIL ) {
 		glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
 		glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_STENCIL, ( int ) buffer->width, ( int ) buffer->height );
-		glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_STENCIL_INDEX8, ( int ) buffer->width, ( int ) buffer->height );
+		glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
 	}
 }
 
@@ -340,7 +343,7 @@ static void GLBlitFrameBuffers( PLGFrameBuffer *src_buffer,
 
 static void GLBindTexture( const PLGTexture *texture );
 
-static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter ) {
+static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int components, PLGTextureFilter filter ) {
 	PLGTexture *texture = gInterface->CreateTexture();
 	if ( texture == NULL ) {
 		return NULL;
@@ -349,32 +352,39 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 	/* all of this is going to change later...
 	 * this is just the bare minimum to get things going */
 
+	GLBindFrameBuffer( buffer, PLG_FRAMEBUFFER_DRAW );
 	GLBindTexture( texture );
-
-	int glComponent;
-	unsigned int glType;
-	unsigned int glAttachment;
-	switch ( component ) {
-		case PLG_BUFFER_DEPTH:
-			glComponent = GL_DEPTH_COMPONENT;
-			glType = GL_FLOAT;
-			glAttachment = GL_DEPTH_ATTACHMENT;
-			break;
-		case PLG_BUFFER_COLOUR:
-			glComponent = GL_RGBA;
-			glType = GL_UNSIGNED_BYTE;
-			glAttachment = GL_COLOR_ATTACHMENT0;
-			break;
-	}
-
-	glTexImage2D( GL_TEXTURE_2D, 0, glComponent, buffer->width, buffer->height, 0, glComponent, glType, NULL );
 
 	int min, mag;
 	GL_TranslateTextureFilterFormat( filter, &min, &mag );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag );
 
-	glFramebufferTexture2D( GL_FRAMEBUFFER, glAttachment, GL_TEXTURE_2D, texture->internal.id, 0 );
+	/* sigh... */
+	if ( ( components & PLG_BUFFER_DEPTH ) || ( components & PLG_BUFFER_STENCIL ) ) {
+		if ( ( buffer->flags & PLG_BUFFER_DEPTH ) && ( buffer->flags & PLG_BUFFER_STENCIL ) ) {
+			/* so yeah, this sucks, but if both of these are active we assume it's packed */
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, buffer->width, buffer->height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL );
+			if ( components & PLG_BUFFER_DEPTH ) {
+				glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture->internal.id, 0 );
+			}
+			if ( components & PLG_BUFFER_STENCIL ) {
+				glFramebufferTexture2D( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture->internal.id, 0 );
+			}
+		} else {
+			/* otherwise, assumed not packed */
+			if ( components & PLG_BUFFER_DEPTH ) {
+				glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, buffer->width, buffer->height, 0, GL_DEPTH_ATTACHMENT, GL_UNSIGNED_INT, NULL );
+				glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture->internal.id, 0 );
+			} else if ( components & PLG_BUFFER_STENCIL ) {
+				glTexImage2D( GL_TEXTURE_2D, 0, GL_STENCIL_INDEX8, buffer->width, buffer->height, 0, GL_STENCIL_ATTACHMENT, GL_UNSIGNED_BYTE, NULL );
+				glFramebufferTexture2D( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture->internal.id, 0 );
+			}
+		}
+	} else if ( components & PLG_BUFFER_COLOUR ) {
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, buffer->width, buffer->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->internal.id, 0 );
+	}
 
 	GLBindTexture( NULL );
 
