@@ -771,6 +771,50 @@ void PlSetWorkingDirectory( const char *path ) {
 	}
 }
 
+const char *PlGetExecutablePath( char *out, size_t outSize ) {
+	PL_ZERO( out, outSize );
+
+#if PL_SYSTEM_OS == PL_SYSTEM_OS_LINUX
+	if ( readlink( "/proc/self/exe", out, outSize ) == -1 ) {
+		return NULL;
+	}
+#elif PL_SYSTEM_OS == PL_SYSTEM_OS_FREEBSD
+	if ( readlink( "/proc/curproc/file", out, outSize ) == -1 ) {
+		return NULL;
+	}
+#elif PL_SYSTEM_OS == PL_SYSTEM_OS_WINDOWS
+	GetModuleFileName( NULL, out, outSize );
+#else
+	PlReportBasicError( PL_RESULT_UNSUPPORTED );
+#endif
+
+	PlNormalizePath_( out, outSize );
+
+	return out;
+}
+
+/**
+ * Returns the directory the current executable is located within.
+ */
+const char *PlGetExecutableDirectory( char *out, size_t outSize ) {
+	if ( PlGetExecutablePath( out, outSize ) == NULL ) {
+		return NULL;
+	}
+
+	char *c = strrchr( out, '/' );
+	if ( c == NULL ) {
+		PlReportErrorF( PL_RESULT_FILEPATH, "couldn't find path seperator" );
+		return NULL;
+	}
+
+	unsigned int i = c - out + 1;
+	if ( i < outSize ) {
+		out[ i ] = '\0';
+	}
+
+	return out;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // FILE I/O
 

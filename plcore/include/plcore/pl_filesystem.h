@@ -58,6 +58,9 @@ PL_EXTERN char *PlGetUserName( char *out, size_t n );
 PL_EXTERN const char *PlGetWorkingDirectory( void );
 PL_EXTERN void PlSetWorkingDirectory( const char *path );
 
+PL_EXTERN const char *PlGetExecutablePath( char *out, size_t outSize );
+PL_EXTERN const char *PlGetExecutableDirectory( char *out, size_t outSize );
+
 PL_EXTERN char *PlGetApplicationDataDirectory( const char *app_name, char *out, size_t n );
 
 PL_EXTERN bool PlPathEndsInSlash( const char *p );
