@@ -288,17 +288,22 @@ static void GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
 }
 
 static void GLDeleteFrameBuffer( PLGFrameBuffer *buffer ) {
-	if ( buffer ) {
+	if ( buffer == NULL ) {
+		return;
+	}
+
+	if ( buffer->fbo != 0 ) {
 		glDeleteFramebuffers( 1, &buffer->fbo );
-		if ( buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] ) {
-			glDeleteRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] );
+		buffer->fbo = 0;
+	}
+
+	for ( unsigned int i = 0; i < PLG_MAX_RENDERBUFFER_TYPES; ++i ) {
+		if ( buffer->renderBuffers[ i ] == 0 ) {
+			continue;
 		}
-		if ( buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) {
-			glDeleteRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] );
-		}
-		if ( buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] ) {
-			glDeleteRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] );
-		}
+
+		glDeleteRenderbuffers( 1, &buffer->renderBuffers[ i ] );
+		buffer->renderBuffers[ i ] = 0;
 	}
 }
 
