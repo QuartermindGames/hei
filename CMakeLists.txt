@@ -56,7 +56,7 @@ if (PL_BUILD_PLUGINS)
         add_subdirectory(plugins/driver_d3d12/)
     endif ()
 
-    if (EXISTS "${CMAKE_SOURCE_DIR}/plugins/driver_glide/CMakeLists.txt")
+    if (WIN32 AND EXISTS "${CMAKE_SOURCE_DIR}/plugins/driver_glide/CMakeLists.txt")
         add_subdirectory(plugins/driver_glide/)
     endif ()
 
