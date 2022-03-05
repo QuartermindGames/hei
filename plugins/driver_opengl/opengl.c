@@ -1616,12 +1616,12 @@ static void MessageCallback(
 }
 #endif
 
-void GLInitialize( void ) {
+PLFunctionResult GLInitialize( void ) {
 	glewExperimental = true;
 	GLenum err = glewInit();
 	if ( err != GLEW_OK ) {
 		gInterface->core->ReportError( PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", ( char * ) glewGetErrorString( err ) );
-		return;
+		return PL_RESULT_GRAPHICSINIT;
 	}
 
 	memset( &gl_capabilities, 0, sizeof( gl_capabilities ) );
@@ -1673,6 +1673,8 @@ void GLInitialize( void ) {
 	/* in OpenGL, multisample is automatically enabled per spec */
 	gfx_state.current_capabilities[ PL_GFX_STATE_MULTISAMPLE ] = true;
 #endif
+
+	return PL_RESULT_SUCCESS;
 }
 
 void GLShutdown( void ) {

@@ -53,7 +53,7 @@ typedef struct PLGDriverExportTable {
 } PLGDriverExportTable;
 
 typedef struct PLGDriverImportTable {
-	void ( *Initialize )( void );
+	PLFunctionResult ( *Initialize )( void );
 	void ( *Shutdown )( void );
 
 	// Debug
