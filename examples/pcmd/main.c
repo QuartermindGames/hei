@@ -118,7 +118,6 @@ static void Cmd_Exit( unsigned int argc, char **argv ) {
 PLPackage *IStorm_LST_LoadFile( const char *path );
 PLPackage *Outcast_OPK_LoadFile( const char *path );
 PLPackage *FTactics_PAK_LoadFile( const char *path );
-PLPackage *Doom_WAD_LoadFile( const char *path );
 PLPackage *Sentient_VSR_LoadFile( const char *path );
 PLPackage *Mortyr_HAL_LoadFile( const char *path );
 PLPackage *Eradicator_RID_LoadFile( const char *path );
@@ -142,7 +141,6 @@ int main( int argc, char **argv ) {
 	PlRegisterPackageLoader( "lst", IStorm_LST_LoadFile );
 	PlRegisterPackageLoader( "opk", Outcast_OPK_LoadFile );
 	PlRegisterPackageLoader( "pak", FTactics_PAK_LoadFile );
-	PlRegisterPackageLoader( "wad", Doom_WAD_LoadFile );
 	PlRegisterPackageLoader( "vsr", Sentient_VSR_LoadFile );
 	PlRegisterPackageLoader( "hal", Mortyr_HAL_LoadFile );
 	PlRegisterPackageLoader( "rid", Eradicator_RID_LoadFile );

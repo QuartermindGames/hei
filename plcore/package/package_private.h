@@ -13,6 +13,7 @@
 
 PL_EXTERN_C
 
+PLPackage *PlLoadIWADPackage_( const char *path );;
 PLPackage *PlLoadMadPackage( const char *path );
 PLPackage *PlLoadTabPackage( const char *path );
 

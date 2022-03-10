@@ -199,6 +199,7 @@ void PlRegisterPackageLoader( const char *ext, PLPackage *( *LoadFunction )( con
 }
 
 void PlRegisterStandardPackageLoaders( void ) {
+	PlRegisterPackageLoader( "wad", PlLoadIWADPackage_ );
 	/* hogs of war */
 	PlRegisterPackageLoader( "mad", PlLoadMadPackage );
 	PlRegisterPackageLoader( "mtd", PlLoadMadPackage );
