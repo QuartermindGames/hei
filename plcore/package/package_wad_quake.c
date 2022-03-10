@@ -13,6 +13,8 @@
 #define WAD2_MAGIC       PL_MAGIC_TO_NUM( 'W', 'A', 'D', '2' )
 #define WAD2_NAME_LENGTH 16
 
+#define WAD3_MAGIC PL_MAGIC_TO_NUM( 'W', 'A', 'D', '3' )
+
 typedef struct WAD2Index {
 	int32_t offset;
 	int32_t cSize;
@@ -25,7 +27,7 @@ typedef struct WAD2Index {
 
 static PLPackage *ParseWAD2File( PLFile *file ) {
 	uint32_t magic = PlReadInt32( file, false, NULL );
-	if ( magic != WAD2_MAGIC ) {
+	if ( magic != WAD2_MAGIC && magic != WAD3_MAGIC ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid magic: \"%s\"", magic );
 		return NULL;
 	}
@@ -58,11 +60,43 @@ static PLPackage *ParseWAD2File( PLFile *file ) {
 		index->compressedSize = PlReadInt32( file, false, NULL );
 		index->fileSize = PlReadInt32( file, false, NULL );
 
-		PlReadInt8( file, NULL ); /* type */
-	   	PlReadInt8( file, NULL ); /* compression (afaik, never used) */
+		const char *hint;
+		uint8_t type = PlReadInt8( file, NULL ); /* type */
+		switch ( type ) {
+			default:
+				hint = ".none";
+				break;
+			case 1:
+				hint = ".label";
+				break;
+			case 64:
+				hint = ".palette";
+				break;
+			case 65:
+				hint = ".colormap";
+				break;
+			case 66:
+				hint = ".qpic";
+				break;
+			case 67:
+				hint = ".miptex";
+				break;
+			case 68:
+				hint = ".raw";
+				break;
+			case 69:
+				hint = ".colormap2";
+				break;
+			case 70:
+				hint = ".font";
+				break;
+		}
+
+		PlReadInt8( file, NULL );         /* compression (afaik, never used) */
 		PlReadInt16( file, false, NULL ); /* unused */
 
 		PlReadFile( file, index->fileName, sizeof( char ), WAD2_NAME_LENGTH );
+		strcat( index->fileName, hint );
 	}
 
 	return package;
