@@ -8,8 +8,7 @@
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_package.h>
 
-/* id Software's Doom WAD package format
- * todo: this may possibly be moved back into core */
+/* id Software's Doom WAD package format */
 
 typedef struct WadIndex {
 	int32_t offset;
@@ -17,7 +16,7 @@ typedef struct WadIndex {
 	char name[ 8 ];
 } WadIndex;
 
-static PLPackage *Doom_WAD_ParseFile( PLFile *file ) {
+static PLPackage *ParseWADFile( PLFile *file ) {
 	char magic[ 4 ];
 	PlReadFile( file, magic, sizeof( char ), 4 );
 	if ( memcmp( magic, "IWAD", 4 ) != 0 && memcmp( magic, "PWAD", 4 ) != 0 ) {
@@ -80,13 +79,13 @@ static PLPackage *Doom_WAD_ParseFile( PLFile *file ) {
 	return package;
 }
 
-PLPackage *Doom_WAD_LoadFile( const char *path ) {
+PLPackage *PlLoadIWADPackage_( const char *path ) {
 	PLFile *file = PlOpenFile( path, false );
 	if ( file == NULL ) {
 		return NULL;
 	}
 
-	PLPackage *package = Doom_WAD_ParseFile( file );
+	PLPackage *package = ParseWADFile( file );
 
 	PlCloseFile( file );
 

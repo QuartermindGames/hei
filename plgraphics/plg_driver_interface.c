@@ -65,7 +65,6 @@ bool PlgRegisterDriver( const char *path ) {
 			PlUnloadLibrary( library );
 			return false;
 		}
-
 #if !defined( NDEBUG )
 		GfxLog( "\"%s\" :\n"
 		        " identifier = \"%s\"\n"
@@ -179,8 +178,15 @@ PLFunctionResult PlgSetDriver( const char *mode ) {
 	}
 
 	gfx_state.interface = interface;
+	if ( gfx_state.interface->Initialize == NULL ) {
+		PlReportErrorF( PL_RESULT_GRAPHICSINIT, "no initialization function bound for graphics interface \"%s\"", mode );
+		return PL_RESULT_GRAPHICSINIT;
+	}
 
-	CallGfxFunction( Initialize );
+	PLFunctionResult result;
+	if ( ( result = gfx_state.interface->Initialize() ) != PL_RESULT_SUCCESS ) {
+		return result;
+	}
 
 	GfxLog( "Mode \"%s\" initialized!\n", mode );
 

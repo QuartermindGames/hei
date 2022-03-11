@@ -552,6 +552,21 @@ int PlAddLogLevel( const char *prefix, PLColour colour, bool status ) {
 	return i;
 }
 
+/**
+ * Removes the specified log levels.
+ * Keep in mind that this will not remove any
+ * console variables generated from adding those
+ * levels.
+ */
+void PlRemoveLogLevel( int id ) {
+	LogLevel *l = GetLogLevelForId( id );
+	if ( l == NULL ) {
+		return;
+	}
+
+	PL_ZERO( l, sizeof( LogLevel ) );
+}
+
 void PlSetLogLevelStatus( int id, bool status ) {
 	LogLevel *l = GetLogLevelForId( id );
 	if ( l == NULL ) {
