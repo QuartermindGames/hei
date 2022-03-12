@@ -30,6 +30,7 @@ project( pcmd )
 add_executable( pcmd
         main.c
 
+        ../../extras/angel/angel_dat.c
         ../../extras/core/core_package_clu.c
         ../../extras/core/core_loader_hgt.c
 

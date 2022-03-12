@@ -123,6 +123,7 @@ PLPackage *Mortyr_HAL_LoadFile( const char *path );
 PLPackage *Eradicator_RID_LoadFile( const char *path );
 PLPackage *Outwars_FF_LoadFile( const char *path );
 PLPackage *Core_CLU_LoadPackage( const char *path );
+PLPackage *Angel_DAT_LoadPackage( const char *path );
 
 PLImage *Core_HGT_ParseImage( PLFile *file );
 
@@ -147,6 +148,7 @@ int main( int argc, char **argv ) {
 	PlRegisterPackageLoader( "rim", Eradicator_RID_LoadFile );
 	PlRegisterPackageLoader( "ff", Outwars_FF_LoadFile );
 	PlRegisterPackageLoader( "clu", Core_CLU_LoadPackage );
+	PlRegisterPackageLoader( "dat", Angel_DAT_LoadPackage );
 
 	PlRegisterImageLoader( "hgt", Core_HGT_ParseImage );
 
