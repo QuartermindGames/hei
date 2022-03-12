@@ -157,7 +157,7 @@ IMPLEMENT_COMMAND( pkgext, "Extract the contents of a package." ) {
 		FILE *fout = fopen( outPath, "wb" );
 		if ( fout == NULL ) {
 			PrintWarning( "Failed to write file to destination, \"%s\"!\n", outPath );
-			break;
+			continue;
 		}
 		fwrite( PlGetFileData( file ), sizeof( uint8_t ), PlGetFileSize( file ), fout );
 		fclose( fout );
