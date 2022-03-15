@@ -35,7 +35,7 @@ add_executable( pcmd
 
         ../../extras/core/core_package_clu.c
         ../../extras/core/core_loader_hgt.c
-
+        ../../extras/aitd/aitd_pak.c
         ../../extras/eradicator_rid.c
         ../../extras/ftactics_pak.c
         #../../extras/galleon_pkg.c
