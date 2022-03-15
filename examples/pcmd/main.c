@@ -126,6 +126,7 @@ PLPackage *Core_CLU_LoadPackage( const char *path );
 PLPackage *Angel_DAT_LoadPackage( const char *path );
 
 PLImage *Core_HGT_ParseImage( PLFile *file );
+PLImage *Angel_TEX_ParseImage( PLFile *file );
 
 #define MAX_COMMAND_LENGTH 256
 static char cmdLine[ MAX_COMMAND_LENGTH ];
@@ -151,6 +152,7 @@ int main( int argc, char **argv ) {
 	PlRegisterPackageLoader( "dat", Angel_DAT_LoadPackage );
 
 	PlRegisterImageLoader( "hgt", Core_HGT_ParseImage );
+	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
 
 	PlRegisterPlugins( "./" );
 
