@@ -195,15 +195,16 @@ void PlgDestroyMesh( PLGMesh *mesh ) {
 void PlgClearMesh( PLGMesh *mesh ) {
 	PlgClearMeshVertices( mesh );
 	PlgClearMeshTriangles( mesh );
-	mesh->isDirty = true;
 }
 
 void PlgClearMeshVertices( PLGMesh *mesh ) {
 	mesh->num_verts = 0;
+	mesh->isDirty = true;
 }
 
 void PlgClearMeshTriangles( PLGMesh *mesh ) {
 	mesh->num_triangles = mesh->num_indices = 0;
+	mesh->isDirty = true;
 }
 
 void PlgScaleMesh( PLGMesh *mesh, PLVector3 scale ) {
