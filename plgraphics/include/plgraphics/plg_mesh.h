@@ -127,7 +127,7 @@ PLCollisionAABB PlgGenerateAabbFromMesh( const PLGMesh *mesh, bool absolute );
 PL_EXTERN void PlgGenerateMeshNormals( PLGMesh *mesh, bool perFace );
 PL_EXTERN void PlgGenerateMeshTangentBasis( PLGMesh *mesh );
 
-PL_EXTERN void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles );
+PL_EXTERN void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices );
 PL_EXTERN void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertices, PLVector2 textureOffset, PLVector2 textureScale );
 PL_EXTERN void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, unsigned int *indices, unsigned int numTriangles, bool perFace );
 
