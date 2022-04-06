@@ -1115,6 +1115,11 @@ PLFile *PlOpenLocalFile( const char *path, bool cache ) {
  * @return Returns handle to the file instance.
  */
 PLFile *PlOpenFile( const char *path, bool cache ) {
+	const char *p = PlGetPathForAlias( path );
+	if ( p != NULL ) {
+		path = p;
+	}
+
 	PLFileSystemMount *mount = PlGetMountLocationForPath_( path );
 	if ( mount != NULL && mount->type == PL_FS_MOUNT_PACKAGE ) {
 		return PlLoadPackageFile( mount->pkg, path );
@@ -1421,4 +1426,64 @@ const void *PlCacheFile( PLFile *file ) {
 	file->pos = file->data + p;
 
 	return file->pos;
+}
+
+/****************************************
+ * File Aliases
+ * This system allows you to register an alias that can be caught to load a
+ * different file in it's place. Useful when dealing with older titles that
+ * didn't utilise full paths and just single file names instead (i.e. mapping
+ * between a WAD and local file).
+ ****************************************/
+
+#define MAX_ALIASES 4096
+
+typedef struct FileAlias {
+	PLPath alias;
+	PLPath target;
+	uint32_t hash;
+} FileAlias;
+static FileAlias fileAliases[ MAX_ALIASES ];
+static unsigned int numFileAliases = 0;
+
+void PlClearFileAliases( void ) {
+	numFileAliases = 0;
+}
+
+/**
+ * Adds a new alias to the list.
+ */
+void PlAddFileAlias( const char *alias, const char *target ) {
+	if ( numFileAliases >= MAX_ALIASES ) {
+		PlReportBasicError( PL_RESULT_MEMORY_EOA );
+		return;
+	}
+
+	const char *p = PlGetPathForAlias( alias );
+	if ( p != NULL ) {
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "duplicate alias" );
+		return;
+	}
+
+	snprintf( fileAliases[ numFileAliases ].alias, sizeof( PLPath ), "%s", alias );
+	fileAliases[ numFileAliases ].hash = pl_strhash_sdbm( fileAliases[ numFileAliases ].alias );
+	snprintf( fileAliases[ numFileAliases ].target, sizeof( PLPath ), "%s", target );
+	numFileAliases++;
+}
+
+const char *PlGetPathForAlias( const char *alias ) {
+	if ( numFileAliases == 0 ) {
+		return NULL;
+	}
+
+	uint32_t hash = pl_strhash_sdbm( alias );
+	for ( unsigned int i = 0; i < numFileAliases; ++i ) {
+		if ( hash != fileAliases[ i ].hash ) {
+			continue;
+		}
+
+		return fileAliases[ i ].target;
+	}
+
+	return NULL;
 }
