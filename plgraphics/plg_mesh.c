@@ -172,6 +172,20 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 	return mesh;
 }
 
+PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, PLColour colour ) {
+	PLGMesh *mesh = PlgCreateMesh( PLG_MESH_TRIANGLE_STRIP, PLG_DRAW_DYNAMIC, 0, 4 );
+	if ( mesh == NULL ) {
+		return NULL;
+	}
+
+	PlgAddMeshVertex( mesh, PLVector3( x, y, 0.0f ), pl_vecOrigin3, colour, PLVector2( 0.0f, 0.0f ) );
+	PlgAddMeshVertex( mesh, PLVector3( x, y + h, 0.0f ), pl_vecOrigin3, colour, PLVector2( 0.0f, 1.0f ) );
+	PlgAddMeshVertex( mesh, PLVector3( x + w, y, 0.0f ), pl_vecOrigin3, colour, PLVector2( 1.0f, 0.0f ) );
+	PlgAddMeshVertex( mesh, PLVector3( x + w, y + h, 0.0f ), pl_vecOrigin3, colour, PLVector2( 1.0f, 1.0f ) );
+
+	return mesh;
+}
+
 void PlgDestroyMesh( PLGMesh *mesh ) {
 	if ( mesh == NULL ) {
 		return;
