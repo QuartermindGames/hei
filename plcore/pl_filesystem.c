@@ -434,7 +434,7 @@ bool PlIsFileModified( time_t oldtime, const char *path ) {
 }
 
 bool PlIsEndOfFile( const PLFile *ptr ) {
-	return ( PlGetFileOffset( ptr ) == PlGetFileSize( ptr ) );
+	return ( ( size_t ) PlGetFileOffset( ptr ) == PlGetFileSize( ptr ) );
 }
 
 /**
@@ -1204,7 +1204,7 @@ size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count ) {
 }
 
 char PlReadInt8( PLFile *ptr, bool *status ) {
-	if ( PlGetFileOffset( ptr ) >= ptr->size ) {
+	if ( ( size_t ) PlGetFileOffset( ptr ) >= ptr->size ) {
 		if ( status != NULL ) {
 			*status = false;
 		}
@@ -1345,7 +1345,7 @@ bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 	PLFileOffset posn = PlGetFileOffset( ptr );
 	switch ( seek ) {
 		case PL_SEEK_CUR:
-			if ( posn + pos > ptr->size || pos < -( ( signed long ) posn ) ) {
+			if ( ( size_t ) ( posn + pos ) > ptr->size || pos < -( ( signed long ) posn ) ) {
 				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}

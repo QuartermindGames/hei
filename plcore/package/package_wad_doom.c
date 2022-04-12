@@ -45,7 +45,7 @@ static PLPackage *ParseWADFile( PLFile *file ) {
 	PlFileSeek( file, tableOffset, PL_SEEK_SET );
 
 	WadIndex *indices = PlMAllocA( tableSize );
-	for ( unsigned int i = 0; i < numLumps; ++i ) {
+	for ( int i = 0; i < numLumps; ++i ) {
 		indices[ i ].offset = PlReadInt32( file, false, NULL );
 		if ( indices[ i ].offset == 0 || indices[ i ].offset >= tableOffset ) {
 			PlFree( indices );
@@ -54,7 +54,7 @@ static PLPackage *ParseWADFile( PLFile *file ) {
 		}
 
 		indices[ i ].size = PlReadInt32( file, false, NULL );
-		if ( indices[ i ].size >= PlGetFileSize( file ) ) {
+		if ( indices[ i ].size >= ( int ) PlGetFileSize( file ) ) {
 			PlFree( indices );
 			PlReportErrorF( PL_RESULT_FILEREAD, "invalid file size for index %d", i );
 			return NULL;
