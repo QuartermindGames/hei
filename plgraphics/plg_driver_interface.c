@@ -60,26 +60,27 @@ bool PlgRegisterDriver( const char *path ) {
 	if ( RegisterDriver != NULL ) {
 		/* now fetch the driver description */
 		description = RegisterDriver();
-		if ( description != NULL ) {
+		if ( description == NULL ) {
+			GfxLog( "Failed to fetch description from library: \"%s\"!\n", path );
+			PlUnloadLibrary( library );
+			return false;
+		}
 #if !defined( NDEBUG )
-			GfxLog( "\"%s\" :\n"
-			        " identifier = \"%s\"\n"
-			        " description = \"%s\"\n"
-			        " driver version = %d.%d.%d\n",
-			        path,
-			        description->identifier,
-			        description->description,
-			        description->driverVersion[ 0 ],
-			        description->driverVersion[ 1 ],
-			        description->driverVersion[ 2 ] );
+		GfxLog( "\"%s\" :\n"
+		        " identifier = \"%s\"\n"
+		        " description = \"%s\"\n"
+		        " driver version = %d.%d.%d\n",
+		        path,
+		        description->identifier,
+		        description->description,
+		        description->driverVersion[ 0 ],
+		        description->driverVersion[ 1 ],
+		        description->driverVersion[ 2 ] );
 #endif
-			if ( description->coreInterfaceVersion[ 0 ] != PL_PLUGIN_INTERFACE_VERSION_MAJOR ) {
-				PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported core interface version" );
-			} else if ( description->graphicsInterfaceVersion[ 0 ] != PLG_INTERFACE_VERSION_MAJOR ) {
-				PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported graphics interface version" );
-			}
-		} else {
-			PlReportErrorF( PL_RESULT_FAIL, "failed to fetch driver description" );
+		if ( description->coreInterfaceVersion[ 0 ] != PL_PLUGIN_INTERFACE_VERSION_MAJOR ) {
+			PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported core interface version" );
+		} else if ( description->graphicsInterfaceVersion[ 0 ] != PLG_INTERFACE_VERSION_MAJOR ) {
+			PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported graphics interface version" );
 		}
 
 		InitializeDriver = ( PLGDriverInitializationFunction ) PlGetLibraryProcedure( library, PLG_DRIVER_INIT_FUNCTION );

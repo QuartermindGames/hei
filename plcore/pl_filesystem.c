@@ -157,7 +157,7 @@ IMPLEMENT_COMMAND( pkgext, "Extract the contents of a package." ) {
 		FILE *fout = fopen( outPath, "wb" );
 		if ( fout == NULL ) {
 			PrintWarning( "Failed to write file to destination, \"%s\"!\n", outPath );
-			break;
+			continue;
 		}
 		fwrite( PlGetFileData( file ), sizeof( uint8_t ), PlGetFileSize( file ), fout );
 		fclose( fout );
@@ -434,7 +434,7 @@ bool PlIsFileModified( time_t oldtime, const char *path ) {
 }
 
 bool PlIsEndOfFile( const PLFile *ptr ) {
-	return ( PlGetFileOffset( ptr ) == PlGetFileSize( ptr ) );
+	return ( ( size_t ) PlGetFileOffset( ptr ) == PlGetFileSize( ptr ) );
 }
 
 /**
@@ -687,6 +687,10 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 		return;
 	}
 
+	size_t ml;
+	if ( mount != NULL )
+		ml = strlen( mount->path );
+
 	do {
 		snprintf( selectorPath, sizeof( selectorPath ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, ffd.cFileName );
 
@@ -699,12 +703,7 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 
 		const char *rp = selectorPath;
 		if ( mount != NULL ) {
-			size_t pos = strlen( mount->path );
-			if ( pos >= sizeof( selectorPath ) ) {
-				PrintWarning( "pos >= %d!\n", pos );
-				continue;
-			}
-			rp = &selectorPath[ pos ];
+			rp = &selectorPath[ ml ];
 		}
 
 		Function( rp, userData );
@@ -1210,7 +1209,7 @@ size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count ) {
 }
 
 char PlReadInt8( PLFile *ptr, bool *status ) {
-	if ( PlGetFileOffset( ptr ) >= ptr->size ) {
+	if ( ( size_t ) PlGetFileOffset( ptr ) >= ptr->size ) {
 		if ( status != NULL ) {
 			*status = false;
 		}
@@ -1351,7 +1350,7 @@ bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 	PLFileOffset posn = PlGetFileOffset( ptr );
 	switch ( seek ) {
 		case PL_SEEK_CUR:
-			if ( posn + pos > ptr->size || pos < -( ( signed long ) posn ) ) {
+			if ( ( size_t ) ( posn + pos ) > ptr->size || pos < -( ( signed long ) posn ) ) {
 				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}

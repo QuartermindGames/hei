@@ -118,14 +118,16 @@ static void Cmd_Exit( unsigned int argc, char **argv ) {
 PLPackage *IStorm_LST_LoadFile( const char *path );
 PLPackage *Outcast_OPK_LoadFile( const char *path );
 PLPackage *FTactics_PAK_LoadFile( const char *path );
-PLPackage *Doom_WAD_LoadFile( const char *path );
 PLPackage *Sentient_VSR_LoadFile( const char *path );
 PLPackage *Mortyr_HAL_LoadFile( const char *path );
 PLPackage *Eradicator_RID_LoadFile( const char *path );
 PLPackage *Outwars_FF_LoadFile( const char *path );
 PLPackage *Core_CLU_LoadPackage( const char *path );
+PLPackage *Angel_DAT_LoadPackage( const char *path );
+PLPackage *AITD_PAK_LoadPackage( const char *path );
 
 PLImage *Core_HGT_ParseImage( PLFile *file );
+PLImage *Angel_TEX_ParseImage( PLFile *file );
 
 #define MAX_COMMAND_LENGTH 256
 static char cmdLine[ MAX_COMMAND_LENGTH ];
@@ -141,16 +143,18 @@ int main( int argc, char **argv ) {
 
 	PlRegisterPackageLoader( "lst", IStorm_LST_LoadFile );
 	PlRegisterPackageLoader( "opk", Outcast_OPK_LoadFile );
+	PlRegisterPackageLoader( "pak", AITD_PAK_LoadPackage );
 	PlRegisterPackageLoader( "pak", FTactics_PAK_LoadFile );
-	PlRegisterPackageLoader( "wad", Doom_WAD_LoadFile );
 	PlRegisterPackageLoader( "vsr", Sentient_VSR_LoadFile );
 	PlRegisterPackageLoader( "hal", Mortyr_HAL_LoadFile );
 	PlRegisterPackageLoader( "rid", Eradicator_RID_LoadFile );
 	PlRegisterPackageLoader( "rim", Eradicator_RID_LoadFile );
 	PlRegisterPackageLoader( "ff", Outwars_FF_LoadFile );
 	PlRegisterPackageLoader( "clu", Core_CLU_LoadPackage );
+	PlRegisterPackageLoader( "dat", Angel_DAT_LoadPackage );
 
 	PlRegisterImageLoader( "hgt", Core_HGT_ParseImage );
+	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
 
 	PlRegisterPlugins( "./" );
 

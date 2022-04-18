@@ -160,7 +160,9 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 
 	mesh->maxVertices = numVerts;
 	mesh->vertices = ( PLGVertex * ) PlCAllocA( mesh->maxVertices, sizeof( PLGVertex ) );
-	if ( vertices != NULL ) {
+
+	// If the vertices passed in aren't null, copy them into our vertex list
+	if ( vertices != NULL ) { //-V1051
 		memcpy( mesh->vertices, vertices, sizeof( PLGVertex ) * numVerts );
 		mesh->num_verts = numVerts;
 	}
