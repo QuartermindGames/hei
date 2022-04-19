@@ -88,8 +88,8 @@ PL_EXTERN PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, P
 PL_EXTERN void PlgDestroyMesh( PLGMesh *mesh );
 
 PL_EXTERN void PlgDrawEllipse( unsigned int segments, PLVector2 position, float w, float h, PLColour colour );
-PL_EXTERN void PlgDrawRectangle( const PLMatrix4 *transform, float x, float y, float w, float h, PLColour colour );
-PL_EXTERN void PlgDrawTexturedRectangle( const PLMatrix4 *transform, float x, float y, float w, float h, PLGTexture *texture );
+PL_EXTERN void PlgDrawRectangle( float x, float y, float w, float h, PLColour colour );
+PL_EXTERN void PlgDrawTexturedRectangle( float x, float y, float w, float h, PLGTexture *texture );
 PL_EXTERN void PlgDrawFilledRectangle( const PLRectangle2D *rectangle );
 PL_EXTERN void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
                                     float hScale, float vScale, PLGTexture *texture );
@@ -127,11 +127,21 @@ PLCollisionAABB PlgGenerateAabbFromMesh( const PLGMesh *mesh, bool absolute );
 PL_EXTERN void PlgGenerateMeshNormals( PLGMesh *mesh, bool perFace );
 PL_EXTERN void PlgGenerateMeshTangentBasis( PLGMesh *mesh );
 
+PL_EXTERN void PlgGenerateVertexTangentBasis( PLGVertex *vertices, unsigned int numVertices );
 PL_EXTERN void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles );
 PL_EXTERN void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertices, PLVector2 textureOffset, PLVector2 textureScale );
 PL_EXTERN void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, unsigned int *indices, unsigned int numTriangles, bool perFace );
 
 PL_EXTERN PLVector3 PlgGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3 c );
+
+/* immediate mode style api */
+void PlgImmBegin( PLGMeshPrimitive primitive );
+unsigned int PlgImmPushVertex( float x, float y, float z );
+void PlgImmNormal( float x, float y, float z );
+void PlgImmColour( uint8_t r, uint8_t g, uint8_t b, uint8_t a );
+void PlgImmTextureCoord( float s, float t );
+unsigned int PlgImmPushTriangle( unsigned int x, unsigned int y, unsigned int z );
+void PlgImmDraw( void );
 
 #endif
 

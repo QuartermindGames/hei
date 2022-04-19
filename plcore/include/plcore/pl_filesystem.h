@@ -133,6 +133,10 @@ PL_EXTERN const char *PlGetMountLocationPath( const PLFileSystemMount *fileSyste
 
 /****/
 
+void PlClearFileAliases( void );
+void PlAddFileAlias( const char *alias, const char *target );
+const char *PlGetPathForAlias( const char *alias );
+
 #endif
 
 PL_EXTERN_C_END
