@@ -73,10 +73,10 @@ void PlgGenerateMeshNormals( PLGMesh *mesh, bool perFace ) {
 }
 
 void PlgGenerateMeshTangentBasis( PLGMesh *mesh ) {
-	PlgGenerateTangentBasis( mesh->vertices, mesh->num_verts );
+	PlgGenerateTangentBasis( mesh->vertices, mesh->num_verts, mesh->indices, mesh->num_triangles );
 }
 
-void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices ) {
+void PlgGenerateVertexTangentBasis( PLGVertex *vertices, unsigned int numVertices ) {
 	for ( unsigned int i = 0; i < numVertices; ++i ) {
 		PLGVertex *v = &vertices[ i ];
 
@@ -90,6 +90,32 @@ void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices ) {
 
 		v->tangent = PlNormalizeVector3( v->tangent );
 		v->bitangent = PlNormalizeVector3( PlVector3CrossProduct( v->normal, v->tangent ) );
+	}
+}
+
+/* based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#computing-the-tangents-and-bitangents */
+void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles ) {
+	for ( unsigned int i = 0; i < numTriangles; i++, indices += 3 ) {
+		PLGVertex *a = &vertices[ indices[ 0 ] ];
+		PLGVertex *b = &vertices[ indices[ 1 ] ];
+		PLGVertex *c = &vertices[ indices[ 2 ] ];
+
+		/* edges of the triangle, aka, position delta */
+		PLVector3 deltaPos1 = PlSubtractVector3( b->position, a->position );
+		PLVector3 deltaPos2 = PlSubtractVector3( c->position, a->position );
+
+		/* uv delta */
+		PLVector2 deltaUV1 = PlSubtractVector2( &b->st[ 0 ], &a->st[ 0 ] );
+		PLVector2 deltaUV2 = PlSubtractVector2( &c->st[ 0 ], &a->st[ 0 ] );
+
+		/* now actually compute the tangent and bitangent */
+		float r = 1.0f / ( deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x );
+
+		PLVector3 tangent = PlScaleVector3F( PlSubtractVector3( PlScaleVector3F( deltaPos1, deltaUV2.y ), PlScaleVector3F( deltaPos2, deltaUV1.y ) ), r );
+		PLVector3 bitangent = PlScaleVector3F( PlAddVector3( PlScaleVector3F( deltaPos1, -deltaUV2.x ), PlScaleVector3F( deltaPos2, deltaUV1.x ) ), r );
+
+		a->tangent = b->tangent = c->tangent = tangent;
+		a->bitangent = b->bitangent = c->bitangent = bitangent;
 	}
 }
 

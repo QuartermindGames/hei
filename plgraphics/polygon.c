@@ -43,7 +43,7 @@ void PlgGeneratePolygonNormals( PLGPolygon *polygon ) {
 	unsigned int *indices = PlgConvertPolygonToTriangles( polygon, &numTriangles );
 
 	PlgGenerateVertexNormals( polygon->vertices, polygon->numVertices, indices, numTriangles, true );
-	PlgGenerateTangentBasis( polygon->vertices, polygon->numVertices );
+	PlgGenerateTangentBasis( polygon->vertices, polygon->numVertices, indices, numTriangles );
 
 	PlFree( indices );
 }

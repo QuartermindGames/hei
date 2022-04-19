@@ -51,6 +51,8 @@ inline static PLMatrix4 PlInverseMatrix4( PLMatrix4 m );
 PLVector3 PlGetMatrix4Translation( const PLMatrix4 *m );
 PLVector3 PlGetMatrix4Angle( const PLMatrix4 *m );
 
+PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix );
+
 #ifdef __cplusplus
 namespace hei {
 	struct Matrix4 : PLMatrix4 {
@@ -137,7 +139,7 @@ namespace hei {
 			return *this = *this * v;
 		}
 	};
-}
+}// namespace hei
 #endif
 
 /* ClearMatrix */

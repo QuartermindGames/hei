@@ -8,6 +8,12 @@
 
 #include <plcore/pl_math.h>
 
+PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix ) {
+	PLVector4 posw = PlVector4( position->x, position->y, position->z, 1.0f );
+	PLVector4 ppos = PlTransformVector4( &posw, viewProjMatrix );
+	return PlVector2( ppos.x / ppos.w, ppos.y / ppos.w );
+}
+
 /****************************************
  ****************************************/
  

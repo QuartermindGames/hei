@@ -280,13 +280,23 @@ void PlgDrawMeshNormals( const PLGMesh *mesh ) {
 	PlgImmBegin( PLG_MESH_LINES );
 
 	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
-		PLVector3 linePos = mesh->vertices[ i ].position;
+		PLVector3 linePos, lineEndPos;
+
+		linePos = mesh->vertices[ i ].position;
 		PlgImmPushVertex( linePos.x, linePos.y, linePos.z );
 		PlgImmColour( 255, 0, 0, 255 );
 
-		PLVector3 lineEndPos = PlAddVector3( linePos, PlScaleVector3F( mesh->vertices[ i ].normal, 64.0f ) );
+		lineEndPos = PlAddVector3( linePos, PlScaleVector3F( mesh->vertices[ i ].normal, 4.0f ) );
 		PlgImmPushVertex( lineEndPos.x, lineEndPos.y, lineEndPos.z );
 		PlgImmColour( 0, 255, 0, 255 );
+
+		linePos = mesh->vertices[ i ].position;
+		PlgImmPushVertex( linePos.x, linePos.y, linePos.z );
+		PlgImmColour( 255, 0, 255, 255 );
+
+		lineEndPos = PlAddVector3( linePos, PlScaleVector3F( mesh->vertices[ i ].tangent, 4.0f ) );
+		PlgImmPushVertex( lineEndPos.x, lineEndPos.y, lineEndPos.z );
+		PlgImmColour( 0, 255, 255, 255 );
 	}
 
 	PlgImmDraw();
