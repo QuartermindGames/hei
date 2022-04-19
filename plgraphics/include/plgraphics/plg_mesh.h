@@ -7,6 +7,7 @@
 #pragma once
 
 #include <plcore/pl_math.h>
+#include <plcore/pl_physics.h>
 
 PL_EXTERN_C
 
