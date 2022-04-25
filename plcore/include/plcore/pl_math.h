@@ -500,11 +500,7 @@ inline static float PlGenerateRandomFloat( float max ) {
 	return ( float ) ( rand() ) / ( RAND_MAX / max );
 }
 
-inline static int *PlSeedRandom( int seed ) {
-	int *s = ( int * ) PlMAllocA( sizeof( int ) );
-	*s = seed;
-	return s;
-}
+int *PlSeedRandom( int seed );
 
 // Linear congruential generator
 
