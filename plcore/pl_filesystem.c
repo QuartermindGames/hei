@@ -114,7 +114,7 @@ static PLFileSystemMount *fs_mount_ceiling = NULL;
 #define VFS_MAX_HINT   16
 #define VFS_MAX_PATH   ( ( PL_SYSTEM_MAX_PATH + VFS_MAX_HINT ) + 1 )
 
-static_assert( sizeof( VFS_LOCAL_HINT ) < VFS_MAX_HINT, "Local hint is larger than maximum hint length, please adjust limit!" );
+PL_STATIC_ASSERT( sizeof( VFS_LOCAL_HINT ) < VFS_MAX_HINT, "Local hint is larger than maximum hint length, please adjust limit!" );
 
 IMPLEMENT_COMMAND( pkgext, "Extract the contents of a package." ) {
 	if ( argc == 1 ) {
