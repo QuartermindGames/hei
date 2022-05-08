@@ -273,33 +273,38 @@ void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize ) {
 	PlgImmDraw();
 }
 
-/**
- * Draw lines at each vertex point representing the direction of the normal.
- */
-void PlgDrawMeshNormals( const PLGMesh *mesh ) {
+void PlgDrawVertexNormals( const PLGVertex *vertices, unsigned int numVertices )
+{
 	PlgImmBegin( PLG_MESH_LINES );
 
-	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
+	for ( unsigned int i = 0; i < numVertices; ++i ) {
 		PLVector3 linePos, lineEndPos;
 
-		linePos = mesh->vertices[ i ].position;
-		PlgImmPushVertex( linePos.x, linePos.y, linePos.z );
-		PlgImmColour( 255, 0, 0, 255 );
-
-		lineEndPos = PlAddVector3( linePos, PlScaleVector3F( mesh->vertices[ i ].normal, 4.0f ) );
-		PlgImmPushVertex( lineEndPos.x, lineEndPos.y, lineEndPos.z );
-		PlgImmColour( 0, 255, 0, 255 );
-
-		linePos = mesh->vertices[ i ].position;
+		linePos = vertices[ i ].position;
 		PlgImmPushVertex( linePos.x, linePos.y, linePos.z );
 		PlgImmColour( 255, 0, 255, 255 );
 
-		lineEndPos = PlAddVector3( linePos, PlScaleVector3F( mesh->vertices[ i ].tangent, 4.0f ) );
+		lineEndPos = PlAddVector3( linePos, PlScaleVector3F( vertices[ i ].normal, 4.0f ) );
+		PlgImmPushVertex( lineEndPos.x, lineEndPos.y, lineEndPos.z );
+		PlgImmColour( 255, 0, 255, 255 );
+
+		linePos = vertices[ i ].position;
+		PlgImmPushVertex( linePos.x, linePos.y, linePos.z );
+		PlgImmColour( 0, 255, 255, 255 );
+
+		lineEndPos = PlAddVector3( linePos, PlScaleVector3F( vertices[ i ].tangent, 4.0f ) );
 		PlgImmPushVertex( lineEndPos.x, lineEndPos.y, lineEndPos.z );
 		PlgImmColour( 0, 255, 255, 255 );
 	}
 
 	PlgImmDraw();
+}
+
+/**
+ * Draw lines at each vertex point representing the direction of the normal.
+ */
+void PlgDrawMeshNormals( const PLGMesh *mesh ) {
+	PlgDrawVertexNormals( mesh->vertices, mesh->num_verts );
 }
 
 void PlgDrawPixel( int x, int y, PLColour colour ) {
