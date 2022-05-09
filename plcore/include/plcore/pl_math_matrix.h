@@ -535,7 +535,7 @@ inline static PLMatrix4 PlOrtho( float left, float right, float bottom, float to
 }
 
 inline static PLMatrix4 PlPerspective( float fov, float aspect, float nearf, float farf ) {
-	float y_max = nearf * tanf( fov * PL_PI / 360 );
+	float y_max = nearf * tanf( fov * PL_PI / 360.0f );
 	float x_max = y_max * aspect;
 	return PlFrustum( -x_max, x_max, -y_max, y_max, nearf, farf );
 }
@@ -544,6 +544,7 @@ inline static PLMatrix4 PlPerspective( float fov, float aspect, float nearf, flo
 
 typedef enum PLMatrixMode {
 	PL_MODELVIEW_MATRIX,
+	PL_VIEW_MATRIX,
 	PL_PROJECTION_MATRIX,
 	PL_TEXTURE_MATRIX,
 
