@@ -630,7 +630,7 @@ enum {
 
 	MAX_GPU_MESH_BUFFERS
 };
-static_assert( MAX_GPU_MESH_BUFFERS < PLG_MAX_MESH_BUFFERS, "Invalid MAX_GL_BUFFERS size!" );
+PL_STATIC_ASSERT( MAX_GPU_MESH_BUFFERS < PLG_MAX_MESH_BUFFERS, "Invalid MAX_GL_BUFFERS size!" );
 
 static void GLCreateMesh( PLGMesh *mesh ) {
 	if ( !GLVersion( 2, 0 ) ) {

@@ -114,7 +114,7 @@ static PLFileSystemMount *fs_mount_ceiling = NULL;
 #define VFS_MAX_HINT   16
 #define VFS_MAX_PATH   ( ( PL_SYSTEM_MAX_PATH + VFS_MAX_HINT ) + 1 )
 
-static_assert( sizeof( VFS_LOCAL_HINT ) < VFS_MAX_HINT, "Local hint is larger than maximum hint length, please adjust limit!" );
+PL_STATIC_ASSERT( sizeof( VFS_LOCAL_HINT ) < VFS_MAX_HINT, "Local hint is larger than maximum hint length, please adjust limit!" );
 
 IMPLEMENT_COMMAND( pkgext, "Extract the contents of a package." ) {
 	if ( argc == 1 ) {
@@ -434,7 +434,7 @@ bool PlIsFileModified( time_t oldtime, const char *path ) {
 }
 
 bool PlIsEndOfFile( const PLFile *ptr ) {
-	return ( PlGetFileOffset( ptr ) == PlGetFileSize( ptr ) );
+	return ( ( size_t ) PlGetFileOffset( ptr ) == PlGetFileSize( ptr ) );
 }
 
 /**
@@ -587,11 +587,11 @@ char *PlGetApplicationDataDirectory( const char *app_name, char *out, size_t n )
 		struct passwd *pw = getpwuid( getuid() );
 		home = pw->pw_dir;
 	}
-	snprintf( out, n, "%s/.%s/", home, app_name );
+	snprintf( out, n, "%s/.config/%s/", home, app_name );
 #else
 	char home[ MAX_PATH ];
 	if ( SUCCEEDED( SHGetFolderPath( NULL, CSIDL_APPDATA, NULL, 0, home ) ) ) {
-		snprintf( out, n, "%s/.%s", home, app_name );
+		snprintf( out, n, "%s/%s", home, app_name );
 		return out;
 	}
 	snprintf( home, sizeof( home ), "." );
@@ -1114,6 +1114,11 @@ PLFile *PlOpenLocalFile( const char *path, bool cache ) {
  * @return Returns handle to the file instance.
  */
 PLFile *PlOpenFile( const char *path, bool cache ) {
+	const char *p = PlGetPathForAlias( path );
+	if ( p != NULL ) {
+		path = p;
+	}
+
 	PLFileSystemMount *mount = PlGetMountLocationForPath_( path );
 	if ( mount != NULL && mount->type == PL_FS_MOUNT_PACKAGE ) {
 		return PlLoadPackageFile( mount->pkg, path );
@@ -1204,7 +1209,7 @@ size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count ) {
 }
 
 char PlReadInt8( PLFile *ptr, bool *status ) {
-	if ( PlGetFileOffset( ptr ) >= ptr->size ) {
+	if ( ( size_t ) PlGetFileOffset( ptr ) >= ptr->size ) {
 		if ( status != NULL ) {
 			*status = false;
 		}
@@ -1345,7 +1350,7 @@ bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 	PLFileOffset posn = PlGetFileOffset( ptr );
 	switch ( seek ) {
 		case PL_SEEK_CUR:
-			if ( posn + pos > ptr->size || pos < -( ( signed long ) posn ) ) {
+			if ( ( size_t ) ( posn + pos ) > ptr->size || pos < -( ( signed long ) posn ) ) {
 				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
@@ -1420,4 +1425,64 @@ const void *PlCacheFile( PLFile *file ) {
 	file->pos = file->data + p;
 
 	return file->pos;
+}
+
+/****************************************
+ * File Aliases
+ * This system allows you to register an alias that can be caught to load a
+ * different file in it's place. Useful when dealing with older titles that
+ * didn't utilise full paths and just single file names instead (i.e. mapping
+ * between a WAD and local file).
+ ****************************************/
+
+#define MAX_ALIASES 4096
+
+typedef struct FileAlias {
+	PLPath alias;
+	PLPath target;
+	uint32_t hash;
+} FileAlias;
+static FileAlias fileAliases[ MAX_ALIASES ];
+static unsigned int numFileAliases = 0;
+
+void PlClearFileAliases( void ) {
+	numFileAliases = 0;
+}
+
+/**
+ * Adds a new alias to the list.
+ */
+void PlAddFileAlias( const char *alias, const char *target ) {
+	if ( numFileAliases >= MAX_ALIASES ) {
+		PlReportBasicError( PL_RESULT_MEMORY_EOA );
+		return;
+	}
+
+	const char *p = PlGetPathForAlias( alias );
+	if ( p != NULL ) {
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "duplicate alias" );
+		return;
+	}
+
+	snprintf( fileAliases[ numFileAliases ].alias, sizeof( PLPath ), "%s", alias );
+	fileAliases[ numFileAliases ].hash = pl_strhash_sdbm( fileAliases[ numFileAliases ].alias );
+	snprintf( fileAliases[ numFileAliases ].target, sizeof( PLPath ), "%s", target );
+	numFileAliases++;
+}
+
+const char *PlGetPathForAlias( const char *alias ) {
+	if ( numFileAliases == 0 ) {
+		return NULL;
+	}
+
+	uint32_t hash = pl_strhash_sdbm( alias );
+	for ( unsigned int i = 0; i < numFileAliases; ++i ) {
+		if ( hash != fileAliases[ i ].hash ) {
+			continue;
+		}
+
+		return fileAliases[ i ].target;
+	}
+
+	return NULL;
 }
