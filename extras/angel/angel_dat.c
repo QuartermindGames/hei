@@ -5,7 +5,7 @@
 #include <plcore/pl_package.h>
 
 #define ANGEL_DAT_MAGIC  PL_MAGIC_TO_NUM( 'D', 'A', 'V', 'E' ) /* oni2 */
-#define ANGEL_DAT_MAGIC2 PL_MAGIC_TO_NUM( 'D', 'a', 'v', 'e' ) /* rdr, sh2 */
+#define ANGEL_DAT_MAGIC2 PL_MAGIC_TO_NUM( 'D', 'a', 'v', 'e' ) /* tsnw, rdr, sh2 */
 
 typedef struct AngelDATHeader {
 	uint32_t magic;// 'DAVE'/'Dave'
