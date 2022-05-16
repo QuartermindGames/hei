@@ -48,6 +48,7 @@ add_subdirectory(plmodel)
 add_subdirectory(tests)
 
 add_subdirectory(examples/pcmd)
+add_subdirectory(examples/cpj_dumper)
 
 if (PL_BUILD_PLUGINS)
     add_subdirectory(plugins/driver_opengl/)

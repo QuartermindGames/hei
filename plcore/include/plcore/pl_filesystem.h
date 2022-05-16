@@ -20,8 +20,8 @@ typedef struct PLFile PLFile;
 
 typedef enum PLFileSeek {
 #if defined( SEEK_SET ) && defined( SEEK_CUR ) && defined( SEEK_END )
-	PL_SEEK_SET = SEEK_SET,
-	PL_SEEK_CUR = SEEK_CUR,
+	PL_SEEK_SET = SEEK_SET, /* set the explicit location */
+	PL_SEEK_CUR = SEEK_CUR, /* seek from the current location */
 	PL_SEEK_END = SEEK_END
 #else
 	PL_SEEK_SET,
