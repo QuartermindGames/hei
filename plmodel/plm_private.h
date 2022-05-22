@@ -34,10 +34,6 @@ extern int LOG_LEVEL_MODEL;
 
 PL_EXTERN_C
 
-PLMModel *PlmLoadU3DModel( const char *path );
-PLMModel *PlmLoadHdvModel( const char *path );
-PLMModel *PlmLoadRequiemModel( const char *path );
-PLMModel *PlmLoadObjModel( const char *path );
 PLMModel *plLoadSmdModel( const char *path );
 
 bool plWriteSmdModel( PLMModel *model, const char *path );

@@ -86,6 +86,23 @@ bool PlmWriteModel( const char *path, PLMModel *model, PLMModelOutputType type )
 		return false;
 	}
 
+	if ( type == PLM_MODEL_OUTPUT_DEFAULT ) {
+		const char *ext = PlGetFileExtension( path );
+		if ( ext == NULL ) {
+			PlReportErrorF( PL_RESULT_FILEPATH, "no extension for file" );
+			return false;
+		}
+
+		if ( strcmp( ext, "smd" ) == 0 ) {
+			return plWriteSmdModel( model, path );
+		} else if ( strcmp( ext, "obj" ) == 0 ) {
+			return plWriteObjModel( model, path );
+		}
+
+		PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported output type for %s (%u)", path, type );
+		return false;
+	}
+
 	switch ( type ) {
 		case PLM_MODEL_OUTPUT_SMD:
 			return plWriteSmdModel( model, path );
