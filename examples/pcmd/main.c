@@ -30,6 +30,8 @@ For more information, please refer to <http://unlicense.org>
 #include <plcore/pl_image.h>
 #include <plcore/pl_package.h>
 
+#include <plmodel/plm.h>
+
 /**
  * Command line utility to interface with the platform lib.
  **/
@@ -103,6 +105,28 @@ static void Cmd_IMGBulkConvert( unsigned int argc, char **argv ) {
 	PlScanDirectory( argv[ 1 ], argv[ 2 ], ConvertImageCallback, false, outDir );
 
 	printf( "Done!\n" );
+}
+
+static void Cmd_ConvertModel( unsigned int argc, char **argv ) {
+	if ( argc < 2 ) {
+		return;
+	}
+
+	const char *outPath = "./out.smd";
+	if ( argc >= 3 ) {
+		outPath = argv[ 2 ];
+	}
+
+	PLMModel *model = PlmLoadModel( argv[ 1 ] );
+	if ( model == NULL )
+	{
+		printf( "Failed to load model: %s\n", PlGetError() );
+		return;
+	}
+
+	PlmWriteModel( outPath, model, PLM_MODEL_OUTPUT_SMD );
+
+	PlmDestroyModel( model );
 }
 
 static bool isRunning = true;

@@ -25,9 +25,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
-project( pcmd )
+project(pcmd)
 
-add_executable( pcmd
+add_executable(pcmd
         main.c
 
         ../../extras/angel/angel_dat.c
@@ -46,4 +46,4 @@ add_executable( pcmd
         ../../extras/sentient_vsr.c
         )
 
-target_link_libraries( pcmd plcore )
+target_link_libraries(pcmd plcore plgraphics plmodel)
