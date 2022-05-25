@@ -48,6 +48,9 @@ inline static float PlRadiansToDegrees( float radians ) {
 	return radians * PL_180_DIV_PI;
 }
 
+#define PL_DEG2RAD( X ) PlDegreesToRadians( ( X ) )
+#define PL_RAD2DEG( X ) PlRadiansToDegrees( ( X ) )
+
 /* https://stackoverflow.com/a/9194117 */
 inline static int PlRoundUp( int num, int multiple ) {
 	return ( num + multiple - 1 ) & -multiple;

@@ -140,6 +140,11 @@ void PlScaleMatrix( PLVector3 scale ) {
 	*curStack = PlScaleMatrix4( *curStack, scale );
 }
 
+void PlInverseMatrix( void ) {
+	PLMatrix4 *curStack = PlGetMatrix( curMatrixMode );
+	*curStack = PlInverseMatrix4( *curStack );
+}
+
 void PlPushMatrix( void ) {
 	if ( curStackSlot[ curMatrixMode ] >= MAX_STACK_SIZE ) {
 		PlReportBasicError( PL_RESULT_MEMORY_EOA );
