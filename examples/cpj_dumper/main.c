@@ -7,6 +7,7 @@
 #include <plcore/pl.h>
 #include <plcore/pl_filesystem.h>
 
+#define CPJ_FILE_START 12
 #define CPJ_MAGIC_MACB PL_MAGIC_TO_NUM( 'M', 'A', 'C', 'B' )
 
 typedef struct CPJChunkInfo {
@@ -18,7 +19,7 @@ typedef struct CPJChunkInfo {
 } CPJChunkInfo;
 
 static bool SeekChunk( PLFile *file, unsigned int magic, CPJChunkInfo *out ) {
-	PlFileSeek( file, 12, PL_SEEK_SET );
+	PlFileSeek( file, CPJ_FILE_START, PL_SEEK_SET );
 
 	while ( !PlIsEndOfFile( file ) ) {
 		out->offset = PlGetFileOffset( file );
@@ -28,7 +29,14 @@ static bool SeekChunk( PLFile *file, unsigned int magic, CPJChunkInfo *out ) {
 			if ( length == 0 || length >= PlGetFileSize( file ) ) {
 				return false;
 			}
-			PlFileSeek( file, length, PL_SEEK_CUR );
+
+			PLFileOffset offset = PlGetFileOffset( file ) + length;
+			if ( ( offset % 2 ) != 0 ) {
+				offset += 2 - ( offset % 2 );
+				printf( "padding: %s - %lu\n", PlGetFilePath( file ), offset );
+			}
+
+			PlFileSeek( file, offset, PL_SEEK_SET );
 			continue;
 		}
 
@@ -65,8 +73,10 @@ static void DumpHeaderTimestamp( const char *path, void *user ) {
 	time_t timestamp = PlReadInt32( file, false, NULL );
 	struct tm *time = gmtime( &timestamp );
 
-	/* now seek to the commands and fetch the author */
 	char author[ 64 ] = " ";
+	char description[ 256 ] = " ";
+
+	/* now seek to the commands and fetch additional data */
 	CPJChunkInfo info;
 	if ( SeekChunk( file, CPJ_MAGIC_MACB, &info ) ) {
 		struct {
@@ -91,24 +101,33 @@ static void DumpHeaderTimestamp( const char *path, void *user ) {
 			PlFileSeek( file, s, PL_SEEK_SET );
 			PlFileSeek( file, commands[ i ], PL_SEEK_CUR );
 
-			char command[ 64 ];
-			PlReadFile( file, command, sizeof( char ), 64 );
+			char command[ 256 ];
+			PlReadFile( file, command, sizeof( char ), sizeof( command ) );
 			if ( strncmp( command, "SetAuthor ", 10 ) == 0 ) {
 				PL_ZERO_( author );
 				char *p = &command[ 11 ];
-				for ( unsigned int j = 0; j < 64; ++j ) {
+				for ( unsigned int j = 0; j < sizeof( command ); ++j ) {
 					if ( *p == '\0' || *p == '\"' ) {
 						break;
 					}
 
 					author[ j ] = *p++;
 				}
-				break;
+			} else if ( strncmp( command, "SetDescription ", 15 ) == 0 ) {
+				PL_ZERO_( description );
+				char *p = &command[ 16 ];
+				for ( unsigned int j = 0; j < sizeof( command ); ++j ) {
+					if ( *p == '\0' || *p == '\"' ) {
+						break;
+					}
+
+					description[ j ] = *p++;
+				}
 			}
 		}
 	}
 
-	fprintf( out, "%s,", author );
+	fprintf( out, "%s,%s,", author, description );
 
 	PlCloseFile( file );
 
@@ -126,7 +145,7 @@ int main( int argc, char **argv ) {
 		return EXIT_FAILURE;
 	}
 
-	fprintf( out, "Path,Author,Timestamp\n" );
+	fprintf( out, "Path,Author,Description,Timestamp\n" );
 
 	PlScanDirectory( "Meshes/", "cpj", DumpHeaderTimestamp, true, out );
 
