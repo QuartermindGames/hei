@@ -8,7 +8,6 @@
 #include <plcore/pl_filesystem.h>
 
 #define CPJ_FILE_START 12
-#define CPJ_MAGIC_MACB PL_MAGIC_TO_NUM( 'M', 'A', 'C', 'B' )
 
 typedef struct CPJChunkInfo {
 	PLFileOffset offset;
@@ -33,7 +32,6 @@ static bool SeekChunk( PLFile *file, unsigned int magic, CPJChunkInfo *out ) {
 			PLFileOffset offset = PlGetFileOffset( file ) + length;
 			if ( ( offset % 2 ) != 0 ) {
 				offset += 2 - ( offset % 2 );
-				printf( "padding: %s - %lu\n", PlGetFilePath( file ), offset );
 			}
 
 			PlFileSeek( file, offset, PL_SEEK_SET );
@@ -78,7 +76,7 @@ static void DumpHeaderTimestamp( const char *path, void *user ) {
 
 	/* now seek to the commands and fetch additional data */
 	CPJChunkInfo info;
-	if ( SeekChunk( file, CPJ_MAGIC_MACB, &info ) ) {
+	if ( SeekChunk( file, PL_MAGIC_TO_NUM( 'M', 'A', 'C', 'B' ), &info ) ) {
 		struct {
 			uint32_t numSections;
 			uint32_t sectionsOffset;
