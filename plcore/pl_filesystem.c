@@ -1154,7 +1154,7 @@ const char *PlGetFilePath( const PLFile *ptr ) {
 	return ptr->path;
 }
 
-const uint8_t *PlGetFileData( const PLFile *ptr ) {
+const void *PlGetFileData( const PLFile *ptr ) {
 	return ptr->data;
 }
 
@@ -1208,7 +1208,7 @@ size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count ) {
 	return length / size;
 }
 
-char PlReadInt8( PLFile *ptr, bool *status ) {
+int8_t PlReadInt8( PLFile *ptr, bool *status ) {
 	if ( ( size_t ) PlGetFileOffset( ptr ) >= ptr->size ) {
 		if ( status != NULL ) {
 			*status = false;
@@ -1221,10 +1221,10 @@ char PlReadInt8( PLFile *ptr, bool *status ) {
 	}
 
 	if ( ptr->fptr != NULL ) {
-		return ( char ) ( fgetc( ptr->fptr ) );
+		return ( int8_t ) ( fgetc( ptr->fptr ) );
 	}
 
-	return ( char ) *( ptr->pos++ );
+	return *( ( int8_t * ) ptr->pos++ );
 }
 
 static int64_t ReadSizedInteger( PLFile *ptr, size_t size, bool big_endian, bool *status ) {

@@ -98,14 +98,14 @@ PL_EXTERN time_t PlGetLocalFileTimeStamp( const char *path );
 PL_EXTERN size_t PlGetLocalFileSize( const char *path );
 
 PL_EXTERN const char *PlGetFilePath( const PLFile *ptr );
-PL_EXTERN const uint8_t *PlGetFileData( const PLFile *ptr );
+PL_EXTERN const void *PlGetFileData( const PLFile *ptr );
 PL_EXTERN time_t PlGetFileTimeStamp( PLFile *ptr );
 PL_EXTERN size_t PlGetFileSize( const PLFile *ptr );
 PL_EXTERN PLFileOffset PlGetFileOffset( const PLFile *ptr );
 
 PL_EXTERN size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count );
 
-PL_EXTERN char PlReadInt8( PLFile *ptr, bool *status );
+PL_EXTERN int8_t PlReadInt8( PLFile *ptr, bool *status );
 PL_EXTERN int16_t PlReadInt16( PLFile *ptr, bool big_endian, bool *status );
 PL_EXTERN int32_t PlReadInt32( PLFile *ptr, bool big_endian, bool *status );
 PL_EXTERN int64_t PlReadInt64( PLFile *ptr, bool big_endian, bool *status );
