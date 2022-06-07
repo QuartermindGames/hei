@@ -118,8 +118,7 @@ static void Cmd_ConvertModel( unsigned int argc, char **argv ) {
 	}
 
 	PLMModel *model = PlmLoadModel( argv[ 1 ] );
-	if ( model == NULL )
-	{
+	if ( model == NULL ) {
 		printf( "Failed to load model: %s\n", PlGetError() );
 		return;
 	}
@@ -133,8 +132,8 @@ static bool isRunning = true;
 
 static void Cmd_Exit( unsigned int argc, char **argv ) {
 	/* we don't use these here, and ommitting var names is a C2x feature :( */
-	(void)( argc );
-	(void)( argv );
+	( void ) ( argc );
+	( void ) ( argv );
 
 	isRunning = false;
 }
@@ -165,6 +164,8 @@ int main( int argc, char **argv ) {
 	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
 	PlRegisterStandardPackageLoaders();
 
+	PlmRegisterStandardModelLoaders( PLM_MODEL_FILEFORMAT_ALL );
+
 	PlRegisterPackageLoader( "lst", IStorm_LST_LoadFile );
 	PlRegisterPackageLoader( "opk", Outcast_OPK_LoadFile );
 	PlRegisterPackageLoader( "pak", AITD_PAK_LoadPackage );
@@ -185,10 +186,12 @@ int main( int argc, char **argv ) {
 	/* register all our custom console commands */
 	PlRegisterConsoleCommand( "exit", Cmd_Exit, "Exit the application." );
 	PlRegisterConsoleCommand( "quit", Cmd_Exit, "Exit the application." );
-	PlRegisterConsoleCommand( "img_convert", Cmd_IMGConvert,
+	PlRegisterConsoleCommand( "mdlconv", Cmd_ConvertModel, "Convert the specified image.\n"
+	                                                       "Usage: mdlconv ./model.mdl [./out.mdl]" );
+	PlRegisterConsoleCommand( "imgconv", Cmd_IMGConvert,
 	                          "Convert the given image.\n"
 	                          "Usage: img_convert ./image.bmp [./out.png]" );
-	PlRegisterConsoleCommand( "img_bulkconvert", Cmd_IMGBulkConvert,
+	PlRegisterConsoleCommand( "imgconvdir", Cmd_IMGBulkConvert,
 	                          "Bulk convert images in the given directory.\n"
 	                          "Usage: img_bulkconvert ./path bmp [./outpath]" );
 
@@ -202,7 +205,7 @@ int main( int argc, char **argv ) {
 		return EXIT_SUCCESS;
 	}
 
-	while( isRunning ) {
+	while ( isRunning ) {
 		printf( "> " );
 
 		int i;

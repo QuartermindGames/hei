@@ -127,6 +127,12 @@ PLMModel *PlmCreateBasicSkeletalModel( PLGMesh *mesh, PLMModelBone *skeleton, ui
 
 PLMModel *PlmLoadModel( const char *path );
 
+PLMModel *PlmLoadU3DModel( const char *path );
+PLMModel *PlmLoadHdvModel( const char *path );
+PLMModel *PlmLoadRequiemModel( const char *path );
+PLMModel *PlmLoadObjModel( const char *path );
+PLMModel *PlmLoadCpjModel( const char *path );
+
 void PlmDestroyModel( PLMModel *model );
 
 void PlmDrawModel( PLMModel *model );
