@@ -149,6 +149,7 @@ enum {
 	PL_BITFLAG( PLM_MODEL_FILEFORMAT_HDV, 1 ),
 	PL_BITFLAG( PLM_MODEL_FILEFORMAT_U3D, 2 ),
 	PL_BITFLAG( PLM_MODEL_FILEFORMAT_OBJ, 3 ),
+	PL_BITFLAG( PLM_MODEL_FILEFORMAT_CPJ, 4 ),
 };
 
 void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char *path ) );

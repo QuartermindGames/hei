@@ -32,7 +32,7 @@ typedef struct ModelLoader {
 } ModelLoader;
 
 #define MAX_OBJECT_INTERFACES 512
-static ModelLoader model_interfaces[MAX_OBJECT_INTERFACES];
+static ModelLoader model_interfaces[ MAX_OBJECT_INTERFACES ];
 static unsigned int num_model_loaders = 0;
 
 int LOG_LEVEL_MODEL = -1;
@@ -42,15 +42,15 @@ void PlmInitialize( void ) {
 
 	LOG_LEVEL_MODEL = PlAddLogLevel( "plmodel", PL_COLOUR_BLUE,
 #if !defined( NDEBUG )
-                                     true
+	                                 true
 #else
-			false
+	                                 false
 #endif
 	);
 }
 
-#define StaticModelData( a ) ( a )->internal.static_data
-#define VertexModelData( a ) ( a )->internal.vertex_data
+#define StaticModelData( a )   ( a )->internal.static_data
+#define VertexModelData( a )   ( a )->internal.vertex_data
 #define SkeletalModelData( a ) ( a )->internal.skeletal_data
 
 void PlmGenerateModelNormals( PLMModel *model, bool perFace ) {
@@ -130,10 +130,11 @@ void PlmRegisterStandardModelLoaders( unsigned int flags ) {
 		PLMModel *( *LoadFunction )( const char *path );
 	} SModelLoader;
 	static const SModelLoader loaderList[] = {
-			{ PLM_MODEL_FILEFORMAT_CYCLONE, "mdl", PlmLoadRequiemModel },
-			{ PLM_MODEL_FILEFORMAT_HDV,     "hdv", PlmLoadHdvModel },
-			{ PLM_MODEL_FILEFORMAT_U3D,     "3d",  PlmLoadU3DModel },
-			{ PLM_MODEL_FILEFORMAT_OBJ,     "obj", PlmLoadObjModel },
+	        { PLM_MODEL_FILEFORMAT_CYCLONE, "mdl", PlmLoadRequiemModel },
+	        { PLM_MODEL_FILEFORMAT_HDV, "hdv", PlmLoadHdvModel },
+	        { PLM_MODEL_FILEFORMAT_U3D, "3d", PlmLoadU3DModel },
+	        { PLM_MODEL_FILEFORMAT_OBJ, "obj", PlmLoadObjModel },
+	        { PLM_MODEL_FILEFORMAT_CPJ, "cpj", PlmLoadCpjModel },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
