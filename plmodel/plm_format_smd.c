@@ -24,7 +24,7 @@ SOFTWARE.
 
 #include "plm_private.h"
 
-#define SMD_VERSION 1
+#define SMD_VERSION   1
 #define SMD_MAX_NODES 4096
 
 typedef struct SMDNode {
@@ -98,7 +98,7 @@ static PLMModel *SMD_ReadFile( PLFile *file ) {
 
 	/* expect the version string first */
 	unsigned int version = 0;
-	if( sscanf( buffer, "version %d\n", &version ) < 1 || version != SMD_VERSION ) {
+	if ( sscanf( buffer, "version %d\n", &version ) < 1 || version != SMD_VERSION ) {
 		PlReportBasicError( PL_RESULT_FILEVERSION );
 		return NULL;
 	}
@@ -137,20 +137,46 @@ PLMModel *plLoadSmdModel( const char *path ) {
 	return model;
 }
 
-static void SMD_WriteVertex( FILE *fp, const PLGVertex *vertex ) {
-	/*               P X  Y  Z  NX NY NZ U  V */
-	fprintf( fp, "0 %f %f %f %f %f %f %f %f\n",
+static void SMD_WriteVertex( FILE *fp, const PLMBoneWeight *boneWeight, const PLGVertex *vertex ) {
+	if ( boneWeight != NULL ) {
+		fprintf( fp, "0 "
+		             "%f %f %f "
+		             "%f %f %f "
+		             "%f %f "
+		             "0 "
+		             "%u %f"
+		             "\n",
 
-	         vertex->position.x,
-	         vertex->position.y,
-	         vertex->position.z,
+		         vertex->position.x,
+		         vertex->position.y,
+		         vertex->position.z,
 
-	         vertex->normal.x,
-	         vertex->normal.y,
-	         vertex->normal.z,
+		         vertex->normal.x,
+		         vertex->normal.y,
+		         vertex->normal.z,
 
-	         vertex->st[ 0 ].x,
-	         vertex->st[ 0 ].y );
+		         vertex->st[ 0 ].x,
+		         vertex->st[ 0 ].y,
+
+		         boneWeight->boneIndex,
+		         boneWeight->weightFactor );
+	} else {
+		fprintf( fp, "0 "
+		             "%f %f %f "
+		             "%f %f %f "
+		             "%f %f\n",
+
+		         vertex->position.x,
+		         vertex->position.y,
+		         vertex->position.z,
+
+		         vertex->normal.x,
+		         vertex->normal.y,
+		         vertex->normal.z,
+
+		         vertex->st[ 0 ].x,
+		         vertex->st[ 0 ].y );
+	}
 }
 
 /* writes given model out to Valve's SMD model format */
@@ -176,19 +202,35 @@ bool plWriteSmdModel( PLMModel *model, const char *path ) {
 		fprintf( fp_out, "0 \"root\" -1\n" );
 	} else {
 		/* todo, revisit this so we're correctly connecting child/parent */
-		for ( unsigned int j = 0; j < model->internal.skeletal_data.num_bones; ++j ) {
-			fprintf( fp_out, "%u %s %d\n", j, model->internal.skeletal_data.bones[ j ].name, ( int ) j - 1 );
+		for ( unsigned int j = 0; j < model->internal.skeletal_data.numBones; ++j ) {
+			int parentBone;
+			if ( model->internal.skeletal_data.bones[ j ].parent == ( unsigned int ) -1 ) {
+				parentBone = -1;
+			} else {
+				parentBone = model->internal.skeletal_data.bones[ j ].parent;
+			}
+			fprintf( fp_out, "%u %s %d\n", j, model->internal.skeletal_data.bones[ j ].name, parentBone );
 		}
 	}
 	fprintf( fp_out, "end\n\n" );
 
 	/* skeleton block */
 	fprintf( fp_out, "skeleton\ntime 0\n" );
-	if ( model->type != PLM_MODELTYPE_SKELETAL ) {
+	if ( model->type == PLM_MODELTYPE_SKELETAL ) {
+		for ( unsigned int i = 0; i < model->internal.skeletal_data.numBones; ++i ) {
+			PLVector3 rotation = PlQuaternionToEuler( &model->internal.skeletal_data.bones[ i ].orientation );
+			fprintf( fp_out, "%u %f %f %f %f %f %f\n",
+			         i,                                                   /* bone id */
+			         model->internal.skeletal_data.bones[ i ].position.x, /* bone pos */
+			         model->internal.skeletal_data.bones[ i ].position.y,
+			         model->internal.skeletal_data.bones[ i ].position.z,
+			         rotation.x, /* bone rot */
+			         rotation.y,
+			         rotation.z );
+		}
+	} else {
 		/* write out dummy bone coords! */
 		fprintf( fp_out, "0 0 0 0 0 0 0\n" );
-	} else {
-		/* todo, print out default coords for each bone */
 	}
 	fprintf( fp_out, "end\n\n" );
 
@@ -201,9 +243,25 @@ bool plWriteSmdModel( PLMModel *model, const char *path ) {
 			} else {
 				fprintf( fp_out, "%s\n", model->meshes[ j ]->texture->name );
 			}
-			SMD_WriteVertex( fp_out, &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k++ ] ] );
-			SMD_WriteVertex( fp_out, &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k++ ] ] );
-			SMD_WriteVertex( fp_out, &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k++ ] ] );
+
+			if ( model->type == PLM_MODELTYPE_SKELETAL ) {
+				SMD_WriteVertex( fp_out,
+				                 &model->internal.skeletal_data.weights[ model->meshes[ j ]->indices[ k ] ],
+				                 &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k ] ] );
+				k++;
+				SMD_WriteVertex( fp_out,
+				                 &model->internal.skeletal_data.weights[ model->meshes[ j ]->indices[ k ] ],
+				                 &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k ] ] );
+				k++;
+				SMD_WriteVertex( fp_out,
+				                 &model->internal.skeletal_data.weights[ model->meshes[ j ]->indices[ k ] ],
+				                 &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k ] ] );
+				k++;
+			} else {
+				SMD_WriteVertex( fp_out, NULL, &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k++ ] ] );
+				SMD_WriteVertex( fp_out, NULL, &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k++ ] ] );
+				SMD_WriteVertex( fp_out, NULL, &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k++ ] ] );
+			}
 		}
 	}
 

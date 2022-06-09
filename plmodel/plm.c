@@ -221,28 +221,23 @@ PLMModel *PlmCreateStaticModel( PLGMesh **meshes, unsigned int numMeshes ) {
 	return CreateModel( PLM_MODELTYPE_STATIC, meshes, numMeshes );
 }
 
-static PLMModel *CreateSkeletalModel( PLMModel *model, PLMModelBone *skeleton, uint32_t num_bones, uint32_t root_index ) {
-	if ( model == NULL ) {
-		return NULL;
-	}
+static PLMModel *CreateSkeletalModel( PLMModel *model, PLMBone *bones, unsigned int numBones, PLMBoneWeight *weights, unsigned int numWeights ) {
+	model->internal.skeletal_data.bones = bones;
+	model->internal.skeletal_data.numBones = numBones;
+	model->internal.skeletal_data.weights = weights;
+	model->internal.skeletal_data.numBoneWeights = numWeights;
 
-	if ( skeleton != NULL ) {
-		model->internal.skeletal_data.bones = skeleton;
-		model->internal.skeletal_data.num_bones = num_bones;
-	}
-
-	model->internal.skeletal_data.root_index = root_index;
+	model->internal.skeletal_data.root_index = 0;
 
 	return model;
 }
 
-PLMModel *PlmCreateBasicSkeletalModel( PLGMesh *mesh, PLMModelBone *skeleton, uint32_t num_bones, uint32_t root_index ) {
-	return CreateSkeletalModel( CreateBasicModel( PLM_MODELTYPE_SKELETAL, mesh ), skeleton, num_bones, root_index );
+PLMModel *PlmCreateBasicSkeletalModel( PLGMesh *mesh, PLMBone *bones, unsigned int numBones, PLMBoneWeight *weights, unsigned int numWeights ) {
+	return CreateSkeletalModel( CreateBasicModel( PLM_MODELTYPE_SKELETAL, mesh ), bones, numBones, weights, numWeights );
 }
 
-PLMModel *PlmCreateSkeletalModel( PLGMesh **meshes, unsigned int numMeshes, PLMModelBone *skeleton, uint32_t num_bones,
-                                  uint32_t root_index ) {
-	return CreateSkeletalModel( CreateModel( PLM_MODELTYPE_SKELETAL, meshes, numMeshes ), skeleton, num_bones, root_index );
+PLMModel *PlmCreateSkeletalModel( PLGMesh **meshes, unsigned int numMeshes, PLMBone *bones, unsigned int numBones, PLMBoneWeight *weights, unsigned int numWeights ) {
+	return CreateSkeletalModel( CreateModel( PLM_MODELTYPE_SKELETAL, meshes, numMeshes ), bones, numBones, weights, numWeights );
 }
 
 void PlmDestroyModel( PLMModel *model ) {

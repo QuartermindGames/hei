@@ -67,23 +67,28 @@ typedef struct PLMVertexAnimModelData {
 /* * * * * * * * * * * * * * * * * */
 /* Skeletal Model Data */
 
-typedef struct PLMModelBoneWeight {
+#define PLM_MAX_BONE_WEIGHTS 4
+
+typedef struct PLMBoneWeight {
+	unsigned int boneIndex;
+	float weightFactor;
 	PLVector3 direction;
-} PLMModelBoneWeight;
+} PLMBoneWeight;
 
 typedef struct PLMModelBone {
 	char name[ 64 ];
-	uint32_t parent;
+	unsigned int parent;
 	PLVector3 position;
 	PLQuaternion orientation;
-} PLMModelBone;
+} PLMBone;
 
 typedef struct PLMSkeletalModelData {
-	PLMModelBone *bones;        /* list of bones */
-	uint32_t num_bones;         /* number of bones in the array */
-	uint32_t root_index;        /* root bone */
-	uint32_t current_animation; /* current animation index */
-	uint32_t current_frame;     /* current animation frame */
+	PLMBone *bones;          /* list of bones */
+	unsigned int numBones;   /* number of bones in the array */
+	unsigned int root_index; /* root bone */
+
+	unsigned int numBoneWeights; /* should be the same as the number of vertices */
+	PLMBoneWeight *weights;
 } PLMSkeletalModelData;
 
 typedef struct PLMModel {
@@ -121,9 +126,8 @@ PL_EXTERN_C
 
 PLMModel *PlmCreateStaticModel( PLGMesh **meshes, unsigned int numMeshes );
 PLMModel *PlmCreateBasicStaticModel( PLGMesh *mesh );
-PLMModel *PlmCreateSkeletalModel( PLGMesh **meshes, unsigned int numMeshes, PLMModelBone *skeleton, uint32_t num_bones,
-                                  uint32_t root_index );
-PLMModel *PlmCreateBasicSkeletalModel( PLGMesh *mesh, PLMModelBone *skeleton, uint32_t num_bones, uint32_t root_index );
+PLMModel *PlmCreateSkeletalModel( PLGMesh **meshes, unsigned int numMeshes, PLMBone *bones, unsigned int numBones, PLMBoneWeight *weights, unsigned int numWeights );
+PLMModel *PlmCreateBasicSkeletalModel( PLGMesh *mesh, PLMBone *bones, unsigned int numBones, PLMBoneWeight *weights, unsigned int numWeights );
 
 PLMModel *PlmLoadModel( const char *path );
 
