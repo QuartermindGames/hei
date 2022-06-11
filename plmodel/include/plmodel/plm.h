@@ -70,9 +70,11 @@ typedef struct PLMVertexAnimModelData {
 #define PLM_MAX_BONE_WEIGHTS 4
 
 typedef struct PLMBoneWeight {
-	unsigned int boneIndex;
-	float weightFactor;
-	PLVector3 direction;
+	struct {
+		unsigned int boneIndex;
+		float factor;
+	} subWeights[ PLM_MAX_BONE_WEIGHTS ];
+	unsigned int numSubWeights;
 } PLMBoneWeight;
 
 typedef struct PLMModelBone {
@@ -83,9 +85,10 @@ typedef struct PLMModelBone {
 } PLMBone;
 
 typedef struct PLMSkeletalModelData {
-	PLMBone *bones;          /* list of bones */
-	unsigned int numBones;   /* number of bones in the array */
-	unsigned int root_index; /* root bone */
+	unsigned int rootIndex; /* root bone */
+
+	PLMBone *bones;        /* list of bones */
+	unsigned int numBones; /* number of bones in the array */
 
 	unsigned int numBoneWeights; /* should be the same as the number of vertices */
 	PLMBoneWeight *weights;

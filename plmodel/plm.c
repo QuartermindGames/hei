@@ -94,9 +94,9 @@ bool PlmWriteModel( const char *path, PLMModel *model, PLMModelOutputType type )
 		}
 
 		if ( strcmp( ext, "smd" ) == 0 ) {
-			return plWriteSmdModel( model, path );
+			return PlmWriteSmdModel( model, path );
 		} else if ( strcmp( ext, "obj" ) == 0 ) {
-			return plWriteObjModel( model, path );
+			return PlmWriteObjModel( model, path );
 		}
 
 		PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported output type for %s (%u)", path, type );
@@ -105,7 +105,7 @@ bool PlmWriteModel( const char *path, PLMModel *model, PLMModelOutputType type )
 
 	switch ( type ) {
 		case PLM_MODEL_OUTPUT_SMD:
-			return plWriteSmdModel( model, path );
+			return PlmWriteSmdModel( model, path );
 		default:
 			PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported output type for %s (%u)", path, type );
 			return false;
@@ -227,7 +227,7 @@ static PLMModel *CreateSkeletalModel( PLMModel *model, PLMBone *bones, unsigned 
 	model->internal.skeletal_data.weights = weights;
 	model->internal.skeletal_data.numBoneWeights = numWeights;
 
-	model->internal.skeletal_data.root_index = 0;
+	model->internal.skeletal_data.rootIndex = 0;
 
 	return model;
 }

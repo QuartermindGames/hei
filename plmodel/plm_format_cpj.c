@@ -3,6 +3,12 @@
 
 #include "plm_private.h"
 
+/**
+ * Loader for 3D Realms' CPJ format - it basically just rips
+ * any geometry that's available along with their bones. This
+ * is also a pretty awful loader... But you get the idea.
+ */
+
 #define DEBUG_CPJ_LOADER
 #if defined( DEBUG_CPJ_LOADER )
 #	define dprint( ... ) printf( __VA_ARGS__ )
@@ -11,17 +17,30 @@
 #endif
 
 /* i know, i know, terrible c-isms */
-#define CPJ_MAX_NAME_LENGTH  16
 #define CPJ_MAX_BONE_WEIGHTS 8
 
 #define CPJ_OFFSET_START 12
 
+typedef char CPJName[ 16 ];
+
+typedef struct CPJSurfaceTriangle {
+	unsigned int uvIndex[ 3 ];
+	unsigned int texture;
+	unsigned int smoothingGroup;
+} CPJSurfaceTriangle;
+
 typedef struct CPJSurface {
-	float uv;
+	unsigned int numTextures;
+	CPJName *textures;
+
+	unsigned int numUVCoords;
+	PLVector2 *uvCoords;
+
+	CPJSurfaceTriangle *triangles;
 } CPJSurface;
 
 typedef struct CPJBone {
-	char name[ CPJ_MAX_NAME_LENGTH ];
+	CPJName name;
 	unsigned int parent;
 	PLVector3 scale;
 	PLQuaternion rotation;
@@ -62,11 +81,16 @@ typedef struct CPJModel {
 
 	unsigned int numBones;
 	CPJBone *bones;
+
+	unsigned int numSmoothingGroups;
 } CPJModel;
 
 static void CPJModel_Free( CPJModel *model ) {
 	PL_DELETE( model->vertices );
 	PL_DELETE( model->triangles );
+	for ( unsigned int i = 0; i < model->numSurfaces; ++i ) {
+		PL_DELETE( model->surfaces[ i ].textures );
+	}
 	PL_DELETE( model->surfaces );
 	PL_DELETE( model->bones );
 }
@@ -80,13 +104,6 @@ typedef struct CPJChunkInfo {
 	uint32_t nameOffset;
 } CPJChunkInfo;
 
-static PLFileOffset GetPaddedOffset( PLFileOffset offset ) {
-	if ( ( offset % 2 ) != 0 ) {
-		offset += 2 - ( offset % 2 );
-	}
-	return offset;
-}
-
 static PLFileOffset SeekChunk( PLFile *file, unsigned int magic, PLFileOffset startOffset, CPJChunkInfo *out ) {
 	PlFileSeek( file, startOffset, PL_SEEK_SET );
 
@@ -95,7 +112,10 @@ static PLFileOffset SeekChunk( PLFile *file, unsigned int magic, PLFileOffset st
 		out->magic = PlReadInt32( file, false, NULL );
 		out->length = PlReadInt32( file, false, NULL );
 
-		PLFileOffset nextOffset = GetPaddedOffset( PlGetFileOffset( file ) + out->length );
+		PLFileOffset nextOffset = PlGetFileOffset( file ) + out->length;
+		if ( ( nextOffset % 2 ) != 0 ) {
+			nextOffset += 2 - ( nextOffset % 2 );
+		}
 
 		if ( out->magic != magic ) {
 			if ( out->length == 0 || out->length >= PlGetFileSize( file ) ) {
@@ -141,6 +161,70 @@ static const char *ReadName( PLFile *file, PLFileOffset offset, char *dst, size_
 	return dst;
 }
 
+static void SetupSkeletalData( const CPJModel *cpjModel, PLMSkeletalModelData *skeletalModelData ) {
+	PL_ZERO( skeletalModelData, sizeof( PLMSkeletalModelData ) );
+
+	skeletalModelData->numBones = cpjModel->numBones;
+	skeletalModelData->bones = PL_NEW_( PLMBone, skeletalModelData->numBones );
+	for ( unsigned int i = 0; i < skeletalModelData->numBones; ++i ) {
+		skeletalModelData->bones[ i ].orientation = cpjModel->bones[ i ].rotation;
+		skeletalModelData->bones[ i ].position = cpjModel->bones[ i ].transform;
+		skeletalModelData->bones[ i ].parent = cpjModel->bones[ i ].parent;
+		snprintf( skeletalModelData->bones[ i ].name, sizeof( skeletalModelData->bones[ i ].name ), "%s", cpjModel->bones[ i ].name );
+	}
+
+	skeletalModelData->numBoneWeights = cpjModel->numVerts;
+	skeletalModelData->weights = PL_NEW_( PLMBoneWeight, skeletalModelData->numBoneWeights );
+	for ( unsigned int i = 0; i < skeletalModelData->numBoneWeights; ++i ) {
+		unsigned int numWeights = cpjModel->vertices[ i ].numWeights;
+		if ( numWeights >= PLM_MAX_BONE_WEIGHTS ) {
+			numWeights = PLM_MAX_BONE_WEIGHTS - 1;
+		}
+
+		skeletalModelData->weights[ i ].numSubWeights = numWeights;
+		for ( unsigned int j = 0; j < numWeights; ++j ) {
+			skeletalModelData->weights[ i ].subWeights[ j ].boneIndex = cpjModel->vertices[ i ].weights[ j ].boneIndex;
+			skeletalModelData->weights[ i ].subWeights[ j ].factor = cpjModel->vertices[ i ].weights[ j ].weightFactor;
+		}
+	}
+}
+
+/**
+ * This basically generates a set of normals depending
+ * on the given smoothing group.
+ */
+static PLVector3 **GenerateNormalsPerGroup( const CPJModel *cpjModel ) {
+	PLVector3 **normals = PL_NEW_( PLVector3 *, cpjModel->numSmoothingGroups );
+	for ( unsigned int i = 0; i < cpjModel->numSmoothingGroups; ++i ) {
+		normals[ i ] = PL_NEW_( PLVector3, cpjModel->numVerts );
+
+		for ( unsigned int j = 0; j < cpjModel->numTriangles; ++j ) {
+			if ( cpjModel->surfaces[ 0 ].triangles[ j ].smoothingGroup != i ) {
+				continue;
+			}
+
+			normals[ i ][ cpjModel->triangles[ j ].x ] = PlAddVector3( normals[ i ][ cpjModel->triangles[ j ].x ],
+			                                                           PlgGenerateVertexNormal( cpjModel->vertices[ cpjModel->triangles[ j ].x ].position,
+			                                                                                    cpjModel->vertices[ cpjModel->triangles[ j ].y ].position,
+			                                                                                    cpjModel->vertices[ cpjModel->triangles[ j ].z ].position ) );
+			normals[ i ][ cpjModel->triangles[ j ].y ] = PlAddVector3( normals[ i ][ cpjModel->triangles[ j ].y ],
+			                                                           PlgGenerateVertexNormal( cpjModel->vertices[ cpjModel->triangles[ j ].x ].position,
+			                                                                                    cpjModel->vertices[ cpjModel->triangles[ j ].y ].position,
+			                                                                                    cpjModel->vertices[ cpjModel->triangles[ j ].z ].position ) );
+			normals[ i ][ cpjModel->triangles[ j ].z ] = PlAddVector3( normals[ i ][ cpjModel->triangles[ j ].z ],
+			                                                           PlgGenerateVertexNormal( cpjModel->vertices[ cpjModel->triangles[ j ].x ].position,
+			                                                                                    cpjModel->vertices[ cpjModel->triangles[ j ].y ].position,
+			                                                                                    cpjModel->vertices[ cpjModel->triangles[ j ].z ].position ) );
+		}
+
+		for ( unsigned int j = 0; j < cpjModel->numVerts; ++j ) {
+			normals[ i ][ j ] = PlNormalizeVector3( normals[ i ][ j ] );
+		}
+	}
+
+	return normals;
+}
+
 static PLMModel *ParseCPJModel( PLFile *file ) {
 	unsigned int magic = PlReadInt32( file, false, NULL );
 	if ( magic != PL_MAGIC_TO_NUM( 'R', 'I', 'F', 'F' ) ) {
@@ -158,8 +242,10 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 
 	CPJChunkInfo chunkInfo;
 	PL_ZERO_( chunkInfo );
+
 	CPJModel cpjModel;
 	PL_ZERO_( cpjModel );
+	cpjModel.numSmoothingGroups = 1;
 
 	/* first fetch the geometry description - there's only one of these it seems per model */
 	if ( SeekChunk( file, PL_MAGIC_TO_NUM( 'G', 'E', 'O', 'B' ), CPJ_OFFSET_START, &chunkInfo ) ) {
@@ -229,6 +315,8 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 			triangle->z = edges[ ( uint16_t ) PlReadInt16( file, false, NULL ) ].y;
 			PlReadInt16( file, false, NULL ); /* unused */
 		}
+
+		PL_DELETE( edges );
 	} else {
 		CPJModel_Free( &cpjModel );
 		return NULL;
@@ -245,24 +333,71 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 		}
 
 		cpjModel.numSurfaces++;
+		cpjModel.surfaces = PlReAllocA( cpjModel.surfaces, sizeof( CPJSurface ) * cpjModel.numSurfaces );
+		CPJSurface *surface = &cpjModel.surfaces[ cpjModel.numSurfaces - 1 ];
 
-		uint32_t numTextures = PlReadInt32( file, false, NULL );
+		dprint( "Parsing surface\n" );
+
+		surface->numTextures = PlReadInt32( file, false, NULL );
 		uint32_t ofsTextures = PlReadInt32( file, false, NULL );
 
 		/* according to the spec, this should be the same as the geo's number of tris */
 		uint32_t numTriangles = PlReadInt32( file, false, NULL );
 		if ( numTriangles != cpjModel.numTriangles ) {
 			CPJModel_Free( &cpjModel );
-			PlReportErrorF( PL_RESULT_FILEERR, "invalid number of triangles (%u != %u)", numTriangles, cpjModel.numTriangles );
+			PlReportErrorF( PL_RESULT_FILEERR, "invalid number of triangles in SRFB (%u != %u)", numTriangles, cpjModel.numTriangles );
 			return NULL;
 		}
 
 		uint32_t ofsTriangles = PlReadInt32( file, false, NULL );
 
-		uint32_t numUVCoords = PlReadInt32( file, false, NULL );
+		surface->numUVCoords = PlReadInt32( file, false, NULL );
 		uint32_t ofsUVCoords = PlReadInt32( file, false, NULL );
 
 		PLFileOffset baseOffset = PlGetFileOffset( file );
+
+		PlFileSeek( file, baseOffset + ofsTextures, PL_SEEK_SET );
+		surface->textures = PL_NEW_( CPJName, surface->numTextures );
+		for ( unsigned int i = 0; i < surface->numTextures; ++i ) {
+			uint32_t ofsName = PlReadInt32( file, false, NULL );
+			ReadName( file, baseOffset + ofsName, surface->textures[ i ], sizeof( surface->textures[ i ] ) );
+			PlReadInt32( file, false, NULL ); /* optional name */
+		}
+
+		PlFileSeek( file, baseOffset + ofsUVCoords, PL_SEEK_SET );
+		surface->uvCoords = PL_NEW_( PLVector2, surface->numUVCoords );
+		for ( unsigned int i = 0; i < surface->numUVCoords; ++i ) {
+			surface->uvCoords[ i ].x = PlReadFloat32( file, false, NULL );
+			surface->uvCoords[ i ].y = -PlReadFloat32( file, false, NULL );
+		}
+
+		PlFileSeek( file, baseOffset + ofsTriangles, PL_SEEK_SET );
+		surface->triangles = PL_NEW_( CPJSurfaceTriangle, numTriangles );
+		for ( unsigned int i = 0; i < numTriangles; ++i ) {
+			for ( unsigned int j = 0; j < 3; ++j ) {
+				surface->triangles[ i ].uvIndex[ j ] = PlReadInt16( file, false, NULL );
+			}
+			surface->triangles[ i ].texture = PlReadInt8( file, NULL );
+			PlReadInt8( file, NULL );
+			PlReadInt32( file, false, NULL );
+
+			surface->triangles[ i ].smoothingGroup = PlReadInt8( file, NULL );
+			if ( ( surface->triangles[ i ].smoothingGroup + 1 ) > cpjModel.numSmoothingGroups ) {
+				cpjModel.numSmoothingGroups = surface->triangles[ i ].smoothingGroup + 1;
+			}
+
+			PlReadInt8( file, NULL );
+			PlReadInt8( file, NULL );
+			PlReadInt8( file, NULL );
+		}
+	}
+
+	/* mesh generation is based upon the surfaces we retrieve, so if there aren't any
+	 * then it could be that the cpj is buggered */
+	if ( cpjModel.numSurfaces == 0 ) {
+		CPJModel_Free( &cpjModel );
+		PlReportErrorF( PL_RESULT_FILEERR, "no surfaces in cpj" );
+		return NULL;
 	}
 
 	/* skeleton chunk, not a problem if it doesn't exist as it likely just means it's static */
@@ -296,7 +431,6 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 		PLFileOffset baseOffset = PlGetFileOffset( file );
 
 		/* and now fetch the booones */
-		dprint( "bones...\n" );
 		PlFileSeek( file, baseOffset + ofsBones, PL_SEEK_SET );
 		cpjModel.bones = PL_NEW_( CPJBone, cpjModel.numBones );
 		for ( unsigned int i = 0; i < cpjModel.numBones; ++i ) {
@@ -320,41 +454,87 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 
 			cpjModel.bones[ i ].length = PlReadFloat32( file, false, NULL );
 		}
+
+		PlFileSeek( file, baseOffset + ofsWeights, PL_SEEK_SET );
+		CPJBoneWeight *weights = PL_NEW_( CPJBoneWeight, numWeights );
+		for ( unsigned int i = 0; i < numWeights; ++i ) {
+			weights[ i ].boneIndex = PlReadInt32( file, false, NULL );
+			weights[ i ].weightFactor = PlReadFloat32( file, false, NULL );
+			/* offset... hm */
+			PlReadFloat32( file, false, NULL );
+			PlReadFloat32( file, false, NULL );
+			PlReadFloat32( file, false, NULL );
+		}
+
+		PlFileSeek( file, baseOffset + ofsVerts, PL_SEEK_SET );
+		for ( unsigned int i = 0; i < numVerts; ++i ) {
+			cpjModel.vertices[ i ].numWeights = PlReadInt16( file, false, NULL );
+
+			uint16_t vertexWeightIndex = PlReadInt16( file, false, NULL );
+			for ( unsigned int j = 0; j < cpjModel.vertices[ i ].numWeights; ++j ) {
+				cpjModel.vertices[ i ].weights[ j ].boneIndex = weights[ vertexWeightIndex + j ].boneIndex;
+				cpjModel.vertices[ i ].weights[ j ].weightFactor = weights[ vertexWeightIndex + j ].weightFactor;
+			}
+		}
+
+		PL_DELETE( weights );
 	}
 
-	PLGMesh *mesh = PlgCreateMesh( PLG_MESH_TRIANGLES, PLG_DRAW_STATIC, cpjModel.numTriangles, cpjModel.numVerts );
+	const CPJSurface *surface = &cpjModel.surfaces[ 0 ];
 
-	for ( unsigned int i = 0; i < cpjModel.numVerts; ++i ) {
-		PlgAddMeshVertex( mesh, cpjModel.vertices[ i ].position, pl_vecOrigin3, PL_COLOUR_WHITE, pl_vecOrigin2 );
+	/* generate normals per smoothing group */
+	PLVector3 **normals = GenerateNormalsPerGroup( &cpjModel );
+
+	PLGMesh **meshes = PL_NEW_( PLGMesh *, surface->numTextures );
+	for ( unsigned int i = 0; i < surface->numTextures; ++i ) {
+		meshes[ i ] = PlgCreateMesh( PLG_MESH_TRIANGLES, PLG_DRAW_STATIC, cpjModel.numTriangles, cpjModel.numVerts );
+		meshes[ i ]->materialIndex = i;
+		for ( unsigned int j = 0; j < cpjModel.numTriangles; ++j ) {
+			unsigned int x = PlgAddMeshVertex( meshes[ i ],
+			                                   cpjModel.vertices[ cpjModel.triangles[ j ].x ].position,
+			                                   normals[ surface->triangles[ j ].smoothingGroup ][ cpjModel.triangles[ j ].x ],
+			                                   PL_COLOUR_WHITE,
+			                                   surface->uvCoords[ surface->triangles[ j ].uvIndex[ 0 ] ] );
+			unsigned int y = PlgAddMeshVertex( meshes[ i ],
+			                                   cpjModel.vertices[ cpjModel.triangles[ j ].y ].position,
+			                                   normals[ surface->triangles[ j ].smoothingGroup ][ cpjModel.triangles[ j ].y ],
+			                                   PL_COLOUR_WHITE,
+			                                   surface->uvCoords[ surface->triangles[ j ].uvIndex[ 1 ] ] );
+			unsigned int z = PlgAddMeshVertex( meshes[ i ],
+			                                   cpjModel.vertices[ cpjModel.triangles[ j ].z ].position,
+			                                   normals[ surface->triangles[ j ].smoothingGroup ][ cpjModel.triangles[ j ].z ],
+			                                   PL_COLOUR_WHITE,
+			                                   surface->uvCoords[ surface->triangles[ j ].uvIndex[ 2 ] ] );
+
+			if ( surface->triangles[ j ].texture != i ) {
+				continue;
+			}
+
+			PlgAddMeshTriangle( meshes[ i ], x, y, z );
+		}
 	}
 
-	CPJTriangle *triangle = cpjModel.triangles;
-	for ( unsigned int i = 0; i < cpjModel.numTriangles; ++i, ++triangle ) {
-		PlgAddMeshTriangle( mesh, triangle->x, triangle->y, triangle->z );
+	for ( unsigned int i = 0; i < cpjModel.numSmoothingGroups; ++i ) {
+		PL_DELETE( normals[ i ] );
 	}
+	PL_DELETE( normals );
 
 	PLMSkeletalModelData skeletalModelData;
-	PL_ZERO_( skeletalModelData );
+	SetupSkeletalData( &cpjModel, &skeletalModelData );
 
-	skeletalModelData.numBones = cpjModel.numBones;
-	skeletalModelData.bones = PL_NEW_( PLMBone, skeletalModelData.numBones );
-	for ( unsigned int i = 0; i < skeletalModelData.numBones; ++i ) {
-		skeletalModelData.bones[ i ].orientation = cpjModel.bones[ i ].rotation;
-		skeletalModelData.bones[ i ].position = cpjModel.bones[ i ].transform;
-		skeletalModelData.bones[ i ].parent = cpjModel.bones[ i ].parent;
-		snprintf( skeletalModelData.bones[ i ].name, sizeof( skeletalModelData.bones[ i ].name ), "%s", cpjModel.bones[ i ].name );
-	}
+	PLMModel *model = PlmCreateSkeletalModel( meshes, cpjModel.surfaces[ 0 ].numTextures,
+	                                          skeletalModelData.bones, skeletalModelData.numBones,
+	                                          skeletalModelData.weights, skeletalModelData.numBoneWeights );
 
-	skeletalModelData.numBoneWeights = cpjModel.numVerts;
-	skeletalModelData.weights = PL_NEW_( PLMBoneWeight, skeletalModelData.numBoneWeights );
-	for ( unsigned int i = 0; i < skeletalModelData.numBoneWeights; ++i ) {
-		skeletalModelData.weights[ i ].boneIndex = cpjModel.vertices[ i ].weights[ 0 ].boneIndex;
-		skeletalModelData.weights[ i ].weightFactor = cpjModel.vertices[ i ].weights[ 0 ].weightFactor;
+	model->numMaterials = cpjModel.surfaces[ 0 ].numTextures;
+	model->materials = PL_NEW_( PLPath, model->numMaterials );
+	for ( unsigned int i = 0; i < cpjModel.surfaces[ 0 ].numTextures; ++i ) {
+		snprintf( model->materials[ i ], sizeof( PLPath ), "%s.bmp", cpjModel.surfaces[ 0 ].textures[ i ] );
 	}
 
 	CPJModel_Free( &cpjModel );
 
-	return PlmCreateBasicSkeletalModel( mesh, skeletalModelData.bones, skeletalModelData.numBones, skeletalModelData.weights, skeletalModelData.numBoneWeights );
+	return model;
 }
 
 PLMModel *PlmLoadCpjModel( const char *path ) {

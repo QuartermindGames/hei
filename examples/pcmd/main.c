@@ -107,25 +107,80 @@ static void Cmd_IMGBulkConvert( unsigned int argc, char **argv ) {
 	printf( "Done!\n" );
 }
 
-static void Cmd_ConvertModel( unsigned int argc, char **argv ) {
-	if ( argc < 2 ) {
-		return;
-	}
-
-	const char *outPath = "./out.smd";
-	if ( argc >= 3 ) {
-		outPath = argv[ 2 ];
-	}
-
-	PLMModel *model = PlmLoadModel( argv[ 1 ] );
+static void ConvertModel( const char *path, const char *destination ) {
+	PLMModel *model = PlmLoadModel( path );
 	if ( model == NULL ) {
 		printf( "Failed to load model: %s\n", PlGetError() );
 		return;
 	}
 
-	PlmWriteModel( outPath, model, PLM_MODEL_OUTPUT_SMD );
+	PlmWriteModel( destination, model, PLM_MODEL_OUTPUT_SMD );
 
 	PlmDestroyModel( model );
+}
+
+static void Cmd_ConvertModel( unsigned int argc, char **argv ) {
+	if ( argc < 2 ) {
+		return;
+	}
+
+	PLPath outPath;
+	if ( argc >= 3 ) {
+		snprintf( outPath, sizeof( outPath ), "%s", argv[ 2 ] );
+	} else {
+		const char *fn = PlGetFileName( argv[ 1 ] );
+		size_t ns = strlen( fn );
+		const char *fe = PlGetFileExtension( fn );
+		size_t es = strlen( fe );
+
+		char name[ ns ];
+		snprintf( name, ns - es, "%s", fn );
+
+		snprintf( outPath, sizeof( outPath ), "./%s.smd", name );
+	}
+
+	ConvertModel( argv[ 1 ], outPath );
+}
+
+static void ConvertModelCallback( const char *path, void *userData ) {
+	char *outDir = ( char * ) userData;
+
+	if ( !PlCreateDirectory( outDir ) ) {
+		Error( "Error: %s\n", PlGetError() );
+		return;
+	}
+
+	const char *fn = PlGetFileName( path );
+	size_t ns = strlen( fn );
+	const char *fe = PlGetFileExtension( fn );
+	size_t es = strlen( fe );
+
+	char name[ ns ];
+	snprintf( name, ns - es, "%s", fn );
+
+	char outPath[ PL_SYSTEM_MAX_PATH ];
+	snprintf( outPath, sizeof( outPath ), "%s%s.smd", outDir, name );
+
+	printf( "Converting %s to %s\n", path, outPath );
+
+	ConvertModel( path, outPath );
+}
+
+static void Cmd_BulkConvertModel( unsigned int argc, char **argv ) {
+	if ( argc < 3 ) {
+		return;
+	}
+
+	char outDir[ PL_SYSTEM_MAX_PATH ];
+	if ( argc >= 4 ) {
+		snprintf( outDir, sizeof( outDir ), "%s/", argv[ 3 ] );
+	} else {
+		snprintf( outDir, sizeof( outDir ), "out/" );
+	}
+
+	PlScanDirectory( argv[ 1 ], argv[ 2 ], ConvertModelCallback, true, outDir );
+
+	printf( "Done!\n" );
 }
 
 static bool isRunning = true;
@@ -188,6 +243,7 @@ int main( int argc, char **argv ) {
 	PlRegisterConsoleCommand( "quit", Cmd_Exit, "Exit the application." );
 	PlRegisterConsoleCommand( "mdlconv", Cmd_ConvertModel, "Convert the specified image.\n"
 	                                                       "Usage: mdlconv ./model.mdl [./out.mdl]" );
+	PlRegisterConsoleCommand( "mdlconvdir", Cmd_BulkConvertModel, "Bulk convert images." );
 	PlRegisterConsoleCommand( "imgconv", Cmd_IMGConvert,
 	                          "Convert the given image.\n"
 	                          "Usage: img_convert ./image.bmp [./out.png]" );
