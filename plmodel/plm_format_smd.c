@@ -182,22 +182,13 @@ static void SMD_WriteVertex( FILE *file, const PLMModel *model, const PLMBoneWei
 		}
 		fprintf( file, "\n" );
 	} else {
-		fprintf( file, "0 "
-		             /* position */
-		             "%f %f %f "
-		             /* normal */
-		             "%f %f %f "
-		             /* uv coords */
-		             "%f %f\n",
-
+		fprintf( file, "0 %f %f %f %f %f %f %f %f\n",
 		         vertex->position.x,
 		         vertex->position.y,
 		         vertex->position.z,
-
 		         vertex->normal.x,
 		         vertex->normal.y,
 		         vertex->normal.z,
-
 		         vertex->st[ 0 ].x,
 		         vertex->st[ 0 ].y );
 	}
