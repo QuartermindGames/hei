@@ -358,6 +358,9 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min ) );
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag ) );
 
+	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ) );
+	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ) );
+
 	/* sigh... */
 	if ( ( components & PLG_BUFFER_DEPTH ) || ( components & PLG_BUFFER_STENCIL ) ) {
 		if ( ( buffer->flags & PLG_BUFFER_DEPTH ) && ( buffer->flags & PLG_BUFFER_STENCIL ) ) {
