@@ -40,9 +40,6 @@ typedef struct PLGVertex {
 	PLVector3 tangent, bitangent;
 	PLVector2 st[ 16 ];
 	PLColour colour;
-	/* specific to skeletal animation */
-	unsigned int bone_index;
-	float bone_weight;
 } PLGVertex;
 
 typedef struct PLGTexture PLGTexture;
