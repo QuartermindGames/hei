@@ -203,6 +203,7 @@ PLPackage *Outwars_FF_LoadFile( const char *path );
 PLPackage *Core_CLU_LoadPackage( const char *path );
 PLPackage *Angel_DAT_LoadPackage( const char *path );
 PLPackage *AITD_PAK_LoadPackage( const char *path );
+PLPackage *WFear_INU_LoadPackage( const char *path );
 
 PLImage *Core_HGT_ParseImage( PLFile *file );
 PLImage *Angel_TEX_ParseImage( PLFile *file );
@@ -232,6 +233,7 @@ int main( int argc, char **argv ) {
 	PlRegisterPackageLoader( "ff", Outwars_FF_LoadFile );
 	PlRegisterPackageLoader( "clu", Core_CLU_LoadPackage );
 	PlRegisterPackageLoader( "dat", Angel_DAT_LoadPackage );
+	PlRegisterPackageLoader( "inu", WFear_INU_LoadPackage );
 
 	PlRegisterImageLoader( "hgt", Core_HGT_ParseImage );
 	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );

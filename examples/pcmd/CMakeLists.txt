@@ -35,6 +35,9 @@ add_executable(pcmd
 
         ../../extras/core/core_package_clu.c
         ../../extras/core/core_loader_hgt.c
+
+        ../../extras/wfear/wfear_inu.c
+
         ../../extras/aitd/aitd_pak.c
         ../../extras/eradicator_rid.c
         ../../extras/ftactics_pak.c
