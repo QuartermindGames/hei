@@ -19,25 +19,25 @@ typedef struct PLVector4 {
 } PLVector4;
 
 #ifndef __cplusplus /* todo: deprecate */
-#define PLVector2( x, y ) \
-	( PLVector2 ) { x, y }
+#	define PLVector2( x, y ) \
+		( PLVector2 ) { x, y }
 #endif
 #define PlVector2( X, Y ) \
-    ( PLVector2 ) { X, Y }
+	( PLVector2 ) { X, Y }
 #ifndef __cplusplus /* todo: deprecate */
-#define PLVector3( x, y, z ) \
-	( PLVector3 ) { ( float ) x, ( float ) y, ( float ) z }
+#	define PLVector3( x, y, z ) \
+		( PLVector3 ) { ( float ) x, ( float ) y, ( float ) z }
 #endif
 #define PlVector3( X, Y, Z ) \
-    ( PLVector3 ) { X, Y, Z }
+	( PLVector3 ) { X, Y, Z }
 #ifndef __cplusplus /* todo: deprecate */
-#define PLVector4( x, y, z, w ) \
-	( PLVector4 ) { ( float ) x, ( float ) y, ( float ) z, ( float ) w }
+#	define PLVector4( x, y, z, w ) \
+		( PLVector4 ) { ( float ) x, ( float ) y, ( float ) z, ( float ) w }
 #endif
 #define PlVector4( X, Y, Z, W ) \
-    ( PLVector4 ) { X, Y, Z, W }
+	( PLVector4 ) { X, Y, Z, W }
 
-#define PlVectorIndex( VECTOR, INDEX ) ( ( float * ) &( VECTOR ) )[ INDEX ]
+#define PlVectorIndex( VECTOR, INDEX )  ( ( float * ) &( VECTOR ) )[ INDEX ]
 /* todo: add bound checking to the below implementation??? Or just remove!? */
 #define PlVector3Index( VECTOR, INDEX ) PlVectorIndex( VECTOR, INDEX )
 
@@ -169,6 +169,8 @@ namespace hei {
 
 		bool operator==( const PLVector2 &a ) const { return ( ( x == a.x ) && ( y == a.y ) ); }
 		bool operator==( float a ) const { return ( ( x == a ) && ( y == a ) ); }
+
+		bool operator!=( const PLVector2 &a ) const { return ( ( x != a.x ) || ( y != a.y ) ); }
 		bool operator!=( float a ) const { return ( ( x != a ) && ( y != a ) ); }
 
 		PLVector2 operator*( const PLVector2 &a ) const { return Vector2( x * a.x, y * a.y ); }
