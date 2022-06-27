@@ -92,22 +92,24 @@ typedef struct PLConsoleCommand {
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PL_EXTERN void PlGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds );
-PL_EXTERN void PlRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( unsigned int argc, char *argv[] ), const char *description );
-PL_EXTERN PLConsoleCommand *PlGetConsoleCommand( const char *name );
+void PlGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds );
+void PlRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( unsigned int argc, char *argv[] ), const char *description );
+PLConsoleCommand *PlGetConsoleCommand( const char *name );
 
-PL_EXTERN void PlSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg, PLColour colour ) );
+void PlSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg, PLColour colour ) );
 
-PL_EXTERN const char **PlAutocompleteConsoleString( const char *string, unsigned int *numElements );
-PL_EXTERN void PlParseConsoleString( const char *string );
+const char **PlAutocompleteConsoleString( const char *string, unsigned int *numElements );
+void PlParseConsoleString( const char *string );
+
+void PlExecuteConsoleScript( const char *path );
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-extern void PlSetupLogOutput( const char *path );
-extern int PlAddLogLevel( const char *prefix, PLColour colour, bool status );
-extern void PlRemoveLogLevel( int id );
-extern void PlSetLogLevelStatus( int id, bool status );
-extern void PlLogMessage( int id, const char *msg, ... );
+void PlSetupLogOutput( const char *path );
+int PlAddLogLevel( const char *prefix, PLColour colour, bool status );
+void PlRemoveLogLevel( int id );
+void PlSetLogLevelStatus( int id, bool status );
+void PlLogMessage( int id, const char *msg, ... );
 
 #define PlLogWFunction( ID, FORMAT, ... ) PlLogMessage( ( ID ), "(%s) " FORMAT, PL_FUNCTION, ## __VA_ARGS__ )
 

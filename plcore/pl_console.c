@@ -6,13 +6,15 @@
 
 #include <plcore/pl_console.h>
 #include <plcore/pl_filesystem.h>
+#include <plcore/pl_linkedlist.h>
+#include <plcore/pl_parse.h>
 
 #include "pl_private.h"
 
 #include <errno.h>
 #if defined( _WIN32 )
-#include <Windows.h>
-#include <io.h>
+#	include <Windows.h>
+#	include <io.h>
 #endif
 
 #define CONSOLE_MAX_ARGUMENTS 8
@@ -638,4 +640,47 @@ void PlLogMessage( int id, const char *msg, ... ) {
 	}
 
 	PlFree( buf );
+}
+
+/**
+ * Loads in a file that provides a command per line
+ * and executes each command in order.
+ */
+void PlExecuteConsoleScript( const char *path ) {
+	PLFile *file = PlOpenFile( path, true );
+	if ( file == NULL ) {
+		return;
+	}
+
+	size_t length = PlGetFileSize( file );
+	char *buf = PL_NEW_( char, length + 1 );
+	memcpy( buf, PlGetFileData( file ), length );
+	PlCloseFile( file );
+
+	PLLinkedList *queuedCommands = PlCreateLinkedList();
+
+	const char *p = buf;
+	while( *p != '\0' ) {
+		unsigned int l = PlDetermineLineLength( buf );
+		if ( l == 0 ) {
+			PlSkipLine( &p );
+			continue;
+		}
+
+		char *command = PL_NEW_( char, ++l );
+		PlParseLine( &p, command, l );
+
+		PlInsertLinkedListNode( queuedCommands, command );
+	}
+
+	PL_DELETE( buf );
+
+	PLLinkedListNode *node = PlGetFirstNode( queuedCommands );
+	while ( node != NULL ) {
+		char *command = PlGetLinkedListNodeUserData( node );
+		PlParseConsoleString( command );
+		PL_DELETE( command );
+		node = PlGetNextLinkedListNode( node );
+	}
+	PlDestroyLinkedList( queuedCommands );
 }

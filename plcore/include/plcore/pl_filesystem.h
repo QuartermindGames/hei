@@ -8,6 +8,10 @@
 
 #include <plcore/pl.h>
 
+#define PlKilobytesToBytes( a ) ( ( double ) ( ( a ) ) * 1000 )
+#define PlMegabytesToBytes( a ) ( PlKilobytesToBytes( a ) * 1000 )
+#define PlGigabytesToBytes( a ) ( PlMegabytesToBytes( a ) * 1000 )
+
 #define PlBytesToKilobytes( a ) ( ( double ) ( ( a ) ) / 1000 )
 #define PlBytesToMegabytes( a ) ( PlBytesToKilobytes( a ) / 1000 )
 #define PlBytesToGigabytes( a ) ( PlBytesToMegabytes( a ) / 1000 )
