@@ -1,8 +1,5 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+/* SPDX-License-Identifier: MIT */
+/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
 
 #include <plcore/pl_console.h>
 #include <plcore/pl_filesystem.h>
@@ -20,16 +17,12 @@
 #define CONSOLE_MAX_ARGUMENTS 8
 
 /* Multi Console Manager */
-// todo, should the console be case-sensitive?
-// todo, mouse input callback
-// todo, keyboard input callback
 
 static PLConsoleCommand **_pl_commands = NULL;
 static size_t _pl_num_commands = 0;
 static size_t _pl_commands_size = 512;
 
-void PlRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( unsigned int argc, char *argv[] ),
-                               const char *description ) {
+void PlRegisterConsoleCommand( const char *name, const char *description, int args, void ( *CallbackFunction )( unsigned int argc, char *argv[] ) ) {
 	FunctionStart();
 
 	if ( name == NULL || name[ 0 ] == '\0' ) {
@@ -56,10 +49,18 @@ void PlRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( uns
 		PLConsoleCommand *cmd = _pl_commands[ _pl_num_commands ];
 		memset( cmd, 0, sizeof( PLConsoleCommand ) );
 		cmd->Callback = CallbackFunction;
-		strncpy( cmd->cmd, name, sizeof( cmd->cmd ) );
-		if ( description != NULL && description[ 0 ] != '\0' ) {
-			strncpy( cmd->description, description, sizeof( cmd->description ) );
+
+		size_t s = strlen( name );
+		cmd->name = PL_NEW_( char, s + 1 );
+		strncpy( cmd->name, name, s );
+
+		if ( description != NULL ) {
+			s = strlen( description );
+			cmd->description = PL_NEW_( char, s + 1 );
+			strncpy( cmd->description, description, s );
 		}
+
+		cmd->args = args;
 
 		_pl_num_commands++;
 	}
@@ -70,9 +71,9 @@ void PlGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds ) {
 	*num_cmds = _pl_num_commands;
 }
 
-PLConsoleCommand *PlGetConsoleCommand( const char *name ) {
+static PLConsoleCommand *PlGetConsoleCommand( const char *name ) {
 	for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
-		if ( pl_strcasecmp( name, ( *cmd )->cmd ) == 0 ) {
+		if ( pl_strcasecmp( name, ( *cmd )->name ) == 0 ) {
 			return ( *cmd );
 		}
 	}
@@ -85,9 +86,7 @@ static PLConsoleVariable **_pl_variables = NULL;
 static size_t _pl_num_variables = 0;
 static size_t _pl_variables_size = 512;
 
-PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *def, PLVariableType type,
-                                              void ( *CallbackFunction )( const PLConsoleVariable *variable ),
-                                              const char *desc ) {
+PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive ) {
 	FunctionStart();
 
 	plAssert( _pl_variables );
@@ -106,9 +105,19 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *def,
 		_pl_variables[ _pl_num_variables ] = ( PLConsoleVariable * ) PlMAllocA( sizeof( PLConsoleVariable ) );
 		out = _pl_variables[ _pl_num_variables ];
 		out->type = type;
-		snprintf( out->var, sizeof( out->var ), "%s", name );
-		snprintf( out->default_value, sizeof( out->default_value ), "%s", def );
-		snprintf( out->description, sizeof( out->description ), "%s", desc );
+		out->archive = archive;
+
+		size_t s = strlen( name );
+		out->name = PL_NEW_( char, s + 1 );
+		strncpy( out->name, name, s );
+
+		if ( description != NULL ) {
+			s = strlen( description );
+			out->description = PL_NEW_( char, s + 1 );
+			strncpy( out->description, description, s );
+		}
+
+		snprintf( out->default_value, sizeof( out->default_value ), "%s", defaultValue );
 
 		PlSetConsoleVariable( out, out->default_value );
 
@@ -130,7 +139,7 @@ void PlGetConsoleVariables( PLConsoleVariable ***vars, size_t *num_vars ) {
 
 PLConsoleVariable *PlGetConsoleVariable( const char *name ) {
 	for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
-		if ( pl_strcasecmp( name, ( *var )->var ) == 0 ) {
+		if ( pl_strcasecmp( name, ( *var )->name ) == 0 ) {
 			return ( *var );
 		}
 	}
@@ -213,78 +222,65 @@ void PlSetConsoleVariableByName( const char *name, const char *value ) {
 /////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE
 
-IMPLEMENT_COMMAND( pwd, "Print current working directory." ) {
+IMPLEMENT_COMMAND( pwd ) {
 	PlUnused( argv );
 	PlUnused( argc );
 	Print( "%s\n", PlGetWorkingDirectory() );
 }
 
-IMPLEMENT_COMMAND( echo, "Prints out string to console." ) {
+IMPLEMENT_COMMAND( echo ) {
 	for ( unsigned int i = 0; i < ( argc - 1 ); ++i ) {
 		Print( "%s ", argv[ i ] );
 	}
 	Print( "\n" );
 }
 
-#if 0
-IMPLEMENT_COMMAND(clear, "Clears the console buffer.") {
-    memset(console_panes[active_console_pane].buffer, 0, 4096);
-}
-#endif
-
-IMPLEMENT_COMMAND( colour, "Changes the colour of the current console." ) {
-	PlUnused( argv );
-	PlUnused( argc );
-	//console_panes[active_console_pane].
-}
-
-IMPLEMENT_COMMAND( time, "Prints out the current time." ) {
+IMPLEMENT_COMMAND( time ) {
 	PlUnused( argv );
 	PlUnused( argc );
 	Print( "%s\n", PlGetFormattedTime() );
 }
 
-IMPLEMENT_COMMAND( mem, "Prints out current memory usage." ) {
+IMPLEMENT_COMMAND( mem ) {
 	PlUnused( argv );
 	PlUnused( argc );
+	/* this intentionally sucks for now... */
+	Print( "System usage:        %llu\n"
+	       "Local/tracked usage: %llu\n",
+	       PlGetCurrentMemoryUsage(),
+	       PlGetTotalAllocatedMemory() );
 }
 
-IMPLEMENT_COMMAND( cmds, "Produces list of existing commands." ) {
+IMPLEMENT_COMMAND( cmds ) {
 	PlUnused( argv );
 	PlUnused( argc );
 	for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
-		Print( " %-20s : %-20s\n", ( *cmd )->cmd, ( *cmd )->description );
+		Print( " %-20s : %-20s\n", ( *cmd )->name, ( *cmd )->description != NULL ? ( *cmd )->description : "None" );
 	}
 	Print( "%zu commands in total\n", _pl_num_commands );
 }
 
-IMPLEMENT_COMMAND( vars, "Produces list of existing variables." ) {
+IMPLEMENT_COMMAND( vars ) {
 	PlUnused( argv );
 	PlUnused( argc );
 	for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
 		Print( " %-20s : %-5s / %-15s : %-20s\n",
-		       ( *var )->var, ( *var )->value, ( *var )->default_value, ( *var )->description );
+		       ( *var )->name, ( *var )->value, ( *var )->default_value, ( *var )->description != NULL ? ( *var )->description : "None" );
 	}
 	Print( "%zu variables in total\n", _pl_num_variables );
 }
 
-IMPLEMENT_COMMAND( help, "Returns information regarding specified command or variable.\nUsage: help <cmd/cvar>" ) {
-	if ( argc == 1 ) {
-		// provide help on help, gross...
-		Print( "%s\n", help_var.description );
-		return;
-	}
-
+IMPLEMENT_COMMAND( help ) {
 	PLConsoleVariable *var = PlGetConsoleVariable( argv[ 1 ] );
 	if ( var != NULL ) {
 		Print( " %-20s : %-5s / %-15s : %-20s\n",
-		       var->var, var->value, var->default_value, var->description );
+		       var->name, var->value, var->default_value, var->description != NULL ? var->description : "None" );
 		return;
 	}
 
 	PLConsoleCommand *cmd = PlGetConsoleCommand( argv[ 1 ] );
 	if ( cmd != NULL ) {
-		Print( " %-20s : %-20s\n", cmd->cmd, cmd->description );
+		Print( " %-20s : %-20s\n", cmd->name, cmd->description != NULL ? cmd->description : "None" );
 		return;
 	}
 
@@ -307,20 +303,13 @@ PLFunctionResult PlInitConsole( void ) {
 		return PL_RESULT_MEMORY_ALLOCATION;
 	}
 
-	PLConsoleCommand base_commands[] = {
-	        //clear_var,
-	        help_var,
-	        time_var,
-	        mem_var,
-	        colour_var,
-	        cmds_var,
-	        vars_var,
-	        pwd_var,
-	        echo_var,
-	};
-	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( base_commands ); ++i ) {
-		PlRegisterConsoleCommand( base_commands[ i ].cmd, base_commands[ i ].Callback, base_commands[ i ].description );
-	}
+	PlRegisterConsoleCommand( "help", "Returns information regarding specified command or variable.", 1, help_cmd );
+	PlRegisterConsoleCommand( "time", "Returns the current time.", 0, time_cmd );
+	PlRegisterConsoleCommand( "mem", "Returns the current memory usage stats.", 0, mem_cmd );
+	PlRegisterConsoleCommand( "cmds", "Prints a list of available commands.", 0, cmds_cmd );
+	PlRegisterConsoleCommand( "vars", "Prints a list of available variables.", 0, vars_cmd );
+	PlRegisterConsoleCommand( "pwd", "Prints out the current working directory.", 0, pwd_cmd );
+	PlRegisterConsoleCommand( "echo", "Echos the given input to the console output.", 1, echo_cmd );
 
 	/* initialize our internal log levels here
 	 * as we depend on the console variables being setup first */
@@ -337,9 +326,12 @@ void PlShutdownConsole( void ) {
 				continue;
 			}
 
-			PlFree( ( *cmd ) );
+			PL_DELETE( ( *cmd )->name );
+			PL_DELETE( ( *cmd )->description );
+
+			PL_DELETE( ( *cmd ) );
 		}
-		PlFree( _pl_commands );
+		PL_DELETE( _pl_commands );
 	}
 
 	if ( _pl_variables ) {
@@ -349,9 +341,12 @@ void PlShutdownConsole( void ) {
 				continue;
 			}
 
-			PlFree( ( *var ) );
+			PL_DELETE( ( *var )->name );
+			PL_DELETE( ( *var )->description );
+
+			PL_DELETE( ( *var ) );
 		}
-		PlFree( _pl_variables );
+		PL_DELETE( _pl_variables );
 	}
 
 	ConsoleOutputCallback = NULL;
@@ -375,19 +370,19 @@ const char **PlAutocompleteConsoleString( const char *string, unsigned int *numE
 	for ( unsigned int i = 0; i < _pl_num_variables; ++i ) {
 		if ( c >= MAX_AUTO_OPTIONS ) {
 			break;
-		} else if ( pl_strncasecmp( string, _pl_variables[ i ]->var, sl ) != 0 ) {
+		} else if ( pl_strncasecmp( string, _pl_variables[ i ]->name, sl ) != 0 ) {
 			continue;
 		}
-		options[ c++ ] = _pl_variables[ i ]->var;
+		options[ c++ ] = _pl_variables[ i ]->name;
 	}
 	/* gather up all the console commands */
 	for ( unsigned int i = 0; i < _pl_num_commands; ++i ) {
 		if ( c >= MAX_AUTO_OPTIONS ) {
 			break;
-		} else if ( pl_strncasecmp( string, _pl_commands[ i ]->cmd, sl ) != 0 ) {
+		} else if ( pl_strncasecmp( string, _pl_commands[ i ]->name, sl ) != 0 ) {
 			continue;
 		}
-		options[ c++ ] = _pl_commands[ i ]->cmd;
+		options[ c++ ] = _pl_commands[ i ]->name;
 	}
 
 	*numElements = c;
@@ -440,18 +435,25 @@ void PlParseConsoleString( const char *string ) {
 		if ( argc > 1 ) {
 			PlSetConsoleVariable( var, argv[ 1 ] );
 		} else {
-			Print( "    %s\n", var->var );
-			Print( "    %s\n", var->description );
+			Print( "    %s\n", var->name );
+			Print( "    %s\n", var->description != NULL ? var->description : "None" );
 			Print( "    %-10s : %s\n", var->value, var->default_value );
 		}
 	} else if ( ( cmd = PlGetConsoleCommand( argv[ 0 ] ) ) != NULL ) {
-		if ( cmd->Callback != NULL ) {
-			cmd->Callback( argc, argv );
-		} else {
+		if ( cmd->Callback == NULL ) {
 			Print( "    Invalid command, no callback provided!\n" );
-			Print( "    %s\n", cmd->cmd );
-			Print( "    %s\n", cmd->description );
+			Print( "    %s\n", cmd->name );
+			Print( "    %s\n", cmd->description != NULL ? cmd->description : "None" );
+			return;
 		}
+
+		if ( cmd->args >= 0 && ( argc - 1 ) != cmd->args ) {
+			Print( "    Invalid number of arguments!\n" );
+			Print( "    %s\n", cmd->description != NULL ? cmd->description : "None" );
+			return;
+		}
+
+		cmd->Callback( argc, argv );
 	} else {
 		Print( "Unknown variable/command, %s!\n", argv[ 0 ] );
 	}
@@ -549,7 +551,7 @@ int PlAddLogLevel( const char *prefix, PLColour colour, bool status ) {
 
 	char var[ 32 ];
 	snprintf( var, sizeof( var ), "log.%s", prefix );
-	l->var = PlRegisterConsoleVariable( var, status ? "1" : "0", pl_bool_var, NULL, "Console output level." );
+	l->var = PlRegisterConsoleVariable( var, "Console output level.", status ? "1" : "0", pl_bool_var, NULL, false );
 
 	return i;
 }
@@ -660,7 +662,7 @@ void PlExecuteConsoleScript( const char *path ) {
 	PLLinkedList *queuedCommands = PlCreateLinkedList();
 
 	const char *p = buf;
-	while( *p != '\0' ) {
+	while ( *p != '\0' ) {
 		unsigned int l = PlDetermineLineLength( buf );
 		if ( l == 0 ) {
 			PlSkipLine( &p );

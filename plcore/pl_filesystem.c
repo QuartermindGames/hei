@@ -116,12 +116,7 @@ static PLFileSystemMount *fs_mount_ceiling = NULL;
 
 PL_STATIC_ASSERT( sizeof( VFS_LOCAL_HINT ) < VFS_MAX_HINT, "Local hint is larger than maximum hint length, please adjust limit!" );
 
-IMPLEMENT_COMMAND( pkgext, "Extract the contents of a package." ) {
-	if ( argc == 1 ) {
-		Print( "%s", pkgext_var.description );
-		return;
-	}
-
+IMPLEMENT_COMMAND( pkgext ) {
 	const char *path = argv[ 1 ];
 	if ( path == NULL ) {
 		PrintWarning( "Invalid path specified!\n" );
@@ -169,12 +164,7 @@ IMPLEMENT_COMMAND( pkgext, "Extract the contents of a package." ) {
 	PlDestroyPackage( pkg );
 }
 
-IMPLEMENT_COMMAND( pkglst, "List all the files in a particular package." ) {
-	if ( argc == 1 ) {
-		Print( "%s", pkglst_var.description );
-		return;
-	}
-
+IMPLEMENT_COMMAND( pkglst ) {
 	const char *path = argv[ 1 ];
 	if ( path == NULL ) {
 		Print( "Invalid path specified!\n" );
@@ -208,7 +198,7 @@ IMPLEMENT_COMMAND( pkglst, "List all the files in a particular package." ) {
 	PlDestroyPackage( pkg );
 }
 
-IMPLEMENT_COMMAND( lstmnt, "Lists all of the mounted directories." ) {
+IMPLEMENT_COMMAND( lstmnt ) {
 	PlUnused( argv );
 	PlUnused( argc );
 
@@ -235,12 +225,7 @@ IMPLEMENT_COMMAND( lstmnt, "Lists all of the mounted directories." ) {
 	Print( "%d locations mounted\n", numLocations );
 }
 
-IMPLEMENT_COMMAND( unmnt, "Unmount the specified directory." ) {
-	if ( argc == 1 ) {
-		Print( "%s", unmnt_var.description );
-		return;
-	}
-
+IMPLEMENT_COMMAND( unmnt ) {
 	if ( fs_mount_root == NULL ) {
 		Print( "No locations mounted\n" );
 		return;
@@ -260,12 +245,7 @@ IMPLEMENT_COMMAND( unmnt, "Unmount the specified directory." ) {
 	Print( "Failed to find location: \"%s\"!\n", argv[ 1 ] );
 }
 
-IMPLEMENT_COMMAND( mnt, "Mount the specified directory." ) {
-	if ( argc == 1 ) {
-		Print( "%s", mnt_var.description );
-		return;
-	}
-
+IMPLEMENT_COMMAND( mnt ) {
 	const char *path = argv[ 1 ];
 	if ( path == NULL ) {
 		Print( "Invalid path specified!\n" );
@@ -276,16 +256,11 @@ IMPLEMENT_COMMAND( mnt, "Mount the specified directory." ) {
 }
 
 static void PlRegisterFSCommands_( void ) {
-	PLConsoleCommand fsCommands[] = {
-	        pkgext_var,
-	        pkglst_var,
-	        lstmnt_var,
-	        unmnt_var,
-	        mnt_var,
-	};
-	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( fsCommands ); ++i ) {
-		PlRegisterConsoleCommand( fsCommands[ i ].cmd, fsCommands[ i ].Callback, fsCommands[ i ].description );
-	}
+	PlRegisterConsoleCommand( "pkgext", "Extract the contents of a package.", 1, pkgext_cmd );
+	PlRegisterConsoleCommand( "pkglst", "List the contents of a package.", 1, pkglst_cmd );
+	PlRegisterConsoleCommand( "lstmnt", "List all mounted packages and directories.", 0, lstmnt_cmd );
+	PlRegisterConsoleCommand( "unmnt", "Unmount the specified location.", 1, unmnt_cmd );
+	PlRegisterConsoleCommand( "mnt", "Mount the specified location.", 1, mnt_cmd );
 }
 
 void PlClearMountedLocation( PLFileSystemMount *location ) {

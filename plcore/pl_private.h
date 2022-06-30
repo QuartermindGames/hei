@@ -9,9 +9,9 @@
 #include <plcore/pl.h>
 
 #if defined( _MSC_VER )
-#pragma warning( disable : 4204 )
-#pragma warning( disable : 4820 )
-#pragma warning( disable : 4668 )
+#	pragma warning( disable : 4204 )
+#	pragma warning( disable : 4820 )
+#	pragma warning( disable : 4668 )
 #endif
 
 // OS Specific Headers
@@ -21,8 +21,8 @@
 //#include <afxres.h>
 //#define STRSAFE_NO_DEPRECATE 1
 //#include <strsafe.h>
-#undef far
-#undef near
+#	undef far
+#	undef near
 #endif
 
 /* Hard Limits */
@@ -38,11 +38,11 @@ extern int LOG_LEVEL_FILESYSTEM;
 #define PrintWarning( FORMAT, ... ) PlLogWFunction( LOG_LEVEL_MEDIUM, FORMAT, ##__VA_ARGS__ )
 #define PrintError( FORMAT, ... )   PlLogWFunction( LOG_LEVEL_HIGH, FORMAT, ##__VA_ARGS__ )
 #if !defined( NDEBUG )
-#define debug_printf( ... )       printf( __VA_ARGS__ )
-#define DebugPrint( FORMAT, ... ) PlLogWFunction( LOG_LEVEL_DEBUG, FORMAT, ##__VA_ARGS__ )
+#	define debug_printf( ... )       printf( __VA_ARGS__ )
+#	define DebugPrint( FORMAT, ... ) PlLogWFunction( LOG_LEVEL_DEBUG, FORMAT, ##__VA_ARGS__ )
 #else
-#define debug_printf( ... )
-#define DebugPrint( ... ) Print( __VA_ARGS__ )
+#	define debug_printf( ... )
+#	define DebugPrint( ... ) Print( __VA_ARGS__ )
 #endif
 
 #define FunctionStart() PlClearError()
@@ -69,15 +69,13 @@ const char *GetLastError_strerror( uint32_t errnum );
 int GetLastError( void );
 const char *GetLastError_strerror( int errnum );
 
-#define WSAGetLastError()                  GetLastError()
-#define WSAGetLastError_strerror( errnum ) GetLastError_strerror( errnum )
+#	define WSAGetLastError()                  GetLastError()
+#	define WSAGetLastError_strerror( errnum ) GetLastError_strerror( errnum )
 
 #endif
 
 /* * * * * * * * * * * * * * * * * * * */
 /* Console Utilities                   */
 
-#define IMPLEMENT_COMMAND( NAME, DESC )                                \
-	static void NAME##_func( unsigned int argc, char *argv[] );        \
-	static PLConsoleCommand NAME##_var = { #NAME, NAME##_func, DESC }; \
-	static void NAME##_func( unsigned int argc, char *argv[] )
+#define IMPLEMENT_COMMAND( NAME ) \
+	static void NAME##_cmd( unsigned int argc, char *argv[] )

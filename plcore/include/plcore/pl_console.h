@@ -31,8 +31,8 @@ PL_EXTERN_C
 
 /* todo: make this structure private */
 typedef struct PLConsoleVariable {
-	char var[ 32 ];
-	char description[ 256 ];
+	char *name;
+	char *description;
 
 	PLVariableType type;
 
@@ -66,35 +66,31 @@ const char *PlGetConsoleVariableDefaultValue( const char *name );
 void PlSetConsoleVariable( PLConsoleVariable *var, const char *value );
 void PlSetConsoleVariableByName( const char *name, const char *value );
 
-PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *def, PLVariableType type,
-                                              void ( *CallbackFunction )( const PLConsoleVariable *variable ),
-                                              const char *desc );
+PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive );
 
 /* fetch and cache console var for trivial lookup */
-#define PL_GET_CVAR( NAME, STORE )                    \
-	static PLConsoleVariable *( STORE ) = NULL;       \
-	if ( ( STORE ) == NULL ) {                        \
-		( STORE ) = PlGetConsoleVariable( ( NAME ) ); \
-		assert( ( STORE ) != NULL );                  \
-	}
+#	define PL_GET_CVAR( NAME, STORE )                    \
+		static PLConsoleVariable *( STORE ) = NULL;       \
+		if ( ( STORE ) == NULL ) {                        \
+			( STORE ) = PlGetConsoleVariable( ( NAME ) ); \
+			assert( ( STORE ) != NULL );                  \
+		}
 
 #endif /* !defined( PL_COMPILE_PLUGIN ) */
 
 /////////////////////////////////////////////////////////////////////////////////////
 
 typedef struct PLConsoleCommand {
-	char cmd[ 24 ];
-
+	char *name;
+	char *description;
+	int args;
 	void ( *Callback )( unsigned int argc, char *argv[] );
-
-	char description[ 512 ];
 } PLConsoleCommand;
 
 #if !defined( PL_COMPILE_PLUGIN )
 
 void PlGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds );
-void PlRegisterConsoleCommand( const char *name, void ( *CallbackFunction )( unsigned int argc, char *argv[] ), const char *description );
-PLConsoleCommand *PlGetConsoleCommand( const char *name );
+void PlRegisterConsoleCommand( const char *name, const char *description, int args, void ( *CallbackFunction )( unsigned int argc, char *argv[] ) );
 
 void PlSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg, PLColour colour ) );
 
@@ -111,8 +107,11 @@ void PlRemoveLogLevel( int id );
 void PlSetLogLevelStatus( int id, bool status );
 void PlLogMessage( int id, const char *msg, ... );
 
-#define PlLogWFunction( ID, FORMAT, ... ) PlLogMessage( ( ID ), "(%s) " FORMAT, PL_FUNCTION, ## __VA_ARGS__ )
+#	define PlLogWFunction( ID, FORMAT, ... ) PlLogMessage( ( ID ), "(%s) " FORMAT, PL_FUNCTION, ##__VA_ARGS__ )
 
 #endif /* !defined( PL_COMPILE_PLUGIN ) */
+
+#define PL_REGISTER_CMD_SIMPLE( NAME, CALLBACK )           PlRegisterConsoleCommand( ( NAME ), NULL, -1, ( CALLBACK ) )
+#define PL_REGISTER_VAR_SIMPLE( NAME, TYPE, DEFAULT, ARCHIVE ) PlRegisterConsoleVariable( ( NAME ), NULL, ( DEFAULT ), ( TYPE ), NULL, ( ARCHIVE ) )
 
 PL_EXTERN_C_END

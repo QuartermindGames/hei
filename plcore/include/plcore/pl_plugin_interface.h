@@ -132,8 +132,8 @@ typedef struct PLPluginExportTable {
 	const char *( *GetConsoleVariableValue )( const char *name );
 	const char *( *GetConsoleVariableDefaultValue )( const char *name );
 	void ( *SetConsoleVariable )( const char *name, const char *value );
-	PLConsoleVariable *( *RegisterConsoleVariable )( const char *name, const char *def, PLVariableType type, void ( *CallbackFunction )( const PLConsoleVariable *var ), const char *description );
-	void ( *RegisterConsoleCommand )( const char *name, void ( *CallbackFunction )( unsigned int argc, char **argv ), const char *description );
+	PLConsoleVariable *( *RegisterConsoleVariable )( const char *name, const char *description, const char *defaultValue, PLVariableType type, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive );
+	void ( *RegisterConsoleCommand )( const char *name, const char *description, int args, void ( *CallbackFunction )( unsigned int argc, char *argv[] ) );
 	void ( *ParseConsoleString )( const char *string );
 
 	/**
@@ -156,8 +156,8 @@ typedef struct PLPluginExportTable {
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */
-#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 6
-#define PL_PLUGIN_INTERFACE_VERSION_MINOR 1
+#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 7
+#define PL_PLUGIN_INTERFACE_VERSION_MINOR 0
 #define PL_PLUGIN_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
 
@@ -166,7 +166,11 @@ typedef const PLPluginDescription *( *PLPluginQueryFunction )( void );
 #define PL_PLUGIN_INIT_FUNCTION "PLInitializePlugin"
 typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *exportTable );
 
-/* 2022-01-12
+/* 2022-06-30
+ * - RegisterConsoleVariable and RegisterConsoleCommand have been altered
+ * - Layout of the PLConsoleVariable struct was changed
+ *
+ * 2022-01-12
  * - Expose CacheFile functionality
  *
  * 2022-01-10
