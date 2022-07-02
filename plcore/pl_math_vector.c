@@ -302,7 +302,7 @@ PLVector4 PlClampVector4( const PLVector4 *v, float min, float max ) {
 
 const char *PlPrintVector2( const PLVector2 *v, PLVariableType format ) {
 	static char s[ 64 ];
-	if ( format == pl_int_var )
+	if ( format == PL_VAR_I32 )
 		snprintf( s, sizeof( s ), "%i %i", ( int ) v->x, ( int ) v->y );
 	else
 		snprintf( s, sizeof( s ), "%f %f", v->x, v->y );
@@ -311,7 +311,7 @@ const char *PlPrintVector2( const PLVector2 *v, PLVariableType format ) {
 
 const char *PlPrintVector3( const PLVector3 *v, PLVariableType format ) {
 	static char s[ 64 ];
-	if ( format == pl_int_var )
+	if ( format == PL_VAR_I32 )
 		snprintf( s, sizeof( s ), "%i %i %i", ( int ) v->x, ( int ) v->y, ( int ) v->z );
 	else
 		snprintf( s, sizeof( s ), "%f %f %f", v->x, v->y, v->z );
@@ -320,7 +320,7 @@ const char *PlPrintVector3( const PLVector3 *v, PLVariableType format ) {
 
 const char *PlPrintVector4( const PLVector4 *v, PLVariableType format ) {
 	static char s[ 64 ];
-	if ( format == pl_int_var )
+	if ( format == PL_VAR_I32 )
 		snprintf( s, sizeof( s ), "%i %i %i %i", ( int ) v->x, ( int ) v->y, ( int ) v->z, ( int ) v->w );
 	else
 		snprintf( s, sizeof( s ), "%f %f %f %f", v->x, v->y, v->z, v->w );

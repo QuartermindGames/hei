@@ -132,7 +132,7 @@ typedef struct PLPluginExportTable {
 	const char *( *GetConsoleVariableValue )( const char *name );
 	const char *( *GetConsoleVariableDefaultValue )( const char *name );
 	void ( *SetConsoleVariable )( const char *name, const char *value );
-	PLConsoleVariable *( *RegisterConsoleVariable )( const char *name, const char *description, const char *defaultValue, PLVariableType type, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive );
+	PLConsoleVariable *( *RegisterConsoleVariable )( const char *name, const char *description, const char *defaultValue, PLVariableType type, void *ptrValue, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive );
 	void ( *RegisterConsoleCommand )( const char *name, const char *description, int args, void ( *CallbackFunction )( unsigned int argc, char *argv[] ) );
 	void ( *ParseConsoleString )( const char *string );
 
@@ -156,7 +156,7 @@ typedef struct PLPluginExportTable {
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */
-#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 7
+#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 8
 #define PL_PLUGIN_INTERFACE_VERSION_MINOR 0
 #define PL_PLUGIN_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
@@ -166,7 +166,10 @@ typedef const PLPluginDescription *( *PLPluginQueryFunction )( void );
 #define PL_PLUGIN_INIT_FUNCTION "PLInitializePlugin"
 typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *exportTable );
 
-/* 2022-06-30
+/* 2022-07-02
+ * - Now possible to attach a variable to a console var
+ *
+ * 2022-06-30
  * - RegisterConsoleVariable and RegisterConsoleCommand have been altered
  * - Layout of the PLConsoleVariable struct was changed
  *

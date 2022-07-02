@@ -50,6 +50,7 @@ typedef struct PLConsoleVariable {
 	};
 	char value[ PL_VAR_VALUE_LENGTH ];
 	char default_value[ PL_VAR_VALUE_LENGTH ];
+	void *ptrValue;
 
 	/////////////////////////////
 
@@ -66,7 +67,7 @@ const char *PlGetConsoleVariableDefaultValue( const char *name );
 void PlSetConsoleVariable( PLConsoleVariable *var, const char *value );
 void PlSetConsoleVariableByName( const char *name, const char *value );
 
-PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive );
+PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void *ptrValue, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive );
 
 /* fetch and cache console var for trivial lookup */
 #	define PL_GET_CVAR( NAME, STORE )                    \
@@ -111,7 +112,7 @@ void PlLogMessage( int id, const char *msg, ... );
 
 #endif /* !defined( PL_COMPILE_PLUGIN ) */
 
-#define PL_REGISTER_CMD_SIMPLE( NAME, CALLBACK )           PlRegisterConsoleCommand( ( NAME ), NULL, -1, ( CALLBACK ) )
-#define PL_REGISTER_VAR_SIMPLE( NAME, TYPE, DEFAULT, ARCHIVE ) PlRegisterConsoleVariable( ( NAME ), NULL, ( DEFAULT ), ( TYPE ), NULL, ( ARCHIVE ) )
+#define PL_REGISTER_CMD_SIMPLE( NAME, CALLBACK )               PlRegisterConsoleCommand( ( NAME ), NULL, -1, ( CALLBACK ) )
+#define PL_REGISTER_VAR_SIMPLE( NAME, TYPE, DEFAULT, ARCHIVE ) PlRegisterConsoleVariable( ( NAME ), NULL, ( DEFAULT ), ( TYPE ), NULL, NULL, ( ARCHIVE ) )
 
 PL_EXTERN_C_END

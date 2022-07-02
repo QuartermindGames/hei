@@ -97,10 +97,10 @@ typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
 #endif
 
 typedef enum PLVariableType {
-	pl_float_var,
-	pl_int_var,
-	pl_string_var,
-	pl_bool_var,// 0,1 true,false
+	PL_VAR_F32,
+	PL_VAR_I32,
+	PL_VAR_STRING,
+	PL_VAR_BOOL,// 0,1 true,false
 } PLVariableType;
 
 //////////////////////////////////////////////////////////////////

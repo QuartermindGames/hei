@@ -86,7 +86,7 @@ static PLConsoleVariable **_pl_variables = NULL;
 static size_t _pl_num_variables = 0;
 static size_t _pl_variables_size = 512;
 
-PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive ) {
+PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void *ptrValue, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive ) {
 	FunctionStart();
 
 	plAssert( _pl_variables );
@@ -104,7 +104,12 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *desc
 	if ( _pl_num_variables < _pl_variables_size ) {
 		_pl_variables[ _pl_num_variables ] = ( PLConsoleVariable * ) PlMAllocA( sizeof( PLConsoleVariable ) );
 		out = _pl_variables[ _pl_num_variables ];
+
 		out->type = type;
+		if ( ptrValue != NULL ) {
+			out->ptrValue = ptrValue;
+		}
+
 		out->archive = archive;
 
 		size_t s = strlen( name );
@@ -172,24 +177,30 @@ void PlSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
 			PrintWarning( "Unknown variable type %d, failed to set!\n", var->type );
 			return;
 
-		case pl_int_var:
+		case PL_VAR_I32:
 			if ( pl_strisdigit( value ) != -1 ) {
 				PrintWarning( "Unknown argument type %s, failed to set!\n", value );
 				return;
 			}
 
 			var->i_value = ( int ) strtol( value, NULL, 10 );
+			if ( var->ptrValue != NULL ) {
+				*( int * ) var->ptrValue = var->i_value;
+			}
 			break;
 
-		case pl_string_var:
+		case PL_VAR_STRING:
 			var->s_value = &var->value[ 0 ];
 			break;
 
-		case pl_float_var:
+		case PL_VAR_F32:
 			var->f_value = strtof( value, NULL );
+			if ( var->ptrValue != NULL ) {
+				*( float * ) var->ptrValue = var->f_value;
+			}
 			break;
 
-		case pl_bool_var:
+		case PL_VAR_BOOL:
 			if ( pl_strisalnum( value ) == -1 ) {
 				PrintWarning( "Unknown argument type %s, failed to set!\n", value );
 				return;
@@ -199,6 +210,10 @@ void PlSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
 				var->b_value = true;
 			} else {
 				var->b_value = false;
+			}
+
+			if ( var->ptrValue != NULL ) {
+				*( bool * ) var->ptrValue = var->b_value;
 			}
 			break;
 	}
@@ -551,7 +566,7 @@ int PlAddLogLevel( const char *prefix, PLColour colour, bool status ) {
 
 	char var[ 32 ];
 	snprintf( var, sizeof( var ), "log.%s", prefix );
-	l->var = PlRegisterConsoleVariable( var, "Console output level.", status ? "1" : "0", pl_bool_var, NULL, false );
+	l->var = PlRegisterConsoleVariable( var, "Console output level.", status ? "1" : "0", PL_VAR_BOOL, NULL, NULL, false );
 
 	return i;
 }
