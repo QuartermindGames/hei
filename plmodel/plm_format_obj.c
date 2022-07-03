@@ -190,15 +190,15 @@ bool PlmWriteObjModel( PLMModel *model, const char *path ) {
 			fprintf( fp, "o mesh.%0d\n", i );
 			/* print out vertices */
 			for ( unsigned int vi = 0; vi < mesh->num_verts; ++vi ) {
-				fprintf( fp, "v %s\n", PlPrintVector3( &mesh->vertices[ vi ].position, pl_float_var ) );
+				fprintf( fp, "v %s\n", PlPrintVector3( &mesh->vertices[ vi ].position, PL_VAR_F32 ) );
 			}
 			/* print out texture coords */
 			for ( unsigned int vi = 0; vi < mesh->num_verts; ++vi ) {
-				fprintf( fp, "vt %s\n", PlPrintVector2( &mesh->vertices[ vi ].st[ 0 ], pl_float_var ) );
+				fprintf( fp, "vt %s\n", PlPrintVector2( &mesh->vertices[ vi ].st[ 0 ], PL_VAR_F32 ) );
 			}
 			/* print out vertex normals */
 			for ( unsigned int vi = 0; vi < mesh->num_verts; ++vi ) {
-				fprintf( fp, "vn %s\n", PlPrintVector3( &mesh->vertices[ vi ].normal, pl_float_var ) );
+				fprintf( fp, "vn %s\n", PlPrintVector3( &mesh->vertices[ vi ].normal, PL_VAR_F32 ) );
 			}
 			fprintf( fp, "# %d vertices\n", mesh->num_verts );
 
