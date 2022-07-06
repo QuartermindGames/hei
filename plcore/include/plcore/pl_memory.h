@@ -36,8 +36,8 @@ extern uint64_t PlGetCurrentMemoryUsage( void );
 #define PlMAllocA( SIZE )          PlMAlloc( ( SIZE ), true )
 #define PlReAllocA( PTR, NEWSIZE ) PlReAlloc( ( PTR ), ( NEWSIZE ), true )
 
-#define PL_NEW( TYPE )       PlMAllocA( sizeof( TYPE ) )
-#define PL_NEW_( TYPE, NUM ) PlCAllocA( NUM, sizeof( TYPE ) )
+#define PL_NEW( TYPE )       ( TYPE * ) PlMAllocA( sizeof( TYPE ) )
+#define PL_NEW_( TYPE, NUM ) ( TYPE * ) PlCAllocA( NUM, sizeof( TYPE ) )
 #define PL_DELETE( PTR )     PlFree( PTR )
 
 PL_EXTERN_C_END
