@@ -504,6 +504,9 @@ inline static float PlGenerateRandomFloat( float max ) {
 }
 
 int *PlSeedRandom( int seed );
+int *PlSeedPerlin( const int *hashTable );
+
+double PlGeneratePerlinNoise( int *seed, double x, double y, double z );
 
 // Linear congruential generator
 
