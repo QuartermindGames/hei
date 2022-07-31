@@ -278,7 +278,7 @@ PLImage *VTF_ParseImage( PLFile *file ) {
 		}
 	}
 	
-	PLImage *out = NULL;
+	PLImage *out = gInterface->MAlloc( sizeof( PLImage ), true );
 
 	/*
     if (header.version[1] >= 3) {
