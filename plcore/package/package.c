@@ -66,7 +66,7 @@ static int Inflate( unsigned char *dst, uint32_t *dstLength, const unsigned char
  * Generic loader for package files, since this is unlikely to change
  * in most cases.
  */
-static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
+static void *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 	FunctionStart();
 
 	if ( !PlFileSeek( fh, ( signed ) pi->offset, PL_SEEK_SET ) ) {
@@ -74,67 +74,81 @@ static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 	}
 
 	size_t size = ( pi->compressionType != PL_COMPRESSION_NONE ) ? pi->compressedSize : pi->fileSize;
-	uint8_t *dataPtr = PlMAllocA( size );
+	uint8_t *dataPtr = PL_NEW_( uint8_t, size );
 	if ( PlReadFile( fh, dataPtr, sizeof( uint8_t ), size ) != size ) {
-		PlFree( dataPtr );
+		PL_DELETE( dataPtr );
 		return NULL;
 	}
 
 	if ( pi->compressionType != PL_COMPRESSION_NONE ) {
-		uint8_t *decompressedPtr = PlMAllocA( pi->fileSize );
-		uint32_t uncompressedLength = ( uint32_t ) pi->fileSize;
-		if ( pi->compressionType == PL_COMPRESSION_DEFLATE || pi->compressionType == PL_COMPRESSION_GZIP ) {
-			int status = Inflate( decompressedPtr, &uncompressedLength, dataPtr, ( unsigned long ) pi->compressedSize, ( pi->compressionType == PL_COMPRESSION_GZIP ) );
-
-			PlFree( dataPtr );
-			dataPtr = decompressedPtr;
-
-			if ( status != Z_OK ) {
-				PlFree( dataPtr );
-				PlReportErrorF( PL_RESULT_FILEREAD, "failed to decompress buffer (%s)", zError( status ) );
-				return NULL;
-			}
-		} else if ( pi->compressionType == PL_COMPRESSION_IMPLODE ) {
-			BlstUser in = {
-			                 .buffer = dataPtr,
-			                 .length = ( unsigned int ) size,
-			         },
-			         out = {
-			                 .buffer = decompressedPtr,
-			                 .length = 0,
-			                 .maxLength = uncompressedLength,
-			         };
-			int status = blast( BlstCbIn, &in, BlstCbOut, &out, NULL, NULL );
-
-			PlFree( dataPtr );
-			dataPtr = decompressedPtr;
-
-			if ( status != 0 ) {
-				const char *errmsg;
-				switch ( status ) {
-					case 2:
-						errmsg = "ran out of input before completing decompression";
-						break;
-					case 1:
-						errmsg = "output error before completing decompression";
-						break;
-					case -1:
-						errmsg = "literal flag not zero or one";
-						break;
-					case -2:
-						errmsg = "dictionary size not in 4..6";
-						break;
-					case -3:
-						errmsg = "distance is too far back";
-						break;
-					default:
-						errmsg = "unknown error when decompressing buffer";
-						break;
+		switch ( pi->compressionType ) {
+			default:
+				PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported compression type for packages" );
+				break;
+			case PL_COMPRESSION_DEFLATE:
+			case PL_COMPRESSION_GZIP: {
+				uint8_t *decompressedPtr = PL_NEW_( uint8_t, pi->fileSize );
+				uint32_t uncompressedLength = ( uint32_t ) pi->fileSize;
+				int status = Inflate( decompressedPtr, &uncompressedLength, dataPtr, ( unsigned long ) pi->compressedSize, ( pi->compressionType == PL_COMPRESSION_GZIP ) );
+				PL_DELETE( dataPtr );
+				dataPtr = decompressedPtr;
+				if ( status != Z_OK ) {
+					PL_DELETE( dataPtr );
+					PlReportErrorF( PL_RESULT_FILEREAD, "failed to decompress buffer (%s)", zError( status ) );
+					return NULL;
 				}
+				break;
+			}
+			case PL_COMPRESSION_IMPLODE: {
+				uint8_t *decompressedPtr = PL_NEW_( uint8_t, pi->fileSize );
+				uint32_t uncompressedLength = ( uint32_t ) pi->fileSize;
+				BlstUser in = {
+				                 .buffer = dataPtr,
+				                 .length = ( unsigned int ) size,
+				         },
+				         out = {
+				                 .buffer = decompressedPtr,
+				                 .length = 0,
+				                 .maxLength = uncompressedLength,
+				         };
+				int status = blast( BlstCbIn, &in, BlstCbOut, &out, NULL, NULL );
+				PL_DELETE( dataPtr );
+				dataPtr = decompressedPtr;
+				if ( status != 0 ) {
+					const char *errmsg;
+					switch ( status ) {
+						case 2:
+							errmsg = "ran out of input before completing decompression";
+							break;
+						case 1:
+							errmsg = "output error before completing decompression";
+							break;
+						case -1:
+							errmsg = "literal flag not zero or one";
+							break;
+						case -2:
+							errmsg = "dictionary size not in 4..6";
+							break;
+						case -3:
+							errmsg = "distance is too far back";
+							break;
+						default:
+							errmsg = "unknown error when decompressing buffer";
+							break;
+					}
 
-				PlFree( dataPtr );
-				PlReportErrorF( PL_RESULT_FILEREAD, "%s (%d)", errmsg, status );
-				return NULL;
+					PL_DELETE( dataPtr );
+					PlReportErrorF( PL_RESULT_FILEREAD, "%s (%d)", errmsg, status );
+					return NULL;
+				}
+				break;
+			}
+			case PL_COMPRESSION_LZRW1: {
+				size_t uncompressedLength = pi->fileSize;
+				void *decompressedPtr = PlDecompress_LZRW1( dataPtr, pi->compressedSize, &uncompressedLength );
+				PL_DELETE( dataPtr );
+				dataPtr = decompressedPtr;
+				break;
 			}
 		}
 	}
@@ -148,7 +162,7 @@ static uint8_t *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 /**
  * Allocate a new package handle.
  */
-PLPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, uint8_t *( *OpenFile )( PLFile *filePtr, PLPackageIndex *index ) ) {
+PLPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, void *( *OpenFile )( PLFile *filePtr, PLPackageIndex *index ) ) {
 	PLPackage *package = PlMAllocA( sizeof( PLPackage ) );
 
 	if ( OpenFile == NULL ) {

@@ -23,7 +23,7 @@ typedef struct PLPackage {
 	unsigned int table_size;
 	PLPackageIndex *table;
 	struct {
-		uint8_t *( *LoadFile )( PLFile *package, PLPackageIndex *index );
+		void *( *LoadFile )( PLFile *package, PLPackageIndex *index );
 	} internal;
 } PLPackage;
 
@@ -31,7 +31,7 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PL_EXTERN PLPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, uint8_t *( *OpenFile )( PLFile *filePtr, PLPackageIndex *index ) );
+PL_EXTERN PLPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, void *( *OpenFile )( PLFile *filePtr, PLPackageIndex *index ) );
 
 PL_EXTERN PLPackage *PlLoadPackage( const char *path );
 PL_EXTERN PLFile *PlLoadPackageFile( PLPackage *package, const char *path );
