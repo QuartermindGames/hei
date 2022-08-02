@@ -1,8 +1,5 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+/* SPDX-License-Identifier: MIT */
+/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
 
 #pragma once
 
@@ -39,5 +36,28 @@ extern uint64_t PlGetCurrentMemoryUsage( void );
 #define PL_NEW( TYPE )       ( TYPE * ) PlMAllocA( sizeof( TYPE ) )
 #define PL_NEW_( TYPE, NUM ) ( TYPE * ) PlCAllocA( NUM, sizeof( TYPE ) )
 #define PL_DELETE( PTR )     PlFree( PTR )
+
+typedef struct PLMemoryGroup PLMemoryGroup;
+void PlFlushMemoryGroup( PLMemoryGroup *group );
+PLMemoryGroup *PlCreateMemoryGroup( void );
+void PlDestroyMemoryGroup( PLMemoryGroup *group );
+size_t PlGetMemoryGroupSize( PLMemoryGroup *group );
+void *PlGroupAlloc( PLMemoryGroup *group, size_t size );
+
+#define PL_GNEW( GROUP, TYPE )       ( TYPE * ) PlGroupAlloc( GROUP, sizeof( TYPE ) )
+#define PL_GNEW_( GROUP, TYPE, NUM ) ( TYPE * ) PlGroupAlloc( GROUP, sizeof( TYPE ) * NUM )
+
+typedef struct PLMemoryHeap PLMemoryHeap;
+void PlFlushHeap( PLMemoryHeap *heap );
+PLMemoryHeap *PlCreateHeap( size_t reserve );
+void PlDestroyHeap( PLMemoryHeap *heap );
+size_t PlGetAvailableHeapSize( const PLMemoryHeap *heap );
+void *PlHeapAlloc( PLMemoryHeap *heap, size_t size );
+
+#define PL_DEFAULT_HEAP_SIZE     0x3D09000                            /* should be 64mb */
+#define PL_CREATE_DEFAULT_HEAP() PlCreateHeap( PL_DEFAULT_HEAP_SIZE ) /* init with default */
+
+#define PL_HNEW( HEAP, TYPE )       ( TYPE * ) PlHeapAlloc( HEAP, sizeof( TYPE ) )
+#define PL_HNEW_( HEAP, TYPE, NUM ) ( TYPE * ) PlHeapAlloc( HEAP, sizeof( TYPE ) * NUM )
 
 PL_EXTERN_C_END

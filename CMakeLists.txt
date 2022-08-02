@@ -47,7 +47,6 @@ add_subdirectory(plmodel)
 
 add_subdirectory(tests)
 
-add_subdirectory(examples/compression)
 add_subdirectory(examples/pcmd)
 add_subdirectory(examples/cpj_dumper)
 
