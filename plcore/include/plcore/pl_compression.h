@@ -14,11 +14,16 @@ typedef enum PLCompressionType {
 	PL_COMPRESSION_GZIP,
 	PL_COMPRESSION_IMPLODE,
 
+	PL_COMPRESSION_LZRW1,
+
 	PL_MAX_COMPRESSION_FORMATS
 } PLCompressionType;
 
 PL_EXTERN_C
 
-void *PlDeflateCompression( const void *data, unsigned long length, unsigned long *outLength );
+void *PlCompress_Deflate( const void *src, size_t srcLength, size_t *dstLength );
+void *PlCompress_LZRW1( const void *src, size_t length, size_t *outLength );
+
+void *PlDecompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength );
 
 PL_EXTERN_C_END

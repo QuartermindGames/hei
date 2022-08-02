@@ -1,8 +1,5 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+/* SPDX-License-Identifier: MIT */
+/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
 /****************************************
  * MEMORY MANAGEMENT
  ****************************************/
@@ -16,6 +13,8 @@
 #endif
 
 #include "pl_private.h"
+
+#include <plcore/pl_linkedlist.h>
 
 //#define DEBUG_MEMORY
 #define TRACK_MEMORY
@@ -145,7 +144,7 @@ void PlFree( void *ptr ) {
 	if ( buf != NULL ) {
 		buf -= sizeof( PLAllocHeader );
 		PLAllocHeader *header = ( PLAllocHeader * ) buf;
-		if ( ( header != NULL ) && (header->magic == MAGIC) ) {
+		if ( ( header != NULL ) && ( header->magic == MAGIC ) ) {
 			totalRAMUsage -= header->length;
 #	ifdef DEBUG_MEMORY
 			printf( "FREE: %p | " COM_FMT_uint64 " bytes (%s)\t\t | TOTAL: " COM_FMT_double "mb\n",
@@ -238,4 +237,91 @@ uint64_t PlGetCurrentMemoryUsage( void ) {
 #else
 #	error "Missing implementation!"
 #endif
+}
+
+/****************************************
+ * Heap
+ * For quick temporary memory allocation
+ ****************************************/
+
+typedef struct PLMemoryHeap {
+	void *store;
+	void *pos;
+	size_t size;
+} PLMemoryHeap;
+
+void PlFlushHeap( PLMemoryHeap *heap ) {
+	heap->pos = heap->store;
+	*( char * ) heap->pos = '\0';
+}
+
+PLMemoryHeap *PlCreateHeap( size_t reserve ) {
+	PLMemoryHeap *heap = PL_NEW( PLMemoryHeap );
+	heap->store = PL_NEW_( char, reserve );
+	heap->pos = heap->store;
+	heap->size = reserve;
+	return heap;
+}
+
+void PlDestroyHeap( PLMemoryHeap *heap ) {
+	PL_DELETE( heap->store );
+	PL_DELETE( heap );
+}
+
+size_t PlGetAvailableHeapSize( const PLMemoryHeap *heap ) {
+	return heap->size - ( heap->pos - heap->store );
+}
+
+void *PlHeapAlloc( PLMemoryHeap *heap, size_t size ) {
+	size_t end = ( ( heap->pos - heap->store ) + size );
+	if ( end >= heap->size ) {
+		PlReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "requested size will not fit in heap" );
+		return NULL;
+	}
+
+	void *p = heap->pos;
+	heap->pos = heap->pos + size;
+	return p;
+}
+
+/****************************************
+ * Memory Allocation Groups
+ ****************************************/
+
+typedef struct PLMemoryGroup {
+	PLLinkedList *allocations;
+	size_t totalSize;
+} PLMemoryGroup;
+
+void PlFlushMemoryGroup( PLMemoryGroup *group ) {
+	PLLinkedListNode *node = PlGetFirstNode( group->allocations );
+	while ( node != NULL ) {
+		PL_DELETE( PlGetLinkedListNodeUserData( node ) );
+		node = PlGetNextLinkedListNode( node );
+	}
+	PlDestroyLinkedListNodes( group->allocations );
+	group->totalSize = 0;
+}
+
+PLMemoryGroup *PlCreateMemoryGroup( void ) {
+	PLMemoryGroup *group = PL_NEW( PLMemoryGroup );
+	group->allocations = PlCreateLinkedList();
+	return group;
+}
+
+void PlDestroyMemoryGroup( PLMemoryGroup *group ) {
+	PlFlushMemoryGroup( group );
+	PlDestroyLinkedList( group->allocations );
+	PL_DELETE( group );
+}
+
+size_t PlGetMemoryGroupSize( PLMemoryGroup *group ) {
+	return group->totalSize;
+}
+
+void *PlGroupAlloc( PLMemoryGroup *group, size_t size ) {
+	void *p = PlMAllocA( size );
+	PlInsertLinkedListNode( group->allocations, p );
+	group->totalSize += size;
+	return p;
 }

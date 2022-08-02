@@ -19,6 +19,7 @@ priority for you then I would highly recommend looking elsewhere!**
 ## Features
 
 ### plcore
+- Support for multiple compression algorithms
 - PCMD command-line interface, that exposes features the library has to offer
 - Plugin interface for supporting new image and package formats
 - C/C++ Math Library (Vector, Matrix, Quaternion)
@@ -44,16 +45,25 @@ mounted packages before falling back to the local FS
   - Ritual SWL (*read*)
   - Sony TIM (*read*)
   - Valve VTX (via plugin) (*read*)
+  - Herdy Gerdy HGT (*read*)
+  - Angel Engine TEX (*read*)
   - Can easily be extended to support other image formats either via the API or via plugins
 - Supported Package Formats
-  - IBF (Iron Storm)
-  - RID/RIM (Eradicator)
-  - WAD (Doom)
-  - FF (Outwars)
-  - MAD/MTD (Hogs of War, Actua Soccer)
-  - HAL (Mortyr)
-  - SFA (SF Adventures)
-  - VSR (Sentient)
+  - IWAD/PWAD, WAD2 and WAD3
+  - Future Tactics PAK
+  - Outcast OPK
+  - Quake PAK
+  - Alone in the Dark PAK
+  - Herdy Gerdy CLU
+  - Iron Storm IBF
+  - Eradicator RID/RIM
+  - Outwars FF
+  - Gremlin MAD/MTD (Hogs of War, Actua Soccer)
+  - Mortyr HAL
+  - Star Fox Adventures BIN
+  - Sentient VSR
+  - VTMB VPK
+  - Angel Engine DAT
   - Can easily be extended to support other package formats either via the API or via plugins
 
 ### plgraphics

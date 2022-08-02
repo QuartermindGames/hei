@@ -51,12 +51,7 @@ void CB_test_cmd( unsigned int argc, char **argv ) {
 }
 
 FUNC_TEST( RegisterConsoleCommand )
-PlRegisterConsoleCommand( "test_cmd", CB_test_cmd, "testing" );
-PLConsoleCommand *cmd = PlGetConsoleCommand( "test_cmd" );
-if ( cmd == NULL ) {
-	printf( "test_cmd was not registered!\n" );
-	return TEST_RETURN_FAILURE;
-}
+PlRegisterConsoleCommand( "test_cmd", "testing", 0, CB_test_cmd );
 PlParseConsoleString( "test_cmd" );
 if ( !test_cmd_called ) {
 	printf( "Failed to call \"test_cmd\" command!\n" );
@@ -65,54 +60,165 @@ if ( !test_cmd_called ) {
 test_cmd_called = false;
 FUNC_TEST_END()
 
-FUNC_TEST( GetConsoleCommands )
-PLConsoleCommand **cmds;
-size_t numCmds;
-PlGetConsoleCommands( &cmds, &numCmds );
-if ( numCmds < 1 ) {
-	printf( "Did not receive any commands!\n" );
-	return TEST_RETURN_FAILURE;
-}
-if ( cmds == NULL ) {
-	printf( "Returned null cmds list!\n" );
-	return TEST_RETURN_FAILURE;
-}
-bool foundResult = false;
-for ( unsigned int i = 0; i < numCmds; ++i ) {
-	const PLConsoleCommand *cmd = cmds[ i ];
-	if ( strcmp( "test_cmd", cmd->cmd ) != 0 ) {
-		continue;
+FUNC_TEST( GetConsoleCommands ) {
+	PLConsoleCommand **cmds;
+	size_t numCmds;
+	PlGetConsoleCommands( &cmds, &numCmds );
+	if ( numCmds < 1 ) {
+		printf( "Did not receive any commands!\n" );
+		return TEST_RETURN_FAILURE;
 	}
-	foundResult = true;
-}
-if ( !foundResult ) {
-	printf( "Failed to find test_cmd!\n" );
-	return TEST_RETURN_FAILURE;
+	if ( cmds == NULL ) {
+		printf( "Returned null cmds list!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+	bool foundResult = false;
+	for ( unsigned int i = 0; i < numCmds; ++i ) {
+		const PLConsoleCommand *cmd = cmds[ i ];
+		if ( strcmp( "test_cmd", cmd->name ) != 0 ) {
+			continue;
+		}
+		foundResult = true;
+	}
+	if ( !foundResult ) {
+		printf( "Failed to find test_cmd!\n" );
+		return TEST_RETURN_FAILURE;
+	}
 }
 FUNC_TEST_END()
 
-FUNC_TEST( GetConsoleCommand )
-const PLConsoleCommand *cmd = PlGetConsoleCommand( "test_cmd" );
-if ( cmd == NULL ) {
-	printf( "Failed to get test_cmd!\n" );
-	return TEST_RETURN_FAILURE;
+FUNC_TEST( StringChunk ) {
+	static const char *testString = "thisthisthisthisthisthis";
+	char *c = pl_strchunksplit( testString, 4, " " );
+	if ( c == NULL ) {
+		printf( "Returned null!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+	bool status = ( strcmp( c, "this this this this this this " ) == 0 );
+	PlFree( c );
+	if ( !status ) {
+		printf( "Failed to split string!\n" );
+		return TEST_RETURN_FAILURE;
+	}
 }
 FUNC_TEST_END()
 
-FUNC_TEST( StringChunk )
-static const char *testString = "thisthisthisthisthisthis";
-char *c = pl_strchunksplit( testString, 4, " " );
-if ( c == NULL ) {
-	printf( "Returned null!\n" );
-	return EXIT_FAILURE;
-}
-bool status = ( strcmp( c, "this this this this this this " ) == 0 );
-PlFree( c );
-if ( !status ) {
-	printf( "Failed to split string!\n" );
-	return EXIT_FAILURE;
+/*============================================================
+ * COMPRESSION
+ ===========================================================*/
+
+#include <plcore/pl_compression.h>
+
+FUNC_TEST( CompressionLZRW1 ) {
+	static const char *string = "The quick brown fox jumped over the lazy dog! !2345678 "
+	                            "The quick brown fox jumped over the lazy dog! !3456789 "
+	                            "The quick brown fox jumped over the lazy dog! !4567890 "
+	                            "The quick brown fox jumped over the lazy dog! !5678901 "
+	                            "The quick brown fox jumped over the lazy dog! !6789012 "
+	                            "The quick brown fox jumped over the lazy dog! !7890123 "
+	                            "The quick brown fox jumped over the lazy dog! !8901234 "
+	                            "The quick brown fox jumped over the lazy dog! !9012345 ";
+
+	size_t originalLength = strlen( string ) + 1;
+	size_t srcLength = originalLength;
+	size_t dstLength;
+	void *dst = PlCompress_LZRW1( string, srcLength, &dstLength );
+	if ( dst == NULL || ( dstLength >= srcLength ) || dstLength == 0 ) {
+		printf( "Failed to compress - lzrw1: %s\n", PlGetError() );
+		return TEST_RETURN_FAILURE;
+	}
+
+	printf( "Compressed from %llu bytes to %llu bytes\nDecompressing...\n", srcLength, dstLength );
+
+	char *src = PlDecompress_LZRW1( dst, dstLength, &srcLength );
+	if ( src == NULL || ( srcLength <= dstLength ) || ( srcLength != originalLength ) || srcLength == 0 ) {
+		printf( "Failed to decompress - lzrw1: %s\n", PlGetError() );
+		return TEST_RETURN_FAILURE;
+	}
+
+	printf( "SOURCE: %s\n", string );
+	printf( "DEST:   %s\n", src );
+
+	if ( strcmp( string, src ) != 0 ) {
+		printf( "Decompressed result doesn't match original!\n" );
+		return TEST_RETURN_FAILURE;
+	}
 }
 FUNC_TEST_END()
+
+/*============================================================
+ * MEMORY
+ ===========================================================*/
+
+FUNC_TEST( HeapMemory ) {
+	const char *src = "The quick brown fox jumped over the lazy dog!";
+	size_t srcLength = strlen( src ) + 1;
+
+	PLMemoryHeap *heap = PlCreateHeap( 64 );
+	if ( PlGetAvailableHeapSize( heap ) != 64 ) {
+		printf( "PlGetAvailableHeapSize didn't return size allocated!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+	char *dst = PL_HNEW_( heap, char, srcLength );
+	snprintf( dst, srcLength, "%s", src );
+
+	if ( strcmp( dst, src ) != 0 ) {
+		printf( "Source doesn't match destination!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+
+	if ( PlGetAvailableHeapSize( heap ) != 18 ) {
+		printf( "Unexpected remaining heap size!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+
+	/* this should fail due to an overrun */
+	dst = PL_HNEW_( heap, char, srcLength );
+	if ( dst != NULL ) {
+		printf( "Heap allocation should've failed due to overrun!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+
+	PlDestroyHeap( heap );
+}
+FUNC_TEST_END()
+
+FUNC_TEST( GroupMemory ) {
+	PLMemoryGroup *group = PlCreateMemoryGroup();
+
+	size_t a = PlGetTotalAllocatedMemory();
+	PL_GNEW_( group, char, 256 );
+	PL_GNEW_( group, char, 256 );
+	PL_GNEW_( group, char, 256 );
+	PL_GNEW_( group, char, 256 );
+	PL_GNEW_( group, char, 256 );
+	if ( PlGetMemoryGroupSize( group ) != 1280 ) {
+		printf( "GetMemoryGroupSize returned an expected value!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+
+	if ( PlGetTotalAllocatedMemory() == a ) {
+		printf( "GetTotalAllocatedMemory did not track allocations under MemoryGroup!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+
+	PlFlushMemoryGroup( group );
+	size_t c = PlGetTotalAllocatedMemory();
+	if ( a != c ) {
+		printf( "FlushMemoryGroup did not clear memory!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+	if ( PlGetMemoryGroupSize( group ) != 0 ) {
+		printf( "GetMemoryGroupSize returned an expected value!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+
+	PlDestroyMemoryGroup( group );
+}
+FUNC_TEST_END()
+
+/*============================================================
+ ===========================================================*/
 
 int main( int argc, char **argv ) {
 	printf( "Starting tests...\n" );
@@ -130,10 +236,16 @@ int main( int argc, char **argv ) {
 
 	CALL_FUNC_TEST( RegisterConsoleCommand )
 	CALL_FUNC_TEST( GetConsoleCommands )
-	CALL_FUNC_TEST( GetConsoleCommand )
 
 	/* string */
 	CALL_FUNC_TEST( StringChunk )
+
+	/* compression */
+	CALL_FUNC_TEST( CompressionLZRW1 )
+
+	/* memory */
+	CALL_FUNC_TEST( HeapMemory )
+	CALL_FUNC_TEST( GroupMemory )
 
 	printf( "\nAll tests passed successfully!\n" );
 
