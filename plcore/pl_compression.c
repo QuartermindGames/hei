@@ -13,7 +13,7 @@
  * so other libraries don't need to also include it.
  */
 
-void *PlCompress_Deflate( const void *src, unsigned long srcLength, unsigned long *dstLength ) {
+void *PlCompress_Deflate( const void *src, size_t srcLength, size_t *dstLength ) {
 	unsigned long compressedLength = mz_compressBound( srcLength );
 	void *compressedData = PlMAllocA( compressedLength );
 	int status = mz_compress( compressedData, &compressedLength, src, srcLength );
@@ -40,14 +40,18 @@ enum {
 	LZRW1_FLAG_COPY = 1,
 };
 
+#if defined( __GNUC__ )
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wunused-value"
+#endif
 void *PlCompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength ) {
-	uint8_t *dst = PL_NEW_( uint8_t, srcLength );
-
 	const uint8_t *p_src_post = src + srcLength;
-	const uint8_t *p_src_max1 = p_src_post - LZRW1_ITEM_MAX, *p_src_max16 = p_src_post - 16 * LZRW1_ITEM_MAX;
+	const uint8_t *p_src_max1 = p_src_post - LZRW1_ITEM_MAX;
+	const uint8_t *p_src_max16 = p_src_post - 16 * LZRW1_ITEM_MAX;
 	const uint8_t *hash[ 4096 ];
 	uint16_t control = 0, control_bits = 0;
 
+	uint8_t *dst = PL_NEW_( uint8_t, srcLength + LZRW1_FLAG_BYTES );
 	uint8_t *p_dst = dst;
 	*p_dst = LZRW1_FLAG_COMPRESS;
 	p_dst += LZRW1_FLAG_BYTES;
@@ -121,6 +125,9 @@ void *PlCompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength ) {
 
 	return dst;
 }
+#if defined( __GNUC__ )
+#	pragma GCC diagnostic pop
+#endif
 
 void *PlDecompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength ) {
 	if ( *( int * ) src == LZRW1_FLAG_COPY ) {
@@ -130,10 +137,13 @@ void *PlDecompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength )
 		return dst;
 	}
 
-	unsigned int allocSize = ( *dstLength < srcLength ) ? srcLength : *dstLength;
-	uint8_t *dst = PL_NEW_( uint8_t, allocSize ), *p_dst = dst;
+	static const unsigned int padSize = 512;
+	unsigned int allocSize = srcLength + padSize;
+	uint8_t *dst = PL_NEW_( uint8_t, allocSize );
+	uint8_t *p_dst = dst;
 
-	const uint8_t *p_src = src + LZRW1_FLAG_BYTES, *p_src_post = src + srcLength;
+	const uint8_t *p_src = src + LZRW1_FLAG_BYTES;
+	const uint8_t *p_src_post = src + srcLength;
 	uint16_t controlbits = 0, control;
 	while ( p_src != p_src_post ) {
 		if ( controlbits == 0 ) {
@@ -151,14 +161,16 @@ void *PlDecompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength )
 				*p_dst++ = *p++;
 				*dstLength = p_dst - dst;
 				if ( *dstLength >= allocSize ) {
-					dst = PlReAllocA( dst, allocSize += 512 );
+					dst = PlReAllocA( dst, allocSize += padSize );
+					p_dst = dst + *dstLength;
 				}
 			}
 		} else {
 			*p_dst++ = *p_src++;
 			*dstLength = p_dst - dst;
 			if ( *dstLength >= allocSize ) {
-				dst = PlReAllocA( dst, allocSize += 512 );
+				dst = PlReAllocA( dst, allocSize += padSize );
+				p_dst = dst + *dstLength;
 			}
 		}
 

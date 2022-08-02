@@ -21,7 +21,7 @@ typedef enum PLCompressionType {
 
 PL_EXTERN_C
 
-void *PlCompress_Deflate( const void *src, unsigned long srcLength, unsigned long *dstLength );
+void *PlCompress_Deflate( const void *src, size_t srcLength, size_t *dstLength );
 void *PlCompress_LZRW1( const void *src, size_t length, size_t *outLength );
 
 void *PlDecompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength );

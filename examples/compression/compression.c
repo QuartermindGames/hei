@@ -2,13 +2,13 @@
 #include <plcore/pl_compression.h>
 
 const char *string = "The quick brown fox jumped over the lazy dog! !2345678 "
-                     "The quick brown fox jumped over the lazy dog! !2345678 "
-                     "The quick brown fox jumped over the lazy dog! !2345678 "
-                     "The quick brown fox jumped over the lazy dog! !2345678 "
-                     "The quick brown fox jumped over the lazy dog! !2345678 "
-                     "The quick brown fox jumped over the lazy dog! !2345678 "
-                     "The quick brown fox jumped over the lazy dog! !2345678 "
-                     "The quick brown fox jumped over the lazy dog! !2345678 ";
+                     "The quick brown fox jumped over the lazy dog! !3456789 "
+                     "The quick brown fox jumped over the lazy dog! !4567890 "
+                     "The quick brown fox jumped over the lazy dog! !5678901 "
+                     "The quick brown fox jumped over the lazy dog! !6789012 "
+                     "The quick brown fox jumped over the lazy dog! !7890123 "
+                     "The quick brown fox jumped over the lazy dog! !8901234 "
+                     "The quick brown fox jumped over the lazy dog! !9012345 ";
 
 int main( int argc, char **argv ) {
 	PlInitialize( argc, argv );
