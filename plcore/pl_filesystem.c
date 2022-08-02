@@ -1337,7 +1337,7 @@ bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
-			ptr->pos = &ptr->data[ pos ];
+			ptr->pos = ( ptr->data + pos );
 			break;
 
 		case PL_SEEK_END:
@@ -1345,7 +1345,7 @@ bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
-			ptr->pos = &ptr->data[ ptr->size - pos ];
+			ptr->pos = ( ptr->data + ( ptr->size - pos ) );
 			break;
 
 		default:
