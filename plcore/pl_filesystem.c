@@ -81,7 +81,7 @@ static int pl_fseek( FILE *file, PLFileOffset off, int wence ) {
 
 /*	File System	*/
 
-static void PlNormalizePath_( char *path, size_t length ) {
+void PlNormalizePath( char *path, size_t length ) {
 	for ( size_t i = 0; i < length; ++i ) {
 		if ( path[ i ] == '\0' ) {
 			if ( path[ i - 1 ] == '/' ) {
@@ -314,7 +314,7 @@ PLFileSystemMount *PlMountLocalLocation( const char *path ) {
 		location->type = PL_FS_MOUNT_DIR;
 		snprintf( location->path, sizeof( location->path ), "%s", path );
 
-		PlNormalizePath_( location->path, sizeof( location->path ) );
+		PlNormalizePath( location->path, sizeof( location->path ) );
 
 		Print( "Mounted directory %s successfully!\n", location->path );
 
@@ -710,7 +710,7 @@ void PlScanDirectory( const char *path, const char *extension, void ( *Function 
 
 	PLPath normPath;
 	snprintf( normPath, sizeof( normPath ), "%s", path );
-	PlNormalizePath_( normPath, sizeof( normPath ) );
+	PlNormalizePath( normPath, sizeof( normPath ) );
 
 	FSScanInstance *fileList = NULL;
 	PLFileSystemMount *location = fs_mount_root;
@@ -770,7 +770,7 @@ const char *PlGetExecutablePath( char *out, size_t outSize ) {
 	PlReportBasicError( PL_RESULT_UNSUPPORTED );
 #endif
 
-	PlNormalizePath_( out, outSize );
+	PlNormalizePath( out, outSize );
 
 	return out;
 }
