@@ -40,13 +40,16 @@ PL_EXTERN_C
 typedef struct PLCollisionRay {
 	PLVector3 origin, direction;
 } PLCollisionRay;
+
 typedef struct PLCollisionAABB {
 	PLVector3 origin, mins, maxs, absOrigin;
 } PLCollisionAABB;
+
 typedef struct PLCollisionSphere {
 	PLVector3 origin;
 	float radius;
 } PLCollisionSphere;
+
 typedef struct PLCollisionPlane {
 	PLVector3 origin, normal;
 } PLCollisionPlane;

@@ -616,8 +616,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 #if defined( _WIN32 )
 	OutputDebugString( buf );
 #endif
-
-	printf( "%s", buf );
+	printf( "[%s] %s", l->prefix, buf );
 
 	if ( ConsoleOutputCallback != NULL ) {
 		// todo: pass back level

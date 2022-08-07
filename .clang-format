@@ -1,7 +1,7 @@
 BasedOnStyle: LLVM
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
-AlignConsecutiveAssignments: false
+AlignArrayOfStructures: Left
 AlignConsecutiveMacros: AcrossComments
 AlignOperands: true
 AllowAllArgumentsOnNextLine: false
