@@ -57,6 +57,8 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
+void PlNormalizePath( char *path, size_t length );
+
 PL_EXTERN char *PlGetUserName( char *out, size_t n );
 
 PL_EXTERN const char *PlGetWorkingDirectory( void );
