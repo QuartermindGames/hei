@@ -357,6 +357,7 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 	GL_TranslateTextureFilterFormat( filter, &min, &mag );
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min ) );
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag ) );
+	texture->filter = filter;
 
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ) );
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ) );
