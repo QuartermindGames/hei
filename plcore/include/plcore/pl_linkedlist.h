@@ -21,6 +21,7 @@ void PlDestroyLinkedListNodes( PLLinkedList *list );
 PLLinkedListNode *PlGetNextLinkedListNode( PLLinkedListNode *node );
 PLLinkedListNode *PlGetPrevLinkedListNode( PLLinkedListNode *node );
 PLLinkedListNode *PlGetFirstNode( PLLinkedList *list );
+PLLinkedListNode *PlGetLastNode( PLLinkedList *list );
 void *PlGetLinkedListNodeUserData( PLLinkedListNode *node );
 void PlSetLinkedListNodeUserData( PLLinkedListNode *node, void *userPtr );
 

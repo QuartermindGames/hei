@@ -36,8 +36,9 @@ enum {
 
 #define FUNC_TEST( NAME )         \
 	uint8_t test_##NAME( void ) { \
-		printf( " Starting " #NAME "\n" );
+		printf( " Starting " #NAME "... " );
 #define FUNC_TEST_END()         \
+	printf( "PASSED!\n" );      \
 	return TEST_RETURN_SUCCESS; \
 	}
 
@@ -147,6 +148,88 @@ FUNC_TEST( CompressionLZRW1 ) {
 FUNC_TEST_END()
 
 /*============================================================
+ * LINKED LIST
+ ===========================================================*/
+
+#include <plcore/pl_linkedlist.h>
+
+FUNC_TEST( LinkedList ) {
+	PLLinkedList *list = PlCreateLinkedList();
+	PlInsertLinkedListNode( list, "Hello A" );
+	PlInsertLinkedListNode( list, "Hello B" );
+	PlInsertLinkedListNode( list, "Hello C" );
+
+	PLLinkedListNode *node;
+	node = PlGetFirstNode( list );
+	if ( strcmp( PlGetLinkedListNodeUserData( node ), "Hello A" ) != 0 ) {
+		return TEST_RETURN_FAILURE;
+	}
+	node = PlGetNextLinkedListNode( node );
+	if ( strcmp( PlGetLinkedListNodeUserData( node ), "Hello B" ) != 0 ) {
+		return TEST_RETURN_FAILURE;
+	}
+	node = PlGetNextLinkedListNode( node );
+	if ( strcmp( PlGetLinkedListNodeUserData( node ), "Hello C" ) != 0 ) {
+		return TEST_RETURN_FAILURE;
+	}
+	node = PlGetNextLinkedListNode( node );
+	if ( node != NULL ) {
+		return TEST_RETURN_FAILURE;
+	}
+
+	node = PlGetFirstNode( list );
+	PlMoveLinkedListNodeToBack( node );
+
+	node = PlGetFirstNode( list );
+	if ( strcmp( PlGetLinkedListNodeUserData( node ), "Hello B" ) != 0 ) {
+		return TEST_RETURN_FAILURE;
+	}
+	node = PlGetNextLinkedListNode( node );
+	if ( strcmp( PlGetLinkedListNodeUserData( node ), "Hello C" ) != 0 ) {
+		return TEST_RETURN_FAILURE;
+	}
+	node = PlGetNextLinkedListNode( node );
+	if ( strcmp( PlGetLinkedListNodeUserData( node ), "Hello A" ) != 0 ) {
+		return TEST_RETURN_FAILURE;
+	}
+
+	node = PlGetLastNode( list );
+	if ( strcmp( PlGetLinkedListNodeUserData( node ), "Hello A" ) != 0 ) {
+		return TEST_RETURN_FAILURE;
+	}
+	node = PlGetPrevLinkedListNode( node );
+	if ( strcmp( PlGetLinkedListNodeUserData( node ), "Hello C" ) != 0 ) {
+		return TEST_RETURN_FAILURE;
+	}
+	node = PlGetPrevLinkedListNode( node );
+	if ( strcmp( PlGetLinkedListNodeUserData( node ), "Hello B" ) != 0 ) {
+		return TEST_RETURN_FAILURE;
+	}
+
+	node = PlGetLastNode( list );
+	PlMoveLinkedListNodeToFront( node );
+	node = PlGetFirstNode( list );
+	if ( strcmp( PlGetLinkedListNodeUserData( node ), "Hello A" ) != 0 ) {
+		return TEST_RETURN_FAILURE;
+	}
+	node = PlGetNextLinkedListNode( node );
+	if ( strcmp( PlGetLinkedListNodeUserData( node ), "Hello B" ) != 0 ) {
+		return TEST_RETURN_FAILURE;
+	}
+	node = PlGetNextLinkedListNode( node );
+	if ( strcmp( PlGetLinkedListNodeUserData( node ), "Hello C" ) != 0 ) {
+		return TEST_RETURN_FAILURE;
+	}
+	node = PlGetNextLinkedListNode( node );
+	if ( node != NULL ) {
+		return TEST_RETURN_FAILURE;
+	}
+
+	PlDestroyLinkedList( list );
+}
+FUNC_TEST_END()
+
+/*============================================================
  * MEMORY
  ===========================================================*/
 
@@ -242,6 +325,8 @@ int main( int argc, char **argv ) {
 
 	/* compression */
 	CALL_FUNC_TEST( CompressionLZRW1 )
+
+	CALL_FUNC_TEST( LinkedList )
 
 	/* memory */
 	CALL_FUNC_TEST( HeapMemory )

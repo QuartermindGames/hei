@@ -1,11 +1,9 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+/* SPDX-License-Identifier: MIT */
+/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
 
 #include <plcore/pl_compression.h>
 
+#define MINIZ_NO_ARCHIVE_APIS
 #include "3rdparty/miniz/miniz.h"
 
 /*

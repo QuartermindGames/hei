@@ -54,6 +54,10 @@ PLLinkedListNode *PlGetFirstNode( PLLinkedList *list ) {
 	return list->front;
 }
 
+PLLinkedListNode *PlGetLastNode( PLLinkedList *list ) {
+	return list->back;
+}
+
 void *PlGetLinkedListNodeUserData( PLLinkedListNode *node ) {
 	return node->userPtr;
 }
@@ -138,14 +142,19 @@ void PlMoveLinkedListNodeToFront( PLLinkedListNode *node ) {
 		return;
 	}
 
+	if ( list->back == node ) {
+		list->back = node->prev;
+	}
+
 	if ( node->prev != NULL ) {
 		node->prev->next = node->next;
 		node->prev = NULL;
 	}
 	if ( node->next != NULL ) {
 		node->next->prev = node->prev;
-		node->next = list->front;
 	}
+
+	node->next = list->front;
 
 	list->front->prev = node;
 	list->front = node;
@@ -160,14 +169,19 @@ void PlMoveLinkedListNodeToBack( PLLinkedListNode *node ) {
 		return;
 	}
 
+	if ( list->front == node ) {
+		list->front = node->next;
+	}
+
 	if ( node->prev != NULL ) {
 		node->prev->next = node->next;
-		node->prev = list->back;
 	}
 	if ( node->next != NULL ) {
 		node->next->prev = node->prev;
 		node->next = NULL;
 	}
+
+	node->prev = list->back;
 
 	list->back->next = node;
 	list->back = node;
