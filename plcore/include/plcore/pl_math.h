@@ -450,38 +450,11 @@ typedef struct PLSphere {
 	PLColour colour;
 } PLSphere;
 
-// Rectangle 2D
+// Quad
 
-typedef struct PLRectangle2D {
-	PLVector2 xy;
-	PLVector2 wh;
-
-	PLColour ul, ur, ll, lr;
-} PLRectangle2D;
-
-inline static PLRectangle2D plCreateRectangle(
-        PLVector2 xy, PLVector2 wh,
-        PLColour ul, PLColour ur,
-        PLColour ll, PLColour lr ) {
-	/* reversed: 
-	 * error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax */
-	PLRectangle2D v;
-	v.xy = xy;
-	v.wh = wh;
-	v.ul = ul;
-	v.ur = ur;
-	v.ll = ll;
-	v.lr = lr;
-	return v;
-}
-
-inline static void PlClearRectangle( PLRectangle2D *r ) {
-	memset( r, 0, sizeof( PLRectangle2D ) );
-}
-
-inline static void PlSetRectangleUniformColour( PLRectangle2D *r, PLColour colour ) {
-	r->ll = r->lr = r->ul = r->ur = colour;
-}
+typedef struct PLQuad {
+	float x, y, w, h;
+} PLQuad;
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Randomisation
