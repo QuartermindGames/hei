@@ -82,7 +82,6 @@ void PlgDestroyMesh( PLGMesh *mesh );
 void PlgDrawEllipse( unsigned int segments, PLVector2 position, float w, float h, PLColour colour );
 void PlgDrawRectangle( float x, float y, float w, float h, PLColour colour );
 void PlgDrawTexturedRectangle( float x, float y, float w, float h, PLGTexture *texture );
-void PlgDrawFilledRectangle( const PLRectangle2D *rectangle );
 void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
                                     float hScale, float vScale, PLGTexture *texture );
 void PlgDrawTriangle( int x, int y, unsigned int w, unsigned int h );

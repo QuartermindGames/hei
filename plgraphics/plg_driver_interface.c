@@ -92,7 +92,7 @@ bool PlgRegisterDriver( const char *path ) {
 		return false;
 	}
 
-	GfxLog( "Success, adding \"%s\" to drivers list\n", path );
+	GfxLog( "Success, adding \"%s\" to drivers list\n", description->identifier );
 
 	PLGDriver *driver = &drivers[ numDrivers++ ];
 	snprintf( driver->description, sizeof( driver->description ), "%s", description->description );

@@ -146,31 +146,6 @@ void PlgDrawRectangle( float x, float y, float w, float h, PLColour colour ) {
 	PlgImmDraw();
 }
 
-void PlgDrawFilledRectangle( const PLRectangle2D *rectangle ) {
-	PlgImmBegin( PLG_MESH_TRIANGLE_STRIP );
-
-	SetupRectangleMesh( rectangle->xy.x, rectangle->xy.y, rectangle->wh.x, rectangle->wh.y, PLColour( 255, 255, 255, 255 ) );
-
-	int x = rectangle->xy.x;
-	int y = rectangle->xy.y;
-	int w = rectangle->wh.x;
-	int h = rectangle->wh.y;
-
-	PlgImmPushVertex( x, y, 0.0f );
-	PlgImmColour( rectangle->ul.r, rectangle->ul.g, rectangle->ul.b, rectangle->ul.a );
-
-	PlgImmPushVertex( x, y + h, 0.0f );
-	PlgImmColour( rectangle->ll.r, rectangle->ll.g, rectangle->ll.b, rectangle->ll.a );
-
-	PlgImmPushVertex( x + w, y, 0.0f );
-	PlgImmColour( rectangle->ur.r, rectangle->ur.g, rectangle->ur.b, rectangle->ur.a );
-
-	PlgImmPushVertex( x + w, y + h, 0.0f );
-	PlgImmColour( rectangle->lr.r, rectangle->lr.g, rectangle->lr.b, rectangle->lr.a );
-
-	PlgImmDraw();
-}
-
 void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr, float hScale, float vScale, PLGTexture *texture ) {
 	PLGMesh *mesh = GetInternalMesh( PLG_MESH_TRIANGLES );
 
