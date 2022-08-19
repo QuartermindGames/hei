@@ -350,6 +350,10 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 	/* all of this is going to change later...
 	 * this is just the bare minimum to get things going */
 
+	texture->filter = filter;
+	texture->w = buffer->width;
+	texture->h = buffer->height;
+
 	GLBindFrameBuffer( buffer, PLG_FRAMEBUFFER_DRAW );
 	GLBindTexture( texture );
 
@@ -357,7 +361,6 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 	GL_TranslateTextureFilterFormat( filter, &min, &mag );
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min ) );
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag ) );
-	texture->filter = filter;
 
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ) );
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ) );
@@ -593,14 +596,14 @@ typedef struct MeshTranslatePrimitive {
 } MeshTranslatePrimitive;
 
 static MeshTranslatePrimitive primitives[] = {
-        { PLG_MESH_LINES, GL_LINES, "LINES" },
-        { PLG_MESH_LINE_LOOP, GL_LINE_LOOP, "LINE_LOOP" },
-        { PLG_MESH_POINTS, GL_POINTS, "POINTS" },
-        { PLG_MESH_TRIANGLES, GL_TRIANGLES, "TRIANGLES" },
-        { PLG_MESH_TRIANGLE_FAN, GL_TRIANGLE_FAN, "TRIANGLE_FAN" },
-        { PLG_MESH_TRIANGLE_FAN_LINE, GL_LINES, "TRIANGLE_FAN_LINE" },
-        { PLG_MESH_TRIANGLE_STRIP, GL_TRIANGLE_STRIP, "TRIANGLE_STRIP" },
-        { PLG_MESH_QUADS, GL_TRIANGLES, "QUADS" }// todo, translate
+        {PLG_MESH_LINES,              GL_LINES,          "LINES"            },
+        { PLG_MESH_LINE_LOOP,         GL_LINE_LOOP,      "LINE_LOOP"        },
+        { PLG_MESH_POINTS,            GL_POINTS,         "POINTS"           },
+        { PLG_MESH_TRIANGLES,         GL_TRIANGLES,      "TRIANGLES"        },
+        { PLG_MESH_TRIANGLE_FAN,      GL_TRIANGLE_FAN,   "TRIANGLE_FAN"     },
+        { PLG_MESH_TRIANGLE_FAN_LINE, GL_LINES,          "TRIANGLE_FAN_LINE"},
+        { PLG_MESH_TRIANGLE_STRIP,    GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"   },
+        { PLG_MESH_QUADS,             GL_TRIANGLES,      "QUADS"            }  // todo, translate
 };
 
 static unsigned int TranslatePrimitiveMode( PLGMeshPrimitive mode ) {
