@@ -7,7 +7,7 @@
 typedef struct PLLinkedListNode {
 	struct PLLinkedListNode *next;
 	struct PLLinkedListNode *prev;
-	struct PLLinkedList *listParent;
+	struct PLLinkedList *list;
 	void *userPtr;
 } PLLinkedListNode;
 
@@ -34,7 +34,7 @@ PLLinkedListNode *PlInsertLinkedListNode( PLLinkedList *list, void *userPtr ) {
 	list->back = node;
 	node->next = NULL;
 
-	node->listParent = list;
+	node->list = list;
 	node->userPtr = userPtr;
 
 	list->numNodes++;
@@ -79,7 +79,7 @@ void PlDestroyLinkedListNode( PLLinkedListNode *node ) {
 	}
 
 	/* ensure root and back are always pointing to a valid location */
-	PLLinkedList *list = node->listParent;
+	PLLinkedList *list = node->list;
 	if ( node == list->front ) {
 		list->front = node->next;
 	}
@@ -113,7 +113,7 @@ unsigned int PlGetNumLinkedListNodes( PLLinkedList *list ) {
 }
 
 PLLinkedList *PlGetLinkedListNodeContainer( PLLinkedListNode *node ) {
-	return node->listParent;
+	return node->list;
 }
 
 /**
@@ -137,7 +137,7 @@ void PlIterateLinkedList( PLLinkedList *linkedList, PLLinkedListIteratorCallback
  * Move the given node to the head/start of the list.
  */
 void PlMoveLinkedListNodeToFront( PLLinkedListNode *node ) {
-	PLLinkedList *list = node->listParent;
+	PLLinkedList *list = node->list;
 	if ( list->front == node ) {
 		return;
 	}
@@ -164,7 +164,7 @@ void PlMoveLinkedListNodeToFront( PLLinkedListNode *node ) {
  * Move the given node to the tail/end of the list.
  */
 void PlMoveLinkedListNodeToBack( PLLinkedListNode *node ) {
-	PLLinkedList *list = node->listParent;
+	PLLinkedList *list = node->list;
 	if ( list->back == node ) {
 		return;
 	}
