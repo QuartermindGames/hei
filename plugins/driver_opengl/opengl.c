@@ -339,6 +339,18 @@ static void GLBlitFrameBuffers( PLGFrameBuffer *src_buffer,
 	XGL_CALL( glBlitFramebuffer( 0, 0, src_w, src_h, 0, 0, dst_w, dst_h, GL_COLOR_BUFFER_BIT, linear ? GL_LINEAR : GL_NEAREST ) );
 }
 
+static void GLSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height ) {
+	/* just to be safe, flush the whole thing */
+	GLDeleteFrameBuffer( frameBuffer );
+
+	/* and given we don't flush any flags etc., we can
+	 * pretty much just update what we want and create
+	 * it again */
+	frameBuffer->width = width;
+	frameBuffer->height = height;
+	GLCreateFrameBuffer( frameBuffer );
+}
+
 static void GLBindTexture( const PLGTexture *texture );
 
 static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int components, PLGTextureFilter filter ) {
@@ -1722,6 +1734,7 @@ PLGDriverImportTable graphicsInterface = {
         .BindFrameBuffer = GLBindFrameBuffer,
         .GetFrameBufferTextureAttachment = GLGetFrameBufferTextureAttachment,
         .BlitFrameBuffers = GLBlitFrameBuffers,
+        .SetFrameBufferSize = GLSetFrameBufferSize,
 
         .CreateTexture = GLCreateTexture,
         .DeleteTexture = GLDeleteTexture,
