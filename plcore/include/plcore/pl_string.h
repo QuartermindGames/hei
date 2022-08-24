@@ -15,11 +15,11 @@ PL_EXTERN_C
 #define PL_FMT_int32  "%d"
 #define PL_FMT_uint32 "%u"
 #if defined( __x86_64__ )
-#define PL_FMT_int64  "%ld"
-#define PL_FMT_uint64 "%lu"
+#	define PL_FMT_int64  "%ld"
+#	define PL_FMT_uint64 "%lu"
 #else
-#define PL_FMT_int64  "%lld"
-#define PL_FMT_uint64 "%llu"
+#	define PL_FMT_int64  "%lld"
+#	define PL_FMT_uint64 "%llu"
 #endif
 #define PL_FMT_hex     "%x"
 #define PL_FMT_string  "%s"
@@ -55,13 +55,24 @@ char *pl_strinsert( const char *string, char **buf, size_t *bufSize, size_t *max
 /**
  * http://www.cse.yorku.ca/~oz/hash.html#sdbm
  */
-static inline uint32_t pl_strhash_sdbm( const char *str ) {
+static inline uint32_t PlGenerateHashSDBM( const char *str ) {
 	uint32_t hash = 0;
 	int c;
 	while ( ( c = *str++ ) ) {
 		hash = c + ( hash << 6 ) + ( hash << 16 ) - hash;
 	}
 
+	return hash;
+}
+
+static inline uint64_t PlGenerateHashFNV1( const char *str ) {
+	static const uint64_t offset = 14695981039346656037UL;
+	static const uint64_t prime = 1099511628211UL;
+	uint64_t hash = offset;
+	for ( const char *p = str; *p; p++ ) {
+		hash ^= ( uint64_t ) ( unsigned char ) ( *p );
+		hash *= prime;
+	}
 	return hash;
 }
 
