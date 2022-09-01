@@ -91,7 +91,7 @@ static double timespec_to_double( const struct timespec *ts ) {
  *  https://github.com/solemnwarning/timespec
  */
 static long timespec_to_ms( const struct timespec *ts ) {
-	return ( ts->tv_sec * 1000 ) + ( ts->tv_nsec / 1000000 );
+	return ( long ) ( ( ts->tv_sec * 1000 ) + ( ts->tv_nsec / 1000000 ) );
 }
 
 static bool GetTime( struct timespec *ts ) {

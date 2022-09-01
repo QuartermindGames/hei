@@ -765,7 +765,7 @@ const char *PlGetExecutablePath( char *out, size_t outSize ) {
 		return NULL;
 	}
 #elif PL_SYSTEM_OS == PL_SYSTEM_OS_WINDOWS
-	GetModuleFileName( NULL, out, outSize );
+	GetModuleFileName( NULL, out, ( DWORD ) outSize );
 #else
 	PlReportBasicError( PL_RESULT_UNSUPPORTED );
 #endif
@@ -1156,7 +1156,7 @@ PLFileOffset PlGetFileOffset( const PLFile *ptr ) {
 		return pl_ftell( ptr->fptr );
 	}
 
-	return ptr->pos - ptr->data;
+	return ( char * ) ptr->pos - ( char * ) ptr->data;
 }
 
 size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count ) {
@@ -1179,7 +1179,7 @@ size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count ) {
 	}
 
 	memcpy( dest, ptr->pos, length );
-	ptr->pos += length;
+	( char * ) ptr->pos += length;
 	return length / size;
 }
 
@@ -1199,7 +1199,7 @@ int8_t PlReadInt8( PLFile *ptr, bool *status ) {
 		return ( int8_t ) ( fgetc( ptr->fptr ) );
 	}
 
-	return *( ( int8_t * ) ptr->pos++ );
+	return *( ( ( int8_t * ) ( ptr->pos ) )++ );
 }
 
 static int64_t ReadSizedInteger( PLFile *ptr, size_t size, bool big_endian, bool *status ) {
@@ -1289,18 +1289,18 @@ char *PlReadString( PLFile *ptr, char *str, size_t size ) {
 		return fgets( str, ( int ) size, ptr->fptr );
 	}
 
-	if ( ptr->pos >= ptr->data + ptr->size ) {
+	if ( ( char * ) ptr->pos >= ( char * ) ptr->data + ptr->size ) {
 		PlReportBasicError( PL_RESULT_FILEREAD );
 		return NULL;
 	}
 
-	char *nl = memchr( ptr->pos, '\n', ptr->size - ( ptr->pos - ptr->data ) );
+	char *nl = memchr( ptr->pos, '\n', ptr->size - ( ( char * ) ptr->pos - ( char * ) ptr->data ) );
 	if ( nl == NULL ) {
-		nl = ( char * ) ( ptr->data + ptr->size - 1 );
+		nl = ( char * ) ( ( char * ) ptr->data + ptr->size - 1 );
 	}
 
 	if ( ( nl - ( char * ) ptr->pos ) + 1 >= ( signed long ) size ) {
-		nl = ( char * ) ( ptr->pos + size );
+		nl = ( char * ) ( ( char * ) ptr->pos + size );
 	}
 
 	memcpy( str, ptr->pos, ( nl - ( char * ) ptr->pos ) + 1 );
@@ -1329,7 +1329,7 @@ bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
-			ptr->pos += pos;
+			( char * ) ptr->pos += pos;
 			break;
 
 		case PL_SEEK_SET:
@@ -1337,7 +1337,7 @@ bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
-			ptr->pos = ( ptr->data + pos );
+			ptr->pos = ( ( char * ) ptr->data + pos );
 			break;
 
 		case PL_SEEK_END:
@@ -1345,7 +1345,7 @@ bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
-			ptr->pos = ( ptr->data + ( ptr->size - pos ) );
+			ptr->pos = ( ( char * ) ptr->data + ( ptr->size - pos ) );
 			break;
 
 		default:
@@ -1397,7 +1397,7 @@ const void *PlCacheFile( PLFile *file ) {
 	_pl_fclose( file->fptr );
 
 	/* match pos with where we originally were, so it's like nothing changed */
-	file->pos = file->data + p;
+	file->pos = ( char * ) file->data + p;
 
 	return file->pos;
 }
