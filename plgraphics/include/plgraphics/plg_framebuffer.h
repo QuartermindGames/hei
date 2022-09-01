@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <plgraphics/plg_texture.h>
+
 PL_EXTERN_C
 
 typedef enum PLGFrameBufferObjectTarget {
