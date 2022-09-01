@@ -12,9 +12,9 @@
  */
 
 void *PlCompress_Deflate( const void *src, size_t srcLength, size_t *dstLength ) {
-	unsigned long compressedLength = mz_compressBound( srcLength );
+	unsigned long compressedLength = mz_compressBound( ( mz_ulong ) srcLength );
 	void *compressedData = PlMAllocA( compressedLength );
-	int status = mz_compress( compressedData, &compressedLength, src, srcLength );
+	int status = mz_compress( compressedData, &compressedLength, src, ( mz_ulong ) srcLength );
 	if ( status != MZ_OK ) {
 		PlReportErrorF( PL_RESULT_FAIL, "failed to compress data: %s", mz_error( status ) );
 		PlFree( compressedData );
@@ -43,7 +43,7 @@ enum {
 #	pragma GCC diagnostic ignored "-Wunused-value"
 #endif
 void *PlCompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength ) {
-	const uint8_t *p_src_post = src + srcLength;
+	const uint8_t *p_src_post = ( char * ) src + srcLength;
 	const uint8_t *p_src_max1 = p_src_post - LZRW1_ITEM_MAX;
 	const uint8_t *p_src_max16 = p_src_post - 16 * LZRW1_ITEM_MAX;
 	const uint8_t *hash[ 4096 ];
@@ -131,17 +131,17 @@ void *PlDecompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength )
 	if ( *( int * ) src == LZRW1_FLAG_COPY ) {
 		*dstLength = srcLength - LZRW1_FLAG_BYTES;
 		void *dst = PL_NEW_( uint8_t, *dstLength );
-		memcpy( dst, src + LZRW1_FLAG_BYTES, *dstLength );
+		memcpy( dst, ( char * ) src + LZRW1_FLAG_BYTES, *dstLength );
 		return dst;
 	}
 
 	static const unsigned int padSize = 512;
-	unsigned int allocSize = srcLength + padSize;
+	unsigned int allocSize = ( unsigned int ) srcLength + padSize;
 	uint8_t *dst = PL_NEW_( uint8_t, allocSize );
 	uint8_t *p_dst = dst;
 
-	const uint8_t *p_src = src + LZRW1_FLAG_BYTES;
-	const uint8_t *p_src_post = src + srcLength;
+	const uint8_t *p_src = ( char * ) src + LZRW1_FLAG_BYTES;
+	const uint8_t *p_src_post = ( char * ) src + srcLength;
 	uint16_t controlbits = 0, control;
 	while ( p_src != p_src_post ) {
 		if ( controlbits == 0 ) {

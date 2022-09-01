@@ -269,18 +269,18 @@ void PlDestroyHeap( PLMemoryHeap *heap ) {
 }
 
 size_t PlGetAvailableHeapSize( const PLMemoryHeap *heap ) {
-	return heap->size - ( heap->pos - heap->store );
+	return heap->size - ( ( char * ) heap->pos - ( char * ) heap->store );
 }
 
 void *PlHeapAlloc( PLMemoryHeap *heap, size_t size ) {
-	size_t end = ( ( heap->pos - heap->store ) + size );
+	size_t end = ( ( ( char * ) heap->pos - ( char * ) heap->store ) + size );
 	if ( end >= heap->size ) {
 		PlReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "requested size will not fit in heap" );
 		return NULL;
 	}
 
 	void *p = heap->pos;
-	heap->pos = heap->pos + size;
+	heap->pos = ( char * ) heap->pos + size;
 	return p;
 }
 
