@@ -21,6 +21,7 @@ typedef struct PLPackageIndex {
 typedef struct PLPackage {
 	char path[ PL_SYSTEM_MAX_PATH ];
 	unsigned int table_size;
+	unsigned int maxTableSize;
 	PLPackageIndex *table;
 	struct {
 		void *( *LoadFile )( PLFile *package, PLPackageIndex *index );

@@ -169,8 +169,8 @@ PLPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, void
 		package->internal.LoadFile = OpenFile;
 	}
 
-	package->table_size = tableSize;
-	package->table = PlCAllocA( tableSize, sizeof( PLPackageIndex ) );
+	package->table_size = package->maxTableSize = tableSize;
+	package->table = PL_NEW_( PLPackageIndex, tableSize );
 
 	snprintf( package->path, sizeof( package->path ), "%s", path );
 
@@ -184,8 +184,8 @@ void PlDestroyPackage( PLPackage *package ) {
 		return;
 	}
 
-	PlFree( package->table );
-	PlFree( package );
+	PL_DELETE( package->table );
+	PL_DELETE( package );
 }
 #if 0// todo
 void plWritePackage(PLPackage *package) {
