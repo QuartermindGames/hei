@@ -1440,7 +1440,7 @@ void PlAddFileAlias( const char *alias, const char *target ) {
 	}
 
 	snprintf( fileAliases[ numFileAliases ].alias, sizeof( PLPath ), "%s", alias );
-	fileAliases[ numFileAliases ].hash = pl_strhash_sdbm( fileAliases[ numFileAliases ].alias );
+	fileAliases[ numFileAliases ].hash = PlGenerateHashSDBM( fileAliases[ numFileAliases ].alias );
 	snprintf( fileAliases[ numFileAliases ].target, sizeof( PLPath ), "%s", target );
 	numFileAliases++;
 }
@@ -1450,7 +1450,7 @@ const char *PlGetPathForAlias( const char *alias ) {
 		return NULL;
 	}
 
-	uint32_t hash = pl_strhash_sdbm( alias );
+	uint32_t hash = PlGenerateHashSDBM( alias );
 	for ( unsigned int i = 0; i < numFileAliases; ++i ) {
 		if ( hash != fileAliases[ i ].hash ) {
 			continue;

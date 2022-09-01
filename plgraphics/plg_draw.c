@@ -69,7 +69,7 @@ void PlgImmDraw( void ) {
  ****************************************/
 
 void PlgInitializeInternalMeshes( void ) {
-	memset( meshes, 0, sizeof( meshes ) );
+	PL_ZERO_( meshes );
 }
 
 void PlgClearInternalMeshes( void ) {

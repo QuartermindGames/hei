@@ -1,6 +1,6 @@
 /**
  * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
+ * Copyright (C) 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com>
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
@@ -98,7 +98,7 @@ PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned i
 		return NULL;
 	}
 
-	PLGFrameBuffer *buffer = ( PLGFrameBuffer * ) PlMAllocA( sizeof( PLGFrameBuffer ) );
+	PLGFrameBuffer *buffer = PL_NEW( PLGFrameBuffer );
 	buffer->width = w;
 	buffer->height = h;
 	buffer->flags = flags;
@@ -122,6 +122,7 @@ PLGTexture *PlgGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned
 	CallReturningGfxFunction( GetFrameBufferTextureAttachment, NULL, buffer, component, filter );
 }
 
+// should really be 'GetFrameBufferSize', urgh...
 void PlgGetFrameBufferResolution( const PLGFrameBuffer *buffer, unsigned int *width, unsigned int *height ) {
 	*width = buffer->width;
 	*height = buffer->height;
@@ -165,6 +166,26 @@ void PlgSetClearColour( PLColour rgba ) {
 
 void PlgClearBuffers( unsigned int buffers ) {
 	CallGfxFunction( ClearBuffers, buffers );
+}
+
+/**
+ * Resizes the given framebuffer to the specified size.
+ */
+void PlgSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height ) {
+	assert( width != 0 && height != 0 );
+	if ( width == 0 ) {
+		PlReportErrorF( PL_RESULT_INVALID_PARM2, "invalid width" );
+		return;
+	} else if ( height == 0 ) {
+		PlReportErrorF( PL_RESULT_INVALID_PARM3, "invalid height" );
+		return;
+	}
+
+	if ( frameBuffer->width == width && frameBuffer->height == height ) {
+		return;
+	}
+
+	CallGfxFunction( SetFrameBufferSize, frameBuffer, width, height );
 }
 
 /*===========================
