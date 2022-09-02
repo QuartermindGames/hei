@@ -1179,7 +1179,7 @@ size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count ) {
 	}
 
 	memcpy( dest, ptr->pos, length );
-	( char * ) ptr->pos += length;
+	ptr->pos = ( void * ) ( ( char * ) ( ptr->pos ) + length );
 	return length / size;
 }
 
@@ -1199,7 +1199,8 @@ int8_t PlReadInt8( PLFile *ptr, bool *status ) {
 		return ( int8_t ) ( fgetc( ptr->fptr ) );
 	}
 
-	return *( ( ( int8_t * ) ( ptr->pos ) )++ );
+	ptr->pos = ( void * ) ( ( char * ) ( ptr->pos ) + 1 );
+	return *( ( int8_t * ) ( ptr->pos ) );
 }
 
 static int64_t ReadSizedInteger( PLFile *ptr, size_t size, bool big_endian, bool *status ) {
@@ -1329,7 +1330,7 @@ bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
-			( char * ) ptr->pos += pos;
+			ptr->pos = ( ( char * ) ptr->pos + pos );
 			break;
 
 		case PL_SEEK_SET:

@@ -43,7 +43,7 @@ enum {
 #	pragma GCC diagnostic ignored "-Wunused-value"
 #endif
 void *PlCompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength ) {
-	const uint8_t *p_src_post = ( char * ) src + srcLength;
+	const uint8_t *p_src_post = ( uint8_t * ) src + srcLength;
 	const uint8_t *p_src_max1 = p_src_post - LZRW1_ITEM_MAX;
 	const uint8_t *p_src_max16 = p_src_post - 16 * LZRW1_ITEM_MAX;
 	const uint8_t *hash[ 4096 ];
@@ -140,8 +140,8 @@ void *PlDecompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength )
 	uint8_t *dst = PL_NEW_( uint8_t, allocSize );
 	uint8_t *p_dst = dst;
 
-	const uint8_t *p_src = ( char * ) src + LZRW1_FLAG_BYTES;
-	const uint8_t *p_src_post = ( char * ) src + srcLength;
+	const uint8_t *p_src = ( uint8_t * ) src + LZRW1_FLAG_BYTES;
+	const uint8_t *p_src_post = ( uint8_t * ) src + srcLength;
 	uint16_t controlbits = 0, control;
 	while ( p_src != p_src_post ) {
 		if ( controlbits == 0 ) {
