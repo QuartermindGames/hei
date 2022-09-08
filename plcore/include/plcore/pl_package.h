@@ -38,6 +38,7 @@ PL_EXTERN PLPackage *PlLoadPackage( const char *path );
 PL_EXTERN PLFile *PlLoadPackageFile( PLPackage *package, const char *path );
 PL_EXTERN PLFile *PlLoadPackageFileByIndex( PLPackage *package, unsigned int index );
 PL_EXTERN void PlDestroyPackage( PLPackage *package );
+void PlExtractPackage( PLPackage *package, const char *path );
 
 PL_EXTERN void PlRegisterPackageLoader( const char *ext, PLPackage *( *LoadFunction )( const char *path ) );
 PL_EXTERN void PlRegisterStandardPackageLoaders( void );
@@ -49,6 +50,9 @@ PL_EXTERN unsigned int PlGetPackageTableSize( const PLPackage *package );
 PL_EXTERN int PlGetPackageTableIndex( const PLPackage *package, const char *indexName );
 
 const char *PlGetPackageFileName( const PLPackage *package, unsigned int index );
+
+PLPackage *PlLoadZipPackage( const char *path );
+PLPackage *PlParseZipPackage( PLFile *file );
 
 #endif
 

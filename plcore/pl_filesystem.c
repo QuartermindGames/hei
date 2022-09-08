@@ -965,7 +965,7 @@ bool PlDeleteFile( const char *path ) {
  * @param length Length of the data buffer.
  * @return True on success and false on fail.
  */
-bool PlWriteFile( const char *path, const uint8_t *buf, size_t length ) {
+bool PlWriteFile( const char *path, const void *buf, size_t length ) {
 	FILE *fp = fopen( path, "wb" );
 	if ( fp == NULL ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", path );

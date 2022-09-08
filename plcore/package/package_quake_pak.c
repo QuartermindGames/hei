@@ -14,7 +14,7 @@
 static PLPackage *ParsePAKFile( PLFile *file ) {
 	uint32_t magic = PlReadInt32( file, false, NULL );
 	if ( magic != PAK_MAGIC ) {
-		PlReportErrorF( PL_RESULT_FILETYPE, "invalid magic: \"%s\"", magic );
+		PlReportErrorF( PL_RESULT_FILETYPE, "invalid magic: %X", magic );
 		return NULL;
 	}
 

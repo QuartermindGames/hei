@@ -94,7 +94,7 @@ PL_EXTERN PLFile *PlOpenFile( const char *path, bool cache );
 PL_EXTERN void PlCloseFile( PLFile *ptr );
 
 PL_EXTERN bool PlCopyFile( const char *path, const char *dest );
-PL_EXTERN bool PlWriteFile( const char *path, const uint8_t *buf, size_t length );
+PL_EXTERN bool PlWriteFile( const char *path, const void *buf, size_t length );
 PL_EXTERN bool PlDeleteFile( const char *path );
 
 PL_EXTERN bool PlIsFileModified( time_t oldtime, const char *path );

@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 /* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
 
+#include <plcore/pl_console.h>
+
 #include "pl_private.h"
 #include "package_private.h"
 #include "filesystem_private.h"
@@ -192,6 +194,43 @@ void plWritePackage(PLPackage *package) {
 
 }
 #endif
+
+void PlExtractPackage( PLPackage *package, const char *path ) {
+	for ( unsigned int i = 0; i < package->table_size; ++i ) {
+		/* create the file dir first */
+		PLPath subPath;
+		snprintf( subPath, sizeof( subPath ), "%s", package->table[ i ].fileName );
+		unsigned int l = ( unsigned int ) strlen( subPath );
+		for ( unsigned int j = l; j > 0; --j ) {
+			if ( subPath[ j ] != '\\' && subPath[ j ] != '/' )
+				continue;
+
+			subPath[ j ] = '\0';
+		}
+		PLPath writePath;
+		snprintf( writePath, sizeof( writePath ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, subPath );
+		if ( !PlCreatePath( writePath ) ) {
+			FSLog( "Failed to create path: %s\n", PlGetError() );
+			continue;
+		}
+
+		PLFile *file = PlLoadPackageFileByIndex( package, i );
+		if ( file == NULL ) {
+			FSLog( "Failed to load package file: %s\n", PlGetError() );
+			continue;
+		}
+		const void *p = PlGetFileData( file );
+
+		/* now write it out */
+		snprintf( writePath, sizeof( writePath ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, package->table[ i ].fileName );
+		if ( !PlWriteFile( writePath, p, package->table[ i ].fileSize ) ) {
+			FSLog( "Failed to write package file: %s\n", PlGetError() );
+		}
+
+		PlCloseFile( file );
+	}
+}
+
 /////////////////////////////////////////////////////////////////
 
 typedef struct PLPackageLoader {
@@ -237,11 +276,18 @@ void PlRegisterStandardPackageLoaders( void ) {
 	PlRegisterPackageLoader( "wad", PlLoadWAD2Package_ );
 	PlRegisterPackageLoader( "pak", PlLoadPAKPackage_ );
 	PlRegisterPackageLoader( "vpk", PlLoadVPKPackage_ );
+
 	/* hogs of war */
 	PlRegisterPackageLoader( "mad", PlLoadMadPackage );
 	PlRegisterPackageLoader( "mtd", PlLoadMadPackage );
+
 	/* starfox adventures */
 	PlRegisterPackageLoader( "tab", PlLoadTabPackage );
+
+	PlRegisterPackageLoader( "zip", PlLoadZipPackage );
+	PlRegisterPackageLoader( "pak", PlLoadZipPackage );
+	PlRegisterPackageLoader( "pk3", PlLoadZipPackage );
+	PlRegisterPackageLoader( "pk4", PlLoadZipPackage );
 }
 
 PLPackage *PlLoadPackage( const char *path ) {
