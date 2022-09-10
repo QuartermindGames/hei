@@ -206,6 +206,7 @@ void PlExtractPackage( PLPackage *package, const char *path ) {
 				continue;
 
 			subPath[ j ] = '\0';
+			break;
 		}
 		PLPath writePath;
 		snprintf( writePath, sizeof( writePath ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, subPath );
