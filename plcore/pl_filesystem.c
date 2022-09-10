@@ -718,7 +718,7 @@ void PlScanDirectory( const char *path, const char *extension, void ( *Function 
 		if ( location->type == PL_FS_MOUNT_PACKAGE ) {
 			// todo: Only works for directories for now
 		} else if ( location->type == PL_FS_MOUNT_DIR ) {
-			char mounted_path[ PL_SYSTEM_MAX_PATH + 1 ];
+			char mounted_path[ PL_SYSTEM_MAX_PATH * 2 ];
 			snprintf( mounted_path, sizeof( mounted_path ), "%s/%s", location->path, normPath );
 			ScanLocalDirectory( location, &fileList, mounted_path, extension, Function, recursive, userData );
 		}
