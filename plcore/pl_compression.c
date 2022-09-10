@@ -13,11 +13,11 @@
 
 void *PlCompress_Deflate( const void *src, size_t srcLength, size_t *dstLength ) {
 	unsigned long compressedLength = mz_compressBound( ( mz_ulong ) srcLength );
-	void *compressedData = PlMAllocA( compressedLength );
+	void *compressedData = PL_NEW_( char, compressedLength );
 	int status = mz_compress( compressedData, &compressedLength, src, ( mz_ulong ) srcLength );
 	if ( status != MZ_OK ) {
 		PlReportErrorF( PL_RESULT_FAIL, "failed to compress data: %s", mz_error( status ) );
-		PlFree( compressedData );
+		PL_DELETE( compressedData );
 		return NULL;
 	}
 
