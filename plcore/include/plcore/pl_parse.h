@@ -21,18 +21,19 @@ typedef struct PLVector3 PLVector3;
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-extern bool PlIsEndOfLine( const char *p );
-extern int PlGetLineEndType( const char *p );
+bool PlIsEndOfLine( const char *p );
+int PlGetLineEndType( const char *p );
 
-extern void PlSkipWhitespace( const char **p );
-extern void PlSkipLine( const char **p );
-extern const char *PlParseEnclosedString( const char **p, char *dest, size_t size );
-extern const char *PlParseToken( const char **p, char *dest, size_t size );
-extern int PlParseInteger( const char **p, bool *status );
-extern float PlParseFloat( const char **p, bool *status );
-extern PLVector3 PlParseVector( const char **p, bool *status );
+void PlSkipWhitespace( const char **p );
+void PlSkipLine( const char **p );
+const char *PlParseEnclosedString( const char **p, char *dest, size_t size );
+unsigned int PlDetermineTokenLength( const char *p );
+const char *PlParseToken( const char **p, char *dest, size_t size );
+int PlParseInteger( const char **p, bool *status );
+float PlParseFloat( const char **p, bool *status );
+PLVector3 PlParseVector( const char **p, bool *status );
 
-extern unsigned int PlDetermineLineLength( const char *p );
+unsigned int PlDetermineLineLength( const char *p );
 const char *PlParseLine( const char **p, char *dest, size_t size );
 
 #endif /* !defined( PL_COMPILE_PLUGIN ) */
