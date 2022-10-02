@@ -678,7 +678,7 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 
 		const char *rp = selectorPath;
 		if ( mount != NULL ) {
-			rp = &selectorPath[ ml ];
+			rp = &selectorPath[ ml + 1 ];
 		}
 
 		Function( rp, userData );
