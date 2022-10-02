@@ -35,10 +35,14 @@ file(
         pl_compression.c
         pl_console.c
         pl_filesystem.c
+        
         pl_memory.c
         pl_parser.c
         pl_library.c
+
+        pl_hashtable.c
         pl_linkedlist.c
+
         polygon.c
 
         pl_math_colour.c
