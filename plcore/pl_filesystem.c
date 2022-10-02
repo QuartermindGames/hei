@@ -1055,31 +1055,30 @@ PLFile *PlCreateFileFromMemory( const char *path, void *buf, size_t bufSize, PLF
 }
 
 PLFile *PlOpenLocalFile( const char *path, bool cache ) {
-	FILE *fp = fopen( path, "rb" );
-	if ( fp == NULL ) {
+	FILE *sysFile = fopen( path, "rb" );
+	if ( sysFile == NULL ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, strerror( errno ) );
 		return NULL;
 	}
 
-	PLFile *ptr = PlCAllocA( 1, sizeof( PLFile ) );
-	snprintf( ptr->path, sizeof( ptr->path ), "%s", path );
-	ptr->size = PlGetLocalFileSize( path );
+	PLFile *file = PL_NEW( PLFile );
+	snprintf( file->path, sizeof( file->path ), "%s", path );
+	file->size = PlGetLocalFileSize( path );
 
 	if ( cache ) {
-		ptr->data = PlMAllocA( ptr->size * sizeof( uint8_t ) );
-		ptr->pos = ptr->data;
-		if ( fread( ptr->data, sizeof( uint8_t ), ptr->size, fp ) != ptr->size ) {
+		file->data = PL_NEW_( uint8_t, file->size );
+		file->pos = file->data;
+		if ( fread( file->data, sizeof( uint8_t ), file->size, sysFile ) != file->size ) {
 			FSLog( "Failed to read complete file (%s)!\n", path );
 		}
-		_pl_fclose( fp );
+		_pl_fclose( sysFile );
 	} else {
-		ptr->fptr = fp;
+		file->fptr = sysFile;
 	}
 
-	/* timestamp for local files is a special case */
-	ptr->timeStamp = -1;
+	file->timeStamp = PlGetLocalFileTimeStamp( path );
 
-	return ptr;
+	return file;
 }
 
 /**
