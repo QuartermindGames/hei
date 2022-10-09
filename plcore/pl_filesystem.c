@@ -697,8 +697,10 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
  * @param recursive if true, also scans the contents of each sub-directory.
  */
 void PlScanDirectory( const char *path, const char *extension, void ( *Function )( const char *, void * ), bool recursive, void *userData ) {
-	if ( strncmp( VFS_LOCAL_HINT, path, sizeof( VFS_LOCAL_HINT ) ) == 0 ) {
-		ScanLocalDirectory( NULL, NULL, path + sizeof( VFS_LOCAL_HINT ), extension, Function, recursive, userData );
+	if ( strncmp( VFS_LOCAL_HINT, path, strlen( VFS_LOCAL_HINT ) ) == 0 ) {
+		const char *c = path + sizeof( VFS_LOCAL_HINT );
+		if ( *c == ':' ) c++;
+		ScanLocalDirectory( NULL, NULL, c, extension, Function, recursive, userData );
 		return;
 	}
 
