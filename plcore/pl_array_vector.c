@@ -19,11 +19,6 @@ void PlResizeVectorArray( PLVectorArray *vectorArray, unsigned int newMaxElement
 		return;
 	}
 
-	assert( newMaxElements < vectorArray->maxElements );
-	if ( newMaxElements < vectorArray->maxElements ) {
-		return;
-	}
-
 	vectorArray->data = PlReAllocA( vectorArray->data, sizeof( void * ) * newMaxElements );
 	vectorArray->maxElements = newMaxElements;
 }
@@ -58,7 +53,7 @@ void PlClearVectorArray( PLVectorArray *vectorArray ) {
 }
 
 void PlPushBackVectorArrayElement( PLVectorArray *vectorArray, void *value ) {
-	if ( vectorArray->numElements + 1 >= vectorArray->maxElements ) {
+	if ( vectorArray->numElements + 1 > vectorArray->maxElements ) {
 		PlResizeVectorArray( vectorArray, vectorArray->maxElements + 1 );
 	}
 
@@ -98,9 +93,9 @@ void *PlGetVectorArrayBack( PLVectorArray *vectorArray ) {
 /**
  * Create a vector array.
  */
-PLVectorArray *PlCreateVectorArray( unsigned int size ) {
+PLVectorArray *PlCreateVectorArray( unsigned int maxElements ) {
 	PLVectorArray *vectorArray = PL_NEW( PLVectorArray );
-	vectorArray->maxElements = size;
+	vectorArray->maxElements = maxElements;
 	vectorArray->data = PL_NEW_( void *, vectorArray->maxElements );
 	return vectorArray;
 }

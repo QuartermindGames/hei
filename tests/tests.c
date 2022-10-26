@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 #include <plcore/pl.h>
 #include <plcore/pl_console.h>
+#include <plcore/pl_array_vector.h>
 
 enum {
 	TEST_RETURN_SUCCESS,
@@ -36,11 +37,116 @@ enum {
 
 #define FUNC_TEST( NAME )         \
 	uint8_t test_##NAME( void ) { \
-		printf( " Starting " #NAME "... " );
+		printf( " " #NAME "... " );
 #define FUNC_TEST_END()         \
-	printf( "PASSED!\n" );      \
+	printf( "OK\n" );           \
 	return TEST_RETURN_SUCCESS; \
 	}
+
+FUNC_TEST( pl_array_vector ) {
+	PLVectorArray *vec;
+
+	/* attempt to create vector of size 0 */
+	vec = PlCreateVectorArray( 0 );
+	if ( vec == NULL ) {
+		printf( "Failed to create vector array: %s\n", PlGetError() );
+		return TEST_RETURN_FAILURE;
+	}
+	if ( PlGetMaxVectorArrayElements( vec ) != 0 ) {
+		printf( "Maximum elements not equal to 0\n" );
+		return TEST_RETURN_FAILURE;
+	}
+	PlDestroyVectorArray( vec );
+
+	/* now vector of size 100 */
+	vec = PlCreateVectorArray( 100 );
+	if ( vec == NULL ) {
+		printf( "Failed to create vector array w/ max 100 elements: %s\n", PlGetError() );
+		return TEST_RETURN_FAILURE;
+	}
+	if ( PlGetMaxVectorArrayElements( vec ) != 100 ) {
+		printf( "Maximum elements not equal to 100\n" );
+		return TEST_RETURN_FAILURE;
+	}
+	if ( !PlIsVectorArrayEmpty( vec ) ) {
+		printf( "Vector should be empty - query returned false!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+
+	/* fill it with data */
+	static unsigned int data[ 100 ];
+	for ( unsigned int i = 0; i < 100; ++i ) {
+		data[ i ] = i;
+		PlPushBackVectorArrayElement( vec, &data[ i ] );
+	}
+	/* verify */
+	unsigned int *v = PlGetVectorArrayElementAt( vec, 5 );
+	if ( *v != 5 ) {
+		printf( "Unexpected data in vector!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+	v = PlGetVectorArrayBack( vec );
+	if ( *v != 99 ) {
+		printf( "Unexpected back element (%u) in vector!\n", *v );
+		return TEST_RETURN_FAILURE;
+	}
+
+	/* remove several elements */
+	for ( unsigned int i = 0; i < 50; ++i ) {
+		PlEraseVectorArrayElement( vec, 0 );
+		v = PlGetVectorArrayFront( vec );
+		if ( *v != ( i + 1 ) ) {
+			printf( "Unexpected data (%u) in vector at %u!\n", *v, i );
+			return TEST_RETURN_FAILURE;
+		}
+	}
+	if ( PlGetNumVectorArrayElements( vec ) != 50 ) {
+		printf( "Vector not of expected size!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+	for ( unsigned int i = 0; i < 50; ++i ) {
+		v = PlGetVectorArrayElementAt( vec, i );
+		if ( *v != ( i + 50 ) ) {
+			printf( "Unexpected data (%u) in vector at %u!\n", *v, i );
+			return TEST_RETURN_FAILURE;
+		}
+	}
+	/* ensure the last element is still as expected */
+	v = PlGetVectorArrayBack( vec );
+	if ( *v != 99 ) {
+		printf( "Unexpected back element (%u) in vector, expected '99'!\n", *v );
+		return TEST_RETURN_FAILURE;
+	}
+	/* and try popping the last element */
+	PlPopVectorArrayBack( vec );
+	v = PlGetVectorArrayBack( vec );
+	if ( *v != 98 ) {
+		printf( "Unexpected back element (%u) in vector, expected '98'!\n", *v );
+		return TEST_RETURN_FAILURE;
+	}
+
+	/* invalid get request */
+	if ( PlGetVectorArrayElementAt( vec, 80 ) != NULL ) {
+		printf( "Invalid GetVectorArrayElementAt request succeeded!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+
+	/* make sure shrinking works */
+	unsigned int maxElements = PlGetMaxVectorArrayElements( vec );
+	PlShrinkVectorArray( vec );
+	if ( PlGetMaxVectorArrayElements( vec ) >= maxElements ) {
+		printf( "Shrink failed!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+
+	if ( PlGetVectorArrayData( vec ) == NULL ) {
+		printf( "Returned null array!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+
+	PlDestroyVectorArray( vec );
+}
+FUNC_TEST_END()
 
 /*============================================================
  * CONSOLE
@@ -51,14 +157,15 @@ void CB_test_cmd( unsigned int argc, char **argv ) {
 	test_cmd_called = true;
 }
 
-FUNC_TEST( RegisterConsoleCommand )
-PlRegisterConsoleCommand( "test_cmd", "testing", 0, CB_test_cmd );
-PlParseConsoleString( "test_cmd" );
-if ( !test_cmd_called ) {
-	printf( "Failed to call \"test_cmd\" command!\n" );
-	return TEST_RETURN_FAILURE;
+FUNC_TEST( RegisterConsoleCommand ) {
+	PlRegisterConsoleCommand( "test_cmd", "testing", 0, CB_test_cmd );
+	PlParseConsoleString( "test_cmd" );
+	if ( !test_cmd_called ) {
+		printf( "Failed to call \"test_cmd\" command!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+	test_cmd_called = false;
 }
-test_cmd_called = false;
 FUNC_TEST_END()
 
 FUNC_TEST( GetConsoleCommands ) {
@@ -110,7 +217,7 @@ FUNC_TEST_END()
 
 #include <plcore/pl_compression.h>
 
-FUNC_TEST( CompressionLZRW1 ) {
+FUNC_TEST( pl_compression ) {
 	static const char *string = "The quick brown fox jumped over the lazy dog! !2345678 "
 	                            "The quick brown fox jumped over the lazy dog! !3456789 "
 	                            "The quick brown fox jumped over the lazy dog! !4567890 "
@@ -129,7 +236,7 @@ FUNC_TEST( CompressionLZRW1 ) {
 		return TEST_RETURN_FAILURE;
 	}
 
-	printf( "Compressed from %llu bytes to %llu bytes\nDecompressing...\n", srcLength, dstLength );
+	//printf( "Compressed from %lu bytes to %lu bytes\nDecompressing...\n", srcLength, dstLength );
 
 	char *src = PlDecompress_LZRW1( dst, dstLength, &srcLength );
 	if ( src == NULL || ( srcLength <= dstLength ) || ( srcLength != originalLength ) || srcLength == 0 ) {
@@ -137,8 +244,8 @@ FUNC_TEST( CompressionLZRW1 ) {
 		return TEST_RETURN_FAILURE;
 	}
 
-	printf( "SOURCE: %s\n", string );
-	printf( "DEST:   %s\n", src );
+	//printf( "SOURCE: %s\n", string );
+	//printf( "DEST:   %s\n", src );
 
 	if ( strcmp( string, src ) != 0 ) {
 		printf( "Decompressed result doesn't match original!\n" );
@@ -304,18 +411,23 @@ FUNC_TEST_END()
  ===========================================================*/
 
 int main( int argc, char **argv ) {
-	printf( "Starting tests...\n" );
+	if ( PlInitialize( argc, argv ) != PL_RESULT_SUCCESS ) {
+		fprintf( stderr, "Failed to initialize Hei: %s\n", PlGetError() );
+		return EXIT_FAILURE;
+	}
 
-	PlInitialize( argc, argv );
-
+	bool allPassed = true;
 #define CALL_FUNC_TEST( NAME )                                       \
 	{                                                                \
 		int ret = test_##NAME();                                     \
 		if ( ret != TEST_RETURN_SUCCESS ) {                          \
-			printf( "Failed on " #NAME "!\n" );                      \
+			fprintf( stderr, "Failed on " #NAME "!\n" );             \
 			if ( ret == TEST_RETURN_FATAL ) { return EXIT_FAILURE; } \
+			allPassed = false;                                       \
 		}                                                            \
 	}
+
+	CALL_FUNC_TEST( pl_array_vector )
 
 	CALL_FUNC_TEST( RegisterConsoleCommand )
 	CALL_FUNC_TEST( GetConsoleCommands )
@@ -323,8 +435,7 @@ int main( int argc, char **argv ) {
 	/* string */
 	CALL_FUNC_TEST( StringChunk )
 
-	/* compression */
-	CALL_FUNC_TEST( CompressionLZRW1 )
+	CALL_FUNC_TEST( pl_compression )
 
 	CALL_FUNC_TEST( LinkedList )
 
@@ -332,7 +443,10 @@ int main( int argc, char **argv ) {
 	CALL_FUNC_TEST( HeapMemory )
 	CALL_FUNC_TEST( GroupMemory )
 
-	printf( "\nAll tests passed successfully!\n" );
+	if ( allPassed )
+		printf( "\nAll tests passed successfully!\n" );
+	else
+		printf( "\nReached end but some tests failed!\n" );
 
 	return EXIT_SUCCESS;
 }

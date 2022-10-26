@@ -1,6 +1,6 @@
 /**
  * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
+ * Copyright (C) 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com>
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
@@ -10,7 +10,7 @@
 
 PL_EXTERN_C
 
-typedef struct PLVectorArray PLVectorArray;
+typedef struct PLVectorArray PLVectorArray;const
 
 void PlResizeVectorArray( PLVectorArray *vectorArray, unsigned int newMaxElements );
 void **PlGetVectorArrayData( PLVectorArray *vectorArray );
@@ -29,7 +29,7 @@ void *PlGetVectorArrayElementAt( PLVectorArray *vectorArray, unsigned int at );
 void *PlGetVectorArrayFront( PLVectorArray *vectorArray );
 void *PlGetVectorArrayBack( PLVectorArray *vectorArray );
 
-PLVectorArray *PlCreateVectorArray( unsigned int size );
+PLVectorArray *PlCreateVectorArray( unsigned int maxElements );
 void PlDestroyVectorArray( PLVectorArray *vectorArray );
 
 PL_EXTERN_C_END
