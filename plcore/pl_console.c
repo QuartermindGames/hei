@@ -410,12 +410,6 @@ void PlParseConsoleString( const char *string ) {
 		return;
 	}
 
-	size_t l = strlen( string ) + 2;
-	char *buf = PlMAllocA( l );
-	snprintf( buf, l, "%s\n", string );
-	PlLogMessage( LOG_LEVEL_LOW, buf );
-	PlFree( buf );
-
 	static char **argv = NULL;
 	if ( argv == NULL ) {
 		if ( ( argv = ( char ** ) PlMAllocA( sizeof( char * ) * CONSOLE_MAX_ARGUMENTS ) ) == NULL ) {
