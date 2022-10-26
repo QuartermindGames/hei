@@ -241,17 +241,12 @@ int main( int argc, char **argv ) {
 	PlRegisterPlugins( "./" );
 
 	/* register all our custom console commands */
-	PlRegisterConsoleCommand( "exit", Cmd_Exit, "Exit the application." );
-	PlRegisterConsoleCommand( "quit", Cmd_Exit, "Exit the application." );
-	PlRegisterConsoleCommand( "mdlconv", Cmd_ConvertModel, "Convert the specified image.\n"
-	                                                       "Usage: mdlconv ./model.mdl [./out.mdl]" );
-	PlRegisterConsoleCommand( "mdlconvdir", Cmd_BulkConvertModel, "Bulk convert images." );
-	PlRegisterConsoleCommand( "imgconv", Cmd_IMGConvert,
-	                          "Convert the given image.\n"
-	                          "Usage: img_convert ./image.bmp [./out.png]" );
-	PlRegisterConsoleCommand( "imgconvdir", Cmd_IMGBulkConvert,
-	                          "Bulk convert images in the given directory.\n"
-	                          "Usage: img_bulkconvert ./path bmp [./outpath]" );
+	PlRegisterConsoleCommand( "exit", "Exit the application.", 0, Cmd_Exit );
+	PlRegisterConsoleCommand( "quit", "Exit the application.", 0, Cmd_Exit );
+	PlRegisterConsoleCommand( "mdlconv", "Convert the specified image. 'mdlconv ./model.mdl [./out.mdl]'", 1, Cmd_ConvertModel );
+	PlRegisterConsoleCommand( "mdlconvdir", "Bulk convert images.", 1, Cmd_BulkConvertModel );
+	PlRegisterConsoleCommand( "imgconv", "Convert the given image. 'img_convert ./image.bmp [./out.png]'", 1, Cmd_IMGConvert );
+	PlRegisterConsoleCommand( "imgconvdir", "Bulk convert images in the given directory. 'img_bulkconvert ./path bmp [./outpath]'", 2, Cmd_IMGBulkConvert );
 
 	PlInitializePlugins();
 
