@@ -608,15 +608,25 @@ void PlLogMessage( int id, const char *msg, ... ) {
 	if ( length <= 0 )
 		return;
 
-	char *buf = PlCAllocA( length, sizeof( char ) );
+	char *buf = PL_NEW_( char, length );
 	vsnprintf( buf, length, msg, args );
 
 	va_end( args );
 
+	/* apply prefix if provided */
+	if ( *l->prefix != '\0' ) {
+		length += ( int ) strlen( l->prefix ) + 3;
+		char *tmp = PL_NEW_( char, length );
+		snprintf( tmp, length, "[%s] %s", l->prefix, buf );
+		PL_DELETE( buf );
+		buf = tmp;
+	}
+
 #if defined( _WIN32 )
 	OutputDebugString( buf );
 #endif
-	printf( "[%s] %s", l->prefix, buf );
+
+	printf( "%s", buf );
 
 	if ( ConsoleOutputCallback != NULL ) {
 		// todo: pass back level
@@ -630,11 +640,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 			if ( file != NULL ) {
 				// add the prefix to the start
 				char prefix[ 128 ];
-				if ( l->prefix[ 0 ] != '\0' ) {
-					snprintf( prefix, sizeof( prefix ), "[%s] %s: ", PlGetFormattedTime(), l->prefix );
-				} else {
-					snprintf( prefix, sizeof( prefix ), "[%s]: ", PlGetFormattedTime() );
-				}
+				snprintf( prefix, sizeof( prefix ), "[%s]: ", PlGetFormattedTime() );
 
 				size_t nl = strlen( prefix ) + length;
 				char *logBuf = PlCAllocA( nl, sizeof( char ) );

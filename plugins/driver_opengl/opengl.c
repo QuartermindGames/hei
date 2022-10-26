@@ -65,8 +65,16 @@ static GLuint VAO[ 1 ];
 			unsigned int _err = glGetError(); \
 			assert( _err == GL_NO_ERROR );    \
 		}
+#	define XGL_CALL_RETURN( X, Y )           \
+		{                                     \
+			glGetError();                     \
+			( Y ) = X;                        \
+			unsigned int _err = glGetError(); \
+			assert( _err == GL_NO_ERROR );    \
+		}
 #else
-#	define XGL_CALL( X ) X
+#	define XGL_CALL( X )           X
+#	define XGL_CALL_RETURN( X, Y ) ( Y ) = X;
 #endif
 
 ///////////////////////////////////////////
@@ -1308,12 +1316,12 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 		return;
 	}
 
-	program->internal.v_position = glGetAttribLocation( program->internal.id, "pl_vposition" );
-	program->internal.v_normal = glGetAttribLocation( program->internal.id, "pl_vnormal" );
-	program->internal.v_uv = glGetAttribLocation( program->internal.id, "pl_vuv" );
-	program->internal.v_colour = glGetAttribLocation( program->internal.id, "pl_vcolour" );
-	program->internal.v_tangent = glGetAttribLocation( program->internal.id, "pl_vtangent" );
-	program->internal.v_bitangent = glGetAttribLocation( program->internal.id, "pl_vbitangent" );
+	XGL_CALL_RETURN( glGetAttribLocation( program->internal.id, "pl_vposition" ), program->internal.v_position );
+	XGL_CALL_RETURN( glGetAttribLocation( program->internal.id, "pl_vnormal" ), program->internal.v_normal );
+	XGL_CALL_RETURN( glGetAttribLocation( program->internal.id, "pl_vuv" ), program->internal.v_uv );
+	XGL_CALL_RETURN( glGetAttribLocation( program->internal.id, "pl_vcolour" ), program->internal.v_colour );
+	XGL_CALL_RETURN( glGetAttribLocation( program->internal.id, "pl_vtangent" ), program->internal.v_tangent );
+	XGL_CALL_RETURN( glGetAttribLocation( program->internal.id, "pl_vbitangent" ), program->internal.v_bitangent );
 
 	int num_uniforms = 0;
 	XGL_CALL( glGetProgramiv( program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms ) );
@@ -1324,7 +1332,9 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 	}
 	program->num_uniforms = ( unsigned int ) num_uniforms;
 
-	//GLLog( "Found %u uniforms in shader\n", program->num_uniforms );
+#if !defined( NDEBUG )
+	XGL_LOG( "Found %u uniforms in shader\n", program->num_uniforms );
+#endif
 
 	program->uniforms = gInterface->core->CAlloc( ( size_t ) program->num_uniforms, sizeof( *program->uniforms ), true );
 	unsigned int registered = 0;
@@ -1346,42 +1356,43 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 			continue;
 		}
 
+		XGL_CALL_RETURN( glGetUniformLocation( program->internal.id, uniformName ), program->uniforms[ i ].slot );
+
 		program->uniforms[ i ].type = GLConvertGLUniformType( glType );
-		program->uniforms[ i ].slot = i;
 		program->uniforms[ i ].name = uniformName;
 
 		/* fetch it's current value, assume it's the default */
 		switch ( program->uniforms[ i ].type ) {
 			case PLG_UNIFORM_FLOAT:
-				XGL_CALL( glGetUniformfv( program->internal.id, i, &program->uniforms[ i ].defaultFloat ) );
+				XGL_CALL( glGetUniformfv( program->internal.id, program->uniforms[ i ].slot, &program->uniforms[ i ].defaultFloat ) );
 				break;
 			case PLG_UNIFORM_SAMPLER2D:
 			case PLG_UNIFORM_INT:
-				XGL_CALL( glGetUniformiv( program->internal.id, i, &program->uniforms[ i ].defaultInt ) );
+				XGL_CALL( glGetUniformiv( program->internal.id, program->uniforms[ i ].slot, &program->uniforms[ i ].defaultInt ) );
 				break;
 			case PLG_UNIFORM_UINT:
-				XGL_CALL( glGetUniformuiv( program->internal.id, i, &program->uniforms[ i ].defaultUInt ) );
+				XGL_CALL( glGetUniformuiv( program->internal.id, program->uniforms[ i ].slot, &program->uniforms[ i ].defaultUInt ) );
 				break;
 			case PLG_UNIFORM_BOOL:
-				XGL_CALL( glGetUniformiv( program->internal.id, i, ( GLint * ) &program->uniforms[ i ].defaultBool ) );
+				XGL_CALL( glGetUniformiv( program->internal.id, program->uniforms[ i ].slot, ( GLint * ) &program->uniforms[ i ].defaultBool ) );
 				break;
 			case PLG_UNIFORM_DOUBLE:
-				XGL_CALL( glGetUniformdv( program->internal.id, i, &program->uniforms[ i ].defaultDouble ) );
+				XGL_CALL( glGetUniformdv( program->internal.id, program->uniforms[ i ].slot, &program->uniforms[ i ].defaultDouble ) );
 				break;
 			case PLG_UNIFORM_VEC2:
-				XGL_CALL( glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec2 ) );
+				XGL_CALL( glGetUniformfv( program->internal.id, program->uniforms[ i ].slot, ( GLfloat * ) &program->uniforms[ i ].defaultVec2 ) );
 				break;
 			case PLG_UNIFORM_VEC3:
-				XGL_CALL( glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec3 ) );
+				XGL_CALL( glGetUniformfv( program->internal.id, program->uniforms[ i ].slot, ( GLfloat * ) &program->uniforms[ i ].defaultVec3 ) );
 				break;
 			case PLG_UNIFORM_VEC4:
-				XGL_CALL( glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultVec4 ) );
+				XGL_CALL( glGetUniformfv( program->internal.id, program->uniforms[ i ].slot, ( GLfloat * ) &program->uniforms[ i ].defaultVec4 ) );
 				break;
 			case PLG_UNIFORM_MAT3:
-				XGL_CALL( glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultMat3 ) );
+				XGL_CALL( glGetUniformfv( program->internal.id, program->uniforms[ i ].slot, ( GLfloat * ) &program->uniforms[ i ].defaultMat3 ) );
 				break;
 			case PLG_UNIFORM_MAT4:
-				XGL_CALL( glGetUniformfv( program->internal.id, i, ( GLfloat * ) &program->uniforms[ i ].defaultMat4 ) );
+				XGL_CALL( glGetUniformfv( program->internal.id, program->uniforms[ i ].slot, ( GLfloat * ) &program->uniforms[ i ].defaultMat4 ) );
 				break;
 			default:
 				break;
