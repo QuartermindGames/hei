@@ -37,9 +37,7 @@ void PlPopVectorArrayBack( PLVectorArray *vectorArray ) {
 }
 
 void PlEraseVectorArrayElement( PLVectorArray *vectorArray, unsigned int at ) {
-	for ( unsigned int i = ( at + 1 ); i < vectorArray->numElements; ++i ) {
-		vectorArray->data[ i - 1 ] = vectorArray->data[ i ];
-	}
+	memmove( vectorArray->data + at, vectorArray->data + at + 1, ( vectorArray->numElements - at ) * sizeof( void * ) );
 	vectorArray->numElements--;
 }
 
