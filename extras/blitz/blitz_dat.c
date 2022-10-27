@@ -123,17 +123,23 @@ static PLPackage *ParseDATFile( PLFile *file ) {
 		return NULL;
 	}
 
+	unsigned int numMatches = 0;
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
 		int32_t hash = PlReadInt32( file, false, NULL );
 		const char *fileName = GetStringForHash( hash );
 		if ( fileName == NULL ) {
 			snprintf( package->table[ i ].fileName, sizeof( PLPath ), "%X", hash );
 		} else {
+			numMatches++;
 			snprintf( package->table[ i ].fileName, sizeof( PLPath ), "%s", fileName );
 		}
 		package->table[ i ].offset = 16384 + ( PlReadInt32( file, false, NULL ) * 2048 );
 		package->table[ i ].fileSize = PlReadInt32( file, false, NULL );
 	}
+
+#if !defined( NDEBUG )
+	printf( "%lf%% matched for Blitz package \"%s\"\n", ( ( double ) numMatches / numFiles ) * 100.0, PlGetFileName( PlGetFilePath( file ) ) );
+#endif
 
 	return package;
 }
