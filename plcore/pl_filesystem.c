@@ -1201,8 +1201,9 @@ int8_t PlReadInt8( PLFile *ptr, bool *status ) {
 		return ( int8_t ) ( fgetc( ptr->fptr ) );
 	}
 
+	int8_t value = *( ( int8_t * ) ( ptr->pos ) );
 	ptr->pos = ( void * ) ( ( char * ) ( ptr->pos ) + 1 );
-	return *( ( int8_t * ) ( ptr->pos ) );
+	return value;
 }
 
 static int64_t ReadSizedInteger( PLFile *ptr, size_t size, bool big_endian, bool *status ) {
