@@ -141,11 +141,9 @@ static void ConvertVTFFormat( PLImage *image, unsigned int in ) {
 			break;
 		case VTF_FORMAT_ABGR8888:
 			image->format = PL_IMAGEFORMAT_RGBA8;
-			image->colour_format = PL_COLOURFORMAT_ABGR;
 			break;
 		case VTF_FORMAT_ARGB8888:
 			image->format = PL_IMAGEFORMAT_RGBA8;
-			image->colour_format = PL_COLOURFORMAT_ARGB;
 			break;
 		case VTF_FORMAT_BGR565:
 			image->format = PL_IMAGEFORMAT_RGB565;

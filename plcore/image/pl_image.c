@@ -97,21 +97,21 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	} SImageLoader;
 
 	static const SImageLoader loaderList[] = {
-	        { PL_IMAGE_FILEFORMAT_TGA, "tga", LoadStbImage },
-	        { PL_IMAGE_FILEFORMAT_PNG, "png", LoadStbImage },
-	        { PL_IMAGE_FILEFORMAT_JPG, "jpg", LoadStbImage },
-	        { PL_IMAGE_FILEFORMAT_BMP, "bmp", LoadStbImage },
-	        { PL_IMAGE_FILEFORMAT_PSD, "psd", LoadStbImage },
-	        { PL_IMAGE_FILEFORMAT_GIF, "gif", LoadStbImage },
-	        { PL_IMAGE_FILEFORMAT_HDR, "hdr", LoadStbImage },
-	        { PL_IMAGE_FILEFORMAT_PIC, "pic", LoadStbImage },
-	        { PL_IMAGE_FILEFORMAT_PNM, "pnm", LoadStbImage },
-	        { PL_IMAGE_FILEFORMAT_FTX, "ftx", PlParseFtxImage },
-	        { PL_IMAGE_FILEFORMAT_3DF, "3df", PlParse3dfImage },
-	        { PL_IMAGE_FILEFORMAT_TIM, "tim", PlParseTimImage },
-	        { PL_IMAGE_FILEFORMAT_SWL, "swl", PlParseSwlImage },
-	        { PL_IMAGE_FILEFORMAT_QOI, "qoi", PlParseQoiImage },
-	        { PL_IMAGE_FILEFORMAT_DDS, "dds", PlParseDdsImage },
+	        {PL_IMAGE_FILEFORMAT_TGA,  "tga", LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_PNG, "png", LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_JPG, "jpg", LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_BMP, "bmp", LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_PSD, "psd", LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_GIF, "gif", LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_HDR, "hdr", LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_PIC, "pic", LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_PNM, "pnm", LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_FTX, "ftx", PlParseFtxImage},
+	        { PL_IMAGE_FILEFORMAT_3DF, "3df", PlParse3dfImage},
+	        { PL_IMAGE_FILEFORMAT_TIM, "tim", PlParseTimImage},
+	        { PL_IMAGE_FILEFORMAT_SWL, "swl", PlParseSwlImage},
+	        { PL_IMAGE_FILEFORMAT_QOI, "qoi", PlParseQoiImage},
+	        { PL_IMAGE_FILEFORMAT_DDS, "dds", PlParseDdsImage},
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
@@ -127,7 +127,7 @@ void PlClearImageLoaders( void ) {
 	numImageLoaders = 0;
 }
 
-PLImage *PlCreateImage( uint8_t *buf, unsigned int w, unsigned int h, PLColourFormat col, PLImageFormat dat ) {
+PLImage *PlCreateImage( uint8_t *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat ) {
 	PLImage *image = PlMAlloc( sizeof( PLImage ), false );
 	if ( image == NULL ) {
 		return NULL;
@@ -140,20 +140,28 @@ PLImage *PlCreateImage( uint8_t *buf, unsigned int w, unsigned int h, PLColourFo
 	image->size = PlGetImageSize( image->format, image->width, image->height );
 	image->levels = 1;
 
-	image->data = PlCAlloc( image->levels, sizeof( uint8_t * ), false );
-	if ( image->data == NULL ) {
-		PlDestroyImage( image );
-		return NULL;
-	}
+	if ( numFrames > 0 ) {
+		image->numFrames = numFrames;
+		image->frames = PL_NEW_( PLImageFrame, image->numFrames );
+		for ( unsigned int i = 0; i < image->numFrames; ++i ) {
+			image->frames[ i ].data = PL_NEW_( void *, image->levels );
+		}
+	} else { /* todo: kill this */
+		image->data = PlCAlloc( image->levels, sizeof( uint8_t * ), false );
+		if ( image->data == NULL ) {
+			PlDestroyImage( image );
+			return NULL;
+		}
 
-	image->data[ 0 ] = PlCAlloc( image->size, sizeof( uint8_t ), false );
-	if ( image->data[ 0 ] == NULL ) {
-		PlDestroyImage( image );
-		return NULL;
-	}
+		image->data[ 0 ] = PlCAlloc( image->size, sizeof( uint8_t ), false );
+		if ( image->data[ 0 ] == NULL ) {
+			PlDestroyImage( image );
+			return NULL;
+		}
 
-	if ( buf != NULL ) {
-		memcpy( image->data[ 0 ], buf, image->size );
+		if ( buf != NULL ) {
+			memcpy( image->data[ 0 ], buf, image->size );
+		}
 	}
 
 	return image;
@@ -164,9 +172,18 @@ void PlDestroyImage( PLImage *image ) {
 		return;
 	}
 
+	/* todo: kill this */
 	for ( unsigned int levels = 0; levels < image->levels; ++levels ) {
 		PlFree( image->data[ levels ] );
 	}
+
+	for ( unsigned int i = 0; i < image->numFrames; ++i ) {
+		for ( unsigned int j = 0; j < image->frames[ i ].numMips; ++j ) {
+			PL_DELETE( image->frames[ i ].data[ j ] );
+		}
+		PL_DELETE( image->frames[ i ].data );
+	}
+	PL_DELETE( image->frames );
 
 	PlFree( image->data );
 	PlFree( image );
@@ -605,12 +622,22 @@ unsigned int PlGetImageWidth( const PLImage *image ) { return image->width; }
 unsigned int PlGetImageHeight( const PLImage *image ) { return image->height; }
 PLImageFormat PlGetImageFormat( const PLImage *image ) { return image->format; }
 
-const uint8_t *PlGetImageData( const PLImage *image, unsigned int level ) {
-	if ( level >= image->levels ) {
+void *PlGetImageData( PLImage *image, unsigned int frame, unsigned int mip ) {
+	if ( mip >= image->levels ) {
 		return NULL;
 	}
 
-	return image->data[ level ];
+	if ( image->numFrames > 0 ) {
+		if ( frame >= image->numFrames ) {
+			PlReportErrorF( PL_RESULT_MEMORY_EOA, "invalid frame" );
+			return NULL;
+		}
+
+		return image->frames[ frame ].data[ mip ];
+	}
+
+	/* todo: kill this */
+	return image->data[ mip ];
 }
 
 unsigned int PlGetImageDataSize( const PLImage *image ) {

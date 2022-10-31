@@ -34,7 +34,7 @@ PLImage *PlParseFtxImage( PLFile *file ) {
 		return NULL;
 	}
 
-	PLImage *image = PlCreateImage( buffer, header.width, header.height, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+	PLImage *image = PlCreateImage( buffer, header.width, header.height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
 	/* create image makes a copy of the buffer */
 	PlFree( buffer );

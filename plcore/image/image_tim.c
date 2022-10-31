@@ -265,8 +265,6 @@ static bool TIM_ReadFile( PLFile *fin, PLImage *out ) {
 			goto ERR_CLEANUP;
 	}
 
-	out->colour_format = PL_COLOURFORMAT_ABGR;
-
 	PlFree( image_data );
 	PlFree( palette );
 
