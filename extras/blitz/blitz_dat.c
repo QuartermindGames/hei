@@ -343,6 +343,7 @@ static PLPackage *ParseDATFile( PLFile *file ) {
 		} else {
 			numMatches++;
 			snprintf( package->table[ i ].fileName, sizeof( PLPath ), "%s", fileName );
+			PlNormalizePath( package->table[ i ].fileName, sizeof( PLPath ) );
 		}
 		package->table[ i ].offset = 16384 + ( PlReadInt32( file, false, NULL ) * 2048 );
 		package->table[ i ].fileSize = PlReadInt32( file, false, NULL );
