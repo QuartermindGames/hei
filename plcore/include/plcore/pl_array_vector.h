@@ -10,7 +10,7 @@
 
 PL_EXTERN_C
 
-typedef struct PLVectorArray PLVectorArray;const
+typedef struct PLVectorArray PLVectorArray;
 
 void PlResizeVectorArray( PLVectorArray *vectorArray, unsigned int newMaxElements );
 void **PlGetVectorArrayData( PLVectorArray *vectorArray );

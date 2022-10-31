@@ -257,12 +257,11 @@ inline static PLVector4 PlColourToVector4( const PLColour *c ) {
 	return v;
 }
 
-#define PlColourU8( R, G, B, A ) \
+#define PL_COLOURU8( R, G, B, A ) \
 	( PLColour ) { R, G, B, A }
-
-#define PlColourF32( R, G, B, A ) \
+#define PL_COLOURF32( R, G, B, A ) \
 	( PLColourF32 ) { R, G, B, A }
-#define PlColourF32RGB( R, G, B ) \
+#define PL_COLOURF32RGB( R, G, B ) \
 	( PLColourF32 ) { R, G, B, 1.0f }
 
 #ifndef __cplusplus
@@ -273,16 +272,29 @@ inline static PLVector4 PlColourToVector4( const PLColour *c ) {
 
 #endif
 
-#define PLColourRGB( r, g, b ) \
-	( PLColour ) { r, g, b, 255 }
-#define PLColourR( r ) \
-	( PLColour ) { r, 255, 255, 255 }
-#define PLColourG( g ) \
-	( PLColour ) { 255, g, 255, 255 }
-#define PLColourB( b ) \
-	( PLColour ) { 255, 255, b, 255 }
-#define PLColourA( a ) \
-	( PLColour ) { 255, 255, 255, a }
+#if !defined( __cplusplus )
+#	define PLColourRGB( r, g, b ) \
+		( PLColour ) { r, g, b, 255 }
+#	define PLColourR( r ) \
+		( PLColour ) { r, 255, 255, 255 }
+#	define PLColourG( g ) \
+		( PLColour ) { 255, g, 255, 255 }
+#	define PLColourB( b ) \
+		( PLColour ) { 255, 255, b, 255 }
+#	define PLColourA( a ) \
+		( PLColour ) { 255, 255, 255, a }
+#else
+#	define PLColourRGB( r, g, b ) \
+		{ r, g, b, 255 }
+#	define PLColourR( r ) \
+		{ r, 255, 255, 255 }
+#	define PLColourG( g ) \
+		{ 255, g, 255, 255 }
+#	define PLColourB( b ) \
+		{ 255, 255, b, 255 }
+#	define PLColourA( a ) \
+		{ 255, 255, 255, a }
+#endif
 
 /* pinks */
 #define PL_COLOUR_PINK                   PLColourRGB( 255, 192, 203 )
