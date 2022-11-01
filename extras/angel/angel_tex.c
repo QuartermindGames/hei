@@ -68,7 +68,7 @@ PLImage *Angel_TEX_ParseImage( PLFile *file ) {
 				return NULL;
 			}
 
-			image = PlCreateImage( NULL, header.width, header.height, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+			image = PlCreateImage( NULL, header.width, header.height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
 			uint8_t *pixels = PL_NEW_( uint8_t, numPixels );
 			PlReadFile( file, pixels, sizeof( uint8_t ), numPixels );

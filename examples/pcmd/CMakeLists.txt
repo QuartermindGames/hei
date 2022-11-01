@@ -30,7 +30,9 @@ add_executable(pcmd
 
         ../../extras/angel/angel_dat.c
         ../../extras/angel/angel_tex.c
+
         ../../extras/blitz/blitz_dat.c
+        ../../extras/blitz/blitz_spt.c
 
         ../../extras/core/core_package_clu.c
         ../../extras/core/core_loader_hgt.c

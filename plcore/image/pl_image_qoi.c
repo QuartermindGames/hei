@@ -21,7 +21,7 @@ PLImage *PlParseQoiImage( PLFile *file ) {
 		return NULL;
 	}
 
-	PLImage *image = PlCreateImage( dstBuf, desc.width, desc.height, PL_COLOURFORMAT_RGBA,
+	PLImage *image = PlCreateImage( dstBuf, desc.width, desc.height, 0, PL_COLOURFORMAT_RGBA,
 	                                ( desc.channels == 4 ) ? PL_IMAGEFORMAT_RGBA8 : PL_IMAGEFORMAT_RGB8 );
 
 	PlFree( dstBuf );

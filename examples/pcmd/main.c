@@ -32,6 +32,8 @@ For more information, please refer to <http://unlicense.org>
 
 #include <plmodel/plm.h>
 
+#include "../../extras/blitz/blitz.h"
+
 /**
  * Command line utility to interface with the platform lib.
  **/
@@ -193,6 +195,33 @@ static void Cmd_Exit( unsigned int argc, char **argv ) {
 	isRunning = false;
 }
 
+/*************************************************************/
+static void command_blitz_spt_dump( unsigned int argc, char **argv ) {
+	const char *path = argv[ 1 ];
+
+	PLFile *file = PlOpenFile( path, false );
+	if ( file == NULL ) {
+		printf( "Failed to open file: %s\n", PlGetError() );
+		return;
+	}
+
+	char folderName[ 64 ];
+	snprintf( folderName, sizeof( folderName ), "./%s_dump", PlGetFileName( path ) );
+	if ( !PlCreateDirectory( folderName ) ) {
+		printf( "Failed to create destination folder: %s\n", PlGetError() );
+		return;
+	}
+
+	Blitz_SPT_BulkExport( file, folderName, "tga" );
+}
+
+static void register_blitz_commands( void ) {
+	PlRegisterConsoleCommand( "blitz_spt_dump",
+	                          "Dump images contained within an SPT file. 'blitz_spt_dump ./path [./outpath]'",
+	                          -1, command_blitz_spt_dump );
+}
+/*************************************************************/
+
 PLPackage *IStorm_LST_LoadFile( const char *path );
 PLPackage *Outcast_OPK_LoadFile( const char *path );
 PLPackage *FTactics_PAK_LoadFile( const char *path );
@@ -204,10 +233,9 @@ PLPackage *Core_CLU_LoadPackage( const char *path );
 PLPackage *Angel_DAT_LoadPackage( const char *path );
 PLPackage *AITD_PAK_LoadPackage( const char *path );
 PLPackage *WFear_INU_LoadPackage( const char *path );
-PLPackage *Blitz_DAT_LoadPackage( const char *path );
 
-PLImage *Core_HGT_ParseImage( PLFile *file );
 PLImage *Angel_TEX_ParseImage( PLFile *file );
+PLImage *Core_HGT_ParseImage( PLFile *file );
 
 #define MAX_COMMAND_LENGTH 256
 static char cmdLine[ MAX_COMMAND_LENGTH ];
@@ -237,8 +265,9 @@ int main( int argc, char **argv ) {
 	PlRegisterPackageLoader( "dat", Blitz_DAT_LoadPackage );
 	PlRegisterPackageLoader( "inu", WFear_INU_LoadPackage );
 
-	PlRegisterImageLoader( "hgt", Core_HGT_ParseImage );
 	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
+	PlRegisterImageLoader( "hgt", Core_HGT_ParseImage );
+	PlRegisterImageLoader( "spt", Blitz_SPT_ParseImage );
 
 	PlRegisterPlugins( "./" );
 
@@ -247,8 +276,10 @@ int main( int argc, char **argv ) {
 	PlRegisterConsoleCommand( "quit", "Exit the application.", 0, Cmd_Exit );
 	PlRegisterConsoleCommand( "mdlconv", "Convert the specified image. 'mdlconv ./model.mdl [./out.mdl]'", 1, Cmd_ConvertModel );
 	PlRegisterConsoleCommand( "mdlconvdir", "Bulk convert images.", 1, Cmd_BulkConvertModel );
-	PlRegisterConsoleCommand( "imgconv", "Convert the given image. 'img_convert ./image.bmp [./out.png]'", 1, Cmd_IMGConvert );
-	PlRegisterConsoleCommand( "imgconvdir", "Bulk convert images in the given directory. 'img_bulkconvert ./path bmp [./outpath]'", 2, Cmd_IMGBulkConvert );
+	PlRegisterConsoleCommand( "imgconv", "Convert the given image. 'img_convert ./image.bmp [./out.png]'", -1, Cmd_IMGConvert );
+	PlRegisterConsoleCommand( "imgconvdir", "Bulk convert images in the given directory. 'img_bulkconvert ./path bmp [./outpath]'", -1, Cmd_IMGBulkConvert );
+
+	register_blitz_commands();
 
 	PlInitializePlugins();
 

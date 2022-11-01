@@ -71,20 +71,27 @@ typedef enum PLImageFormat {
 
 /* todo: deprecate this */
 typedef enum PLColourFormat {
-	PL_COLOURFORMAT_ARGB,
-	PL_COLOURFORMAT_ABGR,
 	PL_COLOURFORMAT_RGB,
 	PL_COLOURFORMAT_BGR,
 	PL_COLOURFORMAT_RGBA,
 	PL_COLOURFORMAT_BGRA,
 } PLColourFormat;
 
+typedef struct PLImageFrame {
+	void **data;
+	unsigned int numMips;
+} PLImageFrame;
+
 typedef struct PLImage {
 #if 1
-	uint8_t **data;
+	uint8_t **data; /* todo: kill this */
 #else
-	uint8_t *data;
+	uint8_t *data; /* todo: kill this */
 #endif
+
+	PLImageFrame *frames;
+	unsigned int numFrames;
+
 	unsigned int x, y;
 	unsigned int width, height;
 	size_t size;
@@ -123,7 +130,7 @@ PL_EXTERN void PlRegisterImageLoader( const char *extension, PLImage *( *ParseFi
 PL_EXTERN void PlRegisterStandardImageLoaders( unsigned int flags );
 PL_EXTERN void PlClearImageLoaders( void );
 
-PL_EXTERN PLImage *PlCreateImage( uint8_t *buf, unsigned int w, unsigned int h, PLColourFormat col, PLImageFormat dat );
+PL_EXTERN PLImage *PlCreateImage( uint8_t *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat );
 PL_EXTERN void PlDestroyImage( PLImage *image );
 
 PL_EXTERN PLImage *PlLoadImage( const char *path );
@@ -150,7 +157,7 @@ PL_EXTERN const char **PlGetSupportedImageFormats( unsigned int *numElements );
 unsigned int PlGetImageWidth( const PLImage *image );
 unsigned int PlGetImageHeight( const PLImage *image );
 PLImageFormat PlGetImageFormat( const PLImage *image );
-const uint8_t *PlGetImageData( const PLImage *image, unsigned int level );
+void *PlGetImageData( PLImage *image, unsigned int frame, unsigned int mip );
 unsigned int PlGetImageDataSize( const PLImage *image );
 
 #endif

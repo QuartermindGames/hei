@@ -129,7 +129,7 @@ PLImage *PlParse3dfImage( PLFile *file ) {
 		}
 	}
 
-	PLImage *image = PlCreateImage( dstBuf, w, h, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+	PLImage *image = PlCreateImage( dstBuf, w, h, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
 	/* no longer need this */
 	PlFree( dstBuf );
