@@ -29,13 +29,23 @@ extern uint64_t PlGetTotalSystemMemory( void );
 extern uint64_t PlGetTotalAvailableSystemMemory( void );
 extern uint64_t PlGetCurrentMemoryUsage( void );
 
+/* todo: deprecate these... */
 #define PlCAllocA( NUM, SIZE )     PlCAlloc( ( NUM ), ( SIZE ), true )
 #define PlMAllocA( SIZE )          PlMAlloc( ( SIZE ), true )
 #define PlReAllocA( PTR, NEWSIZE ) PlReAlloc( ( PTR ), ( NEWSIZE ), true )
 
+#define PL_CALLOCA( NUM, SIZE )     PlCAlloc( ( NUM ), ( SIZE ), true )
+#define PL_MALLOCA( SIZE )          PlMAlloc( ( SIZE ), true )
+#define PL_REALLOCA( PTR, NEWSIZE ) PlReAlloc( ( PTR ), ( NEWSIZE ), true )
+
 #define PL_NEW( TYPE )       ( TYPE * ) PlMAllocA( sizeof( TYPE ) )
 #define PL_NEW_( TYPE, NUM ) ( TYPE * ) PlCAllocA( NUM, sizeof( TYPE ) )
 #define PL_DELETE( PTR )     PlFree( PTR )
+#define PL_DELETEN( PTR )     \
+	{                         \
+		PL_DELETE( ( PTR ) ); \
+		( PTR ) = NULL;       \
+	}
 
 typedef struct PLMemoryGroup PLMemoryGroup;
 void PlFlushMemoryGroup( PLMemoryGroup *group );
