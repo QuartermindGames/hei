@@ -65,16 +65,8 @@ static GLuint VAO[ 1 ];
 			unsigned int _err = glGetError(); \
 			assert( _err == GL_NO_ERROR );    \
 		}
-#	define XGL_CALL_RETURN( X, Y )           \
-		{                                     \
-			glGetError();                     \
-			( Y ) = X;                        \
-			unsigned int _err = glGetError(); \
-			assert( _err == GL_NO_ERROR );    \
-		}
 #else
-#	define XGL_CALL( X )           X
-#	define XGL_CALL_RETURN( X, Y ) ( Y ) = X;
+#	define XGL_CALL( X ) X
 #endif
 
 ///////////////////////////////////////////
@@ -1316,12 +1308,12 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 		return;
 	}
 
-	XGL_CALL_RETURN( glGetAttribLocation( program->internal.id, "pl_vposition" ), program->internal.v_position );
-	XGL_CALL_RETURN( glGetAttribLocation( program->internal.id, "pl_vnormal" ), program->internal.v_normal );
-	XGL_CALL_RETURN( glGetAttribLocation( program->internal.id, "pl_vuv" ), program->internal.v_uv );
-	XGL_CALL_RETURN( glGetAttribLocation( program->internal.id, "pl_vcolour" ), program->internal.v_colour );
-	XGL_CALL_RETURN( glGetAttribLocation( program->internal.id, "pl_vtangent" ), program->internal.v_tangent );
-	XGL_CALL_RETURN( glGetAttribLocation( program->internal.id, "pl_vbitangent" ), program->internal.v_bitangent );
+	XGL_CALL( program->internal.v_position = glGetAttribLocation( program->internal.id, "pl_vposition" ) );
+	XGL_CALL( program->internal.v_normal = glGetAttribLocation( program->internal.id, "pl_vnormal" ) );
+	XGL_CALL( program->internal.v_uv = glGetAttribLocation( program->internal.id, "pl_vuv" ) );
+	XGL_CALL( program->internal.v_colour = glGetAttribLocation( program->internal.id, "pl_vcolour" ) );
+	XGL_CALL( program->internal.v_tangent = glGetAttribLocation( program->internal.id, "pl_vtangent" ) );
+	XGL_CALL( program->internal.v_bitangent = glGetAttribLocation( program->internal.id, "pl_vbitangent" ) );
 
 	int num_uniforms = 0;
 	XGL_CALL( glGetProgramiv( program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms ) );
@@ -1356,7 +1348,7 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 			continue;
 		}
 
-		XGL_CALL_RETURN( glGetUniformLocation( program->internal.id, uniformName ), program->uniforms[ i ].slot );
+		XGL_CALL( program->uniforms[ i ].slot = glGetUniformLocation( program->internal.id, uniformName ) );
 
 		program->uniforms[ i ].type = GLConvertGLUniformType( glType );
 		program->uniforms[ i ].name = uniformName;
