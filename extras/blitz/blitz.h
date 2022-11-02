@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include <plcore/pl_image.h>
-#include <plcore/pl_package.h>
+#include <plcore/pl_plugin_interface.h>
+extern const PLPluginExportTable *gInterface;
 
-PLImage *Blitz_SPT_ParseImage( PLFile *file );
-void Blitz_SPT_BulkExport( PLFile *file, const char *destination, const char *format );
+extern const char *titanStrings[];
+extern const unsigned int numTitanStrings;
 
-PLPackage *Blitz_DAT_LoadPackage( const char *path );
+const char *get_string_for_hash( uint32_t hash, const char **strings, unsigned int numStrings );

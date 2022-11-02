@@ -127,7 +127,7 @@ void PlClearImageLoaders( void ) {
 	numImageLoaders = 0;
 }
 
-PLImage *PlCreateImage( uint8_t *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat ) {
+PLImage *PlCreateImage( void *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat ) {
 	PLImage *image = PlMAlloc( sizeof( PLImage ), false );
 	if ( image == NULL ) {
 		return NULL;

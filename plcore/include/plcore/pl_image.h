@@ -130,7 +130,7 @@ PL_EXTERN void PlRegisterImageLoader( const char *extension, PLImage *( *ParseFi
 PL_EXTERN void PlRegisterStandardImageLoaders( unsigned int flags );
 PL_EXTERN void PlClearImageLoaders( void );
 
-PL_EXTERN PLImage *PlCreateImage( uint8_t *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat );
+PL_EXTERN PLImage *PlCreateImage( void *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat );
 PL_EXTERN void PlDestroyImage( PLImage *image );
 
 PL_EXTERN PLImage *PlLoadImage( const char *path );
