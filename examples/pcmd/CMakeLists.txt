@@ -25,14 +25,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ]]
 
+add_subdirectory(../../extras/blitz/ ../../bin/plugins/)
+
 add_executable(pcmd
         main.c
 
         ../../extras/angel/angel_dat.c
         ../../extras/angel/angel_tex.c
-
-        ../../extras/blitz/blitz_dat.c
-        ../../extras/blitz/blitz_spt.c
 
         ../../extras/core/core_package_clu.c
         ../../extras/core/core_loader_hgt.c
@@ -49,5 +48,7 @@ add_executable(pcmd
         ../../extras/outwars_ff.c
         ../../extras/sentient_vsr.c
         )
+
+add_dependencies(pcmd blitz_plugin)
 
 target_link_libraries(pcmd plcore plgraphics plmodel)

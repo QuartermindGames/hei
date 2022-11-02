@@ -153,11 +153,38 @@ typedef struct PLPluginExportTable {
 	/** v4.1 ************************************************/
 
 	void ( *GenerateChecksumCRC32 )( const void *buf, uint32_t bufSize, uint32_t *crc );
+
+	/** v8.1 ************************************************/
+	/* pl_string.h */
+	char *( *itoa )( int val, char *buf, size_t n, int base );
+	char *( *strtolower )( char *s );
+	char *( *strntolower )( char *s, size_t n );
+	char *( *strtoupper )( char *s );
+	char *( *strntoupper )( char *s, size_t n );
+	char *( *strcasestr )( const char *s, const char *find );
+	int ( *strcasecmp )( const char *s1, const char *s2 );
+	int ( *strncasecmp )( const char *s1, const char *s2, size_t n );
+	int ( *strisalpha )( const char *s );
+	int ( *strnisalpha )( const char *s, unsigned int n );
+	int ( *strisalnum )( const char *s );
+	int ( *strnisalnum )( const char *s, unsigned int n );
+	int ( *strisdigit )( const char *s );
+	int ( *strnisdigit )( const char *s, unsigned int n );
+	int ( *vscprintf )( const char *format, va_list args );
+	unsigned int ( *strcnt )( const char *s, char c );
+	unsigned int ( *strncnt )( const char *s, char c, unsigned int n );
+	char *( *strchunksplit )( const char *s, unsigned int n, const char *sep );
+	char *( *strinsert )( const char *s, char **buf, size_t *bufSize, size_t *maxBufSize );
+	/* pl_image.h */
+	PLImage *( *CreateImage2 )( void *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat );
+	bool ( *WriteImage )( const PLImage *image, const char *path );
+	/* pl_filesystem.h */
+	void ( *NormalizePath )( char *path, size_t length );
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */
 #define PL_PLUGIN_INTERFACE_VERSION_MAJOR 8
-#define PL_PLUGIN_INTERFACE_VERSION_MINOR 0
+#define PL_PLUGIN_INTERFACE_VERSION_MINOR 1
 #define PL_PLUGIN_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
 
@@ -166,7 +193,11 @@ typedef const PLPluginDescription *( *PLPluginQueryFunction )( void );
 #define PL_PLUGIN_INIT_FUNCTION "PLInitializePlugin"
 typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *exportTable );
 
-/* 2022-07-02
+/* 2022-11-01
+ * - Strings API is now exposed
+ * - CreateImage2, which now provides an option for storing multiple frames
+ *
+ * 2022-07-02
  * - Now possible to attach a variable to a console var
  *
  * 2022-06-30

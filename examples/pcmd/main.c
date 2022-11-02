@@ -196,30 +196,8 @@ static void Cmd_Exit( unsigned int argc, char **argv ) {
 }
 
 /*************************************************************/
-static void command_blitz_spt_dump( unsigned int argc, char **argv ) {
-	const char *path = argv[ 1 ];
 
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
-		printf( "Failed to open file: %s\n", PlGetError() );
-		return;
-	}
 
-	char folderName[ 64 ];
-	snprintf( folderName, sizeof( folderName ), "./%s_dump", PlGetFileName( path ) );
-	if ( !PlCreateDirectory( folderName ) ) {
-		printf( "Failed to create destination folder: %s\n", PlGetError() );
-		return;
-	}
-
-	Blitz_SPT_BulkExport( file, folderName, "tga" );
-}
-
-static void register_blitz_commands( void ) {
-	PlRegisterConsoleCommand( "blitz_spt_dump",
-	                          "Dump images contained within an SPT file. 'blitz_spt_dump ./path [./outpath]'",
-	                          -1, command_blitz_spt_dump );
-}
 /*************************************************************/
 
 PLPackage *IStorm_LST_LoadFile( const char *path );
@@ -262,14 +240,17 @@ int main( int argc, char **argv ) {
 	PlRegisterPackageLoader( "ff", Outwars_FF_LoadFile );
 	PlRegisterPackageLoader( "clu", Core_CLU_LoadPackage );
 	PlRegisterPackageLoader( "dat", Angel_DAT_LoadPackage );
-	PlRegisterPackageLoader( "dat", Blitz_DAT_LoadPackage );
 	PlRegisterPackageLoader( "inu", WFear_INU_LoadPackage );
 
 	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
 	PlRegisterImageLoader( "hgt", Core_HGT_ParseImage );
-	PlRegisterImageLoader( "spt", Blitz_SPT_ParseImage );
 
-	PlRegisterPlugins( "./" );
+	PLPath exeDir;
+	if ( PlGetExecutableDirectory( exeDir, sizeof( PLPath ) ) != NULL ) {
+		PLPath pluginsDir;
+		snprintf( pluginsDir, sizeof( pluginsDir ), PlPathEndsInSlash( exeDir ) ? "%splugins" : "%s/plugins", exeDir );
+		PlRegisterPlugins( pluginsDir );
+	}
 
 	/* register all our custom console commands */
 	PlRegisterConsoleCommand( "exit", "Exit the application.", 0, Cmd_Exit );
@@ -278,8 +259,6 @@ int main( int argc, char **argv ) {
 	PlRegisterConsoleCommand( "mdlconvdir", "Bulk convert images.", 1, Cmd_BulkConvertModel );
 	PlRegisterConsoleCommand( "imgconv", "Convert the given image. 'img_convert ./image.bmp [./out.png]'", -1, Cmd_IMGConvert );
 	PlRegisterConsoleCommand( "imgconvdir", "Bulk convert images in the given directory. 'img_bulkconvert ./path bmp [./outpath]'", -1, Cmd_IMGBulkConvert );
-
-	register_blitz_commands();
 
 	PlInitializePlugins();
 

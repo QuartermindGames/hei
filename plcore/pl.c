@@ -10,14 +10,14 @@
 #include <plcore/pl_image.h>
 
 #if defined( _WIN32 )
-#include <Windows.h>
-#ifdef CreateDirectory
-#undef CreateDirectory
-#endif
+#	include <Windows.h>
+#	ifdef CreateDirectory
+#		undef CreateDirectory
+#	endif
 #endif
 
 #if !defined( _MSC_VER )
-#include <sys/time.h>
+#	include <sys/time.h>
 #endif
 #include <errno.h>
 
@@ -35,9 +35,10 @@ typedef struct PLSubSystem {
 } PLSubSystem;
 
 PLSubSystem pl_subsystems[] = {
-        { PL_SUBSYSTEM_IO,
-          &PlInitFileSystem,
-          &PlShutdownFileSystem } };
+        {PL_SUBSYSTEM_IO,
+         &PlInitFileSystem,
+         &PlShutdownFileSystem}
+};
 
 #if 0 /* incomplete interface? */
 typedef struct PLArgument {
@@ -80,11 +81,11 @@ PLFunctionResult PlInitialize( int argc, char **argv ) {
 	memset( &pl_arguments, 0, sizeof( PLArguments ) );
 	pl_arguments.num_arguments = ( unsigned int ) argc;
 	if ( pl_arguments.num_arguments > 0 ) {
-        pl_arguments.exe_name = PlGetFileName( argv[ 0 ] );
+		pl_arguments.exe_name = PlGetFileName( argv[ 0 ] );
 
-        for ( unsigned int i = 0; i < pl_arguments.num_arguments; i++ ) {
-            pl_arguments.arguments[ i ] = argv[ i ];
-        }
+		for ( unsigned int i = 0; i < pl_arguments.num_arguments; i++ ) {
+			pl_arguments.arguments[ i ] = argv[ i ];
+		}
 	}
 
 	PlInitPackageSubSystem();
@@ -298,7 +299,7 @@ const char *GetLastError_strerror( int errnum ) {
 #endif
 
 #define MAX_FUNCTION_LENGTH 64
-#define MAX_ERROR_LENGTH 2048
+#define MAX_ERROR_LENGTH    2048
 
 char
         loc_error[ MAX_ERROR_LENGTH ] = { '\0' },
@@ -469,10 +470,15 @@ typedef struct PLPlugin {
 static PLLinkedList *plugins = NULL;
 static unsigned int numPlugins = 0;
 
+static PLImage *CreateImageOldWrapper( uint8_t *buf, unsigned int width, unsigned int height, PLColourFormat colourFormat, PLImageFormat dataFormat ) {
+	return PlCreateImage( buf, width, height, 0, colourFormat, dataFormat );
+}
+
 static PLPluginExportTable exportTable = {
         .ReportError = PlReportError,
         .GetError = PlGetError,
 
+        /* pl_filesystem.h */
         .LocalFileExists = PlLocalFileExists,
         .FileExists = PlFileExists,
         .LocalPathExists = PlLocalPathExists,
@@ -498,17 +504,21 @@ static PLPluginExportTable exportTable = {
         .FileSeek = PlFileSeek,
         .RewindFile = PlRewindFile,
         .CacheFile = PlCacheFile,
+        .NormalizePath = PlNormalizePath,
 
         .RegisterPackageLoader = PlRegisterPackageLoader,
         .RegisterImageLoader = PlRegisterImageLoader,
 
-        .CreateImage = PlCreateImage,
+        /* pl_image.h */
+        .CreateImage = CreateImageOldWrapper,
+        .CreateImage2 = PlCreateImage,
         .DestroyImage = PlDestroyImage,
         .ConvertPixelFormat = PlConvertPixelFormat,
         .InvertImageColour = PlInvertImageColour,
         .ReplaceImageColour = PlReplaceImageColour,
         .FlipImageVertical = PlFlipImageVertical,
         .GetImageSize = PlGetImageSize,
+        .WriteImage = PlWriteImage,
 
         .CreatePackageHandle = PlCreatePackageHandle,
         .GetPackagePath = PlGetPackagePath,
@@ -535,6 +545,27 @@ static PLPluginExportTable exportTable = {
         .ParseFloat = PlParseFloat,
 
         .GenerateChecksumCRC32 = pl_crc32,
+
+        /* pl_string.h */
+        .itoa = pl_itoa,
+        .strtolower = pl_strtolower,
+        .strntolower = pl_strntolower,
+        .strtoupper = pl_strtoupper,
+        .strntoupper = pl_strntoupper,
+        .strcasestr = pl_strcasestr,
+        .strcasecmp = pl_strcasecmp,
+        .strncasecmp = pl_strncasecmp,
+        .strisalpha = pl_strisalpha,
+        .strnisalpha = pl_strnisalpha,
+        .strisalnum = pl_strisalnum,
+        .strnisalnum = pl_strnisalnum,
+        .strisdigit = pl_strisdigit,
+        .strnisdigit = pl_strnisdigit,
+        .vscprintf = pl_vscprintf,
+        .strcnt = pl_strcnt,
+        .strncnt = pl_strncnt,
+        .strchunksplit = pl_strchunksplit,
+        .strinsert = pl_strinsert,
 };
 
 const PLPluginExportTable *PlGetExportTable( void ) {
