@@ -35,6 +35,7 @@ static PLGMesh *GetInternalMesh( PLGMeshPrimitive primitive ) {
 void PlgImmBegin( PLGMeshPrimitive primitive ) {
 	currentDynamicMesh = GetInternalMesh( primitive );
 	PlgClearMesh( currentDynamicMesh );
+	PlgSetMeshPrimitiveScale( currentDynamicMesh, 1.0f );
 	currentVertex = 0;
 }
 
@@ -56,6 +57,10 @@ void PlgImmTextureCoord( float s, float t ) {
 
 unsigned int PlgImmPushTriangle( unsigned int x, unsigned int y, unsigned int z ) {
 	return ( currentTriangle = PlgAddMeshTriangle( currentDynamicMesh, x, y, z ) );
+}
+
+void PlgImmSetPrimitiveScale( float scale ) {
+	PlgSetMeshPrimitiveScale( currentDynamicMesh, scale );
 }
 
 void PlgImmDraw( void ) {
@@ -228,28 +233,40 @@ void PlgDrawSimpleLine( PLMatrix4 transform, PLVector3 startPos, PLVector3 endPo
 	PlgDrawLine( transform, startPos, colour, endPos, colour );
 }
 
-void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize ) {
+void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColour *colour ) {
 	PlgImmBegin( PLG_MESH_LINES );
 
 	int c = 0, r = 0;
 	for ( ; r < h + 1; r += ( int ) gridSize ) {
 		PlgImmPushVertex( x, y + r, 0.0f );
-		PlgImmColour( 0, 0, 255, 255 );
+		PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 		PlgImmPushVertex( x + w, r + y, 0.0f );
-		PlgImmColour( 0, 0, 255, 255 );
+		PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 		for ( ; c < w + 1; c += ( int ) gridSize ) {
 			PlgImmPushVertex( c + x, y, 0.0f );
-			PlgImmColour( 0, 0, 255, 255 );
+			PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 			PlgImmPushVertex( c + x, y + h, 0.0f );
-			PlgImmColour( 0, 0, 255, 255 );
+			PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 		}
 	}
 
 	PlgImmDraw();
 }
 
-void PlgDrawVertexNormals( const PLGVertex *vertices, unsigned int numVertices )
-{
+void PlgDrawDottedGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColour *colour ) {
+	PlgImmBegin( PLG_MESH_POINTS );
+
+	for ( int r = 0; r < h + 1; r += ( int ) gridSize ) {
+		for ( int c = 0; c < w + 1; c += ( int ) gridSize ) {
+			PlgImmPushVertex( c + x, y + r, 0.0f );
+			PlgImmColour( colour->r, colour->g, colour->b, colour->a );
+		}
+	}
+
+	PlgImmDraw();
+}
+
+void PlgDrawVertexNormals( const PLGVertex *vertices, unsigned int numVertices ) {
 	PlgImmBegin( PLG_MESH_LINES );
 
 	for ( unsigned int i = 0; i < numVertices; ++i ) {
@@ -309,15 +326,15 @@ void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, PLColour colour ) {
 	PlTranslateMatrix( bounds->origin );
 
 	PLVector3 boxPoints[ 8 ] = {
-	        { bounds->maxs.x, bounds->maxs.y, bounds->maxs.z },
-	        { bounds->maxs.x, bounds->mins.y, bounds->maxs.z },
-	        { bounds->maxs.x, bounds->maxs.y, bounds->mins.z },
-	        { bounds->mins.x, bounds->maxs.y, bounds->maxs.z },
+	        {bounds->maxs.x,  bounds->maxs.y, bounds->maxs.z},
+	        { bounds->maxs.x, bounds->mins.y, bounds->maxs.z},
+	        { bounds->maxs.x, bounds->maxs.y, bounds->mins.z},
+	        { bounds->mins.x, bounds->maxs.y, bounds->maxs.z},
 
-	        { bounds->mins.x, bounds->mins.y, bounds->mins.z },
-	        { bounds->mins.x, bounds->maxs.y, bounds->mins.z },
-	        { bounds->mins.x, bounds->mins.y, bounds->maxs.z },
-	        { bounds->maxs.x, bounds->mins.y, bounds->mins.z },
+	        { bounds->mins.x, bounds->mins.y, bounds->mins.z},
+	        { bounds->mins.x, bounds->maxs.y, bounds->mins.z},
+	        { bounds->mins.x, bounds->mins.y, bounds->maxs.z},
+	        { bounds->maxs.x, bounds->mins.y, bounds->mins.z},
 	};
 
 	PlgAddMeshVertex( mesh, boxPoints[ 0 ], pl_vecOrigin3, colour, pl_vecOrigin2 );

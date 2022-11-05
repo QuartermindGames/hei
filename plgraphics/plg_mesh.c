@@ -296,6 +296,14 @@ void PlgSetMeshShaderProgram( PLGMesh *mesh, PLGShaderProgram *program ) {
 	mesh->shader_program = program;
 }
 
+/**
+ * Sets the draw scale for the particular primitive type.
+ * Only applies for POINTS / LINES.
+ */
+void PlgSetMeshPrimitiveScale( PLGMesh *mesh, float scale ) {
+	mesh->primitiveScale = scale;
+}
+
 unsigned int PlgAddMeshVertex( PLGMesh *mesh, PLVector3 position, PLVector3 normal, PLColour colour, PLVector2 st ) {
 	unsigned int vertexIndex = mesh->num_verts++;
 	if ( vertexIndex >= mesh->maxVertices ) {

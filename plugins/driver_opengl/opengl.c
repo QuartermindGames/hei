@@ -699,6 +699,14 @@ static void GLDrawInstancedMesh( PLGMesh *mesh, PLGShaderProgram *program, const
 		return;
 	}
 
+	if ( mesh->primitiveScale != 0.0f ) {
+		if ( mesh->primitive == PLG_MESH_LINES ) {
+			XGL_CALL( glLineWidth( mesh->primitiveScale ) );
+		} else if ( mesh->primitive == PLG_MESH_POINTS ) {
+			XGL_CALL( glPointSize( mesh->primitiveScale ) );
+		}
+	}
+
 	//Ensure VAO/VBO/EBO are bound
 	XGL_CALL( glBindVertexArray( VAO[ 0 ] ) );
 
@@ -712,12 +720,28 @@ static void GLDrawInstancedMesh( PLGMesh *mesh, PLGShaderProgram *program, const
 	} else {
 		XGL_CALL( glDrawArraysInstanced( mode, 0, mesh->num_verts, instanceCount ) );
 	}
+
+	if ( mesh->primitiveScale != 0.0f ) {
+		if ( mesh->primitive == PLG_MESH_LINES ) {
+			XGL_CALL( glLineWidth( 1.0f ) );
+		} else if ( mesh->primitive == PLG_MESH_POINTS ) {
+			XGL_CALL( glPointSize( 1.0f ) );
+		}
+	}
 }
 
 static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 	if ( program == NULL ) {
 		XGL_LOG( "No shader assigned!\n" );
 		return;
+	}
+
+	if ( mesh->primitiveScale != 0.0f ) {
+		if ( mesh->primitive == PLG_MESH_LINES ) {
+			XGL_CALL( glLineWidth( mesh->primitiveScale ) );
+		} else if ( mesh->primitive == PLG_MESH_POINTS ) {
+			XGL_CALL( glPointSize( mesh->primitiveScale ) );
+		}
 	}
 
 	/* anything less and we'll just fallback to immediate */
@@ -801,6 +825,14 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 		XGL_CALL( glDrawElements( mode, mesh->num_indices, GL_UNSIGNED_INT, 0 ) );
 	} else {
 		XGL_CALL( glDrawArrays( mode, 0, mesh->num_verts ) );
+	}
+
+	if ( mesh->primitiveScale != 0.0f ) {
+		if ( mesh->primitive == PLG_MESH_LINES ) {
+			XGL_CALL( glLineWidth( 1.0f ) );
+		} else if ( mesh->primitive == PLG_MESH_POINTS ) {
+			XGL_CALL( glPointSize( 1.0f ) );
+		}
 	}
 }
 
