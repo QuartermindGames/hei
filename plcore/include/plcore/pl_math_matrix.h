@@ -171,23 +171,24 @@ inline static PLMatrix3 PlMatrix3Identity( void ) {
 inline static PLMatrix4 PlMatrix4Identity( void ) {
 	PLMatrix4 out = {
 	        {
-	                1,
-	                0,
-	                0,
-	                0,
-	                0,
-	                1,
-	                0,
-	                0,
-	                0,
-	                0,
-	                1,
-	                0,
-	                0,
-	                0,
-	                0,
-	                1,
-	        } };
+             1,
+             0,
+             0,
+             0,
+             0,
+             1,
+             0,
+             0,
+             0,
+             0,
+             1,
+             0,
+             0,
+             0,
+             0,
+             1,
+	         }
+    };
 	return out;
 }
 
@@ -297,15 +298,19 @@ inline static bool PlCompareMatrix( const PLMatrix4 *m, const PLMatrix4 *m2 ) {
 
 inline static PLMatrix4 PlScaleMatrix4( PLMatrix4 m, PLVector3 scale ) {
 	m.pl_m4pos( 0, 0 ) *= scale.x;
+	m.pl_m4pos( 0, 1 ) *= scale.x;
+	m.pl_m4pos( 0, 2 ) *= scale.x;
+	m.pl_m4pos( 0, 3 ) *= scale.x;
+	m.pl_m4pos( 1, 0 ) *= scale.y;
 	m.pl_m4pos( 1, 1 ) *= scale.y;
+	m.pl_m4pos( 1, 2 ) *= scale.y;
+	m.pl_m4pos( 1, 3 ) *= scale.y;
+	m.pl_m4pos( 2, 0 ) *= scale.z;
+	m.pl_m4pos( 2, 1 ) *= scale.z;
 	m.pl_m4pos( 2, 2 ) *= scale.z;
+	m.pl_m4pos( 2, 3 ) *= scale.z;
 	return m;
 }
-
-/* todo: keep this... ? */
-//inline static PLMatrix4 plMultiRotateMatrix4(PLMatrix4 m, float angle, PLVector3 axis) {
-//  return plMultiplyMatrix4(m, plRotateMatrix4(angle, axis));
-//}
 
 inline static PLMatrix4 PlTranslateMatrix4( PLVector3 v ) {
 	PLMatrix4 m = PlMatrix4Identity();

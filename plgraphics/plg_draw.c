@@ -97,8 +97,8 @@ void PlgDrawEllipse( unsigned int segments, PLVector2 position, float w, float h
 		}
 
 		PLVector3 coord = PLVector3(
-		        ( position.x + w ) + cosf( PlDegreesToRadians( ( float ) i ) ) * w,
-		        ( position.y + h ) + sinf( PlDegreesToRadians( ( float ) i ) ) * h,
+		        ( position.x + w ) + cosf( PL_DEG2RAD( ( float ) i ) ) * w,
+		        ( position.y + h ) + sinf( PL_DEG2RAD( ( float ) i ) ) * h,
 		        0.0f );
 
 		PlgAddMeshVertex( mesh, coord, pl_vecOrigin3, colour, pl_vecOrigin2 );

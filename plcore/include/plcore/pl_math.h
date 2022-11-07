@@ -40,16 +40,8 @@ inline static bool PlIsPowerOfTwo( unsigned int num ) {
 	return ( bool ) ( ( num != 0 ) && ( ( num & ( ~num + 1 ) ) == num ) );
 }
 
-inline static float PlDegreesToRadians( float degrees ) {
-	return degrees * PL_PI_DIV_180;
-}
-
-inline static float PlRadiansToDegrees( float radians ) {
-	return radians * PL_180_DIV_PI;
-}
-
-#define PL_DEG2RAD( X ) PlDegreesToRadians( ( X ) )
-#define PL_RAD2DEG( X ) PlRadiansToDegrees( ( X ) )
+#define PL_DEG2RAD( X ) ( ( X ) * ( PL_PI_DIV_180 ) )
+#define PL_RAD2DEG( X ) ( ( X ) * ( PL_180_DIV_PI ) )
 
 /* https://stackoverflow.com/a/9194117 */
 inline static int PlRoundUp( int num, int multiple ) {
@@ -122,19 +114,19 @@ namespace hei {
 			return { r - c, g - c, b - c, a - c };
 		}
 		inline Colour operator-() const {
-			return Colour( -r, -g, -b, -a );
+			return { -r, -g, -b, -a };
 		}
 		inline Colour operator*( const Colour &v ) const {
-			return Colour( r * v.r, g * v.g, b * v.b, a * v.a );
+			return { r * v.r, g * v.g, b * v.b, a * v.a };
 		}
 		inline Colour operator+( const Colour &v ) const {
-			return Colour( r + v.r, g + v.g, b + v.b, a + v.a );
+			return { r + v.r, g + v.g, b + v.b, a + v.a };
 		}
 		inline Colour operator/( const Colour &v ) const {
 			return { r / v.r, g / v.g, b / v.b, a / v.a };
 		}
 		inline Colour operator/( uint8_t c ) const {
-			return Colour( r / c, g / c, b / c, a / c );
+			return { r / c, g / c, b / c, a / c };
 		}
 		inline uint8_t &operator[]( const unsigned int i ) {
 			return *( ( &r ) + i );
@@ -713,17 +705,17 @@ inline static float PlInOutPow( float x, float p ) {
 /* http://www.songho.ca/opengl/gl_anglestoaxes.html */
 inline static void PlAnglesAxes( PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *forward ) {
 	/* pitch */
-	float theta = PlDegreesToRadians( angles.x );
+	float theta = PL_DEG2RAD( angles.x );
 	float sx = sinf( theta );
 	float cx = cosf( theta );
 
 	/* yaw */
-	theta = PlDegreesToRadians( angles.y );
+	theta = PL_DEG2RAD( angles.y );
 	float sy = sinf( theta );
 	float cy = cosf( theta );
 
 	/* roll */
-	theta = PlDegreesToRadians( angles.z );
+	theta = PL_DEG2RAD( angles.z );
 	float sz = sinf( theta );
 	float cz = cosf( theta );
 
