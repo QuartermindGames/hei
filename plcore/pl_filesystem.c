@@ -148,6 +148,10 @@ IMPLEMENT_COMMAND( pkgext ) {
 		}
 
 		snprintf( outPath, sizeof( outPath ), "extracted/%s", file->path );
+		if ( PlFileExists( outPath ) ) {
+			PrintWarning( "File already exists at destination, skipping!\n" );
+			continue;
+		}
 
 		FILE *fout = fopen( outPath, "wb" );
 		if ( fout == NULL ) {
@@ -157,7 +161,7 @@ IMPLEMENT_COMMAND( pkgext ) {
 		fwrite( PlGetFileData( file ), sizeof( uint8_t ), PlGetFileSize( file ), fout );
 		fclose( fout );
 
-		Print( "Wrote \"%s\"\n", outPath );
+		Print( "(%u/%u) \"%s\"\n", i, pkg->table_size, outPath );
 	}
 	Print( "End\n" );
 
