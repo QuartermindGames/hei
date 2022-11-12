@@ -208,7 +208,10 @@ void Blitz_SPT_BulkExport( PLFile *file, const char *destination, const char *fo
 			PLPath path;
 			const char *fileName = get_string_for_hash( header.hash, titanStrings, numTitanStrings );
 			if ( fileName != NULL ) {
-				snprintf( path, sizeof( path ), "%s/%s.%s", destination, fileName, format );
+				char tmp[ 64 ];
+				snprintf( tmp, sizeof( tmp ), "%s", fileName );
+				gInterface->strntolower( tmp, sizeof( tmp ) );
+				snprintf( path, sizeof( path ), "%s/%s.%s", destination, tmp, format );
 			} else {
 				snprintf( path, sizeof( path ), "%s/%X.%s", destination, header.hash, format );
 			}

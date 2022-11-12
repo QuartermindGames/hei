@@ -12,6 +12,8 @@ PL_EXPORT const PLPluginDescription *PLQueryPlugin( void ) {
 	return &pluginDesc;
 }
 
+/***********************************************************/
+
 static unsigned int hash_string( const char *string ) {
 	static const unsigned int crcTable[] = {
 #include "blitz_hash_table.h"
@@ -52,29 +54,78 @@ PLImage *Blitz_SPT_ParseImage( PLFile *file );
 void Blitz_SPT_BulkExport( PLFile *file, const char *destination, const char *format );
 PLPackage *Blitz_DAT_LoadPackage( const char *path );
 
-static void command_blitz_spt_dump( unsigned int argc, char **argv ) {
-	const char *path = argv[ 1 ];
-
+static void dump_spt_file( const char *path ) {
 	PLFile *file = gInterface->OpenFile( path, false );
 	if ( file == NULL ) {
 		printf( "Failed to open file: %s\n", gInterface->GetError() );
 		return;
 	}
 
+	/* gross - but attempt to load the first index just to verify it */
+	PLImage *image = Blitz_SPT_ParseImage( file );
+	if ( image == NULL ) {
+		printf( "Probably not an SPT file: %s\n", path );
+		gInterface->CloseFile( file );
+		return;
+	}
+	gInterface->DestroyImage( image );
+
 	const char *fileName = strrchr( path, '/' );
 	if ( fileName == NULL ) {
 		fileName = path;
 	}
 
-	char folderName[ 64 ];
-	snprintf( folderName, sizeof( folderName ), "./%s_dump", fileName );
-	if ( !gInterface->CreateDirectory( folderName ) ) {
+	char tmp[ 64 ];
+	snprintf( tmp, sizeof( tmp ), "%s", fileName );
+	const char *extension = strrchr( path + 1, '.' );
+	if ( extension != NULL ) {
+		tmp[ strlen( tmp ) - 4 ] = '\0';
+		gInterface->strntolower( tmp, sizeof( tmp ) );
+	}
+
+	char outPath[ 64 ];
+	snprintf( outPath, sizeof( outPath ), "./dump_spts/%s", tmp );
+	if ( !gInterface->CreatePath( outPath ) ) {
 		printf( "Failed to create destination folder: %s\n", gInterface->GetError() );
+		gInterface->CloseFile( file );
 		return;
 	}
 
-	Blitz_SPT_BulkExport( file, folderName, "tga" );
+	gInterface->RewindFile( file );
+
+	Blitz_SPT_BulkExport( file, outPath, "tga" );
+
+	gInterface->CloseFile( file );
 }
+
+static void command_blitz_spt_dump( unsigned int argc, char **argv ) {
+	dump_spt_file( argv[ 1 ] );
+}
+
+/***********************************************************/
+/** command_blitz_spt_dump_all **/
+
+static void dump_spt_callback( const char *path, void *user ) {
+	const char *extension = strrchr( path + 1, '.' );
+	if ( extension != NULL ) {
+		if ( gInterface->strcasecmp( extension, ".spt" ) != 0 ) {
+			return;
+		}
+
+		dump_spt_file( path );
+		return;
+	}
+
+	/* no extension, need to do some horrible nasty crap... */
+	dump_spt_file( path );
+}
+
+static void command_blitz_spt_dump_all( unsigned int argc, char **argv ) {
+	const char *path = argv[ 1 ];
+	gInterface->ScanDirectory( path, NULL, dump_spt_callback, true, NULL );
+}
+
+/***********************************************************/
 
 static void index_file_callback( const char *path, void *user ) {
 	PLFile *in = gInterface->OpenFile( path, false );
@@ -127,6 +178,9 @@ PL_EXPORT void PLInitializePlugin( const PLPluginExportTable *functionTable ) {
 	gInterface->RegisterConsoleCommand( "blitz_spt_dump",
 	                                    "Dump images contained within an SPT file. 'blitz_spt_dump ./path [./outpath]'",
 	                                    -1, command_blitz_spt_dump );
+	gInterface->RegisterConsoleCommand( "blitz_spt_dump_all",
+	                                    "Dump all possible SPT files in specified directory.",
+	                                    1, command_blitz_spt_dump_all );
 	gInterface->RegisterConsoleCommand( "blitz_dump_strings",
 	                                    "Scan through and dump all identifiable strings from PSI files. "
 	                                    "You'll need to specify the input path.",

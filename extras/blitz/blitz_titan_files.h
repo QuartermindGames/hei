@@ -1872,3 +1872,6 @@
         "YELL4",
         "YELL5",
         "YELL6",
+
+        "GUN1",
+        "CLAWBONE",
