@@ -215,6 +215,8 @@ PLPackage *WFear_INU_LoadPackage( const char *path );
 PLImage *Angel_TEX_ParseImage( PLFile *file );
 PLImage *Core_HGT_ParseImage( PLFile *file );
 
+PLPackage *asa_format_tre_load( const char *path );
+
 #define MAX_COMMAND_LENGTH 256
 static char cmdLine[ MAX_COMMAND_LENGTH ];
 int main( int argc, char **argv ) {
@@ -241,6 +243,7 @@ int main( int argc, char **argv ) {
 	PlRegisterPackageLoader( "clu", Core_CLU_LoadPackage );
 	PlRegisterPackageLoader( "dat", Angel_DAT_LoadPackage );
 	PlRegisterPackageLoader( "inu", WFear_INU_LoadPackage );
+	PlRegisterPackageLoader( "tre", asa_format_tre_load );
 
 	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
 	PlRegisterImageLoader( "hgt", Core_HGT_ParseImage );
