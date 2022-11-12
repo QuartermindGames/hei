@@ -9,8 +9,8 @@
 typedef struct TREIndex {
 	uint32_t offset;
 	uint32_t size;
-	uint32_t unk0;
-	uint32_t hash;
+	uint32_t nameCRC;
+	uint32_t dataCRC;
 } TREIndex;
 PL_STATIC_ASSERT( sizeof( TREIndex ) == 16, "needs to be 16 bytes" );
 
@@ -24,11 +24,11 @@ static TREIndex *parse_tre_index( PLFile *file, TREIndex *out ) {
 	if ( !status ) {
 		return NULL;
 	}
-	out->unk0 = ( uint32_t ) PlReadInt32( file, false, &status );
+	out->nameCRC = ( uint32_t ) PlReadInt32( file, false, &status );
 	if ( !status ) {
 		return NULL;
 	}
-	out->hash = ( uint32_t ) PlReadInt32( file, false, &status );
+	out->dataCRC = ( uint32_t ) PlReadInt32( file, false, &status );
 	if ( !status ) {
 		return NULL;
 	}
@@ -75,7 +75,7 @@ static PLPackage *parse_tre_file( PLFile *file ) {
 
 		package->table[ i ].offset = tmp.offset;
 		package->table[ i ].fileSize = tmp.size;
-		snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileSize ), "%X", tmp.hash );
+		snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileSize ), "%X", tmp.nameCRC );
 	}
 
 	return package;
