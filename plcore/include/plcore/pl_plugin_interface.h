@@ -152,7 +152,7 @@ typedef struct PLPluginExportTable {
 
 	/** v4.1 ************************************************/
 
-	void ( *GenerateChecksumCRC32 )( const void *buf, uint32_t bufSize, uint32_t *crc );
+	unsigned long ( *GenerateChecksumCRC32 )( const void *data, size_t length, unsigned long crc );
 
 	/** v8.1 ************************************************/
 	/* pl_string.h */
@@ -183,8 +183,8 @@ typedef struct PLPluginExportTable {
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */
-#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 8
-#define PL_PLUGIN_INTERFACE_VERSION_MINOR 1
+#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 9
+#define PL_PLUGIN_INTERFACE_VERSION_MINOR 0
 #define PL_PLUGIN_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
 
@@ -193,7 +193,10 @@ typedef const PLPluginDescription *( *PLPluginQueryFunction )( void );
 #define PL_PLUGIN_INIT_FUNCTION "PLInitializePlugin"
 typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *exportTable );
 
-/* 2022-11-01
+/* 2022-11-12
+ * - GenerateChecksumCRC32 calling convention has been altered
+ *
+ * 2022-11-01
  * - Strings API is now exposed
  * - CreateImage2, which now provides an option for storing multiple frames
  *

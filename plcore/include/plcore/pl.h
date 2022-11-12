@@ -29,34 +29,34 @@ support.
 
 // Shared headers
 #ifndef PL_IGNORE_SHARED_HEADERS
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <stdlib.h>
+#	include <stdio.h>
+#	include <stdlib.h>
+#	include <stdarg.h>
+#	include <stdlib.h>
 
-#ifndef __cplusplus
-#ifdef PL_INCLUDE_STD_BOOL
-#include <stdbool.h>
-#endif
-#endif
+#	ifndef __cplusplus
+#		ifdef PL_INCLUDE_STD_BOOL
+#			include <stdbool.h>
+#		endif
+#	endif
 
-#include <stdint.h>
-#include <string.h>
-#include <ctype.h>
-#include <math.h>
-#include <setjmp.h>
-#include <time.h>
+#	include <stdint.h>
+#	include <string.h>
+#	include <ctype.h>
+#	include <math.h>
+#	include <setjmp.h>
+#	include <time.h>
 
-#include <sys/stat.h>
-#include <sys/types.h>
+#	include <sys/stat.h>
+#	include <sys/types.h>
 #endif
 
 #ifdef __cplusplus
-#define PL_EXTERN_C extern "C" {
-#define PL_EXTERN_C_END }
+#	define PL_EXTERN_C     extern "C" {
+#	define PL_EXTERN_C_END }
 #else
-#define PL_EXTERN_C
-#define PL_EXTERN_C_END
+#	define PL_EXTERN_C
+#	define PL_EXTERN_C_END
 #endif
 
 #include <plcore/pl_system.h>
@@ -64,36 +64,36 @@ support.
 typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
 
 #if !defined( NDEBUG )
-#include <assert.h>
+#	include <assert.h>
 
-#define plAssert( a ) assert( a )
+#	define plAssert( a ) assert( a )
 #else
-#define plAssert( a )
+#	define plAssert( a )
 #endif
 
 #define PlUnused( ... ) ( void ) ( __VA_ARGS__ )
 
-#define PL_ARRAY_ELEMENTS( a ) ( sizeof( a ) / sizeof( *( a ) ) )// Returns the number of elements within an array.
+#define PL_ARRAY_ELEMENTS( a )  ( sizeof( a ) / sizeof( *( a ) ) )// Returns the number of elements within an array.
 #define PL_MAX_ARRAY_INDEX( a ) ( int ) ( PL_ARRAY_ELEMENTS( a ) - 1 )
-#define PL_INVALID_STRING( a ) ( a == NULL || *a == '\0' )
+#define PL_INVALID_STRING( a )  ( a == NULL || *a == '\0' )
 
 #define PL_ZERO( DATA, SIZE ) memset( ( DATA ), 0, ( SIZE ) )
 #define PL_ZERO_( DATA )      memset( &( DATA ), 0, sizeof( ( DATA ) ) )
 
-#define PL_MIN( A, B ) ( (A) < (B) ? (A) : (B) )
-#define PL_MAX( A, B ) ( (A) > (B) ? (A) : (B) )
+#define PL_MIN( A, B ) ( ( A ) < ( B ) ? ( A ) : ( B ) )
+#define PL_MAX( A, B ) ( ( A ) > ( B ) ? ( A ) : ( B ) )
 
 #define PL_STRINGIFY( num ) #num
-#define PL_TOSTRING( A ) PL_STRINGIFY( A )
+#define PL_TOSTRING( A )    PL_STRINGIFY( A )
 
 #define PL_MAGIC_TO_NUM( A, B, C, D ) ( ( ( D ) << 24 ) + ( ( C ) << 16 ) + ( ( B ) << 8 ) + ( A ) )
 
 #define PL_BITFLAG( A, B ) A = ( 1U << B )
 
 #ifndef offsetof
-#define pl_offsetof( a, b ) ( ( size_t ) & ( ( ( a * ) 0 )->b ) )
+#	define pl_offsetof( a, b ) ( ( size_t ) & ( ( ( a * ) 0 )->b ) )
 #else
-#define pl_offsetof( a, b ) offsetof( a, b )
+#	define pl_offsetof( a, b ) offsetof( a, b )
 #endif
 
 typedef enum PLVariableType {
@@ -158,9 +158,9 @@ enum {
 };
 
 #if defined( PL_INTERNAL )
-#define PL_DLL PL_EXPORT
+#	define PL_DLL PL_EXPORT
 #else
-#define PL_DLL PL_IMPORT
+#	define PL_DLL PL_IMPORT
 #endif
 
 typedef void PLLibrary; /* handle to dll/module */
@@ -183,8 +183,8 @@ PL_EXTERN const char *PlGetResultString( PLFunctionResult result );
 PL_EXTERN const char *PlGetError( void );// Returns the last recorded error.
 
 PL_EXTERN void PlReportError( PLFunctionResult result, const char *function, const char *message, ... );
-#define PlReportErrorF( type, ... ) PlReportError( type, PL_FUNCTION, __VA_ARGS__ )
-#define PlReportBasicError( type ) PlReportErrorF( ( type ), PlGetResultString( ( type ) ) )
+#	define PlReportErrorF( type, ... ) PlReportError( type, PL_FUNCTION, __VA_ARGS__ )
+#	define PlReportBasicError( type )  PlReportErrorF( ( type ), PlGetResultString( ( type ) ) )
 
 /******************************************************************/
 
@@ -196,7 +196,7 @@ PL_EXTERN bool PlHasCommandLineArgument( const char *arg );
 
 //////////////////////////////////////////////////////////////////
 
-PL_EXTERN void pl_crc32( const void *data, uint32_t n_bytes, uint32_t *crc );
+unsigned long pl_crc32( const void *data, size_t length, unsigned long crc );
 
 //////////////////////////////////////////////////////////////////
 
@@ -205,8 +205,8 @@ bool PlIsSubSystemActive( unsigned int subsystem );
 //////////////////////////////////////////////////////////////////
 
 /* standard headers */
-#include <plcore/pl_string.h>
-#include <plcore/pl_memory.h>
+#	include <plcore/pl_string.h>
+#	include <plcore/pl_memory.h>
 
 PL_EXTERN const char *PlGetFormattedTime( void );
 PL_EXTERN time_t PlStringToTime( const char *ts );
