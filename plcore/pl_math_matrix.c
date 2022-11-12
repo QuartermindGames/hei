@@ -56,7 +56,7 @@ PLVector3 PlGetMatrix4Translation( const PLMatrix4 *m ) {
 
 PLVector3 PlGetMatrix4Angle( const PLMatrix4 *m ) {
 	PLVector3 out = PlVector3( 0, 0, 0 );
-	out.y = PlRadiansToDegrees( asinf( m->m[ 8 ] ) );
+	out.y = PL_RAD2DEG( asinf( m->m[ 8 ] ) );
 	if ( m->m[ 10 ] < 0 ) {
 		if ( out.y >= 0 ) {
 			out.y = 180.f - out.y;
@@ -65,10 +65,10 @@ PLVector3 PlGetMatrix4Angle( const PLMatrix4 *m ) {
 		}
 	}
 	if ( m->m[ 0 ] > -PL_EPSILON && m->m[ 0 ] < PL_EPSILON ) {
-		out.x = PlRadiansToDegrees( atan2f( m->m[ 1 ], m->m[ 5 ] ) );
+		out.x = PL_RAD2DEG( atan2f( m->m[ 1 ], m->m[ 5 ] ) );
 	} else {
-		out.z = PlRadiansToDegrees( atan2f( -m->m[ 4 ], m->m[ 0 ] ) );
-		out.x = PlRadiansToDegrees( atan2f( -m->m[ 9 ], m->m[ 10 ] ) );
+		out.z = PL_RAD2DEG( atan2f( -m->m[ 4 ], m->m[ 0 ] ) );
+		out.x = PL_RAD2DEG( atan2f( -m->m[ 9 ], m->m[ 10 ] ) );
 	}
 	return out;
 }

@@ -107,7 +107,7 @@ static bool GetTime( struct timespec *ts ) {
 	}
 
 	LARGE_INTEGER pc;
-	if ( QueryPerformanceFrequency( &pc ) == 0 ) {
+	if ( QueryPerformanceCounter( &pc ) == 0 ) {
 		PlReportBasicError( PL_RESULT_FAIL );
 		return false;
 	}

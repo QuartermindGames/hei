@@ -133,9 +133,9 @@ static void SetupCameraPerspective( PLGCamera *camera ) {
 
 	camera->internal.proj = PlPerspective( camera->fov, w / h, camera->near, camera->far );
 
-	float x = cosf( PlDegreesToRadians( camera->angles.y ) ) * cosf( PlDegreesToRadians( camera->angles.x ) );
-	float y = sinf( PlDegreesToRadians( camera->angles.x ) );
-	float z = sinf( PlDegreesToRadians( camera->angles.y ) ) * cosf( PlDegreesToRadians( camera->angles.x ) );
+	float x = cosf( PL_DEG2RAD( camera->angles.y ) ) * cosf( PL_DEG2RAD( camera->angles.x ) );
+	float y = sinf( PL_DEG2RAD( camera->angles.x ) );
+	float z = sinf( PL_DEG2RAD( camera->angles.y ) ) * cosf( PL_DEG2RAD( camera->angles.x ) );
 
 	camera->forward = PlNormalizeVector3( PLVector3( x, y, z ) );
 	camera->internal.view = PlLookAt( camera->position, PlAddVector3( camera->position, camera->forward ), camera->up );
