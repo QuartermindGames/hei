@@ -161,7 +161,7 @@ IMPLEMENT_COMMAND( pkgext ) {
 		fwrite( PlGetFileData( file ), sizeof( uint8_t ), PlGetFileSize( file ), fout );
 		fclose( fout );
 
-		Print( "(%u/%u) \"%s\"\n", i, pkg->table_size, outPath );
+		Print( "(%u/%u) \"%s\"\n", i + 1, pkg->table_size, outPath );
 	}
 	Print( "End\n" );
 

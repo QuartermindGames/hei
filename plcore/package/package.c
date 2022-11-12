@@ -320,6 +320,34 @@ PLPackage *PlLoadPackage( const char *path ) {
 	return NULL;
 }
 
+PLFile *PlLoadPackageFileByIndex( PLPackage *package, unsigned int index ) {
+	if ( index >= package->table_size ) {
+		PlReportBasicError( PL_RESULT_INVALID_PARM2 );
+		return NULL;
+	}
+
+	/* load in the package */
+	PLFile *packageFile = PlOpenFile( package->path, false );
+	if ( packageFile == NULL ) {
+		return NULL;
+	}
+
+	PLFile *file = NULL;
+
+	uint8_t *dataPtr = package->internal.LoadFile( packageFile, &( package->table[ index ] ) );
+	if ( dataPtr != NULL ) {
+		file = PL_NEW( PLFile );
+		snprintf( file->path, sizeof( file->path ), "%s", package->table[ index ].fileName );
+		file->size = package->table[ index ].fileSize;
+		file->data = dataPtr;
+		file->pos = file->data;
+	}
+
+	PlCloseFile( packageFile );
+
+	return file;
+}
+
 PLFile *PlLoadPackageFile( PLPackage *package, const char *path ) {
 	if ( package->internal.LoadFile == NULL ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "package has not been initialized, no LoadFile function assigned, aborting" );
@@ -331,39 +359,11 @@ PLFile *PlLoadPackageFile( PLPackage *package, const char *path ) {
 			continue;
 		}
 
-		/* load in the package */
-		PLFile *packageFile = PlOpenFile( package->path, true );
-		if ( packageFile == NULL ) {
-			return NULL;
-		}
-
-		PLFile *file = NULL;
-
-		uint8_t *dataPtr = package->internal.LoadFile( packageFile, &( package->table[ i ] ) );
-		if ( dataPtr != NULL ) {
-			file = PlMAllocA( sizeof( PLFile ) );
-			snprintf( file->path, sizeof( file->path ), "%s", package->table[ i ].fileName );
-			file->size = package->table[ i ].fileSize;
-			file->data = dataPtr;
-			file->pos = file->data;
-		}
-
-		PlCloseFile( packageFile );
-
-		return file;
+		return PlLoadPackageFileByIndex( package, i );
 	}
 
 	PlReportErrorF( PL_RESULT_INVALID_PARM2, "failed to find file in package" );
 	return NULL;
-}
-
-PLFile *PlLoadPackageFileByIndex( PLPackage *package, unsigned int index ) {
-	if ( index >= package->table_size ) {
-		PlReportBasicError( PL_RESULT_INVALID_PARM2 );
-		return NULL;
-	}
-
-	return PlLoadPackageFile( package, package->table[ index ].fileName );
 }
 
 const char *PlGetPackagePath( const PLPackage *package ) {
