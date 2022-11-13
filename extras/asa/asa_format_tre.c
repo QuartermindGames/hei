@@ -37,39 +37,55 @@ static TREIndex *parse_tre_index( PLFile *file, TREIndex *out ) {
 	return out;
 }
 
-static PLPackage *parse_tre_file( PLFile *file ) {
+static bool validate_tre( PLFile *file ) {
 	uint32_t numFiles = ( uint32_t ) PlReadInt32( file, false, NULL );
 	if ( numFiles == 0 ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid tre file" );
 		return NULL;
 	}
 
-	/* right, bit of extra crap just to be sure we're dealing with a valid file */
 	size_t size = PlGetFileSize( file );
 	size_t tocSize = sizeof( TREIndex ) * numFiles;
 	if ( tocSize >= size ) {
-		PlReportErrorF( PL_RESULT_FILETYPE, "invalid tre file" );
-		return NULL;
+		return false;
 	}
 	/* try loading in the first index and ensure that's all dandy too */
 	TREIndex tmp;
 	if ( parse_tre_index( file, &tmp ) == NULL ) {
-		PlReportErrorF( PL_RESULT_FILETYPE, "invalid tre file" );
-		return NULL;
+		return false;
 	}
 	if ( tmp.offset < ( tocSize + 4 ) || tmp.offset >= size ) {
+		return false;
+	}
+
+	/* maybe as additional validation we could check the dataCRC matches,
+	 * but for now I think the above is good enough */
+
+	PlRewindFile( file );
+
+	return true;
+}
+
+static PLPackage *parse_tre_file( PLFile *file ) {
+	if ( !validate_tre( file ) ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid tre file" );
 		return NULL;
 	}
 
-	PlFileSeek( file, 4, PL_SEEK_SET );
+	uint32_t numFiles = ( uint32_t ) PlReadInt32( file, false, NULL );
+	if ( numFiles == 0 ) {
+		PlReportErrorF( PL_RESULT_FILETYPE, "invalid tre file" );
+		return NULL;
+	}
 
 	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
 	if ( package == NULL ) {
 		return NULL;
 	}
 
+	unsigned int numMatches = 0;
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
+		TREIndex tmp;
 		if ( parse_tre_index( file, &tmp ) == NULL ) {
 			PlDestroyPackage( package );
 			return NULL;
@@ -90,12 +106,24 @@ static PLPackage *parse_tre_file( PLFile *file ) {
 		}
 
 		if ( fileName != NULL ) {
+			numMatches++;
 			strncpy( package->table[ i ].fileName, fileName, sizeof( package->table[ i ].fileName ) - 1 );
 			PlNormalizePath( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ) );
 		} else {
 			snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileSize ), "%X", tmp.nameCRC );
 		}
 	}
+
+#if !defined( NDEBUG )
+	const char *filePath = PlGetFilePath( file );
+	const char *fileName = strrchr( filePath, '/' );
+	if ( fileName == NULL ) {
+		fileName = filePath;
+	}
+	printf( "%.2lf%% matched (%u/%u) for package \"%s\"\n", ( ( double ) numMatches / numFiles ) * 100.0,
+	        numMatches, numFiles,
+	        fileName );
+#endif
 
 	return package;
 }
