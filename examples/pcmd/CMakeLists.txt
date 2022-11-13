@@ -32,6 +32,7 @@ add_executable(pcmd
 
         ../../extras/angel/angel_dat.c
         ../../extras/angel/angel_tex.c
+        ../../extras/asa/asa.c
         ../../extras/asa/asa_format_tre.c
         ../../extras/core/core_package_clu.c
         ../../extras/core/core_loader_hgt.c

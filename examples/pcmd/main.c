@@ -263,6 +263,9 @@ int main( int argc, char **argv ) {
 	PlRegisterConsoleCommand( "imgconv", "Convert the given image. 'img_convert ./image.bmp [./out.png]'", -1, Cmd_IMGConvert );
 	PlRegisterConsoleCommand( "imgconvdir", "Bulk convert images in the given directory. 'img_bulkconvert ./path bmp [./outpath]'", -1, Cmd_IMGBulkConvert );
 
+	void asa_register_commands( void );
+	asa_register_commands();
+
 	PlInitializePlugins();
 
 	/* allow us to just push a command via the command line if we want */
