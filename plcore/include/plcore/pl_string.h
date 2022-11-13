@@ -65,13 +65,16 @@ static inline uint32_t PlGenerateHashSDBM( const char *str ) {
 	return hash;
 }
 
-static inline uint64_t PlGenerateHashFNV1( const char *str ) {
+static inline uint64_t PlGenerateHashFNV1( const void *str, size_t size ) {
 	static const uint64_t offset = 14695981039346656037UL;
 	static const uint64_t prime = 1099511628211UL;
 	uint64_t hash = offset;
-	for ( const char *p = str; *p; p++ ) {
+	for ( const char *p = str;; p++ ) {
 		hash ^= ( uint64_t ) ( unsigned char ) ( *p );
 		hash *= prime;
+		if ( --size == 0 ) {
+			break;
+		}
 	}
 	return hash;
 }

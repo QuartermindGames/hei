@@ -3,98 +3,80 @@
 
 #include <plcore/pl_hashtable.h>
 
+#define HASH_TABLE_SIZE 1024U
+
 typedef struct PLHashTableNode {
-	char *key;
+	void *key;
+	size_t keySize;
 	uint64_t hash;
 	void *value;
+	struct PLHashTableNode *next;
 } PLHashTableNode;
 
 typedef struct PLHashTable {
-	PLHashTableNode *nodes;
+	PLHashTableNode *nodes[ HASH_TABLE_SIZE ];
 	unsigned int numNodes;
-	unsigned int maxNodes;
 } PLHashTable;
 
 PLHashTable *PlCreateHashTable( void ) {
-	static const unsigned int initNodes = 8;
-	PLHashTable *hashTable = PL_NEW( PLHashTable );
-	hashTable->maxNodes = initNodes;
-	hashTable->nodes = PL_NEW_( PLHashTableNode, hashTable->maxNodes );
-	return hashTable;
+	return PL_NEW( PLHashTable );
 }
 
 void PlDestroyHashTable( PLHashTable *hashTable ) {
-	for ( size_t i = 0; i < hashTable->maxNodes; ++i ) {
-		PL_DELETE( hashTable->nodes[ i ].key );
+	for ( size_t i = 0; i < HASH_TABLE_SIZE; ++i ) {
+		PLHashTableNode *child = hashTable->nodes[ i ];
+		while ( child != NULL ) {
+			PLHashTableNode *next = child->next;
+			PL_DELETE( child->key );
+			PL_DELETE( child );
+			child = next;
+		}
 	}
-	PL_DELETE( hashTable->nodes );
 	PL_DELETE( hashTable );
 }
 
-#define GET_INDEX( HASH, TABLE ) ( unsigned int ) ( ( HASH ) & ( uint64_t ) ( ( TABLE )->maxNodes - 1 ) )
+#define GET_INDEX( HASH ) ( unsigned int ) ( ( HASH ) % HASH_TABLE_SIZE )
 
-void *PlLookupHashTableUserData( const PLHashTable *hashTable, const char *key ) {
-	uint64_t hash = PlGenerateHashFNV1( key );
-	unsigned int index = GET_INDEX( hash, hashTable );
-
-	while ( hashTable->nodes[ index ].key != NULL ) {
-		if ( strcmp( key, hashTable->nodes[ index ].key ) == 0 ) {
-			return hashTable->nodes[ index ].value;
-		}
-
-		index++;
-		if ( index >= hashTable->maxNodes ) {
-			index = 0;
+void *PlLookupHashTableUserData( const PLHashTable *hashTable, const void *key, size_t keySize ) {
+	uint64_t hash = PlGenerateHashFNV1( key, keySize );
+	unsigned int index = GET_INDEX( hash );
+	for ( PLHashTableNode *node = hashTable->nodes[ index ]; node != NULL; node = node->next ) {
+		if ( keySize == node->keySize && memcmp( key, node->key, keySize ) == 0 ) {
+			return node->value;
 		}
 	}
 
 	return NULL;
 }
 
-const PLHashTableNode *PlInsertHashTableNode( PLHashTable *hashTable, const char *key, void *value ) {
+bool PlInsertHashTableNode( PLHashTable *hashTable, const void *key, size_t keySize, void *value ) {
 	assert( key != NULL );
 	if ( key == NULL ) {
 		PlReportErrorF( PL_RESULT_INVALID_PARM2, "invalid key provided" );
-		return NULL;
+		return false;
 	}
 
-	if ( hashTable->numNodes >= hashTable->maxNodes / 2 ) {
-		// Expand
+	if ( PlLookupHashTableUserData( hashTable, key, keySize ) != NULL ) {
+		PlReportErrorF( PL_RESULT_INVALID_PARM2, "key already exists" );
+		return false;
 	}
 
-	uint64_t hash = PlGenerateHashFNV1( key );
-	unsigned int index = GET_INDEX( hash, hashTable );
+	PLHashTableNode *node = PL_NEW( PLHashTableNode );
+	node->hash = PlGenerateHashFNV1( key, keySize );
+	node->keySize = keySize;
+	node->key = PL_NEW_( char, keySize + 1 );
+	node->value = value;
 
-	while ( hashTable->nodes[ index ].key != NULL ) {
-		if ( strcmp( key, hashTable->nodes[ index ].key ) == 0 ) {
-			PlReportErrorF( PL_RESULT_INVALID_PARM2, "key already exists in table" );
-			return NULL;
-		}
+	memcpy( node->key, key, node->keySize );
 
-		index++;
-		if ( index >= hashTable->maxNodes ) {
-			index = 0;
-		}
-	}
+	unsigned int index = GET_INDEX( node->hash );
+	node->next = hashTable->nodes[ index ];
+	hashTable->nodes[ index ] = node;
+	hashTable->numNodes++;
 
-	size_t keyLength = strlen( key );
-	hashTable->nodes[ index ].key = PL_NEW_( char, keyLength + 1 );
-	snprintf( hashTable->nodes[ index ].key, keyLength, "%s", key );
-	hashTable->nodes[ index ].value = value;
+	return true;
 }
 
 unsigned int PlGetNumHashTableNodes( const PLHashTable *hashTable ) {
 	return hashTable->numNodes;
-}
-
-void *PlGetHashTableNodeUserData( const PLHashTableNode *hashTableNode ) {
-	return hashTableNode->value;
-}
-
-const PLHashTableNode *PlGetHashTableNodeByIndex( PLHashTable *hashTable, unsigned int index ) {
-	if ( index >= hashTable->numNodes ) {
-		return NULL;
-	}
-
-	return &hashTable->nodes[ index ];
 }
