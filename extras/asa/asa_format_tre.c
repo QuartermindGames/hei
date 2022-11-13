@@ -6,6 +6,8 @@
 
 #include <plcore/pl_package.h>
 
+#include "asa_vexx_files.h"
+
 typedef struct TREIndex {
 	uint32_t offset;
 	uint32_t size;
@@ -75,7 +77,24 @@ static PLPackage *parse_tre_file( PLFile *file ) {
 
 		package->table[ i ].offset = tmp.offset;
 		package->table[ i ].fileSize = tmp.size;
-		snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileSize ), "%X", tmp.nameCRC );
+
+		const char *fileName = NULL;
+		for ( unsigned int j = 0; j < numVexxStrings; ++j ) {
+			uint32_t hash = pl_crc32( vexxStrings[ j ], strlen( vexxStrings[ j ] ), 0 );
+			if ( tmp.nameCRC != hash ) {
+				continue;
+			}
+
+			fileName = vexxStrings[ j ];
+			break;
+		}
+
+		if ( fileName != NULL ) {
+			strncpy( package->table[ i ].fileName, fileName, sizeof( package->table[ i ].fileName ) - 1 );
+			PlNormalizePath( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ) );
+		} else {
+			snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileSize ), "%X", tmp.nameCRC );
+		}
 	}
 
 	return package;
