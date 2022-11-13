@@ -4,9 +4,12 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
+#include <plcore/pl_hashtable.h>
 #include <plcore/pl_package.h>
 
 #include "asa_vexx_files.h"
+
+static PLHashTable *hashTable = NULL;
 
 typedef struct TREIndex {
 	uint32_t offset;
@@ -94,17 +97,7 @@ static PLPackage *parse_tre_file( PLFile *file ) {
 		package->table[ i ].offset = tmp.offset;
 		package->table[ i ].fileSize = tmp.size;
 
-		const char *fileName = NULL;
-		for ( unsigned int j = 0; j < numVexxStrings; ++j ) {
-			uint32_t hash = pl_crc32( vexxStrings[ j ], strlen( vexxStrings[ j ] ), 0 );
-			if ( tmp.nameCRC != hash ) {
-				continue;
-			}
-
-			fileName = vexxStrings[ j ];
-			break;
-		}
-
+		const char *fileName = ( const char * ) PlLookupHashTableUserData( hashTable, &tmp.nameCRC, sizeof( uint32_t ) );
 		if ( fileName != NULL ) {
 			numMatches++;
 			strncpy( package->table[ i ].fileName, fileName, sizeof( package->table[ i ].fileName ) - 1 );
@@ -129,6 +122,14 @@ static PLPackage *parse_tre_file( PLFile *file ) {
 }
 
 PLPackage *asa_format_tre_load( const char *path ) {
+	if ( hashTable == NULL ) {
+		hashTable = PlCreateHashTable();
+		for ( unsigned int i = 0; i < numVexxStrings; ++i ) {
+			uint32_t hash = pl_crc32( vexxStrings[ i ], strlen( vexxStrings[ i ] ), 0 );
+			PlInsertHashTableNode( hashTable, &hash, sizeof( uint32_t ), ( void * ) vexxStrings[ i ] );
+		}
+	}
+
 	PLFile *file = PlOpenFile( path, false );
 	if ( file == NULL ) {
 		return NULL;
