@@ -69,7 +69,7 @@ static inline uint64_t PlGenerateHashFNV1( const void *str, size_t size ) {
 	static const uint64_t offset = 14695981039346656037UL;
 	static const uint64_t prime = 1099511628211UL;
 	uint64_t hash = offset;
-	for ( const char *p = str;; p++ ) {
+	for ( const char *p = ( const char * ) str;; p++ ) {
 		hash ^= ( uint64_t ) ( unsigned char ) ( *p );
 		hash *= prime;
 		if ( --size == 0 ) {
