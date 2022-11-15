@@ -80,3 +80,38 @@ bool PlInsertHashTableNode( PLHashTable *hashTable, const void *key, size_t keyS
 unsigned int PlGetNumHashTableNodes( const PLHashTable *hashTable ) {
 	return hashTable->numNodes;
 }
+
+/* iterator */
+
+PLHashTableNode *PlGetFirstHashTableNode( PLHashTable *hashTable ) {
+	for ( size_t i = 0; i < HASH_TABLE_SIZE; ++i ) {
+		PLHashTableNode *child = hashTable->nodes[ i ];
+		if ( child != NULL ) {
+			return child;
+		}
+	}
+
+	return NULL;
+}
+
+PLHashTableNode *PlGetNextHashTableNode( PLHashTable *hashTable, PLHashTableNode *hashTableNode ) {
+	PLHashTableNode *child = hashTableNode->next;
+	if ( child != NULL ) {
+		return child;
+	}
+
+	unsigned int index = GET_INDEX( hashTableNode->hash ) + 1;
+	while ( child == NULL ) {
+		if ( index >= HASH_TABLE_SIZE ) {
+			break;
+		}
+
+		child = hashTable->nodes[ index++ ];
+	}
+
+	return child;
+}
+
+void *PlGetHashTableNodeUserData( PLHashTableNode *hashTableNode ) {
+	return hashTableNode->value;
+}
