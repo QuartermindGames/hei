@@ -14,7 +14,7 @@ PL_EXTERN_C
 #define PL_FMT_uint16 "%hu"
 #define PL_FMT_int32  "%d"
 #define PL_FMT_uint32 "%u"
-#if defined( __x86_64__ )
+#if defined( __x86_64__ ) && defined( _MSC_VER )
 #	define PL_FMT_int64  "%ld"
 #	define PL_FMT_uint64 "%lu"
 #else
