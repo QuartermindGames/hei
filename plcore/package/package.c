@@ -317,6 +317,11 @@ PLPackage *PlLoadPackage( const char *path ) {
 		}
 	}
 
+	if ( PlGetFunctionResult() == PL_RESULT_SUCCESS ) {
+		/* this was clearly not the case... */
+		PlReportBasicError( PL_RESULT_UNSUPPORTED );
+	}
+
 	return NULL;
 }
 
