@@ -650,7 +650,7 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 
 		closedir( directory );
 	} else {
-		PlReportErrorF( PL_RESULT_FILEPATH, "opendir failed!" );
+		PlReportErrorF( PL_RESULT_FILEPATH, "opendir failed: %s", GetLastError_strerror( GetLastError() ) );
 	}
 #else /* assumed win32 impl */
 	if ( extension == NULL ) {
@@ -701,6 +701,8 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
  * @param recursive if true, also scans the contents of each sub-directory.
  */
 void PlScanDirectory( const char *path, const char *extension, void ( *Function )( const char *, void * ), bool recursive, void *userData ) {
+	PlClearError();
+
 	size_t hintSize = strlen( VFS_LOCAL_HINT );
 	if ( strncmp( VFS_LOCAL_HINT, path, hintSize ) == 0 ) {
 		const char *c = path + hintSize;
