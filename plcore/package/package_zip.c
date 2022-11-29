@@ -12,6 +12,8 @@
 
 #define ZIP_FILE_MAGIC PL_MAGIC_TO_NUM( 'P', 'K', '\3', '\4' )
 
+#define ZIP_EXCLUDE_DIRS
+
 typedef enum ZipCompression {
 	ZIP_COMPRESSION_NONE = 0,
 	ZIP_COMPRESSION_IMPLODED = 6,
@@ -89,6 +91,17 @@ PLPackage *PlParseZipPackage( PLFile *file ) {
 			PL_DELETE( store );
 			break;
 		}
+
+#if defined( ZIP_EXCLUDE_DIRS )
+		/* couldn't see any defined way to determine type for a zip
+		 * 'file' - and some zips store indices representing directories
+		 * which is great, but we're not specifically interested in these */
+		const char *c = &store->name[ store->nameSize - 1 ];
+		if ( *c == '/' || *c == '\\' ) {
+			PL_DELETE( store );
+			continue;
+		}
+#endif
 
 		PlInsertLinkedListNode( files, store );
 	}
