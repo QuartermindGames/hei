@@ -608,6 +608,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 	va_end( args );
 
 	/* apply prefix if provided */
+#if 0
 	if ( *l->prefix != '\0' ) {
 		length += ( int ) strlen( l->prefix ) + 3;
 		char *tmp = PL_NEW_( char, length );
@@ -615,6 +616,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 		PL_DELETE( buf );
 		buf = tmp;
 	}
+#endif
 
 #if defined( _WIN32 )
 	OutputDebugString( buf );
