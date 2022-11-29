@@ -12,99 +12,46 @@
  * - buffer upscaling and downscaling
  */
 
-#define SWGetDisplayBufferSize( a ) PlGetImageSize( PL_IMAGEFORMAT_RGBA8, ( a )->w, ( a )->h )
-#define SWGetCurrentDisplayBuffer() gfx_state.current_viewport->buffer
+static uint8_t *drawBuffer = NULL;
+
+#define SWGetDisplayBufferSize( WIDTH, HEIGHT ) PlGetImageSize( PL_IMAGEFORMAT_RGBA8, WIDTH, HEIGHT )
 
 static void SWSetClearColour( PLColour colour ) {}
 
 static void SWClearBuffers( unsigned int buffers ) {
-	if ( gfx_state.current_viewport->buffer == NULL ) {
+	if ( drawBuffer == NULL ) {
 		return;
 	}
 
-	unsigned int size = SWGetDisplayBufferSize( gfx_state.current_viewport );
+	unsigned int size = SWGetDisplayBufferSize( gfx_state.viewport.w, gfx_state.viewport.h );
 	if ( buffers & PLG_BUFFER_COLOUR ) {
 		for ( unsigned int i = 0; i < size; i += 4 ) {
-			SWGetCurrentDisplayBuffer()[ i ] = gfx_state.current_clearcolour.r;
-			SWGetCurrentDisplayBuffer()[ i + 1 ] = gfx_state.current_clearcolour.g;
-			SWGetCurrentDisplayBuffer()[ i + 2 ] = gfx_state.current_clearcolour.b;
-			SWGetCurrentDisplayBuffer()[ i + 3 ] = gfx_state.current_clearcolour.a;
+			drawBuffer[ i ] = gfx_state.current_clearcolour.r;
+			drawBuffer[ i + 1 ] = gfx_state.current_clearcolour.g;
+			drawBuffer[ i + 2 ] = gfx_state.current_clearcolour.b;
+			drawBuffer[ i + 3 ] = gfx_state.current_clearcolour.a;
 		}
-	}
-}
-
-/**********************************************************/
-/** camera **/
-
-static uint8_t *SWCreateDisplayBuffer( PLGViewport *viewport ) {
-	PlFree( viewport->buffer );
-	viewport->buffer = ( uint8_t * ) PlMAllocA( SWGetDisplayBufferSize( viewport ) );
-	viewport->oldW = viewport->w;
-	viewport->oldH = viewport->h;
-	return viewport->buffer;
-}
-
-static void SWCreateCamera( PLGCamera *camera ) {
-	plAssert( camera != NULL );
-	if ( camera == NULL ) {
-		return;
-	}
-
-	PLGViewport *viewport = &camera->viewport;
-	if ( viewport->buffer != NULL ) {
-		/* only update the display buffer if the target size has changed */
-		if ( viewport->oldH != viewport->h && viewport->oldW != viewport->w ) {
-			SWCreateDisplayBuffer( viewport );
-		}
-		return;
-	}
-
-	SWCreateDisplayBuffer( viewport );
-}
-
-static void SWDestroyCamera( PLGCamera *camera ) {
-	plAssert( camera );
-} /* camera API takes care of deletion, so nothing to do here */
-
-static void SWSetupCamera( PLGCamera *camera ) {
-	plAssert( camera );
-
-	/* only update the display buffer if the target size has changed */
-	if ( camera->viewport.oldH != camera->viewport.h &&
-	     camera->viewport.oldW != camera->viewport.w ) {
-		SWCreateDisplayBuffer( &camera->viewport );
 	}
 }
 
 /**********************************************************/
 
 static void SWDrawPixel( int x, int y, PLColour colour ) {
-	PLGViewport *viewport = gfx_state.current_viewport;
-	if ( viewport->buffer == NULL ) {
+	unsigned int pos = y * gfx_state.viewport.w + x;
+	if ( pos >= SWGetDisplayBufferSize( gfx_state.viewport.w, gfx_state.viewport.h ) ) {
 		return;
 	}
 
-	unsigned int pos = y * viewport->w + x;
-	if ( pos >= SWGetDisplayBufferSize( viewport ) ) {
-		return;
-	}
-
-	PLColour *buffer = ( PLColour * ) viewport->buffer;
+	PLColour *buffer = ( PLColour * ) drawBuffer;
 	buffer[ pos ] = colour;
 }
 
 static void SWDrawLine( const PLGVertex *start, const PLGVertex *end ) {
-	PLGViewport *viewport = gfx_state.current_viewport;
-	if ( viewport->buffer == NULL ) {
-		return;
-	}
-
-	//PLColour *buffer = ( PLColour * ) viewport->buffer;
 }
 
 static void SWDrawMesh( PLGMesh *mesh ) {
 	PLVector3 transform = PlGetMatrix4Translation( PlGetMatrix( PL_MODELVIEW_MATRIX ) );
-	switch( mesh->primitive ) {
+	switch ( mesh->primitive ) {
 		case PLG_MESH_LINES: {
 			for ( unsigned int i = 0; i < mesh->num_verts; i += 2 ) {
 				PLGVertex a = mesh->vertices[ i ];

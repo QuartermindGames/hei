@@ -92,6 +92,7 @@ void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize, const PLCol
 void PlgDrawDottedGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColour *colour );
 void PlgDrawVertexNormals( const PLGVertex *vertices, unsigned int numVertices );
 void PlgDrawMeshNormals( const PLGMesh *mesh );
+void PlgDrawPixel( int x, int y, PLColour colour );
 void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, PLColour colour );
 
 void PlgClearMesh( PLGMesh *mesh );

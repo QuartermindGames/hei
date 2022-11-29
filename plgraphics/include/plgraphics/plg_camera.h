@@ -33,17 +33,6 @@ enum {
 	PLG_CAMERA_MODE_ISOMETRIC
 };
 
-typedef struct PLGViewport {
-	bool auto_scale;//If true, viewport will update to match
-	                // height/width of currently bound FBO when
-	                // SetupCamera() is called
-	int x, y;
-	int w, h;
-	int oldW, oldH;
-	uint8_t *buffer;
-	unsigned int bufferSize;
-} PLGViewport;
-
 enum {
 	PLG_FRUSTUM_PLANE_RIGHT,
 	PLG_FRUSTUM_PLANE_LEFT,
@@ -69,9 +58,6 @@ typedef struct PLGCamera {
 
 	PLCollisionAABB bounds;
 
-	// Viewport
-	PLGViewport viewport;
-
 	struct {
 		PLMatrix4 proj;
 		PLMatrix4 view;
@@ -91,7 +77,8 @@ void PlgSetupCamera( PLGCamera *camera );
 bool PlgIsBoxInsideView( const PLGCamera *camera, const PLCollisionAABB *bounds );
 bool PlgIsSphereInsideView( const PLGCamera *camera, const PLCollisionSphere *sphere );
 
-const PLGViewport *PlgGetCurrentViewport( void );
+void PlgGetViewport( int *x, int *y, int *width, int *height );
+void PlgSetViewport( int x, int y, int width, int height );
 
 /***** TEMPORARY CRAP START *****/
 
@@ -101,5 +88,7 @@ void PlgSetProjectionMatrix( const PLMatrix4 *projMatrix );
 PLMatrix4 PlgGetProjectionMatrix( void );
 
 /***** TEMPORARY CRAP END 	*****/
+
+void PlgLookAtTargetVector( PLGCamera *camera, const PLVector3 *target );
 
 PL_EXTERN_C_END

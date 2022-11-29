@@ -26,20 +26,8 @@ PLGCamera *PlgCreateCamera( void ) {
 	camera->far = CAMERA_DEFAULT_FAR;
 	camera->mode = PLG_CAMERA_MODE_PERSPECTIVE;
 
-	/*  XY * * * * W
-     *  *
-     *  *
-     *  *
-     *  *
-     *  H
-     */
-	camera->viewport.w = CAMERA_DEFAULT_WIDTH;
-	camera->viewport.h = CAMERA_DEFAULT_HEIGHT;
-
 	camera->forward = PLVector3( 0, 0, 1 );
 	camera->up = PLVector3( 0, 1, 0 );
-
-	CallGfxFunction( CreateCamera, camera );
 
 	camera->bounds.mins = PLVector3(
 	        -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS );
@@ -54,10 +42,7 @@ void PlgDestroyCamera( PLGCamera *camera ) {
 		return;
 	}
 
-	CallGfxFunction( DestroyCamera, camera );
-
-	PlFree( camera->viewport.buffer );
-	PlFree( camera );
+	PL_DELETE( camera );
 }
 
 /**
@@ -127,9 +112,9 @@ static void SetupCameraFrustum( PLGCamera *camera ) {
 	MakeFrustumPlanes( &mvp, camera->frustum );
 }
 
-static void SetupCameraPerspective( PLGCamera *camera ) {
-	float w = ( float ) camera->viewport.w;
-	float h = ( float ) camera->viewport.h;
+static void SetupCameraPerspective( PLGCamera *camera, int width, int height ) {
+	float w = ( float ) width;
+	float h = ( float ) height;
 
 	camera->internal.proj = PlPerspective( camera->fov, w / h, camera->near, camera->far );
 
@@ -152,17 +137,41 @@ PLMatrix4 PlgGetProjectionMatrix( void ) { return gfx_state.projection_matrix; }
 
 /***** TEMPORARY CRAP END 	*****/
 
+void PlgGetViewport( int *x, int *y, int *width, int *height ) {
+	if ( x != NULL ) {
+		*x = gfx_state.viewport.x;
+	}
+	if ( y != NULL ) {
+		*y = gfx_state.viewport.y;
+	}
+	if ( width != NULL ) {
+		*width = gfx_state.viewport.w;
+	}
+	if ( height != NULL ) {
+		*height = gfx_state.viewport.h;
+	}
+}
+
+void PlgSetViewport( int x, int y, int width, int height ) {
+	gfx_state.viewport.x = x;
+	gfx_state.viewport.y = y;
+	gfx_state.viewport.w = width;
+	gfx_state.viewport.h = height;
+
+	CallGfxFunction( SetViewport, x, y, width, height );
+}
+
 void PlgSetupCamera( PLGCamera *camera ) {
 	plAssert( camera );
 
 	switch ( camera->mode ) {
 		case PLG_CAMERA_MODE_PERSPECTIVE: {
-			SetupCameraPerspective( camera );
+			SetupCameraPerspective( camera, gfx_state.viewport.w, gfx_state.viewport.h );
 			break;
 		}
 
 		case PLG_CAMERA_MODE_ORTHOGRAPHIC:
-			camera->internal.proj = PlOrtho( 0, ( float ) camera->viewport.w, ( float ) camera->viewport.h, 0, camera->near, camera->far );
+			camera->internal.proj = PlOrtho( 0, ( float ) gfx_state.viewport.w, ( float ) gfx_state.viewport.h, 0, camera->near, camera->far );
 			camera->internal.view = PlMatrix4Identity();
 			break;
 
@@ -178,14 +187,9 @@ void PlgSetupCamera( PLGCamera *camera ) {
 	/* setup the camera frustum */
 	SetupCameraFrustum( camera );
 
-	// keep the gfx_state up-to-date on the situation
-	gfx_state.current_viewport = &camera->viewport;
-
 	// Copy camera matrices
 	PlgSetViewMatrix( &camera->internal.view );
 	PlgSetProjectionMatrix( &camera->internal.proj );
-
-	CallGfxFunction( SetupCamera, camera );
 }
 
 /**
@@ -236,10 +240,6 @@ bool PlgIsSphereInsideView( const PLGCamera *camera, const PLCollisionSphere *sp
 	return true;
 }
 
-const PLGViewport *PlgGetCurrentViewport( void ) {
-	return gfx_state.current_viewport;
-}
-
-void PlgLookAtTargetVector( PLGCamera *camera, PLVector3 target ) {
-	camera->internal.view = PlLookAt( camera->position, target, PLVector3( 0, 1, 0 ) );
+void PlgLookAtTargetVector( PLGCamera *camera, const PLVector3 *target ) {
+	camera->internal.view = PlLookAt( camera->position, *target, PLVector3( 0, 1, 0 ) );
 }

@@ -116,11 +116,8 @@ typedef struct PLGDriverImportTable {
 	void ( *SetTextureFilter )( PLGTexture *texture, PLGTextureFilter filter );
 	void ( *ActiveTexture )( unsigned int target );
 
-	// Camera
-	/* todo: simplify/remove this interface */
-	void ( *CreateCamera )( PLGCamera *camera );
-	void ( *DestroyCamera )( PLGCamera *camera );
-	void ( *SetupCamera )( PLGCamera *camera );
+	/* viewport */
+	void ( *SetViewport )( int x, int y, int width, int height );
 
 	///////////////////////////////////////////
 

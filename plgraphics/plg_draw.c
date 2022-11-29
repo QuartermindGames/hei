@@ -300,13 +300,11 @@ void PlgDrawMeshNormals( const PLGMesh *mesh ) {
 }
 
 void PlgDrawPixel( int x, int y, PLColour colour ) {
-	const PLGViewport *viewport = PlgGetCurrentViewport();
-	if ( viewport == NULL ) {
-		return;
-	}
+	int vpW, vpH;
+	PlgGetViewport( NULL, NULL, &vpW, &vpH );
 
 	/* make sure that the pixel is within the viewport */
-	if ( x > viewport->w || x < 0 || y > viewport->h || y < 0 ) {
+	if ( x > vpW || x < 0 || y > vpH || y < 0 ) {
 		return;
 	}
 

@@ -837,37 +837,11 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 }
 
 /////////////////////////////////////////////////////////////
-// Camera
+// Viewport
 
-enum {
-	VIEWPORT_FRAMEBUFFER,
-	VIEWPORT_RENDERBUFFER_DEPTH,
-	VIEWPORT_RENDERBUFFER_COLOUR,
-};
-
-static void GLCreateCamera( PLGCamera *camera ) {
-	plAssert( camera );
-}
-
-static void GLDestroyCamera( PLGCamera *camera ) {
-	plAssert( camera );
-}
-
-static void GLSetupCamera( PLGCamera *camera ) {
-	plAssert( camera );
-
-	if ( camera->viewport.auto_scale && XGL_VERSION( 3, 0 ) ) {
-		GLint bound_rbo_w, bound_rbo_h;
-		XGL_CALL( glGetRenderbufferParameteriv( GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &bound_rbo_w ) );
-		XGL_CALL( glGetRenderbufferParameteriv( GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &bound_rbo_h ) );
-		camera->viewport.x = 0;
-		camera->viewport.y = 0;
-		camera->viewport.w = bound_rbo_w;
-		camera->viewport.h = bound_rbo_h;
-	}
-
-	XGL_CALL( glViewport( camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h ) );
-	XGL_CALL( glScissor( camera->viewport.x, camera->viewport.y, camera->viewport.w, camera->viewport.h ) );
+static void GLSetViewport( int x, int y, int width, int height ) {
+	XGL_CALL( glViewport( x, y, width, height ) );
+	XGL_CALL( glScissor( x, y, width, height ) );
 }
 
 /////////////////////////////////////////////////////////////
@@ -1449,7 +1423,7 @@ static void GLSetShaderProgram( PLGShaderProgram *program ) {
 
 typedef struct ShaderCacheHeader {
 	uint32_t magic;
-	uint32_t checksum;
+	uint64_t checksum;
 	uint32_t format;
 	uint32_t length;
 } ShaderCacheHeader;
@@ -1484,8 +1458,7 @@ static void CacheShaderProgram( PLGShaderProgram *program ) {
 	void *buf = gInterface->core->MAlloc( length, true );
 	XGL_CALL( glGetProgramBinary( program->internal.id, length, NULL, &format, buf ) );
 
-	uint32_t checksum;
-	gInterface->core->GenerateChecksumCRC32( buf, length, &checksum );
+	unsigned long checksum = gInterface->core->GenerateChecksumCRC32( buf, length, 0 );
 
 	FILE *file = fopen( path, "wb" );
 	if ( file == NULL ) {
@@ -1780,9 +1753,7 @@ PLGDriverImportTable graphicsInterface = {
         .ActiveTexture = GLActiveTexture,
         .SetTextureFilter = GLSetTextureFilter,
 
-        .CreateCamera = GLCreateCamera,
-        .DestroyCamera = GLDestroyCamera,
-        .SetupCamera = GLSetupCamera,
+        .SetViewport = GLSetViewport,
 
         .CreateShaderProgram = GLCreateShaderProgram,
         .DestroyShaderProgram = GLDestroyShaderProgram,
