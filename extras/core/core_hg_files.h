@@ -492,48 +492,24 @@
 "cd_root/effects/footprints/bleeps/bleepmidern.bmp", /* good */
 "cd_root/effects/footprints/doops/doopsnow.bmp", /* good */
 "cd_root/effects/footprints/doops/doophut.bmp", /* good */
+"cd_root/effects/footprints/doops/doopmud.bmp", //246
 "cd_root/effects/footprints/gromp/grompsnow.bmp", /* good */
 "cd_root/effects/footprints/gromp/grompmidern.bmp", /* good */
 "cd_root/effects/footprints/gromp/gromphut.bmp", /* good */
 "cd_root/effects/footprints/gromp/gromphutmud.bmp", /* good */
+"objects/cameracollidables/sausage.hgm",//46
 
-"beaverlodge512.bmp",
-"belders.bmp",
-"daisypatch512.bmp",
-"flocktestshow.bmp",
-"foxtown512.bmp",
-"foxtownsewer.bmp",
-"gerdyshut.bmp",
-"goldenmeadow.bmp",
-"gorge512.bmp",
-"hive.bmp",
-"hivenebulus.bmp",
-"hivenursery.bmp",
-"hivethrone.bmp",
-"lostswarm.bmp",
-"midmear512.bmp",
-"mill.bmp",
-"mistylake512.bmp",
-"oblivion.bmp",
-"skragsnest512.bmp",
-"temple512.bmp",
-"topoworld512.bmp",
-"tournamentarena 1.bmp",
-"tournamentarena 2.bmp",
-"tournamentarena 3.bmp",
-"valleyfloor512.bmp",
-"waterfront512.bmp",
+        "cd_root/effects/dustclouds/16frames.hgt", //22
+        "cd_root/effects/dirt/dirt.hgt",           //73
+        "cd_root/effects/icemist/icemist.hgt",     //118
+        "cd_root/effects/dustclouds/snowcloud.hgt",//136
+        "cd_root/effects/firefly/singleframe.hgt", //219
 
-"cd_root/objects/creatures/herding/anteater.hed",
-"cd_root/objects/creatures/herding/drummeranttribe1.hed",
-"cd_root/objects/creatures/herding/drummeranttribe2.hed",
-"cd_root/objects/creatures/characters/fisherman.hed",
-"cd_root/objects/diz/highrestree.hed",
-"cd_root/objects/diz/saratest.hed",
-"cd_root/costumes/gameglovescostume.hed",
-"cd_root/costumes/gamejuststick.hed",
-"cd_root/costumes/gamestickandboots2.hed",
-"cd_root/costumes/gameswimsuit.hed",
-"cd_root/costumes/gerdynull.hed",
-"creatures/herding/herdingbee.hgm",
-"cd_root/creatures/herding/herdingbee.hgm",
+        "cd_root/effects/waterfalls/16frames.bmp",           //217
+        "cd_root/effects/waterfalls/16frames_alpha.bmp",     //228
+        "cd_root/effects/waterfalls/16frames2.bmp",          //39
+        "cd_root/effects/waterfalls/16frames2_alpha.bmp",    //82
+        "cd_root/effects/waterfalls/16frames_mist.bmp",      //167
+        "cd_root/effects/waterfalls/16frames_mist_alpha.bmp",//40
+        "cd_root/effects/waterfalls/8frames_drop.bmp",       //120
+        "cd_root/effects/waterfalls/8frames_drop_alpha.bmp", //226
