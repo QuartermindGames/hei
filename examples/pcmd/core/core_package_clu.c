@@ -1,9 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
 
-#include <plcore/pl.h>
-#include <plcore/pl_filesystem.h>
-#include <plcore/pl_package.h>
+#include "../pcmd.h"
 
 /* Core Design, CLU (cluster) format
  *
@@ -102,10 +100,11 @@ static PLPackage *ParseCLUFile( PLFile *file ) {
 
 	CLUIndex *indicies = PlMAllocA( tableSize );
 	if ( PlReadFile( file, indicies, sizeof( CLUIndex ), header.numIndices ) != header.numIndices ) {
-		PlFree( indicies );
+		PL_DELETE( indicies );
 		return NULL;
 	}
 
+	unsigned int numMatches = 0;
 	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), header.numIndices, NULL );
 	for ( unsigned int i = 0; i < header.numIndices; ++i ) {
 		package->table[ i ].fileSize = indicies[ i ].size;
@@ -116,10 +115,18 @@ static PLPackage *ParseCLUFile( PLFile *file ) {
 			snprintf( package->table[ i ].fileName, sizeof( PLPath ), "%X", indicies[ i ].hash );
 		} else {
 			snprintf( package->table[ i ].fileName, sizeof( PLPath ), "%s", fileName );
+			numMatches++;
 		}
 	}
 
-	PlFree( indicies );
+	PL_DELETE( indicies );
+
+#if !defined( NDEBUG )
+	const char *fileName = PlGetFileName( PlGetFilePath( file ) );
+	printf( "%.2lf%% matched (%u/%u) for CLU package \"%s\"\n", ( ( double ) numMatches / header.numIndices ) * 100.0,
+	        numMatches, header.numIndices,
+	        fileName );
+#endif
 
 	return package;
 }

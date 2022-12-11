@@ -369,7 +369,7 @@
 "scripts/yggwindemoscript.txt", /* good */
 
 /* =====================================================
- * globals/objects.clu :
+ * globals/objects.clu : 54%
  * ===================================================== */
 "levels.txt", /* good */
 "movies.txt", /* good */
@@ -378,7 +378,9 @@
 "version.txt", /* good */
 "chars.txt", /* good */
 "footprint.txt", /* good */
+
 "languages/us/usgametext.txt",
+
 "cd_root/loadingscreens/gerdyhut.bmp", /* good */
 "cd_root/loadingscreens/meadowvillage.bmp", /* good */
 "cd_root/loadingscreens/yggtree.bmp", /* good */
@@ -411,6 +413,7 @@
 "cd_root/loadingscreens/arena3.bmp", /* good */
 "cd_root/loadingscreens/bootup.bmp", /* good */
 "cd_root/loadingscreens/controls.bmp", /* good */
+
 "cd_root/panel/ingamemaps/surround/arrow.bmp", /* good */
 "cd_root/panel/ingamemaps/surround/dot.bmp", /* good */
 "cd_root/panel/ingamemaps/surround/mapalpha.bmp", /* good */
@@ -480,9 +483,11 @@
 "cd_root/panel/overlaytextures/spike.hgt", /* good */
 "cd_root/panel/overlaytextures/witch.hgt", /* good */
 "cd_root/panel/overlaytextures/yggdrasil.hgt", /* good */
+
 "cd_root/effects/screeniris/defaultiris.bmp", /* good */
 "cd_root/effects/screeniris/grimpiris.bmp", /* good */
 "cd_root/effects/screeniris/sadorfiris.bmp", /* good */
+
 "cd_root/effects/footprints/beaver_default.bmp", /* good */
 "cd_root/effects/footprints/gerdyhut_default.bmp", /* good */
 "cd_root/effects/footprints/gerdyhut_mud.bmp", /* good */
@@ -497,12 +502,14 @@
 "cd_root/effects/footprints/gromp/grompmidern.bmp", /* good */
 "cd_root/effects/footprints/gromp/gromphut.bmp", /* good */
 "cd_root/effects/footprints/gromp/gromphutmud.bmp", /* good */
-"objects/cameracollidables/sausage.hgm",//46
+
+        "objects/cameracollidables/sausage.hgm",//46
+        "objects/cameracollidables/sphere.hgm", //58
 
         "cd_root/effects/dustclouds/16frames.hgt", //22
+        "cd_root/effects/dustclouds/snowcloud.hgt",//136
         "cd_root/effects/dirt/dirt.hgt",           //73
         "cd_root/effects/icemist/icemist.hgt",     //118
-        "cd_root/effects/dustclouds/snowcloud.hgt",//136
         "cd_root/effects/firefly/singleframe.hgt", //219
 
         "cd_root/effects/waterfalls/16frames.bmp",           //217

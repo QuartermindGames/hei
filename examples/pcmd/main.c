@@ -25,14 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <plcore/pl.h>
-#include <plcore/pl_console.h>
-#include <plcore/pl_image.h>
-#include <plcore/pl_package.h>
-
-#include <plmodel/plm.h>
-
-#include "../../extras/blitz/blitz.h"
+#include "pcmd.h"
 
 /**
  * Command line utility to interface with the platform lib.

@@ -30,12 +30,13 @@ add_subdirectory(../../extras/blitz/ ../../bin/plugins/)
 add_executable(pcmd
         main.c
 
+        core/core_loader_hgt.c
+        core/core_package_clu.c
+
         ../../extras/angel/angel_dat.c
         ../../extras/angel/angel_tex.c
         ../../extras/asa/asa.c
         ../../extras/asa/asa_format_tre.c
-        ../../extras/core/core_package_clu.c
-        ../../extras/core/core_loader_hgt.c
         ../../extras/wfear/wfear_inu.c
         ../../extras/aitd/aitd_pak.c
         ../../extras/eradicator_rid.c
