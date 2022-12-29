@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 /* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
 
-#include <plcore/pl.h>
 #include <plcore/pl_image.h>
 
 /* Core Design, HGT format

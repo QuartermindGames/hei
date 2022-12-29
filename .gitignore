@@ -26,8 +26,6 @@
 
 # Assorted files
 
-/bin/pl_graphics.log
-
 *.pdb
 *.ilk
 *.ipch
@@ -42,6 +40,7 @@
 /build
 /.idea/
 **/cmake-build-debug/
+bin/
 
 plcore/3rdparty/glew-2.2.0/glew.pc
 

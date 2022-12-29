@@ -1,10 +1,11 @@
 /* SPDX-License-Identifier: MIT */
-/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
+/* Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com> */
 
 #include <plcore/pl_console.h>
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_linkedlist.h>
 #include <plcore/pl_parse.h>
+#include <plcore/pl_hashtable.h>
 
 #include "pl_private.h"
 
@@ -21,12 +22,22 @@
 static PLConsoleCommand **_pl_commands = NULL;
 static size_t _pl_num_commands = 0;
 static size_t _pl_commands_size = 512;
+static PLHashTable *commandHashes = NULL;
+
+static PLConsoleCommand *PlGetConsoleCommand( const char *name ) {
+	if ( commandHashes == NULL ) {
+		PlReportErrorF( PL_RESULT_MEMORY_EOA, "no console commands registered" );
+		return NULL;
+	}
+
+	return ( PLConsoleCommand * ) PlLookupHashTableUserData( commandHashes, name, strlen( name ) );
+}
 
 void PlRegisterConsoleCommand( const char *name, const char *description, int args, void ( *CallbackFunction )( unsigned int argc, char *argv[] ) ) {
 	FunctionStart();
 
-	if ( name == NULL || name[ 0 ] == '\0' ) {
-		PlReportErrorF( PL_RESULT_COMMAND_NAME, PlGetResultString( PL_RESULT_COMMAND_NAME ) );
+	if ( PlGetConsoleCommand( name ) != NULL ) {
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "command with name has already been registered" );
 		return;
 	}
 
@@ -40,6 +51,10 @@ void PlRegisterConsoleCommand( const char *name, const char *description, int ar
 		_pl_commands = ( PLConsoleCommand ** ) PlReAllocA( _pl_commands, ( _pl_commands_size += 128 ) * sizeof( PLConsoleCommand ) );
 	}
 
+	if ( commandHashes == NULL ) {
+		commandHashes = PlCreateHashTable();
+	}
+
 	if ( _pl_num_commands < _pl_commands_size ) {
 		_pl_commands[ _pl_num_commands ] = ( PLConsoleCommand * ) PlMAllocA( sizeof( PLConsoleCommand ) );
 		if ( !_pl_commands[ _pl_num_commands ] ) {
@@ -47,12 +62,14 @@ void PlRegisterConsoleCommand( const char *name, const char *description, int ar
 		}
 
 		PLConsoleCommand *cmd = _pl_commands[ _pl_num_commands ];
-		memset( cmd, 0, sizeof( PLConsoleCommand ) );
+		PL_ZERO( cmd, sizeof( PLConsoleCommand ) );
 		cmd->Callback = CallbackFunction;
 
 		size_t s = strlen( name );
 		cmd->name = PL_NEW_( char, s + 1 );
 		strncpy( cmd->name, name, s );
+
+		PlInsertHashTableNode( commandHashes, cmd->name, s, cmd );
 
 		if ( description != NULL ) {
 			s = strlen( description );
@@ -71,33 +88,30 @@ void PlGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds ) {
 	*num_cmds = _pl_num_commands;
 }
 
-static PLConsoleCommand *PlGetConsoleCommand( const char *name ) {
-	for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
-		if ( pl_strcasecmp( name, ( *cmd )->name ) == 0 ) {
-			return ( *cmd );
-		}
-	}
-	return NULL;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////
 
 static PLConsoleVariable **_pl_variables = NULL;
 static size_t _pl_num_variables = 0;
 static size_t _pl_variables_size = 512;
+static PLHashTable *variableHashes = NULL;
 
 PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void *ptrValue, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive ) {
 	FunctionStart();
 
 	plAssert( _pl_variables );
 
-	if ( name == NULL || name[ 0 ] == '\0' ) {
+	if ( PlGetConsoleVariable( name ) != NULL ) {
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "variable with name has already been registered" );
 		return NULL;
 	}
 
 	// Deal with resizing the array dynamically...
 	if ( ( 1 + _pl_num_variables ) > _pl_variables_size ) {
 		_pl_variables = ( PLConsoleVariable ** ) PlReAllocA( _pl_variables, ( _pl_variables_size += 128 ) * sizeof( PLConsoleVariable ) );
+	}
+
+	if ( variableHashes == NULL ) {
+		variableHashes = PlCreateHashTable();
 	}
 
 	PLConsoleVariable *out = NULL;
@@ -115,6 +129,8 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *desc
 		size_t s = strlen( name );
 		out->name = PL_NEW_( char, s + 1 );
 		strncpy( out->name, name, s );
+
+		PlInsertHashTableNode( variableHashes, out->name, s, out );
 
 		if ( description != NULL ) {
 			s = strlen( description );
@@ -143,12 +159,12 @@ void PlGetConsoleVariables( PLConsoleVariable ***vars, size_t *num_vars ) {
 }
 
 PLConsoleVariable *PlGetConsoleVariable( const char *name ) {
-	for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
-		if ( pl_strcasecmp( name, ( *var )->name ) == 0 ) {
-			return ( *var );
-		}
+	if ( variableHashes == NULL ) {
+		PlReportErrorF( PL_RESULT_MEMORY_EOA, "no console variables registered" );
+		return NULL;
 	}
-	return NULL;
+
+	return ( PLConsoleVariable * ) PlLookupHashTableUserData( variableHashes, name, strlen( name ) );
 }
 
 const char *PlGetConsoleVariableValue( const char *name ) {
@@ -334,6 +350,8 @@ PLFunctionResult PlInitConsole( void ) {
 }
 
 void PlShutdownConsole( void ) {
+	PlDestroyHashTable( commandHashes );
+	commandHashes = NULL;
 	if ( _pl_commands ) {
 		for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
 			// todo, should we return here; assume it's the end?
@@ -346,9 +364,11 @@ void PlShutdownConsole( void ) {
 
 			PL_DELETE( ( *cmd ) );
 		}
-		PL_DELETE( _pl_commands );
+		PL_DELETEN( _pl_commands );
 	}
 
+	PlDestroyHashTable( variableHashes );
+	variableHashes = NULL;
 	if ( _pl_variables ) {
 		for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
 			// todo, should we return here; assume it's the end?
@@ -361,7 +381,7 @@ void PlShutdownConsole( void ) {
 
 			PL_DELETE( ( *var ) );
 		}
-		PL_DELETE( _pl_variables );
+		PL_DELETEN( _pl_variables );
 	}
 
 	ConsoleOutputCallback = NULL;
