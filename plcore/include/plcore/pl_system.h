@@ -148,6 +148,8 @@
 #	define PL_EXPORT __declspec( dllexport )
 #	define PL_IMPORT __declspec( dllimport )
 
+#	define PL_UNUSED
+
 #	define PL_DEPRECATED( function ) __declspec( deprecated ) function
 #	define PL_NORETURN( function )   __declspec( noreturn ) function
 
@@ -170,6 +172,8 @@
 
 #	define PL_EXPORT __attribute__( ( visibility( "default" ) ) )
 #	define PL_IMPORT
+
+#	define PL_UNUSED __attribute__( ( unused ) )
 
 #	define PL_DEPRECATED( function ) function __attribute__( ( deprecated ) )
 #	define PL_NORETURN( function )   function __attribute__( ( noreturn ) )
