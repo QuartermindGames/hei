@@ -225,7 +225,8 @@ int main( int argc, char **argv ) {
 	PlmRegisterStandardModelLoaders( PLM_MODEL_FILEFORMAT_ALL );
 
 	PlRegisterPackageLoader( "lst", IStorm_LST_LoadFile );
-	PlRegisterPackageLoader( "opk", Outcast_OPK_LoadFile );
+	/*PlRegisterPackageLoader( "opk", Outcast_OPK_LoadFile );*/
+	PlRegisterPackageLoader( "pak", Outcast_OPK_LoadFile );
 	PlRegisterPackageLoader( "pak", AITD_PAK_LoadPackage );
 	PlRegisterPackageLoader( "pak", FTactics_PAK_LoadFile );
 	PlRegisterPackageLoader( "vsr", Sentient_VSR_LoadFile );
