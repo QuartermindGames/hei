@@ -149,7 +149,7 @@ IMPLEMENT_COMMAND( pkgext ) {
 
 		snprintf( outPath, sizeof( outPath ), "extracted/%s", file->path );
 		if ( PlFileExists( outPath ) ) {
-			PrintWarning( "File already exists at destination, skipping!\n" );
+			//PrintWarning( "File already exists at destination, skipping!\n" );
 			continue;
 		}
 

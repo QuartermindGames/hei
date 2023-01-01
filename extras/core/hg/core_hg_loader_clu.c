@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
 
-#include "../pcmd.h"
+#include "../core.h"
 
 /* Core Design, CLU (cluster) format
  *
@@ -73,56 +73,112 @@ static const char *GetStringForHash( uint32_t hash ) {
 	return NULL;
 }
 
+static const char *IdentifyFileType( PLFile *file ) {
+	uint32_t magic = ( uint32_t ) gInterface->ReadInt32( file, false, NULL );
+
+	/* first check if it's a bitmap... */
+	if ( ( ( uint16_t ) magic ) == 0x4d42 ) {
+		return ".bmp";
+	}
+
+	/* then geo */
+	if ( magic == PL_MAGIC_TO_NUM( 'H', 'E', 'D', ' ' ) ) {
+		return ".hgm"; /* referenced as '.hed', but actually stored as '.hgm' */
+	}
+
+	if ( magic == PL_MAGIC_TO_NUM( 'C', 'L', 'U', '\0' ) ) {
+		return ".clu";
+	}
+
+	/* and finally, check if it's a texture */
+	if ( magic == PL_MAGIC_TO_NUM( 'T', 'X', 'T', 'R' ) ) {
+		return ".hgt";
+	} else {
+		/* more typically, they'll have some crap at the start followed by 'TXTR' */
+		magic = gInterface->ReadInt32( file, false, NULL );
+		if ( magic == PL_MAGIC_TO_NUM( 'T', 'X', 'T', 'R' ) ) {
+			return ".hgt";
+		}
+	}
+
+	/* try to determine if it's a script (ugly) */
+	char tmp[ 128 ];
+	gInterface->ReadFile( file, tmp, sizeof( char ), sizeof( tmp ) );
+	for ( unsigned int i = 0; i < sizeof( tmp ); ++i ) {
+		if ( !isascii( tmp[ i ] ) ) {
+			tmp[ 0 ] = '\0';
+			break;
+		}
+	}
+	if ( tmp[ 0 ] != '\0' ) {
+		return ".txt";
+	}
+
+	return "";
+}
+
 static PLPackage *ParseCLUFile( PLFile *file ) {
 	CLUHeader header;
-	PlReadFile( file, &header, sizeof( CLUHeader ), 1 );
+	gInterface->ReadFile( file, &header, sizeof( CLUHeader ), 1 );
 
 	if ( header.magic != CLU_MAGIC ) {
-		PlReportBasicError( PL_RESULT_FILETYPE );
+		gInterface->ReportError( PL_RESULT_FILETYPE, PL_FUNCTION, "invalid magic" );
 		return NULL;
 	}
 
 	if ( header.version != CLU_VERSION ) {
-		PlReportBasicError( PL_RESULT_FILEVERSION );
+		gInterface->ReportError( PL_RESULT_FILEVERSION, PL_FUNCTION, "unexpected version" );
 		return NULL;
 	}
 
-	if ( header.headerLength >= PlGetFileSize( file ) ) {
-		PlReportErrorF( PL_RESULT_FILEERR, "invalid data offset provided in header" );
+	if ( header.headerLength >= gInterface->GetFileSize( file ) ) {
+		gInterface->ReportError( PL_RESULT_FILEERR, PL_FUNCTION, "invalid data offset provided in header" );
 		return NULL;
 	}
 
 	size_t tableSize = ( sizeof( CLUIndex ) * header.numIndices );
 	if ( tableSize >= header.headerLength ) {
-		PlReportErrorF( PL_RESULT_FILEERR, "invalid relative table size to data offset" );
+		gInterface->ReportError( PL_RESULT_FILEERR, PL_FUNCTION, "invalid relative table size to data offset" );
 		return NULL;
 	}
 
-	CLUIndex *indicies = PlMAllocA( tableSize );
-	if ( PlReadFile( file, indicies, sizeof( CLUIndex ), header.numIndices ) != header.numIndices ) {
-		PL_DELETE( indicies );
+	CLUIndex *indicies = gInterface->MAlloc( tableSize, true );
+	if ( gInterface->ReadFile( file, indicies, sizeof( CLUIndex ), header.numIndices ) != header.numIndices ) {
+		gInterface->Free( indicies );
 		return NULL;
 	}
 
 	unsigned int numMatches = 0;
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), header.numIndices, NULL );
+	PLPackage *package = gInterface->CreatePackageHandle( gInterface->GetFilePath( file ), header.numIndices, NULL );
 	for ( unsigned int i = 0; i < header.numIndices; ++i ) {
 		package->table[ i ].fileSize = indicies[ i ].size;
 		package->table[ i ].offset = indicies[ i ].offset;
 
 		const char *fileName = GetStringForHash( indicies[ i ].hash );
 		if ( fileName == NULL ) {
-			snprintf( package->table[ i ].fileName, sizeof( PLPath ), "%X", indicies[ i ].hash );
+			/* let's add an extension based on a guessed type */
+			const char *extension = "";
+			PLFileOffset oldOffset = gInterface->GetFileOffset( file );
+			if ( gInterface->FileSeek( file, package->table[ i ].offset, PL_SEEK_SET ) ) {
+				extension = IdentifyFileType( file );
+			}
+			gInterface->FileSeek( file, oldOffset, PL_SEEK_SET );
+
+			snprintf( package->table[ i ].fileName, sizeof( PLPath ), "%X%s", indicies[ i ].hash, extension );
 		} else {
 			snprintf( package->table[ i ].fileName, sizeof( PLPath ), "%s", fileName );
 			numMatches++;
 		}
 	}
 
-	PL_DELETE( indicies );
+	gInterface->Free( indicies );
 
 #if !defined( NDEBUG )
-	const char *fileName = PlGetFileName( PlGetFilePath( file ) );
+	const char *filePath = gInterface->GetFilePath( file );
+	const char *fileName = strrchr( filePath, '/' );
+	if ( fileName == NULL ) {
+		fileName = filePath;
+	}
 	printf( "%.2lf%% matched (%u/%u) for CLU package \"%s\"\n", ( ( double ) numMatches / header.numIndices ) * 100.0,
 	        numMatches, header.numIndices,
 	        fileName );
@@ -132,14 +188,14 @@ static PLPackage *ParseCLUFile( PLFile *file ) {
 }
 
 PLPackage *Core_CLU_LoadPackage( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
+	PLFile *file = gInterface->OpenFile( path, false );
 	if ( file == NULL ) {
 		return NULL;
 	}
 
 	PLPackage *package = ParseCLUFile( file );
 
-	PlCloseFile( file );
+	gInterface->CloseFile( file );
 
 	return package;
 }

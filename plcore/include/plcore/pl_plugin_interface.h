@@ -180,11 +180,15 @@ typedef struct PLPluginExportTable {
 	bool ( *WriteImage )( const PLImage *image, const char *path );
 	/* pl_filesystem.h */
 	void ( *NormalizePath )( char *path, size_t length );
+
+	/** v9.1 ************************************************/
+	/* pl_image.h */
+	PLImage *( *ParseImage )( PLFile *file );
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */
 #define PL_PLUGIN_INTERFACE_VERSION_MAJOR 9
-#define PL_PLUGIN_INTERFACE_VERSION_MINOR 0
+#define PL_PLUGIN_INTERFACE_VERSION_MINOR 1
 #define PL_PLUGIN_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
 
@@ -193,7 +197,10 @@ typedef const PLPluginDescription *( *PLPluginQueryFunction )( void );
 #define PL_PLUGIN_INIT_FUNCTION "PLInitializePlugin"
 typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *exportTable );
 
-/* 2022-11-12
+/* 2023-01-01
+ * - Exposed missing pl_image API
+ *
+ * 2022-11-12
  * - GenerateChecksumCRC32 calling convention has been altered
  *
  * 2022-11-01
@@ -223,4 +230,5 @@ typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *exp
  * - changed how version is queried and introduced minor
  * - plugins can now push log messages
  * - plugins can now create and execute commands via console api
- * - introduced graphics api interface */
+ * - introduced graphics api interface
+ * */

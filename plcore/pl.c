@@ -519,6 +519,7 @@ static PLPluginExportTable exportTable = {
         .FlipImageVertical = PlFlipImageVertical,
         .GetImageSize = PlGetImageSize,
         .WriteImage = PlWriteImage,
+        .ParseImage = PlParseImage,
 
         .CreatePackageHandle = PlCreatePackageHandle,
         .GetPackagePath = PlGetPackagePath,

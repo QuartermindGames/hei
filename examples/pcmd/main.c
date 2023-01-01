@@ -178,14 +178,39 @@ static void Cmd_BulkConvertModel( unsigned int argc, char **argv ) {
 	printf( "Done!\n" );
 }
 
-static bool isRunning = true;
+static void BulkExportCallback( const char *path, void *user ) {
+	/* just throw it through the console command */
+	char *tmp = pl_strjoin( "pkgext ", path );
+	PlParseConsoleString( tmp );
+	PL_DELETE( tmp );
+}
+
+static void Cmd_BulkExportPackages( unsigned int argc, char **argv ) {
+	PLPath path;
+	snprintf( path, sizeof( path ), "%s", argv[ 1 ] );
+	if ( !PlPathExists( path ) ) {
+		printf( "Path doesn't exist: %s\n", PlGetError() );
+		return;
+	}
+
+	char extension[ 16 ];
+	snprintf( extension, sizeof( extension ), "%s", argv[ 2 ] );
+	if ( extension[ 0 ] == '\0' || extension[ 0 ] == '.' ) {
+		printf( "Invalid extension provided; example 'clu'\n" );
+		return;
+	}
+
+	PlScanDirectory( path, extension, BulkExportCallback, false, NULL );
+}
 
 static void Cmd_Exit( unsigned int argc, char **argv ) {
 	/* we don't use these here, and ommitting var names is a C2x feature :( */
 	( void ) ( argc );
 	( void ) ( argv );
 
-	isRunning = false;
+	PlShutdown();
+
+	exit( 0 );
 }
 
 /*************************************************************/
@@ -200,77 +225,18 @@ PLPackage *Sentient_VSR_LoadFile( const char *path );
 PLPackage *Mortyr_HAL_LoadFile( const char *path );
 PLPackage *Eradicator_RID_LoadFile( const char *path );
 PLPackage *Outwars_FF_LoadFile( const char *path );
-PLPackage *Core_CLU_LoadPackage( const char *path );
 PLPackage *Angel_DAT_LoadPackage( const char *path );
 PLPackage *AITD_PAK_LoadPackage( const char *path );
 PLPackage *WFear_INU_LoadPackage( const char *path );
 
 PLImage *Angel_TEX_ParseImage( PLFile *file );
-PLImage *Core_HGT_ParseImage( PLFile *file );
 
 PLPackage *asa_format_tre_load( const char *path );
 
+PL_NORETURN( static void MainLoop( void ) ) {
 #define MAX_COMMAND_LENGTH 256
-static char cmdLine[ MAX_COMMAND_LENGTH ];
-int main( int argc, char **argv ) {
-	/* no buffering stdout! */
-	setvbuf( stdout, NULL, _IONBF, 0 );
-
-	PlInitialize( argc, argv );
-	PlInitializeSubSystems( PL_SUBSYSTEM_IO );
-
-	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
-	PlRegisterStandardPackageLoaders();
-
-	PlmRegisterStandardModelLoaders( PLM_MODEL_FILEFORMAT_ALL );
-
-	PlRegisterPackageLoader( "lst", IStorm_LST_LoadFile );
-	/*PlRegisterPackageLoader( "opk", Outcast_OPK_LoadFile );*/
-	PlRegisterPackageLoader( "pak", Outcast_OPK_LoadFile );
-	PlRegisterPackageLoader( "pak", AITD_PAK_LoadPackage );
-	PlRegisterPackageLoader( "pak", FTactics_PAK_LoadFile );
-	PlRegisterPackageLoader( "vsr", Sentient_VSR_LoadFile );
-	PlRegisterPackageLoader( "hal", Mortyr_HAL_LoadFile );
-	PlRegisterPackageLoader( "rid", Eradicator_RID_LoadFile );
-	PlRegisterPackageLoader( "rim", Eradicator_RID_LoadFile );
-	PlRegisterPackageLoader( "ff", Outwars_FF_LoadFile );
-	PlRegisterPackageLoader( "clu", Core_CLU_LoadPackage );
-	PlRegisterPackageLoader( "dat", Angel_DAT_LoadPackage );
-	PlRegisterPackageLoader( "inu", WFear_INU_LoadPackage );
-	PlRegisterPackageLoader( "tre", asa_format_tre_load );
-
-	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
-	PlRegisterImageLoader( "hgt", Core_HGT_ParseImage );
-
-	PLPath exeDir;
-	if ( PlGetExecutableDirectory( exeDir, sizeof( PLPath ) ) != NULL ) {
-		PLPath pluginsDir;
-		snprintf( pluginsDir, sizeof( pluginsDir ), PlPathEndsInSlash( exeDir ) ? "%splugins" : "%s/plugins", exeDir );
-		PlRegisterPlugins( pluginsDir );
-	}
-
-	/* register all our custom console commands */
-	PlRegisterConsoleCommand( "exit", "Exit the application.", 0, Cmd_Exit );
-	PlRegisterConsoleCommand( "quit", "Exit the application.", 0, Cmd_Exit );
-	PlRegisterConsoleCommand( "mdlconv", "Convert the specified image. 'mdlconv ./model.mdl [./out.mdl]'", 1, Cmd_ConvertModel );
-	PlRegisterConsoleCommand( "mdlconvdir", "Bulk convert images.", 1, Cmd_BulkConvertModel );
-	PlRegisterConsoleCommand( "imgconv", "Convert the given image. 'img_convert ./image.bmp [./out.png]'", -1, Cmd_IMGConvert );
-	PlRegisterConsoleCommand( "imgconvdir", "Bulk convert images in the given directory. 'img_bulkconvert ./path bmp [./outpath]'", -1, Cmd_IMGBulkConvert );
-
-	void asa_register_commands( void );
-	asa_register_commands();
-
-	PlInitializePlugins();
-
-	/* allow us to just push a command via the command line if we want */
-	const char *arg = PlGetCommandLineArgumentValue( "-cmd" );
-	if ( arg != NULL ) {
-		PlParseConsoleString( arg );
-		PlShutdown();
-		return EXIT_SUCCESS;
-	}
-
-	while ( isRunning ) {
+	static char cmdLine[ MAX_COMMAND_LENGTH ];
+	while ( true ) {
 		printf( "> " );
 
 		int i;
@@ -287,10 +253,79 @@ int main( int argc, char **argv ) {
 
 		PlParseConsoleString( cmdLine );
 
-		memset( cmdLine, 0, sizeof( cmdLine ) );
+		PL_ZERO_( cmdLine );
+	}
+}
+
+int main( int argc, char **argv ) {
+	/* no buffering stdout! */
+	setvbuf( stdout, NULL, _IONBF, 0 );
+
+	PlInitialize( argc, argv );
+	PlInitializeSubSystems( PL_SUBSYSTEM_IO );
+
+	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
+	PlRegisterStandardPackageLoaders();
+
+	PlmRegisterStandardModelLoaders( PLM_MODEL_FILEFORMAT_ALL );
+
+	PlRegisterPackageLoader( "lst", IStorm_LST_LoadFile );
+	PlRegisterPackageLoader( "pak", Outcast_OPK_LoadFile );
+	PlRegisterPackageLoader( "pak", AITD_PAK_LoadPackage );
+	PlRegisterPackageLoader( "pak", FTactics_PAK_LoadFile );
+	PlRegisterPackageLoader( "vsr", Sentient_VSR_LoadFile );
+	PlRegisterPackageLoader( "hal", Mortyr_HAL_LoadFile );
+	PlRegisterPackageLoader( "rid", Eradicator_RID_LoadFile );
+	PlRegisterPackageLoader( "rim", Eradicator_RID_LoadFile );
+	PlRegisterPackageLoader( "ff", Outwars_FF_LoadFile );
+	PlRegisterPackageLoader( "dat", Angel_DAT_LoadPackage );
+	PlRegisterPackageLoader( "inu", WFear_INU_LoadPackage );
+	PlRegisterPackageLoader( "tre", asa_format_tre_load );
+
+	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
+
+	PLPath exeDir;
+	if ( PlGetExecutableDirectory( exeDir, sizeof( PLPath ) ) != NULL ) {
+		PlRegisterPlugins( exeDir );
+
+		/* attempt to also register any plugins under a 'plugins' location */
+		PLPath pluginsDir;
+		snprintf( pluginsDir, sizeof( pluginsDir ), PlPathEndsInSlash( exeDir ) ? "%splugins" : "%s/plugins", exeDir );
+		PlRegisterPlugins( pluginsDir );
 	}
 
-	PlShutdown();
+	/* register all our custom console commands */
+	PlRegisterConsoleCommand( "exit", "Exit the application.", 0, Cmd_Exit );
+	PlRegisterConsoleCommand( "quit", "Exit the application.", 0, Cmd_Exit );
+	PlRegisterConsoleCommand( "mdlconv",
+	                          "Convert the specified image. 'mdlconv ./model.mdl [./out.mdl]'",
+	                          1, Cmd_ConvertModel );
+	PlRegisterConsoleCommand( "mdlconvdir",
+	                          "Bulk convert images.",
+	                          1, Cmd_BulkConvertModel );
+	PlRegisterConsoleCommand( "imgconv",
+	                          "Convert the given image. 'img_convert ./image.bmp [./out.png]'",
+	                          -1, Cmd_IMGConvert );
+	PlRegisterConsoleCommand( "imgconvdir",
+	                          "Bulk convert images in the given directory. 'img_bulkconvert ./path bmp [./outpath]'",
+	                          -1, Cmd_IMGBulkConvert );
+	PlRegisterConsoleCommand( "export_packages",
+	                          "Attempt to export from all packages found in directory. "
+	                          "<directory> <extension>",
+	                          2, Cmd_BulkExportPackages );
 
-	return EXIT_SUCCESS;
+	void asa_register_commands( void );
+	asa_register_commands();
+
+	PlInitializePlugins();
+
+	/* allow us to just push a command via the command line if we want */
+	const char *arg = PlGetCommandLineArgumentValue( "-cmd" );
+	if ( arg != NULL ) {
+		PlParseConsoleString( arg );
+		PlShutdown();
+		return EXIT_SUCCESS;
+	}
+
+	MainLoop();
 }

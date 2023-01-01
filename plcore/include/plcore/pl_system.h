@@ -176,7 +176,7 @@
 #	define PL_UNUSED __attribute__( ( unused ) )
 
 #	define PL_DEPRECATED( function ) function __attribute__( ( deprecated ) )
-#	define PL_NORETURN( function )   function __attribute__( ( noreturn ) )
+#	define PL_NORETURN( function )   __attribute__( ( noreturn ) ) function
 
 #	define PL_STATIC_ASSERT( a, b ) _Static_assert( ( a ), b )
 

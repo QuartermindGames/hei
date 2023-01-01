@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
 
-#include <plcore/pl_image.h>
+#include "../core.h"
 
 /* Core Design, HGT format
  *
@@ -17,33 +17,33 @@
 
 PLImage *Core_HGT_ParseImage( PLFile *file ) {
 	/* validate it first */
-	PlFileSeek( file, 4, PL_SEEK_CUR );
-	uint32_t magic = PlReadInt32( file, false, NULL );
+	gInterface->FileSeek( file, 4, PL_SEEK_CUR );
+	uint32_t magic = gInterface->ReadInt32( file, false, NULL );
 	if ( magic != HGT_HEADER_MAGIC ) {
-		PlReportBasicError( PL_RESULT_FILETYPE );
+		gInterface->ReportError( PL_RESULT_FILETYPE, PL_FUNCTION, "invalid magic" );
 		return NULL;
 	}
 
 	/* now seek to the bitmap */
-	if ( !PlFileSeek( file, HGT_HEADER_SIZE, PL_SEEK_SET ) ) {
+	if ( !gInterface->FileSeek( file, HGT_HEADER_SIZE, PL_SEEK_SET ) ) {
 		return NULL;
 	}
 
 	/* load the file into a memory, as it's just a bmp */
-	const void *buf = PlCacheFile( file );
+	const void *buf = gInterface->CacheFile( file );
 	if ( buf == NULL ) {
 		return NULL;
 	}
 
 	/* create a temporary file handle, so we can pass it back to our ParseImage function */
 	PLPath tmpPath;
-	const char *path = PlGetFilePath( file );
+	const char *path = gInterface->GetFilePath( file );
 	snprintf( tmpPath, sizeof( PLPath ), "%s.bmp", ( path != NULL ) ? path : "tmp" );
-	PLFile *tmp = PlCreateFileFromMemory( tmpPath, ( void * ) buf, ( PlGetFileSize( file ) - HGT_HEADER_SIZE ), PL_FILE_MEMORYBUFFERTYPE_UNMANAGED );
+	PLFile *tmp = gInterface->CreateFileFromMemory( tmpPath, ( void * ) buf, ( gInterface->GetFileSize( file ) - HGT_HEADER_SIZE ), PL_FILE_MEMORYBUFFERTYPE_UNMANAGED );
 
-	PLImage *image = PlParseImage( tmp );
+	PLImage *image = gInterface->ParseImage( tmp );
 
-	PlCloseFile( tmp );
+	gInterface->CloseFile( tmp );
 
 	return image;
 }
