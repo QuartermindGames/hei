@@ -45,3 +45,20 @@ char *pl_strinsert( const char *string, char **buf, size_t *bufSize, size_t *max
 
 	return *buf + originalSize + strLength;
 }
+
+/**
+ * Joins two strings together; returns a newly allocated null-terminated buffer.
+ */
+char *pl_strnjoin( const char *a, size_t aSize, const char *b, size_t bSize ) {
+	char *buf = PL_NEW_( char, aSize + bSize + 1 );
+	strncpy( buf, a, aSize );
+	strncpy( buf + aSize, b, bSize );
+	return buf;
+}
+
+/**
+ * Joins two strings together; returns a newly allocated null-terminated buffer.
+ */
+char *pl_strjoin( const char *a, const char *b ) {
+	return pl_strnjoin( a, strlen( a ), b, strlen( b ) );
+}

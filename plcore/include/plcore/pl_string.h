@@ -51,6 +51,8 @@ unsigned int pl_strncnt( const char *s, char c, unsigned int n );
 
 char *pl_strchunksplit( const char *string, unsigned int length, const char *seperator );
 char *pl_strinsert( const char *string, char **buf, size_t *bufSize, size_t *maxBufSize );
+char *pl_strnjoin( const char *a, size_t aSize, const char *b, size_t bSize );
+char *pl_strjoin( const char *a, const char *b );
 
 /**
  * http://www.cse.yorku.ca/~oz/hash.html#sdbm
