@@ -29,6 +29,10 @@ SOFTWARE.
 
 PL_EXTERN_C
 
+/* any log level should be initialised to this value
+ * to catch the case in which it might not be registered */
+#define PL_LOG_INIT_LEVEL ( -1 )
+
 /* todo: make this structure private */
 typedef struct PLConsoleVariable {
 	char *name;

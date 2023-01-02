@@ -5,3 +5,5 @@
 
 #include <plcore/pl_plugin_interface.h>
 extern const PLPluginExportTable *gInterface;
+
+extern int coreMessage;
