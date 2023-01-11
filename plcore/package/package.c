@@ -289,6 +289,8 @@ void PlRegisterStandardPackageLoaders( void ) {
 	PlRegisterPackageLoader( "pak", PlLoadZipPackage );
 	PlRegisterPackageLoader( "pk3", PlLoadZipPackage );
 	PlRegisterPackageLoader( "pk4", PlLoadZipPackage );
+
+	PlRegisterPackageLoader( "dfs", PlLoadDFSPackage );
 }
 
 PLPackage *PlLoadPackage( const char *path ) {

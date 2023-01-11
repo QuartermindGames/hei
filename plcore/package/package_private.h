@@ -13,6 +13,9 @@
 
 PL_EXTERN_C
 
+PLPackage *PlParseDFSFile( PLFile *file );
+PLPackage *PlLoadDFSPackage( const char *path );
+
 PLPackage *PlLoadIWADPackage_( const char *path );
 PLPackage *PlLoadWAD2Package_( const char *path );
 PLPackage *PlLoadPAKPackage_( const char *path );
