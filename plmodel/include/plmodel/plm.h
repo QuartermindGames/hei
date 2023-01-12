@@ -132,13 +132,18 @@ PLMModel *PlmCreateBasicStaticModel( PLGMesh *mesh );
 PLMModel *PlmCreateSkeletalModel( PLGMesh **meshes, unsigned int numMeshes, PLMBone *bones, unsigned int numBones, PLMBoneWeight *weights, unsigned int numWeights );
 PLMModel *PlmCreateBasicSkeletalModel( PLGMesh *mesh, PLMBone *bones, unsigned int numBones, PLMBoneWeight *weights, unsigned int numWeights );
 
+// Loads a model from the specific path - will automatically determine format from extension.
 PLMModel *PlmLoadModel( const char *path );
+// Attempts to load a model from the file handle. Will attempt to determine format.
+PLMModel *PlmParseModel( PLFile *file );
 
 PLMModel *PlmLoadU3DModel( const char *path );
 PLMModel *PlmLoadHdvModel( const char *path );
 PLMModel *PlmLoadRequiemModel( const char *path );
 PLMModel *PlmLoadObjModel( const char *path );
 PLMModel *PlmLoadCpjModel( const char *path );
+
+PLMModel *PlmParseMDX( PLFile *file );
 
 void PlmDestroyModel( PLMModel *model );
 
@@ -157,9 +162,10 @@ enum {
 	PL_BITFLAG( PLM_MODEL_FILEFORMAT_U3D, 2 ),
 	PL_BITFLAG( PLM_MODEL_FILEFORMAT_OBJ, 3 ),
 	PL_BITFLAG( PLM_MODEL_FILEFORMAT_CPJ, 4 ),
+	PL_BITFLAG( PLM_MODEL_FILEFORMAT_MDX, 5 ),
 };
 
-void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char *path ) );
+void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char *path ), PLMModel *( *ParseFunction )( PLFile *file ) );
 void PlmRegisterStandardModelLoaders( unsigned int flags );
 void PlmClearModelLoaders( void );
 

@@ -299,7 +299,7 @@ int main( int argc, char **argv ) {
 	PlRegisterConsoleCommand( "quit", "Exit the application.", 0, Cmd_Exit );
 	PlRegisterConsoleCommand( "mdlconv",
 	                          "Convert the specified image. 'mdlconv ./model.mdl [./out.mdl]'",
-	                          1, Cmd_ConvertModel );
+	                          -1, Cmd_ConvertModel );
 	PlRegisterConsoleCommand( "mdlconvdir",
 	                          "Bulk convert images.",
 	                          1, Cmd_BulkConvertModel );

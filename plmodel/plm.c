@@ -29,6 +29,7 @@ SOFTWARE.
 typedef struct ModelLoader {
 	const char *ext;
 	PLMModel *( *LoadFunction )( const char *path );
+	PLMModel *( *ParseFunction )( PLFile *file );
 } ModelLoader;
 
 #define MAX_OBJECT_INTERFACES 512
@@ -112,7 +113,7 @@ bool PlmWriteModel( const char *path, PLMModel *model, PLMModelOutputType type )
 	}
 }
 
-void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char *path ) ) {
+void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char *path ), PLMModel *( *ParseFunction )( PLFile *file ) ) {
 	if ( num_model_loaders >= MAX_OBJECT_INTERFACES ) {
 		PlReportBasicError( PL_RESULT_MEMORY_EOA );
 		return;
@@ -120,6 +121,7 @@ void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const
 
 	model_interfaces[ num_model_loaders ].ext = ext;
 	model_interfaces[ num_model_loaders ].LoadFunction = LoadFunction;
+	model_interfaces[ num_model_loaders ].ParseFunction = ParseFunction;
 	num_model_loaders++;
 }
 
@@ -128,13 +130,15 @@ void PlmRegisterStandardModelLoaders( unsigned int flags ) {
 		unsigned int flag;
 		const char *extension;
 		PLMModel *( *LoadFunction )( const char *path );
+		PLMModel *( *ParseFunction )( PLFile *file );
 	} SModelLoader;
 	static const SModelLoader loaderList[] = {
-	        { PLM_MODEL_FILEFORMAT_CYCLONE, "mdl", PlmLoadRequiemModel },
-	        { PLM_MODEL_FILEFORMAT_HDV, "hdv", PlmLoadHdvModel },
-	        { PLM_MODEL_FILEFORMAT_U3D, "3d", PlmLoadU3DModel },
-	        { PLM_MODEL_FILEFORMAT_OBJ, "obj", PlmLoadObjModel },
-	        { PLM_MODEL_FILEFORMAT_CPJ, "cpj", PlmLoadCpjModel },
+	        {PLM_MODEL_FILEFORMAT_CYCLONE, "mdl", PlmLoadRequiemModel, NULL       },
+	        { PLM_MODEL_FILEFORMAT_HDV,    "hdv", PlmLoadHdvModel,     NULL       },
+	        { PLM_MODEL_FILEFORMAT_U3D,    "3d",  PlmLoadU3DModel,     NULL       },
+	        { PLM_MODEL_FILEFORMAT_OBJ,    "obj", PlmLoadObjModel,     NULL       },
+	        { PLM_MODEL_FILEFORMAT_CPJ,    "cpj", PlmLoadCpjModel,     NULL       },
+	        { PLM_MODEL_FILEFORMAT_MDX,    "mdx", NULL,                PlmParseMDX},
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
@@ -142,7 +146,7 @@ void PlmRegisterStandardModelLoaders( unsigned int flags ) {
 			continue;
 		}
 
-		PlmRegisterModelLoader( loaderList[ i ].extension, loaderList[ i ].LoadFunction );
+		PlmRegisterModelLoader( loaderList[ i ].extension, loaderList[ i ].LoadFunction, loaderList[ i ].ParseFunction );
 	}
 }
 
@@ -152,37 +156,87 @@ void PlmClearModelLoaders( void ) {
 }
 
 PLMModel *PlmLoadModel( const char *path ) {
-	if ( !PlFileExists( path ) ) {
-		PlReportErrorF( PL_RESULT_FILEREAD, "failed to load model, %s", path );
+	// preferred route, we load in the file and hand it over to a parse callback -
+	// this will be *faster* once we get rid of the LoadFunction method as we'll
+	// then only need to load the model in once!
+	PLFile *file = PlOpenFile( path, false );
+	if ( file == NULL ) {
 		return NULL;
 	}
 
 	const char *extension = PlGetFileExtension( path );
-	size_t ext_len = strlen( extension );
+	size_t extensionLength = strlen( extension );
+
+	PLMModel *model = NULL;
 	for ( unsigned int i = 0; i < num_model_loaders; ++i ) {
-		if ( model_interfaces[ i ].LoadFunction == NULL ) {
+		if ( model_interfaces[ i ].ParseFunction == NULL ) {
+			continue;
+		}
+
+		if ( pl_strcasecmp( extension, model_interfaces[ i ].ext ) != 0 ) {
+			continue;
+		}
+
+		model = model_interfaces[ i ].ParseFunction( file );
+		if ( model != NULL ) {
 			break;
 		}
 
-		if ( !PL_INVALID_STRING( model_interfaces[ i ].ext ) ) {
-			if ( pl_strcasecmp( extension, model_interfaces[ i ].ext ) == 0 ) {
-				PLMModel *model = model_interfaces[ i ].LoadFunction( path );
-				if ( model != NULL ) {
-					const char *name = PlGetFileName( path );
-					if ( !PL_INVALID_STRING( name ) ) {
-						size_t nme_len = strlen( name );
-						strncpy( model->name, name, nme_len - ( ext_len + 1 ) );
-					} else {
-						snprintf( model->name, sizeof( model->name ), "null" );
-					}
+		PlRewindFile( file );
+	}
 
-					strncpy( model->path, path, sizeof( model->path ) );
-					return model;
-				}
+	PlCloseFile( file );
+
+	//TODO: switch list over to use map - try matched extension first, if that doesn't work, try others?
+	//TODO: kill the below
+
+	if ( model == NULL ) {
+		for ( unsigned int i = 0; i < num_model_loaders; ++i ) {
+			if ( model_interfaces[ i ].LoadFunction == NULL ) {
+				continue;
+			}
+
+			if ( pl_strcasecmp( extension, model_interfaces[ i ].ext ) != 0 ) {
+				continue;
+			}
+
+			model = model_interfaces[ i ].LoadFunction( path );
+			if ( model != NULL ) {
+				break;
 			}
 		}
 	}
 
+	// if we've got a valid model, we need to update the path and name
+	if ( model != NULL ) {
+		const char *name = PlGetFileName( path );
+		if ( !PL_INVALID_STRING( name ) ) {
+			size_t nme_len = strlen( name );
+			strncpy( model->name, name, nme_len - ( extensionLength + 1 ) );
+		} else {
+			snprintf( model->name, sizeof( model->name ), "null" );
+		}
+		strncpy( model->path, path, sizeof( model->path ) );
+	}
+
+	return model;
+}
+
+PLMModel *PlmParseModel( PLFile *file ) {
+	for ( unsigned int i = 0; i < num_model_loaders; ++i ) {
+		if ( model_interfaces[ i ].ParseFunction == NULL ) {
+			continue;
+		}
+
+		PLMModel *model = model_interfaces[ i ].ParseFunction( file );
+		if ( model != NULL ) {
+			return model;
+		}
+
+		PlRewindFile( file );
+	}
+
+	PlReportErrorF( PL_RESULT_FILEERR, "failed to parse model, last error: %s", PlGetError() );
 	return NULL;
 }
 
