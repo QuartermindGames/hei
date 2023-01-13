@@ -1,26 +1,5 @@
-/*
-MIT License
-
-Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+// SPDX-License-Identifier: MIT
+// Copyright © 2021-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "plm_private.h"
 
@@ -159,12 +138,44 @@ PLMModel *PlmLoadObjModel( const char *path ) {
 	return NULL;
 }
 
-bool PlmWriteObjModel( PLMModel *model, const char *path ) {
-	if ( model == NULL ) {
-		PlReportBasicError( PL_RESULT_INVALID_PARM1 );
-		return false;
+static void WriteVertices( FILE *file, const PLGMesh *mesh ) {
+	fprintf( file, "# %u vertices\n", mesh->num_verts );
+	for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
+		fprintf( file, "v %s\n", PlPrintVector3( &mesh->vertices[ j ].position, PL_VAR_F32 ) );
 	}
+	for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
+		fprintf( file, "vt %s\n", PlPrintVector2( &mesh->vertices[ j ].st[ 0 ], PL_VAR_F32 ) );
+	}
+	for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
+		fprintf( file, "vn %s\n", PlPrintVector3( &mesh->vertices[ j ].normal, PL_VAR_F32 ) );
+	}
+}
 
+static void WriteFaces( FILE *file, const PLGMesh *mesh ) {
+	if ( mesh->primitive == PLG_MESH_TRIANGLES ) {
+		fprintf( file, "# %u faces\n", mesh->num_triangles );
+		const unsigned int *index = mesh->indices;
+		for ( unsigned int j = 0; j < mesh->num_triangles; j++, index += 3 ) {
+			/* this was broken for a long time; these start at 1 for obj, not 0!
+			 * the moral of the story is, read!! */
+			uint32_t x = index[ 0 ] + 1;
+			uint32_t y = index[ 1 ] + 1;
+			uint32_t z = index[ 2 ] + 1;
+			fprintf( file, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", x, x, x, y, y, y, z, z, z );
+		}
+	}
+}
+
+static void WriteObjectHeader( FILE *file, const char *name, const PLMModel *model, const PLGMesh *mesh ) {
+	fprintf( file, "o %s\n", name );
+	if ( mesh->texture != NULL && mesh->texture->name[ 0 ] != '\0' ) {
+		fprintf( file, "usemtl %s\n", mesh->texture->name );
+	} else if ( model->numMaterials > 0 ) {
+		fprintf( file, "usemtl %s\n", model->materials[ mesh->materialIndex ] );
+	}
+}
+
+bool PlmWriteObjModel( PLMModel *model, const char *path ) {
 	FILE *fp = fopen( path, "w" );
 	if ( fp == NULL ) {
 		PlReportBasicError( PL_RESULT_FILEWRITE );
@@ -176,49 +187,60 @@ bool PlmWriteObjModel( PLMModel *model, const char *path ) {
 		ModelLog( "Model is of type skeletal; Obj only supports static models so skeleton will be discarded...\n" );
 	}
 
-	/* for now, use the same name as the model for the material */
-	const char *filename = PlGetFileName( path );
-	size_t len = strlen( filename );
-	char *mtl_name = PlMAllocA( len );
-	snprintf( mtl_name, len - 4, "%s", PlGetFileName( path ) );
-	fprintf( fp, "mtllib ./%s.mtl\n", mtl_name );
+	if ( model->numMaterials > 0 ) {
+		for ( unsigned int i = 0; i < model->numMaterials; ++i ) {
+			fprintf( fp, "mtllib %s.mtl\n", model->materials[ i ] );
+		}
+	} else {
+		PLPath mtl_name;
+		snprintf( mtl_name, strlen( PlGetFileName( path ) ) - 4, "%s", PlGetFileName( path ) );
+		fprintf( fp, "mtllib %s.mtl\n", mtl_name );
+	}
 
-	/* todo: kill duplicated data */
-	for ( unsigned int i = 0; i < model->numMeshes; ++i ) {
-		PLGMesh *mesh = model->meshes[ i ];
-		if ( mesh->primitive == PLG_MESH_TRIANGLES ) {
-			fprintf( fp, "o mesh.%0d\n", i );
-			/* print out vertices */
-			for ( unsigned int vi = 0; vi < mesh->num_verts; ++vi ) {
-				fprintf( fp, "v %s\n", PlPrintVector3( &mesh->vertices[ vi ].position, PL_VAR_F32 ) );
-			}
-			/* print out texture coords */
-			for ( unsigned int vi = 0; vi < mesh->num_verts; ++vi ) {
-				fprintf( fp, "vt %s\n", PlPrintVector2( &mesh->vertices[ vi ].st[ 0 ], PL_VAR_F32 ) );
-			}
-			/* print out vertex normals */
-			for ( unsigned int vi = 0; vi < mesh->num_verts; ++vi ) {
-				fprintf( fp, "vn %s\n", PlPrintVector3( &mesh->vertices[ vi ].normal, PL_VAR_F32 ) );
-			}
-			fprintf( fp, "# %d vertices\n", mesh->num_verts );
+	if ( model->type == PLM_MODELTYPE_VERTEX ) {
+		const PLGMesh *mesh = model->meshes[ 0 ];
+		PLVector3 *vertices = PL_NEW_( PLVector3, mesh->num_verts );
 
-			if ( mesh->texture != NULL && mesh->texture->name[ 0 ] != '\0' ) {
-				fprintf( fp, "usemtl %s\n", mesh->texture->name );
+		unsigned int numFrames;
+		const PLMVertexAnimationFrame *frames = PlmGetVertexAnimationFrames( model, &numFrames );
+		for ( unsigned int i = 0; i < numFrames; ++i ) {
+			for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
+				vertices[ j ] = mesh->vertices[ j ].position;
+			}
+			for ( unsigned int j = 0; j < frames[ i ].numTransforms; ++j ) {
+				vertices[ frames[ i ].transforms[ j ].index ] = frames[ i ].transforms[ j ].position;
 			}
 
-			for ( unsigned int fi = 0; fi < mesh->num_triangles; ++fi ) {
-				fprintf( fp, "f %d/%d/%d\n",
-				         mesh->indices[ fi ],
-				         mesh->indices[ fi ],
-				         mesh->indices[ fi ] );
+			char tmp[ 64 ];
+			snprintf( tmp, sizeof( tmp ), "%s.frame%0u\n", ( *model->name != '\0' ) ? model->name : "mesh", i );
+			WriteObjectHeader( fp, tmp, model, mesh );
+
+			fprintf( fp, "# %u vertices\n", mesh->num_verts );
+			for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
+				fprintf( fp, "v %s\n", PlPrintVector3( &vertices[ j ], PL_VAR_F32 ) );
 			}
+			for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
+				fprintf( fp, "vt %s\n", PlPrintVector2( &mesh->vertices[ j ].st[ 0 ], PL_VAR_F32 ) );
+			}
+			for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
+				fprintf( fp, "vn %s\n", PlPrintVector3( &mesh->vertices[ j ].normal, PL_VAR_F32 ) );
+			}
+			WriteFaces( fp, mesh );
+		}
+		PL_DELETE( vertices );
+	} else {
+		for ( unsigned int i = 0; i < model->numMeshes; ++i ) {
+			PLGMesh *mesh = model->meshes[ i ];
+
+			char tmp[ 64 ];
+			snprintf( tmp, sizeof( tmp ), "%s.%0u\n", ( *model->name != '\0' ) ? model->name : "mesh", i );
+			WriteObjectHeader( fp, tmp, model, mesh );
+			WriteVertices( fp, mesh );
+			WriteFaces( fp, mesh );
 		}
 	}
 
-	PlFree( mtl_name );
-
 	fclose( fp );
 
-	// todo...
 	return true;
 }

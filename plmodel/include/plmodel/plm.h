@@ -1,26 +1,5 @@
-/*
-MIT License
-
-Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+// SPDX-License-Identifier: MIT
+// Copyright © 2021-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #pragma once
 
@@ -31,19 +10,6 @@ SOFTWARE.
 #include <plgraphics/plg.h>
 #include <plgraphics/plg_mesh.h>
 
-typedef struct PLAnimationFrame {
-	PLVector3 transform;
-} PLAnimationFrame;
-
-typedef struct PLAnimation {
-	char name[ 64 ];
-	PLAnimationFrame *frames;
-	uint32_t num_frames;
-	float framerate;
-} PLAnimation;
-
-////////////////////////////////////////////////////////////////////////////
-
 typedef enum PLMModelType {
 	PLM_MODELTYPE_STATIC,   /* static non-animated */
 	PLM_MODELTYPE_VERTEX,   /* per-vertex animated */
@@ -52,17 +18,33 @@ typedef enum PLMModelType {
 	PLM_NUM_MODELTYPES
 } PLMModelType;
 
+/**
+ * Location per vertex.
+ */
+typedef struct PLMVertexAnimationTransform {
+	unsigned int index;
+	PLVector3 position;
+	bool relative;
+} PLMVertexAnimationTransform;
+
 typedef struct PLMVertexAnimationFrame {
-	/* todo: store submeshes into PLMesh struct */
-	PLGMesh **meshes;
-	uint32_t num_meshes;
+	PLMVertexAnimationTransform *transforms;
+	unsigned int numTransforms;
 } PLMVertexAnimationFrame;
 
-typedef struct PLMVertexAnimModelData {
-	uint32_t current_animation; /* current animation index */
-	uint32_t current_frame;     /* current animation frame */
-	PLMVertexAnimationFrame *animations;
-} PLMVertexAnimModelData;
+typedef struct PLMVertexAnimation {
+	char name[ 32 ];
+	unsigned int startFrame;
+	unsigned int endFrame;
+	float speed;
+} PLMVertexAnimation;
+
+typedef struct PLMVertexAnimationModelData {
+	PLMVertexAnimationFrame *frames;
+	unsigned int numFrames;
+	PLMVertexAnimation *animations;
+	unsigned int numAnimations;
+} PLMVertexAnimationModelData;
 
 /* * * * * * * * * * * * * * * * * */
 /* Skeletal Model Data */
@@ -94,9 +76,11 @@ typedef struct PLMSkeletalModelData {
 	PLMBoneWeight *weights;
 } PLMSkeletalModelData;
 
+#define PLM_MODEL_MAX_MESHES 8
+
 typedef struct PLMModel {
 	char name[ 64 ];
-	char path[ PL_SYSTEM_MAX_PATH ];
+	PLPath path;
 	PLMModelType type;
 	uint16_t flags;
 
@@ -105,9 +89,9 @@ typedef struct PLMModel {
 	PLCollisionAABB bounds;
 
 	/* transformations */
-	PLMatrix4 modelMatrix;
+	PLMatrix4 modelMatrix;//TODO: kill this
 
-	PLGMesh **meshes;
+	PLGMesh *meshes[ PLM_MODEL_MAX_MESHES ];
 	unsigned int numMeshes;
 
 	PLPath *materials;
@@ -118,9 +102,8 @@ typedef struct PLMModel {
 	struct {
 		/* model type data */
 		union {
-			PLMSkeletalModelData skeletal_data; /* skeletal animation data */
-			//PLStaticModelData       static_data;    /* static model data */
-			PLMVertexAnimModelData vertex_data; /* per-vertex animation data */
+			PLMSkeletalModelData skeletal_data;      /* skeletal animation data */
+			PLMVertexAnimationModelData vertex_data; /* per-vertex animation data */
 		};
 	} internal;
 } PLMModel;
@@ -134,6 +117,9 @@ PLMModel *PlmCreateBasicStaticModel( PLGMesh *mesh );
 PLMModel *PlmCreateSkeletalModel( PLGMesh **meshes, unsigned int numMeshes, PLMBone *bones, unsigned int numBones, PLMBoneWeight *weights, unsigned int numWeights );
 PLMModel *PlmCreateBasicSkeletalModel( PLGMesh *mesh, PLMBone *bones, unsigned int numBones, PLMBoneWeight *weights, unsigned int numWeights );
 
+PLMModel *PlmCreateVertexModel( PLGMesh **meshes, unsigned int numMeshes, unsigned int numFrames, unsigned int numAnimations );
+PLMVertexAnimationFrame *PlmGetVertexAnimationFrames( const PLMModel *model, unsigned int *numFrames );
+
 // Loads a model from the specific path - will automatically determine format from extension.
 PLMModel *PlmLoadModel( const char *path );
 // Attempts to load a model from the file handle. Will attempt to determine format.
@@ -146,6 +132,7 @@ PLMModel *PlmLoadObjModel( const char *path );
 PLMModel *PlmLoadCpjModel( const char *path );
 
 PLMModel *PlmParseMDX( PLFile *file );
+PLMModel *PlmParseGMA( PLFile *file );
 
 void PlmDestroyModel( PLMModel *model );
 
@@ -167,6 +154,7 @@ enum {
 	PL_BITFLAG( PLM_MODEL_FILEFORMAT_OBJ, 3 ),
 	PL_BITFLAG( PLM_MODEL_FILEFORMAT_CPJ, 4 ),
 	PL_BITFLAG( PLM_MODEL_FILEFORMAT_MDX, 5 ),
+	PL_BITFLAG( PLM_MODEL_FILEFORMAT_GMA, 6 ),
 };
 
 #if !defined( PL_COMPILE_PLUGIN )
@@ -180,6 +168,7 @@ void PlmClearModelLoaders( void );
 typedef enum PLModelOutputType {
 	PLM_MODEL_OUTPUT_DEFAULT,
 	PLM_MODEL_OUTPUT_SMD,
+	PLM_MODEL_OUTPUT_OBJ,
 
 	PLM_MAX_MODEL_OUTPUT_FORMATS
 } PLMModelOutputType;

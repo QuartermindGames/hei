@@ -109,7 +109,7 @@ static void ConvertModel( const char *path, const char *destination ) {
 		return;
 	}
 
-	PlmWriteModel( destination, model, PLM_MODEL_OUTPUT_SMD );
+	PlmWriteModel( destination, model, PLM_MODEL_OUTPUT_DEFAULT );
 
 	PlmDestroyModel( model );
 }
@@ -131,7 +131,7 @@ static void Cmd_ConvertModel( unsigned int argc, char **argv ) {
 		char name[ ns ];
 		snprintf( name, ns - es, "%s", fn );
 
-		snprintf( outPath, sizeof( outPath ), "./%s.smd", name );
+		snprintf( outPath, sizeof( outPath ), "./%s", name );
 	}
 
 	ConvertModel( argv[ 1 ], outPath );
@@ -154,7 +154,7 @@ static void ConvertModelCallback( const char *path, void *userData ) {
 	snprintf( name, ns - es, "%s", fn );
 
 	char outPath[ PL_SYSTEM_MAX_PATH ];
-	snprintf( outPath, sizeof( outPath ), "%s%s.smd", outDir, name );
+	snprintf( outPath, sizeof( outPath ), "%s%s", outDir, name );
 
 	printf( "Converting %s to %s\n", path, outPath );
 
@@ -299,11 +299,11 @@ int main( int argc, char **argv ) {
 	PlRegisterConsoleCommand( "exit", "Exit the application.", 0, Cmd_Exit );
 	PlRegisterConsoleCommand( "quit", "Exit the application.", 0, Cmd_Exit );
 	PlRegisterConsoleCommand( "mdlconv",
-	                          "Convert the specified image. 'mdlconv ./model.mdl [./out.mdl]'",
+	                          "Convert the specified model. 'mdlconv ./model.mdl [./out.mdl]'",
 	                          -1, Cmd_ConvertModel );
 	PlRegisterConsoleCommand( "mdlconvdir",
-	                          "Bulk convert images.",
-	                          1, Cmd_BulkConvertModel );
+	                          "Bulk convert models.",
+	                          -1, Cmd_BulkConvertModel );
 	PlRegisterConsoleCommand( "imgconv",
 	                          "Convert the given image. 'img_convert ./image.bmp [./out.png]'",
 	                          -1, Cmd_IMGConvert );
