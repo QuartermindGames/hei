@@ -124,17 +124,19 @@ static ASCFChunkIndex *SeekChunk( PLFile *file, const ASCFHeader *header, unsign
 /////////////////////////////////////////////////////////////////////
 // Below is the actual MDX loader itself...
 
-#define MAX_GROUPS 16
+typedef char MDXSkinName[ 64 ];
+
+#define MDX_MAX_GROUPS 16
 
 typedef struct MDXFrameInfo {
-	PLVector3 scales[ MAX_GROUPS ];
-	PLVector3 translations[ MAX_GROUPS ];
-	PLVector3 volumes[ 2 ][ MAX_GROUPS ];
+	PLVector3 scales[ MDX_MAX_GROUPS ];
+	PLVector3 translations[ MDX_MAX_GROUPS ];
+	PLVector3 volumes[ 2 ][ MDX_MAX_GROUPS ];
 } MDXFrameInfo;
-static MDXFrameInfo *ParseFrameInfo( PLFile *file, MDXFrameInfo *out ) {
+static MDXFrameInfo *ParseMDXFrameInfo( PLFile *file, MDXFrameInfo *out ) {
 	bool status;
 
-	for ( uint8_t i = 0; i < MAX_GROUPS; ++i ) {
+	for ( uint8_t i = 0; i < MDX_MAX_GROUPS; ++i ) {
 		out->scales[ i ].x = PlReadFloat32( file, false, &status );
 		out->scales[ i ].y = PlReadFloat32( file, false, &status );
 		out->scales[ i ].z = PlReadFloat32( file, false, &status );
@@ -143,7 +145,7 @@ static MDXFrameInfo *ParseFrameInfo( PLFile *file, MDXFrameInfo *out ) {
 		return NULL;
 	}
 
-	for ( uint8_t i = 0; i < MAX_GROUPS; ++i ) {
+	for ( uint8_t i = 0; i < MDX_MAX_GROUPS; ++i ) {
 		out->translations[ i ].x = PlReadFloat32( file, false, &status );
 		out->translations[ i ].y = PlReadFloat32( file, false, &status );
 		out->translations[ i ].z = PlReadFloat32( file, false, &status );
@@ -153,7 +155,7 @@ static MDXFrameInfo *ParseFrameInfo( PLFile *file, MDXFrameInfo *out ) {
 	}
 
 	for ( uint8_t i = 0; i < 2; ++i ) {
-		for ( uint8_t j = 0; j < MAX_GROUPS; ++j ) {
+		for ( uint8_t j = 0; j < MDX_MAX_GROUPS; ++j ) {
 			out->volumes[ i ][ j ].x = PlReadFloat32( file, false, &status );
 			out->volumes[ i ][ j ].y = PlReadFloat32( file, false, &status );
 			out->volumes[ i ][ j ].z = PlReadFloat32( file, false, &status );
@@ -166,9 +168,9 @@ static MDXFrameInfo *ParseFrameInfo( PLFile *file, MDXFrameInfo *out ) {
 	return out;
 }
 
-static PLGMesh *ParseReferenceFrame( PLFile *file, const ASCFChunkIndex *chunkIndex ) {
+static PLGMesh *ParseMDXReferenceChunk( PLFile *file, const ASCFChunkIndex *chunkIndex, PLMemoryGroup *memoryGroup ) {
 	MDXFrameInfo frameInfo;
-	if ( ParseFrameInfo( file, &frameInfo ) == NULL ) {
+	if ( ParseMDXFrameInfo( file, &frameInfo ) == NULL ) {
 		return NULL;
 	}
 
@@ -185,8 +187,6 @@ static PLGMesh *ParseReferenceFrame( PLFile *file, const ASCFChunkIndex *chunkIn
 		PlReportErrorF( PL_RESULT_FILEERR, "invalid triangles" );
 		return NULL;
 	}
-
-	PLMemoryGroup *memoryGroup = PlCreateMemoryGroup();
 
 	// load in the vertex data
 	typedef struct MDXVertex {
@@ -218,6 +218,53 @@ static PLGMesh *ParseReferenceFrame( PLFile *file, const ASCFChunkIndex *chunkIn
 		stCoords[ i ].t = PlReadInt16( file, false, NULL );
 	}
 
+	uint8_t *skins = PL_GNEW_( memoryGroup, uint8_t, numTriangles );
+	for ( uint32_t i = 0; i < numTriangles; ++i ) {
+		skins[ i ] = ( uint8_t ) PlReadInt8( file, NULL );
+	}
+
+	return NULL;
+}
+
+static MDXSkinName *ParseMDXSkinChunk( PLFile *file, const ASCFChunkIndex *chunkIndex, PLMemoryGroup *memoryGroup, uint32_t *outSkins ) {
+	PlFileSeek( file, chunkIndex->offset, PL_SEEK_SET );
+	uint32_t numSkins = ( uint32_t ) PlReadInt32( file, false, NULL );
+	MDXSkinName *skins = PL_GNEW_( memoryGroup, MDXSkinName, numSkins );
+	for ( uint32_t i = 0; i < numSkins; ++i ) {
+		PlReadInt32( file, false, NULL );// width
+		PlReadInt32( file, false, NULL );// height
+		PlReadInt32( file, false, NULL );// depth
+		PlReadFile( file, skins[ i ], sizeof( char ), sizeof( MDXSkinName ) );
+	}
+	return skins;
+}
+
+PLMModel *ParseMDXChunks( PLFile *file, const ASCFHeader *header, PLMemoryGroup *memoryGroup ) {
+	// ensure the required chunks are there first
+	ASCFChunkIndex skinChunk;
+	if ( SeekChunk( file, header, 0, PL_MAGIC_TO_NUM( 'S', 'K', 'I', 'N' ), NULL, &skinChunk ) == NULL ) {
+		PlReportErrorF( PL_RESULT_FILEERR, "failed to fetch SKIN chunk: %s", PlGetError() );
+		return NULL;
+	}
+	ASCFChunkIndex triangleChunk;
+	if ( SeekChunk( file, header, 0, PL_MAGIC_TO_NUM( 'T', 'R', 'I', 'S' ), NULL, &triangleChunk ) == NULL ) {
+		PlReportErrorF( PL_RESULT_FILEERR, "failed to fetch TRIS chunk: %s", PlGetError() );
+		return NULL;
+	}
+	ASCFChunkIndex referenceChunk;
+	if ( SeekChunk( file, header, 0, PL_MAGIC_TO_NUM( 'R', 'F', 'R', 'M' ), NULL, &referenceChunk ) == NULL ) {
+		PlReportErrorF( PL_RESULT_FILEERR, "failed to fetch RFRM chunk: %s", PlGetError() );
+		return NULL;
+	}
+
+	// read in the skins
+	uint32_t numSkins;
+	MDXSkinName *skins = ParseMDXSkinChunk( file, &skinChunk, memoryGroup, &numSkins );
+	if ( skins == NULL ) {
+		return NULL;
+	}
+
+	PLGMesh *mesh = PlgCreateMesh( PLG_MESH_TRIANGLES, PLG_DRAW_DYNAMIC, 0, 0 );
 
 }
 
@@ -238,23 +285,9 @@ PLMModel *PlmParseMDX( PLFile *file ) {
 		return NULL;
 	}
 
-	// keys for all the chunks we want in the MDX file
-	static const unsigned int MAGIC_RFRM = PL_MAGIC_TO_NUM( 'R', 'F', 'R', 'M' );
-	//static const unsigned int MAGIC_FSEQ = PL_MAGIC_TO_NUM( 'F', 'S', 'E', 'Q' );
-	//static const unsigned int MAGIC_MPNT = PL_MAGIC_TO_NUM( 'M', 'P', 'N', 'T' );
-	//static const unsigned int MAGIC_SKIN = PL_MAGIC_TO_NUM( 'S', 'K', 'I', 'N' );
+	PLMemoryGroup *memoryGroup = PlCreateMemoryGroup();
+	PLMModel *model = ParseMDXChunks( file, &header, memoryGroup );
+	PlDestroyMemoryGroup( memoryGroup );
 
-	// fetch the reference frame (which has geo data)
-	ASCFChunkIndex chunkIndex;
-	if ( SeekChunk( file, &header, 0, MAGIC_RFRM, NULL, &chunkIndex ) == NULL ) {
-		PlReportErrorF( PL_RESULT_FILEERR, "failed to fetch RFRM chunk: %s", PlGetError() );
-		return NULL;
-	}
-	// and now parse n load it into memory
-	PLGMesh *mesh = ParseReferenceFrame( file, &chunkIndex );
-	if ( mesh == NULL ) {
-		return NULL;
-	}
-
-	return NULL;
+	return model;
 }
