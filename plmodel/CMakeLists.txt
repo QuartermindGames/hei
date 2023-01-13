@@ -27,6 +27,7 @@ option(PLM_COMPILE_STATIC "Compile as static library" ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 set(PLM_LOADER_SOURCE_FILES
+        loaders/plm_loader_gma.c
         loaders/plm_loader_mdx.c)
 
 file(GLOB PLM_SOURCE_FILES

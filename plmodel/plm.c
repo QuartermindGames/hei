@@ -1,26 +1,5 @@
-/*
-MIT License
-
-Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+// SPDX-License-Identifier: MIT
+// Copyright © 2021-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "plm_private.h"
 
@@ -32,6 +11,7 @@ typedef struct ModelLoader {
 	PLMModel *( *ParseFunction )( PLFile *file );
 } ModelLoader;
 
+//TODO: switch this over to use a hash table by extension
 #define MAX_OBJECT_INTERFACES 512
 static ModelLoader model_interfaces[ MAX_OBJECT_INTERFACES ];
 static unsigned int num_model_loaders = 0;
@@ -81,36 +61,52 @@ void PlmGenerateModelBounds( PLMModel *model ) {
 	model->bounds = b1;
 }
 
+/**
+ * Attempts to write the model to the destination. If MODEL_OUTPUT_DEFAULT is
+ * specified then it will choose the appropriate output format based on the
+ * type of model.
+ */
 bool PlmWriteModel( const char *path, PLMModel *model, PLMModelOutputType type ) {
 	if ( path == NULL || *path == '\0' ) {
 		PlReportBasicError( PL_RESULT_FILEPATH );
 		return false;
 	}
 
+	// if the default, automatically choose based on type
 	if ( type == PLM_MODEL_OUTPUT_DEFAULT ) {
-		const char *ext = PlGetFileExtension( path );
-		if ( ext == NULL ) {
-			PlReportErrorF( PL_RESULT_FILEPATH, "no extension for file" );
-			return false;
+		type = ( model->type == PLM_MODELTYPE_SKELETAL ) ? PLM_MODEL_OUTPUT_SMD : PLM_MODEL_OUTPUT_OBJ;
+	}
+
+	PLPath tmp;
+	if ( *PlGetFileExtension( path ) == '\0' ) {
+		const char *extension = NULL;
+		switch ( type ) {
+			case PLM_MODEL_OUTPUT_OBJ:
+				extension = ".obj";
+				break;
+			case PLM_MODEL_OUTPUT_SMD:
+				extension = ".smd";
+				break;
+			default:
+				break;
 		}
 
-		if ( strcmp( ext, "smd" ) == 0 ) {
-			return PlmWriteSmdModel( model, path );
-		} else if ( strcmp( ext, "obj" ) == 0 ) {
-			return PlmWriteObjModel( model, path );
+		if ( extension != NULL ) {
+			snprintf( tmp, sizeof( tmp ), "%s%s", path, extension );
 		}
-
-		PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported output type for %s (%u)", path, type );
-		return false;
+		path = tmp;
 	}
 
 	switch ( type ) {
 		case PLM_MODEL_OUTPUT_SMD:
 			return PlmWriteSmdModel( model, path );
+		case PLM_MODEL_OUTPUT_OBJ:
+			return PlmWriteObjModel( model, path );
 		default:
-			PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported output type for %s (%u)", path, type );
-			return false;
+			break;
 	}
+
+	return false;
 }
 
 void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char *path ), PLMModel *( *ParseFunction )( PLFile *file ) ) {
@@ -139,6 +135,7 @@ void PlmRegisterStandardModelLoaders( unsigned int flags ) {
 	        { PLM_MODEL_FILEFORMAT_OBJ,    "obj", PlmLoadObjModel,     NULL       },
 	        { PLM_MODEL_FILEFORMAT_CPJ,    "cpj", PlmLoadCpjModel,     NULL       },
 	        { PLM_MODEL_FILEFORMAT_MDX,    "mdx", NULL,                PlmParseMDX},
+	        { PLM_MODEL_FILEFORMAT_GMA,    "gma", NULL,                PlmParseGMA},
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
@@ -158,7 +155,7 @@ void PlmClearModelLoaders( void ) {
 PLMModel *PlmLoadModel( const char *path ) {
 	// preferred route, we load in the file and hand it over to a parse callback -
 	// this will be *faster* once we get rid of the LoadFunction method as we'll
-	// then only need to load the model in once!
+	// then only need to fetch the file once!
 	PLFile *file = PlOpenFile( path, false );
 	if ( file == NULL ) {
 		return NULL;
@@ -241,6 +238,11 @@ PLMModel *PlmParseModel( PLFile *file ) {
 }
 
 static PLMModel *CreateModel( PLMModelType type, PLGMesh **meshes, unsigned int numMeshes ) {
+	if ( numMeshes >= PLM_MODEL_MAX_MESHES ) {
+		PlReportErrorF( PL_RESULT_MEMORY_EOA, "invalid number of meshes (%u >= %u)", numMeshes, PLM_MODEL_MAX_MESHES );
+		return NULL;
+	}
+
 	PLMModel *model = PlMAllocA( sizeof( PLMModel ) );
 	if ( model == NULL ) {
 		return NULL;
@@ -248,7 +250,10 @@ static PLMModel *CreateModel( PLMModelType type, PLGMesh **meshes, unsigned int 
 
 	model->modelMatrix = PlMatrix4Identity();
 	model->type = type;
-	model->meshes = meshes;
+
+	for ( unsigned int i = 0; i < numMeshes; ++i ) {
+		model->meshes[ i ] = meshes[ i ];
+	}
 	model->numMeshes = numMeshes;
 
 	return model;
@@ -274,6 +279,32 @@ PLMModel *PlmCreateBasicStaticModel( PLGMesh *mesh ) {
 PLMModel *PlmCreateStaticModel( PLGMesh **meshes, unsigned int numMeshes ) {
 	return CreateModel( PLM_MODELTYPE_STATIC, meshes, numMeshes );
 }
+
+//////////////////////////////////////////////////////////////////
+// Vertex animation
+
+PLMModel *PlmCreateVertexModel( PLGMesh **meshes, unsigned int numMeshes, unsigned int numFrames, unsigned int numAnimations ) {
+	PLMModel *model = CreateModel( PLM_MODELTYPE_VERTEX, meshes, numMeshes );
+	if ( model == NULL ) {
+		return NULL;
+	}
+
+	model->internal.vertex_data.numFrames = numFrames;
+	model->internal.vertex_data.frames = PL_NEW_( PLMVertexAnimationFrame, model->internal.vertex_data.numFrames );
+	model->internal.vertex_data.numAnimations = numAnimations;
+	model->internal.vertex_data.animations = PL_NEW_( PLMVertexAnimation, model->internal.vertex_data.numAnimations );
+	return model;
+}
+
+PLMVertexAnimationFrame *PlmGetVertexAnimationFrames( const PLMModel *model, unsigned int *numFrames ) {
+	if ( model->type != PLM_MODELTYPE_VERTEX ) {
+		return NULL;
+	}
+	*numFrames = model->internal.vertex_data.numFrames;
+	return model->internal.vertex_data.frames;
+}
+
+//////////////////////////////////////////////////////////////////
 
 static PLMModel *CreateSkeletalModel( PLMModel *model, PLMBone *bones, unsigned int numBones, PLMBoneWeight *weights, unsigned int numWeights ) {
 	model->internal.skeletal_data.bones = bones;
@@ -307,7 +338,6 @@ void PlmDestroyModel( PLMModel *model ) {
 		PlgDestroyMesh( model->meshes[ i ] );
 	}
 
-	PlFree( model->meshes );
 	PlFree( model->materials );
 
 	if ( model->type == PLM_MODELTYPE_SKELETAL ) {
@@ -330,6 +360,7 @@ void PlmDrawModel( PLMModel *model ) {
 
 		PlgSetTexture( model->meshes[ i ]->texture, 0 );
 
+		//TODO: use user provided matrix
 		PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", &model->modelMatrix, true );
 
 		PlgUploadMesh( model->meshes[ i ] );
