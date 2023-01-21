@@ -151,19 +151,19 @@ FUNC_TEST_END()
 
 FUNC_TEST( pl_filesystem ) {
 	PLPath tmp;
-	PlSetPath( "testing123", tmp, true );
+	PlSetPath( tmp, "testing123", true );
 	if ( strcmp( tmp, "testing123" ) != 0 ) {
 		printf( "Failed to set path!\n" );
 		return TEST_RETURN_FAILURE;
 	}
 
-	PlAppendPath( "_again.txt", tmp, true );
+	PlAppendPath( tmp, "_again.txt", true );
 	if ( strcmp( tmp, "testing123_again.txt" ) != 0 ) {
 		printf( "Failed to append path!\n" );
 		return TEST_RETURN_FAILURE;
 	}
 
-	PlPrefixPath( "im_", tmp, true );
+	PlPrefixPath( tmp, "im_", true );
 	if ( strcmp( tmp, "im_testing123_again.txt" ) != 0 ) {
 		printf( "Failed to prefix path!\n" );
 		return TEST_RETURN_FAILURE;

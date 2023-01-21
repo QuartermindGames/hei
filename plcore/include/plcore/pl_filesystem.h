@@ -57,9 +57,9 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-const char *PlSetPath( const char *src, PLPath dst, bool truncate );
-const char *PlAppendPath( const char *src, PLPath dst, bool truncate );
-const char *PlPrefixPath( const char *src, PLPath dst, bool truncate );
+const char *PlSetPath( PLPath dst, const char *src, bool truncate );
+const char *PlAppendPath( PLPath dst, const char *src, bool truncate );
+const char *PlPrefixPath( PLPath dst, const char *src, bool truncate );
 
 void PlNormalizePath( char *path, size_t length );
 
