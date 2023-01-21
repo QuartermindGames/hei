@@ -81,6 +81,37 @@ static int pl_fseek( FILE *file, PLFileOffset off, int wence ) {
 
 /*	File System	*/
 
+const char *PlSetPath( const char *src, PLPath dst, bool truncate ) {
+	if ( !truncate && ( strlen( src ) >= sizeof( PLPath ) ) ) {
+		PlReportErrorF( PL_RESULT_MEMORY_EOA, "source path is too long" );
+		return NULL;
+	}
+	strncpy( dst, src, sizeof( PLPath ) - 1 );
+	return dst;
+}
+
+const char *PlAppendPath( const char *src, PLPath dst, bool truncate ) {
+	size_t as = strlen( dst );
+	if ( !truncate && ( ( as + strlen( src ) ) >= sizeof( PLPath ) ) ) {
+		PlReportErrorF( PL_RESULT_MEMORY_EOA, "source path is too long" );
+		return NULL;
+	}
+	strncpy( &dst[ as ], src, sizeof( PLPath ) - ( as - 1 ) );
+	return dst;
+}
+
+const char *PlPrefixPath( const char *src, PLPath dst, bool truncate ) {
+	size_t as = strlen( dst );
+	size_t bs = strlen( src );
+	if ( !truncate && ( ( as + bs ) >= sizeof( PLPath ) ) ) {
+		PlReportErrorF( PL_RESULT_MEMORY_EOA, "source path is too long" );
+		return NULL;
+	}
+	memmove( &dst[ bs ], dst, as );
+	strncpy( dst, src, bs );
+	return dst;
+}
+
 void PlNormalizePath( char *path, size_t length ) {
 	for ( size_t i = 0; i < length; ++i ) {
 		if ( path[ i ] == '\0' ) {

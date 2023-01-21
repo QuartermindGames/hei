@@ -57,6 +57,10 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
+const char *PlSetPath( const char *src, PLPath dst, bool truncate );
+const char *PlAppendPath( const char *src, PLPath dst, bool truncate );
+const char *PlPrefixPath( const char *src, PLPath dst, bool truncate );
+
 void PlNormalizePath( char *path, size_t length );
 
 PL_EXTERN char *PlGetUserName( char *out, size_t n );

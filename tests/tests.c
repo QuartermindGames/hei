@@ -28,6 +28,7 @@ For more information, please refer to <http://unlicense.org>
 #include <plcore/pl.h>
 #include <plcore/pl_console.h>
 #include <plcore/pl_array_vector.h>
+#include <plcore/pl_filesystem.h>
 
 enum {
 	TEST_RETURN_SUCCESS,
@@ -145,6 +146,28 @@ FUNC_TEST( pl_array_vector ) {
 	}
 
 	PlDestroyVectorArray( vec );
+}
+FUNC_TEST_END()
+
+FUNC_TEST( pl_filesystem ) {
+	PLPath tmp;
+	PlSetPath( "testing123", tmp, true );
+	if ( strcmp( tmp, "testing123" ) != 0 ) {
+		printf( "Failed to set path!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+
+	PlAppendPath( "_again.txt", tmp, true );
+	if ( strcmp( tmp, "testing123_again.txt" ) != 0 ) {
+		printf( "Failed to append path!\n" );
+		return TEST_RETURN_FAILURE;
+	}
+
+	PlPrefixPath( "im_", tmp, true );
+	if ( strcmp( tmp, "im_testing123_again.txt" ) != 0 ) {
+		printf( "Failed to prefix path!\n" );
+		return TEST_RETURN_FAILURE;
+	}
 }
 FUNC_TEST_END()
 
@@ -428,6 +451,7 @@ int main( int argc, char **argv ) {
 	}
 
 	CALL_FUNC_TEST( pl_array_vector )
+	CALL_FUNC_TEST( pl_filesystem )
 
 	CALL_FUNC_TEST( RegisterConsoleCommand )
 	CALL_FUNC_TEST( GetConsoleCommands )
