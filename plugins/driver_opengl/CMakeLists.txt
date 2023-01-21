@@ -24,27 +24,18 @@ SOFTWARE.
 
 project(pl_gl_driver)
 
+set(GLEW_SOURCE
+        3rdparty/glew-2.2.0/src/glew.c)
+
 add_library(
         pl_gl_driver SHARED
+        ${GLEW_SOURCE}
         opengl.c
         plugin.c
         plugin.h)
 
-function(build_glew)
-    set(BUILD_UTILS OFF CACHE BOOL "utilities")
-    add_subdirectory(3rdparty/glew-2.2.0/build/cmake/)
-endfunction()
-
-if (WIN32 OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    build_glew()
-    target_link_libraries(pl_gl_driver glew_s)
-    target_include_directories(pl_gl_driver PRIVATE
-            3rdparty/glew-2.2.0/include/)
-else ()
-    target_link_libraries(pl_gl_driver GLEW GL)
-endif ()
-
 target_include_directories(pl_gl_driver PRIVATE
+        3rdparty/glew-2.2.0/include/
         ../../plcore/include/
         ../../plgraphics/include/
         )

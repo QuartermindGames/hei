@@ -1480,6 +1480,7 @@ static void CacheShaderProgram( PLGShaderProgram *program ) {
 
 static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 	if ( !XGL_VERSION( 2, 0 ) ) {
+		gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, PL_FUNCTION, "unsupported" );
 		return;
 	}
 
@@ -1495,9 +1496,10 @@ static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 			XGL_CALL( glGetProgramInfoLog( program->internal.id, s_length, NULL, log ) );
 			XGL_LOG( " LINK ERROR:\n%s\n", log );
 			gInterface->core->Free( log );
-			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, "%s", log );
+			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, PL_FUNCTION, log );
 		} else {
 			XGL_LOG( " UNKNOWN LINK ERROR!\n" );
+			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, PL_FUNCTION, "unknown error" );
 		}
 
 		return;
