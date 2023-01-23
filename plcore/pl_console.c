@@ -30,7 +30,18 @@ static PLConsoleCommand *PlGetConsoleCommand( const char *name ) {
 		return NULL;
 	}
 
-	return ( PLConsoleCommand * ) PlLookupHashTableUserData( commandHashes, name, strlen( name ) );
+	// convert it so it's case insensitive here...
+	size_t s = strlen( name );
+	char *tmp = PL_NEW_( char, s + 1 );
+	for ( unsigned int i = 0; i < s; ++i ) {
+		tmp[ i ] = ( char ) tolower( name[ i ] );
+	}
+
+	PLConsoleCommand *command = ( PLConsoleCommand * ) PlLookupHashTableUserData( commandHashes, tmp, s );
+
+	PL_DELETE( tmp );
+
+	return command;
 }
 
 void PlRegisterConsoleCommand( const char *name, const char *description, int args, void ( *CallbackFunction )( unsigned int argc, char *argv[] ) ) {
@@ -68,6 +79,7 @@ void PlRegisterConsoleCommand( const char *name, const char *description, int ar
 		size_t s = strlen( name );
 		cmd->name = PL_NEW_( char, s + 1 );
 		strncpy( cmd->name, name, s );
+		pl_strtolower( cmd->name );
 
 		PlInsertHashTableNode( commandHashes, cmd->name, s, cmd );
 
@@ -129,6 +141,7 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *desc
 		size_t s = strlen( name );
 		out->name = PL_NEW_( char, s + 1 );
 		strncpy( out->name, name, s );
+		pl_strtolower( out->name );
 
 		PlInsertHashTableNode( variableHashes, out->name, s, out );
 
@@ -164,7 +177,18 @@ PLConsoleVariable *PlGetConsoleVariable( const char *name ) {
 		return NULL;
 	}
 
-	return ( PLConsoleVariable * ) PlLookupHashTableUserData( variableHashes, name, strlen( name ) );
+	// convert it so it's case insensitive here...
+	size_t s = strlen( name );
+	char *tmp = PL_NEW_( char, s + 1 );
+	for ( unsigned int i = 0; i < s; ++i ) {
+		tmp[ i ] = ( char ) tolower( name[ i ] );
+	}
+
+	PLConsoleVariable *var = ( PLConsoleVariable * ) PlLookupHashTableUserData( variableHashes, tmp, s );
+
+	PL_DELETE( tmp );
+
+	return var;
 }
 
 const char *PlGetConsoleVariableValue( const char *name ) {
