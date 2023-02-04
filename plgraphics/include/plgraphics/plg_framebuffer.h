@@ -47,6 +47,8 @@ enum {
 	PLG_DEPTHBUFFER_ENABLE,
 };
 
+#if !defined( PL_COMPILE_PLUGIN )
+
 PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned int flags );
 void PlgDestroyFrameBuffer( PLGFrameBuffer *buffer );
 void PlgBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget target_binding );
@@ -59,5 +61,7 @@ void PlgGetFrameBufferResolution( const PLGFrameBuffer *buffer, unsigned int *wi
 void PlgSetClearColour( PLColour rgba );
 void PlgClearBuffers( unsigned int buffers );
 void PlgSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height );
+
+#endif
 
 PL_EXTERN_C_END

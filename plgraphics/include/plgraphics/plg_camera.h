@@ -66,6 +66,8 @@ typedef struct PLGCamera {
 
 PL_EXTERN_C
 
+#if !defined( PL_COMPILE_PLUGIN )
+
 PLGCamera *PlgCreateCamera( void );
 void PlgDestroyCamera( PLGCamera *camera );
 
@@ -90,5 +92,7 @@ PLMatrix4 PlgGetProjectionMatrix( void );
 /***** TEMPORARY CRAP END 	*****/
 
 void PlgLookAtTargetVector( PLGCamera *camera, const PLVector3 *target );
+
+#endif
 
 PL_EXTERN_C_END
