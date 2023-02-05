@@ -269,18 +269,19 @@ int main( int argc, char **argv ) {
 
 	PlmRegisterStandardModelLoaders( PLM_MODEL_FILEFORMAT_ALL );
 
-	PlRegisterPackageLoader( "lst", IStorm_LST_LoadFile );
-	PlRegisterPackageLoader( "pak", Outcast_OPK_LoadFile );
-	PlRegisterPackageLoader( "pak", AITD_PAK_LoadPackage );
-	PlRegisterPackageLoader( "pak", FTactics_PAK_LoadFile );
-	PlRegisterPackageLoader( "vsr", Sentient_VSR_LoadFile );
-	PlRegisterPackageLoader( "hal", Mortyr_HAL_LoadFile );
-	PlRegisterPackageLoader( "rid", Eradicator_RID_LoadFile );
-	PlRegisterPackageLoader( "rim", Eradicator_RID_LoadFile );
-	PlRegisterPackageLoader( "ff", Outwars_FF_LoadFile );
-	PlRegisterPackageLoader( "dat", Angel_DAT_LoadPackage );
-	PlRegisterPackageLoader( "inu", WFear_INU_LoadPackage );
-	PlRegisterPackageLoader( "tre", asa_format_tre_load );
+	PlRegisterPackageLoader( "lst", IStorm_LST_LoadFile, NULL );
+	PlRegisterPackageLoader( "pak", Outcast_OPK_LoadFile, NULL );
+	PlRegisterPackageLoader( "pak", AITD_PAK_LoadPackage, NULL );
+	PlRegisterPackageLoader( "pak", FTactics_PAK_LoadFile, NULL );
+	PlRegisterPackageLoader( "vsr", Sentient_VSR_LoadFile, NULL );
+	PlRegisterPackageLoader( "hal", Mortyr_HAL_LoadFile, NULL );
+	PlRegisterPackageLoader( "rid", Eradicator_RID_LoadFile, NULL );
+	PlRegisterPackageLoader( "rim", Eradicator_RID_LoadFile, NULL );
+	PlRegisterPackageLoader( "ff", Outwars_FF_LoadFile, NULL );
+	PlRegisterPackageLoader( "dat", Angel_DAT_LoadPackage, NULL );
+	PlRegisterPackageLoader( "inu", WFear_INU_LoadPackage, NULL );
+	PlRegisterPackageLoader( "tre", asa_format_tre_load, NULL );
+	PlRegisterPackageLoader( "wad", NULL, PlParseBREWadPackage );
 
 	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
 
