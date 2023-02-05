@@ -39,3 +39,6 @@ target_include_directories(pl_gl_driver PRIVATE
         ../../plcore/include/
         ../../plgraphics/include/
         )
+if (WIN32)
+    target_link_libraries(pl_gl_driver OpenGL32)
+endif ()
