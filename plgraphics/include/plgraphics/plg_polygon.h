@@ -26,29 +26,29 @@ SOFTWARE.
 
 #include <plgraphics/plg.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+PL_EXTERN_C
 
 #define PLG_POLYGON_MAX_SIDES 32
 
-PL_EXTERN PLGPolygon *PlgCreatePolygon( PLGTexture *texture, PLVector2 textureOffset, PLVector2 textureScale, float textureRotation );
-PL_EXTERN void PlgDestroyPolygon( PLGPolygon *polygon );
+#if !defined( PL_COMPILE_PLUGIN )
 
-PL_EXTERN void PlgGeneratePolygonNormals( PLGPolygon *polygon );
+extern PLGPolygon *PlgCreatePolygon( PLGTexture *texture, PLVector2 textureOffset, PLVector2 textureScale, float textureRotation );
+extern void PlgDestroyPolygon( PLGPolygon *polygon );
 
-PL_EXTERN void PlgAddPolygonVertex( PLGPolygon *polygon, const PLGVertex *vertex );
-PL_EXTERN void PlgRemovePolygonVertex( PLGPolygon *polygon, unsigned int vertIndex );
+extern void PlgGeneratePolygonNormals( PLGPolygon *polygon );
 
-PL_EXTERN unsigned int PlgGetNumOfPolygonVertices( const PLGPolygon *polygon );
-PL_EXTERN PLGVertex *PlgGetPolygonVertex( PLGPolygon *polygon, unsigned int vertIndex );
-PL_EXTERN PLGVertex *PlgGetPolygonVertices( PLGPolygon *polygon, unsigned int *numVertices );
-PL_EXTERN PLGTexture *PlgGetPolygonTexture( PLGPolygon *polygon );
-PL_EXTERN PLVector3 PlgGetPolygonFaceNormal( const PLGPolygon *polygon );
-PL_EXTERN unsigned int PlgGetNumOfPolygonTriangles( const PLGPolygon *polygon );
-PL_EXTERN unsigned int *PlgConvertPolygonToTriangles( const PLGPolygon *polygon, unsigned int *numTriangles );
-PL_EXTERN PLGMesh *PlgConvertPolygonToMesh( const PLGPolygon *polygon );
+extern void PlgAddPolygonVertex( PLGPolygon *polygon, const PLGVertex *vertex );
+extern void PlgRemovePolygonVertex( PLGPolygon *polygon, unsigned int vertIndex );
 
-#ifdef __cplusplus
-};
+extern unsigned int PlgGetNumOfPolygonVertices( const PLGPolygon *polygon );
+extern PLGVertex *PlgGetPolygonVertex( PLGPolygon *polygon, unsigned int vertIndex );
+extern PLGVertex *PlgGetPolygonVertices( PLGPolygon *polygon, unsigned int *numVertices );
+extern PLGTexture *PlgGetPolygonTexture( PLGPolygon *polygon );
+extern PLVector3 PlgGetPolygonFaceNormal( const PLGPolygon *polygon );
+extern unsigned int PlgGetNumOfPolygonTriangles( const PLGPolygon *polygon );
+extern unsigned int *PlgConvertPolygonToTriangles( const PLGPolygon *polygon, unsigned int *numTriangles );
+extern PLGMesh *PlgConvertPolygonToMesh( const PLGPolygon *polygon );
+
 #endif
+
+PL_EXTERN_C_END

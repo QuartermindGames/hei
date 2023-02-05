@@ -127,6 +127,8 @@ typedef struct PLMModel {
 
 PL_EXTERN_C
 
+#if !defined( PL_COMPILE_PLUGIN )
+
 PLMModel *PlmCreateStaticModel( PLGMesh **meshes, unsigned int numMeshes );
 PLMModel *PlmCreateBasicStaticModel( PLGMesh *mesh );
 PLMModel *PlmCreateSkeletalModel( PLGMesh **meshes, unsigned int numMeshes, PLMBone *bones, unsigned int numBones, PLMBoneWeight *weights, unsigned int numWeights );
@@ -149,6 +151,8 @@ void PlmDrawModelSkeleton( PLMModel *model );
 void PlmGenerateModelNormals( PLMModel *model, bool perFace );
 void PlmGenerateModelBounds( PLMModel *model );
 
+#endif
+
 enum {
 	PLM_MODEL_FILEFORMAT_ALL = 0,
 
@@ -159,9 +163,13 @@ enum {
 	PL_BITFLAG( PLM_MODEL_FILEFORMAT_CPJ, 4 ),
 };
 
+#if !defined( PL_COMPILE_PLUGIN )
+
 void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char *path ) );
 void PlmRegisterStandardModelLoaders( unsigned int flags );
 void PlmClearModelLoaders( void );
+
+#endif
 
 typedef enum PLModelOutputType {
 	PLM_MODEL_OUTPUT_DEFAULT,
@@ -169,6 +177,11 @@ typedef enum PLModelOutputType {
 
 	PLM_MAX_MODEL_OUTPUT_FORMATS
 } PLMModelOutputType;
+
+#if !defined( PL_COMPILE_PLUGIN )
+
 bool PlmWriteModel( const char *path, PLMModel *model, PLMModelOutputType type );
+
+#endif
 
 PL_EXTERN_C_END

@@ -30,7 +30,18 @@ static PLConsoleCommand *PlGetConsoleCommand( const char *name ) {
 		return NULL;
 	}
 
-	return ( PLConsoleCommand * ) PlLookupHashTableUserData( commandHashes, name, strlen( name ) );
+	// convert it so it's case insensitive here...
+	size_t s = strlen( name );
+	char *tmp = PL_NEW_( char, s + 1 );
+	for ( unsigned int i = 0; i < s; ++i ) {
+		tmp[ i ] = ( char ) tolower( name[ i ] );
+	}
+
+	PLConsoleCommand *command = ( PLConsoleCommand * ) PlLookupHashTableUserData( commandHashes, tmp, s );
+
+	PL_DELETE( tmp );
+
+	return command;
 }
 
 void PlRegisterConsoleCommand( const char *name, const char *description, int args, void ( *CallbackFunction )( unsigned int argc, char *argv[] ) ) {
@@ -68,6 +79,7 @@ void PlRegisterConsoleCommand( const char *name, const char *description, int ar
 		size_t s = strlen( name );
 		cmd->name = PL_NEW_( char, s + 1 );
 		strncpy( cmd->name, name, s );
+		pl_strtolower( cmd->name );
 
 		PlInsertHashTableNode( commandHashes, cmd->name, s, cmd );
 
@@ -129,6 +141,7 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *desc
 		size_t s = strlen( name );
 		out->name = PL_NEW_( char, s + 1 );
 		strncpy( out->name, name, s );
+		pl_strtolower( out->name );
 
 		PlInsertHashTableNode( variableHashes, out->name, s, out );
 
@@ -164,7 +177,18 @@ PLConsoleVariable *PlGetConsoleVariable( const char *name ) {
 		return NULL;
 	}
 
-	return ( PLConsoleVariable * ) PlLookupHashTableUserData( variableHashes, name, strlen( name ) );
+	// convert it so it's case insensitive here...
+	size_t s = strlen( name );
+	char *tmp = PL_NEW_( char, s + 1 );
+	for ( unsigned int i = 0; i < s; ++i ) {
+		tmp[ i ] = ( char ) tolower( name[ i ] );
+	}
+
+	PLConsoleVariable *var = ( PLConsoleVariable * ) PlLookupHashTableUserData( variableHashes, tmp, s );
+
+	PL_DELETE( tmp );
+
+	return var;
 }
 
 const char *PlGetConsoleVariableValue( const char *name ) {
@@ -253,6 +277,20 @@ void PlSetConsoleVariableByName( const char *name, const char *value ) {
 /////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE
 
+static void PrintVarDetails( const PLConsoleVariable *var ) {
+	Print( " %-25s : %-5s / %-15s : %-20s\n",
+	       var->name,
+	       var->value,
+	       var->default_value,
+	       var->description != NULL ? var->description : "None" );
+}
+
+static void PrintCmdDetails( const PLConsoleCommand *cmd ) {
+	Print( " %-25s : %-20s\n",
+	       cmd->name,
+	       cmd->description != NULL ? cmd->description : "None" );
+}
+
 IMPLEMENT_COMMAND( pwd ) {
 	PlUnused( argv );
 	PlUnused( argc );
@@ -286,7 +324,7 @@ IMPLEMENT_COMMAND( cmds ) {
 	PlUnused( argv );
 	PlUnused( argc );
 	for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
-		Print( " %-20s : %-20s\n", ( *cmd )->name, ( *cmd )->description != NULL ? ( *cmd )->description : "None" );
+		PrintCmdDetails( ( *cmd ) );
 	}
 	Print( "%zu commands in total\n", _pl_num_commands );
 }
@@ -295,8 +333,7 @@ IMPLEMENT_COMMAND( vars ) {
 	PlUnused( argv );
 	PlUnused( argc );
 	for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
-		Print( " %-20s : %-5s / %-15s : %-20s\n",
-		       ( *var )->name, ( *var )->value, ( *var )->default_value, ( *var )->description != NULL ? ( *var )->description : "None" );
+		PrintVarDetails( ( *var ) );
 	}
 	Print( "%zu variables in total\n", _pl_num_variables );
 }
@@ -304,18 +341,40 @@ IMPLEMENT_COMMAND( vars ) {
 IMPLEMENT_COMMAND( help ) {
 	PLConsoleVariable *var = PlGetConsoleVariable( argv[ 1 ] );
 	if ( var != NULL ) {
-		Print( " %-20s : %-5s / %-15s : %-20s\n",
-		       var->name, var->value, var->default_value, var->description != NULL ? var->description : "None" );
+		PrintVarDetails( var );
 		return;
 	}
 
 	PLConsoleCommand *cmd = PlGetConsoleCommand( argv[ 1 ] );
 	if ( cmd != NULL ) {
-		Print( " %-20s : %-20s\n", cmd->name, cmd->description != NULL ? cmd->description : "None" );
+		PrintCmdDetails( cmd );
 		return;
 	}
 
 	Print( "Unknown variable/command, %s!\n", argv[ 1 ] );
+}
+
+/**
+ * Find the specific var/cmd, by name or description.
+ */
+static void find_cmd( PL_UNUSED unsigned int argc, char **argv ) {
+	const char *term = argv[ 1 ];
+	Print( "Variables that match the term \"%s\"\n", term );
+	for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
+		if ( ( strstr( ( *var )->name, term ) == NULL ) && ( ( *var )->description != NULL && strstr( ( *var )->description, term ) == NULL ) ) {
+			continue;
+		}
+
+		PrintVarDetails( ( *var ) );
+	}
+	Print( "Commands that match the term \"%s\"\n", term );
+	for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
+		if ( ( strstr( ( *cmd )->name, term ) == NULL ) && ( ( *cmd )->description != NULL && strstr( ( *cmd )->description, term ) == NULL ) ) {
+			continue;
+		}
+
+		PrintCmdDetails( ( *cmd ) );
+	}
 }
 
 //////////////////////////////////////////////
@@ -341,6 +400,7 @@ PLFunctionResult PlInitConsole( void ) {
 	PlRegisterConsoleCommand( "vars", "Prints a list of available variables.", 0, vars_cmd );
 	PlRegisterConsoleCommand( "pwd", "Prints out the current working directory.", 0, pwd_cmd );
 	PlRegisterConsoleCommand( "echo", "Echos the given input to the console output.", 1, echo_cmd );
+	PlRegisterConsoleCommand( "find", "Find the specific var/cmd, by name or description.", 1, find_cmd );
 
 	/* initialize our internal log levels here
 	 * as we depend on the console variables being setup first */

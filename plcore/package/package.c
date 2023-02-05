@@ -237,6 +237,7 @@ void PlExtractPackage( PLPackage *package, const char *path ) {
 typedef struct PLPackageLoader {
 	const char *ext;
 	PLPackage *( *LoadFunction )( const char *path );
+	PLPackage *( *ParseFunction )( PLFile *file );
 } PLPackageLoader;
 
 static PLPackageLoader package_loaders[ MAX_OBJECT_INTERFACES ];
@@ -266,31 +267,32 @@ void PlClearPackageLoaders( void ) {
 	num_package_loaders = 0;
 }
 
-void PlRegisterPackageLoader( const char *ext, PLPackage *( *LoadFunction )( const char *path ) ) {
+void PlRegisterPackageLoader( const char *ext, PLPackage *( *LoadFunction )( const char * ), PLPackage *( *ParseFunction )( PLFile * ) ) {
 	package_loaders[ num_package_loaders ].ext = ext;
 	package_loaders[ num_package_loaders ].LoadFunction = LoadFunction;
+	package_loaders[ num_package_loaders ].ParseFunction = ParseFunction;
 	num_package_loaders++;
 }
 
 void PlRegisterStandardPackageLoaders( void ) {
-	PlRegisterPackageLoader( "wad", PlLoadIWADPackage_ );
-	PlRegisterPackageLoader( "wad", PlLoadWAD2Package_ );
-	PlRegisterPackageLoader( "pak", PlLoadPAKPackage_ );
-	PlRegisterPackageLoader( "vpk", PlLoadVPKPackage_ );
+	PlRegisterPackageLoader( "wad", PlLoadIWADPackage_, NULL );
+	PlRegisterPackageLoader( "wad", PlLoadWAD2Package_, NULL );
+	PlRegisterPackageLoader( "pak", PlLoadPAKPackage_, NULL );
+	PlRegisterPackageLoader( "vpk", PlLoadVPKPackage_, NULL );
 
 	/* hogs of war */
-	PlRegisterPackageLoader( "mad", PlLoadMadPackage );
-	PlRegisterPackageLoader( "mtd", PlLoadMadPackage );
+	PlRegisterPackageLoader( "mad", PlLoadMadPackage, NULL );
+	PlRegisterPackageLoader( "mtd", PlLoadMadPackage, NULL );
 
 	/* starfox adventures */
-	PlRegisterPackageLoader( "tab", PlLoadTabPackage );
+	PlRegisterPackageLoader( "tab", PlLoadTabPackage, NULL );
 
-	PlRegisterPackageLoader( "zip", PlLoadZipPackage );
-	PlRegisterPackageLoader( "pak", PlLoadZipPackage );
-	PlRegisterPackageLoader( "pk3", PlLoadZipPackage );
-	PlRegisterPackageLoader( "pk4", PlLoadZipPackage );
+	PlRegisterPackageLoader( "zip", PlLoadZipPackage, NULL );
+	PlRegisterPackageLoader( "pak", PlLoadZipPackage, NULL );
+	PlRegisterPackageLoader( "pk3", PlLoadZipPackage, NULL );
+	PlRegisterPackageLoader( "pk4", PlLoadZipPackage, NULL );
 
-	PlRegisterPackageLoader( "dfs", PlLoadDFSPackage );
+	PlRegisterPackageLoader( "dfs", PlLoadDFSPackage, NULL );
 }
 
 PLPackage *PlLoadPackage( const char *path ) {
