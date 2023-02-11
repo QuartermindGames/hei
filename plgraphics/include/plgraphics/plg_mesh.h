@@ -130,7 +130,7 @@ void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, un
 PLVector3 PlgGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3 c );
 
 /* immediate mode style api */
-void PlgImmBegin( PLGMeshPrimitive primitive );
+PLGMesh *PlgImmBegin( PLGMeshPrimitive primitive );
 unsigned int PlgImmPushVertex( float x, float y, float z );
 void PlgImmNormal( float x, float y, float z );
 void PlgImmColour( uint8_t r, uint8_t g, uint8_t b, uint8_t a );

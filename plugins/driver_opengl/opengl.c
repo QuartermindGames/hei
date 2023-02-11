@@ -796,27 +796,27 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 
 	if ( program->internal.v_position != -1 ) {
 		XGL_CALL( glEnableVertexAttribArray( program->internal.v_position ) );
-		XGL_CALL( glVertexAttribPointer( program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, position ) ) );
+		XGL_CALL( glVertexAttribPointer( program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, position ) ) );
 	}
 	if ( program->internal.v_normal != -1 ) {
 		XGL_CALL( glEnableVertexAttribArray( program->internal.v_normal ) );
-		XGL_CALL( glVertexAttribPointer( program->internal.v_normal, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, normal ) ) );
+		XGL_CALL( glVertexAttribPointer( program->internal.v_normal, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, normal ) ) );
 	}
 	if ( program->internal.v_uv != -1 ) {
 		XGL_CALL( glEnableVertexAttribArray( program->internal.v_uv ) );
-		XGL_CALL( glVertexAttribPointer( program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, st ) ) );
+		XGL_CALL( glVertexAttribPointer( program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, st ) ) );
 	}
 	if ( program->internal.v_colour != -1 ) {
 		XGL_CALL( glEnableVertexAttribArray( program->internal.v_colour ) );
-		XGL_CALL( glVertexAttribPointer( program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, colour ) ) );
+		XGL_CALL( glVertexAttribPointer( program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, colour ) ) );
 	}
 	if ( program->internal.v_tangent != -1 ) {
 		XGL_CALL( glEnableVertexAttribArray( program->internal.v_tangent ) );
-		XGL_CALL( glVertexAttribPointer( program->internal.v_tangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, tangent ) ) );
+		XGL_CALL( glVertexAttribPointer( program->internal.v_tangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, tangent ) ) );
 	}
 	if ( program->internal.v_bitangent != -1 ) {
 		XGL_CALL( glEnableVertexAttribArray( program->internal.v_bitangent ) );
-		XGL_CALL( glVertexAttribPointer( program->internal.v_bitangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) pl_offsetof( PLGVertex, bitangent ) ) );
+		XGL_CALL( glVertexAttribPointer( program->internal.v_bitangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, bitangent ) ) );
 	}
 
 	//draw
@@ -1300,7 +1300,7 @@ static void GLSetShaderUniformValue( PLGShaderProgram *program, int slot, const 
 }
 
 static void GLSetShaderUniformMatrix4( PLGShaderProgram *program, int slot, PLMatrix4 value, bool transpose ) {
-	PlUnused( program );
+	PL_UNUSEDVAR( program );
 
 	if ( !XGL_VERSION( 2, 0 ) ) {
 		return;
@@ -1589,10 +1589,10 @@ static void MessageCallback(
         GLsizei length,
         const GLchar *message,
         void *param ) {
-	PlUnused( source );
-	PlUnused( id );
-	PlUnused( length );
-	PlUnused( param );
+	PL_UNUSEDVAR( source );
+	PL_UNUSEDVAR( id );
+	PL_UNUSEDVAR( length );
+	PL_UNUSEDVAR( param );
 
 	const char *s_severity;
 	switch ( severity ) {

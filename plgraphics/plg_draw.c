@@ -32,11 +32,12 @@ static PLGMesh *GetInternalMesh( PLGMeshPrimitive primitive ) {
 	return meshes[ primitive ];
 }
 
-void PlgImmBegin( PLGMeshPrimitive primitive ) {
+PLGMesh *PlgImmBegin( PLGMeshPrimitive primitive ) {
 	currentDynamicMesh = GetInternalMesh( primitive );
 	PlgClearMesh( currentDynamicMesh );
 	PlgSetMeshPrimitiveScale( currentDynamicMesh, 1.0f );
 	currentVertex = 0;
+	return currentDynamicMesh;
 }
 
 unsigned int PlgImmPushVertex( float x, float y, float z ) {

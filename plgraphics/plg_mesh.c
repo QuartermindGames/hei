@@ -67,7 +67,7 @@ PLVector3 PlgGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3 c ) {
 }
 
 void PlgGenerateMeshNormals( PLGMesh *mesh, bool perFace ) {
-	plAssert( mesh );
+	PL_ASSERT( mesh );
 
 	PlgGenerateVertexNormals( mesh->vertices, mesh->num_verts, mesh->indices, mesh->num_triangles, perFace );
 }
@@ -165,7 +165,7 @@ PLGMesh *PlgCreateMesh( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsign
 
 PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
                           const unsigned int *indicies, const PLGVertex *vertices ) {
-	plAssert( numVerts );
+	PL_ASSERT( numVerts );
 
 	PLGMesh *mesh = ( PLGMesh * ) PlCAllocA( 1, sizeof( PLGMesh ) );
 	mesh->primitive = primitive;
@@ -248,24 +248,24 @@ void PlgScaleMesh( PLGMesh *mesh, PLVector3 scale ) {
 }
 
 void PlgSetMeshTrianglePosition( PLGMesh *mesh, unsigned int *index, unsigned int x, unsigned int y, unsigned int z ) {
-	plAssert( *index < mesh->maxIndices );
+	PL_ASSERT( *index < mesh->maxIndices );
 	mesh->indices[ ( *index )++ ] = x;
 	mesh->indices[ ( *index )++ ] = y;
 	mesh->indices[ ( *index )++ ] = z;
 }
 
 void PlgSetMeshVertexPosition( PLGMesh *mesh, unsigned int index, PLVector3 vector ) {
-	plAssert( index < mesh->maxVertices );
+	PL_ASSERT( index < mesh->maxVertices );
 	mesh->vertices[ index ].position = vector;
 }
 
 void PlgSetMeshVertexNormal( PLGMesh *mesh, unsigned int index, PLVector3 vector ) {
-	plAssert( index < mesh->maxVertices );
+	PL_ASSERT( index < mesh->maxVertices );
 	mesh->vertices[ index ].normal = vector;
 }
 
 void PlgSetMeshVertexST( PLGMesh *mesh, unsigned int index, float s, float t ) {
-	plAssert( index < mesh->maxVertices );
+	PL_ASSERT( index < mesh->maxVertices );
 	mesh->vertices[ index ].st[ 0 ] = PLVector2( s, t );
 }
 
@@ -282,7 +282,7 @@ void PlgSetMeshVertexSTv( PLGMesh *mesh, uint8_t unit, unsigned int index, unsig
 }
 
 void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, PLColour colour ) {
-	plAssert( index < mesh->maxVertices );
+	PL_ASSERT( index < mesh->maxVertices );
 	mesh->vertices[ index ].colour = colour;
 }
 

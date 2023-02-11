@@ -110,7 +110,7 @@ static PLHashTable *variableHashes = NULL;
 PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void *ptrValue, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive ) {
 	FunctionStart();
 
-	plAssert( _pl_variables );
+	PL_ASSERT( _pl_variables );
 
 	if ( PlGetConsoleVariable( name ) != NULL ) {
 		PlReportErrorF( PL_RESULT_INVALID_PARM1, "variable with name has already been registered" );
@@ -211,7 +211,7 @@ const char *PlGetConsoleVariableDefaultValue( const char *name ) {
 
 // Set console variable, with sanity checks...
 void PlSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
-	plAssert( var );
+	PL_ASSERT( var );
 	switch ( var->type ) {
 		default:
 			PrintWarning( "Unknown variable type %d, failed to set!\n", var->type );
@@ -292,8 +292,8 @@ static void PrintCmdDetails( const PLConsoleCommand *cmd ) {
 }
 
 IMPLEMENT_COMMAND( pwd ) {
-	PlUnused( argv );
-	PlUnused( argc );
+	PL_UNUSEDVAR( argv );
+	PL_UNUSEDVAR( argc );
 	Print( "%s\n", PlGetWorkingDirectory() );
 }
 
@@ -305,14 +305,14 @@ IMPLEMENT_COMMAND( echo ) {
 }
 
 IMPLEMENT_COMMAND( time ) {
-	PlUnused( argv );
-	PlUnused( argc );
+	PL_UNUSEDVAR( argv );
+	PL_UNUSEDVAR( argc );
 	Print( "%s\n", PlGetFormattedTime() );
 }
 
 IMPLEMENT_COMMAND( mem ) {
-	PlUnused( argv );
-	PlUnused( argc );
+	PL_UNUSEDVAR( argv );
+	PL_UNUSEDVAR( argc );
 	/* this intentionally sucks for now... */
 	Print( "System usage:        %llu\n"
 	       "Local/tracked usage: %llu\n",
@@ -321,8 +321,8 @@ IMPLEMENT_COMMAND( mem ) {
 }
 
 IMPLEMENT_COMMAND( cmds ) {
-	PlUnused( argv );
-	PlUnused( argc );
+	PL_UNUSEDVAR( argv );
+	PL_UNUSEDVAR( argc );
 	for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
 		PrintCmdDetails( ( *cmd ) );
 	}
@@ -330,8 +330,8 @@ IMPLEMENT_COMMAND( cmds ) {
 }
 
 IMPLEMENT_COMMAND( vars ) {
-	PlUnused( argv );
-	PlUnused( argc );
+	PL_UNUSEDVAR( argv );
+	PL_UNUSEDVAR( argc );
 	for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
 		PrintVarDetails( ( *var ) );
 	}
