@@ -30,7 +30,6 @@ file(GLOB PLM_SOURCE_FILES
         plm.c
         plm_format_cpj.c
         plm_format_cyclone.c
-        plm_format_dpc.c
         plm_format_hdv.c
         plm_format_obj.c
         plm_format_smd.c

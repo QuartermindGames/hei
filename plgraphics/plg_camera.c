@@ -162,7 +162,7 @@ void PlgSetViewport( int x, int y, int width, int height ) {
 }
 
 void PlgSetupCamera( PLGCamera *camera ) {
-	plAssert( camera );
+	PL_ASSERT( camera );
 
 	switch ( camera->mode ) {
 		case PLG_CAMERA_MODE_PERSPECTIVE: {

@@ -211,8 +211,8 @@ const char *PlgGetShaderCacheLocation( void ) {
 }
 
 void PlgAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stage ) {
-	plAssert( program != NULL );
-	plAssert( stage != NULL );
+	PL_ASSERT( program != NULL );
+	PL_ASSERT( stage != NULL );
 	program->stages[ program->num_stages++ ] = stage;
 	CallGfxFunction( AttachShaderStage, program, stage );
 }

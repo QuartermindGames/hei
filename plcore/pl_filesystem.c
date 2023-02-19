@@ -237,8 +237,8 @@ IMPLEMENT_COMMAND( pkglst ) {
 }
 
 IMPLEMENT_COMMAND( lstmnt ) {
-	PlUnused( argv );
-	PlUnused( argc );
+	PL_UNUSEDVAR( argv );
+	PL_UNUSEDVAR( argc );
 
 	if ( fs_mount_root == NULL ) {
 		Print( "No locations mounted\n" );

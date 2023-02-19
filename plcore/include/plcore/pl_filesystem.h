@@ -120,6 +120,11 @@ PL_EXTERN int16_t PlReadInt16( PLFile *ptr, bool big_endian, bool *status );
 PL_EXTERN int32_t PlReadInt32( PLFile *ptr, bool big_endian, bool *status );
 PL_EXTERN int64_t PlReadInt64( PLFile *ptr, bool big_endian, bool *status );
 
+#	define PL_READUINT8( FILE, STATUS )          ( uint8_t ) PlReadInt8( ( FILE ), ( STATUS ) )
+#	define PL_READUINT16( FILE, ENDIAN, STATUS ) ( uint16_t ) PlReadInt16( ( FILE ), ( ENDIAN ), ( STATUS ) )
+#	define PL_READUINT32( FILE, ENDIAN, STATUS ) ( uint32_t ) PlReadInt32( ( FILE ), ( ENDIAN ), ( STATUS ) )
+#	define PL_READUINT64( FILE, ENDIAN, STATUS ) ( uint64_t ) PlReadInt64( ( FILE ), ( ENDIAN ), ( STATUS ) )
+
 PL_EXTERN float PlReadFloat32( PLFile *ptr, bool big_endian, bool *status );
 PL_EXTERN double PlReadFloat64( PLFile *ptr, bool big_endian, bool *status );
 

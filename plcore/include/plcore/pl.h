@@ -1,8 +1,6 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #pragma once
 
@@ -63,15 +61,10 @@ support.
 
 typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
 
-#if !defined( NDEBUG )
-#	include <assert.h>
+#include <assert.h>
+#define PL_ASSERT( a ) assert( a )//TODO: remove - deprecated
 
-#	define plAssert( a ) assert( a )
-#else
-#	define plAssert( a )
-#endif
-
-#define PlUnused( ... ) ( void ) ( __VA_ARGS__ )
+#define PL_UNUSEDVAR( ... ) ( void ) ( __VA_ARGS__ )
 
 #define PL_ARRAY_ELEMENTS( a )  ( sizeof( a ) / sizeof( *( a ) ) )// Returns the number of elements within an array.
 #define PL_MAX_ARRAY_INDEX( a ) ( int ) ( PL_ARRAY_ELEMENTS( a ) - 1 )
@@ -91,9 +84,9 @@ typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
 #define PL_BITFLAG( A, B ) A = ( 1U << B )
 
 #ifndef offsetof
-#	define pl_offsetof( a, b ) ( ( size_t ) & ( ( ( a * ) 0 )->b ) )
+#	define PL_OFFSETOF( a, b ) ( ( size_t ) & ( ( ( a * ) 0 )->b ) )
 #else
-#	define pl_offsetof( a, b ) offsetof( a, b )
+#	define PL_OFFSETOF( a, b ) offsetof( a, b )
 #endif
 
 typedef enum PLVariableType {

@@ -199,7 +199,7 @@ void PlgSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode ) {
 /////////////////////
 
 bool PlgUploadTextureImage( PLGTexture *texture, const PLImage *upload ) {
-	plAssert( texture );
+	PL_ASSERT( texture );
 
 	texture->w = upload->width;
 	texture->h = upload->height;

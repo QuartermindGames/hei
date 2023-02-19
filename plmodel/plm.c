@@ -264,7 +264,7 @@ void PlmDestroyModel( PLMModel *model ) {
 }
 
 void PlmDrawModel( PLMModel *model ) {
-	plAssert( model );
+	PL_ASSERT( model );
 
 	/* todo: currently only deals with static... */
 

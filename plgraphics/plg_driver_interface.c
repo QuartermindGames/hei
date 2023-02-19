@@ -108,7 +108,7 @@ bool PlgRegisterDriver( const char *path ) {
  * Private callback when scanning for plugins.
  */
 static void RegisterScannedDriver( const char *path, void *unused ) {
-	PlUnused( unused );
+	PL_UNUSEDVAR( unused );
 
 	/* validate it's actually a plugin */
 	size_t length = strlen( path );

@@ -634,7 +634,7 @@ bool PlRegisterPlugin( const char *path ) {
  * Private callback when scanning for plugins.
  */
 static void RegisterScannedPlugin( const char *path, void *unused ) {
-	PlUnused( unused );
+	PL_UNUSEDVAR( unused );
 
 	/* validate it's actually a plugin */
 	size_t length = strlen( path );
