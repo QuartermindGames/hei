@@ -600,7 +600,7 @@ char *PlGetApplicationDataDirectory( const char *app_name, char *out, size_t n )
 		struct passwd *pw = getpwuid( getuid() );
 		home = pw->pw_dir;
 	}
-	snprintf( out, n, "%s/.config/%s/", home, app_name );
+	snprintf( out, n, "%s/.config/%s", home, app_name );
 #else
 	char home[ MAX_PATH ];
 	if ( SUCCEEDED( SHGetFolderPath( NULL, CSIDL_APPDATA, NULL, 0, home ) ) ) {
