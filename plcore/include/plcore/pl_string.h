@@ -8,19 +8,14 @@
 
 PL_EXTERN_C
 
-#define PL_FMT_float  "%f"
-#define PL_FMT_double "%lf"
-#define PL_FMT_int16  "%hd"
-#define PL_FMT_uint16 "%hu"
-#define PL_FMT_int32  "%d"
-#define PL_FMT_uint32 "%u"
-#if defined( __x86_64__ ) && defined( _MSC_VER )
-#	define PL_FMT_int64  "%ld"
-#	define PL_FMT_uint64 "%lu"
-#else
-#	define PL_FMT_int64  "%lld"
-#	define PL_FMT_uint64 "%llu"
-#endif
+#define PL_FMT_float   "%f"
+#define PL_FMT_double  "%lf"
+#define PL_FMT_int16   "%hd"
+#define PL_FMT_uint16  "%hu"
+#define PL_FMT_int32   "%d"
+#define PL_FMT_uint32  "%u"
+#define PL_FMT_int64   "%ld"
+#define PL_FMT_uint64  "%lu"
 #define PL_FMT_hex     "%x"
 #define PL_FMT_string  "%s"
 #define PL_FMT_address "%p"
