@@ -126,12 +126,17 @@ static void RegisterScannedDriver( const char *path, void *unused ) {
 	PlgRegisterDriver( path );
 }
 
-void PlgScanForDrivers( const char *path ) {
-	GfxLog( "Scanning for drivers in \"%s\"\n", path );
-
+/**
+ * Scans for any graphic interfaces under the given
+ * location and then returns the number of results
+ * that were registered successfully.
+ * @param path A path to the directory to scan.
+ * @return The number of interfaces registered successfully.
+ */
+unsigned int PlgScanForDrivers( const char *path ) {
+	unsigned int numDriversBefore = numDrivers;
 	PlScanDirectory( path, ( PL_SYSTEM_LIBRARY_EXTENSION ) + 1, RegisterScannedDriver, false, NULL );
-
-	GfxLog( "Done, %d graphics drivers loaded.\n", numDrivers );
+	return numDrivers - numDriversBefore;
 }
 
 /**

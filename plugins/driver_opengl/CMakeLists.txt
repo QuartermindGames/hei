@@ -41,4 +41,6 @@ target_include_directories(pl_gl_driver PRIVATE
         )
 if (WIN32)
     target_link_libraries(pl_gl_driver OpenGL32)
+else()
+    target_link_libraries(pl_gl_driver GL)
 endif ()
