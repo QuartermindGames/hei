@@ -111,6 +111,7 @@ int PlAddLogLevel( const char *prefix, PLColour colour, bool status );
 void PlRemoveLogLevel( int id );
 void PlSetLogLevelStatus( int id, bool status );
 void PlLogMessage( int id, const char *msg, ... );
+unsigned int PlGetNumLogLevels( void );
 
 #	define PlLogWFunction( ID, FORMAT, ... ) PlLogMessage( ( ID ), "(%s) " FORMAT, PL_FUNCTION, ##__VA_ARGS__ )
 

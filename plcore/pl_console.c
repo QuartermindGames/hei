@@ -559,6 +559,7 @@ typedef struct LogLevel {
 	PLConsoleVariable *var;
 } LogLevel;
 static LogLevel levels[ MAX_LOG_LEVELS ];
+unsigned int numLogLevels = 0;
 
 int LOG_LEVEL_LOW = 0;
 int LOG_LEVEL_MEDIUM = 0;
@@ -641,6 +642,7 @@ int PlAddLogLevel( const char *prefix, PLColour colour, bool status ) {
 	char var[ 32 ];
 	snprintf( var, sizeof( var ), "log.%s", prefix );
 	l->var = PlRegisterConsoleVariable( var, "Console output level.", status ? "1" : "0", PL_VAR_BOOL, NULL, NULL, false );
+	numLogLevels++;
 
 	return i;
 }
@@ -738,6 +740,10 @@ void PlLogMessage( int id, const char *msg, ... ) {
 	}
 
 	PlFree( buf );
+}
+
+unsigned int PlGetNumLogLevels( void ) {
+	return numLogLevels;
 }
 
 /**
