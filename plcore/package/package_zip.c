@@ -1,5 +1,5 @@
-/* SPDX-License-Identifier: MIT */
-/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
+// SPDX-License-Identifier: MIT
+// Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include <plcore/pl_linkedlist.h>
 
