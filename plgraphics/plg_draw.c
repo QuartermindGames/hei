@@ -41,15 +41,15 @@ PLGMesh *PlgImmBegin( PLGMeshPrimitive primitive ) {
 }
 
 unsigned int PlgImmPushVertex( float x, float y, float z ) {
-	return ( currentVertex = PlgAddMeshVertex( currentDynamicMesh, PlVector3( x, y, z ), pl_vecOrigin3, PL_COLOUR_WHITE, pl_vecOrigin2 ) );
+	return ( currentVertex = PlgAddMeshVertex( currentDynamicMesh, &PlVector3( x, y, z ), &pl_vecOrigin3, &PL_COLOUR_WHITE, &pl_vecOrigin2 ) );
 }
 
 void PlgImmNormal( float x, float y, float z ) {
-	PlgSetMeshVertexNormal( currentDynamicMesh, currentVertex, PlVector3( x, y, z ) );
+	PlgSetMeshVertexNormal( currentDynamicMesh, currentVertex, &PlVector3( x, y, z ) );
 }
 
 void PlgImmColour( uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
-	PlgSetMeshVertexColour( currentDynamicMesh, currentVertex, PL_COLOURU8( r, g, b, a ) );
+	PlgSetMeshVertexColour( currentDynamicMesh, currentVertex, &PL_COLOURU8( r, g, b, a ) );
 }
 
 void PlgImmTextureCoord( float s, float t ) {
@@ -89,7 +89,7 @@ void PlgClearInternalMeshes( void ) {
 	}
 }
 
-void PlgDrawEllipse( unsigned int segments, PLVector2 position, float w, float h, PLColour colour ) {
+void PlgDrawEllipse( unsigned int segments, const PLVector2 *position, float w, float h, const PLColour *colour ) {
 	PLGMesh *mesh = GetInternalMesh( PLG_MESH_TRIANGLE_FAN );
 
 	for ( unsigned int i = 0, pos = 0; i < 360; i += ( 360 / segments ) ) {
@@ -98,11 +98,11 @@ void PlgDrawEllipse( unsigned int segments, PLVector2 position, float w, float h
 		}
 
 		PLVector3 coord = PLVector3(
-		        ( position.x + w ) + cosf( PL_DEG2RAD( ( float ) i ) ) * w,
-		        ( position.y + h ) + sinf( PL_DEG2RAD( ( float ) i ) ) * h,
+		        ( position->x + w ) + cosf( PL_DEG2RAD( ( float ) i ) ) * w,
+		        ( position->y + h ) + sinf( PL_DEG2RAD( ( float ) i ) ) * h,
 		        0.0f );
 
-		PlgAddMeshVertex( mesh, coord, pl_vecOrigin3, colour, pl_vecOrigin2 );
+		PlgAddMeshVertex( mesh, &coord, &pl_vecOrigin3, colour, &pl_vecOrigin2 );
 	}
 
 	PlMatrixMode( PL_MODELVIEW_MATRIX );
@@ -160,10 +160,10 @@ void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVect
 	PLVector3 lowerDist = PlSubtractVector3( *ll, *ul );
 	float quadHeight = PlVector3Length( lowerDist ) / vScale;
 
-	PlgAddMeshVertex( mesh, *ul, pl_vecOrigin3, PL_COLOUR_WHITE, PLVector2( 0.0f, quadHeight / texture->h ) );
-	PlgAddMeshVertex( mesh, *ur, pl_vecOrigin3, PL_COLOUR_WHITE, PLVector2( quadWidth / texture->w, quadHeight / texture->h ) );
-	PlgAddMeshVertex( mesh, *ll, pl_vecOrigin3, PL_COLOUR_WHITE, PLVector2( 0.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, *lr, pl_vecOrigin3, PL_COLOUR_WHITE, PLVector2( quadWidth / texture->w, 0.0f ) );
+	PlgAddMeshVertex( mesh, ul, &pl_vecOrigin3, &PL_COLOUR_WHITE, &PLVector2( 0.0f, quadHeight / texture->h ) );
+	PlgAddMeshVertex( mesh, ur, &pl_vecOrigin3, &PL_COLOUR_WHITE, &PLVector2( quadWidth / texture->w, quadHeight / texture->h ) );
+	PlgAddMeshVertex( mesh, ll, &pl_vecOrigin3, &PL_COLOUR_WHITE, &PLVector2( 0.0f, 0.0f ) );
+	PlgAddMeshVertex( mesh, lr, &pl_vecOrigin3, &PL_COLOUR_WHITE, &PLVector2( quadWidth / texture->w, 0.0f ) );
 
 	PlgAddMeshTriangle( mesh, 0, 1, 2 );
 	PlgAddMeshTriangle( mesh, 2, 1, 3 );
@@ -188,9 +188,9 @@ void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVect
 void PlgDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 	PLGMesh *mesh = GetInternalMesh( PLG_MESH_TRIANGLE_FAN );
 
-	PlgAddMeshVertex( mesh, PLVector3( x, y + h, 0.0f ), pl_vecOrigin3, PLColour( 255, 0, 0, 255 ), pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, PLVector3( x + w / 2, x, 0.0f ), pl_vecOrigin3, PLColour( 0, 255, 0, 255 ), pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, PLVector3( x + w, y + h, 0.0f ), pl_vecOrigin3, PLColour( 0, 0, 255, 255 ), pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &PLVector3( x, y + h, 0.0f ), &pl_vecOrigin3, &PLColour( 255, 0, 0, 255 ), &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &PLVector3( x + w / 2, x, 0.0f ), &pl_vecOrigin3, &PLColour( 0, 255, 0, 255 ), &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &PLVector3( x + w, y + h, 0.0f ), &pl_vecOrigin3, &PLColour( 0, 0, 255, 255 ), &pl_vecOrigin2 );
 
 	//plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
 
@@ -315,7 +315,7 @@ void PlgDrawPixel( int x, int y, PLColour colour ) {
 /**
  * Utility function for drawing a bounding volume.
  */
-void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, PLColour colour ) {
+void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, const PLColour *colour ) {
 	PLGMesh *mesh = GetInternalMesh( PLG_MESH_LINES );
 
 	PlMatrixMode( PL_MODELVIEW_MATRIX );
@@ -336,34 +336,34 @@ void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, PLColour colour ) {
 	        { bounds->maxs.x, bounds->mins.y, bounds->mins.z},
 	};
 
-	PlgAddMeshVertex( mesh, boxPoints[ 0 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 1 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 0 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 2 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 0 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 3 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 0 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 1 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 0 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 2 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 0 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 3 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
 
-	PlgAddMeshVertex( mesh, boxPoints[ 4 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 5 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 4 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 6 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 4 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 7 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 4 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 5 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 4 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 6 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 4 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 7 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
 
-	PlgAddMeshVertex( mesh, boxPoints[ 2 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 5 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 2 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 7 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 2 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 5 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 2 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 7 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
 
-	PlgAddMeshVertex( mesh, boxPoints[ 1 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 6 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 1 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 7 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 1 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 6 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 1 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 7 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
 
-	PlgAddMeshVertex( mesh, boxPoints[ 3 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 5 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 3 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, boxPoints[ 6 ], pl_vecOrigin3, colour, pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 3 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 5 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 3 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &boxPoints[ 6 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
 
 	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", PlGetMatrix( PL_MODELVIEW_MATRIX ), true );
 

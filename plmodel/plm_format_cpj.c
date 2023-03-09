@@ -491,20 +491,20 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 		meshes[ i ]->materialIndex = i;
 		for ( unsigned int j = 0; j < cpjModel.numTriangles; ++j ) {
 			unsigned int x = PlgAddMeshVertex( meshes[ i ],
-			                                   cpjModel.vertices[ cpjModel.triangles[ j ].x ].position,
-			                                   normals[ surface->triangles[ j ].smoothingGroup ][ cpjModel.triangles[ j ].x ],
-			                                   PL_COLOUR_WHITE,
-			                                   surface->uvCoords[ surface->triangles[ j ].uvIndex[ 0 ] ] );
+			                                   &cpjModel.vertices[ cpjModel.triangles[ j ].x ].position,
+			                                   &normals[ surface->triangles[ j ].smoothingGroup ][ cpjModel.triangles[ j ].x ],
+			                                   &PL_COLOUR_WHITE,
+			                                   &surface->uvCoords[ surface->triangles[ j ].uvIndex[ 0 ] ] );
 			unsigned int y = PlgAddMeshVertex( meshes[ i ],
-			                                   cpjModel.vertices[ cpjModel.triangles[ j ].y ].position,
-			                                   normals[ surface->triangles[ j ].smoothingGroup ][ cpjModel.triangles[ j ].y ],
-			                                   PL_COLOUR_WHITE,
-			                                   surface->uvCoords[ surface->triangles[ j ].uvIndex[ 1 ] ] );
+			                                   &cpjModel.vertices[ cpjModel.triangles[ j ].y ].position,
+			                                   &normals[ surface->triangles[ j ].smoothingGroup ][ cpjModel.triangles[ j ].y ],
+			                                   &PL_COLOUR_WHITE,
+			                                   &surface->uvCoords[ surface->triangles[ j ].uvIndex[ 1 ] ] );
 			unsigned int z = PlgAddMeshVertex( meshes[ i ],
-			                                   cpjModel.vertices[ cpjModel.triangles[ j ].z ].position,
-			                                   normals[ surface->triangles[ j ].smoothingGroup ][ cpjModel.triangles[ j ].z ],
-			                                   PL_COLOUR_WHITE,
-			                                   surface->uvCoords[ surface->triangles[ j ].uvIndex[ 2 ] ] );
+			                                   &cpjModel.vertices[ cpjModel.triangles[ j ].z ].position,
+			                                   &normals[ surface->triangles[ j ].smoothingGroup ][ cpjModel.triangles[ j ].z ],
+			                                   &PL_COLOUR_WHITE,
+			                                   &surface->uvCoords[ surface->triangles[ j ].uvIndex[ 2 ] ] );
 
 			if ( surface->triangles[ j ].texture != i ) {
 				continue;

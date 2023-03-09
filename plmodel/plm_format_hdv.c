@@ -108,8 +108,8 @@ PLMModel *PlmLoadHdvModel( const char *path ) {
 		uint8_t r = ( uint8_t ) ( rand() % 255 );
 		uint8_t g = ( uint8_t ) ( rand() % 255 );
 		uint8_t b = ( uint8_t ) ( rand() % 255 );
-		PlgSetMeshVertexPosition( mesh, i, PLVector3( -vertices[ i ].x / 100, -vertices[ i ].y / 100, vertices[ i ].z / 100 ) );
-		PlgSetMeshVertexColour( mesh, i, PLColour( r, g, b, 255 ) );
+		PlgSetMeshVertexPosition( mesh, i, &PLVector3( -vertices[ i ].x / 100, -vertices[ i ].y / 100, vertices[ i ].z / 100 ) );
+		PlgSetMeshVertexColour( mesh, i, &PLColour( r, g, b, 255 ) );
 	}
 #endif
 

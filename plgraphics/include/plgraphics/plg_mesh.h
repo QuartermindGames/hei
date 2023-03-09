@@ -76,10 +76,10 @@ typedef struct PLCollisionAABB PLCollisionAABB;
 PLGMesh *PlgCreateMesh( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts );
 PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
                             const unsigned int *indicies, const PLGVertex *vertices );
-PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, PLColour colour );
+PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, const PLColour *colour );
 void PlgDestroyMesh( PLGMesh *mesh );
 
-void PlgDrawEllipse( unsigned int segments, PLVector2 position, float w, float h, PLColour colour );
+void PlgDrawEllipse( unsigned int segments, const PLVector2 *position, float w, float h, const PLColour *colour );
 void PlgDrawRectangle( float x, float y, float w, float h, PLColour colour );
 void PlgDrawTexturedRectangle( float x, float y, float w, float h, PLGTexture *texture );
 void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
@@ -93,7 +93,7 @@ void PlgDrawDottedGrid( int x, int y, int w, int h, unsigned int gridSize, const
 void PlgDrawVertexNormals( const PLGVertex *vertices, unsigned int numVertices );
 void PlgDrawMeshNormals( const PLGMesh *mesh );
 void PlgDrawPixel( int x, int y, PLColour colour );
-void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, PLColour colour );
+void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, const PLColour *colour );
 
 void PlgClearMesh( PLGMesh *mesh );
 void PlgClearMeshVertices( PLGMesh *mesh );
@@ -101,16 +101,16 @@ void PlgClearMeshTriangles( PLGMesh *mesh );
 
 void PlgScaleMesh( PLGMesh *mesh, PLVector3 scale );
 void PlgSetMeshTrianglePosition( PLGMesh *mesh, unsigned int *index, unsigned int x, unsigned int y, unsigned int z );
-void PlgSetMeshVertexPosition( PLGMesh *mesh, unsigned int index, PLVector3 vector );
-void PlgSetMeshVertexNormal( PLGMesh *mesh, unsigned int index, PLVector3 vector );
+void PlgSetMeshVertexPosition( PLGMesh *mesh, unsigned int index, const PLVector3 *vector );
+void PlgSetMeshVertexNormal( PLGMesh *mesh, unsigned int index, const PLVector3 *vector );
 void PlgSetMeshVertexST( PLGMesh *mesh, unsigned int index, float s, float t );
 void PlgSetMeshVertexSTv( PLGMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st );
-void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, PLColour colour );
-void PlgSetMeshUniformColour( PLGMesh *mesh, PLColour colour );
+void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, const PLColour *colour );
+void PlgSetMeshUniformColour( PLGMesh *mesh, const PLColour *colour );
 void PlgSetMeshShaderProgram( PLGMesh *mesh, struct PLGShaderProgram *program );
 void PlgSetMeshPrimitiveScale( PLGMesh *mesh, float scale );
 
-unsigned int PlgAddMeshVertex( PLGMesh *mesh, PLVector3 position, PLVector3 normal, PLColour colour, PLVector2 st );
+unsigned int PlgAddMeshVertex( PLGMesh *mesh, const PLVector3 *position, const PLVector3 *normal, const PLColour *colour, const PLVector2 *st );
 unsigned int PlgAddMeshTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, unsigned int z );
 
 void PlgUploadMesh( PLGMesh *mesh );

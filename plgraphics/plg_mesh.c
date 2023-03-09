@@ -18,7 +18,7 @@ void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertice
 
 	unsigned int x, y;
 	for ( unsigned int i = 0; i < numVertices; ++i ) {
-        if ( ( fabsf( vertices[ i ].normal.x ) > fabsf( vertices[ i ].normal.y ) ) &&
+		if ( ( fabsf( vertices[ i ].normal.x ) > fabsf( vertices[ i ].normal.y ) ) &&
 		     ( fabsf( vertices[ i ].normal.x ) > fabsf( vertices[ i ].normal.z ) ) ) {
 			x = ( vertices[ i ].normal.x > 0.0 ) ? 1 : 2;
 			y = ( vertices[ i ].normal.x > 0.0 ) ? 2 : 1;
@@ -27,13 +27,13 @@ void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertice
 			x = ( vertices[ i ].normal.z > 0.0 ) ? 0 : 1;
 			y = ( vertices[ i ].normal.z > 0.0 ) ? 1 : 0;
 		} else {
-            x = ( vertices[ i ].normal.y > 0.0 ) ? 2 : 0;
-            y = ( vertices[ i ].normal.y > 0.0 ) ? 0 : 2;
-        }
+			x = ( vertices[ i ].normal.y > 0.0 ) ? 2 : 0;
+			y = ( vertices[ i ].normal.y > 0.0 ) ? 0 : 2;
+		}
 
 		/* why the weird multiplication at the end here? to roughly match previous scaling values */
-        vertices[ i ].st[ 0 ].x = ( PlVector3Index( vertices[ i ].position, x ) + textureOffset.x ) / ( textureScale.x * 500.0f );
-        vertices[ i ].st[ 0 ].y = ( PlVector3Index( vertices[ i ].position, y ) + textureOffset.y ) / ( textureScale.y * 500.0f );
+		vertices[ i ].st[ 0 ].x = ( PlVector3Index( vertices[ i ].position, x ) + textureOffset.x ) / ( textureScale.x * 500.0f );
+		vertices[ i ].st[ 0 ].y = ( PlVector3Index( vertices[ i ].position, y ) + textureOffset.y ) / ( textureScale.y * 500.0f );
 	}
 }
 
@@ -164,7 +164,7 @@ PLGMesh *PlgCreateMesh( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsign
 }
 
 PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
-                          const unsigned int *indicies, const PLGVertex *vertices ) {
+                            const unsigned int *indicies, const PLGVertex *vertices ) {
 	PL_ASSERT( numVerts );
 
 	PLGMesh *mesh = ( PLGMesh * ) PlCAllocA( 1, sizeof( PLGMesh ) );
@@ -179,7 +179,7 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 			if ( indicies != NULL ) {
 				memcpy( mesh->indices, indicies, sizeof( unsigned int ) * numIndices );
 				mesh->num_indices = numIndices;
-                mesh->num_triangles = numTriangles;
+				mesh->num_triangles = numTriangles;
 			}
 		}
 	}
@@ -188,7 +188,7 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 	mesh->vertices = ( PLGVertex * ) PlCAllocA( mesh->maxVertices, sizeof( PLGVertex ) );
 
 	// If the vertices passed in aren't null, copy them into our vertex list
-	if ( vertices != NULL ) { //-V1051
+	if ( vertices != NULL ) {//-V1051
 		memcpy( mesh->vertices, vertices, sizeof( PLGVertex ) * numVerts );
 		mesh->num_verts = numVerts;
 	}
@@ -200,16 +200,16 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 	return mesh;
 }
 
-PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, PLColour colour ) {
+PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, const PLColour *colour ) {
 	PLGMesh *mesh = PlgCreateMesh( PLG_MESH_TRIANGLE_STRIP, PLG_DRAW_DYNAMIC, 0, 4 );
 	if ( mesh == NULL ) {
 		return NULL;
 	}
 
-	PlgAddMeshVertex( mesh, PLVector3( x, y, 0.0f ), pl_vecOrigin3, colour, PLVector2( 0.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, PLVector3( x, y + h, 0.0f ), pl_vecOrigin3, colour, PLVector2( 0.0f, 1.0f ) );
-	PlgAddMeshVertex( mesh, PLVector3( x + w, y, 0.0f ), pl_vecOrigin3, colour, PLVector2( 1.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, PLVector3( x + w, y + h, 0.0f ), pl_vecOrigin3, colour, PLVector2( 1.0f, 1.0f ) );
+	PlgAddMeshVertex( mesh, &PLVector3( x, y, 0.0f ), &pl_vecOrigin3, colour, &PLVector2( 0.0f, 0.0f ) );
+	PlgAddMeshVertex( mesh, &PLVector3( x, y + h, 0.0f ), &pl_vecOrigin3, colour, &PLVector2( 0.0f, 1.0f ) );
+	PlgAddMeshVertex( mesh, &PLVector3( x + w, y, 0.0f ), &pl_vecOrigin3, colour, &PLVector2( 1.0f, 0.0f ) );
+	PlgAddMeshVertex( mesh, &PLVector3( x + w, y + h, 0.0f ), &pl_vecOrigin3, colour, &PLVector2( 1.0f, 1.0f ) );
 
 	return mesh;
 }
@@ -254,14 +254,14 @@ void PlgSetMeshTrianglePosition( PLGMesh *mesh, unsigned int *index, unsigned in
 	mesh->indices[ ( *index )++ ] = z;
 }
 
-void PlgSetMeshVertexPosition( PLGMesh *mesh, unsigned int index, PLVector3 vector ) {
+void PlgSetMeshVertexPosition( PLGMesh *mesh, unsigned int index, const PLVector3 *vector ) {
 	PL_ASSERT( index < mesh->maxVertices );
-	mesh->vertices[ index ].position = vector;
+	mesh->vertices[ index ].position = *vector;
 }
 
-void PlgSetMeshVertexNormal( PLGMesh *mesh, unsigned int index, PLVector3 vector ) {
+void PlgSetMeshVertexNormal( PLGMesh *mesh, unsigned int index, const PLVector3 *vector ) {
 	PL_ASSERT( index < mesh->maxVertices );
-	mesh->vertices[ index ].normal = vector;
+	mesh->vertices[ index ].normal = *vector;
 }
 
 void PlgSetMeshVertexST( PLGMesh *mesh, unsigned int index, float s, float t ) {
@@ -281,14 +281,14 @@ void PlgSetMeshVertexSTv( PLGMesh *mesh, uint8_t unit, unsigned int index, unsig
 	}
 }
 
-void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, PLColour colour ) {
+void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, const PLColour *colour ) {
 	PL_ASSERT( index < mesh->maxVertices );
-	mesh->vertices[ index ].colour = colour;
+	mesh->vertices[ index ].colour = *colour;
 }
 
-void PlgSetMeshUniformColour( PLGMesh *mesh, PLColour colour ) {
+void PlgSetMeshUniformColour( PLGMesh *mesh, const PLColour *colour ) {
 	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
-		mesh->vertices[ i ].colour = colour;
+		PlgSetMeshVertexColour( mesh, i, colour );
 	}
 }
 
@@ -304,7 +304,7 @@ void PlgSetMeshPrimitiveScale( PLGMesh *mesh, float scale ) {
 	mesh->primitiveScale = scale;
 }
 
-unsigned int PlgAddMeshVertex( PLGMesh *mesh, PLVector3 position, PLVector3 normal, PLColour colour, PLVector2 st ) {
+unsigned int PlgAddMeshVertex( PLGMesh *mesh, const PLVector3 *position, const PLVector3 *normal, const PLColour *colour, const PLVector2 *st ) {
 	unsigned int vertexIndex = mesh->num_verts++;
 	if ( vertexIndex >= mesh->maxVertices ) {
 		mesh->vertices = PlReAllocA( mesh->vertices, ( mesh->maxVertices += 16 ) * sizeof( PLGVertex ) );
@@ -313,7 +313,7 @@ unsigned int PlgAddMeshVertex( PLGMesh *mesh, PLVector3 position, PLVector3 norm
 	PlgSetMeshVertexPosition( mesh, vertexIndex, position );
 	PlgSetMeshVertexNormal( mesh, vertexIndex, normal );
 	PlgSetMeshVertexColour( mesh, vertexIndex, colour );
-	PlgSetMeshVertexST( mesh, vertexIndex, st.x, st.y );
+	PlgSetMeshVertexST( mesh, vertexIndex, st->x, st->y );
 
 	return vertexIndex;
 }
@@ -354,16 +354,16 @@ void PlgDrawInstancedMesh( PLGMesh *mesh, const PLMatrix4 *transforms, unsigned 
 }
 
 PLCollisionAABB PlgGenerateAabbFromVertices( const PLGVertex *vertices, unsigned int numVertices, bool absolute ) {
-    PLVector3 *vvertices = PlMAllocA( sizeof( PLVector3 ) * numVertices );
-    for ( unsigned int i = 0; i < numVertices; ++i ) {
-        vvertices[ i ] = vertices[ i ].position;
-    }
+	PLVector3 *vvertices = PlMAllocA( sizeof( PLVector3 ) * numVertices );
+	for ( unsigned int i = 0; i < numVertices; ++i ) {
+		vvertices[ i ] = vertices[ i ].position;
+	}
 
-    PLCollisionAABB bounds = PlGenerateAabbFromCoords( vvertices, numVertices, absolute );
+	PLCollisionAABB bounds = PlGenerateAabbFromCoords( vvertices, numVertices, absolute );
 
 	PlFree( vvertices );
 
-    return bounds;
+	return bounds;
 }
 
 PLCollisionAABB PlgGenerateAabbFromMesh( const PLGMesh *mesh, bool absolute ) {
