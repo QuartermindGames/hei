@@ -1,26 +1,6 @@
-/*
-MIT License
-
-Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "plm_private.h"
 
@@ -29,6 +9,8 @@ SOFTWARE.
 typedef struct ModelLoader {
 	const char *ext;
 	PLMModel *( *LoadFunction )( const char *path );
+	PLMModel *( *Deserialize )( PLFile *file );
+	void *( *Serialize )( PLMModel *model );
 } ModelLoader;
 
 #define MAX_OBJECT_INTERFACES 512
@@ -128,13 +110,14 @@ void PlmRegisterStandardModelLoaders( unsigned int flags ) {
 		unsigned int flag;
 		const char *extension;
 		PLMModel *( *LoadFunction )( const char *path );
+		PLMModel *( *Deserialize )( PLFile *file );
 	} SModelLoader;
 	static const SModelLoader loaderList[] = {
-	        { PLM_MODEL_FILEFORMAT_CYCLONE, "mdl", PlmLoadRequiemModel },
-	        { PLM_MODEL_FILEFORMAT_HDV, "hdv", PlmLoadHdvModel },
-	        { PLM_MODEL_FILEFORMAT_U3D, "3d", PlmLoadU3DModel },
-	        { PLM_MODEL_FILEFORMAT_OBJ, "obj", PlmLoadObjModel },
-	        { PLM_MODEL_FILEFORMAT_CPJ, "cpj", PlmLoadCpjModel },
+	        {PLM_MODEL_FILEFORMAT_CYCLONE, "mdl", PlmLoadRequiemModel},
+	        { PLM_MODEL_FILEFORMAT_HDV,    "hdv", PlmLoadHdvModel    },
+	        { PLM_MODEL_FILEFORMAT_U3D,    "3d",  PlmLoadU3DModel    },
+	        { PLM_MODEL_FILEFORMAT_OBJ,    "obj", PlmLoadObjModel    },
+	        { PLM_MODEL_FILEFORMAT_CPJ,    "cpj", PlmLoadCpjModel    },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
@@ -157,33 +140,56 @@ PLMModel *PlmLoadModel( const char *path ) {
 		return NULL;
 	}
 
+	PLMModel *model = NULL;
+
 	const char *extension = PlGetFileExtension( path );
 	size_t ext_len = strlen( extension );
 	for ( unsigned int i = 0; i < num_model_loaders; ++i ) {
-		if ( model_interfaces[ i ].LoadFunction == NULL ) {
-			break;
+		if ( pl_strcasecmp( extension, model_interfaces[ i ].ext ) != 0 ) {
+			continue;
 		}
 
-		if ( !PL_INVALID_STRING( model_interfaces[ i ].ext ) ) {
-			if ( pl_strcasecmp( extension, model_interfaces[ i ].ext ) == 0 ) {
-				PLMModel *model = model_interfaces[ i ].LoadFunction( path );
-				if ( model != NULL ) {
-					const char *name = PlGetFileName( path );
-					if ( !PL_INVALID_STRING( name ) ) {
-						size_t nme_len = strlen( name );
-						strncpy( model->name, name, nme_len - ( ext_len + 1 ) );
-					} else {
-						snprintf( model->name, sizeof( model->name ), "null" );
-					}
+		// first attempt to load it in using ye old method
+		if ( model_interfaces[ i ].LoadFunction != NULL ) {
+			model = model_interfaces[ i ].LoadFunction( path );
+			if ( model != NULL ) {
+				break;
+			}
+		}
 
-					strncpy( model->path, path, sizeof( model->path ) );
-					return model;
-				}
+		if ( model_interfaces[ i ].Deserialize != NULL ) {
+			// eventually this should only get loaded the once, once LoadFunction is gone,
+			// and then just rewound each time
+			PLFile *file = PlOpenFile( path, false );
+			if ( file == NULL ) {
+				// break in this case, as if this fails it's likely every other attempt will
+				break;
+			}
+
+			model = model_interfaces[ i ].Deserialize( file );
+
+			// again, we'll eventually only need to do this once, once LoadFunction is out of the picture
+			PlCloseFile( file );
+
+			if ( model != NULL ) {
+				break;
 			}
 		}
 	}
 
-	return NULL;
+	if ( model != NULL ) {
+		const char *name = PlGetFileName( path );
+		if ( !PL_INVALID_STRING( name ) ) {
+			size_t nme_len = strlen( name );
+			strncpy( model->name, name, nme_len - ( ext_len + 1 ) );
+		} else {
+			snprintf( model->name, sizeof( model->name ), "null" );
+		}
+
+		strncpy( model->path, path, sizeof( model->path ) );
+	}
+
+	return model;
 }
 
 static PLMModel *CreateModel( PLMModelType type, PLGMesh **meshes, unsigned int numMeshes ) {
