@@ -119,33 +119,37 @@ const char *PlParseToken( const char **p, char *dest, size_t size ) {
 int PlParseInteger( const char **p, bool *status ) {
 	if ( status != NULL ) *status = false;
 
-	char num[ 64 ] = { '\0' };
-	PlParseToken( p, num, sizeof( num ) );
-
-	int v = 0;
-	if ( *num != '\0' ) {
-		v = strtol( num, NULL, 10 );
-		/* todo: validate strtol succeeded! */
-		if ( status != NULL ) *status = true;
+	char num[ 64 ];
+	if ( PlParseToken( p, num, sizeof( num ) ) == NULL ) {
+		return 0;
 	}
 
-	return v;
+    if ( status != NULL ) *status = true;
+	return ( int ) strtol( num, NULL, 10 );
 }
 
 float PlParseFloat( const char **p, bool *status ) {
 	if ( status != NULL ) *status = false;
 
 	char num[ 64 ];
-	PlParseToken( p, num, sizeof( num ) );
-
-	float v = 0.0f;
-	if ( *num != '\0' ) {
-		v = strtof( num, NULL );
-		/* todo: validate strtof succeeded! */
-		if ( status != NULL ) *status = true;
+	if ( PlParseToken( p, num, sizeof( num ) ) == NULL ) {
+		return 0.0f;
 	}
 
-	return v;
+	if ( status != NULL ) *status = true;
+	return strtof( num, NULL );
+}
+
+double PlParseDouble( const char **p, bool *status ) {
+	if ( status != NULL ) *status = false;
+
+	char num[ 64 ];
+	if ( PlParseToken( p, num, sizeof( num ) ) == NULL ) {
+		return 0.0;
+	}
+
+	if ( status != NULL ) *status = true;
+	return strtod( num, NULL );
 }
 
 PLVector3 PlParseVector( const char **p, bool *status ) {

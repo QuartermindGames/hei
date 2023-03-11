@@ -31,6 +31,7 @@ unsigned int PlDetermineTokenLength( const char *p );
 const char *PlParseToken( const char **p, char *dest, size_t size );
 int PlParseInteger( const char **p, bool *status );
 float PlParseFloat( const char **p, bool *status );
+double PlParseDouble( const char **p, bool *status );
 PLVector3 PlParseVector( const char **p, bool *status );
 
 unsigned int PlDetermineLineLength( const char *p );
