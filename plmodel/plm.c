@@ -118,6 +118,7 @@ void PlmRegisterStandardModelLoaders( unsigned int flags ) {
 	        { PLM_MODEL_FILEFORMAT_U3D,    "3d",  PlmLoadU3DModel    },
 	        { PLM_MODEL_FILEFORMAT_OBJ,    "obj", PlmLoadObjModel    },
 	        { PLM_MODEL_FILEFORMAT_CPJ,    "cpj", PlmLoadCpjModel    },
+	        { PLM_MODEL_FILEFORMAT_PLY, "ply", NULL, PlmDeserializePly },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {

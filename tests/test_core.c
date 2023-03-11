@@ -25,24 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <plcore/pl.h>
-#include <plcore/pl_console.h>
-#include <plcore/pl_array_vector.h>
-#include <plcore/pl_filesystem.h>
-
-enum {
-	TEST_RETURN_SUCCESS,
-	TEST_RETURN_FAILURE,
-	TEST_RETURN_FATAL,
-};
-
-#define FUNC_TEST( NAME )         \
-	uint8_t test_##NAME( void ) { \
-		printf( " " #NAME "... " );
-#define FUNC_TEST_END()         \
-	printf( "OK\n" );           \
-	return TEST_RETURN_SUCCESS; \
-	}
+#include "tests.h"
 
 FUNC_TEST( pl_array_vector ) {
 	PLVectorArray *vec;
