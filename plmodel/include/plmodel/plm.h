@@ -166,7 +166,7 @@ enum {
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char *path ) );
+void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char * ), PLMModel *( *Deserialize )( PLFile * ) );
 void PlmRegisterStandardModelLoaders( unsigned int flags );
 void PlmClearModelLoaders( void );
 

@@ -94,7 +94,7 @@ bool PlmWriteModel( const char *path, PLMModel *model, PLMModelOutputType type )
 	}
 }
 
-void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char *path ) ) {
+void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char * ), PLMModel *( *Deserialize )( PLFile * ) ) {
 	if ( num_model_loaders >= MAX_OBJECT_INTERFACES ) {
 		PlReportBasicError( PL_RESULT_MEMORY_EOA );
 		return;
@@ -102,6 +102,7 @@ void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const
 
 	model_interfaces[ num_model_loaders ].ext = ext;
 	model_interfaces[ num_model_loaders ].LoadFunction = LoadFunction;
+	model_interfaces[ num_model_loaders ].Deserialize = Deserialize;
 	num_model_loaders++;
 }
 
@@ -113,11 +114,11 @@ void PlmRegisterStandardModelLoaders( unsigned int flags ) {
 		PLMModel *( *Deserialize )( PLFile *file );
 	} SModelLoader;
 	static const SModelLoader loaderList[] = {
-	        {PLM_MODEL_FILEFORMAT_CYCLONE, "mdl", PlmLoadRequiemModel},
-	        { PLM_MODEL_FILEFORMAT_HDV,    "hdv", PlmLoadHdvModel    },
-	        { PLM_MODEL_FILEFORMAT_U3D,    "3d",  PlmLoadU3DModel    },
-	        { PLM_MODEL_FILEFORMAT_OBJ,    "obj", PlmLoadObjModel    },
-	        { PLM_MODEL_FILEFORMAT_CPJ,    "cpj", PlmLoadCpjModel    },
+	        { PLM_MODEL_FILEFORMAT_CYCLONE, "mdl", PlmLoadRequiemModel },
+	        { PLM_MODEL_FILEFORMAT_HDV, "hdv", PlmLoadHdvModel },
+	        { PLM_MODEL_FILEFORMAT_U3D, "3d", PlmLoadU3DModel },
+	        { PLM_MODEL_FILEFORMAT_OBJ, "obj", PlmLoadObjModel },
+	        { PLM_MODEL_FILEFORMAT_CPJ, "cpj", PlmLoadCpjModel },
 	        { PLM_MODEL_FILEFORMAT_PLY, "ply", NULL, PlmDeserializePly },
 	};
 
@@ -126,7 +127,7 @@ void PlmRegisterStandardModelLoaders( unsigned int flags ) {
 			continue;
 		}
 
-		PlmRegisterModelLoader( loaderList[ i ].extension, loaderList[ i ].LoadFunction );
+		PlmRegisterModelLoader( loaderList[ i ].extension, loaderList[ i ].LoadFunction, loaderList[ i ].Deserialize );
 	}
 }
 
