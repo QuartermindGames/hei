@@ -52,24 +52,32 @@ typedef struct PLYData {
 		uint32_t tuint;
 		float tfloat;
 		double tdouble;
-		struct PLYData *data;
 	};
 	PLYPropertyType type;
+
+	// this gets used for lists ...
+	void *subDataElements;
+	PLYPropertyType subDataType;
+	unsigned int numSubDataElements;
 } PLYData;
 
 typedef struct PLYProperty {
-	PLYPropertyType type, subType;// subtype only matters for lists
-	PLYName name;                 // name of the property
+	PLYPropertyType
+	        type,       // main type (list, etc.)
+	        listNumType,// if it's a list, this is the counter type
+	        listSubType;// and then the actual data type
+	PLYName name;       // name of the property
 } PLYProperty;
 
 typedef struct PLYElement {
-	PLYName name;                                // name of the element
-	unsigned int num;                            // number of this element in the file
+	PLYName name;    // name of the element
+	unsigned int num;// number of this element in the file
+
 	PLYProperty properties[ PLY_MAX_PROPERTIES ];// properties
 	unsigned int numProperties;                  // number of properties for this element
 
-	PLYData *data;
-	unsigned int dataLength;
+	PLYData *data;          // all the actual data is stored as a big fat array
+	unsigned int dataLength;// and the length of said array
 } PLYElement;
 
 unsigned int PropertyTypeForToken( const char *token ) {
@@ -96,40 +104,79 @@ unsigned int PropertyTypeForToken( const char *token ) {
 	}
 }
 
-static const PLYData *ParseData( const char **p, PLYData *data ) {
-	switch ( data->type ) {
+static size_t GetSizeForType( PLYPropertyType type ) {
+	switch ( type ) {
 		case PLY_PROPERTY_TYPE_CHAR:
-			data->tchar = ( int8_t ) PlParseInteger( p, NULL );
-			return data;
+			return sizeof( int8_t );
 		case PLY_PROPERTY_TYPE_UCHAR:
-			data->tuchar = ( uint8_t ) PlParseInteger( p, NULL );
-			return data;
+			return sizeof( uint8_t );
 		case PLY_PROPERTY_TYPE_SHORT:
-			data->tshort = ( int16_t ) PlParseInteger( p, NULL );
-			return data;
+			return sizeof( int16_t );
 		case PLY_PROPERTY_TYPE_USHORT:
-			data->tushort = ( uint16_t ) PlParseInteger( p, NULL );
-			return data;
+			return sizeof( uint16_t );
 		case PLY_PROPERTY_TYPE_INT:
-			data->tint = PlParseInteger( p, NULL );
-			return data;
+			return sizeof( int32_t );
 		case PLY_PROPERTY_TYPE_UINT:
-			data->tuint = ( unsigned ) PlParseInteger( p, NULL );
-			return data;
+			return sizeof( uint32_t );
 		case PLY_PROPERTY_TYPE_FLOAT:
-			data->tfloat = PlParseFloat( p, NULL );
-			return data;
+			return sizeof( float );
 		case PLY_PROPERTY_TYPE_DOUBLE:
-			data->tdouble = PlParseDouble( p, NULL );
-			break;
+			return sizeof( double );
 		default:
 			break;
 	}
+	return 0;
+}
 
+static void *ParseDataType( const char **p, PLYPropertyType type, void *out ) {
+	switch ( type ) {
+		case PLY_PROPERTY_TYPE_CHAR:
+			*( ( int8_t * ) out ) = ( int8_t ) PlParseInteger( p, NULL );
+			return out;
+		case PLY_PROPERTY_TYPE_UCHAR:
+			*( ( uint8_t * ) out ) = ( uint8_t ) PlParseInteger( p, NULL );
+			return out;
+		case PLY_PROPERTY_TYPE_SHORT:
+			*( ( int16_t * ) out ) = ( int16_t ) PlParseInteger( p, NULL );
+			return out;
+		case PLY_PROPERTY_TYPE_USHORT:
+			*( ( uint16_t * ) out ) = ( uint16_t ) PlParseInteger( p, NULL );
+			return out;
+		case PLY_PROPERTY_TYPE_INT:
+			*( ( int32_t * ) out ) = PlParseInteger( p, NULL );
+			return out;
+		case PLY_PROPERTY_TYPE_UINT:
+			*( ( uint32_t * ) out ) = ( unsigned ) PlParseInteger( p, NULL );
+			return out;
+		case PLY_PROPERTY_TYPE_FLOAT:
+			*( ( float * ) out ) = PlParseFloat( p, NULL );
+			return out;
+		case PLY_PROPERTY_TYPE_DOUBLE:
+			*( ( double * ) out ) = PlParseDouble( p, NULL );
+			return out;
+		default:
+			break;
+	}
 	return NULL;
 }
 
-static const PLYElement *LookupElementByName( const char *name, const PLYElement *elements, unsigned int numElements ) {
+static PLYData *ParseData( const char **p, PLYData *data ) {
+	PLYPropertyType type;
+	if ( data->type == PLY_PROPERTY_TYPE_LIST ) {
+		type = data->subDataType;
+	} else {
+		type = data->type;
+	}
+
+	if ( ParseDataType( p, type, &data->tdouble ) == NULL ) {
+		PlReportErrorF( PL_RESULT_FILEERR, "failed to parse data type" );
+		return NULL;
+	}
+
+	return data;
+}
+
+static PLYElement *LookupElementByName( const char *name, PLYElement *elements, unsigned int numElements ) {
 	for ( unsigned int i = 0; i < numElements; ++i ) {
 		if ( strcmp( elements[ i ].name, name ) == 0 ) {
 			return &elements[ i ];
@@ -150,7 +197,7 @@ static const PLYProperty *LookupPropertyByName( const char *name, const PLYEleme
 static PLYElement elements[ PLY_MAX_ELEMENTS ];
 static unsigned int numElements;
 
-static bool ParsePlyHeader( const char **p ) {
+static bool ParseHeader( const char **p ) {
 	// this reads in the header block *after* the format line,
 	// and provides some additional validation on the way
 	bool headerEnd = false;
@@ -199,13 +246,23 @@ static bool ParsePlyHeader( const char **p ) {
 				PlReportErrorF( PL_RESULT_FILEERR, "property with unsupported/invalid type" );
 				return false;
 			} else if ( property->type == PLY_PROPERTY_TYPE_LIST ) {
-				// for lists, there's an additional type we need to read in
+				// the count data type for the list
 				if ( PlParseToken( p, token, sizeof( token ) ) == NULL ) {
 					PlReportErrorF( PL_RESULT_FILEERR, "property list with no subtype" );
 					return false;
 				}
-				property->subType = PropertyTypeForToken( token );
-				if ( property->subType == PLY_PROPERTY_TYPE_INVALID || property->subType == PLY_PROPERTY_TYPE_LIST ) {
+				property->listNumType = PropertyTypeForToken( token );
+				if ( property->listNumType == PLY_PROPERTY_TYPE_INVALID || property->listNumType == PLY_PROPERTY_TYPE_LIST ) {
+					PlReportErrorF( PL_RESULT_FILEERR, "property list with unsupported/invalid subtype" );
+					return false;
+				}
+				// and the actual data type
+				if ( PlParseToken( p, token, sizeof( token ) ) == NULL ) {
+					PlReportErrorF( PL_RESULT_FILEERR, "property list with no subtype" );
+					return false;
+				}
+				property->listSubType = PropertyTypeForToken( token );
+				if ( property->listSubType == PLY_PROPERTY_TYPE_INVALID || property->listSubType == PLY_PROPERTY_TYPE_LIST ) {
 					PlReportErrorF( PL_RESULT_FILEERR, "property list with unsupported/invalid subtype" );
 					return false;
 				}
@@ -236,45 +293,51 @@ static bool ParsePlyHeader( const char **p ) {
 	return true;
 }
 
+static bool ParseElements( const char **p ) {
+	for ( unsigned int i = 0; i < numElements; ++i ) {
+		elements[ i ].data = PL_NEW_( PLYData, elements[ i ].num * elements[ i ].numProperties );
+		for ( unsigned int j = 0; j < elements[ i ].numProperties; ++j ) {
+			PLYProperty *property = &elements[ i ].properties[ j ];
+			if ( property->type == PLY_PROPERTY_TYPE_LIST ) {
+				unsigned int numSubElements;
+				ParseDataType( p, property->listNumType, &numSubElements );
+				for ( unsigned int k = 0; k < numSubElements; ++k ) {
+
+				}
+			} else {
+
+			}
+		}
+	}
+}
+
+static void Cleanup( void ) {
+	// cleanup
+	for ( unsigned int i = 0; i < numElements; ++i ) {
+		for ( unsigned int j = 0; j < elements[ i ].dataLength; ++j ) {
+			if ( elements[ i ].data[ j ].type != PLY_PROPERTY_TYPE_LIST ) {
+				continue;
+			}
+			PL_DELETE( elements[ i ].data[ j ].subDataElements );
+		}
+		PL_DELETE( elements[ i ].data );
+	}
+}
+
 static PLMModel *ParsePly( const char *buf ) {
 	const char *p = buf;
 
 	PL_ZERO( elements, sizeof( PLYElement ) * PLY_MAX_ELEMENTS );
 	numElements = 0;
 
-	if ( !ParsePlyHeader( &p ) ) {
+	if ( !ParseHeader( &p ) ) {
 		return NULL;
 	}
 
-	// okay, now we can load in the actual data - this will be in the order the elements were provided
-
-	PLYElement *vertexElement = LookupElementByName( "vertex", elements, numElements );
-	if ( vertexElement == NULL ) {
-		PlReportErrorF( PL_RESULT_FILEERR, "no vertex element in ply" );
+	// okay, now we can load in the actual data -
+	// this will be in the order the elements were provided
+	if ( !ParseElements( &p ) ) {
 		return NULL;
-	}
-
-	PLYElement *faceElement = LookupElementByName( "face", elements, numElements );
-	if ( faceElement == NULL ) {
-		PlReportErrorF( PL_RESULT_FILEERR, "no face element in ply" );
-		return NULL;
-	}
-
-	// read in the remaining data now ...
-
-	vertexElement->data = PL_NEW_( PLYData, sizeof( PLYData ) * ( vertexElement->numProperties * vertexElement->num ) );
-	for ( unsigned int i = 0; i < vertexElement->num; ++i ) {
-		for ( unsigned int j = 0; j < vertexElement->numProperties; ++j ) {
-			PLYData *data = &vertexElement->data[ i + j ];
-			data->type = vertexElement->properties[ j ].type;
-			if ( ParseData( &p, data ) == NULL ) {
-			}
-		}
-	}
-
-	// cleanup
-	for ( unsigned int i = 0; i < numElements; ++i ) {
-		PL_DELETE( elements[ i ].data );
 	}
 
 	return NULL;
@@ -304,6 +367,7 @@ PLMModel *PlmDeserializePly( PLFile *file ) {
 	PLMModel *model = ParsePly( buf );
 
 	// and now cleanup
+	Cleanup();
 	PL_DELETE( buf );
 
 	return model;
