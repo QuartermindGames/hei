@@ -67,6 +67,7 @@ typedef struct PLYProperty {
 	        listNumType,// if it's a list, this is the counter type
 	        listSubType;// and then the actual data type
 	PLYName name;       // name of the property
+	PLYData *data;
 } PLYProperty;
 
 typedef struct PLYElement {
@@ -75,9 +76,6 @@ typedef struct PLYElement {
 
 	PLYProperty properties[ PLY_MAX_PROPERTIES ];// properties
 	unsigned int numProperties;                  // number of properties for this element
-
-	PLYData *data;          // all the actual data is stored as a big fat array
-	unsigned int dataLength;// and the length of said array
 } PLYElement;
 
 unsigned int PropertyTypeForToken( const char *token ) {
@@ -158,22 +156,6 @@ static void *ParseDataType( const char **p, PLYPropertyType type, void *out ) {
 			break;
 	}
 	return NULL;
-}
-
-static PLYData *ParseData( const char **p, PLYData *data ) {
-	PLYPropertyType type;
-	if ( data->type == PLY_PROPERTY_TYPE_LIST ) {
-		type = data->subDataType;
-	} else {
-		type = data->type;
-	}
-
-	if ( ParseDataType( p, type, &data->tdouble ) == NULL ) {
-		PlReportErrorF( PL_RESULT_FILEERR, "failed to parse data type" );
-		return NULL;
-	}
-
-	return data;
 }
 
 static PLYElement *LookupElementByName( const char *name, PLYElement *elements, unsigned int numElements ) {
@@ -275,6 +257,8 @@ static bool ParseHeader( const char **p ) {
 			}
 			snprintf( property->name, sizeof( PLYName ), "%s", token );
 
+			property->data = PL_NEW_( PLYData, element->num );
+
 			element->numProperties++;
 		} else if ( strcmp( token, "end_header" ) == 0 ) {
 			headerEnd = true;
@@ -295,17 +279,14 @@ static bool ParseHeader( const char **p ) {
 
 static bool ParseElements( const char **p ) {
 	for ( unsigned int i = 0; i < numElements; ++i ) {
-		elements[ i ].data = PL_NEW_( PLYData, elements[ i ].num * elements[ i ].numProperties );
-		for ( unsigned int j = 0; j < elements[ i ].numProperties; ++j ) {
+		for ( unsigned int j = 0; j < elements[ i ].num; ++j ) {
 			PLYProperty *property = &elements[ i ].properties[ j ];
-			if ( property->type == PLY_PROPERTY_TYPE_LIST ) {
-				unsigned int numSubElements;
-				ParseDataType( p, property->listNumType, &numSubElements );
-				for ( unsigned int k = 0; k < numSubElements; ++k ) {
+			for ( unsigned int k = 0; k < elements[ i ].numProperties; ++k ) {
+				if ( property->type == PLY_PROPERTY_TYPE_LIST ) {
 
+				} else {
+					ParseDataType( p, property->type, &property->data[ j ].tdouble );
 				}
-			} else {
-
 			}
 		}
 	}
@@ -314,13 +295,17 @@ static bool ParseElements( const char **p ) {
 static void Cleanup( void ) {
 	// cleanup
 	for ( unsigned int i = 0; i < numElements; ++i ) {
-		for ( unsigned int j = 0; j < elements[ i ].dataLength; ++j ) {
-			if ( elements[ i ].data[ j ].type != PLY_PROPERTY_TYPE_LIST ) {
-				continue;
+		for ( unsigned int j = 0; j < elements[ i ].numProperties; ++j ) {
+			PLYProperty *property = &elements[ i ].properties[ j ];
+			for ( unsigned int k = 0; k < elements[ i ].num; ++k ) {
+				if ( property->type != PLY_PROPERTY_TYPE_LIST ) {
+					continue;
+				}
+
+				PL_DELETE( property->data[ k ].subDataElements );
 			}
-			PL_DELETE( elements[ i ].data[ j ].subDataElements );
+			PL_DELETE( property->data );
 		}
-		PL_DELETE( elements[ i ].data );
 	}
 }
 
