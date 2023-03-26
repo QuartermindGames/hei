@@ -57,7 +57,7 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-const char *PlSetPath( PLPath dst, const char *src, bool truncate );
+const char *PlSetupPath( PLPath dst, bool truncate, const char *msg, ... );
 const char *PlAppendPath( PLPath dst, const char *src, bool truncate );
 const char *PlPrefixPath( PLPath dst, const char *src, bool truncate );
 

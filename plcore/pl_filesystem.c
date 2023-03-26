@@ -81,12 +81,22 @@ static int pl_fseek( FILE *file, PLFileOffset off, int wence ) {
 
 /*	File System	*/
 
-const char *PlSetPath( PLPath dst, const char *src, bool truncate ) {
-	if ( !truncate && ( strlen( src ) >= sizeof( PLPath ) ) ) {
+const char *PlSetupPath( PLPath dst, bool truncate, const char *msg, ... ) {
+	*dst = '\0';
+
+	va_list args;
+	va_start( args, msg );
+	int length = pl_vscprintf( msg, args ) + 1;
+	if ( length <= 0 ) {
+		return NULL;
+	}
+
+	if ( !truncate && ( length >= sizeof( PLPath ) ) ) {
 		PlReportErrorF( PL_RESULT_MEMORY_EOA, "source path is too long" );
 		return NULL;
 	}
-	strncpy( dst, src, sizeof( PLPath ) - 1 );
+
+	vsnprintf( dst, sizeof( PLPath ), msg, args );
 	PlNormalizePath( dst, sizeof( PLPath ) );
 	return dst;
 }
