@@ -6,19 +6,21 @@
 
 #pragma once
 
+#include <inttypes.h>
+
 PL_EXTERN_C
 
 #define PL_FMT_float   "%f"
 #define PL_FMT_double  "%lf"
-#define PL_FMT_int16   "%hd"
-#define PL_FMT_uint16  "%hu"
-#define PL_FMT_int32   "%d"
-#define PL_FMT_uint32  "%u"
-#define PL_FMT_int64   "%ld"
-#define PL_FMT_uint64  "%lu"
+#define PL_FMT_int16   "%" PRId16
+#define PL_FMT_uint16  "%" PRIu16
+#define PL_FMT_int32   "%" PRId32
+#define PL_FMT_uint32  "%" PRIu32
+#define PL_FMT_int64   "%" PRId64
+#define PL_FMT_uint64  "%" PRIu64
 #define PL_FMT_hex     "%x"
 #define PL_FMT_string  "%s"
-#define PL_FMT_address "%p"
+#define PL_FMT_address "%" PRIdPTR
 
 char *pl_itoa( int val, char *buf, size_t len, int base );
 
