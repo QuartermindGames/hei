@@ -48,6 +48,30 @@ inline static int PlRoundUp( int num, int multiple ) {
 	return ( num + multiple - 1 ) & -multiple;
 }
 
+typedef struct PLRectangleI32 {
+	int x, y, w, h;
+} PLRectangleI32;
+inline static PLRectangleI32 PlCreateRectangleI32( int x, int y, int w, int h ) {
+	return ( PLRectangleI32 ){
+	        .x = x,
+	        .y = y,
+	        .w = w,
+	        .h = h,
+	};
+}
+
+typedef struct PLRectangleF32 {
+	float x, y, w, h;
+} PLRectangleF32;
+inline static PLRectangleF32 PlCreateRectangleF32( float x, float y, float w, float h ) {
+	return ( PLRectangleF32 ){
+	        .x = x,
+	        .y = y,
+	        .w = w,
+	        .h = h,
+	};
+}
+
 #include <plcore/pl_math_vector.h>
 
 /////////////////////////////////////////////////////////////////////////////////////
