@@ -184,6 +184,11 @@ typedef struct PLPluginExportTable {
 	/** v9.1 ************************************************/
 	/* pl_image.h */
 	PLImage *( *ParseImage )( PLFile *file );
+
+	/** v9.2 ************************************************/
+	const char *( *SetupPath )( PLPath dst, bool truncate, const char *msg, ... );
+	const char *( *AppendPath )( PLPath dst, const char *src, bool truncate );
+	const char *( *PrefixPath )( PLPath dst, const char *src, bool truncate );
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */
@@ -197,7 +202,10 @@ typedef const PLPluginDescription *( *PLPluginQueryFunction )( void );
 #define PL_PLUGIN_INIT_FUNCTION "PLInitializePlugin"
 typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *exportTable );
 
-/* 2023-01-01
+/* 2023-04-10
+ * - Added Path API
+ *
+ * 2023-01-01
  * - Exposed missing pl_image API
  *
  * 2022-11-12

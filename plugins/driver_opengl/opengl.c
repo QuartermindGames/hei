@@ -1049,7 +1049,7 @@ static char *InsertString( const char *string, char **buf, size_t *bufSize, size
  * and handle any pre-processor commands.
  * todo: this is dumb... rewrite it
  */
-static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *length, bool head ) {
+static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *length, bool head, const char *directory ) {
 	/* setup the destination buffer */
 	size_t actualLength = 0;
 	size_t maxLength = *length;
@@ -1098,8 +1098,13 @@ static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *l
 				gInterface->core->SkipWhitespace( &srcPos );
 
 				/* pull the path - needs to be enclosed otherwise this'll fail */
-				char path[ PL_SYSTEM_MAX_PATH ];
+				PLPath path;
 				gInterface->core->ParseEnclosedString( &srcPos, path, sizeof( path ) );
+				if ( directory != NULL ) {
+					PLPath tmp;
+					gInterface->core->SetupPath( tmp, true, "%s/%s", directory, path );
+					strcpy( path, tmp );
+				}
 
 				PLFile *file = gInterface->core->OpenFile( path, true );
 				if ( file != NULL ) {
@@ -1113,7 +1118,7 @@ static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *l
 					gInterface->core->CloseFile( file );
 
 					/* now throw it into the pre-processor */
-					incBuf = GLPreProcessGLSLShader( stage, incBuf, &incLength, false );
+					incBuf = GLPreProcessGLSLShader( stage, incBuf, &incLength, false, NULL );
 
 					/* and finally, push it into our destination */
 					dstPos = InsertString( incBuf, &dstBuffer, &actualLength, &maxLength );
@@ -1226,7 +1231,7 @@ static void GLAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stag
 	XGL_CALL( glAttachShader( program->internal.id, stage->internal.id ) );
 }
 
-static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length ) {
+static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length, const char *directory ) {
 	if ( !XGL_VERSION( 2, 0 ) ) {
 		return;
 	}
@@ -1235,7 +1240,7 @@ static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t
 	char *temp = gInterface->core->MAlloc( length + 1, true );
 	memcpy( temp, buf, length );
 
-	temp = GLPreProcessGLSLShader( stage, temp, &length, true );
+	temp = GLPreProcessGLSLShader( stage, temp, &length, true, directory );
 
 	XGL_CALL( glShaderSource( stage->internal.id, 1, ( const GLchar ** ) &temp, ( GLint * ) &length ) );
 	XGL_CALL( glCompileShader( stage->internal.id ) );

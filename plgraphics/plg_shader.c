@@ -22,7 +22,7 @@
  * @return the new shader stage.
  */
 PLGShaderStage *PlgCreateShaderStage( PLGShaderStageType type ) {
-	PLGShaderStage *stage = PlCAllocA( 1, sizeof( PLGShaderStage ) );
+	PLGShaderStage *stage = PL_NEW( PLGShaderStage );
 	stage->type = type;
 
 	CallGfxFunction( CreateShaderStage, stage );
@@ -56,10 +56,10 @@ void PlgDestroyShaderStage( PLGShaderStage *stage ) {
  * @param buf pointer to buffer containing the shader we're compiling.
  * @param length the length of the buffer.
  */
-void PlgCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length ) {
+void PlgCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length, const char *localDirectory ) {
 	PlClearError();
 
-	CallGfxFunction( CompileShaderStage, stage, buf, length );
+	CallGfxFunction( CompileShaderStage, stage, buf, length, localDirectory );
 }
 
 /**
@@ -80,7 +80,7 @@ void PlgSetShaderStageDefinitions( PLGShaderStage *stage, const char definitions
  */
 PLGShaderStage *PlgParseShaderStage( PLGShaderStageType type, const char *buf, size_t length ) {
 	PLGShaderStage *stage = PlgCreateShaderStage( type );
-	PlgCompileShaderStage( stage, buf, length );
+	PlgCompileShaderStage( stage, buf, length, NULL );
 	if ( PlGetFunctionResult() == PL_RESULT_SHADER_COMPILE ) {
 		PlgDestroyShaderStage( stage );
 		return NULL;

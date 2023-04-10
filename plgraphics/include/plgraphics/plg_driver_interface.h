@@ -131,7 +131,7 @@ typedef struct PLGDriverImportTable {
 	void ( *SetShaderProgram )( PLGShaderProgram *program );
 	void ( *CreateShaderStage )( PLGShaderStage *stage );
 	void ( *DestroyShaderStage )( PLGShaderStage *stage );
-	void ( *CompileShaderStage )( PLGShaderStage *stage, const char *buf, size_t length );
+	void ( *CompileShaderStage )( PLGShaderStage *stage, const char *buf, size_t length, const char *directory );
 	void ( *SetShaderUniformValue )( PLGShaderProgram *program, int slot, const void *value, bool transpose );
 
 	// Stencil operations

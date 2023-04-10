@@ -567,6 +567,10 @@ static PLPluginExportTable exportTable = {
         .strncnt = pl_strncnt,
         .strchunksplit = pl_strchunksplit,
         .strinsert = pl_strinsert,
+
+        .SetupPath = PlSetupPath,
+        .AppendPath = PlAppendPath,
+        .PrefixPath = PlPrefixPath,
 };
 
 const PLPluginExportTable *PlGetExportTable( void ) {

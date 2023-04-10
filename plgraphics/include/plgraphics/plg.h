@@ -235,7 +235,7 @@ void PlgShutdownGraphics( void );
 PL_EXTERN PLGShaderStage *PlgCreateShaderStage( PLGShaderStageType type );
 PL_EXTERN PLGShaderStage *PlgParseShaderStage( PLGShaderStageType type, const char *buf, size_t length );
 PL_EXTERN PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type );
-PL_EXTERN void PlgCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length );
+PL_EXTERN void PlgCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length, const char *localDirectory );
 
 PL_EXTERN void PlgSetShaderStageDefinitions( PLGShaderStage *stage, const char definitions[][ PLG_MAX_DEFINITION_LENGTH ], unsigned int numDefinitions );
 
