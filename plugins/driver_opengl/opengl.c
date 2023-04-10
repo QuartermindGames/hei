@@ -1117,8 +1117,15 @@ static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *l
 					 * and hitting any limits */
 					gInterface->core->CloseFile( file );
 
+					PLPath tmp;
+					gInterface->core->SetupPath( tmp, true, "%s", path );
+					char *sep = strrchr( tmp, '/' );
+					if ( sep != NULL ) {
+						*sep = '\0';
+					}
+
 					/* now throw it into the pre-processor */
-					incBuf = GLPreProcessGLSLShader( stage, incBuf, &incLength, false, NULL );
+					incBuf = GLPreProcessGLSLShader( stage, incBuf, &incLength, false, tmp );
 
 					/* and finally, push it into our destination */
 					dstPos = InsertString( incBuf, &dstBuffer, &actualLength, &maxLength );
