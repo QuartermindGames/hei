@@ -151,7 +151,7 @@ FUNC_TEST_END()
 
 FUNC_TEST( pl_filesystem ) {
 	PLPath tmp;
-	PlSetPath( tmp, "testing123", true );
+	PlSetupPath( tmp, true, "testing123" );
 	if ( strcmp( tmp, "testing123" ) != 0 ) {
 		printf( "Failed to set path!\n" );
 		return TEST_RETURN_FAILURE;
