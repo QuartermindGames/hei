@@ -41,11 +41,16 @@ elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -W3")
 endif ()
 
+enable_testing()
+
 add_subdirectory(plcore)
 add_subdirectory(plgraphics)
 add_subdirectory(plmodel)
+add_subdirectory(plwindow)
 
-add_subdirectory(tests)
+if (CMAKE_TESTING_ENABLED)
+    add_subdirectory(tests)
+endif ()
 
 add_subdirectory(examples/pcmd)
 add_subdirectory(examples/cpj_dumper)
