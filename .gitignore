@@ -36,12 +36,16 @@
 *.db-wal
 *.tlog
 *.exp
+*.pc
 
-/build
-/.idea/
-**/cmake-build-debug/
-
-plcore/3rdparty/glew-2.2.0/glew.pc
+bin
+build
+.idea
+cmake-*
+Testing
 
 # PVS
+.PVS-Studio
+pvs-studio*
 *.PVS-Studio.*
+*.cfg
