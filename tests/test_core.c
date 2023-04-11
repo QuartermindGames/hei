@@ -113,20 +113,40 @@ FUNC_TEST( pl_filesystem ) {
 	PLPath tmp;
 	PlSetupPath( tmp, true, "testing123" );
 	if ( strcmp( tmp, "testing123" ) != 0 ) {
-		printf( "Failed to set path!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Failed to set path!\n" );
 	}
 
 	PlAppendPath( tmp, "_again.txt", true );
 	if ( strcmp( tmp, "testing123_again.txt" ) != 0 ) {
-		printf( "Failed to append path!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Failed to append path!\n" );
 	}
 
 	PlPrefixPath( tmp, "im_", true );
 	if ( strcmp( tmp, "im_testing123_again.txt" ) != 0 ) {
-		printf( "Failed to prefix path!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Failed to prefix path!\n" );
+	}
+
+	static const char *overflow = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+	                              "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+	                              "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+	                              "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+	                              "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+
+	if ( PlAppendPath( tmp, overflow, false ) != NULL ) {
+		RETURN_FAILURE( "Failed to catch path overflow for append!\n" );
+	}
+	if ( PlPrefixPath( tmp, overflow, false ) != NULL ) {
+		RETURN_FAILURE( "Failed to catch path overflow for prefix!\n" );
+	}
+
+	PlAppendPath( tmp, overflow, true );
+	if ( tmp[ strlen( tmp ) - 1 ] != 'x' ) {
+		RETURN_FAILURE( "Failed to append path with overflow!\n" );
+	}
+
+	PlPrefixPath( tmp, overflow, true );
+	if ( *tmp != 'x' ) {
+		RETURN_FAILURE( "Failed to prefix path with overflow!\n" );
 	}
 }
 FUNC_TEST_END()
@@ -399,16 +419,7 @@ int main( int argc, char **argv ) {
 		return EXIT_FAILURE;
 	}
 
-	bool allPassed = true;
-#define CALL_FUNC_TEST( NAME )                                       \
-	{                                                                \
-		int ret = test_##NAME();                                     \
-		if ( ret != TEST_RETURN_SUCCESS ) {                          \
-			fprintf( stderr, "Failed on " #NAME "!\n" );             \
-			if ( ret == TEST_RETURN_FATAL ) { return EXIT_FAILURE; } \
-			allPassed = false;                                       \
-		}                                                            \
-	}
+	TEST_RUN_INIT
 
 	CALL_FUNC_TEST( pl_array_vector )
 	CALL_FUNC_TEST( pl_filesystem )
@@ -427,10 +438,5 @@ int main( int argc, char **argv ) {
 	CALL_FUNC_TEST( HeapMemory )
 	CALL_FUNC_TEST( GroupMemory )
 
-	if ( allPassed )
-		printf( "\nAll tests passed successfully!\n" );
-	else
-		printf( "\nReached end but some tests failed!\n" );
-
-	return EXIT_SUCCESS;
+	TEST_RUN_END
 }

@@ -15,6 +15,17 @@ enum {
 	TEST_RETURN_FATAL,
 };
 
+#define TEST_RUN_INIT \
+	bool allPassed = true;
+#define TEST_RUN_END                                        \
+	if ( allPassed ) {                                      \
+		printf( "\nAll tests passed successfully!\n" );     \
+		return EXIT_SUCCESS;                                \
+	} else {                                                \
+		printf( "\nReached end but some tests failed!\n" ); \
+		return EXIT_FAILURE;                                \
+	}
+
 #define FUNC_TEST( NAME )         \
 	uint8_t test_##NAME( void ) { \
 		printf( " " #NAME "... " );
@@ -31,3 +42,7 @@ enum {
 			allPassed = false;                                       \
 		}                                                            \
 	}
+
+#define RETURN_FAILURE( ... ) \
+	printf( __VA_ARGS__ );    \
+	return TEST_RETURN_FAILURE

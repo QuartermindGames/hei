@@ -26,14 +26,9 @@ int main( int argc, char **argv ) {
 
 	PlmRegisterStandardModelLoaders( PLM_MODEL_FILEFORMAT_ALL );
 
-	bool allPassed = true;
+	TEST_RUN_INIT
 
 	CALL_FUNC_TEST( format_ply )
 
-	if ( allPassed )
-		printf( "\nAll tests passed successfully!\n" );
-	else
-		printf( "\nReached end but some tests failed!\n" );
-
-	return EXIT_SUCCESS;
+	TEST_RUN_END
 }

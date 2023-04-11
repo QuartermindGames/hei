@@ -107,7 +107,7 @@ const char *PlAppendPath( PLPath dst, const char *src, bool truncate ) {
 		PlReportErrorF( PL_RESULT_MEMORY_EOA, "source path is too long" );
 		return NULL;
 	}
-	strncpy( &dst[ as ], src, sizeof( PLPath ) - ( as - 1 ) );
+	snprintf( &dst[ as ], sizeof( PLPath ) - as, "%s", src );
 	PlNormalizePath( dst, sizeof( PLPath ) );
 	return dst;
 }
@@ -119,8 +119,11 @@ const char *PlPrefixPath( PLPath dst, const char *src, bool truncate ) {
 		PlReportErrorF( PL_RESULT_MEMORY_EOA, "source path is too long" );
 		return NULL;
 	}
-	memmove( &dst[ bs ], dst, as );
-	strncpy( dst, src, bs );
+
+	PLPath tmp;
+	snprintf( tmp, sizeof( tmp ), "%s%s", src, dst );
+	strcpy( dst, tmp );
+
 	PlNormalizePath( dst, sizeof( PLPath ) );
 	return dst;
 }
