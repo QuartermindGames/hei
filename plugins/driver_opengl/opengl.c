@@ -29,7 +29,6 @@ SOFTWARE.
 
 #include <plcore/pl_parse.h>
 
-#define GLEW_STATIC
 #include <GL/glew.h>
 
 #define DEBUG_GL
