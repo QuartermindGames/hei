@@ -105,10 +105,9 @@ bool PlIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollision
 
 PLCollision PlIsSphereIntersectingPlane( const PLCollisionSphere *sphere, const PLCollisionPlane *plane ) {
 	PLCollision collision;
-	memset( &collision, 0, sizeof( PLCollision ) );
+	PL_ZERO_( collision );
 
-	PLVector3 pDist;
-	pDist = PlSubtractVector3( sphere->origin, plane->origin );
+	PLVector3 pDist = PlSubtractVector3( sphere->origin, plane->origin );
 
 	/* distance from the sphere to the plane */
 	float distance = PlVector3DotProduct( plane->normal, pDist ) - ( sphere->radius * 2.0f );
@@ -116,6 +115,31 @@ PLCollision PlIsSphereIntersectingPlane( const PLCollisionSphere *sphere, const 
 	collision.contactNormal = plane->normal;
 	collision.contactPoint = PlScaleVector3F( PlSubtractVector3( sphere->origin, plane->normal ), distance );
 	collision.penetration = -distance;
+
+	return collision;
+}
+
+PLCollision PlIsAABBIntersectingPlane( const PLCollisionAABB *aabb, const PLCollisionPlane *plane ) {
+	PLCollision collision;
+	PL_ZERO_( collision );
+
+	float distance = PlVector3DotProduct( plane->normal, aabb->origin ) -
+	                 PlVector3DotProduct( plane->normal, plane->origin );
+
+	PLVector3 halfDimension;
+	halfDimension.x = ( aabb->maxs.x - aabb->mins.x ) / 2.0f;
+	halfDimension.y = ( aabb->maxs.y - aabb->mins.y ) / 2.0f;
+	halfDimension.z = ( aabb->maxs.z - aabb->mins.z ) / 2.0f;
+
+	float extents = fabsf( halfDimension.x * plane->normal.x ) +
+	                fabsf( halfDimension.y * plane->normal.y ) +
+	                fabsf( halfDimension.z * plane->normal.z );
+
+	if ( distance > extents ) {
+		collision.penetration = extents - distance;
+		collision.contactNormal = plane->normal;
+		collision.contactPoint = PlScaleVector3F( PlAddVector3( aabb->origin, plane->normal ), collision.penetration );
+	}
 
 	return collision;
 }
