@@ -1342,30 +1342,33 @@ char *PlReadString( PLFile *ptr, char *str, size_t size ) {
 		return NULL;
 	}
 
+	char *result = NULL;
 	if ( ptr->fptr != NULL ) {
-		return fgets( str, ( int ) size, ptr->fptr );
+		result = fgets( str, ( int ) size, ptr->fptr );
+	} else {
+		if ( ( char * ) ptr->pos >= ( char * ) ptr->data + ptr->size ) {
+			PlReportBasicError( PL_RESULT_FILEREAD );
+			return NULL;
+		}
+
+		char *nl = memchr( ptr->pos, '\n', ptr->size - ( ( char * ) ptr->pos - ( char * ) ptr->data ) );
+		if ( nl == NULL ) {
+			nl = ( char * ) ( ( char * ) ptr->data + ptr->size - 1 );
+		}
+
+		size_t bytesToCopy = nl - ( char * ) ptr->pos + 1;
+		if ( bytesToCopy >= size ) {
+			bytesToCopy = size - 1;
+			nl = ( char * ) ( ( char * ) ptr->pos + bytesToCopy - 1 );
+		}
+
+		memcpy( str, ptr->pos, bytesToCopy );
+		str[ bytesToCopy ] = '\0';
+		ptr->pos = ( uint8_t * ) ( nl + 1 );
+		result = str;
 	}
 
-	if ( ( char * ) ptr->pos >= ( char * ) ptr->data + ptr->size ) {
-		PlReportBasicError( PL_RESULT_FILEREAD );
-		return NULL;
-	}
-
-	char *nl = memchr( ptr->pos, '\n', ptr->size - ( ( char * ) ptr->pos - ( char * ) ptr->data ) );
-	if ( nl == NULL ) {
-		nl = ( char * ) ( ( char * ) ptr->data + ptr->size - 1 );
-	}
-
-	if ( ( nl - ( char * ) ptr->pos ) + 1 >= ( signed long ) size ) {
-		nl = ( char * ) ( ( char * ) ptr->pos + size );
-	}
-
-	memcpy( str, ptr->pos, ( nl - ( char * ) ptr->pos ) + 1 );
-	str[ ( nl - ( char * ) ptr->pos ) + 1 ] = '\0';
-
-	ptr->pos = ( uint8_t * ) ( nl + 1 );
-
-	return str;
+	return result;
 }
 
 bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
