@@ -474,6 +474,10 @@ static PLImage *CreateImageOldWrapper( uint8_t *buf, unsigned int width, unsigne
 	return PlCreateImage( buf, width, height, 0, colourFormat, dataFormat );
 }
 
+static void RegisterPackageLoaderWrapper( const char *extension, PLPackage *( *Callback )( const char * ) ) {
+	PlRegisterPackageLoader( extension, Callback, NULL );
+}
+
 static PLPluginExportTable exportTable = {
         .ReportError = PlReportError,
         .GetError = PlGetError,
@@ -506,7 +510,7 @@ static PLPluginExportTable exportTable = {
         .CacheFile = PlCacheFile,
         .NormalizePath = PlNormalizePath,
 
-        .RegisterPackageLoader = PlRegisterPackageLoader,
+        .RegisterPackageLoader = RegisterPackageLoaderWrapper,
         .RegisterImageLoader = PlRegisterImageLoader,
 
         /* pl_image.h */
