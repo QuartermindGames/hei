@@ -24,6 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org>
 */
+// Purpose: Example application for using console API
 
 #include "pcmd.h"
 
@@ -218,21 +219,6 @@ static void Cmd_Exit( unsigned int argc, char **argv ) {
 
 /*************************************************************/
 
-PLPackage *IStorm_LST_LoadFile( const char *path );
-PLPackage *Outcast_OPK_LoadFile( const char *path );
-PLPackage *FTactics_PAK_LoadFile( const char *path );
-PLPackage *Sentient_VSR_LoadFile( const char *path );
-PLPackage *Mortyr_HAL_LoadFile( const char *path );
-PLPackage *Eradicator_RID_LoadFile( const char *path );
-PLPackage *Outwars_FF_LoadFile( const char *path );
-PLPackage *Angel_DAT_LoadPackage( const char *path );
-PLPackage *AITD_PAK_LoadPackage( const char *path );
-PLPackage *WFear_INU_LoadPackage( const char *path );
-
-PLImage *Angel_TEX_ParseImage( PLFile *file );
-
-PLPackage *asa_format_tre_load( const char *path );
-
 PL_NORETURN( static void MainLoop( void ) ) {
 #define MAX_COMMAND_LENGTH 256
 	static char cmdLine[ MAX_COMMAND_LENGTH ];
@@ -269,20 +255,46 @@ int main( int argc, char **argv ) {
 
 	PlmRegisterStandardModelLoaders( PLM_MODEL_FILEFORMAT_ALL );
 
+	PLPackage *ROF_ParseFile( PLFile * file ); // package_rof.c
+	PlRegisterPackageLoader( "rof", NULL, ROF_ParseFile );
+
+	PLPackage *IStorm_LST_LoadFile( const char *path );
 	PlRegisterPackageLoader( "lst", IStorm_LST_LoadFile, NULL );
+
+	PLPackage *Outcast_OPK_LoadFile( const char *path );
 	PlRegisterPackageLoader( "pak", Outcast_OPK_LoadFile, NULL );
+
+	PLPackage *AITD_PAK_LoadPackage( const char *path );
 	PlRegisterPackageLoader( "pak", AITD_PAK_LoadPackage, NULL );
+
+	PLPackage *FTactics_PAK_LoadFile( const char *path );
 	PlRegisterPackageLoader( "pak", FTactics_PAK_LoadFile, NULL );
+
+	PLPackage *Sentient_VSR_LoadFile( const char *path );
 	PlRegisterPackageLoader( "vsr", Sentient_VSR_LoadFile, NULL );
+
+	PLPackage *Mortyr_HAL_LoadFile( const char *path );
 	PlRegisterPackageLoader( "hal", Mortyr_HAL_LoadFile, NULL );
+
+	PLPackage *Eradicator_RID_LoadFile( const char *path );
 	PlRegisterPackageLoader( "rid", Eradicator_RID_LoadFile, NULL );
 	PlRegisterPackageLoader( "rim", Eradicator_RID_LoadFile, NULL );
+
+	PLPackage *Outwars_FF_LoadFile( const char *path );
 	PlRegisterPackageLoader( "ff", Outwars_FF_LoadFile, NULL );
+
+	PLPackage *Angel_DAT_LoadPackage( const char *path );
 	PlRegisterPackageLoader( "dat", Angel_DAT_LoadPackage, NULL );
+
+	PLPackage *WFear_INU_LoadPackage( const char *path );
 	PlRegisterPackageLoader( "inu", WFear_INU_LoadPackage, NULL );
+
+	PLPackage *asa_format_tre_load( const char *path );
 	PlRegisterPackageLoader( "tre", asa_format_tre_load, NULL );
+
 	PlRegisterPackageLoader( "wad", NULL, PlParseBREWadPackage );
 
+	PLImage *Angel_TEX_ParseImage( PLFile * file );
 	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
 
 	PLPath exeDir;

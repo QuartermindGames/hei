@@ -44,6 +44,7 @@ add_executable(pcmd
         ../../extras/mortyr_hal.c
         ../../extras/outcast_opk.c
         ../../extras/outwars_ff.c
+        ../../extras/package_rof.c
         ../../extras/sentient_vsr.c
         )
 

@@ -301,7 +301,7 @@ PLPackage *PlLoadPackage( const char *path ) {
 	const char *ext = PlGetFileExtension( path );
 	for ( unsigned int i = 0; i < num_package_loaders; ++i ) {
 		if ( package_loaders[ i ].LoadFunction == NULL ) {
-			break;
+			continue;
 		}
 
 		if ( !PL_INVALID_STRING( ext ) && !PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
@@ -321,12 +321,46 @@ PLPackage *PlLoadPackage( const char *path ) {
 		}
 	}
 
-	if ( PlGetFunctionResult() == PL_RESULT_SUCCESS ) {
+	//TODO: this should replace the above, eventually...
+
+	PLFile *file = PlOpenFile( path, false );
+	if ( file == NULL ) {
+		return NULL;
+	}
+
+	PLPackage *package = NULL;
+	for ( unsigned int i = 0; i < num_package_loaders; ++i ) {
+		if ( package_loaders[ i ].ParseFunction == NULL ) {
+			continue;
+		}
+
+		if ( !PL_INVALID_STRING( ext ) && !PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
+			if ( pl_strncasecmp( ext, package_loaders[ i ].ext, sizeof( package_loaders[ i ].ext ) ) == 0 ) {
+				package = package_loaders[ i ].ParseFunction( file );
+				if ( package != NULL ) {
+					break;
+				}
+			}
+		} else if ( PL_INVALID_STRING( ext ) && PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
+			package = package_loaders[ i ].ParseFunction( file );
+			if ( package != NULL ) {
+				break;
+			}
+		}
+
+		PlRewindFile( file );
+	}
+
+	PlCloseFile( file );
+
+	if ( package != NULL ) {
+		strncpy( package->path, path, sizeof( package->path ) );
+	} else if ( PlGetFunctionResult() == PL_RESULT_SUCCESS ) {
 		/* this was clearly not the case... */
 		PlReportBasicError( PL_RESULT_UNSUPPORTED );
 	}
 
-	return NULL;
+	return package;
 }
 
 PLFile *PlLoadPackageFileByIndex( PLPackage *package, unsigned int index ) {
