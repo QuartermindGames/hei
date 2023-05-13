@@ -429,6 +429,8 @@ unsigned int PlGetImageSize( PLImageFormat format, unsigned int width, unsigned 
  * of one byte, returns ZERO. */
 unsigned int PlGetImageFormatPixelSize( PLImageFormat format ) {
 	switch ( format ) {
+		case PL_IMAGEFORMAT_R8:
+			return 1;
 		case PL_IMAGEFORMAT_RGBA4:
 		case PL_IMAGEFORMAT_RGB5A1:
 		case PL_IMAGEFORMAT_RGB565:
@@ -453,6 +455,8 @@ unsigned int PlGetImageFormatPixelSize( PLImageFormat format ) {
  */
 unsigned int PlGetNumImageFormatChannels( PLImageFormat format ) {
 	switch ( format ) {
+		case PL_IMAGEFORMAT_R8:
+			return 1;
 		case PL_IMAGEFORMAT_RGB4:
 		case PL_IMAGEFORMAT_RGB5:
 		case PL_IMAGEFORMAT_RGB565:

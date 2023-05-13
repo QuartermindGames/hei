@@ -416,6 +416,8 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 
 static unsigned int TranslateImageFormat( PLImageFormat format ) {
 	switch ( format ) {
+		case PL_IMAGEFORMAT_R8:
+			return GL_R8;
 		case PL_IMAGEFORMAT_RGB8:
 			return GL_RGB8;
 		case PL_IMAGEFORMAT_RGBA8:
@@ -452,6 +454,8 @@ static unsigned int GetStorageFormatForImageFormat( PLImageFormat format ) {
 
 static unsigned int GetColourFormatForImageFormat( PLImageFormat format ) {
 	switch ( format ) {
+		case PL_IMAGEFORMAT_R8:
+			return  GL_RED;
 		case PL_IMAGEFORMAT_RGB4:
 		case PL_IMAGEFORMAT_RGB5:
 		case PL_IMAGEFORMAT_RGB565:
