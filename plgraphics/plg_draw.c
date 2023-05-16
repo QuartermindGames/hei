@@ -255,6 +255,10 @@ void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize, const PLCol
 }
 
 void PlgDrawDottedGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColour *colour ) {
+	if ( gridSize == 0 ) {
+		return;
+	}
+
 	PlgImmBegin( PLG_MESH_POINTS );
 
 	for ( int r = 0; r < h + 1; r += ( int ) gridSize ) {
