@@ -10852,5 +10852,17 @@ static const char *vexxStrings[] = {
 "data\\text\\world4.txm",
 "data\\text\\world6.txm",
 "data\\text\\zones.txm",
+
+"data\\textures\\onscreengraphics\\fonts\\button1.tgax",
+"data\\textures\\onscreengraphics\\fonts\\button2.tgax",
+"data\\textures\\onscreengraphics\\fonts\\button3.tgax",
+"data\\textures\\onscreengraphics\\fonts\\button4.tgax",
+"data\\textures\\onscreengraphics\\fonts\\button5.tgax",
+"data\\textures\\onscreengraphics\\fonts\\button6.tgax",
+"data\\textures\\onscreengraphics\\fonts\\button7.tgax",
+"data\\textures\\onscreengraphics\\fonts\\button8.tgax",
+"data\\textures\\onscreengraphics\\fonts\\button9.tgax",
+"data\\textures\\onscreengraphics\\fonts\\button10.tgax",
+"data\\textures\\onscreengraphics\\fonts\\button11.tgax",
 };
 static const unsigned int numVexxStrings = PL_ARRAY_ELEMENTS( vexxStrings );
