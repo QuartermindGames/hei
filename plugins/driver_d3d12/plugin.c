@@ -73,10 +73,6 @@ PL_EXPORT const PLGDriverImportTable *InitializeGraphicsDriver( const PLGDriverE
 	        .SetTextureAnisotropy = NULL,
 	        .ActiveTexture = NULL,
 
-	        .CreateCamera = NULL,
-	        .DestroyCamera = NULL,
-	        .SetupCamera = NULL,
-
 	        .CreateShaderProgram = NULL,
 	        .DestroyShaderProgram = NULL,
 	        .AttachShaderStage = NULL,

@@ -1,7 +1,3 @@
-#[[ Copyright (C) 2021 Mark E Sowden <markelswo@gmail.com> ]]
-
-project(pl_vk_driver)
-
 add_library(
         pl_vk_driver SHARED
         vulkan.c
