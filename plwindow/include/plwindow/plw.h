@@ -43,6 +43,6 @@ void PlwDestroyWindow( PLWWindow *window );
 
 void PlwGetWindowPosition( PLWWindow *window, int *x, int *y );
 
-void PlwSwapWindow( PLWWindow *window );
+void PlwSwapBuffers( PLWWindow *window );
 
 PL_EXTERN_C_END

@@ -161,7 +161,20 @@ void PlwDestroyWindow( PLWWindow *window ) {
 	PL_DELETE( window );
 }
 
-void PlGetWindowPosition( PLWWindow *window, int *x, int *y ) {
+void PlwSwapBuffers( PLWWindow *window ) {
+#if defined( _WIN32 )
+
+	NativeWin32WindowHandle *nativeWindow = ( NativeWin32WindowHandle * ) window->nativeWindow;
+	SwapBuffers( nativeWindow->deviceContext );
+
+#else
+
+#	error "SwapBuffers unsupported!"
+
+#endif
+}
+
+void PlwGetWindowPosition( PLWWindow *window, int *x, int *y ) {
 	*x = 0;
 	*y = 0;
 
