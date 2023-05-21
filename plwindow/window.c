@@ -4,6 +4,16 @@
 
 #include "window_private.h"
 
+#if defined( __linux__ )
+
+static Display *display = NULL;
+
+typedef struct HeiNativeWindow {
+	Window win;
+} HeiNativeWindow;
+
+#endif
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Error Management
 
@@ -94,6 +104,39 @@ PLWWindow *PlwCreateWindow( const char *title, int width, int height ) {
 
 	return window;
 
+#elif defined( __linux__ )
+
+	if ( display == NULL ) {
+		display = XOpenDisplay( NULL );
+		if ( display == NULL ) {
+			PlwSetError( PLW_ERROR_WINDOW_CREATE, "failed to open display" );
+			return NULL;
+		}
+	}
+
+	int screen = XDefaultScreen( display );
+	Window win = XCreateSimpleWindow( display, XRootWindow( display, screen ),
+	                                  0, 0,
+	                                  width, height,
+	                                  1,
+	                                  XBlackPixel( display, screen ),
+	                                  XWhitePixel( display, screen ) );
+	if ( win == None ) {
+		//todo: make this more verbose...
+		PlwSetError( PLW_ERROR_WINDOW_CREATE, "failed to create window" );
+		return NULL;
+	}
+
+	XStoreName( display, win, title );
+
+	XMapWindow( display, win );
+	XFlush( display );
+
+	PLWWindow *window = PL_NEW( PLWWindow );
+	window->nativeWindow = PL_NEW( HeiNativeWindow );
+	( ( HeiNativeWindow * ) window->nativeWindow )->win = win;
+	return window;
+
 #else
 
 #	error "CreateWindow unsupported!"
@@ -118,7 +161,20 @@ void PlwDestroyWindow( PLWWindow *window ) {
 	PL_DELETE( window );
 }
 
-void PlGetWindowPosition( PLWWindow *window, int *x, int *y ) {
+void PlwSwapBuffers( PLWWindow *window ) {
+#if defined( _WIN32 )
+
+	NativeWin32WindowHandle *nativeWindow = ( NativeWin32WindowHandle * ) window->nativeWindow;
+	SwapBuffers( nativeWindow->deviceContext );
+
+#else
+
+#	error "SwapBuffers unsupported!"
+
+#endif
+}
+
+void PlwGetWindowPosition( PLWWindow *window, int *x, int *y ) {
 	*x = 0;
 	*y = 0;
 
@@ -132,6 +188,17 @@ void PlGetWindowPosition( PLWWindow *window, int *x, int *y ) {
 
 	*x = position.left;
 	*y = position.top;
+
+#elif defined( __linux__ )
+
+	XWindowAttributes attributes;
+	if ( XGetWindowAttributes( display, ( Window ) window->nativeWindow, &attributes ) != None ) {
+		//todo: make this more verbose...
+		PlwSetError( PLW_ERROR_WINDOW_GET, "failed to fetch window attributes" );
+		return;
+	}
+	*x = attributes.x;
+	*y = attributes.y;
 
 #else
 

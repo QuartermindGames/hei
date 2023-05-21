@@ -30,6 +30,11 @@ SOFTWARE.
 #include <plcore/pl_parse.h>
 
 #include <GL/glew.h>
+#if defined( _WIN32 )
+#	include <GL/wglew.h>
+#else
+#	include <GL/glxew.h>
+#endif
 
 #define DEBUG_GL
 
@@ -1530,7 +1535,7 @@ static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 /////////////////////////////////////////////////////////////
 // Generic State Management
 
-unsigned int TranslateGraphicsState( PLGDrawState state ) {
+static unsigned int TranslateGraphicsState( PLGDrawState state ) {
 	switch ( state ) {
 		default:
 			break;
@@ -1563,7 +1568,7 @@ unsigned int TranslateGraphicsState( PLGDrawState state ) {
 	return 0;
 }
 
-void GLEnableState( PLGDrawState state ) {
+static void GLEnableState( PLGDrawState state ) {
 	unsigned int gl_state = TranslateGraphicsState( state );
 	if ( !gl_state ) {
 		if ( state == PLG_GFX_STATE_WIREFRAME ) {
@@ -1577,7 +1582,7 @@ void GLEnableState( PLGDrawState state ) {
 	XGL_CALL( glEnable( gl_state ) );
 }
 
-void GLDisableState( PLGDrawState state ) {
+static void GLDisableState( PLGDrawState state ) {
 	unsigned int gl_state = TranslateGraphicsState( state );
 	if ( !gl_state ) {
 		if ( state == PLG_GFX_STATE_WIREFRAME ) {
@@ -1653,7 +1658,7 @@ static void MessageCallback(
 }
 #endif
 
-PLFunctionResult GLInitialize( void ) {
+static PLFunctionResult GLInitialize( void ) {
 	glewExperimental = true;
 	GLenum err = glewInit();
 	if ( err != GLEW_OK ) {
@@ -1714,7 +1719,7 @@ PLFunctionResult GLInitialize( void ) {
 	return PL_RESULT_SUCCESS;
 }
 
-void GLShutdown( void ) {
+static void GLShutdown( void ) {
 #if defined( DEBUG_GL )
 	if ( XGL_VERSION( 4, 3 ) ) {
 		XGL_CALL( glDisable( GL_DEBUG_OUTPUT ) );
@@ -1722,6 +1727,8 @@ void GLShutdown( void ) {
 	}
 #endif
 }
+
+/////////////////////////////////////////////////////////////
 
 PLGDriverImportTable graphicsInterface = {
         .Initialize = GLInitialize,

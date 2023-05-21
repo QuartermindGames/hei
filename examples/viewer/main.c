@@ -25,13 +25,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 */
 
-#include <PL/pl_graphics.h>
-#include <PL/pl_graphics_camera.h>
-#include <PL/platform_console.h>
-#include <PL/platform_filesystem.h>
-#include <PL/platform_math.h>
-#include <PL/platform_model.h>
-#include <PL/platform_package.h>
+#include <plcore/pl.h>
+#include <plcore/pl_package.h>
+#include <plcore/pl_console.h>
+
+#include <plgraphics/plg.h>
+#include <plgraphics/plg_camera.h>
+
+#include <plmodel/plm.h>
+
+#include <plwindow/plw.h>
 
 #include "../shared.h"
 
@@ -40,13 +43,14 @@ For more information, please refer to <http://unlicense.org>
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 3
 
-#define WIDTH 800
+#define WIDTH  800
 #define HEIGHT 600
 
 #define CENTER_X WIDTH / 2
 #define CENTER_Y HEIGHT / 2
 
-static PLCamera *mainCamera = NULL;
+static PLGCamera *mainCamera = NULL;
+static PLWWindow *mainWindow = NULL;
 
 enum {
 	VIEW_MODE_LIT,
@@ -120,12 +124,10 @@ static void ProcessKeyboard( void ) {
 }
 
 // loads a model in and then frees it
-static void TempModelLoad( const char *path, void *userData ) {
-	plUnused( userData );
-
-	PLModel *model = plLoadModel( path );
+static void TempModelLoad( const char *path, PL_UNUSED void *userData ) {
+	PLMModel *model = PlmLoadModel( path );
 	if ( model != NULL ) {
-		plDestroyModel( model );
+		PlmDestroyModel( model );
 	}
 }
 
@@ -141,12 +143,16 @@ int main( int argc, char **argv ) {
 	PRINT( "  WASD   - move camera\n" );
 	PRINT( "\n-------------------------------------------------------------------------\n\n" );
 
-	plInitialize( argc, argv );
-	plSetupLogOutput( "./viewer.log" );
+	if ( PlInitialize( argc, argv ) != PL_RESULT_SUCCESS ) {
+		PRINT( "Failed to initialize plcore: %s\n", PlGetError() );
+		return EXIT_FAILURE;
+	}
 
-	plRegisterStandardPackageLoaders();
-	plRegisterStandardModelLoaders( PL_MODEL_FILEFORMAT_ALL );
-	plRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
+	PlSetupLogOutput( "viewer.log" );
+
+	PlRegisterStandardPackageLoaders();
+	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
+	PlmRegisterStandardModelLoaders( PLM_MODEL_FILEFORMAT_ALL );
 
 	if ( argc < 2 ) {
 		PRINT( " viewer -<optional mode> <model path>\n" );
@@ -162,9 +168,9 @@ int main( int argc, char **argv ) {
 	bool scanDirectory = false;
 	bool useMouseLook = false;
 
-	if ( plHasCommandLineArgument( "-smd" ) ) {
+	if ( PlHasCommandLineArgument( "-smd" ) ) {
 		exportModel = true;
-	} else if ( plHasCommandLineArgument( "-scan" ) ) {
+	} else if ( PlHasCommandLineArgument( "-scan" ) ) {
 		scanDirectory = true;
 	}
 
@@ -193,52 +199,47 @@ int main( int argc, char **argv ) {
 			return EXIT_FAILURE;
 		}
 
-		plScanDirectory( model_path, model_extension, TempModelLoad, false, NULL );
+		PlScanDirectory( model_path, model_extension, TempModelLoad, false, NULL );
 		return EXIT_SUCCESS;
 	}
 
-#if 0
-	mainWindow = plCreateWindow( WIDTH, HEIGHT, TITLE );
-	if ( mainWindow ) {
-		PRINT_ERROR( "Failed to create window!\n%s\n", plGetError() );
+	mainWindow = PlwCreateWindow( TITLE, WIDTH, HEIGHT );
+	if ( mainWindow == NULL ) {
+		PRINT_ERROR( "Failed to create window: %s\n", PlwGetLastErrorMessage() );
 	}
-#endif
 
-	plInitializeSubSystems( PL_SUBSYSTEM_GRAPHICS );
-	plSetGraphicsMode( NULL );
+	PlgInitializeGraphics();
 
-	PLModel *model = plLoadModel( model_path );
+	PLMModel *model = PlmLoadModel( model_path );
 	if ( model == NULL ) {
-		PRINT_ERROR( "Failed to load model \"%s\"!\n%s", model_path, plGetError() );
+		PRINT_ERROR( "Failed to load model \"%s\"!\n%s", model_path, PlGetError() );
 	}
 
 	if ( exportModel ) {
-		if ( !plWriteModel( "output", model, PL_MODEL_OUTPUT_SMD ) ) {
-			PRINT_ERROR( "Failed to write model \"%s\"!\n%s\n", model->name, plGetError() );
+		if ( !PlmWriteModel( "output", model, PLM_MODEL_OUTPUT_SMD ) ) {
+			PRINT_ERROR( "Failed to write model \"%s\"!\n%s\n", model->name, PlGetError() );
 		}
 		return EXIT_SUCCESS;
 	}
 
-	plSetClearColour( PLColour( 0, 0, 128, 255 ) );
+	PlgSetClearColour( PLColour( 0, 0, 128, 255 ) );
 
-	mainCamera = plCreateCamera();
+	mainCamera = PlgCreateCamera();
 	if ( mainCamera == NULL ) {
 		PRINT_ERROR( "Failed to create camera!\n" );
 	}
-	mainCamera->mode = PL_CAMERA_MODE_PERSPECTIVE;
+	mainCamera->mode = PLG_CAMERA_MODE_PERSPECTIVE;
 	mainCamera->fov = 75.0f;
 	mainCamera->position = PLVector3( 0, 2, -50 );
-	mainCamera->viewport.w = WIDTH;
-	mainCamera->viewport.h = HEIGHT;
 
-	plSetDepthBufferMode( PL_DEPTHBUFFER_ENABLE );
-	plSetCullMode( PL_CULL_NONE );
+	PlgSetDepthBufferMode( PLG_DEPTHBUFFER_ENABLE );
+	PlgSetCullMode( PLG_CULL_NONE );
 
-	PLLight lights[ 4 ];
-	memset( &lights, 0, sizeof( PLLight ) * 4 );
+	PLGLight lights[ 4 ];
+	memset( &lights, 0, sizeof( PLGLight ) * 4 );
 	lights[ 0 ].position = PLVector3( 0, 0, 0 );
-	lights[ 0 ].colour = plCreateColour4f( 1.5f, .5f, .5f, 128.f );
-	lights[ 0 ].type = PL_LIGHT_TYPE_OMNI;
+	lights[ 0 ].colour = PlCreateColour4F( 1.5f, .5f, .5f, 128.f );
+	lights[ 0 ].type = PLG_LIGHT_TYPE_OMNI;
 
 	/* compile shaders */
 
@@ -252,17 +253,17 @@ int main( int argc, char **argv ) {
 	        "   gl_FragColor = vec4(1,1,1,1);"
 	        "}" };
 
-	PLShaderProgram *program = plCreateShaderProgram();
-	plRegisterShaderStageFromMemory( program, vertex_stage, strlen( vertex_stage ), PL_SHADER_TYPE_VERTEX );
-	plRegisterShaderStageFromMemory( program, fragment_stage, strlen( fragment_stage ), PL_SHADER_TYPE_FRAGMENT );
+	PLGShaderProgram *program = PlgCreateShaderProgram();
+	PlgRegisterShaderStageFromMemory( program, vertex_stage, strlen( vertex_stage ), PLG_SHADER_TYPE_VERTEX );
+	PlgRegisterShaderStageFromMemory( program, fragment_stage, strlen( fragment_stage ), PLG_SHADER_TYPE_FRAGMENT );
 
-	plLinkShaderProgram( program );
-	plSetShaderProgram( program );
+	PlgLinkShaderProgram( program );
+	PlgSetShaderProgram( program );
 
 	/* done, now for main rendering loop! */
 
-	while ( plIsRunning() ) {
-        static PLVector3 object_angles = { 0, 0 };
+	while ( true ) {
+		static PLVector3 object_angles = { 0, 0 };
 
 #if 0 /* todo: windowing... */
 		SDL_PumpEvents();
@@ -320,15 +321,15 @@ int main( int argc, char **argv ) {
 
 		ProcessKeyboard();
 
-		plSetupCamera( mainCamera );
+		PlgSetupCamera( mainCamera );
 
-		plClearBuffers( PL_BUFFER_COLOUR | PL_BUFFER_DEPTH );
+		PlgClearBuffers( PLG_BUFFER_COLOUR | PLG_BUFFER_DEPTH );
 
-		plLoadIdentityMatrix();
-		plPushMatrix();
-		plRotateMatrix( object_angles.y, 1, 0, 0 );
-		plRotateMatrix( object_angles.x, 0, 1, 0 );
-		plRotateMatrix( object_angles.z, 0, 0, 1 );
+		PlLoadIdentityMatrix();
+		PlPushMatrix();
+		PlRotateMatrix( object_angles.y, 1, 0, 0 );
+		PlRotateMatrix( object_angles.x, 0, 1, 0 );
+		PlRotateMatrix( object_angles.z, 0, 0, 1 );
 
 		switch ( viewMode ) {
 			default:
@@ -337,23 +338,22 @@ int main( int argc, char **argv ) {
 			case VIEW_MODE_LIT:
 			case VIEW_MODE_WEIGHTS:
 			case VIEW_MODE_WIREFRAME:
-				plDrawModel( model );
+				PlmDrawModel( model );
 				break;
 
 			case VIEW_MODE_SKELETON:
-				plDrawModelSkeleton( model );
+				PlmDrawModelSkeleton( model );
 				break;
 		}
 
-#if 0
-		plSwapWindow( mainWindow );
-#endif
+		PlwSwapBuffers( mainWindow );
 	}
 
-	plDestroyModel( model );
-	plDestroyCamera( mainCamera );
+	PlmDestroyModel( model );
+	PlgDestroyCamera( mainCamera );
 
-	plShutdown();
+	PlgShutdownGraphics();
+	PlShutdown();
 
 	return EXIT_SUCCESS;
 }

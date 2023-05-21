@@ -13,3 +13,8 @@ endif ()
 
 target_include_directories(plwindow PUBLIC include/)
 target_link_libraries(plwindow plcore plgraphics)
+
+if(UNIX)
+    find_package(X11 REQUIRED)
+    target_link_libraries(plwindow X11)
+endif()

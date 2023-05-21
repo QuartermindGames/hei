@@ -293,3 +293,7 @@ void PlmDrawModel( PLMModel *model ) {
 	PlgSetShaderProgram( old_program );
 	PlgSetTexture( NULL, 0 );
 }
+
+void PlmDrawModelSkeleton( PLMModel *model ) {
+	//TODO
+}

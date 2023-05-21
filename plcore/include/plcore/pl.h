@@ -146,8 +146,7 @@ typedef enum PLFunctionResult {
 //////////////////////////////////////////////////////////////////
 
 enum {
-	PL_BITFLAG( PL_SUBSYSTEM_GRAPHICS, 0 ),
-	PL_BITFLAG( PL_SUBSYSTEM_IO, 1 ),
+	PL_BITFLAG( PL_SUBSYSTEM_IO, 0 ),
 };
 
 #if defined( PL_INTERNAL )

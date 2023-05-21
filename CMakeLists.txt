@@ -27,6 +27,7 @@ cmake_minimum_required(VERSION 3.16)
 project(PlatformLibrary)
 
 option(PL_BUILD_PLUGINS "Build plugins" ON)
+option(PL_BUILD_EXAMPLES "Build example projects" ON)
 
 # Set all of our output directories.
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $<1:${CMAKE_SOURCE_DIR}/bin/>)
@@ -52,19 +53,21 @@ if (CMAKE_TESTING_ENABLED)
     add_subdirectory(tests)
 endif ()
 
-add_subdirectory(examples/pcmd)
-add_subdirectory(examples/cpj_dumper)
-
 if (PL_BUILD_PLUGINS)
     add_subdirectory(plugins/driver_opengl/)
     #add_subdirectory(plugins/driver_vulkan/)
-    if (MSVC)
+    if (WIN32)
         add_subdirectory(plugins/driver_d3d12/)
-    endif ()
-
-    if (WIN32 AND EXISTS "${CMAKE_SOURCE_DIR}/plugins/driver_glide/CMakeLists.txt")
-        add_subdirectory(plugins/driver_glide/)
+        if (EXISTS "${CMAKE_SOURCE_DIR}/plugins/driver_glide/CMakeLists.txt")
+            add_subdirectory(plugins/driver_glide/)
+        endif ()
     endif ()
 
     add_subdirectory(plugins/valve/)
 endif (PL_BUILD_PLUGINS)
+
+if (PL_BUILD_EXAMPLES)
+    add_subdirectory(examples/pcmd)
+    add_subdirectory(examples/cpj_dumper)
+    add_subdirectory(examples/viewer)
+endif ()

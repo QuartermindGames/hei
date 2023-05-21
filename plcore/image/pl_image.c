@@ -1,8 +1,6 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_image.h>
@@ -12,21 +10,29 @@
 #include "filesystem_private.h"
 #include "image_private.h"
 
-#define STBI_MALLOC( sz )        PlMAllocA( sz )
-#define STBI_REALLOC( p, newsz ) PlReAllocA( p, newsz )
-#define STBI_FREE( p )           PlFree( p )
-
-#define STBIW_MALLOC( sz )        PlMAllocA( sz )
-#define STBIW_REALLOC( p, newsz ) PlReAllocA( p, newsz )
-#define STBIW_FREE( p )           PlFree( p )
-
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #if defined( STB_IMAGE_WRITE_IMPLEMENTATION )
+#	define STBIW_MALLOC( sz )        PlMAllocA( sz )
+#	define STBIW_REALLOC( p, newsz ) PlReAllocA( p, newsz )
+#	define STBIW_FREE( p )           PlFree( p )
+
 #	include "stb_image_write.h"
+#endif
+
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#if defined( STB_IMAGE_RESIZE_IMPLEMENTATION )
+#	define STBIR_MALLOC( sz, ... ) PlMAllocA( sz )
+#	define STBIR_FREE( p, ... )    PlFree( p )
+
+#	include "stb_image_resize.h"
 #endif
 
 #define STB_IMAGE_IMPLEMENTATION
 #if defined( STB_IMAGE_IMPLEMENTATION )
+#	define STBI_MALLOC( sz )        PlMAllocA( sz )
+#	define STBI_REALLOC( p, newsz ) PlReAllocA( p, newsz )
+#	define STBI_FREE( p )           PlFree( p )
+
 #	define STB_IMAGE_WRITE_STATIC
 #	include "stb_image.h"
 
@@ -97,21 +103,22 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	} SImageLoader;
 
 	static const SImageLoader loaderList[] = {
-	        {PL_IMAGE_FILEFORMAT_TGA,  "tga", LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_PNG, "png", LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_JPG, "jpg", LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_BMP, "bmp", LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_PSD, "psd", LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_GIF, "gif", LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_HDR, "hdr", LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_PIC, "pic", LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_PNM, "pnm", LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_FTX, "ftx", PlParseFtxImage},
-	        { PL_IMAGE_FILEFORMAT_3DF, "3df", PlParse3dfImage},
-	        { PL_IMAGE_FILEFORMAT_TIM, "tim", PlParseTimImage},
-	        { PL_IMAGE_FILEFORMAT_SWL, "swl", PlParseSwlImage},
-	        { PL_IMAGE_FILEFORMAT_QOI, "qoi", PlParseQoiImage},
-	        { PL_IMAGE_FILEFORMAT_DDS, "dds", PlParseDdsImage},
+	        {PL_IMAGE_FILEFORMAT_TGA,  "tga",  LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_PNG, "png",  LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_JPG, "jpg",  LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_JPG, "jpeg", LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_BMP, "bmp",  LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_PSD, "psd",  LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_GIF, "gif",  LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_HDR, "hdr",  LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_PIC, "pic",  LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_PNM, "pnm",  LoadStbImage   },
+	        { PL_IMAGE_FILEFORMAT_FTX, "ftx",  PlParseFtxImage},
+	        { PL_IMAGE_FILEFORMAT_3DF, "3df",  PlParse3dfImage},
+	        { PL_IMAGE_FILEFORMAT_TIM, "tim",  PlParseTimImage},
+	        { PL_IMAGE_FILEFORMAT_SWL, "swl",  PlParseSwlImage},
+	        { PL_IMAGE_FILEFORMAT_QOI, "qoi",  PlParseQoiImage},
+	        { PL_IMAGE_FILEFORMAT_DDS, "dds",  PlParseDdsImage},
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
@@ -646,4 +653,27 @@ void *PlGetImageData( PLImage *image, unsigned int frame, unsigned int mip ) {
 
 unsigned int PlGetImageDataSize( const PLImage *image ) {
 	return PlGetImageSize( image->format, image->width, image->height );
+}
+
+PLImage *PlResizeImage( PLImage *image, unsigned int newWidth, unsigned int newHeight ) {
+	if ( image->width == newWidth && image->height == newHeight ) {
+		PlReportErrorF( PL_RESULT_FAIL, "image already of width/height" );
+		return NULL;
+	}
+
+	PLImage *newImage = PlCreateImage( NULL, newWidth, newHeight, 0, image->colour_format, image->format );
+	if ( newImage == NULL ) {
+		return NULL;
+	}
+
+	uint8_t *src = PlGetImageData( image, 0, 0 );
+	uint8_t *dst = PlGetImageData( newImage, 0, 0 );
+	if ( stbir_resize_uint8( src, ( int ) image->width, ( int ) image->height, 0,
+	                         dst, ( int ) newImage->width, ( int ) newImage->height, 0,
+	                         ( int ) PlGetNumImageFormatChannels( newImage->format ) ) == 0 ) {
+		PlReportErrorF( PL_RESULT_FAIL, "image resize failed" );
+		return NULL;
+	}
+
+	return newImage;
 }

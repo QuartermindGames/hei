@@ -38,6 +38,11 @@ void PlDestroyHashTable( PLHashTable *hashTable ) {
 #define GET_INDEX( HASH ) ( unsigned int ) ( ( HASH ) % HASH_TABLE_SIZE )
 
 void *PlLookupHashTableUserData( const PLHashTable *hashTable, const void *key, size_t keySize ) {
+	assert( key != NULL && keySize != 0 );
+	if ( key == NULL || keySize == 0 ) {
+		return NULL;
+	}
+
 	uint64_t hash = PlGenerateHashFNV1( key, keySize );
 	unsigned int index = GET_INDEX( hash );
 	for ( PLHashTableNode *node = hashTable->nodes[ index ]; node != NULL; node = node->next ) {
@@ -50,8 +55,8 @@ void *PlLookupHashTableUserData( const PLHashTable *hashTable, const void *key, 
 }
 
 bool PlInsertHashTableNode( PLHashTable *hashTable, const void *key, size_t keySize, void *value ) {
-	assert( key != NULL );
-	if ( key == NULL ) {
+	assert( key != NULL && keySize != 0 );
+	if ( key == NULL || keySize == 0 ) {
 		PlReportErrorF( PL_RESULT_INVALID_PARM2, "invalid key provided" );
 		return false;
 	}

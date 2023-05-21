@@ -6,21 +6,24 @@
 
 #include "plugin.h"
 
-#include <directx/d3dx12.h>
+#include <d3d12.h>
+#include <d3d12sdklayers.h>
 #include <dxgi.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
+
+#include <directxmath.h>
+
+#include <wrl/client.h>
 
 static Microsoft::WRL::ComPtr< ID3D12Device > d12Device;
 static Microsoft::WRL::ComPtr< ID3D12CommandQueue > d12CommandQueue;
-static Microsoft::WRL::ComPtr< ID3D12SwapChainAssistant > d12SwapChain;
+//static Microsoft::WRL::ComPtr< ID3D12SwapChainAssistant > d12SwapChain;
 
 static Microsoft::WRL::ComPtr< ID3D12Resource > d12BackBuffers[ 4 ];
 
 static void Driver_D3D12_AbortOnFail_( HRESULT hr ) {
-	if ( !FAILED( hr ) )
+	if ( !FAILED( hr ) ) {
 		return;
-
+	}
 	abort();
 }
 

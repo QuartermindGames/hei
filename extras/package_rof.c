@@ -57,7 +57,7 @@ PLPackage *ROF_ParseFile( PLFile *file ) {
 		unsigned int rm = PL_READUINT32( file, false, NULL );
 		if ( rm == magic ) {
 			// probably compressed, or we'll assume it is anyway!
-			PlFileSeek( file, 4, PL_SEEK_CUR );// no idea...always the same
+			PlFileSeek( file, 4, PL_SEEK_CUR );// no idea...always the same (6465665480380100)
 
 			package->table[ i ].fileSize = PL_READUINT32( file, false, NULL );
 			package->table[ i ].compressedSize = PL_READUINT32( file, false, NULL );

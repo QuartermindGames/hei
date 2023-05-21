@@ -160,6 +160,8 @@ PLImageFormat PlGetImageFormat( const PLImage *image );
 void *PlGetImageData( PLImage *image, unsigned int frame, unsigned int mip );
 unsigned int PlGetImageDataSize( const PLImage *image );
 
+PLImage *PlResizeImage( PLImage *image, unsigned int newWidth, unsigned int newHeight );
+
 #endif
 
 PL_EXTERN_C_END
