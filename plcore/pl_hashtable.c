@@ -23,6 +23,10 @@ PLHashTable *PlCreateHashTable( void ) {
 }
 
 void PlDestroyHashTable( PLHashTable *hashTable ) {
+	if ( hashTable == NULL ) {
+		return;
+	}
+
 	for ( size_t i = 0; i < HASH_TABLE_SIZE; ++i ) {
 		PLHashTableNode *child = hashTable->nodes[ i ];
 		while ( child != NULL ) {
