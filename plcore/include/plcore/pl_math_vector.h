@@ -118,6 +118,10 @@ PLVector2 PlComputeLineNormal( const PLVector2 *x, const PLVector2 *y );
 
 bool PlIsVectorNaN( float *v, uint8_t numElements );
 
+inline static bool PlIsVector2NaN( const PLVector2 *v ) { return PlIsVectorNaN( ( float * ) v, 2 ); }
+inline static bool PlIsVector3NaN( const PLVector3 *v ) { return PlIsVectorNaN( ( float * ) v, 3 ); }
+inline static bool PlIsVector4NaN( const PLVector4 *v ) { return PlIsVectorNaN( ( float * ) v, 4 ); }
+
 /****************************************
  * C++ Helper Classes
  ****************************************/
