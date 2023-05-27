@@ -335,3 +335,18 @@ PLVector2 PlComputeLineNormal( const PLVector2 *x, const PLVector2 *y ) {
 	PLVector2 v = PlVector2( x->y - y->y, y->x - x->x );
 	return plNormalizeVector2( &v );
 }
+
+bool PlIsVectorNaN( float *v, uint8_t numElements )
+{
+	for ( uint8_t i = 0; i < numElements; ++i )
+	{
+		if ( !isnan( v[ i ] ) )
+		{
+			continue;
+		}
+
+		return true;
+	}
+
+	return false;
+}

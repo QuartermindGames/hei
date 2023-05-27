@@ -37,6 +37,18 @@ typedef struct PLVector4 {
 #define PlVector4( X, Y, Z, W ) \
 	( PLVector4 ) { X, Y, Z, W }
 
+/* these will give you the number of elements in each type
+ * of vector. 												*/
+#define PL_MVECNUM( x ) ( sizeof( x ) / sizeof( float ) )
+#ifndef __cplusplus
+PL_STATIC_ASSERT( ( PL_MVECNUM( PLVector2 ) == 2 ), "unexpected vector element num" );
+PL_STATIC_ASSERT( PL_MVECNUM( PLVector3 ) == 3, "unexpected vector element num" );
+PL_STATIC_ASSERT( PL_MVECNUM( PLVector4 ) == 4, "unexpected vector element num" );
+#endif
+#define PL_MVEC2NUM PL_GETMVECNUM( PLVector2 )
+#define PL_MVEC3NUM PL_GETMVECNUM( PLVector3 )
+#define PL_MVEC4NUM PL_GETMVECNUM( PLVector4 )
+
 #define PlVectorIndex( VECTOR, INDEX )  ( ( float * ) &( VECTOR ) )[ INDEX ]
 /* todo: add bound checking to the below implementation??? Or just remove!? */
 #define PlVector3Index( VECTOR, INDEX ) PlVectorIndex( VECTOR, INDEX )
@@ -103,6 +115,8 @@ const char *PlPrintVector3( const PLVector3 *v, PLVariableType format );
 const char *PlPrintVector4( const PLVector4 *v, PLVariableType format );
 
 PLVector2 PlComputeLineNormal( const PLVector2 *x, const PLVector2 *y );
+
+bool PlIsVectorNaN( float *v, uint8_t numElements );
 
 /****************************************
  * C++ Helper Classes
