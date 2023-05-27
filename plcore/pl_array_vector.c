@@ -100,5 +100,6 @@ PLVectorArray *PlCreateVectorArray( unsigned int maxElements ) {
 
 void PlDestroyVectorArray( PLVectorArray *vectorArray ) {
 	PlClearVectorArray( vectorArray );
+	PL_DELETE( vectorArray->data );
 	PL_DELETE( vectorArray );
 }
