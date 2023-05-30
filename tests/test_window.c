@@ -9,8 +9,7 @@
 FUNC_TEST( CreateWindow ) {
 	PLWWindow *window = PlwCreateWindow( "Hello World", 800, 600 );
 	if ( window == NULL ) {
-		printf( "Failed on creating window: %s\n", PlwGetLastErrorMessage() );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Failed on creating window: %s\n", PlwGetLastErrorMessage() );
 	}
 
 	PlwDestroyWindow( window );
