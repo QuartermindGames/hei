@@ -6,11 +6,10 @@
 
 #include "tests.h"
 
-FUNC_TEST( format_ply ) {
+FUNC_TEST( plm_format_ply ) {
 	PLMModel *model = PlmLoadModel( "testdata/models/test_box.ply" );
 	if ( model == NULL ) {
-		printf( "Failed on load model: %s\n", PlGetError() );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Failed on load model: %s\n", PlGetError() );
 	}
 	PlmWriteModel( "out/test_box_ply.smd", model, PLM_MODEL_OUTPUT_DEFAULT );
 	PlmDestroyModel( model );
@@ -28,7 +27,7 @@ int main( int argc, char **argv ) {
 
 	TEST_RUN_INIT
 
-	CALL_FUNC_TEST( format_ply )
+	CALL_FUNC_TEST( plm_format_ply )
 
 	TEST_RUN_END
 }
