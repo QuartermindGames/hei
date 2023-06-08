@@ -278,9 +278,49 @@ static unsigned int TranslateFrameBufferBinding( PLGFrameBufferObjectTarget targ
 	}
 }
 
+enum {
+	XGL_FRAMEBUFFER_TARGET_DRAW,
+	XGL_FRAMEBUFFER_TARGET_READ,
+
+	XGL_MAX_FRAMEBUFFER_TARGETS
+};
+static uint32_t boundFrameBuffers[ XGL_MAX_FRAMEBUFFER_TARGETS ] = {
+        [XGL_FRAMEBUFFER_TARGET_DRAW] = ( uint32_t ) -1,
+        [XGL_FRAMEBUFFER_TARGET_READ] = ( uint32_t ) -1,
+};
+
+static void GLBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget target_binding ) {
+	uint32_t fbo = ( buffer != NULL ) ? buffer->fbo : 0;
+
+	// this is probably really damn overkill, but essentially determine which target buffer isn't yet bound...
+	if ( target_binding == PLG_FRAMEBUFFER_DEFAULT ) {
+		if ( boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] == fbo && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] == fbo ) {
+			return;
+		} else if ( boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] != fbo && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] == fbo ) {
+			target_binding = PLG_FRAMEBUFFER_DRAW;
+		} else if ( boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] != fbo && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] == fbo ) {
+			target_binding = PLG_FRAMEBUFFER_READ;
+		}
+	} else if ( ( target_binding == PLG_FRAMEBUFFER_DRAW && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] == fbo ) ||
+	            ( target_binding == PLG_FRAMEBUFFER_READ && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] == fbo ) ) {
+		return;
+	}
+
+	XGL_CALL( glBindFramebuffer( TranslateFrameBufferBinding( target_binding ), fbo ) );
+
+	if ( target_binding == PLG_FRAMEBUFFER_DEFAULT ) {
+		boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] = fbo;
+		boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] = fbo;
+	} else if ( target_binding == PLG_FRAMEBUFFER_DRAW ) {
+		boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] = fbo;
+	} else {
+		boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] = fbo;
+	}
+}
+
 static void GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
 	XGL_CALL( glGenFramebuffers( 1, &buffer->fbo ) );
-	XGL_CALL( glBindFramebuffer( GL_FRAMEBUFFER, buffer->fbo ) );
+	GLBindFrameBuffer( buffer, PLG_FRAMEBUFFER_DEFAULT );
 
 	if ( buffer->flags & PLG_BUFFER_COLOUR ) {
 		XGL_CALL( glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] ) );
@@ -312,6 +352,14 @@ static void GLDeleteFrameBuffer( PLGFrameBuffer *buffer ) {
 		return;
 	}
 
+	// automatically unbind it if it's bound
+	if ( boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] == buffer->fbo ) {
+		GLBindFrameBuffer( NULL, XGL_FRAMEBUFFER_TARGET_READ );
+	}
+	if ( boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] == buffer->fbo ) {
+		GLBindFrameBuffer( NULL, XGL_FRAMEBUFFER_TARGET_DRAW );
+	}
+
 	if ( buffer->fbo != 0 ) {
 		XGL_CALL( glDeleteFramebuffers( 1, &buffer->fbo ) );
 		buffer->fbo = 0;
@@ -327,10 +375,6 @@ static void GLDeleteFrameBuffer( PLGFrameBuffer *buffer ) {
 	}
 }
 
-static void GLBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget target_binding ) {
-	XGL_CALL( glBindFramebuffer( TranslateFrameBufferBinding( target_binding ), ( buffer != NULL ) ? buffer->fbo : 0 ) );
-}
-
 static void GLBlitFrameBuffers( PLGFrameBuffer *src_buffer,
                                 unsigned int src_w,
                                 unsigned int src_h,
@@ -338,8 +382,8 @@ static void GLBlitFrameBuffers( PLGFrameBuffer *src_buffer,
                                 unsigned int dst_w,
                                 unsigned int dst_h,
                                 bool linear ) {
-	XGL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, ( src_buffer != NULL ) ? src_buffer->fbo : 0 ) );
-	XGL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, ( dst_buffer != NULL ) ? dst_buffer->fbo : 0 ) );
+	GLBindFrameBuffer( src_buffer, PLG_FRAMEBUFFER_READ );
+	GLBindFrameBuffer( dst_buffer, PLG_FRAMEBUFFER_DRAW );
 
 	XGL_CALL( glBlitFramebuffer( 0, 0, src_w, src_h, 0, 0, dst_w, dst_h, GL_COLOR_BUFFER_BIT, linear ? GL_LINEAR : GL_NEAREST ) );
 }
@@ -354,6 +398,29 @@ static void GLSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int widt
 	frameBuffer->width = width;
 	frameBuffer->height = height;
 	GLCreateFrameBuffer( frameBuffer );
+}
+
+static void *GLReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf ) {
+	GLBindFrameBuffer( frameBuffer, PLG_FRAMEBUFFER_READ );
+
+	if ( XGL_VERSION( 4, 5 ) ) {
+		XGL_CALL( glReadnPixels( ( GLint ) x, ( GLint ) y,
+		                         ( GLsizei ) w, ( GLsizei ) h,
+		                         GL_RGBA, GL_UNSIGNED_BYTE,
+		                         ( GLsizei ) dstSize, dstBuf ) );
+		if ( glGetError() != GL_NO_ERROR ) {
+			return NULL;
+		}
+	} else {
+		XGL_CALL( glReadPixels( ( GLint ) x, ( GLint ) y,
+		                        ( GLsizei ) w, ( GLsizei ) h,
+		                        GL_RGBA, GL_UNSIGNED_BYTE, dstBuf ) );
+		if ( glGetError() != GL_NO_ERROR ) {
+			return NULL;
+		}
+	}
+
+	return dstBuf;
 }
 
 static void GLBindTexture( const PLGTexture *texture );
@@ -460,7 +527,7 @@ static unsigned int GetStorageFormatForImageFormat( PLImageFormat format ) {
 static unsigned int GetColourFormatForImageFormat( PLImageFormat format ) {
 	switch ( format ) {
 		case PL_IMAGEFORMAT_R8:
-			return  GL_RED;
+			return GL_RED;
 		case PL_IMAGEFORMAT_RGB4:
 		case PL_IMAGEFORMAT_RGB5:
 		case PL_IMAGEFORMAT_RGB565:
@@ -668,14 +735,14 @@ static void GLCreateMesh( PLGMesh *mesh ) {
 }
 
 static void GLUploadMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
-	if ( !mesh->isDirty )
+	if ( !mesh->isDirty ) {
 		return;
+	}
 
-	//Bind VBO
-	XGL_CALL( glBindBuffer( GL_ARRAY_BUFFER, mesh->buffers[ BUFFER_VERTEX_DATA ] ) );
-
-	//Write the current CPU vertex data into the VBO
 	unsigned int drawMode = TranslateDrawMode( mesh->mode );
+
+	// Write the current CPU vertex data into the VBO
+	XGL_CALL( glBindBuffer( GL_ARRAY_BUFFER, mesh->buffers[ BUFFER_VERTEX_DATA ] ) );
 	XGL_CALL( glBufferData( GL_ARRAY_BUFFER, ( GLsizei ) ( sizeof( PLGVertex ) * mesh->num_verts ), &mesh->vertices[ 0 ], drawMode ) );
 
 	//Point to the different substreams of the interleaved BVO
@@ -1768,6 +1835,7 @@ PLGDriverImportTable graphicsInterface = {
         .GetFrameBufferTextureAttachment = GLGetFrameBufferTextureAttachment,
         .BlitFrameBuffers = GLBlitFrameBuffers,
         .SetFrameBufferSize = GLSetFrameBufferSize,
+        .ReadFrameBufferRegion = GLReadFrameBufferRegion,
 
         .CreateTexture = GLCreateTexture,
         .DeleteTexture = GLDeleteTexture,

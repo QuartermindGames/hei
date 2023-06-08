@@ -91,9 +91,6 @@ typedef struct GfxState {
 		int w, h;
 	} viewport;
 
-	PLGFrameBuffer *frameBufferTarget;
-	PLGFrameBufferObjectTarget frameBufferTargetMode;
-
 	bool mode_debug;
 } GfxState;
 
@@ -106,14 +103,15 @@ typedef struct GfxState {
 	}
 #define CallReturningGfxFunction( FUNCTION, RETURN, ... )                  \
 	if ( gfx_state.interface != NULL ) {                                   \
-		if ( gfx_state.interface->FUNCTION != NULL )                       \
+		if ( gfx_state.interface->FUNCTION != NULL ) {                     \
 			return gfx_state.interface->FUNCTION( __VA_ARGS__ );           \
-		else {                                                             \
+		} else {                                                           \
 			GfxLog( "Unbound layer function %s was called\n", #FUNCTION ); \
 			return ( RETURN );                                             \
 		}                                                                  \
-	} else                                                                 \
-		return ( RETURN );
+	} else {                                                               \
+		return ( RETURN );                                                 \
+	}
 
 ///////////////////////////////////////////////////////
 

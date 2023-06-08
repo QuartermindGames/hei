@@ -13,7 +13,9 @@ PL_EXTERN_C
 typedef enum PLGFrameBufferObjectTarget {
 	PLG_FRAMEBUFFER_DEFAULT,
 	PLG_FRAMEBUFFER_DRAW,
-	PLG_FRAMEBUFFER_READ
+	PLG_FRAMEBUFFER_READ,
+
+	PLG_MAX_FRAMEBUFFER_TARGETS
 } PLGFrameBufferObjectTarget;
 
 typedef enum PLGFrameBufferRenderFlags {
@@ -52,7 +54,6 @@ enum {
 PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned int flags );
 void PlgDestroyFrameBuffer( PLGFrameBuffer *buffer );
 void PlgBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget target_binding );
-PLGFrameBuffer *PlgGetCurrentFrameBufferTarget( PLGFrameBufferObjectTarget *currentMode );
 void PlgBlitFrameBuffers( PLGFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLGFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, bool linear );
 
 PLGTexture *PlgGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter );
@@ -61,6 +62,7 @@ void PlgGetFrameBufferResolution( const PLGFrameBuffer *buffer, unsigned int *wi
 void PlgSetClearColour( PLColour rgba );
 void PlgClearBuffers( unsigned int buffers );
 void PlgSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height );
+void *PlgReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf );
 
 #endif
 

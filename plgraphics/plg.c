@@ -129,23 +129,8 @@ void PlgGetFrameBufferResolution( const PLGFrameBuffer *buffer, unsigned int *wi
 }
 
 void PlgBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget target_binding ) {
-	if ( ( buffer == gfx_state.frameBufferTarget ) && ( target_binding == gfx_state.frameBufferTargetMode ) ) {
-		return;
-	}
-
 	//NOTE: NULL is valid for *buffer, to bind the SDL window default backbuffer
 	CallGfxFunction( BindFrameBuffer, buffer, target_binding );
-
-	gfx_state.frameBufferTarget = buffer;
-	gfx_state.frameBufferTargetMode = target_binding;
-}
-
-PLGFrameBuffer *PlgGetCurrentFrameBufferTarget( PLGFrameBufferObjectTarget *currentMode ) {
-	if ( currentMode != NULL ) {
-		*currentMode = gfx_state.frameBufferTargetMode;
-	}
-
-	return gfx_state.frameBufferTarget;
 }
 
 void PlgBlitFrameBuffers( PLGFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLGFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, bool linear ) {
@@ -186,6 +171,12 @@ void PlgSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, uns
 	}
 
 	CallGfxFunction( SetFrameBufferSize, frameBuffer, width, height );
+}
+
+void *PlgReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf ) {
+	assert( frameBuffer != NULL );
+
+	CallReturningGfxFunction( ReadFrameBufferRegion, NULL, frameBuffer, x, y, w, h, dstSize, dstBuf );
 }
 
 /*===========================

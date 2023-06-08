@@ -21,7 +21,7 @@ PL_EXTERN_C
  */
 
 #define PLG_INTERFACE_VERSION_MAJOR 3
-#define PLG_INTERFACE_VERSION_MINOR 0
+#define PLG_INTERFACE_VERSION_MINOR 1
 #define PLG_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR }
 
@@ -136,6 +136,10 @@ typedef struct PLGDriverImportTable {
 
 	// Stencil operations
 	void ( *StencilFunction )( PLGStencilTestFunction function, int reference, unsigned int mask );
+
+	// v3.1
+
+	void *( *ReadFrameBufferRegion )( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf );
 } PLGDriverImportTable;
 
 #if !defined( PL_COMPILE_PLUGIN )
