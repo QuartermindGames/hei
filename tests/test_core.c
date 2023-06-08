@@ -10,28 +10,23 @@ FUNC_TEST( pl_array_vector ) {
 	/* attempt to create vector of size 0 */
 	vec = PlCreateVectorArray( 0 );
 	if ( vec == NULL ) {
-		printf( "Failed to create vector array: %s\n", PlGetError() );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Failed to create vector array: %s\n", PlGetError() );
 	}
 	if ( PlGetMaxVectorArrayElements( vec ) != 0 ) {
-		printf( "Maximum elements not equal to 0\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Maximum elements not equal to 0\n" );
 	}
 	PlDestroyVectorArray( vec );
 
 	/* now vector of size 100 */
 	vec = PlCreateVectorArray( 100 );
 	if ( vec == NULL ) {
-		printf( "Failed to create vector array w/ max 100 elements: %s\n", PlGetError() );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Failed to create vector array w/ max 100 elements: %s\n", PlGetError() );
 	}
 	if ( PlGetMaxVectorArrayElements( vec ) != 100 ) {
-		printf( "Maximum elements not equal to 100\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Maximum elements not equal to 100\n" );
 	}
 	if ( !PlIsVectorArrayEmpty( vec ) ) {
-		printf( "Vector should be empty - query returned false!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Vector should be empty - query returned false!\n" );
 	}
 
 	/* fill it with data */
@@ -43,13 +38,11 @@ FUNC_TEST( pl_array_vector ) {
 	/* verify */
 	unsigned int *v = PlGetVectorArrayElementAt( vec, 5 );
 	if ( *v != 5 ) {
-		printf( "Unexpected data in vector!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Unexpected data in vector!\n" );
 	}
 	v = PlGetVectorArrayBack( vec );
 	if ( *v != 99 ) {
-		printf( "Unexpected back element (%u) in vector!\n", *v );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Unexpected back element (%u) in vector!\n", *v );
 	}
 
 	/* remove several elements */
@@ -57,52 +50,44 @@ FUNC_TEST( pl_array_vector ) {
 		PlEraseVectorArrayElement( vec, 0 );
 		v = PlGetVectorArrayFront( vec );
 		if ( *v != ( i + 1 ) ) {
-			printf( "Unexpected data (%u) in vector at %u!\n", *v, i );
-			return TEST_RETURN_FAILURE;
+			RETURN_FAILURE( "Unexpected data (%u) in vector at %u!\n", *v, i );
 		}
 	}
 	if ( PlGetNumVectorArrayElements( vec ) != 50 ) {
-		printf( "Vector not of expected size!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Vector not of expected size!\n" );
 	}
 	for ( unsigned int i = 0; i < 50; ++i ) {
 		v = PlGetVectorArrayElementAt( vec, i );
 		if ( *v != ( i + 50 ) ) {
-			printf( "Unexpected data (%u) in vector at %u!\n", *v, i );
-			return TEST_RETURN_FAILURE;
+			RETURN_FAILURE( "Unexpected data (%u) in vector at %u!\n", *v, i );
 		}
 	}
 	/* ensure the last element is still as expected */
 	v = PlGetVectorArrayBack( vec );
 	if ( *v != 99 ) {
-		printf( "Unexpected back element (%u) in vector, expected '99'!\n", *v );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Unexpected back element (%u) in vector, expected '99'!\n", *v );
 	}
 	/* and try popping the last element */
 	PlPopVectorArrayBack( vec );
 	v = PlGetVectorArrayBack( vec );
 	if ( *v != 98 ) {
-		printf( "Unexpected back element (%u) in vector, expected '98'!\n", *v );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Unexpected back element (%u) in vector, expected '98'!\n", *v );
 	}
 
 	/* invalid get request */
 	if ( PlGetVectorArrayElementAt( vec, 80 ) != NULL ) {
-		printf( "Invalid GetVectorArrayElementAt request succeeded!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Invalid GetVectorArrayElementAt request succeeded!\n" );
 	}
 
 	/* make sure shrinking works */
 	unsigned int maxElements = PlGetMaxVectorArrayElements( vec );
 	PlShrinkVectorArray( vec );
 	if ( PlGetMaxVectorArrayElements( vec ) >= maxElements ) {
-		printf( "Shrink failed!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Shrink failed!\n" );
 	}
 
 	if ( PlGetVectorArrayData( vec ) == NULL ) {
-		printf( "Returned null array!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Returned null array!\n" );
 	}
 
 	PlDestroyVectorArray( vec );
@@ -164,8 +149,7 @@ FUNC_TEST( RegisterConsoleCommand ) {
 	PlRegisterConsoleCommand( "test_cmd", "testing", 0, CB_test_cmd );
 	PlParseConsoleString( "test_cmd" );
 	if ( !test_cmd_called ) {
-		printf( "Failed to call \"test_cmd\" command!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Failed to call \"test_cmd\" command!\n" );
 	}
 	test_cmd_called = false;
 }
@@ -176,12 +160,10 @@ FUNC_TEST( GetConsoleCommands ) {
 	size_t numCmds;
 	PlGetConsoleCommands( &cmds, &numCmds );
 	if ( numCmds < 1 ) {
-		printf( "Did not receive any commands!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Did not receive any commands!\n" );
 	}
 	if ( cmds == NULL ) {
-		printf( "Returned null cmds list!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Returned null cmds list!\n" );
 	}
 	bool foundResult = false;
 	for ( unsigned int i = 0; i < numCmds; ++i ) {
@@ -192,8 +174,7 @@ FUNC_TEST( GetConsoleCommands ) {
 		foundResult = true;
 	}
 	if ( !foundResult ) {
-		printf( "Failed to find test_cmd!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Failed to find test_cmd!\n" );
 	}
 }
 FUNC_TEST_END()
@@ -202,14 +183,12 @@ FUNC_TEST( StringChunk ) {
 	static const char *testString = "thisthisthisthisthisthis";
 	char *c = pl_strchunksplit( testString, 4, " " );
 	if ( c == NULL ) {
-		printf( "Returned null!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Returned null!\n" );
 	}
 	bool status = ( strcmp( c, "this this this this this this " ) == 0 );
 	PlFree( c );
 	if ( !status ) {
-		printf( "Failed to split string!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Failed to split string!\n" );
 	}
 }
 FUNC_TEST_END()
@@ -235,24 +214,21 @@ FUNC_TEST( pl_compression ) {
 	size_t dstLength;
 	void *dst = PlCompress_LZRW1( string, srcLength, &dstLength );
 	if ( dst == NULL || ( dstLength >= srcLength ) || dstLength == 0 ) {
-		printf( "Failed to compress - lzrw1: %s\n", PlGetError() );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Failed to compress - lzrw1: %s\n", PlGetError() );
 	}
 
 	//printf( "Compressed from %lu bytes to %lu bytes\nDecompressing...\n", srcLength, dstLength );
 
 	char *src = PlDecompress_LZRW1( dst, dstLength, &srcLength );
 	if ( src == NULL || ( srcLength <= dstLength ) || ( srcLength != originalLength ) || srcLength == 0 ) {
-		printf( "Failed to decompress - lzrw1: %s\n", PlGetError() );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Failed to decompress - lzrw1: %s\n", PlGetError() );
 	}
 
 	//printf( "SOURCE: %s\n", string );
 	//printf( "DEST:   %s\n", src );
 
 	if ( strcmp( string, src ) != 0 ) {
-		printf( "Decompressed result doesn't match original!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Decompressed result doesn't match original!\n" );
 	}
 }
 FUNC_TEST_END()
@@ -349,27 +325,23 @@ FUNC_TEST( HeapMemory ) {
 
 	PLMemoryHeap *heap = PlCreateHeap( 64 );
 	if ( PlGetAvailableHeapSize( heap ) != 64 ) {
-		printf( "PlGetAvailableHeapSize didn't return size allocated!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "PlGetAvailableHeapSize didn't return size allocated!\n" );
 	}
 	char *dst = PL_HNEW_( heap, char, srcLength );
 	snprintf( dst, srcLength, "%s", src );
 
 	if ( strcmp( dst, src ) != 0 ) {
-		printf( "Source doesn't match destination!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Source doesn't match destination!\n" );
 	}
 
 	if ( PlGetAvailableHeapSize( heap ) != 18 ) {
-		printf( "Unexpected remaining heap size!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Unexpected remaining heap size!\n" );
 	}
 
 	/* this should fail due to an overrun */
 	dst = PL_HNEW_( heap, char, srcLength );
 	if ( dst != NULL ) {
-		printf( "Heap allocation should've failed due to overrun!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "Heap allocation should've failed due to overrun!\n" );
 	}
 
 	PlDestroyHeap( heap );
@@ -386,24 +358,20 @@ FUNC_TEST( GroupMemory ) {
 	PL_GNEW_( group, char, 256 );
 	PL_GNEW_( group, char, 256 );
 	if ( PlGetMemoryGroupSize( group ) != 1280 ) {
-		printf( "GetMemoryGroupSize returned an expected value!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "GetMemoryGroupSize returned an expected value!\n" );
 	}
 
 	if ( PlGetTotalAllocatedMemory() == a ) {
-		printf( "GetTotalAllocatedMemory did not track allocations under MemoryGroup!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "GetTotalAllocatedMemory did not track allocations under MemoryGroup!\n" );
 	}
 
 	PlFlushMemoryGroup( group );
 	size_t c = PlGetTotalAllocatedMemory();
 	if ( a != c ) {
-		printf( "FlushMemoryGroup did not clear memory!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "FlushMemoryGroup did not clear memory!\n" );
 	}
 	if ( PlGetMemoryGroupSize( group ) != 0 ) {
-		printf( "GetMemoryGroupSize returned an expected value!\n" );
-		return TEST_RETURN_FAILURE;
+		RETURN_FAILURE( "GetMemoryGroupSize returned an expected value!\n" );
 	}
 
 	PlDestroyMemoryGroup( group );
