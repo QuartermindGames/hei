@@ -154,16 +154,7 @@ inline static bool PlIsAabbIntersectingLine( const PLCollisionAABB *bounds, cons
 	return false;
 }
 
-inline static bool PlIsLineInBox( const PLCollisionAABB *bounds, const PLVector3 *lineStart, const PLVector3 *lineEnd ) {
-	/* get line midpoint and extent */
-	//	PLVector3 lineMiddle = plScaleVector3f( plAddVector3( *lineStart, *lineEnd ), 0.5f );
-	//	PLVector3 l = plSubtractVector3( *lineStart, lineMiddle );
-	//	PLVector3 lineExtent = PLVector3( fabsf( l.x ), fabsf( l.y ), fabsf( l.z ) );
-
-
-	/* no separating axis, the line intersects */
-	return true;
-}
+PLCollision PlIsAabbIntersectingPlane( const PLCollisionAABB *aabb, const PLCollisionPlane *plane );
 
 bool PlIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere );
 PLCollision PlIsSphereIntersectingPlane( const PLCollisionSphere *sphere, const PLCollisionPlane *plane );
@@ -185,78 +176,7 @@ inline static bool PlIsRayIntersectingSphere( const PLCollisionSphere *sphere, c
 	return false;
 }
 
-/* https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c */
-inline static bool PlIsRayIntersectingAabb( const PLCollisionAABB *bounds, const PLCollisionRay *ray, PLVector3 *hitPoint ) {
-	PLVector3 max = PlAddVector3( bounds->maxs, bounds->origin );
-	PLVector3 min = PlAddVector3( bounds->mins, bounds->origin );
-
-	/* Find candidate planes */
-
-	static const unsigned char right = 0;
-	static const unsigned char left = 1;
-	static const unsigned char middle = 2;
-
-	PLVector3 candidatePlane;
-	unsigned char hitQuadrant[ 3 ];
-	bool isInside = true;
-
-	for ( unsigned int i = 0; i < 3; ++i ) {
-		if ( PlVector3Index( ray->origin, i ) < PlVector3Index( min, i ) ) {
-			hitQuadrant[ i ] = left;
-			PlVector3Index( candidatePlane, i ) = PlVector3Index( min, i );
-			isInside = false;
-		} else if ( PlVector3Index( ray->origin, i ) > PlVector3Index( max, i ) ) {
-			hitQuadrant[ i ] = right;
-			PlVector3Index( candidatePlane, i ) = PlVector3Index( max, i );
-			isInside = false;
-		} else {
-			hitQuadrant[ i ] = middle;
-		}
-	}
-
-	/* Ray origin inside bounding box */
-	if ( isInside ) {
-		*hitPoint = ray->origin;
-		return true;
-	}
-
-	/* Calculate T distances to candidate planes */
-	PLVector3 maxT;
-	for ( unsigned int i = 0; i < 3; ++i ) {
-		if ( hitQuadrant[ i ] != middle && PlVector3Index( ray->direction, i ) != 0.0f ) {
-			PlVector3Index( maxT, i ) = ( PlVector3Index( candidatePlane, i ) - PlVector3Index( ray->origin, i ) ) / PlVector3Index( ray->direction, i );
-		} else {
-			PlVector3Index( maxT, i ) = -1.0f;
-		}
-	}
-
-	/* Get largest of the maxT's for final choice of intersection */
-	unsigned int whichPlane = 0;
-	for ( unsigned int i = 1; i < 3; ++i ) {
-		if ( PlVector3Index( maxT, whichPlane ) < PlVector3Index( maxT, i ) ) {
-			whichPlane = i;
-		}
-	}
-
-	/* Check final candidate actually inside box */
-
-	if ( PlVector3Index( maxT, whichPlane ) < 0.0f ) {
-		return false;
-	}
-
-	for ( unsigned int i = 0; i < 3; ++i ) {
-		if ( whichPlane != i ) {
-			PlVector3Index( hitPoint, i ) = PlVector3Index( ray->origin, i ) + PlVector3Index( maxT, whichPlane ) * PlVector3Index( ray->direction, i );
-			if ( PlVector3Index( hitPoint, i ) < PlVector3Index( min, i ) || PlVector3Index( hitPoint, i ) > PlVector3Index( max, i ) ) {
-				return false;
-			}
-		} else {
-			PlVector3Index( hitPoint, i ) = PlVector3Index( candidatePlane, i );
-		}
-	}
-
-	return true;
-}
+bool PlIsRayIntersectingAabb( const PLCollisionAABB *bounds, const PLCollisionRay *ray, PLVector3 *hitPoint );
 
 PL_EXTERN_C_END
 
