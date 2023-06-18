@@ -451,29 +451,29 @@ inline static PLMatrix4 PlInverseMatrix4( PLMatrix4 m ) {
 }
 
 inline static PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up ) {
-	PLVector3 f = PlNormalizeVector3( PlSubtractVector3( center, eye ) );
-	PLVector3 s = PlNormalizeVector3( PlVector3CrossProduct( f, up ) );
-	PLVector3 u = PlVector3CrossProduct( s, f );
+	PLVector3 z = PlNormalizeVector3( PlSubtractVector3( eye, center ) );
+	PLVector3 x = PlNormalizeVector3( PlVector3CrossProduct( up, z ) );
+	PLVector3 y = PlVector3CrossProduct( z, x );
 
 	PLMatrix4 out = PlMatrix4Identity();
 
 	/* side */
-	out.pl_m4pos( 0, 0 ) = s.x;
-	out.pl_m4pos( 1, 0 ) = s.y;
-	out.pl_m4pos( 2, 0 ) = s.z;
+	out.pl_m4pos( 0, 0 ) = x.x;
+	out.pl_m4pos( 1, 0 ) = x.y;
+	out.pl_m4pos( 2, 0 ) = x.z;
 	/* up */
-	out.pl_m4pos( 0, 1 ) = u.x;
-	out.pl_m4pos( 1, 1 ) = u.y;
-	out.pl_m4pos( 2, 1 ) = u.z;
+	out.pl_m4pos( 0, 1 ) = y.x;
+	out.pl_m4pos( 1, 1 ) = y.y;
+	out.pl_m4pos( 2, 1 ) = y.z;
 	/* forward */
-	out.pl_m4pos( 0, 2 ) = -f.x;
-	out.pl_m4pos( 1, 2 ) = -f.y;
-	out.pl_m4pos( 2, 2 ) = -f.z;
+	out.pl_m4pos( 0, 2 ) = z.x;
+	out.pl_m4pos( 1, 2 ) = z.y;
+	out.pl_m4pos( 2, 2 ) = z.z;
 
 	/* translation */
-	out.pl_m4pos( 3, 0 ) = -( PlVector3DotProduct( s, eye ) );
-	out.pl_m4pos( 3, 1 ) = -( PlVector3DotProduct( u, eye ) );
-	out.pl_m4pos( 3, 2 ) = PlVector3DotProduct( f, eye );
+	out.pl_m4pos( 3, 0 ) = -PlVector3DotProduct( x, eye );
+	out.pl_m4pos( 3, 1 ) = -PlVector3DotProduct( y, eye );
+	out.pl_m4pos( 3, 2 ) = -PlVector3DotProduct( z, eye );
 
 	return out;
 }
