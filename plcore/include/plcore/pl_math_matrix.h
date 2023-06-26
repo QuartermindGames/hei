@@ -11,33 +11,25 @@ PL_EXTERN_C
 /******************************************************************/
 /* Matrices */
 
+#define PL_M3_POS( ROW, COL ) ( ( ROW ) + 3 * ( COL ) )
+#define PL_M4_POS( ROW, COL ) ( ( ROW ) + 4 * ( COL ) )
+
 /* I know, this is disgusting... */
-#define pl_m3pos( row, col ) m[ ( row ) *3 + ( col ) ]
-#define pl_m4pos( row, col ) m[ ( row ) *4 + ( col ) ]
+#define pl_m3pos( row, col ) m[ PL_M3_POS( row, col ) ]
+#define pl_m4pos( row, col ) m[ PL_M4_POS( row, col ) ]
 
 typedef struct PLMatrix3 {
-	float m[ 9 ];
-	/* 0 0 0
-	 * 0 0 0
-	 * 0 0 0
-	 */
+	union {
+		float m[ 9 ];
+		float mm[ 3 ][ 3 ];
+	};
 } PLMatrix3;
 
-typedef struct PLMatrix3x4 {
-	float m[ 12 ];
-	/* 0 0 0 0
-	 * 0 0 0 0
-	 * 0 0 0 0
-	 */
-} PLMatrix3x4;
-
 typedef struct PLMatrix4 {
-	float m[ 16 ];
-	/* 0 0 0 0
-	 * 0 0 0 0
-	 * 0 0 0 0
-	 * 0 0 0 0
-	 */
+	union {
+		float m[ 16 ];
+		float mm[ 4 ][ 4 ];
+	};
 } PLMatrix4;
 
 inline static PLMatrix4 PlAddMatrix4( PLMatrix4 m, PLMatrix4 m2 );
@@ -145,51 +137,32 @@ namespace hei {
 /* ClearMatrix */
 
 inline static void PlClearMatrix3( PLMatrix3 *m ) {
-	for ( unsigned int i = 0; i < 9; ++i ) { m->m[ i ] = 0; }
+	PL_ZERO( m, sizeof( PLMatrix3 ) );
 }
 
 inline static void PlClearMatrix4( PLMatrix4 *m ) {
-	for ( unsigned int i = 0; i < 16; ++i ) { m->m[ i ] = 0; }
+	PL_ZERO( m, sizeof( PLMatrix4 ) );
 }
 
 /* Identity */
 
 inline static PLMatrix3 PlMatrix3Identity( void ) {
-	PLMatrix3 out;
-	out.m[ 0 ] = 1;
-	out.m[ 1 ] = 0;
-	out.m[ 2 ] = 0;
-	out.m[ 3 ] = 0;
-	out.m[ 4 ] = 1;
-	out.m[ 5 ] = 0;
-	out.m[ 6 ] = 0;
-	out.m[ 7 ] = 0;
-	out.m[ 8 ] = 1;
-	return out;
+	PLMatrix3 m;
+	PlClearMatrix3( &m );
+	m.mm[ 0 ][ 0 ] = 1.0f;
+	m.mm[ 1 ][ 1 ] = 1.0f;
+	m.mm[ 2 ][ 2 ] = 1.0f;
+	return m;
 }
 
 inline static PLMatrix4 PlMatrix4Identity( void ) {
-	PLMatrix4 out = {
-	        {
-             1,
-             0,
-             0,
-             0,
-             0,
-             1,
-             0,
-             0,
-             0,
-             0,
-             1,
-             0,
-             0,
-             0,
-             0,
-             1,
-	         }
-    };
-	return out;
+	PLMatrix4 m;
+	PlClearMatrix4( &m );
+	m.mm[ 0 ][ 0 ] = 1.0f;
+	m.mm[ 1 ][ 1 ] = 1.0f;
+	m.mm[ 2 ][ 2 ] = 1.0f;
+	m.mm[ 3 ][ 3 ] = 1.0f;
+	return m;
 }
 
 /* Transpose */
@@ -314,9 +287,9 @@ inline static PLMatrix4 PlScaleMatrix4( PLMatrix4 m, PLVector3 scale ) {
 
 inline static PLMatrix4 PlTranslateMatrix4( PLVector3 v ) {
 	PLMatrix4 m = PlMatrix4Identity();
-	m.pl_m4pos( 0, 3 ) = v.x;
-	m.pl_m4pos( 1, 3 ) = v.y;
-	m.pl_m4pos( 2, 3 ) = v.z;
+	m.mm[ 3 ][ 0 ] = v.x;
+	m.mm[ 3 ][ 1 ] = v.y;
+	m.mm[ 3 ][ 2 ] = v.z;
 	return m;
 }
 
@@ -455,27 +428,22 @@ inline static PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up 
 	PLVector3 x = PlNormalizeVector3( PlVector3CrossProduct( up, z ) );
 	PLVector3 y = PlVector3CrossProduct( z, x );
 
-	PLMatrix4 out = PlMatrix4Identity();
+	PLMatrix4 m = PlMatrix4Identity();
 
 	/* side */
-	out.pl_m4pos( 0, 0 ) = x.x;
-	out.pl_m4pos( 1, 0 ) = x.y;
-	out.pl_m4pos( 2, 0 ) = x.z;
+	m.mm[ 0 ][ 0 ] = x.x;
+	m.mm[ 1 ][ 0 ] = x.y;
+	m.mm[ 2 ][ 0 ] = x.z;
 	/* up */
-	out.pl_m4pos( 0, 1 ) = y.x;
-	out.pl_m4pos( 1, 1 ) = y.y;
-	out.pl_m4pos( 2, 1 ) = y.z;
+	m.mm[ 0 ][ 1 ] = y.x;
+	m.mm[ 1 ][ 1 ] = y.y;
+	m.mm[ 2 ][ 1 ] = y.z;
 	/* forward */
-	out.pl_m4pos( 0, 2 ) = z.x;
-	out.pl_m4pos( 1, 2 ) = z.y;
-	out.pl_m4pos( 2, 2 ) = z.z;
+	m.mm[ 0 ][ 2 ] = z.x;
+	m.mm[ 1 ][ 2 ] = z.y;
+	m.mm[ 2 ][ 2 ] = z.z;
 
-	/* translation */
-	out.pl_m4pos( 3, 0 ) = -PlVector3DotProduct( x, eye );
-	out.pl_m4pos( 3, 1 ) = -PlVector3DotProduct( y, eye );
-	out.pl_m4pos( 3, 2 ) = -PlVector3DotProduct( z, eye );
-
-	return out;
+	return PlMultiplyMatrix4( m, PlTranslateMatrix4( ( PLVector3 ){ -eye.x, -eye.y, -eye.z } ) );
 }
 
 inline static PLMatrix4 PlFrustum( float left, float right, float bottom, float top, float nearf, float farf ) {
@@ -484,29 +452,29 @@ inline static PLMatrix4 PlFrustum( float left, float right, float bottom, float 
 	float m2 = top - bottom;
 	float m3 = farf - nearf;
 
-	PLMatrix4 frustumMatrix;
+	PLMatrix4 m;
 
-	frustumMatrix.m[ 0 ] = m0 / m1;
-	frustumMatrix.m[ 1 ] = 0.0f;
-	frustumMatrix.m[ 2 ] = 0.0f;
-	frustumMatrix.m[ 3 ] = 0.0f;
+	m.mm[ 0 ][ 0 ] = m0 / m1;
+	m.mm[ 0 ][ 1 ] = 0.0f;
+	m.mm[ 0 ][ 2 ] = ( right + left ) / m1;
+	m.mm[ 0 ][ 3 ] = 0.0f;
 
-	frustumMatrix.m[ 4 ] = 0.0f;
-	frustumMatrix.m[ 5 ] = m0 / m2;
-	frustumMatrix.m[ 6 ] = 0.0f;
-	frustumMatrix.m[ 7 ] = 0.0f;
+	m.mm[ 1 ][ 0 ] = 0.0f;
+	m.mm[ 1 ][ 1 ] = m0 / m2;
+	m.mm[ 1 ][ 2 ] = ( top + bottom ) / m2;
+	m.mm[ 1 ][ 3 ] = 0.0f;
 
-	frustumMatrix.m[ 8 ] = ( right + left ) / m1;
-	frustumMatrix.m[ 9 ] = ( top + bottom ) / m2;
-	frustumMatrix.m[ 10 ] = ( -farf - nearf ) / m3;
-	frustumMatrix.m[ 11 ] = -1.0f;
+	m.mm[ 2 ][ 0 ] = 0.0f;
+	m.mm[ 2 ][ 1 ] = 0.0f;
+	m.mm[ 2 ][ 2 ] = -( farf + nearf ) / m3;
+	m.mm[ 2 ][ 3 ] = -1.0f;
 
-	frustumMatrix.m[ 12 ] = 0.0f;
-	frustumMatrix.m[ 13 ] = 0.0f;
-	frustumMatrix.m[ 14 ] = 0.0f;
-	frustumMatrix.m[ 15 ] = 1.0f;
+	m.mm[ 3 ][ 0 ] = 0.0f;
+	m.mm[ 3 ][ 1 ] = 0.0f;
+	m.mm[ 3 ][ 2 ] = -1.0f;
+	m.mm[ 3 ][ 3 ] = 0.0f;
 
-	return frustumMatrix;
+	return m;
 }
 
 inline static PLMatrix4 PlOrtho( float left, float right, float bottom, float top, float nearf, float farf ) {

@@ -113,17 +113,21 @@ static void SetupCameraFrustum( PLGCamera *camera ) {
 }
 
 static void SetupCameraPerspective( PLGCamera *camera, int width, int height ) {
-	float w = ( float ) width;
-	float h = ( float ) height;
+	camera->internal.proj = PlPerspective( camera->fov, ( float ) width / ( float ) height, camera->near, camera->far );
 
-	camera->internal.proj = PlPerspective( camera->fov, w / h, camera->near, camera->far );
+#if 1
+	PLVector3 left, up, forward;
+	PlAnglesAxes( camera->angles, &left, &up, &forward );
 
+	camera->internal.view = PlLookAt( camera->position, PlAddVector3( camera->position, PlNormalizeVector3( forward ) ), up );
+#else
 	float x = cosf( PL_DEG2RAD( camera->angles.y ) ) * cosf( PL_DEG2RAD( camera->angles.x ) );
 	float y = sinf( PL_DEG2RAD( camera->angles.x ) );
 	float z = sinf( PL_DEG2RAD( camera->angles.y ) ) * cosf( PL_DEG2RAD( camera->angles.x ) );
 
 	camera->forward = PlNormalizeVector3( PLVector3( x, y, z ) );
 	camera->internal.view = PlLookAt( camera->position, PlAddVector3( camera->position, camera->forward ), camera->up );
+#endif
 }
 
 /***** TEMPORARY CRAP START *****/
