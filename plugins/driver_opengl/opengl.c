@@ -898,9 +898,17 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 	GLuint mode = TranslatePrimitiveMode( mesh->primitive );
 	if ( mesh->num_indices > 0 ) {
 		XGL_CALL( glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->buffers[ BUFFER_ELEMENT_DATA ] ) );
-		XGL_CALL( glDrawElements( mode, mesh->num_indices, GL_UNSIGNED_INT, 0 ) );
+		if ( mesh->numSubMeshes > 0 ) {
+			XGL_CALL( glMultiDrawElements( mode, mesh->subMeshes, GL_UNSIGNED_INT, NULL, mesh->numSubMeshes ) );
+		} else {
+			XGL_CALL( glDrawElements( mode, mesh->num_indices, GL_UNSIGNED_INT, 0 ) );
+		}
 	} else {
-		XGL_CALL( glDrawArrays( mode, 0, mesh->num_verts ) );
+		if ( mesh->numSubMeshes > 0 ) {
+			XGL_CALL( glMultiDrawArrays( mode, mesh->firstSubMeshes, mesh->subMeshes, mesh->numSubMeshes ) );
+		} else {
+			XGL_CALL( glDrawArrays( mode, 0, mesh->num_verts ) );
+		}
 	}
 
 	if ( mesh->primitiveScale != 0.0f ) {

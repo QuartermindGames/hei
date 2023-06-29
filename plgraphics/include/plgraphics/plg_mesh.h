@@ -49,6 +49,11 @@ typedef struct PLGMesh {
 	unsigned int num_verts;
 	unsigned int maxVertices;
 
+	uint32_t numSubMeshes;
+	uint32_t maxSubMeshes;
+	int32_t *subMeshes;
+	int32_t *firstSubMeshes;
+
 	unsigned int *indices;
 	unsigned int num_indices;
 	unsigned int maxIndices;
@@ -85,7 +90,7 @@ void PlgDrawTexturedRectangle( float x, float y, float w, float h, PLGTexture *t
 void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
                           float hScale, float vScale, PLGTexture *texture );
 void PlgDrawTriangle( int x, int y, unsigned int w, unsigned int h );
-void PlgDrawLines( const PLVector3 *points, unsigned int numPoints, PLColour colour );
+void PlgDrawLines( const PLVector3 *points, unsigned int numPoints, PLColour colour, float thickness );
 void PlgDrawLine( PLMatrix4 transform, PLVector3 startPos, PLColour startColour, PLVector3 endPos, PLColour endColour );
 void PlgDrawSimpleLine( PLMatrix4 transform, PLVector3 startPos, PLVector3 endPos, PLColour colour );
 void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColour *colour );
@@ -115,6 +120,7 @@ unsigned int PlgAddMeshTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, 
 
 void PlgUploadMesh( PLGMesh *mesh );
 void PlgDrawMesh( PLGMesh *mesh );
+void PlgDrawSubMeshes( PLGMesh *mesh, int32_t *firstSubMeshes, int32_t *subMeshes, uint32_t numSubMeshes );
 
 PLCollisionAABB PlgGenerateAabbFromVertices( const PLGVertex *vertices, unsigned int numVertices, bool absolute );
 PLCollisionAABB PlgGenerateAabbFromMesh( const PLGMesh *mesh, bool absolute );

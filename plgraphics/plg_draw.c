@@ -207,8 +207,9 @@ void PlgDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 	PlPopMatrix();
 }
 
-void PlgDrawLines( const PLVector3 *points, unsigned int numPoints, PLColour colour ) {
-	PlgImmBegin( PLG_MESH_LINES );
+void PlgDrawLines( const PLVector3 *points, unsigned int numPoints, PLColour colour, float thickness ) {
+	PLGMesh *mesh = PlgImmBegin( PLG_MESH_LINES );
+	mesh->primitiveScale = thickness;
 
 	for ( unsigned int i = 0; i < numPoints; ++i ) {
 		PlgImmPushVertex( points[ i ].x, points[ i ].y, points[ i ].z );
@@ -216,6 +217,8 @@ void PlgDrawLines( const PLVector3 *points, unsigned int numPoints, PLColour col
 	}
 
 	PlgImmDraw();
+
+	mesh->primitiveScale = 1.0f;
 }
 
 void PlgDrawLine( PLMatrix4 transform, PLVector3 startPos, PLColour startColour, PLVector3 endPos, PLColour endColour ) {

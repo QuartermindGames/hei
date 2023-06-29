@@ -221,6 +221,9 @@ void PlgDestroyMesh( PLGMesh *mesh ) {
 
 	CallGfxFunction( DeleteMesh, mesh );
 
+	PL_DELETE( mesh->subMeshes );
+	PL_DELETE( mesh->firstSubMeshes );
+
 	PlFree( mesh->vertices );
 	PlFree( mesh->indices );
 	PlFree( mesh );
@@ -229,6 +232,8 @@ void PlgDestroyMesh( PLGMesh *mesh ) {
 void PlgClearMesh( PLGMesh *mesh ) {
 	PlgClearMeshVertices( mesh );
 	PlgClearMeshTriangles( mesh );
+
+	mesh->numSubMeshes = 0;
 }
 
 void PlgClearMeshVertices( PLGMesh *mesh ) {
@@ -347,6 +352,22 @@ void PlgDrawMesh( PLGMesh *mesh ) {
 	}
 
 	CallGfxFunction( DrawMesh, mesh, gfx_state.current_program );
+}
+
+/**
+ * Draws a collection of subsets of the given mesh.
+ */
+void PlgDrawSubMeshes( PLGMesh *mesh, int32_t *firstSubMeshes, int32_t *subMeshes, uint32_t numSubMeshes ) {
+	// urgh, this is just a botch for now,
+	// eventually we should introduce a proper call for it, probably
+	mesh->subMeshes = subMeshes;
+	mesh->firstSubMeshes = firstSubMeshes;
+	mesh->numSubMeshes = numSubMeshes;
+
+	PlgDrawMesh( mesh );
+
+	// we can just set it to 0 here, and it won't operate any more...
+	mesh->numSubMeshes = 0;
 }
 
 void PlgDrawInstancedMesh( PLGMesh *mesh, const PLMatrix4 *transforms, unsigned int instanceCount ) {
