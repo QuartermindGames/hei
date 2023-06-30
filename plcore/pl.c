@@ -159,6 +159,15 @@ const char *PlGetCommandLineArgumentValue( const char *arg ) {
 	return NULL;
 }
 
+const char *PlGetCommandLineArgumentValueByIndex( unsigned int index ) {
+	if ( index >= pl_arguments.num_arguments ) {
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "invalid argument index" );
+		return NULL;
+	}
+
+	return pl_arguments.arguments[ index ];
+}
+
 bool _plIsSubSystemActive( unsigned int subsystem ) {
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( pl_subsystems ); i++ ) {
 		if ( pl_subsystems[ i ].subsystem == subsystem ) {

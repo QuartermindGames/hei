@@ -184,6 +184,12 @@ PL_EXTERN const char *PlGenerateUniqueIdentifier( char *dest, size_t destLength 
 
 // CL Arguments
 PL_EXTERN const char *PlGetCommandLineArgumentValue( const char *arg );
+
+/**
+ * Equivalent of using 'argv' directly, but with bounds checking.
+ */
+PL_EXTERN const char *PlGetCommandLineArgumentValueByIndex( unsigned int index );
+
 PL_EXTERN bool PlHasCommandLineArgument( const char *arg );
 
 //////////////////////////////////////////////////////////////////
