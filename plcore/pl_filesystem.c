@@ -800,6 +800,7 @@ const char *PlGetWorkingDirectory( void ) {
 		PlReportErrorF( PL_RESULT_SYSERR, "%s", strerror( errno ) );
 		return NULL;
 	}
+	PlNormalizePath( out, sizeof( out ) );
 	return out;
 }
 
@@ -849,6 +850,8 @@ const char *PlGetExecutableDirectory( char *out, size_t outSize ) {
 	if ( i < outSize ) {
 		out[ i ] = '\0';
 	}
+
+	PlNormalizePath( out, outSize );
 
 	return out;
 }
