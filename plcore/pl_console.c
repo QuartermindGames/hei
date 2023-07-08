@@ -640,7 +640,7 @@ int PlAddLogLevel( const char *prefix, PLColour colour, bool status ) {
 	}
 
 	char var[ 32 ];
-	snprintf( var, sizeof( var ), "log.%s", prefix );
+	snprintf( var, sizeof( var ), "log/%s", prefix );
 	l->var = PlRegisterConsoleVariable( var, "Console output level.", status ? "1" : "0", PL_VAR_BOOL, NULL, NULL, false );
 	numLogLevels++;
 
