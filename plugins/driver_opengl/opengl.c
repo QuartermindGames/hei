@@ -424,7 +424,7 @@ static void *GLReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, u
 }
 
 static void GLBindTexture( const PLGTexture *texture );
-
+static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter );
 static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int components, PLGTextureFilter filter ) {
 	PLGTexture *texture = gInterface->CreateTexture();
 	if ( texture == NULL ) {
@@ -434,17 +434,13 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 	/* all of this is going to change later...
 	 * this is just the bare minimum to get things going */
 
-	texture->filter = filter;
 	texture->w = buffer->width;
 	texture->h = buffer->height;
 
 	GLBindFrameBuffer( buffer, PLG_FRAMEBUFFER_DRAW );
 	GLBindTexture( texture );
 
-	int min, mag;
-	GL_TranslateTextureFilterFormat( filter, &min, &mag );
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min ) );
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag ) );
+	GLSetTextureFilter( texture, filter );
 
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ) );
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ) );
