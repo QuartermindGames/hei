@@ -65,7 +65,7 @@ void PlgImmSetPrimitiveScale( float scale ) {
 }
 
 void PlgImmDraw( void ) {
-	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", PlGetMatrix( PL_MODELVIEW_MATRIX ), true );
+	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
 
 	PlgUploadMesh( currentDynamicMesh );
 	PlgDrawMesh( currentDynamicMesh );
