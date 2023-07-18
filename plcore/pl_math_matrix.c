@@ -14,6 +14,29 @@ PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *vi
 	return PlVector2( ppos.x / ppos.w, ppos.y / ppos.w );
 }
 
+PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up ) {
+	PLVector3 z = PlNormalizeVector3( PlSubtractVector3( eye, center ) );
+	PLVector3 x = PlNormalizeVector3( PlVector3CrossProduct( up, z ) );
+	PLVector3 y = PlVector3CrossProduct( z, x );
+
+	PLMatrix4 m = PlMatrix4Identity();
+
+	/* side */
+	m.mm[ 0 ][ 0 ] = x.x;
+	m.mm[ 1 ][ 0 ] = x.y;
+	m.mm[ 2 ][ 0 ] = x.z;
+	/* up */
+	m.mm[ 0 ][ 1 ] = y.x;
+	m.mm[ 1 ][ 1 ] = y.y;
+	m.mm[ 2 ][ 1 ] = y.z;
+	/* forward */
+	m.mm[ 0 ][ 2 ] = z.x;
+	m.mm[ 1 ][ 2 ] = z.y;
+	m.mm[ 2 ][ 2 ] = z.z;
+
+	return PlMultiplyMatrix4( m, PlTranslateMatrix4( ( PLVector3 ){ -eye.x, -eye.y, -eye.z } ) );
+}
+
 /****************************************
  ****************************************/
  

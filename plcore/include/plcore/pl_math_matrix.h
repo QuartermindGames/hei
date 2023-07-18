@@ -423,28 +423,7 @@ inline static PLMatrix4 PlInverseMatrix4( PLMatrix4 m ) {
 	return out;
 }
 
-inline static PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up ) {
-	PLVector3 z = PlNormalizeVector3( PlSubtractVector3( eye, center ) );
-	PLVector3 x = PlNormalizeVector3( PlVector3CrossProduct( up, z ) );
-	PLVector3 y = PlVector3CrossProduct( z, x );
-
-	PLMatrix4 m = PlMatrix4Identity();
-
-	/* side */
-	m.mm[ 0 ][ 0 ] = x.x;
-	m.mm[ 1 ][ 0 ] = x.y;
-	m.mm[ 2 ][ 0 ] = x.z;
-	/* up */
-	m.mm[ 0 ][ 1 ] = y.x;
-	m.mm[ 1 ][ 1 ] = y.y;
-	m.mm[ 2 ][ 1 ] = y.z;
-	/* forward */
-	m.mm[ 0 ][ 2 ] = z.x;
-	m.mm[ 1 ][ 2 ] = z.y;
-	m.mm[ 2 ][ 2 ] = z.z;
-
-	return PlMultiplyMatrix4( m, PlTranslateMatrix4( ( PLVector3 ){ -eye.x, -eye.y, -eye.z } ) );
-}
+PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up );
 
 inline static PLMatrix4 PlFrustum( float left, float right, float bottom, float top, float nearf, float farf ) {
 	float m0 = 2.0f * nearf;
