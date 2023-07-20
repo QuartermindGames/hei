@@ -106,27 +106,29 @@ static void MakeFrustumPlanes( const PLMatrix4 *matrix, PLGViewFrustum outFrustu
 }
 
 static void SetupCameraFrustum( PLGCamera *camera ) {
-	PLMatrix4 mvp = PlMatrix4Identity();
-	mvp = PlMultiplyMatrix4( mvp, camera->internal.proj );
-	mvp = PlMultiplyMatrix4( mvp, camera->internal.view );
-	MakeFrustumPlanes( &mvp, camera->frustum );
+	PLMatrix4 viewProj = PlMultiplyMatrix4( camera->internal.proj, &camera->internal.view );
+	MakeFrustumPlanes( &viewProj, camera->frustum );
 }
 
 static void SetupCameraPerspective( PLGCamera *camera, int width, int height ) {
 	camera->internal.proj = PlPerspective( camera->fov, ( float ) width / ( float ) height, camera->near, camera->far );
 
 #if 1
+
 	PLVector3 left, up, forward;
 	PlAnglesAxes( camera->angles, &left, &up, &forward );
 
 	camera->internal.view = PlLookAt( camera->position, PlAddVector3( camera->position, PlNormalizeVector3( forward ) ), up );
+
 #else
+
 	float x = cosf( PL_DEG2RAD( camera->angles.y ) ) * cosf( PL_DEG2RAD( camera->angles.x ) );
 	float y = sinf( PL_DEG2RAD( camera->angles.x ) );
 	float z = sinf( PL_DEG2RAD( camera->angles.y ) ) * cosf( PL_DEG2RAD( camera->angles.x ) );
 
 	camera->forward = PlNormalizeVector3( PLVector3( x, y, z ) );
 	camera->internal.view = PlLookAt( camera->position, PlAddVector3( camera->position, camera->forward ), camera->up );
+
 #endif
 }
 
@@ -242,8 +244,4 @@ bool PlgIsSphereInsideView( const PLGCamera *camera, const PLCollisionSphere *sp
 	}
 
 	return true;
-}
-
-void PlgLookAtTargetVector( PLGCamera *camera, const PLVector3 *target ) {
-	camera->internal.view = PlLookAt( camera->position, *target, PLVector3( 0, 1, 0 ) );
 }

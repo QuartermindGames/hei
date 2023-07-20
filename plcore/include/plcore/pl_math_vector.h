@@ -34,7 +34,7 @@ typedef struct PLVector4 {
 #	define PLVector4( x, y, z, w ) \
 		( PLVector4 ) { ( float ) x, ( float ) y, ( float ) z, ( float ) w }
 #endif
-#define PlVector4( X, Y, Z, W ) \
+#define PL_VECTOR4( X, Y, Z, W ) \
 	( PLVector4 ) { X, Y, Z, W }
 
 /* these will give you the number of elements in each type

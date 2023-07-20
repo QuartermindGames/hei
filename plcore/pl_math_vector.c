@@ -15,27 +15,27 @@ PL_DLL const PLVector4 pl_vecOrigin4 = { 0.0f, 0.0f, 0.0f, 0.0f };
  ****************************************/
 
 PLVector4 PlTransformVector4( const PLVector4 *v, const PLMatrix4 *m ) {
-	return PlVector4(
+	return PL_VECTOR4(
 	        /* x */
-	        ( v->x * m->pl_m4pos( 0, 0 ) ) +
-	                ( v->y * m->pl_m4pos( 1, 0 ) ) +
-	                ( v->z * m->pl_m4pos( 2, 0 ) ) +
-	                ( v->w * m->pl_m4pos( 3, 0 ) ),
+	        ( m->pl_m4pos( 0, 0 ) * v->x ) +
+	                ( m->pl_m4pos( 0, 1 ) * v->y ) +
+	                ( m->pl_m4pos( 0, 2 ) * v->z ) +
+	                ( m->pl_m4pos( 0, 3 ) * v->w ),
 	        /* y */
-	        ( v->x * m->pl_m4pos( 0, 1 ) ) +
-	                ( v->y * m->pl_m4pos( 1, 1 ) ) +
-	                ( v->z * m->pl_m4pos( 2, 1 ) ) +
-	                ( v->w * m->pl_m4pos( 3, 1 ) ),
+	        ( m->pl_m4pos( 1, 0 ) * v->x ) +
+	                ( m->pl_m4pos( 1, 1 ) * v->y ) +
+	                ( m->pl_m4pos( 1, 2 ) * v->z ) +
+	                ( m->pl_m4pos( 1, 3 ) * v->w ),
 	        /* y */
-	        ( v->x * m->pl_m4pos( 0, 2 ) ) +
-	                ( v->y * m->pl_m4pos( 1, 2 ) ) +
-	                ( v->z * m->pl_m4pos( 2, 2 ) ) +
-	                ( v->w * m->pl_m4pos( 3, 2 ) ),
+	        ( m->pl_m4pos( 2, 0 ) * v->x ) +
+	                ( m->pl_m4pos( 2, 1 ) * v->y ) +
+	                ( m->pl_m4pos( 2, 2 ) * v->z ) +
+	                ( m->pl_m4pos( 2, 3 ) * v->w ),
 	        /* w */
-	        ( v->x * m->pl_m4pos( 0, 3 ) ) +
-	                ( v->y * m->pl_m4pos( 1, 3 ) ) +
-	                ( v->z * m->pl_m4pos( 2, 3 ) ) +
-	                ( v->w * m->pl_m4pos( 3, 3 ) ) );
+	        ( m->pl_m4pos( 3, 0 ) * v->x ) +
+	                ( m->pl_m4pos( 3, 1 ) * v->y ) +
+	                ( m->pl_m4pos( 3, 2 ) * v->z ) +
+	                ( m->pl_m4pos( 3, 3 ) * v->w ) );
 }
 
 /****************************************
@@ -289,7 +289,7 @@ PLVector3 PlClampVector3( const PLVector3 *v, float min, float max ) {
 }
 
 PLVector4 PlClampVector4( const PLVector4 *v, float min, float max ) {
-	return PlVector4(
+	return PL_VECTOR4(
 	        PlClamp( min, v->x, max ),
 	        PlClamp( min, v->y, max ),
 	        PlClamp( min, v->z, max ),
@@ -336,12 +336,9 @@ PLVector2 PlComputeLineNormal( const PLVector2 *x, const PLVector2 *y ) {
 	return plNormalizeVector2( &v );
 }
 
-bool PlIsVectorNaN( float *v, uint8_t numElements )
-{
-	for ( uint8_t i = 0; i < numElements; ++i )
-	{
-		if ( !isnan( v[ i ] ) )
-		{
+bool PlIsVectorNaN( float *v, uint8_t numElements ) {
+	for ( uint8_t i = 0; i < numElements; ++i ) {
+		if ( !isnan( v[ i ] ) ) {
 			continue;
 		}
 

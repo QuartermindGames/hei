@@ -35,7 +35,7 @@ typedef struct PLMatrix4 {
 inline static PLMatrix4 PlAddMatrix4( PLMatrix4 m, PLMatrix4 m2 );
 inline static PLMatrix4 PlSubtractMatrix4( PLMatrix4 m, PLMatrix4 m2 );
 inline static PLMatrix4 PlScaleMatrix4( PLMatrix4 m, PLVector3 scale );
-inline static PLMatrix4 PlMultiplyMatrix4( PLMatrix4 m, PLMatrix4 m2 );
+inline static PLMatrix4 PlMultiplyMatrix4( PLMatrix4 m, const PLMatrix4 *m2 );
 PLMatrix4 PlRotateMatrix4( float angle, const PLVector3 *axis );
 inline static PLMatrix4 PlTranslateMatrix4( PLVector3 v );
 inline static PLMatrix4 PlInverseMatrix4( PLMatrix4 m );
@@ -43,7 +43,8 @@ inline static PLMatrix4 PlInverseMatrix4( PLMatrix4 m );
 PLVector3 PlGetMatrix4Translation( const PLMatrix4 *m );
 PLVector3 PlGetMatrix4Angle( const PLMatrix4 *m );
 
-PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix );
+PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix,
+                                  int viewportWidth, int viewportHeight, int viewportX, int viewportY );
 
 #ifdef __cplusplus
 namespace hei {
@@ -115,7 +116,7 @@ namespace hei {
 		}
 
 		inline PLMatrix4 operator*( PLMatrix4 m2 ) const {
-			return PlMultiplyMatrix4( *this, m2 );
+			return PlMultiplyMatrix4( *this, &m2 );
 		}
 
 		inline Matrix4 &operator=( const PLMatrix4 &m2 ) {
@@ -229,28 +230,18 @@ inline static PLMatrix4 PlSubtractMatrix4( PLMatrix4 m, PLMatrix4 m2 ) {
 
 /* Multiply */
 
-inline static PLMatrix4 PlMultiplyMatrix4( PLMatrix4 m, PLMatrix4 m2 ) {
+inline static PLMatrix4 PlMultiplyMatrix4( PLMatrix4 m, const PLMatrix4 *m2 ) {
 	PLMatrix4 out;
+	for ( unsigned int row = 0; row < 4; ++row ) {
+		for ( unsigned int col = 0; col < 4; ++col ) {
+			float sum = 0.0f;
+			for ( unsigned int i = 0; i < 4; ++i ) {
+				sum += m.m[ PL_M4_POS( row, i ) ] * m2->m[ PL_M4_POS( i, col ) ];
+			}
 
-	out.m[ 0 ] = m.m[ 0 ] * m2.m[ 0 ] + m.m[ 4 ] * m2.m[ 1 ] + m.m[ 8 ] * m2.m[ 2 ] + m.m[ 12 ] * m2.m[ 3 ];
-	out.m[ 1 ] = m.m[ 1 ] * m2.m[ 0 ] + m.m[ 5 ] * m2.m[ 1 ] + m.m[ 9 ] * m2.m[ 2 ] + m.m[ 13 ] * m2.m[ 3 ];
-	out.m[ 2 ] = m.m[ 2 ] * m2.m[ 0 ] + m.m[ 6 ] * m2.m[ 1 ] + m.m[ 10 ] * m2.m[ 2 ] + m.m[ 14 ] * m2.m[ 3 ];
-	out.m[ 3 ] = m.m[ 3 ] * m2.m[ 0 ] + m.m[ 7 ] * m2.m[ 1 ] + m.m[ 11 ] * m2.m[ 2 ] + m.m[ 15 ] * m2.m[ 3 ];
-
-	out.m[ 4 ] = m.m[ 0 ] * m2.m[ 4 ] + m.m[ 4 ] * m2.m[ 5 ] + m.m[ 8 ] * m2.m[ 6 ] + m.m[ 12 ] * m2.m[ 7 ];
-	out.m[ 5 ] = m.m[ 1 ] * m2.m[ 4 ] + m.m[ 5 ] * m2.m[ 5 ] + m.m[ 9 ] * m2.m[ 6 ] + m.m[ 13 ] * m2.m[ 7 ];
-	out.m[ 6 ] = m.m[ 2 ] * m2.m[ 4 ] + m.m[ 6 ] * m2.m[ 5 ] + m.m[ 10 ] * m2.m[ 6 ] + m.m[ 14 ] * m2.m[ 7 ];
-	out.m[ 7 ] = m.m[ 3 ] * m2.m[ 4 ] + m.m[ 7 ] * m2.m[ 5 ] + m.m[ 11 ] * m2.m[ 6 ] + m.m[ 15 ] * m2.m[ 7 ];
-
-	out.m[ 8 ] = m.m[ 0 ] * m2.m[ 8 ] + m.m[ 4 ] * m2.m[ 9 ] + m.m[ 8 ] * m2.m[ 10 ] + m.m[ 12 ] * m2.m[ 11 ];
-	out.m[ 9 ] = m.m[ 1 ] * m2.m[ 8 ] + m.m[ 5 ] * m2.m[ 9 ] + m.m[ 9 ] * m2.m[ 10 ] + m.m[ 13 ] * m2.m[ 11 ];
-	out.m[ 10 ] = m.m[ 2 ] * m2.m[ 8 ] + m.m[ 6 ] * m2.m[ 9 ] + m.m[ 10 ] * m2.m[ 10 ] + m.m[ 14 ] * m2.m[ 11 ];
-	out.m[ 11 ] = m.m[ 3 ] * m2.m[ 8 ] + m.m[ 7 ] * m2.m[ 9 ] + m.m[ 11 ] * m2.m[ 10 ] + m.m[ 15 ] * m2.m[ 11 ];
-
-	out.m[ 12 ] = m.m[ 0 ] * m2.m[ 12 ] + m.m[ 4 ] * m2.m[ 13 ] + m.m[ 8 ] * m2.m[ 14 ] + m.m[ 12 ] * m2.m[ 15 ];
-	out.m[ 13 ] = m.m[ 1 ] * m2.m[ 12 ] + m.m[ 5 ] * m2.m[ 13 ] + m.m[ 9 ] * m2.m[ 14 ] + m.m[ 13 ] * m2.m[ 15 ];
-	out.m[ 14 ] = m.m[ 2 ] * m2.m[ 12 ] + m.m[ 6 ] * m2.m[ 13 ] + m.m[ 10 ] * m2.m[ 14 ] + m.m[ 14 ] * m2.m[ 15 ];
-	out.m[ 15 ] = m.m[ 3 ] * m2.m[ 12 ] + m.m[ 7 ] * m2.m[ 13 ] + m.m[ 11 ] * m2.m[ 14 ] + m.m[ 15 ] * m2.m[ 15 ];
+			out.m[ PL_M4_POS( row, col ) ] = sum;
+		}
+	}
 
 	return out;
 }

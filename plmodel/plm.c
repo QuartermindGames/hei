@@ -284,7 +284,7 @@ void PlmDrawModel( PLMModel *model ) {
 
 		PlgSetTexture( model->meshes[ i ]->texture, 0 );
 
-		PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", &model->modelMatrix, true );
+		PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", &model->modelMatrix, false );
 
 		PlgUploadMesh( model->meshes[ i ] );
 		PlgDrawMesh( model->meshes[ i ] );

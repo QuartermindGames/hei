@@ -8,10 +8,21 @@
 
 #include <plcore/pl_math.h>
 
-PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix ) {
-	PLVector4 posw = PlVector4( position->x, position->y, position->z, 1.0f );
+PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix,
+                                  int viewportWidth, int viewportHeight, int viewportX, int viewportY ) {
+	// Transform world position to clip space
+	PLVector4 posw = PL_VECTOR4( position->x, position->y, position->z, 1.0f );
 	PLVector4 ppos = PlTransformVector4( &posw, viewProjMatrix );
-	return PlVector2( ppos.x / ppos.w, ppos.y / ppos.w );
+
+	// Divide by w to get normalized device coordinates
+	PLVector3 ndc = PlVector3( ppos.x / ppos.w, ppos.y / ppos.w, ppos.z / ppos.w );
+
+	// Scale and offset by viewport parameters to get screen coordinates
+	PLVector2 screen = PlVector2( ( ( ndc.x + 1.0f ) / 2.0f ) * viewportWidth + viewportX,
+	                              // Flip the y coordinate by subtracting it from the viewport height
+	                              viewportHeight - ( ( ndc.y + 1.0f ) / 2.0f ) * viewportHeight + viewportY );
+
+	return screen;
 }
 
 PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up ) {
@@ -34,12 +45,13 @@ PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up ) {
 	m.mm[ 1 ][ 2 ] = z.y;
 	m.mm[ 2 ][ 2 ] = z.z;
 
-	return PlMultiplyMatrix4( m, PlTranslateMatrix4( ( PLVector3 ){ -eye.x, -eye.y, -eye.z } ) );
+	PLMatrix4 pos = PlTranslateMatrix4( ( PLVector3 ){ -eye.x, -eye.y, -eye.z } );
+	return PlMultiplyMatrix4( m, &pos );
 }
 
 /****************************************
  ****************************************/
- 
+
 PLMatrix4 PlRotateMatrix4( float angle, const PLVector3 *axis ) {
 	float s = sinf( angle );
 	float c = cosf( angle );
@@ -145,7 +157,7 @@ void PlLoadIdentityMatrix( void ) {
 
 void PlMultiMatrix( const PLMatrix4 *matrix ) {
 	PLMatrix4 *curStack = PlGetMatrix( curMatrixMode );
-	*curStack = PlMultiplyMatrix4( *curStack, *matrix );
+	*curStack = PlMultiplyMatrix4( *curStack, matrix );
 }
 
 void PlRotateMatrix( float angle, float x, float y, float z ) {
