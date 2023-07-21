@@ -58,16 +58,16 @@ void *PlLookupHashTableUserData( const PLHashTable *hashTable, const void *key, 
 	return NULL;
 }
 
-bool PlInsertHashTableNode( PLHashTable *hashTable, const void *key, size_t keySize, void *value ) {
+PLHashTableNode *PlInsertHashTableNode( PLHashTable *hashTable, const void *key, size_t keySize, void *value ) {
 	assert( key != NULL && keySize != 0 );
 	if ( key == NULL || keySize == 0 ) {
 		PlReportErrorF( PL_RESULT_INVALID_PARM2, "invalid key provided" );
-		return false;
+		return NULL;
 	}
 
 	if ( PlLookupHashTableUserData( hashTable, key, keySize ) != NULL ) {
 		PlReportErrorF( PL_RESULT_INVALID_PARM2, "key already exists" );
-		return false;
+		return NULL;
 	}
 
 	PLHashTableNode *node = PL_NEW( PLHashTableNode );
@@ -83,7 +83,7 @@ bool PlInsertHashTableNode( PLHashTable *hashTable, const void *key, size_t keyS
 	hashTable->nodes[ index ] = node;
 	hashTable->numNodes++;
 
-	return true;
+	return node;
 }
 
 unsigned int PlGetNumHashTableNodes( const PLHashTable *hashTable ) {
