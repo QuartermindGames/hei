@@ -586,16 +586,22 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 
 	unsigned int image_format = TranslateImageFormat( upload->format );
 	for ( unsigned int i = 0; i < levels; ++i ) {
-		GLsizei w = texture->w / ( unsigned int ) pow( 2, i );
-		GLsizei h = texture->h / ( unsigned int ) pow( 2, i );
+		GLsizei w = ( GLsizei ) ( upload->width / ( unsigned int ) pow( 2, i ) );
+		GLsizei h = ( GLsizei ) ( upload->height / ( unsigned int ) pow( 2, i ) );
 		if ( IsCompressedImageFormat( upload->format ) ) {
+			GLsizei size;
+			if ( i > 0 ) {
+				size = ( GLsizei ) gInterface->core->GetImageSize( upload->format, w, h );
+			} else {
+				size = ( GLsizei ) upload->size;
+			}
 			XGL_CALL( glCompressedTexImage2D(
 			        GL_TEXTURE_2D,
 			        i,
 			        image_format,
 			        w, h,
 			        0,
-			        ( GLsizei ) upload->size,
+			        size,
 			        upload->data[ 0 ] ) );
 		} else {
 			XGL_CALL( glTexImage2D(
