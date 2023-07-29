@@ -78,6 +78,7 @@ PLVector3 PlGetAabbAbsOrigin( const PLCollisionAABB *bounds, PLVector3 origin );
 
 bool PlIsAabbIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB *bBounds );
 bool PlIsPointIntersectingAabb( const PLCollisionAABB *bounds, PLVector3 point );
+bool PlIsSphereIntersectingAabb( const PLCollisionSphere *sphere, const PLCollisionAABB *bounds );
 
 /**
  * Get which side of a line a point is on.

@@ -96,6 +96,19 @@ bool PlIsPointIntersectingAabb( const PLCollisionAABB *bounds, PLVector3 point )
 	        point.z < min.z );
 }
 
+static PLVector3 FindClosestPointOnAabb( const PLCollisionAABB *bounds, const PLVector3 *point ) {
+	return ( PLVector3 ){
+	        PL_MAX( bounds->mins.x, PL_MIN( bounds->maxs.x, point->x ) ),
+	        PL_MAX( bounds->mins.y, PL_MIN( bounds->maxs.y, point->y ) ),
+	        PL_MAX( bounds->mins.z, PL_MIN( bounds->maxs.z, point->z ) ) };
+}
+
+bool PlIsSphereIntersectingAabb( const PLCollisionSphere *sphere, const PLCollisionAABB *bounds ) {
+	PLVector3 point = FindClosestPointOnAabb( bounds, &sphere->origin );
+	float distance = PlVector3Length( PlSubtractVector3( point, sphere->origin ) );
+	return ( distance <= sphere->radius );
+}
+
 bool PlIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere ) {
 	PLVector3 difference = PlSubtractVector3( aSphere->origin, bSphere->origin );
 	float distance = PlVector3Length( difference );
