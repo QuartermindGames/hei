@@ -58,6 +58,8 @@ static int gl_version_minor = 0;
 #define XGL_VERSION( maj, min ) ( ( ( maj ) == gl_version_major && ( min ) <= gl_version_minor ) || ( maj ) < gl_version_major )
 #define XGL_LOG( ... )          gInterface->core->LogMessage( glLogLevel, __VA_ARGS__ )
 
+#define XGL_INVALID ( ( unsigned int ) -1 )
+
 unsigned int gl_num_extensions = 0;
 
 static GLuint VAO[ 1 ];
@@ -1610,6 +1612,99 @@ static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 }
 
 /////////////////////////////////////////////////////////////
+// Stencil Operations
+
+static void GLStencilFunction( PLGStencilTestFunction function, int ref, unsigned int mask ) {
+	GLenum glFunction;
+	switch ( function ) {
+		default:
+			break;
+		case PLG_STENCIL_TEST_ALWAYS:
+			glFunction = GL_ALWAYS;
+			break;
+		case PLG_STENCIL_TEST_LESS:
+			glFunction = GL_LESS;
+			break;
+		case PLG_STENCIL_TEST_LEQUAL:
+			glFunction = GL_LEQUAL;
+			break;
+		case PLG_STENCIL_TEST_GREATER:
+			glFunction = GL_GREATER;
+			break;
+	}
+
+	XGL_CALL( glStencilFunc( glFunction, ref, mask ) );
+}
+
+static GLenum TranslateStencilOp( PLGStencilOp stencilOp ) {
+	switch ( stencilOp ) {
+		default:
+			break;
+		case PLG_STENCIL_OP_KEEP:
+			return GL_KEEP;
+		case PLG_STENCIL_OP_ZERO:
+			return GL_ZERO;
+		case PLG_STENCIL_OP_REPLACE:
+			return GL_REPLACE;
+		case PLG_STENCIL_OP_INCR:
+			return GL_INCR;
+		case PLG_STENCIL_OP_INCRWRAP:
+			return GL_INCR_WRAP;
+		case PLG_STENCIL_OP_DECR:
+			return GL_DECR;
+		case PLG_STENCIL_OP_DECRWRAP:
+			return GL_DECR_WRAP;
+		case PLG_STENCIL_OP_INVERT:
+			return GL_INVERT;
+	}
+
+	return XGL_INVALID;
+}
+
+static GLenum TranslateStencilFace( PLGStencilFace face ) {
+	switch ( face ) {
+		default:
+			break;
+		case PLG_STENCIL_FACE_FRONT:
+			return GL_FRONT;
+		case PLG_STENCIL_FACE_BACK:
+			return GL_BACK;
+		case PLG_STENCIL_FACE_FRONTANDBACK:
+			return GL_FRONT_AND_BACK;
+	}
+
+	return XGL_INVALID;
+}
+
+static void GLStencilOp( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp depthFailOp, PLGStencilOp depthPassOp ) {
+	GLenum glface = TranslateStencilFace( face );
+	if ( glface == XGL_INVALID ) {
+		gInterface->core->ReportError( PL_RESULT_FAIL, PL_FUNCTION, "invalid stencil face specified" );
+		return;
+	}
+
+	GLenum sfail = TranslateStencilOp( stencilFailOp );
+	if ( sfail == XGL_INVALID ) {
+		gInterface->core->ReportError( PL_RESULT_FAIL, PL_FUNCTION, "invalid stencil fail operation" );
+		return;
+	}
+
+	GLenum dpfail = TranslateStencilOp( depthFailOp );
+	if ( sfail == XGL_INVALID ) {
+		gInterface->core->ReportError( PL_RESULT_FAIL, PL_FUNCTION, "invalid depth fail operation" );
+		return;
+	}
+
+	GLenum dppass = TranslateStencilOp( depthPassOp );
+	if ( sfail == XGL_INVALID ) {
+		gInterface->core->ReportError( PL_RESULT_FAIL, PL_FUNCTION, "invalid depth pass operation" );
+		return;
+	}
+
+	XGL_CALL( glStencilOpSeparate( glface, sfail, dpfail, dppass ) );
+}
+
+/////////////////////////////////////////////////////////////
 // Generic State Management
 
 static unsigned int TranslateGraphicsState( PLGDrawState state ) {
@@ -1869,5 +1964,6 @@ PLGDriverImportTable graphicsInterface = {
         .CompileShaderStage = GLCompileShaderStage,
         .SetShaderUniformValue = GLSetShaderUniformValue,
 
-        //.StencilFunction = ,
+        .StencilFunction = GLStencilFunction,
+        .StencilOp = GLStencilOp,
 };

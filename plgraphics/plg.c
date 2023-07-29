@@ -300,3 +300,7 @@ PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
 void PlgStencilFunction( PLGStencilTestFunction function, int reference, unsigned int mask ) {
 	CallGfxFunction( StencilFunction, function, reference, mask );
 }
+
+void PlgStencilOp( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp depthFailOp, PLGStencilOp depthPassOp ) {
+	CallGfxFunction( StencilOp, face, stencilFailOp, depthFailOp, depthPassOp );
+}

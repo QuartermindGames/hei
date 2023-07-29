@@ -76,13 +76,31 @@ typedef enum PLGStencilTestFunction {
 	PLG_STENCIL_TEST_NEVER,
 	PLG_STENCIL_TEST_LESS,
 	PLG_STENCIL_TEST_LEQUAL,
+	PLG_STENCIL_TEST_GREATER,
+	PLG_STENCIL_TEST_GEQUAL,
+	PLG_STENCIL_TEST_EQUAL,
+	PLG_STENCIL_TEST_NOTEQUAL,
 
 	PLG_MAX_STENCIL_TEST_OPERATIONS
 } PLGStencilTestFunction;
 
+typedef enum PLGStencilOp {
+	PLG_STENCIL_OP_KEEP,
+	PLG_STENCIL_OP_ZERO,
+	PLG_STENCIL_OP_REPLACE,
+	PLG_STENCIL_OP_INCR,
+	PLG_STENCIL_OP_INCRWRAP,
+	PLG_STENCIL_OP_DECR,
+	PLG_STENCIL_OP_DECRWRAP,
+	PLG_STENCIL_OP_INVERT,
+
+	PLG_MAX_STENCIL_OPS
+} PLGStencilOp;
+
 typedef enum PLGStencilFace {
 	PLG_STENCIL_FACE_FRONT,
 	PLG_STENCIL_FACE_BACK,
+	PLG_STENCIL_FACE_FRONTANDBACK,
 } PLGStencilFace;
 
 //-----------------
@@ -192,14 +210,14 @@ typedef struct PLGShaderProgram {
 			PLMatrix3 defaultMat3;
 			PLMatrix4 defaultMat4;
 		};
-	} * uniforms;
+	} *uniforms;
 	unsigned int num_uniforms;
 
 	struct {
 		char name[ 32 ];
 
 		unsigned int slot;
-	} * attributes;
+	} *attributes;
 	unsigned int num_attributes;
 
 	PLGShaderStage *stages[ PLG_MAX_SHADER_TYPES ];
@@ -304,6 +322,7 @@ PL_EXTERN void PlgSetDepthMask( bool enable );
 /* stencil operations */
 
 PL_EXTERN void PlgStencilFunction( PLGStencilTestFunction function, int reference, unsigned int mask );
+void PlgStencilOp( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp depthFailOp, PLGStencilOp depthPassOp );
 
 PL_EXTERN bool PlgIsGraphicsStateEnabled( PLGDrawState state );
 
