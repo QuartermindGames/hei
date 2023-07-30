@@ -64,7 +64,9 @@ PLCollisionAABB PlGenerateAabbFromCoords( const PLVector3 *vertices, unsigned in
 }
 
 PLVector3 PlGetAabbAbsOrigin( const PLCollisionAABB *bounds, PLVector3 origin ) {
-	PLVector3 absOrigin = PLVector3( ( bounds->mins.x + bounds->maxs.x ) / 2, ( bounds->mins.y + bounds->maxs.y ) / 2, ( bounds->mins.z + bounds->maxs.z ) / 2 );
+	PLVector3 absOrigin = PLVector3( ( bounds->mins.x + bounds->maxs.x ) / 2,
+	                                 ( bounds->mins.y + bounds->maxs.y ) / 2,
+	                                 ( bounds->mins.z + bounds->maxs.z ) / 2 );
 	return PlAddVector3( origin, absOrigin );
 }
 

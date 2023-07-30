@@ -61,14 +61,14 @@ typedef struct PLCollision {
 } PLCollision;
 
 #ifndef __cplusplus
-#define PlSetupCollisionRay( ORIGIN, DIRECTION ) \
-	( PLCollisionRay ) { ( ORIGIN ), ( DIRECTION ) }
-#define PlSetupCollisionAABB( ORIGIN, MINS, MAXS ) \
-	( PLCollisionAABB ) { ( ORIGIN ), ( MINS ), ( MAXS ) }
-#define PlSetupCollisionSphere( ORIGIN, RADIUS ) \
-	( PLCollisionSphere ) { ( ORIGIN ), ( RADIUS ) }
-#define PlSetupCollisionPlane( ORIGIN, NORMAL ) \
-	( PLCollisionPlane ) { ( ORIGIN ), ( NORMAL ) }
+#	define PlSetupCollisionRay( ORIGIN, DIRECTION ) \
+		( PLCollisionRay ) { ( ORIGIN ), ( DIRECTION ) }
+#	define PlSetupCollisionAABB( ORIGIN, MINS, MAXS ) \
+		( PLCollisionAABB ) { ( ORIGIN ), ( MINS ), ( MAXS ) }
+#	define PlSetupCollisionSphere( ORIGIN, RADIUS ) \
+		( PLCollisionSphere ) { ( ORIGIN ), ( RADIUS ) }
+#	define PlSetupCollisionPlane( ORIGIN, NORMAL ) \
+		( PLCollisionPlane ) { ( ORIGIN ), ( NORMAL ) }
 #endif
 
 float PlComputeSphereFromCoords( const PLVector3 *vertices, unsigned int numVertices );
@@ -84,8 +84,7 @@ bool PlIsSphereIntersectingAabb( const PLCollisionSphere *sphere, const PLCollis
  * Get which side of a line a point is on.
  */
 inline static float PlTestPointLinePosition( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd ) {
-	float d = ( lineEnd->x - lineStart->x ) * ( position->y - lineStart->y ) - ( lineEnd->y - lineStart->y ) * ( position->x - lineStart->x );
-	return d;
+	return ( lineEnd->x - lineStart->x ) * ( position->y - lineStart->y ) - ( lineEnd->y - lineStart->y ) * ( position->x - lineStart->x );
 }
 
 inline static bool PlIsPointIntersectingLine( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal, float *intersection ) {
@@ -145,11 +144,11 @@ inline static bool PlIsAabbIntersectingLine( const PLCollisionAABB *bounds, cons
 	//plIsPointIntersectingLine( &c, lineStart, lineEnd, lineNormal, &cR );
 	//plIsPointIntersectingLine( &d, lineStart, lineEnd, lineNormal, &dR );
 
-#if 0
+#	if 0
 	if( x == 0.0f || y == 0.0f ) {
 		return PLVector2( x, y );
 	}
-#endif
+#	endif
 #endif
 
 	return false;
