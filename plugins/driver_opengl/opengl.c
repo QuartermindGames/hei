@@ -200,7 +200,7 @@ static void GLSetDepthBufferMode( unsigned int mode ) {
 	}
 }
 
-static void GLSetDepthMask( bool enable ) {
+static void GLDepthMask( bool enable ) {
 	XGL_CALL( glDepthMask( enable ) );
 }
 
@@ -476,6 +476,10 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 	GLBindTexture( NULL );
 
 	return texture;
+}
+
+static void GLColourMask( bool r, bool g, bool b, bool a ) {
+	XGL_CALL( glColorMask( r, g, b, a ) );
 }
 
 /////////////////////////////////////////////////////////////
@@ -1631,6 +1635,18 @@ static void GLStencilFunction( PLGStencilTestFunction function, int ref, unsigne
 		case PLG_STENCIL_TEST_GREATER:
 			glFunction = GL_GREATER;
 			break;
+		case PLG_STENCIL_TEST_EQUAL:
+			glFunction = GL_EQUAL;
+			break;
+		case PLG_STENCIL_TEST_NOTEQUAL:
+			glFunction = GL_NOTEQUAL;
+			break;
+		case PLG_STENCIL_TEST_NEVER:
+			glFunction = GL_NEVER;
+			break;
+		case PLG_STENCIL_TEST_GEQUAL:
+			glFunction = GL_GEQUAL;
+			break;
 	}
 
 	XGL_CALL( glStencilFunc( glFunction, ref, mask ) );
@@ -1926,7 +1942,9 @@ PLGDriverImportTable graphicsInterface = {
         //.DrawPixel = ,
 
         .SetDepthBufferMode = GLSetDepthBufferMode,
-        .SetDepthMask = GLSetDepthMask,
+
+        .DepthMask = GLDepthMask,
+        .ColourMask = GLColourMask,
 
         .CreateMesh = GLCreateMesh,
         .UploadMesh = GLUploadMesh,

@@ -317,7 +317,7 @@ PL_EXTERN void PlgSetCullMode( PLGCullMode mode );
 PL_EXTERN void PlgSetBlendMode( PLGBlend a, PLGBlend b );
 
 PL_EXTERN void PlgSetDepthBufferMode( unsigned int mode );
-PL_EXTERN void PlgSetDepthMask( bool enable );
+PL_EXTERN void PlgDepthMask( bool enable );
 
 /* stencil operations */
 

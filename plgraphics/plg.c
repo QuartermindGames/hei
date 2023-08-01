@@ -229,8 +229,12 @@ void PlgSetDepthBufferMode( unsigned int mode ) {
 	CallGfxFunction( SetDepthBufferMode, mode );
 }
 
-void PlgSetDepthMask( bool enable ) {
-	CallGfxFunction( SetDepthMask, enable );
+void PlgDepthMask( bool enable ) {
+	CallGfxFunction( DepthMask, enable );
+}
+
+void PlgColourMask( bool r, bool g, bool b, bool a ) {
+	CallGfxFunction( ColourMask, r, g, b, a );
 }
 
 /*===========================

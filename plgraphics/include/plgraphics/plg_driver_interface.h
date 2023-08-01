@@ -20,8 +20,8 @@ PL_EXTERN_C
  * either audio/video.
  */
 
-#define PLG_INTERFACE_VERSION_MAJOR 3
-#define PLG_INTERFACE_VERSION_MINOR 1
+#define PLG_INTERFACE_VERSION_MAJOR 4
+#define PLG_INTERFACE_VERSION_MINOR 0
 #define PLG_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR }
 
@@ -83,7 +83,9 @@ typedef struct PLGDriverImportTable {
 	void ( *DrawPixel )( int x, int y, PLColour colour );
 
 	void ( *SetDepthBufferMode )( unsigned int mode );
-	void ( *SetDepthMask )( bool enable );
+
+	void ( *DepthMask )( bool enable );
+	void ( *ColourMask )( bool r, bool g, bool b, bool a );
 
 	// Mesh
 	void ( *CreateMesh )( PLGMesh *mesh );
