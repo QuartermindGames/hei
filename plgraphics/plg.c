@@ -238,71 +238,15 @@ void PlgColourMask( bool r, bool g, bool b, bool a ) {
 }
 
 /*===========================
-	TEXTURES
+	BUFFER OPERATIONS
 ===========================*/
 
-#if 0
-PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload) {
-    GRAPHICS_TRACK();
-
-    _plSetActiveTexture(texture);
-
-#	if defined( PL_MODE_OPENGL ) || defined( VL_MODE_OPENGL_CORE )
-    unsigned int storage = _plTranslateTextureStorageFormat(upload->storage_type);
-    unsigned int format = _plTranslateTextureFormat(upload->format);
-
-    unsigned int levels = upload->levels;
-    if(!levels) {
-        levels = 1;
-    }
-
-    if (upload->initial) {
-        glTexStorage2D(GL_TEXTURE_2D, levels, format, upload->width, upload->height);
-    }
-
-    // Check the format, to see if we're getting a compressed
-    // format type.
-    if (_plIsCompressedTextureFormat(upload->format)) {
-        glCompressedTexSubImage2D
-                (
-                        GL_TEXTURE_2D,
-                        0,
-                        upload->x, upload->y,
-                        upload->width, upload->height,
-                        format,
-                        upload->size,
-                        upload->data
-                );
-    } else {
-        glTexSubImage2D
-                (
-                        GL_TEXTURE_2D,
-                        0,
-                        upload->x, upload->y,
-                        upload->width, upload->height,
-                        _plTranslateColourFormat(upload->pixel_format),
-                        storage,
-                        upload->data
-                );
-    }
-
-    if (plIsGraphicsStateEnabled(PL_CAPABILITY_GENERATEMIPMAP) && (levels > 1)) {
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-#	elif defined( VL_MODE_GLIDE )
-#	elif defined( VL_MODE_DIRECT3D )
-#	endif
-
-    return PL_RESULT_SUCCESS;
+void PlgDepthBufferFunction( PLGCompareFunction compareFunction ) {
+	CallGfxFunction( DepthBufferFunction, compareFunction );
 }
-#endif
 
-/*===========================
-	STENCIL OPERATIONS
-===========================*/
-
-void PlgStencilFunction( PLGStencilTestFunction function, int reference, unsigned int mask ) {
-	CallGfxFunction( StencilFunction, function, reference, mask );
+void PlgStencilBufferFunction( PLGCompareFunction function, int reference, unsigned int mask ) {
+	CallGfxFunction( StencilBufferFunction, function, reference, mask );
 }
 
 void PlgStencilOp( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp depthFailOp, PLGStencilOp depthPassOp ) {

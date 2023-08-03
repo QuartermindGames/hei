@@ -71,19 +71,6 @@ typedef enum PLGDrawState {
 // Framebuffers
 // todo: move all of this into pl_graphics_framebuffer.h
 
-typedef enum PLGStencilTestFunction {
-	PLG_STENCIL_TEST_ALWAYS,
-	PLG_STENCIL_TEST_NEVER,
-	PLG_STENCIL_TEST_LESS,
-	PLG_STENCIL_TEST_LEQUAL,
-	PLG_STENCIL_TEST_GREATER,
-	PLG_STENCIL_TEST_GEQUAL,
-	PLG_STENCIL_TEST_EQUAL,
-	PLG_STENCIL_TEST_NOTEQUAL,
-
-	PLG_MAX_STENCIL_TEST_OPERATIONS
-} PLGStencilTestFunction;
-
 typedef enum PLGStencilOp {
 	PLG_STENCIL_OP_KEEP,
 	PLG_STENCIL_OP_ZERO,
@@ -243,6 +230,17 @@ typedef struct PLGVertex PLGVertex;
 typedef struct PLGMesh PLGMesh;
 typedef struct PLGCamera PLGCamera;
 
+typedef enum PLGCompareFunction {
+	PLG_COMPARE_NEVER,
+	PLG_COMPARE_LESS,
+	PLG_COMPARE_EQUAL,
+	PLG_COMPARE_LEQUAL,
+	PLG_COMPARE_GREATER,
+	PLG_COMPARE_NOTEQUAL,
+	PLG_COMPARE_GEQUAL,
+	PLG_COMPARE_ALWAYS,
+} PLGCompareFunction;
+
 PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
@@ -250,84 +248,86 @@ PL_EXTERN_C
 PLFunctionResult PlgInitializeGraphics( void );
 void PlgShutdownGraphics( void );
 
-PL_EXTERN PLGShaderStage *PlgCreateShaderStage( PLGShaderStageType type );
-PL_EXTERN PLGShaderStage *PlgParseShaderStage( PLGShaderStageType type, const char *buf, size_t length );
-PL_EXTERN PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type );
-PL_EXTERN void PlgCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length, const char *localDirectory );
+PLGShaderStage *PlgCreateShaderStage( PLGShaderStageType type );
+PLGShaderStage *PlgParseShaderStage( PLGShaderStageType type, const char *buf, size_t length );
+PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type );
+void PlgCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length, const char *localDirectory );
 
-PL_EXTERN void PlgSetShaderStageDefinitions( PLGShaderStage *stage, const char definitions[][ PLG_MAX_DEFINITION_LENGTH ], unsigned int numDefinitions );
+void PlgSetShaderStageDefinitions( PLGShaderStage *stage, const char definitions[][ PLG_MAX_DEFINITION_LENGTH ], unsigned int numDefinitions );
 
-PL_EXTERN void PlgAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stage );
-PL_EXTERN bool PlgRegisterShaderStageFromMemory( PLGShaderProgram *program, const char *buffer, size_t length,
-                                                 PLGShaderStageType type );
-PL_EXTERN bool PlgRegisterShaderStageFromDisk( PLGShaderProgram *program, const char *path, PLGShaderStageType type );
-PL_EXTERN bool PlgLinkShaderProgram( PLGShaderProgram *program );
+void PlgAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stage );
+bool PlgRegisterShaderStageFromMemory( PLGShaderProgram *program, const char *buffer, size_t length,
+                                       PLGShaderStageType type );
+bool PlgRegisterShaderStageFromDisk( PLGShaderProgram *program, const char *path, PLGShaderStageType type );
+bool PlgLinkShaderProgram( PLGShaderProgram *program );
 
-PL_EXTERN int PlgGetShaderUniformSlot( PLGShaderProgram *program, const char *name );
-PL_EXTERN PLGShaderUniformType PlgGetShaderUniformType( const PLGShaderProgram *program, int slot );
+int PlgGetShaderUniformSlot( PLGShaderProgram *program, const char *name );
+PLGShaderUniformType PlgGetShaderUniformType( const PLGShaderProgram *program, int slot );
 
-PL_EXTERN void PlgSetShaderUniformDefaultValueByIndex( PLGShaderProgram *program, int slot, const void *defaultValue );
-PL_EXTERN void PlgSetShaderUniformDefaultValue( PLGShaderProgram *program, const char *name, const void *defaultValue );
-PL_EXTERN void PlgSetShaderUniformToDefaultByIndex( PLGShaderProgram *program, int slot );
-PL_EXTERN void PlgSetShaderUniformToDefault( PLGShaderProgram *program, const char *name );
-PL_EXTERN void PlgSetShaderUniformsToDefault( PLGShaderProgram *program );
+void PlgSetShaderUniformDefaultValueByIndex( PLGShaderProgram *program, int slot, const void *defaultValue );
+void PlgSetShaderUniformDefaultValue( PLGShaderProgram *program, const char *name, const void *defaultValue );
+void PlgSetShaderUniformToDefaultByIndex( PLGShaderProgram *program, int slot );
+void PlgSetShaderUniformToDefault( PLGShaderProgram *program, const char *name );
+void PlgSetShaderUniformsToDefault( PLGShaderProgram *program );
 
-PL_EXTERN void PlgSetShaderUniformValueByIndex( PLGShaderProgram *program, int slot, const void *value, bool transpose );
-PL_EXTERN void PlgSetShaderUniformValue( PLGShaderProgram *program, const char *name, const void *value, bool transpose );
+void PlgSetShaderUniformValueByIndex( PLGShaderProgram *program, int slot, const void *value, bool transpose );
+void PlgSetShaderUniformValue( PLGShaderProgram *program, const char *name, const void *value, bool transpose );
 
 #	if !defined( PL_EXCLUDE_DEPRECATED_API )
-PL_EXTERN PL_DEPRECATED( void PlgSetShaderUniformFloat( PLGShaderProgram *program, int slot, float value ) );
-PL_EXTERN PL_DEPRECATED( void PlgSetShaderUniformInt( PLGShaderProgram *program, int slot, int value ) );
-PL_EXTERN PL_DEPRECATED( void PlgSetShaderUniformVector4( PLGShaderProgram *program, int slot, PLVector4 value ) );
-PL_EXTERN PL_DEPRECATED( void PlgSetShaderUniformVector3( PLGShaderProgram *program, int slot, PLVector3 value ) );
-PL_EXTERN PL_DEPRECATED( void PlgSetShaderUniformMatrix4( PLGShaderProgram *program, int slot, PLMatrix4 value, bool transpose ) );
+PL_DEPRECATED( void PlgSetShaderUniformFloat( PLGShaderProgram *program, int slot, float value ) );
+PL_DEPRECATED( void PlgSetShaderUniformInt( PLGShaderProgram *program, int slot, int value ) );
+PL_DEPRECATED( void PlgSetShaderUniformVector4( PLGShaderProgram *program, int slot, PLVector4 value ) );
+PL_DEPRECATED( void PlgSetShaderUniformVector3( PLGShaderProgram *program, int slot, PLVector3 value ) );
+PL_DEPRECATED( void PlgSetShaderUniformMatrix4( PLGShaderProgram *program, int slot, PLMatrix4 value, bool transpose ) );
 #	endif
 
-PL_EXTERN PLGShaderProgram *PlgCreateShaderProgram( void );
-PL_EXTERN PLGShaderProgram *PlgLoadCachedShaderProgram( const char *path );
-PL_EXTERN void PlgDestroyShaderProgram( PLGShaderProgram *program, bool free_stages );
+PLGShaderProgram *PlgCreateShaderProgram( void );
+PLGShaderProgram *PlgLoadCachedShaderProgram( const char *path );
+void PlgDestroyShaderProgram( PLGShaderProgram *program, bool free_stages );
 
-PL_EXTERN void PlgSetShaderProgramId( PLGShaderProgram *program, const char *id );
-PL_EXTERN void PlgClearShaderProgramId( PLGShaderProgram *program );
-PL_EXTERN const char *PlgGetShaderProgramId( PLGShaderProgram *program );
+void PlgSetShaderProgramId( PLGShaderProgram *program, const char *id );
+void PlgClearShaderProgramId( PLGShaderProgram *program );
+const char *PlgGetShaderProgramId( PLGShaderProgram *program );
 
-PL_EXTERN void PlgSetShaderCacheLocation( const char *path );
-PL_EXTERN void PlgClearShaderCacheLocation( const char *path );
-PL_EXTERN const char *PlgGetShaderCacheLocation( void );
+void PlgSetShaderCacheLocation( const char *path );
+void PlgClearShaderCacheLocation( const char *path );
+const char *PlgGetShaderCacheLocation( void );
 
-PL_EXTERN PLGShaderProgram *PlgGetCurrentShaderProgram( void );
+PLGShaderProgram *PlgGetCurrentShaderProgram( void );
 
-PL_EXTERN void PlgSetShaderProgram( PLGShaderProgram *program );
-PL_EXTERN bool PlgIsShaderProgramEnabled( PLGShaderProgram *program );
+void PlgSetShaderProgram( PLGShaderProgram *program );
+bool PlgIsShaderProgramEnabled( PLGShaderProgram *program );
 
 // Debugging
-PL_EXTERN void PlgInsertDebugMarker( const char *msg );
-PL_EXTERN void PlgPushDebugGroupMarker( const char *msg );
-PL_EXTERN void PlgPopDebugGroupMarker( void );
+void PlgInsertDebugMarker( const char *msg );
+void PlgPushDebugGroupMarker( const char *msg );
+void PlgPopDebugGroupMarker( void );
 
 // Hardware Information
-PL_EXTERN const char *PlgGetHWExtensions( void );
-PL_EXTERN const char *PlgGetHWRenderer( void );
-PL_EXTERN const char *PlgGetHWVendor( void );
-PL_EXTERN const char *PlgGetHWVersion( void );
+const char *PlgGetHWExtensions( void );
+const char *PlgGetHWRenderer( void );
+const char *PlgGetHWVendor( void );
+const char *PlgGetHWVersion( void );
 
-PL_EXTERN bool PlgSupportsHWShaders( void );
+bool PlgSupportsHWShaders( void );
 
-PL_EXTERN void PlgSetCullMode( PLGCullMode mode );
-PL_EXTERN void PlgSetBlendMode( PLGBlend a, PLGBlend b );
+void PlgSetCullMode( PLGCullMode mode );
+void PlgSetBlendMode( PLGBlend a, PLGBlend b );
 
-PL_EXTERN void PlgSetDepthBufferMode( unsigned int mode );
-PL_EXTERN void PlgDepthMask( bool enable );
+void PlgSetDepthBufferMode( unsigned int mode );
+void PlgDepthMask( bool enable );
 
 /* stencil operations */
 
-PL_EXTERN void PlgStencilFunction( PLGStencilTestFunction function, int reference, unsigned int mask );
+void PlgDepthBufferFunction( PLGCompareFunction compareFunction );
+void PlgStencilBufferFunction( PLGCompareFunction function, int reference, unsigned int mask );
+
 void PlgStencilOp( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp depthFailOp, PLGStencilOp depthPassOp );
 
-PL_EXTERN bool PlgIsGraphicsStateEnabled( PLGDrawState state );
+bool PlgIsGraphicsStateEnabled( PLGDrawState state );
 
-PL_EXTERN void PlgEnableGraphicsState( PLGDrawState state );
-PL_EXTERN void PlgDisableGraphicsState( PLGDrawState state );
+void PlgEnableGraphicsState( PLGDrawState state );
+void PlgDisableGraphicsState( PLGDrawState state );
 
 #endif
 

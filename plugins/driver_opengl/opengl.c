@@ -1618,38 +1618,33 @@ static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 /////////////////////////////////////////////////////////////
 // Stencil Operations
 
-static void GLStencilFunction( PLGStencilTestFunction function, int ref, unsigned int mask ) {
-	GLenum glFunction;
-	switch ( function ) {
-		default:
-			break;
-		case PLG_STENCIL_TEST_ALWAYS:
-			glFunction = GL_ALWAYS;
-			break;
-		case PLG_STENCIL_TEST_LESS:
-			glFunction = GL_LESS;
-			break;
-		case PLG_STENCIL_TEST_LEQUAL:
-			glFunction = GL_LEQUAL;
-			break;
-		case PLG_STENCIL_TEST_GREATER:
-			glFunction = GL_GREATER;
-			break;
-		case PLG_STENCIL_TEST_EQUAL:
-			glFunction = GL_EQUAL;
-			break;
-		case PLG_STENCIL_TEST_NOTEQUAL:
-			glFunction = GL_NOTEQUAL;
-			break;
-		case PLG_STENCIL_TEST_NEVER:
-			glFunction = GL_NEVER;
-			break;
-		case PLG_STENCIL_TEST_GEQUAL:
-			glFunction = GL_GEQUAL;
-			break;
+static GLenum TranslateCompareFunction( PLGCompareFunction compareFunction ) {
+	switch ( compareFunction ) {
+		case PLG_COMPARE_NEVER:
+			return GL_NEVER;
+		case PLG_COMPARE_LESS:
+			return GL_LESS;
+		case PLG_COMPARE_EQUAL:
+			return GL_EQUAL;
+		case PLG_COMPARE_LEQUAL:
+			return GL_LEQUAL;
+		case PLG_COMPARE_GREATER:
+			return GL_GREATER;
+		case PLG_COMPARE_NOTEQUAL:
+			return GL_NOTEQUAL;
+		case PLG_COMPARE_GEQUAL:
+			return GL_GEQUAL;
+		case PLG_COMPARE_ALWAYS:
+			return GL_ALWAYS;
 	}
+}
 
-	XGL_CALL( glStencilFunc( glFunction, ref, mask ) );
+static void GLDepthBufferFunction( PLGCompareFunction compareFunction ) {
+	XGL_CALL( glDepthFunc( TranslateCompareFunction( compareFunction ) ) );
+}
+
+static void GLStencilFunction( PLGCompareFunction compareFunction, int ref, unsigned int mask ) {
+	XGL_CALL( glStencilFunc( TranslateCompareFunction( compareFunction ), ref, mask ) );
 }
 
 static GLenum TranslateStencilOp( PLGStencilOp stencilOp ) {
@@ -1982,6 +1977,7 @@ PLGDriverImportTable graphicsInterface = {
         .CompileShaderStage = GLCompileShaderStage,
         .SetShaderUniformValue = GLSetShaderUniformValue,
 
-        .StencilFunction = GLStencilFunction,
+        .DepthBufferFunction = GLDepthBufferFunction,
+        .StencilBufferFunction = GLStencilFunction,
         .StencilOp = GLStencilOp,
 };

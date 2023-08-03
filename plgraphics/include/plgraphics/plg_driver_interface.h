@@ -137,7 +137,9 @@ typedef struct PLGDriverImportTable {
 	void ( *SetShaderUniformValue )( PLGShaderProgram *program, int slot, const void *value, bool transpose );
 
 	// Stencil operations
-	void ( *StencilFunction )( PLGStencilTestFunction function, int reference, unsigned int mask );
+	void ( *StencilBufferFunction )( PLGCompareFunction compareFunction, int reference, unsigned int mask );
+	void ( *DepthBufferFunction )( PLGCompareFunction compareFunction );
+
 	void ( *StencilOp )( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp depthFailOp, PLGStencilOp depthPassOp );
 
 	// v3.1
