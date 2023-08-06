@@ -119,6 +119,7 @@ typedef struct PLGDriverImportTable {
 	void ( *ActiveTexture )( unsigned int target );
 
 	/* viewport */
+	void ( *ClipViewport )( int x, int y, int width, int height );
 	void ( *SetViewport )( int x, int y, int width, int height );
 
 	///////////////////////////////////////////

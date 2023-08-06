@@ -59,7 +59,6 @@ typedef enum PLGDrawState {
 	PLG_GFX_STATE_DEPTHTEST,      // Depth-testing.
 	PLG_GFX_STATE_STENCILTEST,    // Stencil-testing.
 	PLG_GFX_STATE_MULTISAMPLE,    // Multisampling.
-	PLG_GFX_STATE_SCISSORTEST,    // Scissor test for buffer clear.
 	PLG_GFX_STATE_ALPHATOCOVERAGE,// Alpha to Coverage
 	PLG_GFX_STATE_DEPTH_CLAMP,
 	PLG_GFX_STATE_WIREFRAME,

@@ -80,6 +80,7 @@ bool PlgIsBoxInsideView( const PLGCamera *camera, const PLCollisionAABB *bounds 
 bool PlgIsSphereInsideView( const PLGCamera *camera, const PLCollisionSphere *sphere );
 
 void PlgGetViewport( int *x, int *y, int *width, int *height );
+void PlgClipViewport( int x, int y, int width, int height );
 void PlgSetViewport( int x, int y, int width, int height );
 
 /***** TEMPORARY CRAP START *****/

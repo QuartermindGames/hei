@@ -158,6 +158,10 @@ void PlgGetViewport( int *x, int *y, int *width, int *height ) {
 	}
 }
 
+void PlgClipViewport( int x, int y, int width, int height ) {
+	CallGfxFunction( ClipViewport, x, y, width, height );
+}
+
 void PlgSetViewport( int x, int y, int width, int height ) {
 	gfx_state.viewport.x = x;
 	gfx_state.viewport.y = y;

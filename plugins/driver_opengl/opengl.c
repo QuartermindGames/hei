@@ -931,9 +931,28 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 /////////////////////////////////////////////////////////////
 // Viewport
 
+static struct {
+	int x, y, w, h;
+} viewport;
+
+static void GLClipViewport( int x, int y, int width, int height ) {
+	if ( viewport.x != x || viewport.y != y || viewport.w != width || viewport.h != height ) {
+		XGL_CALL( glEnable( GL_SCISSOR_TEST ) );
+	} else {
+		XGL_CALL( glDisable( GL_SCISSOR_TEST ) );
+		return;
+	}
+
+	XGL_CALL( glScissor( x, y, width, height ) );
+}
+
 static void GLSetViewport( int x, int y, int width, int height ) {
 	XGL_CALL( glViewport( x, y, width, height ) );
-	XGL_CALL( glScissor( x, y, width, height ) );
+
+	viewport.x = x;
+	viewport.y = y;
+	viewport.w = width;
+	viewport.h = height;
 }
 
 /////////////////////////////////////////////////////////////
@@ -1740,8 +1759,6 @@ static unsigned int TranslateGraphicsState( PLGDrawState state ) {
 			return GL_STENCIL_TEST;
 		case PLG_GFX_STATE_MULTISAMPLE:
 			return GL_MULTISAMPLE;
-		case PLG_GFX_STATE_SCISSORTEST:
-			return GL_SCISSOR_TEST;
 		case PLG_GFX_STATE_ALPHATOCOVERAGE:
 			return GL_SAMPLE_ALPHA_TO_COVERAGE;
 		case PLG_GFX_STATE_DEPTH_CLAMP:
@@ -1964,6 +1981,7 @@ PLGDriverImportTable graphicsInterface = {
         .ActiveTexture = GLActiveTexture,
         .SetTextureFilter = GLSetTextureFilter,
 
+        .ClipViewport = GLClipViewport,
         .SetViewport = GLSetViewport,
 
         .CreateShaderProgram = GLCreateShaderProgram,
