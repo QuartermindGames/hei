@@ -43,8 +43,7 @@ inline static PLMatrix4 PlInverseMatrix4( PLMatrix4 m );
 PLVector3 PlGetMatrix4Translation( const PLMatrix4 *m );
 PLVector3 PlGetMatrix4Angle( const PLMatrix4 *m );
 
-PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix,
-                                  int viewportWidth, int viewportHeight, int viewportX, int viewportY );
+PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix, int viewportWidth, int viewportHeight, int viewportX, int viewportY, bool flip );
 
 #ifdef __cplusplus
 namespace hei {
