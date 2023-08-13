@@ -53,6 +53,8 @@ file(
         pl_math_random.c
         pl_math_vector.c
 
+        pl_os_win32.c
+
         pl_physics.c
         pl_timer.c
 

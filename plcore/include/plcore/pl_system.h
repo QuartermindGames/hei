@@ -187,3 +187,11 @@
 #else
 #	error "Unsupported compiler."
 #endif
+
+///////////////////////////////////////////////////////////////
+//
+// System specific functions -
+// using them on other platforms may be undefined!
+//
+
+bool PlOSWin32_IsWine( void );
