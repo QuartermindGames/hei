@@ -259,20 +259,21 @@ inline static const char *PlPrintColour( PLColour c ) {
 }
 
 inline static PLVector4 PlColourToVector4( const PLColour *c ) {
-	float r = PlByteToFloat( c->r );
-	float g = PlByteToFloat( c->g );
-	float b = PlByteToFloat( c->b );
-	float a = PlByteToFloat( c->a );
-
 	/* reversed: 
 	 * error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax */
 	PLVector4 v;
-	v.x = r;
-	v.y = g;
-	v.z = b;
-	v.w = a;
+	v.x = PlByteToFloat( c->r );
+	v.y = PlByteToFloat( c->g );
+	v.z = PlByteToFloat( c->b );
+	v.w = PlByteToFloat( c->a );
 
 	return v;
+}
+
+inline static PLColourF32 PlVector4ToColourF32( const PLVector4 *v ) {
+	PLColourF32 colour;
+	memcpy( &colour, v, sizeof( PLColourF32 ) );
+	return colour;
 }
 
 #define PL_COLOURU8( R, G, B, A ) \
@@ -465,6 +466,9 @@ inline static PLVector4 PlColourToVector4( const PLColour *c ) {
 #define PL_COLOUR_SLATE_GRAY             PLColourRGB( 112, 128, 144 )
 #define PL_COLOUR_DARK_SLATE_GRAY        PLColourRGB( 47, 79, 79 )
 #define PL_COLOUR_BLACK                  PLColourRGB( 0, 0, 0 )
+
+#define PL_COLOURF32_WHITE PL_COLOURF32RGB( 1.0f, 1.0f, 1.0f )
+#define PL_COLOURF32_BLACK PL_COLOURF32RGB( 0.0f, 0.0f, 0.0f )
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Primitives
