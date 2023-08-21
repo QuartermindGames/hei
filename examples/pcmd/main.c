@@ -129,10 +129,10 @@ static void Cmd_ConvertModel( unsigned int argc, char **argv ) {
 		const char *fe = PlGetFileExtension( fn );
 		size_t es = strlen( fe );
 
-		char name[ ns ];
+		char *name = PL_NEW_( char, ns );
 		snprintf( name, ns - es, "%s", fn );
-
 		snprintf( outPath, sizeof( outPath ), "./%s.smd", name );
+		PL_DELETE( name );
 	}
 
 	ConvertModel( argv[ 1 ], outPath );
@@ -151,11 +151,11 @@ static void ConvertModelCallback( const char *path, void *userData ) {
 	const char *fe = PlGetFileExtension( fn );
 	size_t es = strlen( fe );
 
-	char name[ ns ];
+	char *name = PL_NEW_( char, ns );
 	snprintf( name, ns - es, "%s", fn );
-
 	char outPath[ PL_SYSTEM_MAX_PATH ];
 	snprintf( outPath, sizeof( outPath ), "%s%s.smd", outDir, name );
+	PL_DELETE( name );
 
 	printf( "Converting %s to %s\n", path, outPath );
 
@@ -255,7 +255,7 @@ int main( int argc, char **argv ) {
 
 	PlmRegisterStandardModelLoaders( PLM_MODEL_FILEFORMAT_ALL );
 
-	PLPackage *ROF_ParseFile( PLFile * file ); // package_rof.c
+	PLPackage *ROF_ParseFile( PLFile * file );// package_rof.c
 	PlRegisterPackageLoader( "rof", NULL, ROF_ParseFile );
 
 	PLPackage *IStorm_LST_LoadFile( const char *path );
@@ -285,6 +285,8 @@ int main( int argc, char **argv ) {
 
 	PLPackage *Angel_DAT_LoadPackage( const char *path );
 	PlRegisterPackageLoader( "dat", Angel_DAT_LoadPackage, NULL );
+	PLPackage *PlParseIce3DDatPackage( PLFile * file );
+	PlRegisterPackageLoader( "dat", NULL, PlParseIce3DDatPackage );
 
 	PLPackage *WFear_INU_LoadPackage( const char *path );
 	PlRegisterPackageLoader( "inu", WFear_INU_LoadPackage, NULL );

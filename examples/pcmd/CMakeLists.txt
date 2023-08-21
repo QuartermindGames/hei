@@ -40,6 +40,7 @@ add_executable(pcmd
         ../../extras/eradicator_rid.c
         ../../extras/ftactics_pak.c
         #../../extras/galleon_pkg.c
+        ../../extras/ice3d_dat.c
         ../../extras/istorm_ibf.c
         ../../extras/mortyr_hal.c
         ../../extras/outcast_opk.c
