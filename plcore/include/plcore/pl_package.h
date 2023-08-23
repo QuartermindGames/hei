@@ -54,8 +54,6 @@ const char *PlGetPackageFileName( const PLPackage *package, unsigned int index )
 PLPackage *PlLoadZipPackage( const char *path );
 PLPackage *PlParseZipPackage( PLFile *file );
 
-PLPackage *PlParseBREWadPackage( PLFile *file );
-
 #endif
 
 PL_EXTERN_C_END
