@@ -25,7 +25,7 @@ typedef struct WAD2Index {
 static PLPackage *ParseWAD2File( PLFile *file ) {
 	uint32_t magic = PlReadInt32( file, false, NULL );
 	if ( magic != WAD2_MAGIC && magic != WAD3_MAGIC ) {
-		PlReportErrorF( PL_RESULT_FILETYPE, "invalid magic: \"%s\"", magic );
+		PlReportErrorF( PL_RESULT_FILETYPE, "invalid magic: \"%u\"", magic );
 		return NULL;
 	}
 
