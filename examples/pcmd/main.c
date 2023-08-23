@@ -28,6 +28,8 @@ For more information, please refer to <http://unlicense.org>
 
 #include "pcmd.h"
 
+#include "pl_extra_kri_wad.h"
+
 /**
  * Command line utility to interface with the platform lib.
  **/
@@ -294,13 +296,15 @@ int main( int argc, char **argv ) {
 	PLPackage *asa_format_tre_load( const char *path );
 	PlRegisterPackageLoader( "tre", asa_format_tre_load, NULL );
 
-	PlRegisterPackageLoader( "wad", NULL, PlParseBREWadPackage );
+	PlRegisterPackageLoader( "wad", NULL, PlParseKriPackage );
 
 	PLImage *Angel_TEX_ParseImage( PLFile * file );
 	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
 
 	PLPath exeDir;
 	if ( PlGetExecutableDirectory( exeDir, sizeof( PLPath ) ) != NULL ) {
+		PlMountLocalLocation( exeDir );
+
 		PlRegisterPlugins( exeDir );
 
 		/* attempt to also register any plugins under a 'plugins' location */

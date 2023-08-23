@@ -27,6 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 add_subdirectory(../../extras/blitz/ ../../bin/plugins/blitz/)
 add_subdirectory(../../extras/core/ ../../bin/plugins/core/)
+add_subdirectory(../../extras/lead/ ../../lib/)
 
 add_executable(pcmd
         main.c
@@ -47,10 +48,12 @@ add_executable(pcmd
         ../../extras/outwars_ff.c
         ../../extras/package_rof.c
         ../../extras/sentient_vsr.c
-        )
 
+        ../../extras/pl_extra_kri_wad.c
+        )
 add_dependencies(pcmd
         blitz_plugin
         core_plugin)
 
-target_link_libraries(pcmd plcore plgraphics plmodel)
+target_include_directories(pcmd PRIVATE ../../extras)
+target_link_libraries(pcmd plcore plgraphics plmodel lead)
