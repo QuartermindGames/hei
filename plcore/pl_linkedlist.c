@@ -42,6 +42,12 @@ PLLinkedListNode *PlInsertLinkedListNode( PLLinkedList *list, void *userPtr ) {
 	return node;
 }
 
+PLLinkedListNode *PlInsertFrontLinkedListNode( PLLinkedList *list, void *userPtr ) {
+	PLLinkedListNode *node = PlInsertLinkedListNode( list, userPtr );
+	PlMoveLinkedListNodeToFront( node );
+	return node;
+}
+
 PLLinkedListNode *PlGetNextLinkedListNode( PLLinkedListNode *node ) {
 	return node->next;
 }

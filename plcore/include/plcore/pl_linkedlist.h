@@ -13,6 +13,7 @@ typedef struct PLLinkedListNode PLLinkedListNode;
 PLLinkedList *PlCreateLinkedList( void );
 
 PLLinkedListNode *PlInsertLinkedListNode( PLLinkedList *list, void *userPtr );
+PLLinkedListNode *PlInsertFrontLinkedListNode( PLLinkedList *list, void *userPtr );
 
 void PlDestroyLinkedList( PLLinkedList *list );
 void PlDestroyLinkedListNode( PLLinkedListNode *node );
