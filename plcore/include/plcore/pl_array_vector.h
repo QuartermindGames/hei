@@ -17,6 +17,7 @@ void **PlGetVectorArrayData( PLVectorArray *vectorArray );
 void PlShrinkVectorArray( PLVectorArray *vectorArray );
 void PlPopVectorArrayBack( PLVectorArray *vectorArray );
 void PlEraseVectorArrayElement( PLVectorArray *vectorArray, unsigned int at );
+void PlDestroyVectorArrayElement( PLVectorArray *vectorArray, unsigned int at, void ( *elementDeletor )( void *user ) );
 void PlClearVectorArray( PLVectorArray *vectorArray );
 void PlPushBackVectorArrayElement( PLVectorArray *vectorArray, void *value );
 
@@ -30,6 +31,7 @@ void *PlGetVectorArrayFront( PLVectorArray *vectorArray );
 void *PlGetVectorArrayBack( PLVectorArray *vectorArray );
 
 PLVectorArray *PlCreateVectorArray( unsigned int maxElements );
+void PlDestroyVectorArrayElements( PLVectorArray *vectorArray, void ( *elementDeleter )( void *user ) );
 void PlDestroyVectorArray( PLVectorArray *vectorArray );
 
 PL_EXTERN_C_END

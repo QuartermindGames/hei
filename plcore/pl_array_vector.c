@@ -41,6 +41,11 @@ void PlEraseVectorArrayElement( PLVectorArray *vectorArray, unsigned int at ) {
 	vectorArray->numElements--;
 }
 
+void PlDestroyVectorArrayElement( PLVectorArray *vectorArray, unsigned int at, void ( *elementDeletor )( void *user ) ) {
+	elementDeletor( vectorArray->data[ at ] );
+	PlEraseVectorArrayElement( vectorArray, at );
+}
+
 /**
  * Clears all elements from the array.
  * Keep in mind this won't free the individual elements.
@@ -96,6 +101,14 @@ PLVectorArray *PlCreateVectorArray( unsigned int maxElements ) {
 	vectorArray->maxElements = maxElements;
 	vectorArray->data = PL_NEW_( void *, vectorArray->maxElements );
 	return vectorArray;
+}
+
+void PlDestroyVectorArrayElements( PLVectorArray *vectorArray, void ( *elementDeleter )( void *user ) ) {
+	for ( unsigned int i = 0; i < vectorArray->numElements; ++i ) {
+		elementDeleter( vectorArray->data[ i ] );
+	}
+
+	PlClearVectorArray( vectorArray );
 }
 
 void PlDestroyVectorArray( PLVectorArray *vectorArray ) {
