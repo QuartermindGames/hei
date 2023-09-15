@@ -165,32 +165,34 @@ PL_EXTERN PLFunctionResult PlInitialize( int argc, char **argv );
 PL_EXTERN PLFunctionResult PlInitializeSubSystems( unsigned int subsystems );
 PL_EXTERN void PlShutdown( void );
 
+bool PlIsDebuggerPresent( void );
+
 /******************************************************************/
 /* ERROR HANDLING */
 
-PL_EXTERN void PlClearError( void );// Resets the error message to "null", so you can ensure you have the correct message from the library.
+void PlClearError( void );// Resets the error message to "null", so you can ensure you have the correct message from the library.
 
-PL_EXTERN PLFunctionResult PlGetFunctionResult( void );
-PL_EXTERN const char *PlGetResultString( PLFunctionResult result );
-PL_EXTERN const char *PlGetError( void );// Returns the last recorded error.
+PLFunctionResult PlGetFunctionResult( void );
+const char *PlGetResultString( PLFunctionResult result );
+const char *PlGetError( void );// Returns the last recorded error.
 
-PL_EXTERN void PlReportError( PLFunctionResult result, const char *function, const char *message, ... );
+void PlReportError( PLFunctionResult result, const char *function, const char *message, ... );
 #	define PlReportErrorF( type, ... ) PlReportError( type, PL_FUNCTION, __VA_ARGS__ )
 #	define PlReportBasicError( type )  PlReportErrorF( ( type ), PlGetResultString( ( type ) ) )
 
 /******************************************************************/
 
-PL_EXTERN const char *PlGenerateUniqueIdentifier( char *dest, size_t destLength );
+const char *PlGenerateUniqueIdentifier( char *dest, size_t destLength );
 
 // CL Arguments
-PL_EXTERN const char *PlGetCommandLineArgumentValue( const char *arg );
+const char *PlGetCommandLineArgumentValue( const char *arg );
 
 /**
  * Equivalent of using 'argv' directly, but with bounds checking.
  */
-PL_EXTERN const char *PlGetCommandLineArgumentValueByIndex( unsigned int index );
+const char *PlGetCommandLineArgumentValueByIndex( unsigned int index );
 
-PL_EXTERN bool PlHasCommandLineArgument( const char *arg );
+bool PlHasCommandLineArgument( const char *arg );
 
 //////////////////////////////////////////////////////////////////
 
@@ -206,23 +208,23 @@ bool PlIsSubSystemActive( unsigned int subsystem );
 #	include <plcore/pl_string.h>
 #	include <plcore/pl_memory.h>
 
-PL_EXTERN const char *PlGetFormattedTime( void );
-PL_EXTERN time_t PlStringToTime( const char *ts );
+const char *PlGetFormattedTime( void );
+time_t PlStringToTime( const char *ts );
 
 //////////////////////////////////////////////////////////////////
 
-PL_EXTERN PLLibrary *PlLoadLibrary( const char *path, bool appendPath );
-PL_EXTERN void *PlGetLibraryProcedure( PLLibrary *library, const char *procedureName );
-PL_EXTERN void PlUnloadLibrary( PLLibrary *library );
+PLLibrary *PlLoadLibrary( const char *path, bool appendPath );
+void *PlGetLibraryProcedure( PLLibrary *library, const char *procedureName );
+void PlUnloadLibrary( PLLibrary *library );
 
 /**
  * Plugin Interface
  **/
 
-PL_EXTERN const struct PLPluginExportTable *PlGetExportTable( void );
-PL_EXTERN bool PlRegisterPlugin( const char *path );
-PL_EXTERN void PlRegisterPlugins( const char *pluginDir );
-PL_EXTERN void PlInitializePlugins( void );
+const struct PLPluginExportTable *PlGetExportTable( void );
+bool PlRegisterPlugin( const char *path );
+void PlRegisterPlugins( const char *pluginDir );
+void PlInitializePlugins( void );
 
 #endif
 

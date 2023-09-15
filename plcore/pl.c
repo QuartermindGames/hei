@@ -14,11 +14,14 @@
 #	ifdef CreateDirectory
 #		undef CreateDirectory
 #	endif
+#else
+#	include <fcntl.h>
 #endif
 
 #if !defined( _MSC_VER )
 #	include <sys/time.h>
 #endif
+
 #include <errno.h>
 
 #include "pl_private.h"
@@ -192,6 +195,52 @@ void PlShutdown( void ) {
 	}
 
 	PlShutdownConsole();
+}
+
+/*-------------------------------------------------------------------
+ * ERROR HANDLING
+ *-----------------------------------------------------------------*/
+
+bool PlIsDebuggerPresent( void ) {
+#if defined( WIN32 )
+
+	return IsDebuggerPresent();
+
+#else
+
+	// https://stackoverflow.com/a/24969863
+
+	char buf[ 4096 ];
+	const int status = open( "/proc/self/status", O_RDONLY );
+	if ( status == -1 ) {
+		return false;
+	}
+
+	const ssize_t numRead = read( status, buf, sizeof( buf ) - 1 );
+	close( status );
+
+	if ( numRead <= 0 ) {
+		return false;
+	}
+
+	buf[ numRead ] = '\0';
+	static const char tracerPidString[] = "TracerPid:";
+	const char *tracerPidPtr = strstr( buf, tracerPidString );
+	if ( tracerPidPtr == NULL ) {
+		return false;
+	}
+
+	for ( const char *c = tracerPidPtr + sizeof( tracerPidString ) - 1; c <= buf + numRead; ++c ) {
+		if ( isspace( *c ) ) {
+			continue;
+		}
+
+		return isdigit( *c ) != 0 && *c != '0';
+	}
+
+	return false;
+
+#endif
 }
 
 /*-------------------------------------------------------------------

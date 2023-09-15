@@ -14,6 +14,7 @@ typedef struct PLVectorArray PLVectorArray;
 
 void PlResizeVectorArray( PLVectorArray *vectorArray, unsigned int newMaxElements );
 void **PlGetVectorArrayData( PLVectorArray *vectorArray );
+void **PlGetVectorArrayDataEx( PLVectorArray *vectorArray, unsigned int *numElements );
 void PlShrinkVectorArray( PLVectorArray *vectorArray );
 void PlPopVectorArrayBack( PLVectorArray *vectorArray );
 void PlEraseVectorArrayElement( PLVectorArray *vectorArray, unsigned int at );
@@ -33,5 +34,6 @@ void *PlGetVectorArrayBack( PLVectorArray *vectorArray );
 PLVectorArray *PlCreateVectorArray( unsigned int maxElements );
 void PlDestroyVectorArrayElements( PLVectorArray *vectorArray, void ( *elementDeleter )( void *user ) );
 void PlDestroyVectorArray( PLVectorArray *vectorArray );
+void PlDestroyVectorArrayEx( PLVectorArray *vectorArray, void ( *elementDeleter )( void *user ) );
 
 PL_EXTERN_C_END

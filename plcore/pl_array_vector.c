@@ -27,6 +27,11 @@ void **PlGetVectorArrayData( PLVectorArray *vectorArray ) {
 	return vectorArray->data;
 }
 
+void **PlGetVectorArrayDataEx( PLVectorArray *vectorArray, unsigned int *numElements ) {
+	*numElements = vectorArray->numElements;
+	return PlGetVectorArrayData( vectorArray );
+}
+
 void PlShrinkVectorArray( PLVectorArray *vectorArray ) {
 	PlResizeVectorArray( vectorArray, vectorArray->numElements );
 }
@@ -119,4 +124,13 @@ void PlDestroyVectorArray( PLVectorArray *vectorArray ) {
 	PlClearVectorArray( vectorArray );
 	PL_DELETE( vectorArray->data );
 	PL_DELETE( vectorArray );
+}
+
+void PlDestroyVectorArrayEx( PLVectorArray *vectorArray, void ( *elementDeleter )( void *user ) ) {
+	if ( vectorArray == NULL ) {
+		return;
+	}
+
+	PlDestroyVectorArrayElements( vectorArray, elementDeleter );
+	PlDestroyVectorArray( vectorArray );
 }
