@@ -208,9 +208,9 @@ bool PlmWriteObjModel( PLMModel *model, const char *path ) {
 
 			for ( unsigned int fi = 0; fi < mesh->num_triangles; ++fi ) {
 				fprintf( fp, "f %d/%d/%d\n",
-				         mesh->indices[ fi ],
-				         mesh->indices[ fi ],
-				         mesh->indices[ fi ] );
+				         mesh->indices[ fi ] + 1,
+				         mesh->indices[ fi ] + 1,
+				         mesh->indices[ fi ] + 1 );
 			}
 		}
 	}
