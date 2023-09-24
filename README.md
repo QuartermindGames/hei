@@ -6,15 +6,15 @@
 
 </div>
 
-A collection of relatively small utility libraries written in C11 that can be used as the foundation for various applications,
-perhaps more ideally games.
+A collection of relatively small utility libraries written in C11 that can be used as the foundation for various applications, perhaps more ideally games.
 Includes APIs for dealing with images, graphics, models, IO and much more.
 
 Originally created around 2014/2015 as a support library for another game, it's since found
-a new life supporting both the [Yin Game Engine](https://www.hogsy.me/p/yin.html) and [OpenHoW](https://github.com/TalonBraveInfo/OpenHoW) projects.
+a new life supporting [APE Tech](https://www.hogsy.me/p/yin.html) and other projects.
+Do let me know if you find any use of it, and I'll give you a shoutout!
 
-**Keep in mind this is likely far from the most efficient library in the world. If performance is a big
-priority for you then I would highly recommend looking elsewhere!**
+**Keep in mind this is likely far from the most efficient library in the world.
+If performance is a big priority for you, then I would highly recommend looking elsewhere!**
 
 ## Features
 
@@ -81,6 +81,10 @@ mounted packages before falling back to the local FS
     - Unreal 3D (*read*)
     - Valve SMD (*write*)
     - Can easily be extended to support other model formats either via the API or via plugins
+
+## Extras
+
+Under the [extras](extras) directory, you'll find a number of source files for granting you support for various other formats. These are typically left out of the core library because they're either not widely used or support is considered experimental. In summary, if you're developing a larger project, I would highly recommend excluding these.
 
 ## Roadmap
 
