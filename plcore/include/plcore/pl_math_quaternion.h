@@ -9,9 +9,7 @@
 /******************************************************************/
 /* Quaternions */
 
-typedef struct PLQuaternion {
-	float x, y, z, w;
-} PLQuaternion;
+typedef PLVector4 PLQuaternion;
 
 #define PlQuaternion( x, y, z, w ) \
 	( PLQuaternion ) { ( float ) ( x ), ( float ) ( y ), ( float ) ( z ), ( float ) ( w ) }
