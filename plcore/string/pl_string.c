@@ -62,3 +62,16 @@ char *pl_strnjoin( const char *a, size_t aSize, const char *b, size_t bSize ) {
 char *pl_strjoin( const char *a, const char *b ) {
 	return pl_strnjoin( a, strlen( a ), b, strlen( b ) );
 }
+
+char *pl_strnreverse( char *string, size_t size ) {
+	for ( size_t i = 0, j = strnlen( string, size ) - 1; i < j; ++i, j-- ) {
+		char c = string[ i ];
+		if ( c == '\0' )
+			break;
+
+		string[ i ] = string[ j ];
+		string[ j ] = c;
+	}
+
+	return string;
+}
