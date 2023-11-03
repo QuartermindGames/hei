@@ -656,7 +656,17 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 			struct stat st;
 			if ( stat( filestring, &st ) == 0 ) {
 				if ( S_ISREG( st.st_mode ) ) {
-					if ( extension == NULL || pl_strcasecmp( PlGetFileExtension( entry->d_name ), extension ) == 0 ) {
+					// We used to just compare against the end of the name relative to '.',
+					// but an extension could be made up of multiple parts (.world.n),
+					// so we'll do this instead
+					bool match = false;
+					if ( extension != NULL ) {
+						size_t el = strlen( extension );
+						size_t fl = strlen( entry->d_name );
+						match = ( el < fl ) && ( pl_strncasecmp( &entry->d_name[ fl - el ], extension, el ) == 0 );
+					}
+
+					if ( extension == NULL || match ) {
 						if ( mount == NULL ) {
 							Function( filestring, userData );
 							continue;
@@ -684,7 +694,7 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 						Function( filePath, userData );
 
 						// Tack it onto the list
-						cur = PlCAllocA( 1, sizeof( FSScanInstance ) );
+						cur = PL_NEW( FSScanInstance );
 						strncpy( cur->path, filePath, sizeof( cur->path ) );
 						cur->next = *fileList;
 						*fileList = cur;
