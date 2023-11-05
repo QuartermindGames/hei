@@ -10,6 +10,10 @@
 #	include <psapi.h>
 #elif defined( __linux__ )
 #	include <sys/resource.h>
+#elif defined( __FreeBSD__ )
+#include	<sys/types.h>
+#include	<sys/time.h>
+#include	<sys/resource.h>
 #endif
 
 #include "pl_private.h"
@@ -181,7 +185,7 @@ size_t PlGetTotalAllocatedMemory( void ) {
  * Returns the total amount of system memory in bytes.
  */
 uint64_t PlGetTotalSystemMemory( void ) {
-#if defined( __linux__ ) || defined( __APPLE__ )
+#if defined( __linux__ ) || defined( __APPLE__ ) || defined( __FreeBSD__ )
 	long pages = sysconf( _SC_PHYS_PAGES );
 	long pageSize = sysconf( _SC_PAGE_SIZE );
 	return pages * pageSize;
@@ -199,9 +203,9 @@ uint64_t PlGetTotalSystemMemory( void ) {
  * Returns the total amount of available system memory in bytes.
  */
 uint64_t PlGetTotalAvailableSystemMemory( void ) {
-#if defined( __linux__ ) || defined( __APPLE__ )
+#if defined( __linux__ ) || defined( __APPLE__ ) || defined( __FreeBSD__ )
 	/* unfortunately, on OSX, we don't have AVPHYS_PAGES... */
-#	if defined( __APPLE__ )
+#	if defined( __APPLE__ ) || defined( __FreeBSD__ )
 	long pages = sysconf( _SC_PHYS_PAGES );
 #	else
 	long pages = sysconf( _SC_AVPHYS_PAGES );
@@ -222,7 +226,7 @@ uint64_t PlGetTotalAvailableSystemMemory( void ) {
  * Returns the memory usage of the current process in bytes.
  */
 uint64_t PlGetCurrentMemoryUsage( void ) {
-#if defined( __linux__ ) || defined( __APPLE__ )
+#if defined( __linux__ ) || defined( __APPLE__ ) || defined( __FreeBSD__ )
 	/* this is probably the only thing close to an api
 	 * that provides this info on linux, without having
 	 * to parse shit...but it returns kb and isn't
