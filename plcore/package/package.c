@@ -293,6 +293,9 @@ void PlRegisterStandardPackageLoaders( void ) {
 	PlRegisterPackageLoader( "pk4", PlLoadZipPackage, NULL );
 
 	PlRegisterPackageLoader( "dfs", PlLoadDFSPackage, NULL );
+
+	// Fresh3D
+	PlRegisterPackageLoader( "bin", NULL, PlParseFreshBinPackage_ );
 }
 
 PLPackage *PlLoadPackage( const char *path ) {

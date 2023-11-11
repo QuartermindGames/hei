@@ -42,8 +42,11 @@ PLPackage *ROF_ParseFile( PLFile *file ) {
 	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
 	for ( unsigned int i = 0; i < package->table_size; ++i ) {
 		// sort out the name, which we just need to yank out of the name buffer
-
-		strncpy_s( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ), &nameBuffer[ indices[ i ].nameOffset ], indices[ i ].nameSize );
+		assert( indices[ i ].nameSize < sizeof( package->table[ i ].fileName ) );
+		if ( indices[ i ].nameSize >= sizeof( package->table[ i ].fileName ) ) {
+			indices[ i ].nameSize = sizeof( package->table[ i ].fileName ) - 1;
+		}
+		strncpy( package->table[ i ].fileName, &nameBuffer[ indices[ i ].nameOffset ], indices[ i ].nameSize );
 		PlNormalizePath( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ) );
 
 		/* each file here uses deflate compression, but that information
