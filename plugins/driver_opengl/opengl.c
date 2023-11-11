@@ -628,6 +628,11 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 }
 
 static void GLSetTextureAnisotropy( PLGTexture *texture, uint32_t value ) {
+	if ( !GLEW_EXT_texture_filter_anisotropic ) {
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "EXT_texture_filter_anisotropic is unsupported" );
+		return;
+	}
+
 	GLBindTexture( texture );
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, ( int ) value ) );
 }
