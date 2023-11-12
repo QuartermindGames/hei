@@ -3,7 +3,6 @@
 
 #include <plcore/pl_console.h>
 
-#include "pl_private.h"
 #include "package_private.h"
 #include "filesystem_private.h"
 
@@ -232,7 +231,7 @@ void PlExtractPackage( PLPackage *package, const char *path ) {
 	}
 }
 
-/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
 typedef struct PLPackageLoader {
 	const char *ext;
@@ -240,7 +239,7 @@ typedef struct PLPackageLoader {
 	PLPackage *( *ParseFunction )( PLFile *file );
 } PLPackageLoader;
 
-static PLPackageLoader package_loaders[ MAX_OBJECT_INTERFACES ];
+static PLPackageLoader package_loaders[ MAX_OBJECT_INTERFACES ] = {};
 static unsigned int num_package_loaders = 0;
 
 void PlInitPackageSubSystem( void ) {
@@ -263,7 +262,6 @@ const char **PlGetSupportedPackageFormats( unsigned int *numElements ) {
 }
 
 void PlClearPackageLoaders( void ) {
-	memset( package_loaders, 0, sizeof( PLPackageLoader ) * MAX_OBJECT_INTERFACES );
 	num_package_loaders = 0;
 }
 
@@ -274,28 +272,37 @@ void PlRegisterPackageLoader( const char *ext, PLPackage *( *LoadFunction )( con
 	num_package_loaders++;
 }
 
-void PlRegisterStandardPackageLoaders( void ) {
-	PlRegisterPackageLoader( "wad", PlLoadIWADPackage_, NULL );
-	PlRegisterPackageLoader( "wad", PlLoadWAD2Package_, NULL );
-	PlRegisterPackageLoader( "pak", PlLoadPAKPackage_, NULL );
-	PlRegisterPackageLoader( "vpk", PlLoadVPKPackage_, NULL );
+void PlRegisterStandardPackageLoaders( unsigned int flags ) {
+	typedef struct PackageLoader {
+		unsigned int flag;
+		const char *extension;
+		PLPackage *( *loadFunction )( const char *path );//TODO: kill this...
+		PLPackage *( *parseFunction )( PLFile *file );
+	} PackageLoader;
 
-	/* hogs of war */
-	PlRegisterPackageLoader( "mad", PlLoadMadPackage, NULL );
-	PlRegisterPackageLoader( "mtd", PlLoadMadPackage, NULL );
+	static const PackageLoader loaders[] = {
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,          "zip", PlLoadZipPackage,   NULL                   },
+	        { PL_PACKAGE_LOAD_FORMAT_ZIP,         "pak", PlLoadZipPackage,   NULL                   },
+	        { PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk3", PlLoadZipPackage,   NULL                   },
+	        { PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk4", PlLoadZipPackage,   NULL                   },
+	        { PL_PACKAGE_LOAD_FORMAT_WAD_DOOM,    "wad", PlLoadIWADPackage_, NULL                   },
+	        { PL_PACKAGE_LOAD_FORMAT_WAD_QUAKE,   "wad", PlLoadWAD2Package_, NULL                   },
+	        { PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mad", PlLoadMadPackage,   NULL                   },
+	        { PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mtd", PlLoadMadPackage,   NULL                   },
+	        { PL_PACKAGE_LOAD_FORMAT_PAK_QUAKE,   "pak", PlLoadPAKPackage_,  NULL                   },
+	        { PL_PACKAGE_LOAD_FORMAT_TAB_SFA,     "tab", PlLoadTabPackage,   NULL                   },
+	        { PL_PACKAGE_LOAD_FORMAT_BIN_FRESH,   "bin", NULL,               PlParseFreshBinPackage_},
+	        { PL_PACKAGE_LOAD_FORMAT_DFS,         "dfs", PlLoadDFSPackage,   NULL                   },
+	        { PL_PACKAGE_LOAD_FORMAT_VPK_VTMB,    "vpk", PlLoadVPKPackage_,  NULL                   },
+	};
 
-	/* starfox adventures */
-	PlRegisterPackageLoader( "tab", PlLoadTabPackage, NULL );
+	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaders ); ++i ) {
+		if ( flags != PL_PACKAGE_LOAD_FORMAT_ALL && !( flags & loaders[ i ].flag ) ) {
+			continue;
+		}
 
-	PlRegisterPackageLoader( "zip", PlLoadZipPackage, NULL );
-	PlRegisterPackageLoader( "pak", PlLoadZipPackage, NULL );
-	PlRegisterPackageLoader( "pk3", PlLoadZipPackage, NULL );
-	PlRegisterPackageLoader( "pk4", PlLoadZipPackage, NULL );
-
-	PlRegisterPackageLoader( "dfs", PlLoadDFSPackage, NULL );
-
-	// Fresh3D
-	PlRegisterPackageLoader( "bin", NULL, PlParseFreshBinPackage_ );
+		PlRegisterPackageLoader( loaders[ i ].extension, loaders[ i ].loadFunction, loaders[ i ].parseFunction );
+	}
 }
 
 PLPackage *PlLoadPackage( const char *path ) {

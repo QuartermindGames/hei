@@ -58,3 +58,8 @@ PLPackage *PlParseFreshBinPackage_( PLFile *file ) {
 
 	return package;
 }
+
+void PlWriteFreshBinPackage_( PLPackage *package, const char *path )
+{
+
+}

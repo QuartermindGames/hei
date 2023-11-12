@@ -40,7 +40,7 @@ PLPackage *ROF_ParseFile( PLFile *file ) {
 	PlReadFile( file, nameBuffer, sizeof( char ), nameTableSize );
 
 	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
-	for ( unsigned int i = 0; i < package->table_size; ++i ) {
+	for ( unsigned int i = 0; i < package->maxTableSize; ++i ) {
 		// sort out the name, which we just need to yank out of the name buffer
 		assert( indices[ i ].nameSize < sizeof( package->table[ i ].fileName ) );
 		if ( indices[ i ].nameSize >= sizeof( package->table[ i ].fileName ) ) {

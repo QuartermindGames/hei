@@ -253,7 +253,7 @@ int main( int argc, char **argv ) {
 	PlInitializeSubSystems( PL_SUBSYSTEM_IO );
 
 	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
-	PlRegisterStandardPackageLoaders();
+	PlRegisterStandardPackageLoaders( PL_PACKAGE_LOAD_FORMAT_ALL );
 
 	PlmRegisterStandardModelLoaders( PLM_MODEL_FILEFORMAT_ALL );
 

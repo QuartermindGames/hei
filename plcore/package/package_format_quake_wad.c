@@ -51,7 +51,7 @@ static PLPackage *ParseWAD2File( PLFile *file ) {
 
 	const char *path = PlGetFilePath( file );
 	PLPackage *package = PlCreatePackageHandle( path, numLumps, NULL );
-	for ( unsigned int i = 0; i < package->table_size; ++i ) {
+	for ( unsigned int i = 0; i < package->maxTableSize; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
 		index->offset = PlReadInt32( file, false, NULL );
 		index->compressedSize = PlReadInt32( file, false, NULL );
