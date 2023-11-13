@@ -532,6 +532,17 @@ void PlGenerateStipplePattern( PLImage *image, unsigned int depth ) {
 #endif
 }
 
+void PlClearImageAlpha( PLImage *image ) {
+	if ( image->format != PL_IMAGEFORMAT_RGBA8 ) {
+		PlReportErrorF( PL_RESULT_IMAGEFORMAT, "unsupported image format" );
+		return;
+	}
+
+	for ( unsigned int i = 0; i < image->size; i += 4 ) {
+		image->data[ 0 ][ i + 3 ] = 255;
+	}
+}
+
 void PlReplaceImageColour( PLImage *image, PLColour target, PLColour dest ) {
 	unsigned int num_colours = PlGetNumImageFormatChannels( image->format );
 	switch ( image->format ) {
