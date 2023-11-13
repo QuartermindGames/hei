@@ -27,7 +27,7 @@ For more information, please refer to <http://unlicense.org>
 
 add_subdirectory(../../extras/blitz/ ../../bin/plugins/blitz/)
 add_subdirectory(../../extras/core/ ../../bin/plugins/core/)
-add_subdirectory(../../extras/lead/ ../../lib/)
+#add_subdirectory(../../extras/lead/ ../../lib/)
 
 add_executable(pcmd
         main.c
@@ -56,4 +56,4 @@ add_dependencies(pcmd
         core_plugin)
 
 target_include_directories(pcmd PRIVATE ../../extras)
-target_link_libraries(pcmd plcore plgraphics plmodel lead)
+target_link_libraries(pcmd plcore plgraphics plmodel)

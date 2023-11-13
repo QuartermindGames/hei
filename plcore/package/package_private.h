@@ -20,4 +20,6 @@ PLPackage *PlLoadVPKPackage_( const char *path );
 PLPackage *PlLoadMadPackage( const char *path );
 PLPackage *PlLoadTabPackage( const char *path );
 
+PLPackage *PlParseFreshBinPackage_( PLFile *file );
+
 PL_EXTERN_C_END
