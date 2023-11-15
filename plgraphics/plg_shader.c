@@ -169,12 +169,7 @@ void PlgDestroyShaderProgram( PLGShaderProgram *program, bool free_stages ) {
 
 	CallGfxFunction( DestroyShaderProgram, program );
 
-	/* free uniforms */
-	for ( unsigned int i = 0; i < program->num_uniforms; ++i ) {
-		PlFree( program->uniforms[ i ].name );
-	}
 	PlFree( program->uniforms );
-
 	PlFree( program->attributes );
 	PlFree( program );
 }

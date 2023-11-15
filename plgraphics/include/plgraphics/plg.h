@@ -156,6 +156,8 @@ typedef struct PLGShaderStage PLGShaderStage;
 #define PLG_MAX_DEFINITION_LENGTH 16
 #define PLG_MAX_DEFINITIONS       16
 
+#define PLG_MAX_UNIFORM_NAME_LENGTH 128
+
 #define PLG_MAX_SHADER_PROGRAM_ID 128
 
 typedef struct PLGShaderStage {
@@ -178,8 +180,9 @@ typedef struct PLGShaderStage {
 
 typedef struct PLGShaderProgram {
 	struct {
-		char *name;
+		char name[ PLG_MAX_UNIFORM_NAME_LENGTH ];
 		int slot;
+		unsigned int numElements;
 		PLGShaderUniformType type;
 
 		union {

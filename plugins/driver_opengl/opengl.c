@@ -634,7 +634,7 @@ static void GLSetTextureAnisotropy( PLGTexture *texture, uint32_t value ) {
 	}
 
 	GLBindTexture( texture );
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, ( int ) value ) );
+	XGL_CALL( glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, ( float ) value ) );
 }
 
 static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter ) {
@@ -1246,7 +1246,7 @@ static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *l
 					dstPos = InsertString( incBuf, &dstBuffer, &actualLength, &maxLength );
 					gInterface->core->Free( incBuf );
 				} else {
-					XGL_LOG( "Failed to load include \"%s\": %s\n", gInterface->core->GetError() );
+					XGL_LOG( "Failed to load include \"%s\": %s\n", path, gInterface->core->GetError() );
 				}
 
 				gInterface->core->SkipLine( &srcPos );
@@ -1485,7 +1485,8 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 		XGL_CALL( program->uniforms[ i ].slot = glGetUniformLocation( program->internal.id, uniformName ) );
 
 		program->uniforms[ i ].type = GLConvertGLUniformType( glType );
-		program->uniforms[ i ].name = uniformName;
+		program->uniforms[ i ].numElements = uniformSize;
+		snprintf( program->uniforms[ i ].name, sizeof( program->uniforms[ i ].name ), "%s", uniformName );
 
 		/* fetch it's current value, assume it's the default */
 		switch ( program->uniforms[ i ].type ) {
