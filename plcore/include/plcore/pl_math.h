@@ -535,9 +535,25 @@ inline static float PlLinearInterpolate( float y1, float y2, float mu ) {
 	return ( y1 * ( 1 - mu ) + y2 * mu );
 }
 
+static inline PLVector3 PlLinearInterpolateV3f( PLVector3 a, PLVector3 b, float mu ) {
+	return ( PLVector3 ){
+	        PlLinearInterpolate( a.x, b.x, mu ),
+	        PlLinearInterpolate( a.y, b.y, mu ),
+	        PlLinearInterpolate( a.z, b.z, mu ),
+	};
+}
+
 inline static float PlCosineInterpolate( float y1, float y2, float mu ) {
 	float mu2 = ( 1 - cosf( mu * ( float ) PL_PI ) ) / 2;
 	return ( y1 * ( 1 - mu2 ) + y2 * mu2 );
+}
+
+static inline PLVector3 PlCosineInterpolateV3f( PLVector3 a, PLVector3 b, float mu ) {
+	return ( PLVector3 ){
+	        PlCosineInterpolate( a.x, b.x, mu ),
+	        PlCosineInterpolate( a.y, b.y, mu ),
+	        PlCosineInterpolate( a.z, b.z, mu ),
+	};
 }
 
 // http://probesys.blogspot.co.uk/2011/10/useful-math-functions.html
