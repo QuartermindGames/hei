@@ -253,7 +253,7 @@ PLImage *PlParseImage( PLFile *file ) {
 	return NULL;
 }
 
-bool PlWriteImage( const PLImage *image, const char *path ) {
+bool PlWriteImage( const PLImage *image, const char *path, unsigned int quality ) {
 	if ( path != NULL && *path == '\0' ) {
 		PlReportErrorF( PL_RESULT_FILEPATH, PlGetResultString( PL_RESULT_FILEPATH ) );
 		return false;
@@ -280,7 +280,7 @@ bool PlWriteImage( const PLImage *image, const char *path ) {
 				return true;
 			}
 		} else if ( !pl_strncasecmp( extension, "jpg", 3 ) || !pl_strncasecmp( extension, "jpeg", 3 ) ) {
-			if ( stbi_write_jpg( path, ( int ) image->width, ( int ) image->height, comp, image->data[ 0 ], 90 ) == 1 ) {
+			if ( stbi_write_jpg( path, ( int ) image->width, ( int ) image->height, comp, image->data[ 0 ], quality ) == 1 ) {
 				return true;
 			}
 		} else if ( !pl_strncasecmp( extension, "qoi", 3 ) ) {
