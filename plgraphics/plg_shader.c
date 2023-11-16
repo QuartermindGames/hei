@@ -314,7 +314,7 @@ int PlgGetShaderUniformSlot( PLGShaderProgram *program, const char *name ) {
 	}
 
 	for ( unsigned int i = 0; i < prg->num_uniforms; ++i ) {
-		if ( prg->uniforms[ i ].name == NULL ) {
+		if ( *prg->uniforms[ i ].name == '\0' ) {
 			continue;
 		}
 
@@ -332,6 +332,14 @@ PLGShaderUniformType PlgGetShaderUniformType( const PLGShaderProgram *program, i
 	}
 
 	return program->uniforms[ slot ].type;
+}
+
+unsigned int PlgGetNumShaderUniformElements( const PLGShaderProgram *program, int slot ) {
+	if ( slot < 0 || ( unsigned int ) slot >= program->num_uniforms ) {
+		return 0;
+	}
+
+	return program->uniforms[ slot ].numElements;
 }
 
 /*****************************************************/
