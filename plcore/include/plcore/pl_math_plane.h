@@ -11,5 +11,19 @@
 
 typedef struct PLPlane {
 	PLVector3 normal;
-	float intercept;
+	float offset;
 } PLPlane;
+
+static inline PLPlane PlMakePlane( const PLVector3 *point, const PLVector3 *normal ) {
+	return ( PLPlane ){ *normal, -PlVector3DotProduct( *point, *normal ) };
+}
+
+static inline float PlSignedDistance( const PLPlane *plane, const PLVector3 *point ) {
+	return PlVector3DotProduct( plane->normal, *point ) + plane->offset;
+}
+
+static inline PLVector3 PlProjectPointOnPlane( const PLPlane *plane, const PLVector3 *point ) {
+	return PlScaleVector3(
+	        PlSubtractVector3F( *point, PlSignedDistance( plane, point ) ),
+	        plane->normal );
+}
