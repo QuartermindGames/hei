@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
+Copyright (c) 2017-2023 Mark E Sowden <hogsy@snortysoft.net>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -546,6 +546,8 @@ static unsigned int GetColourFormatForImageFormat( PLImageFormat format ) {
 
 static void GLCreateTexture( PLGTexture *texture ) {
 	XGL_CALL( glGenTextures( 1, &texture->internal.id ) );
+
+	texture->wrapMode = PLG_TEXTURE_WRAP_MODE_REPEAT;
 }
 
 static void GLDeleteTexture( PLGTexture *texture ) {
@@ -557,6 +559,7 @@ static void GLBindTexture( const PLGTexture *texture ) {
 		XGL_CALL( glBindTexture( GL_TEXTURE_2D, 0 ) );
 		return;
 	}
+
 	XGL_CALL( glBindTexture( GL_TEXTURE_2D, texture->internal.id ) );
 }
 
@@ -650,6 +653,33 @@ static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter ) {
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min ) );
 
 	texture->filter = filter;
+}
+
+static void GLSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode ) {
+	GLBindTexture( texture );
+
+	int glWrapMode;
+	switch ( wrapMode ) {
+		default:
+			//TODO: throw error
+			return;
+		case PLG_TEXTURE_WRAP_MODE_REPEAT:
+			glWrapMode = GL_REPEAT;
+			break;
+		case PLG_TEXTURE_WRAP_MODE_CLAMP_BORDER:
+			glWrapMode = GL_CLAMP_TO_BORDER;
+			break;
+		case PLG_TEXTURE_WRAP_MODE_CLAMP_EDGE:
+			glWrapMode = GL_CLAMP_TO_EDGE;
+			break;
+		case PLG_TEXTURE_WRAP_MODE_MIRRORED_REPEAT:
+			glWrapMode = GL_MIRRORED_REPEAT;
+			break;
+	}
+
+	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapMode ) );
+	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapMode ) );
+	texture->wrapMode = wrapMode;
 }
 
 static void GLActiveTexture( unsigned int target ) {
@@ -1957,8 +1987,6 @@ PLGDriverImportTable graphicsInterface = {
         .SetClearColour = GLSetClearColour,
         .ClearBuffers = GLClearBuffers,
 
-        //.DrawPixel = ,
-
         .SetDepthBufferMode = GLSetDepthBufferMode,
 
         .DepthMask = GLDepthMask,
@@ -1986,6 +2014,7 @@ PLGDriverImportTable graphicsInterface = {
         .SetTextureAnisotropy = GLSetTextureAnisotropy,
         .ActiveTexture = GLActiveTexture,
         .SetTextureFilter = GLSetTextureFilter,
+        .SetTextureWrapMode = GLSetTextureWrapMode,
 
         .ClipViewport = GLClipViewport,
         .SetViewport = GLSetViewport,
@@ -1993,7 +2022,6 @@ PLGDriverImportTable graphicsInterface = {
         .CreateShaderProgram = GLCreateShaderProgram,
         .DestroyShaderProgram = GLDestroyShaderProgram,
         .AttachShaderStage = GLAttachShaderStage,
-        //.DetachShaderStage = ,
         .LinkShaderProgram = GLLinkShaderProgram,
         .SetShaderProgram = GLSetShaderProgram,
         .CreateShaderStage = GLCreateShaderStage,
