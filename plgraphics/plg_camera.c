@@ -8,8 +8,6 @@
 
 #include "plg_private.h"
 
-#define CAMERA_DEFAULT_WIDTH  640
-#define CAMERA_DEFAULT_HEIGHT 480
 #define CAMERA_DEFAULT_BOUNDS 5
 #define CAMERA_DEFAULT_FOV    75.f
 #define CAMERA_DEFAULT_NEAR   0.1f
