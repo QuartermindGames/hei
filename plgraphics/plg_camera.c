@@ -108,26 +108,21 @@ static void SetupCameraFrustum( PLGCamera *camera ) {
 	MakeFrustumPlanes( &viewProj, camera->frustum );
 }
 
+static void SetupCameraAngles( PLGCamera *camera ) {
+	PlMatrixMode( PL_VIEW_MATRIX );
+	PlLoadIdentityMatrix();
+
+	PlRotateMatrix( PL_DEG2RAD( -camera->angles.x ), 1.0f, 0.0f, 0.0f );
+	PlRotateMatrix( PL_DEG2RAD( -camera->angles.y ), 0.0f, 1.0f, 0.0f );
+	PlRotateMatrix( PL_DEG2RAD( -camera->angles.z ), 0.0f, 0.0f, 1.0f );
+
+	PlTranslateMatrix( ( PLVector3 ){ camera->position.x, camera->position.y, camera->position.z } );
+
+	camera->internal.view = *PlGetMatrix( PL_VIEW_MATRIX );
+}
+
 static void SetupCameraPerspective( PLGCamera *camera, int width, int height ) {
 	camera->internal.proj = PlPerspective( camera->fov, ( float ) width / ( float ) height, camera->near, camera->far );
-
-#if 1
-
-	PLVector3 left, up, forward;
-	PlAnglesAxes( camera->angles, &left, &up, &forward );
-
-	camera->internal.view = PlLookAt( camera->position, PlAddVector3( camera->position, PlNormalizeVector3( forward ) ), up );
-
-#else
-
-	float x = cosf( PL_DEG2RAD( camera->angles.y ) ) * cosf( PL_DEG2RAD( camera->angles.x ) );
-	float y = sinf( PL_DEG2RAD( camera->angles.x ) );
-	float z = sinf( PL_DEG2RAD( camera->angles.y ) ) * cosf( PL_DEG2RAD( camera->angles.x ) );
-
-	camera->forward = PlNormalizeVector3( PLVector3( x, y, z ) );
-	camera->internal.view = PlLookAt( camera->position, PlAddVector3( camera->position, camera->forward ), camera->up );
-
-#endif
 }
 
 /***** TEMPORARY CRAP START *****/
@@ -177,19 +172,22 @@ void PlgSetupCamera( PLGCamera *camera ) {
 			SetupCameraPerspective( camera, gfx_state.viewport.w, gfx_state.viewport.h );
 			break;
 		}
-
-		case PLG_CAMERA_MODE_ORTHOGRAPHIC:
+		case PLG_CAMERA_MODE_ORTHOGRAPHIC: {
 			camera->internal.proj = PlOrtho( 0, ( float ) gfx_state.viewport.w, ( float ) gfx_state.viewport.h, 0, camera->near, camera->far );
 			camera->internal.view = PlMatrix4Identity();
 			break;
-
-		case PLG_CAMERA_MODE_ISOMETRIC:
+		}
+		case PLG_CAMERA_MODE_ISOMETRIC: {
 			camera->internal.proj = PlOrtho( -camera->fov, camera->fov, -camera->fov, 5, -5, 40 );
 			camera->internal.view = PlMatrix4Identity();
 			break;
-
+		}
 		default:
 			break;
+	}
+
+	if ( camera->mode != PLG_CAMERA_MODE_ORTHOGRAPHIC ) {
+		SetupCameraAngles( camera );
 	}
 
 	/* setup the camera frustum */

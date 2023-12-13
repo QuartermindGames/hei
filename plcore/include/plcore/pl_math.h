@@ -31,7 +31,7 @@ enum {
 	PL_ALPHA
 };
 
-#define PlFloatToByte( a ) ( uint8_t )( roundf( ( a ) *255.f ) )
+#define PlFloatToByte( a ) ( uint8_t )( roundf( ( a ) * 255.f ) )
 #define PlByteToFloat( a ) ( ( a ) / ( float ) 255 )
 
 #define PlClamp( min, val, max ) ( val ) < ( min ) ? ( min ) : ( ( val ) > ( max ) ? ( max ) : ( val ) )
@@ -752,8 +752,8 @@ inline static float PlInOutPow( float x, float p ) {
 inline static void PlAnglesAxes( PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *forward ) {
 	/* pitch */
 	float theta = PL_DEG2RAD( angles.x );
-	float sx = sinf( theta );
-	float cx = cosf( theta );
+	float sp = sinf( theta );
+	float cp = cosf( theta );
 
 	/* yaw */
 	theta = PL_DEG2RAD( angles.y );
@@ -762,25 +762,25 @@ inline static void PlAnglesAxes( PLVector3 angles, PLVector3 *left, PLVector3 *u
 
 	/* roll */
 	theta = PL_DEG2RAD( angles.z );
-	float sz = sinf( theta );
-	float cz = cosf( theta );
+	float sr = sinf( theta );
+	float cr = cosf( theta );
 
 	if ( left != NULL ) {
-		left->x = cy * cz;
-		left->y = sx * sy * cz + cx * sz;
-		left->z = -cx * sy * cz + sx * sz;
+		left->x = sy * sp * sr + cy * cr;
+		left->y = -cp * sr;
+		left->z = cy * sp * sr - sy * cr;
 	}
 
 	if ( up != NULL ) {
-		up->x = -cy * sz;
-		up->y = -sx * sy * sz + cx * cz;
-		up->z = cx * sy * sz + sx * cz;
+		up->x = sy * sp * cr - cy * sr;
+		up->y = -cp * cr;
+		up->z = cy * sp * cr + sy * sr;
 	}
 
 	if ( forward != NULL ) {
-		forward->x = sy;
-		forward->y = -sx * cy;
-		forward->z = cx * cy;
+		forward->x = sy * cp;
+		forward->y = -sp;
+		forward->z = cy * cp;
 	}
 }
 
