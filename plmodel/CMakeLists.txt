@@ -34,7 +34,6 @@ file(GLOB PLM_SOURCE_FILES
         plm_format_obj.c
         plm_format_ply.c
         plm_format_smd.c
-        plm_format_u3d.c
         )
 
 if (PLM_COMPILE_STATIC)

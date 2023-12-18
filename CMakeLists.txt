@@ -26,6 +26,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(PlatformLibrary)
 
+set(CMAKE_C_STANDARD 11)
+
 option(PL_BUILD_PLUGINS "Build plugins" ON)
 option(PL_BUILD_EXAMPLES "Build example projects" ON)
 
@@ -69,5 +71,4 @@ endif (PL_BUILD_PLUGINS)
 if (PL_BUILD_EXAMPLES)
     add_subdirectory(examples/pcmd)
     add_subdirectory(examples/cpj_dumper)
-    add_subdirectory(examples/viewer)
 endif ()
