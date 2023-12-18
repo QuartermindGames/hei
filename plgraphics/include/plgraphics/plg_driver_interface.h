@@ -1,6 +1,6 @@
 /**
  * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
+ * Copyright (C) 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
@@ -144,8 +144,10 @@ typedef struct PLGDriverImportTable {
 	void ( *StencilOp )( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp depthFailOp, PLGStencilOp depthPassOp );
 
 	// v3.1
-
 	void *( *ReadFrameBufferRegion )( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf );
+
+	// v3.2
+	void ( *SetTextureWrapMode )( PLGTexture *texture, PLGTextureWrapMode wrapMode );
 } PLGDriverImportTable;
 
 #if !defined( PL_COMPILE_PLUGIN )

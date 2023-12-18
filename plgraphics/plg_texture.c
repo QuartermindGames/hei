@@ -150,6 +150,15 @@ void PlgSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter ) {
 	CallGfxFunction( SetTextureFilter, texture, filter );
 }
 
+void PlgSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode )
+{
+	if ( texture->wrapMode == wrapMode ) {
+		return;
+	}
+
+	CallGfxFunction( SetTextureWrapMode, texture, wrapMode );
+}
+
 /* todo: kill this, favor SetTexture */
 static void BindTexture( const PLGTexture *texture ) {
 	// allow us to pass null texture instances

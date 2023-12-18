@@ -57,7 +57,7 @@ PLCollisionAABB PlGenerateAabbFromCoords( const PLVector3 *vertices, unsigned in
 	}
 
 	/* abs origin is the middle of the bounding volume (wherever it is) and origin is the transformative point */
-	bounds.absOrigin = PLVector3( ( bounds.mins.x + bounds.maxs.x ) / 2, ( bounds.mins.y + bounds.maxs.y ) / 2, ( bounds.mins.z + bounds.maxs.z ) / 2 );
+	bounds.absOrigin = PlGetAabbAbsOrigin( &bounds, pl_vecOrigin3 );
 	bounds.origin = pl_vecOrigin3;
 
 	return bounds;

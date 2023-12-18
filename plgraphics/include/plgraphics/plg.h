@@ -156,6 +156,8 @@ typedef struct PLGShaderStage PLGShaderStage;
 #define PLG_MAX_DEFINITION_LENGTH 16
 #define PLG_MAX_DEFINITIONS       16
 
+#define PLG_MAX_UNIFORM_NAME_LENGTH 128
+
 #define PLG_MAX_SHADER_PROGRAM_ID 128
 
 typedef struct PLGShaderStage {
@@ -178,8 +180,9 @@ typedef struct PLGShaderStage {
 
 typedef struct PLGShaderProgram {
 	struct {
-		char *name;
+		char name[ PLG_MAX_UNIFORM_NAME_LENGTH ];
 		int slot;
+		unsigned int numElements;
 		PLGShaderUniformType type;
 
 		union {
@@ -262,6 +265,7 @@ bool PlgLinkShaderProgram( PLGShaderProgram *program );
 
 int PlgGetShaderUniformSlot( PLGShaderProgram *program, const char *name );
 PLGShaderUniformType PlgGetShaderUniformType( const PLGShaderProgram *program, int slot );
+unsigned int PlgGetNumShaderUniformElements( const PLGShaderProgram *program, int slot );
 
 void PlgSetShaderUniformDefaultValueByIndex( PLGShaderProgram *program, int slot, const void *defaultValue );
 void PlgSetShaderUniformDefaultValue( PLGShaderProgram *program, const char *name, const void *defaultValue );
@@ -271,14 +275,6 @@ void PlgSetShaderUniformsToDefault( PLGShaderProgram *program );
 
 void PlgSetShaderUniformValueByIndex( PLGShaderProgram *program, int slot, const void *value, bool transpose );
 void PlgSetShaderUniformValue( PLGShaderProgram *program, const char *name, const void *value, bool transpose );
-
-#	if !defined( PL_EXCLUDE_DEPRECATED_API )
-PL_DEPRECATED( void PlgSetShaderUniformFloat( PLGShaderProgram *program, int slot, float value ) );
-PL_DEPRECATED( void PlgSetShaderUniformInt( PLGShaderProgram *program, int slot, int value ) );
-PL_DEPRECATED( void PlgSetShaderUniformVector4( PLGShaderProgram *program, int slot, PLVector4 value ) );
-PL_DEPRECATED( void PlgSetShaderUniformVector3( PLGShaderProgram *program, int slot, PLVector3 value ) );
-PL_DEPRECATED( void PlgSetShaderUniformMatrix4( PLGShaderProgram *program, int slot, PLMatrix4 value, bool transpose ) );
-#	endif
 
 PLGShaderProgram *PlgCreateShaderProgram( void );
 PLGShaderProgram *PlgLoadCachedShaderProgram( const char *path );

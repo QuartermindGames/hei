@@ -19,5 +19,6 @@ unsigned int PlGetNumHashTableNodes( const PLHashTable *hashTable );
 PLHashTableNode *PlGetFirstHashTableNode( PLHashTable *hashTable );
 PLHashTableNode *PlGetNextHashTableNode( PLHashTable *hashTable, PLHashTableNode *hashTableNode );
 void *PlGetHashTableNodeUserData( PLHashTableNode *hashTableNode );
+void PlSetHashTableNodeUserData( PLHashTableNode *hashTableNode, void *value );
 
 PL_EXTERN_C_END
