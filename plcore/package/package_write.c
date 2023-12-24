@@ -5,6 +5,8 @@
 
 #include "package_private.h"
 
+#if defined( PL_PACKAGE_WRITE_ENABLED )
+
 static PLHashTable *packageWriteFormats = NULL;//PackageWriter
 
 void PlRegisterPackageWriter( const char *formatTag, PLWritePackageFunction writeFunction ) {
@@ -68,3 +70,5 @@ bool PlWritePackage( PLPackage *package, const char *path, const char *formatTag
 
 	return writeFunction( package, path );
 }
+
+#endif

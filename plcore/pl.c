@@ -532,6 +532,10 @@ static PLImage *CreateImageOldWrapper( uint8_t *buf, unsigned int width, unsigne
 	return PlCreateImage( buf, width, height, 0, colourFormat, dataFormat );
 }
 
+static bool WriteImageOldWrapper( const PLImage *image, const char *path ) {
+	return PlWriteImage( image, path, 100 );
+}
+
 static void RegisterPackageLoaderWrapper( const char *extension, PLPackage *( *Callback )( const char * ) ) {
 	PlRegisterPackageLoader( extension, Callback, NULL );
 }
@@ -580,7 +584,7 @@ static PLPluginExportTable exportTable = {
         .ReplaceImageColour = PlReplaceImageColour,
         .FlipImageVertical = PlFlipImageVertical,
         .GetImageSize = PlGetImageSize,
-        .WriteImage = PlWriteImage,
+        .WriteImage = WriteImageOldWrapper,
         .ParseImage = PlParseImage,
 
         .CreatePackageHandle = PlCreatePackageHandle,

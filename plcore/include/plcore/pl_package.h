@@ -41,6 +41,7 @@ enum {
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_BIN_FRESH, 6 ),
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_DFS, 7 ),
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_VPK_VTMB, 8 ),
+	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_GRP, 9 ),
 };
 
 enum {
@@ -77,6 +78,10 @@ const char *PlGetPackageFileName( const PLPackage *package, unsigned int index )
 PLPackage *PlLoadZipPackage( const char *path );
 PLPackage *PlParseZipPackage( PLFile *file );
 
+#	if 0// Write API - excluded for now...
+
+#define PL_PACKAGE_WRITE_ENABLED
+
 typedef bool ( *PLWritePackageFunction )( PLPackage *package, const char *path );
 
 void PlRegisterPackageWriter( const char *formatTag, PLWritePackageFunction writeFunction );
@@ -84,6 +89,8 @@ void PlRegisterStandardPackageWriters( unsigned int flags );
 void PlClearPackageWriters( void );
 PLPackageIndex *PlAppendPackageFromFile( PLPackage *package, const char *source, const char *filename, PLCompressionType compressionType );
 bool PlWritePackage( PLPackage *package, const char *path, const char *formatTag );
+
+#	endif
 
 #endif
 
