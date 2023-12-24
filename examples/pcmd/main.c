@@ -46,7 +46,7 @@ static void ConvertImage( const char *path, const char *destination ) {
 	/* ensure it's a valid format before we write it out */
 	PlConvertPixelFormat( image, PL_IMAGEFORMAT_RGBA8 );
 
-	if ( PlWriteImage( image, destination ) ) {
+	if ( PlWriteImage( image, destination, 100 ) ) {
 		printf( "Wrote \"%s\"\n", destination );
 	} else {
 		printf( "Failed to write \"%s\"! (%s)\n", destination, PlGetError() );
@@ -206,6 +206,31 @@ static void Cmd_BulkExportPackages( unsigned int argc, char **argv ) {
 	PlScanDirectory( path, extension, BulkExportCallback, false, NULL );
 }
 
+static void list_packages_callback( const char *path, PL_UNUSED void *user ) {
+	/* just throw it through the console command */
+	char *tmp = pl_strjoin( "pkglst ", path );
+	PlParseConsoleString( tmp );
+	PL_DELETE( tmp );
+}
+
+static void list_packages_command( PL_UNUSED unsigned int argc, char **argv ) {
+	PLPath path;
+	snprintf( path, sizeof( path ), "%s", argv[ 1 ] );
+	if ( !PlPathExists( path ) ) {
+		printf( "Path doesn't exist: %s\n", PlGetError() );
+		return;
+	}
+
+	char extension[ 16 ];
+	snprintf( extension, sizeof( extension ), "%s", argv[ 2 ] );
+	if ( extension[ 0 ] == '\0' || extension[ 0 ] == '.' ) {
+		printf( "Invalid extension provided; example 'clu'\n" );
+		return;
+	}
+
+	PlScanDirectory( path, extension, list_packages_callback, false, NULL );
+}
+
 static void Cmd_Exit( unsigned int argc, char **argv ) {
 	/* we don't use these here, and ommitting var names is a C2x feature :( */
 	( void ) ( argc );
@@ -332,6 +357,9 @@ int main( int argc, char **argv ) {
 	                          "Attempt to export from all packages found in directory. "
 	                          "<directory> <extension>",
 	                          2, Cmd_BulkExportPackages );
+	PlRegisterConsoleCommand( "list_packages",
+	                          "Attempts to bulk list the contents from all packages found in a directory.",
+	                          2, list_packages_command );
 
 	void asa_register_commands( void );
 	asa_register_commands();

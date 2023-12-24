@@ -18,10 +18,14 @@ typedef enum PLGTextureEnvironmentMode {
 	PLG_TEXTUREMODE_COMBINE
 } PLGTextureEnvironmentMode;
 
-typedef enum PLGTextureClamp {
-	PLG_TEXTURE_CLAMP_CLAMP,
-	PLG_TEXTURE_CLAMP_WRAP,
-} PLGTextureClamp;
+typedef enum PLGTextureWrapMode {
+	PLG_TEXTURE_WRAP_MODE_REPEAT,
+	PLG_TEXTURE_WRAP_MODE_MIRRORED_REPEAT,
+	PLG_TEXTURE_WRAP_MODE_CLAMP_EDGE,
+	PLG_TEXTURE_WRAP_MODE_CLAMP_BORDER,
+
+	PLG_MAX_TEXTURE_WRAP_MODES
+} PLGTextureWrapMode;
 
 typedef enum PLGTextureFilter {
 	PLG_TEXTURE_FILTER_MIPMAP_NEAREST,
@@ -29,7 +33,9 @@ typedef enum PLGTextureFilter {
 	PLG_TEXTURE_FILTER_MIPMAP_LINEAR_NEAREST,
 	PLG_TEXTURE_FILTER_MIPMAP_NEAREST_LINEAR,
 	PLG_TEXTURE_FILTER_NEAREST,// Nearest
-	PLG_TEXTURE_FILTER_LINEAR  // Linear
+	PLG_TEXTURE_FILTER_LINEAR, // Linear
+
+	PLG_MAX_TEXTURE_FILTER_MODES
 } PLGTextureFilter;
 
 typedef enum PLGTextureTarget {
@@ -70,6 +76,7 @@ typedef struct PLGTexture {
 	char path[ PL_SYSTEM_MAX_PATH ];
 
 	PLGTextureFilter filter;
+	PLGTextureWrapMode wrapMode;
 
 	PLImageFormat format;
 	PLColourFormat pixel;
@@ -92,6 +99,7 @@ PL_EXTERN unsigned int PlgGetMaxTextureAnistropy( void );
 
 PL_EXTERN void PlgSetTextureAnisotropy( PLGTexture *texture, unsigned int amount );
 PL_EXTERN void PlgSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter );
+void PlgSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode );
 
 PL_EXTERN void PlgSetTexture( PLGTexture *texture, unsigned int tmu );
 PL_EXTERN void PlgSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode );
