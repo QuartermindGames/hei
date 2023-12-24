@@ -275,27 +275,30 @@ void PlRegisterPackageLoader( const char *ext, PLPackage *( *LoadFunction )( con
 }
 
 void PlRegisterStandardPackageLoaders( void ) {
+	// Quake
 	PlRegisterPackageLoader( "wad", PlLoadIWADPackage_, NULL );
 	PlRegisterPackageLoader( "wad", PlLoadWAD2Package_, NULL );
 	PlRegisterPackageLoader( "pak", PlLoadPAKPackage_, NULL );
+	// Source
 	PlRegisterPackageLoader( "vpk", PlLoadVPKPackage_, NULL );
-
-	/* hogs of war */
+	// Gremlin
 	PlRegisterPackageLoader( "mad", PlLoadMadPackage, NULL );
 	PlRegisterPackageLoader( "mtd", PlLoadMadPackage, NULL );
-
-	/* starfox adventures */
+	// Starfox Adventures
 	PlRegisterPackageLoader( "tab", PlLoadTabPackage, NULL );
-
+	// Zip
 	PlRegisterPackageLoader( "zip", PlLoadZipPackage, NULL );
 	PlRegisterPackageLoader( "pak", PlLoadZipPackage, NULL );
+	// Quake III
 	PlRegisterPackageLoader( "pk3", PlLoadZipPackage, NULL );
+	// Doom 3
 	PlRegisterPackageLoader( "pk4", PlLoadZipPackage, NULL );
-
-	PlRegisterPackageLoader( "dfs", PlLoadDFSPackage, NULL );
-
 	// Fresh3D
 	PlRegisterPackageLoader( "bin", NULL, PlParseFreshBinPackage_ );
+	// Build
+	PlRegisterPackageLoader( "grp", NULL, PlParseGrpPackage_ );
+
+	PlRegisterPackageLoader( "dfs", PlLoadDFSPackage, NULL );
 }
 
 PLPackage *PlLoadPackage( const char *path ) {
