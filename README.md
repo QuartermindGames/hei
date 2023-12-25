@@ -6,12 +6,10 @@
 
 </div>
 
-A collection of relatively small utility libraries written in C11 that can be used as the foundation for various applications,
-perhaps more ideally games.
+A collection of relatively small utility libraries written in C11 that can be used as the foundation for various applications, perhaps more ideally games.
 Includes APIs for dealing with images, graphics, models, IO and much more.
 
-Originally created around 2014/2015 as a support library for another game, it's since found
-a new life supporting both the [Yin Game Engine](https://www.hogsy.me/p/yin.html) and [OpenHoW](https://github.com/TalonBraveInfo/OpenHoW) projects.
+Originally created around 2014/2015 as a support library for another game, it's since found a new life supporting both [APE Tech](https://hogsy.itch.io/ape-tech) and other projects. If you've found the library useful for anything, then let me know!
 
 **Keep in mind this is likely far from the most efficient library in the world. If performance is a big
 priority for you then I would highly recommend looking elsewhere!**
@@ -50,6 +48,7 @@ mounted packages before falling back to the local FS
   - Can easily be extended to support other image formats either via the API or via plugins
 - Supported Package Formats
   - IWAD/PWAD, WAD2 and WAD3
+  - GRP (Build Engine)
   - Future Tactics PAK
   - Outcast OPK
   - Quake PAK
@@ -74,6 +73,7 @@ mounted packages before falling back to the local FS
   - OpenGL 3.3
   
 ### plmodel
+
 - Model API supports static and animated per-vertex/skeletal formats
 - Supported Model Formats
     - Cyclone MDL (*read*)
@@ -81,6 +81,11 @@ mounted packages before falling back to the local FS
     - Unreal 3D (*read*)
     - Valve SMD (*write*)
     - Can easily be extended to support other model formats either via the API or via plugins
+
+## Users
+
+- [APE Tech](https://hogsy.itch.io/ape-tech), a 3D game engine written in C
+- [OpenHoW](https://github.com/TalonBraveInfo/OpenHoW), a reimplementation of Hogs of War
 
 ## Roadmap
 
