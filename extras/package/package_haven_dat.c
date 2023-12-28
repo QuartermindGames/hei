@@ -69,11 +69,8 @@ PLPackage *PlxParseHavenPackage( PLFile *file ) {
 	}
 
 	PLFileOffset stringTableOffset = PlGetFileOffset( file );
-	printf( "ended at %lu\n", stringTableOffset );
-
 	unsigned int numDirs = 0;
 	numFiles = 0;
-
 	char dir[ 128 ] = { '\0' };
 	for ( unsigned int i = 0; i < numStrings; ++i ) {
 		if ( !PlFileSeek( file, stringTableOffset + subStrings[ i ].offset, PL_SEEK_SET ) ) {
