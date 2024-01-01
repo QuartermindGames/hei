@@ -20,7 +20,7 @@ PL_EXTERN_C
  * either audio/video.
  */
 
-#define PLG_INTERFACE_VERSION_MAJOR 4
+#define PLG_INTERFACE_VERSION_MAJOR 5
 #define PLG_INTERFACE_VERSION_MINOR 0
 #define PLG_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR }
@@ -95,7 +95,7 @@ typedef struct PLGDriverImportTable {
 	void ( *DeleteMesh )( PLGMesh *mesh );
 
 	// Framebuffer
-	void ( *CreateFrameBuffer )( PLGFrameBuffer *buffer );
+	bool ( *CreateFrameBuffer )( PLGFrameBuffer *buffer );
 	void ( *DeleteFrameBuffer )( PLGFrameBuffer *buffer );
 	void ( *BindFrameBuffer )( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget targetBinding );
 	PLGTexture *( *GetFrameBufferTextureAttachment )( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter );
