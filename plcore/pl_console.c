@@ -83,6 +83,9 @@ void PlRegisterConsoleCommand( const char *name, const char *description, int ar
 
 		PlInsertHashTableNode( commandHashes, cmd->name, s, cmd );
 
+		// restore name back to case variant
+		strncpy( cmd->name, name, s );
+
 		if ( description != NULL ) {
 			s = strlen( description );
 			cmd->description = PL_NEW_( char, s + 1 );
@@ -144,6 +147,9 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *desc
 		pl_strtolower( out->name );
 
 		PlInsertHashTableNode( variableHashes, out->name, s, out );
+
+		// restore name back to case variant
+		strncpy( out->name, name, s );
 
 		if ( description != NULL ) {
 			s = strlen( description );
