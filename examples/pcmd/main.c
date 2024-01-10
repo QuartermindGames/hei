@@ -1,32 +1,15 @@
-/*
-This is free and unencumbered software released into the public domain.
-
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
-
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-
-For more information, please refer to <http://unlicense.org>
-*/
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 // Purpose: Example application for using console API
 
-#include "pcmd.h"
+#include <plcore/pl.h>
+#include <plcore/pl_image.h>
+#include <plcore/pl_filesystem.h>
+#include <plcore/pl_package.h>
+#include <plcore/pl_console.h>
+
+#include <plmodel/plm.h>
 
 #include "pl_extra_kri_wad.h"
 
@@ -46,7 +29,7 @@ static void ConvertImage( const char *path, const char *destination ) {
 	/* ensure it's a valid format before we write it out */
 	PlConvertPixelFormat( image, PL_IMAGEFORMAT_RGBA8 );
 
-	if ( PlWriteImage( image, destination ) ) {
+	if ( PlWriteImage( image, destination, 100 ) ) {
 		printf( "Wrote \"%s\"\n", destination );
 	} else {
 		printf( "Failed to write \"%s\"! (%s)\n", destination, PlGetError() );
@@ -206,6 +189,31 @@ static void Cmd_BulkExportPackages( unsigned int argc, char **argv ) {
 	PlScanDirectory( path, extension, BulkExportCallback, false, NULL );
 }
 
+static void list_packages_callback( const char *path, PL_UNUSED void *user ) {
+	/* just throw it through the console command */
+	char *tmp = pl_strjoin( "pkglst ", path );
+	PlParseConsoleString( tmp );
+	PL_DELETE( tmp );
+}
+
+static void list_packages_command( PL_UNUSED unsigned int argc, char **argv ) {
+	PLPath path;
+	snprintf( path, sizeof( path ), "%s", argv[ 1 ] );
+	if ( !PlPathExists( path ) ) {
+		printf( "Path doesn't exist: %s\n", PlGetError() );
+		return;
+	}
+
+	char extension[ 16 ];
+	snprintf( extension, sizeof( extension ), "%s", argv[ 2 ] );
+	if ( extension[ 0 ] == '\0' || extension[ 0 ] == '.' ) {
+		printf( "Invalid extension provided; example 'clu'\n" );
+		return;
+	}
+
+	PlScanDirectory( path, extension, list_packages_callback, false, NULL );
+}
+
 static void Cmd_Exit( unsigned int argc, char **argv ) {
 	/* we don't use these here, and ommitting var names is a C2x feature :( */
 	( void ) ( argc );
@@ -245,6 +253,8 @@ PL_NORETURN( static void MainLoop( void ) ) {
 	}
 }
 
+void PlxRegisterHavenPackageFormat( void );// package_haven_dat.c
+
 int main( int argc, char **argv ) {
 	/* no buffering stdout! */
 	setvbuf( stdout, NULL, _IONBF, 0 );
@@ -257,8 +267,7 @@ int main( int argc, char **argv ) {
 
 	PlmRegisterStandardModelLoaders( PLM_MODEL_FILEFORMAT_ALL );
 
-	PLPackage *ROF_ParseFile( PLFile * file );// package_rof.c
-	PlRegisterPackageLoader( "rof", NULL, ROF_ParseFile );
+	PlxRegisterHavenPackageFormat();
 
 	PLPackage *IStorm_LST_LoadFile( const char *path );
 	PlRegisterPackageLoader( "lst", IStorm_LST_LoadFile, NULL );
@@ -332,6 +341,9 @@ int main( int argc, char **argv ) {
 	                          "Attempt to export from all packages found in directory. "
 	                          "<directory> <extension>",
 	                          2, Cmd_BulkExportPackages );
+	PlRegisterConsoleCommand( "list_packages",
+	                          "Attempts to bulk list the contents from all packages found in a directory.",
+	                          2, list_packages_command );
 
 	void asa_register_commands( void );
 	asa_register_commands();

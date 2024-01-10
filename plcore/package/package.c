@@ -294,6 +294,7 @@ void PlRegisterStandardPackageLoaders( unsigned int flags ) {
 	        { PL_PACKAGE_LOAD_FORMAT_BIN_FRESH,   "bin", NULL,               PlParseFreshBinPackage_},
 	        { PL_PACKAGE_LOAD_FORMAT_DFS,         "dfs", PlLoadDFSPackage,   NULL                   },
 	        { PL_PACKAGE_LOAD_FORMAT_VPK_VTMB,    "vpk", PlLoadVPKPackage_,  NULL                   },
+	        { PL_PACKAGE_LOAD_FORMAT_GRP,         "grp", NULL,               PlParseGrpPackage_     },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaders ); ++i ) {
