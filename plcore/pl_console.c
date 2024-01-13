@@ -367,7 +367,7 @@ static void find_cmd( PL_UNUSED unsigned int argc, char **argv ) {
 	const char *term = argv[ 1 ];
 	Print( "Variables that match the term \"%s\"\n", term );
 	for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
-		if ( ( strstr( ( *var )->name, term ) == NULL ) && ( ( *var )->description != NULL && strstr( ( *var )->description, term ) == NULL ) ) {
+		if ( ( pl_strcasestr( ( *var )->name, term ) == NULL ) && ( ( *var )->description != NULL && pl_strcasestr( ( *var )->description, term ) == NULL ) ) {
 			continue;
 		}
 
@@ -375,7 +375,7 @@ static void find_cmd( PL_UNUSED unsigned int argc, char **argv ) {
 	}
 	Print( "Commands that match the term \"%s\"\n", term );
 	for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
-		if ( ( strstr( ( *cmd )->name, term ) == NULL ) && ( ( *cmd )->description != NULL && strstr( ( *cmd )->description, term ) == NULL ) ) {
+		if ( ( pl_strcasestr( ( *cmd )->name, term ) == NULL ) && ( ( *cmd )->description != NULL && pl_strcasestr( ( *cmd )->description, term ) == NULL ) ) {
 			continue;
 		}
 
