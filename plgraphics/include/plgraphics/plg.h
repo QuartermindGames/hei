@@ -101,7 +101,7 @@ typedef struct PLGLight {
 	PLVector3 position;
 	PLVector3 angles;
 
-	PLColour colour;
+	PLColourF32 colour;
 
 	PLGLightType type;
 } PLGLight;

@@ -1,12 +1,33 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
+
+void PlgClearVertexLayout( PLGVertexLayout *layout ) {
+	PL_ZERO( layout, sizeof( PLGVertexLayout ) );
+}
+
+void PlgSetVertexLayoutElement( PLGVertexLayout *layout, PLGVertexLayoutElementType type, intptr_t offset, unsigned int numElements, bool status ) {
+	if ( layout->numElements >= PLG_MAX_VERTEX_LAYOUT_ELEMENTS ) {
+		PlReportErrorF( PL_RESULT_MEMORY_EOA, "hit vertex layout element limit (%u >= %u)",
+		                layout->numElements, PLG_MAX_VERTEX_LAYOUT_ELEMENTS );
+	}
+
+	layout->elements[ layout->numElements ].numSubElements = numElements;
+	layout->elements[ layout->numElements ].offset = offset;
+	layout->elements[ layout->numElements ].type = type;
+	layout->numElements++;
+}
+
+void PlgSetVertexLayoutData( PLGVertexLayout *layout, void *data ) {
+	layout->data = data;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Generate cubic coordinates for the given vertices.
@@ -37,7 +58,7 @@ void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertice
 	}
 }
 
-void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, unsigned int *indices, unsigned int numTriangles, bool perFace ) {
+void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles, bool perFace ) {
 	if ( perFace ) {
 		for ( unsigned int i = 0, idx = 0; i < numTriangles; ++i, idx += 3 ) {
 			unsigned int a = indices[ idx ];
@@ -127,7 +148,9 @@ void PlgApplyMeshLighting( PLGMesh *mesh, const PLGLight *light, PLVector3 posit
 		PLVector3 normal = mesh->vertices[ i ].normal;
 		float angle = ( distance * ( ( normal.x * distvec.x ) + ( normal.y * distvec.y ) + ( normal.z * distvec.z ) ) );
 		if ( angle < 0 ) {
-			PlClearColour( &mesh->vertices[ i ].colour );
+			mesh->vertices[ i ].colour.r = 0.0f;
+			mesh->vertices[ i ].colour.g = 0.0f;
+			mesh->vertices[ i ].colour.b = 0.0f;
 		} else {
 			mesh->vertices[ i ].colour.r = light->colour.r * PlFloatToByte( angle );
 			mesh->vertices[ i ].colour.g = light->colour.g * PlFloatToByte( angle );
@@ -167,7 +190,7 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
                             const unsigned int *indicies, const PLGVertex *vertices ) {
 	PL_ASSERT( numVerts );
 
-	PLGMesh *mesh = ( PLGMesh * ) PlCAllocA( 1, sizeof( PLGMesh ) );
+	PLGMesh *mesh = PL_NEW( PLGMesh );
 	mesh->primitive = primitive;
 	mesh->mode = mode;
 
@@ -187,6 +210,14 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 	mesh->maxVertices = numVerts;
 	mesh->vertices = ( PLGVertex * ) PlCAllocA( mesh->maxVertices, sizeof( PLGVertex ) );
 
+	PlgSetVertexLayoutData( &mesh->vertexLayout, mesh->vertices );
+	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_POSITION, PL_OFFSETOF( PLGVertex, position ), 3, true );
+	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_NORMAL, PL_OFFSETOF( PLGVertex, normal ), 3, true );
+	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_TANGENT, PL_OFFSETOF( PLGVertex, tangent ), 3, true );
+	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_BITANGENT, PL_OFFSETOF( PLGVertex, bitangent ), 3, true );
+	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_UV, PL_OFFSETOF( PLGVertex, st ), 2, true );
+	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_COLOUR, PL_OFFSETOF( PLGVertex, colour ), 4, true );
+
 	// If the vertices passed in aren't null, copy them into our vertex list
 	if ( vertices != NULL ) {//-V1051
 		memcpy( mesh->vertices, vertices, sizeof( PLGVertex ) * numVerts );
@@ -200,7 +231,7 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 	return mesh;
 }
 
-PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, const PLColour *colour ) {
+PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, const PLColourF32 *colour ) {
 	PLGMesh *mesh = PlgCreateMesh( PLG_MESH_TRIANGLE_STRIP, PLG_DRAW_DYNAMIC, 0, 4 );
 	if ( mesh == NULL ) {
 		return NULL;
@@ -286,12 +317,12 @@ void PlgSetMeshVertexSTv( PLGMesh *mesh, uint8_t unit, unsigned int index, unsig
 	}
 }
 
-void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, const PLColour *colour ) {
+void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, const PLColourF32 *colour ) {
 	PL_ASSERT( index < mesh->maxVertices );
 	mesh->vertices[ index ].colour = *colour;
 }
 
-void PlgSetMeshUniformColour( PLGMesh *mesh, const PLColour *colour ) {
+void PlgSetMeshUniformColour( PLGMesh *mesh, const PLColourF32 *colour ) {
 	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
 		PlgSetMeshVertexColour( mesh, i, colour );
 	}
@@ -309,7 +340,7 @@ void PlgSetMeshPrimitiveScale( PLGMesh *mesh, float scale ) {
 	mesh->primitiveScale = scale;
 }
 
-unsigned int PlgAddMeshVertex( PLGMesh *mesh, const PLVector3 *position, const PLVector3 *normal, const PLColour *colour, const PLVector2 *st ) {
+unsigned int PlgAddMeshVertex( PLGMesh *mesh, const PLVector3 *position, const PLVector3 *normal, const PLColourF32 *colour, const PLVector2 *st ) {
 	unsigned int vertexIndex = mesh->num_verts++;
 	if ( vertexIndex >= mesh->maxVertices ) {
 		mesh->vertices = PlReAllocA( mesh->vertices, ( mesh->maxVertices += 16 ) * sizeof( PLGVertex ) );

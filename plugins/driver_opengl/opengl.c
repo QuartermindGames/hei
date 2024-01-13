@@ -930,16 +930,16 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 			if ( mode == GL_TRIANGLES ) {
 				for ( unsigned int j = 0; j < mesh->num_indices; ++j ) {
 					PLGVertex *vertex = &mesh->vertices[ mesh->indices[ j ] ];
-					XGL_CALL( glVertex3f( vertex->position.x, vertex->position.y, vertex->position.z ) );
-					XGL_CALL( glNormal3f( vertex->normal.x, vertex->normal.y, vertex->normal.z ) );
-					XGL_CALL( glColor4ub( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a ) );
+					XGL_CALL( glVertex3fv( ( GLfloat * ) &vertex->position ) );
+					XGL_CALL( glNormal3fv( ( GLfloat * ) &vertex->normal ) );
+					XGL_CALL( glColor4fv( ( GLfloat * ) &vertex->colour ) );
 				}
 			} else {
 				for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
 					PLGVertex *vertex = &mesh->vertices[ j ];
-					XGL_CALL( glVertex3f( vertex->position.x, vertex->position.y, vertex->position.z ) );
-					XGL_CALL( glNormal3f( vertex->normal.x, vertex->normal.y, vertex->normal.z ) );
-					XGL_CALL( glColor4ub( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a ) );
+					XGL_CALL( glVertex3fv( ( GLfloat * ) &vertex->position ) );
+					XGL_CALL( glNormal3fv( ( GLfloat * ) &vertex->normal ) );
+					XGL_CALL( glColor4fv( ( GLfloat * ) &vertex->colour ) );
 				}
 			}
 			XGL_CALL( glEnd() );

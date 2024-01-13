@@ -37,10 +37,49 @@ typedef struct PLGVertex {
 	PLVector3 position, normal;
 	PLVector3 tangent, bitangent;
 	PLVector2 st[ 16 ];
-	PLColour colour;
+	PLColourF32 colour;
 } PLGVertex;
 
 typedef struct PLGTexture PLGTexture;
+
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+
+#define PLG_MAX_VERTEX_LAYOUT_ELEMENTS 64
+
+typedef enum PLGVertexLayoutElementType {
+	// built-in types
+	PLG_VERTEX_LAYOUT_ELEMENT_TYPE_POSITION,
+	PLG_VERTEX_LAYOUT_ELEMENT_TYPE_COLOUR,
+	PLG_VERTEX_LAYOUT_ELEMENT_TYPE_NORMAL,
+	PLG_VERTEX_LAYOUT_ELEMENT_TYPE_UV,
+	PLG_VERTEX_LAYOUT_ELEMENT_TYPE_TANGENT,
+	PLG_VERTEX_LAYOUT_ELEMENT_TYPE_BITANGENT,
+	// custom
+	PLG_VERTEX_LAYOUT_ELEMENT_TYPE_USER,
+
+	PLG_MAX_VERTEX_LAYOUT_ELEMENT_TYPES
+} PLGVertexLayoutElementType;
+
+typedef struct PLGVertexLayoutElement {
+	char identifier[ 64 ];
+	PLGVertexLayoutElementType type;
+	intptr_t offset;
+	unsigned int numSubElements;
+} PLGVertexLayoutElement;
+
+typedef struct PLGVertexLayout {
+	PLGVertexLayoutElement elements[ PLG_MAX_VERTEX_LAYOUT_ELEMENTS ];
+	unsigned int numElements;
+	void *data;
+} PLGVertexLayout;
+
+void PlgClearVertexLayout( PLGVertexLayout *layout );
+void PlgSetVertexLayoutElement( PLGVertexLayout *layout, PLGVertexLayoutElementType type, intptr_t offset, unsigned int numElements, bool status );
+void PlgSetVertexLayoutData( PLGVertexLayout *layout, void *data );
+
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 
 #define PLG_MAX_MESH_BUFFERS 32
 
@@ -48,6 +87,7 @@ typedef struct PLGMesh {
 	PLGVertex *vertices;
 	unsigned int num_verts;
 	unsigned int maxVertices;
+	PLGVertexLayout vertexLayout;
 
 	uint32_t numSubMeshes;
 	uint32_t maxSubMeshes;
@@ -81,7 +121,7 @@ typedef struct PLCollisionAABB PLCollisionAABB;
 PLGMesh *PlgCreateMesh( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts );
 PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
                             const unsigned int *indicies, const PLGVertex *vertices );
-PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, const PLColour *colour );
+PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, const PLColourF32 *colour );
 void PlgDestroyMesh( PLGMesh *mesh );
 
 void PlgDrawEllipse( unsigned int segments, const PLVector2 *position, float w, float h, const PLColour *colour );
@@ -110,12 +150,12 @@ void PlgSetMeshVertexPosition( PLGMesh *mesh, unsigned int index, const PLVector
 void PlgSetMeshVertexNormal( PLGMesh *mesh, unsigned int index, const PLVector3 *vector );
 void PlgSetMeshVertexST( PLGMesh *mesh, unsigned int index, float s, float t );
 void PlgSetMeshVertexSTv( PLGMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st );
-void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, const PLColour *colour );
-void PlgSetMeshUniformColour( PLGMesh *mesh, const PLColour *colour );
+void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, const PLColourF32 *colour );
+void PlgSetMeshUniformColour( PLGMesh *mesh, const PLColourF32 *colour );
 void PlgSetMeshShaderProgram( PLGMesh *mesh, struct PLGShaderProgram *program );
 void PlgSetMeshPrimitiveScale( PLGMesh *mesh, float scale );
 
-unsigned int PlgAddMeshVertex( PLGMesh *mesh, const PLVector3 *position, const PLVector3 *normal, const PLColour *colour, const PLVector2 *st );
+unsigned int PlgAddMeshVertex( PLGMesh *mesh, const PLVector3 *position, const PLVector3 *normal, const PLColourF32 *colour, const PLVector2 *st );
 unsigned int PlgAddMeshTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, unsigned int z );
 
 void PlgUploadMesh( PLGMesh *mesh );
@@ -131,7 +171,7 @@ void PlgGenerateMeshTangentBasis( PLGMesh *mesh );
 void PlgGenerateVertexTangentBasis( PLGVertex *vertices, unsigned int numVertices );
 void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles );
 void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertices, PLVector2 textureOffset, PLVector2 textureScale );
-void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, unsigned int *indices, unsigned int numTriangles, bool perFace );
+void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles, bool perFace );
 
 PLVector3 PlgGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3 c );
 
