@@ -320,7 +320,8 @@ static void GLBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarge
 	}
 }
 
-static void GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
+static void GLDeleteFrameBuffer( PLGFrameBuffer *buffer );
+static bool GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
 	XGL_CALL( glGenFramebuffers( 1, &buffer->fbo ) );
 	GLBindFrameBuffer( buffer, PLG_FRAMEBUFFER_DEFAULT );
 
@@ -347,6 +348,56 @@ static void GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
 		XGL_CALL( glRenderbufferStorage( GL_RENDERBUFFER, GL_STENCIL_INDEX8, ( int ) buffer->width, ( int ) buffer->height ) );
 		XGL_CALL( glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] ) );
 	}
+
+	GLenum err = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+	if ( err != GL_FRAMEBUFFER_COMPLETE ) {
+		const char *msg;
+		switch ( err ) {
+			default:
+				msg = "unknown";
+				break;
+			case GL_FRAMEBUFFER_UNDEFINED:
+				msg = "the specified framebuffer is the default read or draw framebuffer, but the default framebuffer "
+				      "does not exist";
+				break;
+			case GL_FRAMEBUFFER_UNSUPPORTED:
+				msg = "the combination of internal formats of the attached images violates an implementation-dependent "
+				      "set of restrictions";
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+				msg = "the framebuffer attachment points are framebuffer incomplete";
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+				msg = "the framebuffer does not have at least one image attached to it";
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+				msg = "the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE for any color attachment point(s) "
+				      "named by GL_DRAW_BUFFERi";
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+				msg = "GL_READ_BUFFER is not GL_NONE and the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE "
+				      "for the color attachment point named by GL_READ_BUFFER";
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+				msg = "the value of GL_RENDERBUFFER_SAMPLES is not the same for all attached renderbuffers; "
+				      "if the value of GL_TEXTURE_SAMPLES is the not same for all attached textures; "
+				      "or, if the attached images are a mix of renderbuffers and textures, "
+				      "the value of GL_RENDERBUFFER_SAMPLES does not match the value of GL_TEXTURE_SAMPLES";
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+				msg = "framebuffer attachment is layered, and any populated attachment is not layered, or if all "
+				      "populated color attachments are not from textures of the same target";
+				break;
+		}
+
+		//TODO: graphics API really needs it's own error reporting solution...
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "%s", msg );
+
+		GLDeleteFrameBuffer( buffer );
+		return false;
+	}
+
+	return true;
 }
 
 static void GLDeleteFrameBuffer( PLGFrameBuffer *buffer ) {
