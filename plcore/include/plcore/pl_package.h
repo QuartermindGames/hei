@@ -42,6 +42,7 @@ enum {
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_DFS, 7 ),
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_VPK_VTMB, 8 ),
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_GRP, 9 ),
+    PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_VPP, 10 ),
 };
 
 enum {
@@ -77,6 +78,8 @@ const char *PlGetPackageFileName( const PLPackage *package, unsigned int index )
 
 PLPackage *PlLoadZipPackage( const char *path );
 PLPackage *PlParseZipPackage( PLFile *file );
+
+PLPackage *PlParseVppPackage( PLFile *file );
 
 #	if 0// Write API - excluded for now...
 
