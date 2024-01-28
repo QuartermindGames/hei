@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
+Copyright (c) 2017-2023 Mark E Sowden <hogsy@snortysoft.net>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -320,7 +320,8 @@ static void GLBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarge
 	}
 }
 
-static void GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
+static void GLDeleteFrameBuffer( PLGFrameBuffer *buffer );
+static bool GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
 	XGL_CALL( glGenFramebuffers( 1, &buffer->fbo ) );
 	GLBindFrameBuffer( buffer, PLG_FRAMEBUFFER_DEFAULT );
 
@@ -347,6 +348,56 @@ static void GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
 		XGL_CALL( glRenderbufferStorage( GL_RENDERBUFFER, GL_STENCIL_INDEX8, ( int ) buffer->width, ( int ) buffer->height ) );
 		XGL_CALL( glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] ) );
 	}
+
+	GLenum err = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+	if ( err != GL_FRAMEBUFFER_COMPLETE ) {
+		const char *msg;
+		switch ( err ) {
+			default:
+				msg = "unknown";
+				break;
+			case GL_FRAMEBUFFER_UNDEFINED:
+				msg = "the specified framebuffer is the default read or draw framebuffer, but the default framebuffer "
+				      "does not exist";
+				break;
+			case GL_FRAMEBUFFER_UNSUPPORTED:
+				msg = "the combination of internal formats of the attached images violates an implementation-dependent "
+				      "set of restrictions";
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+				msg = "the framebuffer attachment points are framebuffer incomplete";
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+				msg = "the framebuffer does not have at least one image attached to it";
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+				msg = "the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE for any color attachment point(s) "
+				      "named by GL_DRAW_BUFFERi";
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+				msg = "GL_READ_BUFFER is not GL_NONE and the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE "
+				      "for the color attachment point named by GL_READ_BUFFER";
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+				msg = "the value of GL_RENDERBUFFER_SAMPLES is not the same for all attached renderbuffers; "
+				      "if the value of GL_TEXTURE_SAMPLES is the not same for all attached textures; "
+				      "or, if the attached images are a mix of renderbuffers and textures, "
+				      "the value of GL_RENDERBUFFER_SAMPLES does not match the value of GL_TEXTURE_SAMPLES";
+				break;
+			case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+				msg = "framebuffer attachment is layered, and any populated attachment is not layered, or if all "
+				      "populated color attachments are not from textures of the same target";
+				break;
+		}
+
+		//TODO: graphics API really needs it's own error reporting solution...
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "%s", msg );
+
+		GLDeleteFrameBuffer( buffer );
+		return false;
+	}
+
+	return true;
 }
 
 static void GLDeleteFrameBuffer( PLGFrameBuffer *buffer ) {
@@ -546,6 +597,8 @@ static unsigned int GetColourFormatForImageFormat( PLImageFormat format ) {
 
 static void GLCreateTexture( PLGTexture *texture ) {
 	XGL_CALL( glGenTextures( 1, &texture->internal.id ) );
+
+	texture->wrapMode = PLG_TEXTURE_WRAP_MODE_REPEAT;
 }
 
 static void GLDeleteTexture( PLGTexture *texture ) {
@@ -557,6 +610,7 @@ static void GLBindTexture( const PLGTexture *texture ) {
 		XGL_CALL( glBindTexture( GL_TEXTURE_2D, 0 ) );
 		return;
 	}
+
 	XGL_CALL( glBindTexture( GL_TEXTURE_2D, texture->internal.id ) );
 }
 
@@ -628,8 +682,13 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 }
 
 static void GLSetTextureAnisotropy( PLGTexture *texture, uint32_t value ) {
+	if ( !GLEW_EXT_texture_filter_anisotropic ) {
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "EXT_texture_filter_anisotropic is unsupported" );
+		return;
+	}
+
 	GLBindTexture( texture );
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, ( int ) value ) );
+	XGL_CALL( glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, ( float ) value ) );
 }
 
 static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter ) {
@@ -645,6 +704,33 @@ static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter ) {
 	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min ) );
 
 	texture->filter = filter;
+}
+
+static void GLSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode ) {
+	GLBindTexture( texture );
+
+	int glWrapMode;
+	switch ( wrapMode ) {
+		default:
+			//TODO: throw error
+			return;
+		case PLG_TEXTURE_WRAP_MODE_REPEAT:
+			glWrapMode = GL_REPEAT;
+			break;
+		case PLG_TEXTURE_WRAP_MODE_CLAMP_BORDER:
+			glWrapMode = GL_CLAMP_TO_BORDER;
+			break;
+		case PLG_TEXTURE_WRAP_MODE_CLAMP_EDGE:
+			glWrapMode = GL_CLAMP_TO_EDGE;
+			break;
+		case PLG_TEXTURE_WRAP_MODE_MIRRORED_REPEAT:
+			glWrapMode = GL_MIRRORED_REPEAT;
+			break;
+	}
+
+	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapMode ) );
+	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapMode ) );
+	texture->wrapMode = wrapMode;
 }
 
 static void GLActiveTexture( unsigned int target ) {
@@ -1241,7 +1327,7 @@ static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *l
 					dstPos = InsertString( incBuf, &dstBuffer, &actualLength, &maxLength );
 					gInterface->core->Free( incBuf );
 				} else {
-					XGL_LOG( "Failed to load include \"%s\": %s\n", gInterface->core->GetError() );
+					XGL_LOG( "Failed to load include \"%s\": %s\n", path, gInterface->core->GetError() );
 				}
 
 				gInterface->core->SkipLine( &srcPos );
@@ -1480,7 +1566,8 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 		XGL_CALL( program->uniforms[ i ].slot = glGetUniformLocation( program->internal.id, uniformName ) );
 
 		program->uniforms[ i ].type = GLConvertGLUniformType( glType );
-		program->uniforms[ i ].name = uniformName;
+		program->uniforms[ i ].numElements = uniformSize;
+		snprintf( program->uniforms[ i ].name, sizeof( program->uniforms[ i ].name ), "%s", uniformName );
 
 		/* fetch it's current value, assume it's the default */
 		switch ( program->uniforms[ i ].type ) {
@@ -1951,8 +2038,6 @@ PLGDriverImportTable graphicsInterface = {
         .SetClearColour = GLSetClearColour,
         .ClearBuffers = GLClearBuffers,
 
-        //.DrawPixel = ,
-
         .SetDepthBufferMode = GLSetDepthBufferMode,
 
         .DepthMask = GLDepthMask,
@@ -1980,6 +2065,7 @@ PLGDriverImportTable graphicsInterface = {
         .SetTextureAnisotropy = GLSetTextureAnisotropy,
         .ActiveTexture = GLActiveTexture,
         .SetTextureFilter = GLSetTextureFilter,
+        .SetTextureWrapMode = GLSetTextureWrapMode,
 
         .ClipViewport = GLClipViewport,
         .SetViewport = GLSetViewport,
@@ -1987,7 +2073,6 @@ PLGDriverImportTable graphicsInterface = {
         .CreateShaderProgram = GLCreateShaderProgram,
         .DestroyShaderProgram = GLDestroyShaderProgram,
         .AttachShaderStage = GLAttachShaderStage,
-        //.DetachShaderStage = ,
         .LinkShaderProgram = GLLinkShaderProgram,
         .SetShaderProgram = GLSetShaderProgram,
         .CreateShaderStage = GLCreateShaderStage,

@@ -50,6 +50,7 @@ mounted packages before falling back to the local FS
   - Can easily be extended to support other image formats either via the API or via plugins
 - Supported Package Formats
   - IWAD/PWAD, WAD2 and WAD3
+  - GRP (Build Engine)
   - Future Tactics PAK
   - Outcast OPK
   - Quake PAK
@@ -74,6 +75,7 @@ mounted packages before falling back to the local FS
   - OpenGL 3.3
   
 ### plmodel
+
 - Model API supports static and animated per-vertex/skeletal formats
 - Supported Model Formats
     - Cyclone MDL (*read*)
@@ -81,6 +83,11 @@ mounted packages before falling back to the local FS
     - Unreal 3D (*read*)
     - Valve SMD (*write*)
     - Can easily be extended to support other model formats either via the API or via plugins
+
+## Users
+
+- [APE Tech](https://hogsy.itch.io/ape-tech), a 3D game engine written in C
+- [OpenHoW](https://github.com/TalonBraveInfo/OpenHoW), a reimplementation of Hogs of War
 
 ## Extras
 

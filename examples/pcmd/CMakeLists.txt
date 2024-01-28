@@ -27,7 +27,8 @@ For more information, please refer to <http://unlicense.org>
 
 add_subdirectory(../../extras/blitz/ ../../bin/plugins/blitz/)
 add_subdirectory(../../extras/core/ ../../bin/plugins/core/)
-add_subdirectory(../../extras/lead/ ../../lib/)
+
+set(CMAKE_C_STANDARD 11)
 
 add_executable(pcmd
         main.c
@@ -39,21 +40,24 @@ add_executable(pcmd
         ../../extras/wfear/wfear_inu.c
         ../../extras/aitd/aitd_pak.c
         ../../extras/eradicator_rid.c
-        ../../extras/ftactics_pak.c
+
+        ../../extras/package/package_ftactics_pak.c
+        ../../extras/package/package_haven_dat.c
+
         #../../extras/galleon_pkg.c
         ../../extras/ice3d_dat.c
         ../../extras/istorm_ibf.c
         ../../extras/mortyr_hal.c
         ../../extras/outcast_opk.c
         ../../extras/outwars_ff.c
-        ../../extras/package_rof.c
+        ../../extras/package/package_rof.c
         ../../extras/sentient_vsr.c
 
         ../../extras/pl_extra_kri_wad.c
-        )
+)
 add_dependencies(pcmd
         blitz_plugin
         core_plugin)
 
 target_include_directories(pcmd PRIVATE ../../extras)
-target_link_libraries(pcmd plcore plgraphics plmodel lead)
+target_link_libraries(pcmd plcore plgraphics plmodel)

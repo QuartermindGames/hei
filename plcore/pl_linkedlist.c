@@ -114,6 +114,23 @@ void PlDestroyLinkedList( PLLinkedList *list ) {
 	PL_DELETE( list );
 }
 
+void PlDestroyLinkedListNodesEx( PLLinkedList *list, void ( *elementDeleter )( void *user ) ) {
+	while ( list->front != NULL ) {
+		elementDeleter( list->front->userPtr );
+		PlDestroyLinkedListNode( list->front );
+	}
+	list->numNodes = 0;
+}
+
+void PlDestroyLinkedListEx( PLLinkedList *list, void ( *elementDeleter )( void *user ) ) {
+	if ( list == NULL ) {
+		return;
+	}
+
+	PlDestroyLinkedListNodesEx( list, elementDeleter );
+	PlDestroyLinkedList( list );
+}
+
 unsigned int PlGetNumLinkedListNodes( PLLinkedList *list ) {
 	return list->numNodes;
 }

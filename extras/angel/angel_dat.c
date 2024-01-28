@@ -65,7 +65,7 @@ static PLPackage *ParseDATFile( PLFile *file ) {
 
 	const char *path = PlGetFilePath( file );
 	PLPackage *package = PlCreatePackageHandle( path, header.tocIndices, NULL );
-	for ( unsigned int i = 0; i < package->table_size; ++i ) {
+	for ( unsigned int i = 0; i < package->maxTableSize; ++i ) {
 		package->table[ i ].offset = indices[ i ].offset;
 		package->table[ i ].compressedSize = indices[ i ].compressedSize;
 		package->table[ i ].fileSize = indices[ i ].size;

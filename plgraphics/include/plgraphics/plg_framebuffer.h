@@ -61,7 +61,7 @@ void PlgGetFrameBufferResolution( const PLGFrameBuffer *buffer, unsigned int *wi
 
 void PlgSetClearColour( PLColour rgba );
 void PlgClearBuffers( unsigned int buffers );
-void PlgSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height );
+bool PlgSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height );
 void *PlgReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf );
 void PlgColourMask( bool r, bool g, bool b, bool a );
 

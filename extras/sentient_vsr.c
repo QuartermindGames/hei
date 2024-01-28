@@ -108,7 +108,7 @@ PLPackage *Sentient_VSR_LoadFile( const char *path ) {
 	/* now create our package handle */
 
 	PLPackage *package = PlCreatePackageHandle( path, chunk_directory.num_indices, NULL );
-	for ( unsigned int i = 0; i < package->table_size; ++i ) {
+	for ( unsigned int i = 0; i < package->maxTableSize; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
 		index->offset = directories[ i ].offset;
 		index->fileSize = directories[ i ].length;

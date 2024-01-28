@@ -4,6 +4,8 @@
 
 #include "tests.h"
 
+#include "plcore/pl_package.h"
+
 FUNC_TEST( pl_array_vector ) {
 	PLVectorArray *vec;
 
@@ -133,6 +135,16 @@ FUNC_TEST( pl_filesystem ) {
 	if ( *tmp != 'x' ) {
 		RETURN_FAILURE( "Failed to prefix path with overflow!\n" );
 	}
+}
+FUNC_TEST_END()
+
+FUNC_TEST( pl_package ) {
+	PLPackage *packageHandle = PlCreatePackageHandle( "testdata/blob.bin", 0, NULL );
+	if ( packageHandle == NULL ) {
+		RETURN_FAILURE( "Failed to create package handle!\n" );
+	}
+
+	PlAppendPackageFromFile( packageHandle, NULL, "testdata/images/dice.png", PL_COMPRESSION_GZIP )
 }
 FUNC_TEST_END()
 

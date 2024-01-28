@@ -135,11 +135,12 @@ PL_EXTERN void PlDestroyImage( PLImage *image );
 
 PL_EXTERN PLImage *PlLoadImage( const char *path );
 PL_EXTERN PLImage *PlParseImage( PLFile *file );
-PL_EXTERN bool PlWriteImage( const PLImage *image, const char *path );
+PL_EXTERN bool PlWriteImage( const PLImage *image, const char *path, unsigned int quality );
 
 PL_EXTERN bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format );
 
 PL_EXTERN void PlInvertImageColour( PLImage *image );
+void PlClearImageAlpha( PLImage *image );
 PL_EXTERN void PlReplaceImageColour( PLImage *image, PLColour target, PLColour dest );
 
 PL_EXTERN bool PlFlipImageVertical( PLImage *image );

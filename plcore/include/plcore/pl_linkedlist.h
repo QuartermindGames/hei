@@ -16,8 +16,10 @@ PLLinkedListNode *PlInsertLinkedListNode( PLLinkedList *list, void *userPtr );
 PLLinkedListNode *PlInsertFrontLinkedListNode( PLLinkedList *list, void *userPtr );
 
 void PlDestroyLinkedList( PLLinkedList *list );
+void PlDestroyLinkedListEx( PLLinkedList *list, void ( *elementDeleter )( void *user ) );
 void PlDestroyLinkedListNode( PLLinkedListNode *node );
 void PlDestroyLinkedListNodes( PLLinkedList *list );
+void PlDestroyLinkedListNodesEx( PLLinkedList *list, void ( *elementDeleter )( void *user ) );
 
 PLLinkedListNode *PlGetNextLinkedListNode( PLLinkedListNode *node );
 PLLinkedListNode *PlGetPrevLinkedListNode( PLLinkedListNode *node );

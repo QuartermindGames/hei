@@ -65,7 +65,7 @@ static PLPackage *ParseWADFile( PLFile *file ) {
 
 	const char *path = PlGetFilePath( file );
 	PLPackage *package = PlCreatePackageHandle( path, numLumps, NULL );
-	for ( unsigned int i = 0; i < package->table_size; ++i ) {
+	for ( unsigned int i = 0; i < package->maxTableSize; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
 		index->offset = indices[ i ].offset;
 		index->fileSize = indices[ i ].size;

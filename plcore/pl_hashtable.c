@@ -124,3 +124,7 @@ PLHashTableNode *PlGetNextHashTableNode( PLHashTable *hashTable, PLHashTableNode
 void *PlGetHashTableNodeUserData( PLHashTableNode *hashTableNode ) {
 	return hashTableNode->value;
 }
+
+void PlSetHashTableNodeUserData( PLHashTableNode *hashTableNode, void *value ) {
+	hashTableNode->value = value;
+}

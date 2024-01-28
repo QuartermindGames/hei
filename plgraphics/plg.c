@@ -93,6 +93,10 @@ bool PlgSupportsHWShaders( void ) {
 	FRAMEBUFFERS
 ===========================*/
 
+static bool CreateFrameBuffer( PLGFrameBuffer *frameBuffer ) {
+	CallReturningGfxFunction( CreateFrameBuffer, false, frameBuffer );
+}
+
 PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned int flags ) {
 	if ( flags == 0 ) {
 		return NULL;
@@ -103,7 +107,10 @@ PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned i
 	buffer->height = h;
 	buffer->flags = flags;
 
-	CallGfxFunction( CreateFrameBuffer, buffer );
+	if ( !CreateFrameBuffer( buffer ) ) {
+		PlgDestroyFrameBuffer( buffer );
+		return NULL;
+	}
 
 	return buffer;
 }
@@ -156,21 +163,22 @@ void PlgClearBuffers( unsigned int buffers ) {
 /**
  * Resizes the given framebuffer to the specified size.
  */
-void PlgSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height ) {
+bool PlgSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height ) {
 	assert( width != 0 && height != 0 );
 	if ( width == 0 ) {
 		PlReportErrorF( PL_RESULT_INVALID_PARM2, "invalid width" );
-		return;
+		return false;
 	} else if ( height == 0 ) {
 		PlReportErrorF( PL_RESULT_INVALID_PARM3, "invalid height" );
-		return;
+		return false;
 	}
 
 	if ( frameBuffer->width == width && frameBuffer->height == height ) {
-		return;
+		return true;
 	}
 
 	CallGfxFunction( SetFrameBufferSize, frameBuffer, width, height );
+	return true;
 }
 
 void *PlgReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf ) {

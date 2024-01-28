@@ -51,6 +51,8 @@ char *pl_strinsert( const char *string, char **buf, size_t *bufSize, size_t *max
 char *pl_strnjoin( const char *a, size_t aSize, const char *b, size_t bSize );
 char *pl_strjoin( const char *a, const char *b );
 
+char *pl_strnreverse( char *string, size_t size );
+
 /**
  * http://www.cse.yorku.ca/~oz/hash.html#sdbm
  */

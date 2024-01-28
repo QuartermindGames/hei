@@ -1,6 +1,6 @@
 /**
  * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
+ * Copyright (C) 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
@@ -20,7 +20,7 @@ PL_EXTERN_C
  * either audio/video.
  */
 
-#define PLG_INTERFACE_VERSION_MAJOR 4
+#define PLG_INTERFACE_VERSION_MAJOR 5
 #define PLG_INTERFACE_VERSION_MINOR 0
 #define PLG_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR }
@@ -95,7 +95,7 @@ typedef struct PLGDriverImportTable {
 	void ( *DeleteMesh )( PLGMesh *mesh );
 
 	// Framebuffer
-	void ( *CreateFrameBuffer )( PLGFrameBuffer *buffer );
+	bool ( *CreateFrameBuffer )( PLGFrameBuffer *buffer );
 	void ( *DeleteFrameBuffer )( PLGFrameBuffer *buffer );
 	void ( *BindFrameBuffer )( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget targetBinding );
 	PLGTexture *( *GetFrameBufferTextureAttachment )( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter );
@@ -144,8 +144,10 @@ typedef struct PLGDriverImportTable {
 	void ( *StencilOp )( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp depthFailOp, PLGStencilOp depthPassOp );
 
 	// v3.1
-
 	void *( *ReadFrameBufferRegion )( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf );
+
+	// v3.2
+	void ( *SetTextureWrapMode )( PLGTexture *texture, PLGTextureWrapMode wrapMode );
 } PLGDriverImportTable;
 
 #if !defined( PL_COMPILE_PLUGIN )

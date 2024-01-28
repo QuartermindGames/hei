@@ -81,6 +81,22 @@
 #	define PL_SYSTEM_MAX_PATH     256
 #	define PL_SYSTEM_MAX_USERNAME 32
 
+#elif defined( __FreeBSD__ )
+#	ifndef PL_IGNORE_SYSTEM_HEADERS
+#		include <dirent.h>
+#		include <unistd.h>
+#		include <dlfcn.h>
+#		include <strings.h>
+#	endif
+
+#	define PL_SYSTEM_NAME              "FREEBSD"
+#	define PL_SYSTEM_OS                PL_SYSTEM_OS_FREEBSD
+#	define PL_SYSTEM_EXE_EXTENSION     ""
+#	define PL_SYSTEM_LIBRARY_EXTENSION ".so"
+
+#	define PL_SYSTEM_MAX_PATH     256
+#	define PL_SYSTEM_MAX_USERNAME 32
+
 #elif defined( __APPLE__ )
 
 #	ifndef PL_IGNORE_SYSTEM_HEADERS
