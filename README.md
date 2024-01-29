@@ -4,9 +4,13 @@
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTalonBraveInfo%2Fplatform.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FTalonBraveInfo%2Fplatform?ref=badge_shield) [![CodeFactor](https://www.codefactor.io/repository/github/oldtimes-software/hei/badge)](https://www.codefactor.io/repository/github/oldtimes-software/hei)
 
+[Features](#features) | [Users](#users) | [License](#license)
+
 </div>
 
-A collection of relatively small utility libraries written in C11 that can be used as the foundation for various applications, perhaps more ideally games.
+----
+
+A collection of relatively small utility libraries written in C11 that can be used as the foundation for various applications, though probably more oriented towards games.
 Includes APIs for dealing with images, graphics, models, IO and much more.
 
 Originally created around 2014/2015 as a support library for another game, it's since found
@@ -84,19 +88,17 @@ mounted packages before falling back to the local FS
     - Valve SMD (*write*)
     - Can easily be extended to support other model formats either via the API or via plugins
 
+### Extras
+
+Under the [extras](extras) directory, you'll find a number of source files for granting you support for various other formats. These are typically left out of the core library because they're either not widely used or support is considered experimental. In summary, if you're developing a larger project, I would highly recommend excluding these.
+
 ## Users
 
 - [APE Tech](https://hogsy.itch.io/ape-tech), a 3D game engine written in C
 - [OpenHoW](https://github.com/TalonBraveInfo/OpenHoW), a reimplementation of Hogs of War
 
-## Extras
+## License
 
-Under the [extras](extras) directory, you'll find a number of source files for granting you support for various other formats. These are typically left out of the core library because they're either not widely used or support is considered experimental. In summary, if you're developing a larger project, I would highly recommend excluding these.
+Project is licensed under [MIT](LICENSE).
 
-## Roadmap
-
-- Vulkan driver (*work in progress*)
-- Software driver (*work in progress*)
-- 3dfx Glide 3 driver (*todo, for fun*)
-- S3 MeTaL driver (*todo, for fun*)
-- plwindow; provides windowing API for X11 and Win32
+Additional licences for libraries used by `plcore` can be found [here](docs/plcore).
