@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Hei Platform Library
-// Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_image.h>
@@ -687,4 +687,42 @@ PLImage *PlResizeImage( PLImage *image, unsigned int newWidth, unsigned int newH
 	}
 
 	return newImage;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// S3TC Library Interface
+/////////////////////////////////////////////////////////////////////////////////////
+
+void DecompressBlockBC1( uint32_t x, uint32_t y, uint32_t stride, const uint8_t *blockStorage, unsigned char *image );// DXT1
+void DecompressBlockBC2( uint32_t x, uint32_t y, uint32_t stride, const uint8_t *blockStorage, unsigned char *image );// DXT3
+void DecompressBlockBC3( uint32_t x, uint32_t y, uint32_t stride, const uint8_t *blockStorage, unsigned char *image );// DXT5
+
+void PlBlockDecompressImageDXT1( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image ) {
+	const uint32_t stride = width * sizeof( uint32_t );
+	for ( uint32_t j = 0; j < height; j += 4 ) {
+		for ( uint32_t i = 0; i < width; i += 4 ) {
+			DecompressBlockBC1( i, j, stride, blockStorage, image );
+			blockStorage += 8;
+		}
+	}
+}
+
+void PlBlockDecompressImageDXT3( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image ) {
+	const uint32_t stride = width * sizeof( uint32_t );
+	for ( uint32_t j = 0; j < height; j += 4 ) {
+		for ( uint32_t i = 0; i < width; i += 4 ) {
+			DecompressBlockBC2( i, j, stride, blockStorage, image );
+			blockStorage += 16;
+		}
+	}
+}
+
+void PlBlockDecompressImageDXT5( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image ) {
+	const uint32_t stride = width * sizeof( uint32_t );
+	for ( uint32_t j = 0; j < height; j += 4 ) {
+		for ( uint32_t i = 0; i < width; i += 4 ) {
+			DecompressBlockBC3( i, j, stride, blockStorage, image );
+			blockStorage += 16;
+		}
+	}
 }

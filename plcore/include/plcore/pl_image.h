@@ -163,6 +163,11 @@ unsigned int PlGetImageDataSize( const PLImage *image );
 
 PLImage *PlResizeImage( PLImage *image, unsigned int newWidth, unsigned int newHeight );
 
+// S3TC Library Interface
+void PlBlockDecompressImageDXT1( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image );
+void PlBlockDecompressImageDXT3( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image );
+void PlBlockDecompressImageDXT5( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image );
+
 #endif
 
 PL_EXTERN_C_END

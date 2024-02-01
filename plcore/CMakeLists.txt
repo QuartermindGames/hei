@@ -73,6 +73,7 @@ file(
 
         3rdparty/blast/blast.c
         3rdparty/miniz/miniz.c
+        3rdparty/decompress.c
 )
 
 file(GLOB PLATFORM_PACKAGE_FILES
