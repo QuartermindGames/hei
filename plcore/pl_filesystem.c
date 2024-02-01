@@ -179,7 +179,7 @@ IMPLEMENT_COMMAND( pkgext ) {
 	for ( unsigned int i = 0; i < pkg->table_size; ++i ) {
 		PLFile *file = PlLoadPackageFileByIndex( pkg, i );
 		if ( file == NULL ) {
-			PrintWarning( "Failed to load file at index %d, \"%s\"!\nPL: %s\n", i, pkg->table[ i ].fileName, PlGetError() );
+			PrintWarning( "Failed to load file at index %d (\"%s\"): %s\n", i, pkg->table[ i ].fileName, PlGetError() );
 			continue;
 		}
 

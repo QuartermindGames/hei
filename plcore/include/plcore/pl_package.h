@@ -13,7 +13,7 @@
 typedef struct PLPackageIndex {
 	PLPath sourcePath;// Where the file resides on disk - only matters if writing...
 	PLPath fileName;
-	size_t offset;
+	PLFileOffset offset;
 	size_t fileSize;
 	size_t compressedSize;
 	PLCompressionType compressionType;
@@ -42,7 +42,7 @@ enum {
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_DFS, 7 ),
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_VPK_VTMB, 8 ),
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_GRP, 9 ),
-    PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_VPP, 10 ),
+	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_VPP, 10 ),
 };
 
 enum {
@@ -83,7 +83,7 @@ PLPackage *PlParseVppPackage( PLFile *file );
 
 #	if 0// Write API - excluded for now...
 
-#define PL_PACKAGE_WRITE_ENABLED
+#		define PL_PACKAGE_WRITE_ENABLED
 
 typedef bool ( *PLWritePackageFunction )( PLPackage *package, const char *path );
 

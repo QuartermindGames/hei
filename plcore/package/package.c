@@ -68,7 +68,7 @@ static int Inflate( unsigned char *dst, uint32_t *dstLength, const unsigned char
 static void *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 	FunctionStart();
 
-	if ( !PlFileSeek( fh, ( signed ) pi->offset, PL_SEEK_SET ) ) {
+	if ( !PlFileSeek( fh, pi->offset, PL_SEEK_SET ) ) {
 		return NULL;
 	}
 
