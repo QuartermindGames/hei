@@ -53,6 +53,7 @@ add_executable(pcmd
         ../../extras/package/package_rof.c
         ../../extras/sentient_vsr.c
 
+        ../../extras/pl_extra_okre.c
         ../../extras/pl_extra_kri_wad.c
 )
 add_dependencies(pcmd

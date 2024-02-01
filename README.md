@@ -52,24 +52,35 @@ mounted packages before falling back to the local FS
   - Herdy Gerdy HGT (*read*)
   - Angel Engine TEX (*read*)
   - Can easily be extended to support other image formats either via the API or via plugins
-- Supported Package Formats
-  - IWAD/PWAD, WAD2 and WAD3
-  - GRP (Build Engine)
-  - Future Tactics PAK
-  - Outcast OPK
-  - Quake PAK
-  - Alone in the Dark PAK
-  - Herdy Gerdy CLU
-  - Iron Storm IBF
-  - Eradicator RID/RIM
-  - Outwars FF
-  - Gremlin MAD/MTD (Hogs of War, Actua Soccer)
-  - Mortyr HAL
-  - Star Fox Adventures BIN
-  - Sentient VSR
-  - VTMB VPK
-  - Angel Engine DAT
-  - Can easily be extended to support other package formats either via the API or via plugins
+
+Below is a table of all supported package formats.
+
+| Format       | Usages                                              | Support Level | Mode |
+|--------------|-----------------------------------------------------|---------------|------|
+| ZIP          | General package container format                    | Core          | R    |
+| MAD/MTD      | Hogs of War, Actua Soccer                           | Core          | R    |
+| VPP          | Red Faction, Red Faction II, Summoner, The Punisher | Core          | R    |
+| WAD          | Doom, Quake, Half-Life                              | Core          | R    |
+| PAK          | Quake and Half-Life                                 | Core          | R    |
+| Fresh BIN    | FreshEngine                                         | Core          | R    |
+| GRP          | Duke Nukem 3D                                       | Core          | R    |
+| VPK          | Vampire The Masquerade Bloodlines / Troika          | Core          | R    |
+| CLU          | Herdy Gerdy                                         | Extra         | R    |
+| IBF          | Iron Storm                                          | Extra         | R    |
+| HAL          | Mortyr                                              | Extra         | R    |
+| RID/RIM      | Eradicator                                          | Extra         | R    |
+| FTactics PAK | Future Tactics                                      | Extra         | R    |
+| Kri WAD      | The Mark of Kri                                     | Extra         | R    |
+| WFear INU    |                                                     | Extra         | R    |
+| Haven DAT    | Haven Call of the King                              | Extra         | R    |
+| VSR          | Sentient                                            | Extra         | R    |
+| OPK          | Outcast                                             | Extra         | R    |
+| AITD PAK     | Alone in the Dark                                   | Extra         | R    |
+| Ice3D DAT    | BioShock 3D                                         | Extra         | R    |
+| Angel DAT    | Angel Studios                                       | Extra         | R    |
+| FF           | Outwars                                             | Extra         | R    |
+| Blitz DAT    | Titan A.E., Chicken Run                             | Extra         | R    |
+| SWAT WAD     | Okre Engine (SWAT Global Strike Team)               | Extra         | R    |
 
 ### plgraphics
 - Provides a relatively simple abstraction layer
