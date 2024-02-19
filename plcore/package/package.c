@@ -365,7 +365,7 @@ PLPackage *PlLoadPackage( const char *path ) {
 
 	PlCloseFile( file );
 
-	if ( package != NULL ) {
+	if ( package != NULL && *package->path == '\0' ) {
 		strncpy( package->path, path, sizeof( package->path ) );
 	} else if ( PlGetFunctionResult() == PL_RESULT_SUCCESS ) {
 		/* this was clearly not the case... */

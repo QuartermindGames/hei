@@ -1235,7 +1235,11 @@ size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count ) {
 	}
 
 	if ( ptr->fptr != NULL ) {
-		return fread( dest, size, count, ptr->fptr );
+		size_t r = fread( dest, size, count, ptr->fptr );
+		if ( r != count ) {
+			PlReportErrorF( PL_RESULT_FILEREAD, "read failed on %u (%u read)", count, r );
+		}
+		return r;
 	}
 
 	/* ensure that the read is valid */
