@@ -314,6 +314,7 @@ int main( int argc, char **argv ) {
 	PlRegisterPackageLoader( "tre", asa_format_tre_load, NULL );
 
 	PlRegisterPackageLoader( "wad", NULL, PlParseOkreWadPackage );
+	PlRegisterPackageLoader( "dir", NULL, PlParseOkreDirPackage );
 	PlRegisterImageLoader( "tga", PlParseOkreTexture );
 	PlRegisterImageLoader( "bmDDS", PlParseOkreTexture );
 

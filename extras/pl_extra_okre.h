@@ -8,4 +8,5 @@ typedef struct PLImage PLImage;
 typedef struct PLFile PLFile;
 
 PLPackage *PlParseOkreWadPackage( PLFile *file );
+PLPackage *PlParseOkreDirPackage( PLFile *file );
 PLImage *PlParseOkreTexture( PLFile *file );

@@ -4,11 +4,11 @@
 #include <plcore/pl_package.h>
 #include "plcore/pl_image.h"
 
+// Package format used by Argonaut's SWAT Global Strike
+
 /////////////////////////////////////////////////////////////////////////////////////
 // WAD Loader
 /////////////////////////////////////////////////////////////////////////////////////
-
-// Package format used by Argonaut's SWAT Global Strike (Xbox)
 
 static bool ValidatePackage( PLFile *file ) {
 	// There is no magic or easy identification,
@@ -39,13 +39,24 @@ static bool ValidatePackage( PLFile *file ) {
 			break;
 		}
 
+		printf( "%s\n", buf );
+
 		if ( *buf == '\0' ) {
 			PlReportErrorF( PL_RESULT_FILETYPE, "unexpected string" );
 			break;
 		}
 
-		const char *c = strrchr( PlGetFilePath( file ), '/' ) + 1;
-		if ( pl_strncasecmp( c, buf, strlen( buf ) ) != 0 ) {
+		// This check is dumb...
+		const char *path = PlGetFilePath( file );
+		const char *c = strrchr( path, '/' );
+		if ( c == NULL ) {
+			c = strrchr( path, '\\' );
+			if ( c == NULL ) {
+				c = strrchr( path, '.' );
+			}
+		}
+
+		if ( c != NULL ) {
 			hasWad = true;
 			break;
 		}
@@ -55,6 +66,46 @@ static bool ValidatePackage( PLFile *file ) {
 	PlFileSeek( file, origin, PL_SEEK_SET );
 
 	return hasWad;
+}
+
+/// Seem to be exclusive to the PlayStation 2 version, for whatever reason.
+PLPackage *PlParseOkreDirPackage( PLFile *file ) {
+	uint32_t numSubWads = PL_READUINT32( file, false, NULL );
+	if ( numSubWads == 0 ) {
+		PlReportErrorF( PL_RESULT_FILETYPE, "unexpected number of files" );
+		return NULL;
+	}
+
+	typedef struct FIndex {
+		char name[ 64 ];
+		uint32_t length;
+		uint32_t offset;
+	} FIndex;
+	static_assert( sizeof( FIndex ) == 72, "Invalid struct size!" );
+	FIndex *subWads = PL_NEW_( FIndex, numSubWads );
+	if ( PlReadFile( file, subWads, sizeof( FIndex ), numSubWads ) != numSubWads ) {
+		PL_DELETE( subWads );
+		return NULL;
+	}
+
+	// The actual data is stored in an entirely different file...
+	PLPath wadPath = {};
+	const char *path = PlGetFilePath( file );
+	strncpy( wadPath, path, strlen( path ) - 4 );
+	strcat( wadPath, ".WAD" );
+
+	PLPackage *package = PlCreatePackageHandle( wadPath, numSubWads, NULL );
+	if ( package != NULL ) {
+		for ( unsigned int i = 0; i < numSubWads; ++i ) {
+			strcpy( package->table[ i ].fileName, subWads[ i ].name );
+			package->table[ i ].offset = subWads[ i ].offset;
+			package->table[ i ].fileSize = subWads[ i ].length;
+		}
+	}
+
+	PL_DELETE( subWads );
+
+	return package;
 }
 
 // 10-01.ent.wad
