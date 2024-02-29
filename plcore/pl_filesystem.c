@@ -179,7 +179,7 @@ IMPLEMENT_COMMAND( pkgext ) {
 	for ( unsigned int i = 0; i < pkg->table_size; ++i ) {
 		PLFile *file = PlLoadPackageFileByIndex( pkg, i );
 		if ( file == NULL ) {
-			PrintWarning( "Failed to load file at index %d, \"%s\"!\nPL: %s\n", i, pkg->table[ i ].fileName, PlGetError() );
+			PrintWarning( "Failed to load file at index %d (\"%s\"): %s\n", i, pkg->table[ i ].fileName, PlGetError() );
 			continue;
 		}
 
@@ -1235,7 +1235,11 @@ size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count ) {
 	}
 
 	if ( ptr->fptr != NULL ) {
-		return fread( dest, size, count, ptr->fptr );
+		size_t r = fread( dest, size, count, ptr->fptr );
+		if ( r != count ) {
+			PlReportErrorF( PL_RESULT_FILEREAD, "read failed on %u (%u read)", count, r );
+		}
+		return r;
 	}
 
 	/* ensure that the read is valid */

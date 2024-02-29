@@ -4,15 +4,21 @@
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTalonBraveInfo%2Fplatform.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FTalonBraveInfo%2Fplatform?ref=badge_shield) [![CodeFactor](https://www.codefactor.io/repository/github/oldtimes-software/hei/badge)](https://www.codefactor.io/repository/github/oldtimes-software/hei)
 
+[Features](#features) | [Users](#users) | [License](#license)
+
 </div>
 
-A collection of relatively small utility libraries written in C11 that can be used as the foundation for various applications, perhaps more ideally games.
+----
+
+A collection of relatively small utility libraries written in C11 that can be used as the foundation for various applications, though probably more oriented towards games.
 Includes APIs for dealing with images, graphics, models, IO and much more.
 
-Originally created around 2014/2015 as a support library for another game, it's since found a new life supporting both [APE Tech](https://hogsy.itch.io/ape-tech) and other projects. If you've found the library useful for anything, then let me know!
+Originally created around 2014/2015 as a support library for another game, it's since found
+a new life supporting [APE Tech](https://www.hogsy.me/p/yin.html) and other projects.
+Do let me know if you find any use of it, and I'll give you a shoutout!
 
-**Keep in mind this is likely far from the most efficient library in the world. If performance is a big
-priority for you then I would highly recommend looking elsewhere!**
+**Keep in mind this is likely far from the most efficient library in the world.
+If performance is a big priority for you, then I would highly recommend looking elsewhere!**
 
 ## Features
 
@@ -46,24 +52,35 @@ mounted packages before falling back to the local FS
   - Herdy Gerdy HGT (*read*)
   - Angel Engine TEX (*read*)
   - Can easily be extended to support other image formats either via the API or via plugins
-- Supported Package Formats
-  - IWAD/PWAD, WAD2 and WAD3
-  - GRP (Build Engine)
-  - Future Tactics PAK
-  - Outcast OPK
-  - Quake PAK
-  - Alone in the Dark PAK
-  - Herdy Gerdy CLU
-  - Iron Storm IBF
-  - Eradicator RID/RIM
-  - Outwars FF
-  - Gremlin MAD/MTD (Hogs of War, Actua Soccer)
-  - Mortyr HAL
-  - Star Fox Adventures BIN
-  - Sentient VSR
-  - VTMB VPK
-  - Angel Engine DAT
-  - Can easily be extended to support other package formats either via the API or via plugins
+
+Below is a table of all supported package formats.
+
+| Format       | Usages                                              | Support Level | Mode |
+|--------------|-----------------------------------------------------|---------------|------|
+| ZIP          | General package container format                    | Core          | R    |
+| MAD/MTD      | Hogs of War, Actua Soccer                           | Core          | R    |
+| VPP          | Red Faction, Red Faction II, Summoner, The Punisher | Core          | R    |
+| WAD          | Doom, Quake, Half-Life                              | Core          | R    |
+| PAK          | Quake and Half-Life                                 | Core          | R    |
+| Fresh BIN    | FreshEngine                                         | Core          | R    |
+| GRP          | Duke Nukem 3D                                       | Core          | R    |
+| VPK          | Vampire The Masquerade Bloodlines / Troika          | Core          | R    |
+| CLU          | Herdy Gerdy                                         | Extra         | R    |
+| IBF          | Iron Storm                                          | Extra         | R    |
+| HAL          | Mortyr                                              | Extra         | R    |
+| RID/RIM      | Eradicator                                          | Extra         | R    |
+| FTactics PAK | Future Tactics                                      | Extra         | R    |
+| Kri WAD      | The Mark of Kri                                     | Extra         | R    |
+| WFear INU    |                                                     | Extra         | R    |
+| Haven DAT    | Haven Call of the King                              | Extra         | R    |
+| VSR          | Sentient                                            | Extra         | R    |
+| OPK          | Outcast                                             | Extra         | R    |
+| AITD PAK     | Alone in the Dark                                   | Extra         | R    |
+| Ice3D DAT    | BioShock 3D                                         | Extra         | R    |
+| Angel DAT    | Angel Studios                                       | Extra         | R    |
+| FF           | Outwars                                             | Extra         | R    |
+| Blitz DAT    | Titan A.E., Chicken Run                             | Extra         | R    |
+| SWAT WAD     | Okre Engine (SWAT Global Strike Team)               | Extra         | R    |
 
 ### plgraphics
 - Provides a relatively simple abstraction layer
@@ -82,15 +99,17 @@ mounted packages before falling back to the local FS
     - Valve SMD (*write*)
     - Can easily be extended to support other model formats either via the API or via plugins
 
+### Extras
+
+Under the [extras](extras) directory, you'll find a number of source files for granting you support for various other formats. These are typically left out of the core library because they're either not widely used or support is considered experimental. In summary, if you're developing a larger project, I would highly recommend excluding these.
+
 ## Users
 
 - [APE Tech](https://hogsy.itch.io/ape-tech), a 3D game engine written in C
 - [OpenHoW](https://github.com/TalonBraveInfo/OpenHoW), a reimplementation of Hogs of War
 
-## Roadmap
+## License
 
-- Vulkan driver (*work in progress*)
-- Software driver (*work in progress*)
-- 3dfx Glide 3 driver (*todo, for fun*)
-- S3 MeTaL driver (*todo, for fun*)
-- plwindow; provides windowing API for X11 and Win32
+Project is licensed under [MIT](LICENSE).
+
+Additional licences for libraries used by `plcore` can be found [here](docs/plcore).

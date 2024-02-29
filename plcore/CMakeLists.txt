@@ -47,11 +47,11 @@ file(
 
         polygon.c
 
-        pl_math_colour.c
-        pl_math_matrix.c
-        pl_math_quaternion.c
-        pl_math_random.c
-        pl_math_vector.c
+        math/pl_math_colour.c
+        math/pl_math_matrix.c
+        math/pl_math_quaternion.c
+        math/pl_math_random.c
+        math/pl_math_vector.c
 
         pl_os_win32.c
 
@@ -73,6 +73,7 @@ file(
 
         3rdparty/blast/blast.c
         3rdparty/miniz/miniz.c
+        3rdparty/decompress.c
 )
 
 file(GLOB PLATFORM_PACKAGE_FILES

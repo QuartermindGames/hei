@@ -84,9 +84,9 @@ typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
 #define PL_BITFLAG( A, B ) A = ( 1U << B )
 
 #ifndef offsetof
-#	define PL_OFFSETOF( a, b ) ( ( size_t ) & ( ( ( a * ) 0 )->b ) )
+#	define PL_OFFSETOF( TYPE, MEMBER ) ( ( size_t ) & ( ( ( TYPE * ) 0 )->MEMBER ) )
 #else
-#	define PL_OFFSETOF( a, b ) offsetof( a, b )
+#	define PL_OFFSETOF( TYPE, MEMBER ) offsetof( TYPE, MEMBER )
 #endif
 
 typedef enum PLVariableType {

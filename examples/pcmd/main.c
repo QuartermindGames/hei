@@ -12,6 +12,7 @@
 #include <plmodel/plm.h>
 
 #include "pl_extra_kri_wad.h"
+#include "pl_extra_okre.h"
 
 /**
  * Command line utility to interface with the platform lib.
@@ -83,7 +84,14 @@ static void Cmd_IMGBulkConvert( unsigned int argc, char **argv ) {
 		snprintf( outDir, sizeof( outDir ), "out/" );
 	}
 
-	PlScanDirectory( argv[ 1 ], argv[ 2 ], ConvertImageCallback, false, outDir );
+	bool recursive = false;
+	for ( unsigned int i = 1; i < argc; ++i ) {
+		if ( *argv[ i ] == '/' && *( argv[ i ] + 1 ) == 'r' ) {
+			recursive = true;
+		}
+	}
+
+	PlScanDirectory( argv[ 1 ], argv[ 2 ], ConvertImageCallback, recursive, outDir );
 
 	printf( "Done!\n" );
 }
@@ -305,7 +313,12 @@ int main( int argc, char **argv ) {
 	PLPackage *asa_format_tre_load( const char *path );
 	PlRegisterPackageLoader( "tre", asa_format_tre_load, NULL );
 
-	PlRegisterPackageLoader( "wad", NULL, PlParseKriPackage );
+	PlRegisterPackageLoader( "wad", NULL, PlParseOkreWadPackage );
+	PlRegisterPackageLoader( "dir", NULL, PlParseOkreDirPackage );
+	PlRegisterImageLoader( "tga", PlParseOkreTexture );
+	PlRegisterImageLoader( "bmDDS", PlParseOkreTexture );
+
+	//PlRegisterPackageLoader( "wad", NULL, PlParseKriPackage );
 
 	PLImage *Angel_TEX_ParseImage( PLFile * file );
 	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
