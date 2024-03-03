@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2017-2023 Mark E Sowden <hogsy@snortysoft.net>
+Copyright (c) 2017-2024 Mark E Sowden <hogsy@snortysoft.net>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -167,12 +167,8 @@ static void GLGetMaxTextureSize( unsigned int *s ) {
 
 /////////////////////////////////////////////////////////////
 
-static void GLSetClearColour( PLColour rgba ) {
-	XGL_CALL( glClearColor(
-	        PlByteToFloat( rgba.r ),
-	        PlByteToFloat( rgba.g ),
-	        PlByteToFloat( rgba.b ),
-	        PlByteToFloat( rgba.a ) ) );
+static void GLSetClearColour( const PLColourF32 *rgba ) {
+	XGL_CALL( glClearColor( rgba->r, rgba->g, rgba->b, rgba->a ) );
 }
 
 static void GLClearBuffers( unsigned int buffers ) {

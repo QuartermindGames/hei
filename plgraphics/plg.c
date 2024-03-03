@@ -5,7 +5,6 @@
  */
 
 #include <plcore/pl_console.h>
-#include <plcore/pl_image.h>
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
@@ -37,7 +36,7 @@ int LOG_LEVEL_GRAPHICS = 0;
 void PlgInitializeInternalMeshes( void ); /* plg_draw.c */
 
 PLFunctionResult PlgInitializeGraphics( void ) {
-	memset( &gfx_state, 0, sizeof( GfxState ) );
+	PL_ZERO_( gfx_state );
 
 	LOG_LEVEL_GRAPHICS = PlAddLogLevel( "plgraphics", ( PLColour ){ 0, 255, 255, 255 },
 #if !defined( NDEBUG )
@@ -146,14 +145,14 @@ void PlgBlitFrameBuffers( PLGFrameBuffer *src_buffer, unsigned int src_w, unsign
 	CallGfxFunction( BlitFrameBuffers, src_buffer, src_w, src_h, dst_buffer, dst_w, dst_h, linear );
 }
 
-void PlgSetClearColour( PLColour rgba ) {
-	if ( PlCompareColour( rgba, gfx_state.current_clearcolour ) ) {
+void PlgSetClearColour( const PLColourF32 *rgba ) {
+	if ( PlCompareColourF32( rgba, &gfx_state.current_clearcolour ) ) {
 		return;
 	}
 
 	CallGfxFunction( SetClearColour, rgba );
 
-	gfx_state.current_clearcolour = rgba;
+	gfx_state.current_clearcolour = *rgba;
 }
 
 void PlgClearBuffers( unsigned int buffers ) {
@@ -164,12 +163,8 @@ void PlgClearBuffers( unsigned int buffers ) {
  * Resizes the given framebuffer to the specified size.
  */
 bool PlgSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height ) {
-	assert( width != 0 && height != 0 );
-	if ( width == 0 ) {
-		PlReportErrorF( PL_RESULT_INVALID_PARM2, "invalid width" );
-		return false;
-	} else if ( height == 0 ) {
-		PlReportErrorF( PL_RESULT_INVALID_PARM3, "invalid height" );
+	if ( width == 0 || height == 0 ) {
+		PlReportErrorF( PL_RESULT_INVALID_PARM2, "invalid width / height" );
 		return false;
 	}
 

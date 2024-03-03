@@ -36,14 +36,14 @@ static void SWClearBuffers( unsigned int buffers ) {
 
 /**********************************************************/
 
-static void SWDrawPixel( int x, int y, PLColour colour ) {
+static void SWDrawPixel( int x, int y, PLColourF32 colour ) {
 	unsigned int pos = y * gfx_state.viewport.w + x;
 	if ( pos >= SWGetDisplayBufferSize( gfx_state.viewport.w, gfx_state.viewport.h ) ) {
 		return;
 	}
 
 	PLColour *buffer = ( PLColour * ) drawBuffer;
-	buffer[ pos ] = colour;
+	buffer[ pos ] = PlColourF32ToU8( &colour );
 }
 
 static void SWDrawLine( const PLGVertex *start, const PLGVertex *end ) {

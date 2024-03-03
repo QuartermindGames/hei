@@ -43,9 +43,7 @@ typedef struct GfxState {
 	const PLGDriverImportTable *interface;
 
 	PLGCullMode current_cullmode;
-
-	PLColour current_clearcolour;
-	PLColour current_colour;// Current global colour.
+	PLColourF32 current_clearcolour;
 
 	bool current_capabilities[ PLG_GFX_MAX_STATES ];// Enabled capabilities.
 	unsigned int current_textureunit;

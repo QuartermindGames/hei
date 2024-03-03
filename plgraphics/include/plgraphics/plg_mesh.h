@@ -1,6 +1,6 @@
 /**
  * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
+ * Copyright (C) 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
@@ -124,21 +124,21 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, const PLColourF32 *colour );
 void PlgDestroyMesh( PLGMesh *mesh );
 
-void PlgDrawEllipse( unsigned int segments, const PLVector2 *position, float w, float h, const PLColour *colour );
+void PlgDrawEllipse( unsigned int segments, const PLVector2 *position, float w, float h, const PLColourF32 *colour );
 void PlgDrawRectangle( float x, float y, float w, float h, PLColour colour );
 void PlgDrawTexturedRectangle( float x, float y, float w, float h, PLGTexture *texture );
 void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
                           float hScale, float vScale, PLGTexture *texture );
 void PlgDrawTriangle( int x, int y, unsigned int w, unsigned int h );
-void PlgDrawLines( const PLVector3 *points, unsigned int numPoints, PLColour colour, float thickness );
-void PlgDrawLine( PLMatrix4 transform, PLVector3 startPos, PLColour startColour, PLVector3 endPos, PLColour endColour );
-void PlgDrawSimpleLine( PLMatrix4 transform, PLVector3 startPos, PLVector3 endPos, PLColour colour );
-void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColour *colour );
-void PlgDrawDottedGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColour *colour );
+void PlgDrawLines( const PLVector3 *points, unsigned int numPoints, const PLColourF32 *colour, float thickness );
+void PlgDrawLine( PLMatrix4 transform, PLVector3 startPos, const PLColourF32 *startColour, PLVector3 endPos, const PLColourF32 *endColour );
+void PlgDrawSimpleLine( PLMatrix4 transform, PLVector3 startPos, PLVector3 endPos, const PLColourF32 *colour );
+void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColourF32 *colour );
+void PlgDrawDottedGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColourF32 *colour );
 void PlgDrawVertexNormals( const PLGVertex *vertices, unsigned int numVertices );
 void PlgDrawMeshNormals( const PLGMesh *mesh );
-void PlgDrawPixel( int x, int y, PLColour colour );
-void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, const PLColour *colour );
+void PlgDrawPixel( int x, int y, const PLColourF32 *colour );
+void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, const PLColourF32 *colour );
 
 void PlgClearMesh( PLGMesh *mesh );
 void PlgClearMeshVertices( PLGMesh *mesh );
@@ -179,7 +179,7 @@ PLVector3 PlgGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3 c );
 PLGMesh *PlgImmBegin( PLGMeshPrimitive primitive );
 unsigned int PlgImmPushVertex( float x, float y, float z );
 void PlgImmNormal( float x, float y, float z );
-void PlgImmColour( uint8_t r, uint8_t g, uint8_t b, uint8_t a );
+void PlgImmColour( float r, float g, float b, float a );
 void PlgImmTextureCoord( float s, float t );
 unsigned int PlgImmPushTriangle( unsigned int x, unsigned int y, unsigned int z );
 void PlgImmSetPrimitiveScale( float scale );

@@ -1,6 +1,6 @@
 /**
  * Hei Platform Library
- * Copyright (C) 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
+ * Copyright (C) 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
@@ -20,7 +20,7 @@ PL_EXTERN_C
  * either audio/video.
  */
 
-#define PLG_INTERFACE_VERSION_MAJOR 5
+#define PLG_INTERFACE_VERSION_MAJOR 6
 #define PLG_INTERFACE_VERSION_MINOR 0
 #define PLG_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR }
@@ -77,10 +77,10 @@ typedef struct PLGDriverImportTable {
 	void ( *SetBlendMode )( PLGBlend a, PLGBlend b );
 	void ( *SetCullMode )( PLGCullMode mode );
 
-	void ( *SetClearColour )( PLColour rgba );
+	void ( *SetClearColour )( const PLColourF32 *rgba );
 	void ( *ClearBuffers )( unsigned int buffers );
 
-	void ( *DrawPixel )( int x, int y, PLColour colour );
+	void ( *DrawPixel )( int x, int y, const PLColour *colour );
 
 	void ( *SetDepthBufferMode )( unsigned int mode );
 

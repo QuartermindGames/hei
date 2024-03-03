@@ -105,11 +105,11 @@ PLMModel *PlmLoadHdvModel( const char *path ) {
 #if 1 /* debug */
 	srand( mesh->num_verts );
 	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
-		uint8_t r = ( uint8_t ) ( rand() % 255 );
-		uint8_t g = ( uint8_t ) ( rand() % 255 );
-		uint8_t b = ( uint8_t ) ( rand() % 255 );
+		float r = ( float ) PlUniform0To1Random();
+		float g = ( float ) PlUniform0To1Random();
+		float b = ( float ) PlUniform0To1Random();
 		PlgSetMeshVertexPosition( mesh, i, &PLVector3( -vertices[ i ].x / 100, -vertices[ i ].y / 100, vertices[ i ].z / 100 ) );
-		PlgSetMeshVertexColour( mesh, i, &PLColour( r, g, b, 255 ) );
+		PlgSetMeshVertexColour( mesh, i, &PL_COLOURF32RGB( r, g, b ) );
 	}
 #endif
 

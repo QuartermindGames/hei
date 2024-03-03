@@ -41,15 +41,15 @@ PLGMesh *PlgImmBegin( PLGMeshPrimitive primitive ) {
 }
 
 unsigned int PlgImmPushVertex( float x, float y, float z ) {
-	return ( currentVertex = PlgAddMeshVertex( currentDynamicMesh, &PlVector3( x, y, z ), &pl_vecOrigin3, &PL_COLOUR_WHITE, &pl_vecOrigin2 ) );
+	return ( currentVertex = PlgAddMeshVertex( currentDynamicMesh, &PlVector3( x, y, z ), &pl_vecOrigin3, &PL_COLOURF32RGB( 1.0f, 1.0f, 1.0f ), &pl_vecOrigin2 ) );
 }
 
 void PlgImmNormal( float x, float y, float z ) {
 	PlgSetMeshVertexNormal( currentDynamicMesh, currentVertex, &PlVector3( x, y, z ) );
 }
 
-void PlgImmColour( uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
-	PlgSetMeshVertexColour( currentDynamicMesh, currentVertex, &PL_COLOURU8( r, g, b, a ) );
+void PlgImmColour( float r, float g, float b, float a ) {
+	PlgSetMeshVertexColour( currentDynamicMesh, currentVertex, &PL_COLOURF32( r, g, b, a ) );
 }
 
 void PlgImmTextureCoord( float s, float t ) {
@@ -89,7 +89,7 @@ void PlgClearInternalMeshes( void ) {
 	}
 }
 
-void PlgDrawEllipse( unsigned int segments, const PLVector2 *position, float w, float h, const PLColour *colour ) {
+void PlgDrawEllipse( unsigned int segments, const PLVector2 *position, float w, float h, const PLColourF32 *colour ) {
 	PLGMesh *mesh = GetInternalMesh( PLG_MESH_TRIANGLE_FAN );
 
 	for ( unsigned int i = 0, pos = 0; i < 360; i += ( 360 / segments ) ) {
@@ -160,10 +160,10 @@ void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVect
 	PLVector3 lowerDist = PlSubtractVector3( *ll, *ul );
 	float quadHeight = PlVector3Length( lowerDist ) / vScale;
 
-	PlgAddMeshVertex( mesh, ul, &pl_vecOrigin3, &PL_COLOUR_WHITE, &PLVector2( 0.0f, quadHeight / texture->h ) );
-	PlgAddMeshVertex( mesh, ur, &pl_vecOrigin3, &PL_COLOUR_WHITE, &PLVector2( quadWidth / texture->w, quadHeight / texture->h ) );
-	PlgAddMeshVertex( mesh, ll, &pl_vecOrigin3, &PL_COLOUR_WHITE, &PLVector2( 0.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, lr, &pl_vecOrigin3, &PL_COLOUR_WHITE, &PLVector2( quadWidth / texture->w, 0.0f ) );
+	PlgAddMeshVertex( mesh, ul, &pl_vecOrigin3, &PL_COLOURF32RGB( 1.0f, 1.0f, 1.0f ), &PLVector2( 0.0f, quadHeight / texture->h ) );
+	PlgAddMeshVertex( mesh, ur, &pl_vecOrigin3, &PL_COLOURF32RGB( 1.0f, 1.0f, 1.0f ), &PLVector2( quadWidth / texture->w, quadHeight / texture->h ) );
+	PlgAddMeshVertex( mesh, ll, &pl_vecOrigin3, &PL_COLOURF32RGB( 1.0f, 1.0f, 1.0f ), &PLVector2( 0.0f, 0.0f ) );
+	PlgAddMeshVertex( mesh, lr, &pl_vecOrigin3, &PL_COLOURF32RGB( 1.0f, 1.0f, 1.0f ), &PLVector2( quadWidth / texture->w, 0.0f ) );
 
 	PlgAddMeshTriangle( mesh, 0, 1, 2 );
 	PlgAddMeshTriangle( mesh, 2, 1, 3 );
@@ -188,9 +188,9 @@ void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVect
 void PlgDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 	PLGMesh *mesh = GetInternalMesh( PLG_MESH_TRIANGLE_FAN );
 
-	PlgAddMeshVertex( mesh, &PLVector3( x, y + h, 0.0f ), &pl_vecOrigin3, &PLColour( 255, 0, 0, 255 ), &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &PLVector3( x + w / 2, x, 0.0f ), &pl_vecOrigin3, &PLColour( 0, 255, 0, 255 ), &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &PLVector3( x + w, y + h, 0.0f ), &pl_vecOrigin3, &PLColour( 0, 0, 255, 255 ), &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &PLVector3( x, y + h, 0.0f ), &pl_vecOrigin3, &PL_COLOURF32RGB( 1.0f, 0, 0 ), &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &PLVector3( x + w / 2, x, 0.0f ), &pl_vecOrigin3, &PL_COLOURF32RGB( 0, 1.0f, 0 ), &pl_vecOrigin2 );
+	PlgAddMeshVertex( mesh, &PLVector3( x + w, y + h, 0.0f ), &pl_vecOrigin3, &PL_COLOURF32RGB( 0, 0, 1.0f ), &pl_vecOrigin2 );
 
 	//plSetMeshUniformColour(mesh, PLColour(255, 0, 0, 255));
 
@@ -207,13 +207,13 @@ void PlgDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 	PlPopMatrix();
 }
 
-void PlgDrawLines( const PLVector3 *points, unsigned int numPoints, PLColour colour, float thickness ) {
+void PlgDrawLines( const PLVector3 *points, unsigned int numPoints, const PLColourF32 *colour, float thickness ) {
 	PLGMesh *mesh = PlgImmBegin( PLG_MESH_LINES );
 	mesh->primitiveScale = thickness;
 
 	for ( unsigned int i = 0; i < numPoints; ++i ) {
 		PlgImmPushVertex( points[ i ].x, points[ i ].y, points[ i ].z );
-		PlgImmColour( colour.r, colour.g, colour.b, colour.a );
+		PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	}
 
 	PlgImmDraw();
@@ -221,23 +221,23 @@ void PlgDrawLines( const PLVector3 *points, unsigned int numPoints, PLColour col
 	mesh->primitiveScale = 1.0f;
 }
 
-void PlgDrawLine( PLMatrix4 transform, PLVector3 startPos, PLColour startColour, PLVector3 endPos, PLColour endColour ) {
+void PlgDrawLine( PLMatrix4 transform, PLVector3 startPos, const PLColourF32 *startColour, PLVector3 endPos, const PLColourF32 *endColour ) {
 	PlgImmBegin( PLG_MESH_LINES );
 
 	PlgImmPushVertex( startPos.x, startPos.y, startPos.z );
-	PlgImmColour( startColour.r, startColour.g, startColour.b, startColour.a );
+	PlgImmColour( startColour->r, startColour->g, startColour->b, startColour->a );
 
 	PlgImmPushVertex( endPos.x, endPos.y, endPos.z );
-	PlgImmColour( endColour.r, endColour.g, endColour.b, endColour.a );
+	PlgImmColour( endColour->r, endColour->g, endColour->b, endColour->a );
 
 	PlgImmDraw();
 }
 
-void PlgDrawSimpleLine( PLMatrix4 transform, PLVector3 startPos, PLVector3 endPos, PLColour colour ) {
+void PlgDrawSimpleLine( PLMatrix4 transform, PLVector3 startPos, PLVector3 endPos, const PLColourF32 *colour ) {
 	PlgDrawLine( transform, startPos, colour, endPos, colour );
 }
 
-void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColour *colour ) {
+void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColourF32 *colour ) {
 	PlgImmBegin( PLG_MESH_LINES );
 
 	int c = 0, r = 0;
@@ -257,7 +257,7 @@ void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize, const PLCol
 	PlgImmDraw();
 }
 
-void PlgDrawDottedGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColour *colour ) {
+void PlgDrawDottedGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColourF32 *colour ) {
 	if ( gridSize == 0 ) {
 		return;
 	}
@@ -307,7 +307,7 @@ void PlgDrawMeshNormals( const PLGMesh *mesh ) {
 	PlgDrawVertexNormals( mesh->vertices, mesh->num_verts );
 }
 
-void PlgDrawPixel( int x, int y, PLColour colour ) {
+void PlgDrawPixel( int x, int y, const PLColourF32 *colour ) {
 	int vpW, vpH;
 	PlgGetViewport( NULL, NULL, &vpW, &vpH );
 
@@ -322,7 +322,7 @@ void PlgDrawPixel( int x, int y, PLColour colour ) {
 /**
  * Utility function for drawing a bounding volume.
  */
-void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, const PLColour *colour ) {
+void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, const PLColourF32 *colour ) {
 	PLGMesh *mesh = GetInternalMesh( PLG_MESH_LINES );
 
 	PlMatrixMode( PL_MODELVIEW_MATRIX );
