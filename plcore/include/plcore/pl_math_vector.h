@@ -62,6 +62,7 @@ extern PL_DLL const PLVector4 pl_vecOrigin4;
 
 typedef struct PLMatrix4 PLMatrix4;
 
+PLVector3 PlTransformVector3( const PLVector3 *v, const PLMatrix4 *m );
 PLVector4 PlTransformVector4( const PLVector4 *v, const PLMatrix4 *m );
 
 PLVector2 PlAddVector2( PLVector2 v, PLVector2 v2 );
