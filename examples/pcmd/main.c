@@ -59,7 +59,7 @@ static void ConvertImageCallback( const char *path, void *userData ) {
 	ConvertImage( path, outPath );
 }
 
-static void Cmd_IMGConvert( unsigned int argc, char **argv ) {
+static void ConvertImageCommand( unsigned int argc, char **argv ) {
 	if ( argc < 2 ) {
 		return;
 	}
@@ -72,7 +72,7 @@ static void Cmd_IMGConvert( unsigned int argc, char **argv ) {
 	ConvertImage( argv[ 1 ], outPath );
 }
 
-static void Cmd_IMGBulkConvert( unsigned int argc, char **argv ) {
+static void BulkConvertImagesCommand( unsigned int argc, char **argv ) {
 	if ( argc < 3 ) {
 		return;
 	}
@@ -261,7 +261,19 @@ PL_NORETURN( static void MainLoop( void ) ) {
 	}
 }
 
-void PlxRegisterHavenPackageFormat( void );// package_haven_dat.c
+void PlRegister3drTexImageLoader( void );
+
+static void register_image_formats( void ) {
+	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
+
+	PlRegister3drTexImageLoader();
+
+	PLImage *Angel_TEX_ParseImage( PLFile * file );
+	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
+
+	PlRegisterImageLoader( "tga", PlParseOkreTexture );
+	PlRegisterImageLoader( "bmDDS", PlParseOkreTexture );
+}
 
 int main( int argc, char **argv ) {
 	/* no buffering stdout! */
@@ -270,11 +282,11 @@ int main( int argc, char **argv ) {
 	PlInitialize( argc, argv );
 	PlInitializeSubSystems( PL_SUBSYSTEM_IO );
 
-	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
-	PlRegisterStandardPackageLoaders( PL_PACKAGE_LOAD_FORMAT_ALL );
-
 	PlmRegisterStandardModelLoaders( PLM_MODEL_FILEFORMAT_ALL );
 
+	PlRegisterStandardPackageLoaders( PL_PACKAGE_LOAD_FORMAT_ALL );
+
+	void PlxRegisterHavenPackageFormat( void );// package_haven_dat.c
 	PlxRegisterHavenPackageFormat();
 
 	PLPackage *IStorm_LST_LoadFile( const char *path );
@@ -315,13 +327,10 @@ int main( int argc, char **argv ) {
 
 	PlRegisterPackageLoader( "wad", NULL, PlParseOkreWadPackage );
 	PlRegisterPackageLoader( "dir", NULL, PlParseOkreDirPackage );
-	PlRegisterImageLoader( "tga", PlParseOkreTexture );
-	PlRegisterImageLoader( "bmDDS", PlParseOkreTexture );
 
 	//PlRegisterPackageLoader( "wad", NULL, PlParseKriPackage );
 
-	PLImage *Angel_TEX_ParseImage( PLFile * file );
-	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
+	register_image_formats();
 
 	PLPath exeDir;
 	if ( PlGetExecutableDirectory( exeDir, sizeof( PLPath ) ) != NULL ) {
@@ -346,10 +355,10 @@ int main( int argc, char **argv ) {
 	                          1, Cmd_BulkConvertModel );
 	PlRegisterConsoleCommand( "imgconv",
 	                          "Convert the given image. 'img_convert ./image.bmp [./out.png]'",
-	                          -1, Cmd_IMGConvert );
+	                          -1, ConvertImageCommand );
 	PlRegisterConsoleCommand( "imgconvdir",
 	                          "Bulk convert images in the given directory. 'img_bulkconvert ./path bmp [./outpath]'",
-	                          -1, Cmd_IMGBulkConvert );
+	                          -1, BulkConvertImagesCommand );
 	PlRegisterConsoleCommand( "export_packages",
 	                          "Attempt to export from all packages found in directory. "
 	                          "<directory> <extension>",
