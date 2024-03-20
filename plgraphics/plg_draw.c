@@ -323,59 +323,41 @@ void PlgDrawPixel( int x, int y, const PLColourF32 *colour ) {
  * Utility function for drawing a bounding volume.
  */
 void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, const PLColourF32 *colour ) {
-	PLGMesh *mesh = GetInternalMesh( PLG_MESH_LINES );
-
 	PlMatrixMode( PL_MODELVIEW_MATRIX );
 	PlPushMatrix();
 
-	PlLoadIdentityMatrix();
 	PlTranslateMatrix( bounds->origin );
 
-	PLVector3 boxPoints[ 8 ] = {
-	        {bounds->maxs.x,  bounds->maxs.y, bounds->maxs.z},
-	        { bounds->maxs.x, bounds->mins.y, bounds->maxs.z},
-	        { bounds->maxs.x, bounds->maxs.y, bounds->mins.z},
-	        { bounds->mins.x, bounds->maxs.y, bounds->maxs.z},
+	PlgImmBegin( PLG_MESH_LINES );
 
-	        { bounds->mins.x, bounds->mins.y, bounds->mins.z},
-	        { bounds->mins.x, bounds->maxs.y, bounds->mins.z},
-	        { bounds->mins.x, bounds->mins.y, bounds->maxs.z},
-	        { bounds->maxs.x, bounds->mins.y, bounds->mins.z},
-	};
+	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->mins.z );
+	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->mins.z );
+	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->mins.z );
+	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->mins.z );
+	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->mins.z );
+	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->mins.z );
+	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->mins.z );
+	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->mins.z );
 
-	PlgAddMeshVertex( mesh, &boxPoints[ 0 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 1 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 0 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 2 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 0 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 3 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->maxs.z );
+	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->maxs.z );
+	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->maxs.z );
+	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->maxs.z );
+	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->maxs.z );
+	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->maxs.z );
+	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->maxs.z );
+	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->maxs.z );
 
-	PlgAddMeshVertex( mesh, &boxPoints[ 4 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 5 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 4 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 6 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 4 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 7 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
+	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->mins.z );
+	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->maxs.z );
+	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->mins.z );
+	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->maxs.z );
+	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->mins.z );
+	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->maxs.z );
+	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->mins.z );
+	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->maxs.z );
 
-	PlgAddMeshVertex( mesh, &boxPoints[ 2 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 5 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 2 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 7 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-
-	PlgAddMeshVertex( mesh, &boxPoints[ 1 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 6 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 1 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 7 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-
-	PlgAddMeshVertex( mesh, &boxPoints[ 3 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 5 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 3 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-	PlgAddMeshVertex( mesh, &boxPoints[ 6 ], &pl_vecOrigin3, colour, &pl_vecOrigin2 );
-
-	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", PlGetMatrix( PL_MODELVIEW_MATRIX ), true );
-
-	PlgUploadMesh( mesh );
-	PlgDrawMesh( mesh );
+	PlgImmDraw();
 
 	PlPopMatrix();
 }
