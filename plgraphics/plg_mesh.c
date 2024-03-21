@@ -32,8 +32,8 @@ void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertice
 		}
 
 		/* why the weird multiplication at the end here? to roughly match previous scaling values */
-		vertices[ i ].st[ 0 ].x = ( PlVector3Index( vertices[ i ].position, x ) + textureOffset.x ) / ( textureScale.x * 500.0f );
-		vertices[ i ].st[ 0 ].y = ( PlVector3Index( vertices[ i ].position, y ) + textureOffset.y ) / ( textureScale.y * 500.0f );
+		vertices[ i ].st[ 0 ].x = ( PlVector3Index( vertices[ i ].position, x ) + textureOffset.x ) / textureScale.x;
+		vertices[ i ].st[ 0 ].y = ( PlVector3Index( vertices[ i ].position, y ) + textureOffset.y ) / textureScale.y;
 	}
 }
 

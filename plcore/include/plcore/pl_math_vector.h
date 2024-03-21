@@ -18,22 +18,28 @@ typedef struct PLVector4 {
 	float x, y, z, w;
 } PLVector4;
 
-#ifndef __cplusplus /* todo: deprecate */
+/* todo: deprecate all of these bar the PL_ variants */
+#ifndef __cplusplus
 #	define PLVector2( x, y ) \
 		( PLVector2 ) { x, y }
 #endif
 #define PlVector2( X, Y ) \
 	( PLVector2 ) { X, Y }
-#ifndef __cplusplus /* todo: deprecate */
+#ifndef __cplusplus
 #	define PLVector3( x, y, z ) \
-		( PLVector3 ) { ( float ) x, ( float ) y, ( float ) z }
+		( PLVector3 ) { ( float ) ( x ), ( float ) ( y ), ( float ) ( z ) }
 #endif
 #define PlVector3( X, Y, Z ) \
 	( PLVector3 ) { X, Y, Z }
-#ifndef __cplusplus /* todo: deprecate */
+#ifndef __cplusplus
 #	define PLVector4( x, y, z, w ) \
-		( PLVector4 ) { ( float ) x, ( float ) y, ( float ) z, ( float ) w }
+		( PLVector4 ) { ( float ) ( x ), ( float ) ( y ), ( float ) ( z ), ( float ) ( w ) }
 #endif
+
+#define PL_VECTOR2( X, Y ) \
+	( PLVector2 ) { X, Y }
+#define PL_VECTOR3( X, Y, Z ) \
+	( PLVector3 ) { X, Y, Z }
 #define PL_VECTOR4( X, Y, Z, W ) \
 	( PLVector4 ) { X, Y, Z, W }
 
