@@ -3,15 +3,13 @@
 // Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 // Purpose: Example application for using console API
 
-#include <plcore/pl.h>
+#include <plcore/pl_array_vector.h>
 #include <plcore/pl_image.h>
-#include <plcore/pl_filesystem.h>
 #include <plcore/pl_package.h>
 #include <plcore/pl_console.h>
 
 #include <plmodel/plm.h>
 
-#include "pl_extra_kri_wad.h"
 #include "pl_extra_okre.h"
 
 /**
@@ -262,11 +260,13 @@ PL_NORETURN( static void MainLoop( void ) ) {
 }
 
 void PlRegister3drTexImageLoader( void );
+void PlRegisterRsbImageLoader( void );
 
 static void register_image_formats( void ) {
 	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
 
 	PlRegister3drTexImageLoader();
+	PlRegisterRsbImageLoader();
 
 	PLImage *Angel_TEX_ParseImage( PLFile * file );
 	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
