@@ -12,6 +12,7 @@ typedef struct PLHashTableNode PLHashTableNode;
 
 PLHashTable *PlCreateHashTable( void );
 void PlDestroyHashTable( PLHashTable *hashTable );
+void PlClearHashTable( PLHashTable *hashTable );
 void *PlLookupHashTableUserData( const PLHashTable *hashTable, const void *key, size_t keySize );
 PLHashTableNode *PlInsertHashTableNode( PLHashTable *hashTable, const void *key, size_t keySize, void *value );
 unsigned int PlGetNumHashTableNodes( const PLHashTable *hashTable );

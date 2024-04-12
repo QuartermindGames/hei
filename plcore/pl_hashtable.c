@@ -27,6 +27,12 @@ void PlDestroyHashTable( PLHashTable *hashTable ) {
 		return;
 	}
 
+	PlClearHashTable( hashTable );
+
+	PL_DELETE( hashTable );
+}
+
+void PlClearHashTable( PLHashTable *hashTable ) {
 	for ( size_t i = 0; i < HASH_TABLE_SIZE; ++i ) {
 		PLHashTableNode *child = hashTable->nodes[ i ];
 		while ( child != NULL ) {
@@ -36,7 +42,8 @@ void PlDestroyHashTable( PLHashTable *hashTable ) {
 			child = next;
 		}
 	}
-	PL_DELETE( hashTable );
+
+	hashTable->numNodes = 0;
 }
 
 #define GET_INDEX( HASH ) ( unsigned int ) ( ( HASH ) % HASH_TABLE_SIZE )
