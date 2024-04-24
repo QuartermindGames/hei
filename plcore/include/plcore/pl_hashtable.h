@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
+/* Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com> */
 
 #pragma once
 
@@ -12,6 +12,7 @@ typedef struct PLHashTableNode PLHashTableNode;
 
 PLHashTable *PlCreateHashTable( void );
 void PlDestroyHashTable( PLHashTable *hashTable );
+void PlDestroyHashTableEx( PLHashTable *hashTable, void ( *elementDeleter )( void *user ) );
 void PlClearHashTable( PLHashTable *hashTable );
 void *PlLookupHashTableUserData( const PLHashTable *hashTable, const void *key, size_t keySize );
 PLHashTableNode *PlInsertHashTableNode( PLHashTable *hashTable, const void *key, size_t keySize, void *value );

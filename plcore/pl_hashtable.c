@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
+/* Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com> */
 
 #include <plcore/pl_hashtable.h>
 
@@ -28,6 +28,27 @@ void PlDestroyHashTable( PLHashTable *hashTable ) {
 	}
 
 	PlClearHashTable( hashTable );
+
+	PL_DELETE( hashTable );
+}
+
+void PlDestroyHashTableEx( PLHashTable *hashTable, void ( *elementDeleter )( void *user ) ) {
+	if ( hashTable == NULL ) {
+		return;
+	}
+
+	for ( size_t i = 0; i < HASH_TABLE_SIZE; ++i ) {
+		PLHashTableNode *child = hashTable->nodes[ i ];
+		while ( child != NULL ) {
+			PLHashTableNode *next = child->next;
+			if ( elementDeleter != NULL ) {
+				elementDeleter( child->value );
+			}
+			PL_DELETE( child->key );
+			PL_DELETE( child );
+			child = next;
+		}
+	}
 
 	PL_DELETE( hashTable );
 }
