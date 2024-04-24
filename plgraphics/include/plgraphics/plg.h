@@ -251,6 +251,7 @@ PLFunctionResult PlgInitializeGraphics( void );
 void PlgShutdownGraphics( void );
 
 PLGShaderStage *PlgCreateShaderStage( PLGShaderStageType type );
+void PlgDestroyShaderStage( PLGShaderStage *stage );
 PLGShaderStage *PlgParseShaderStage( PLGShaderStageType type, const char *buf, size_t length );
 PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type );
 void PlgCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length, const char *localDirectory );
