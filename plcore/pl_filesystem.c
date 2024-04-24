@@ -405,7 +405,7 @@ PLFileSystemMount *PlMountLocalLocation( const char *path ) {
  */
 PLFileSystemMount *PlMountLocation( const char *path ) {
 	char buf[ VFS_MAX_PATH ];
-	const char *vpath = PlResolveVirtualPath_( path, buf, sizeof( buf ) );
+	const char *vpath = PlResolveVirtualPath( path, buf, sizeof( buf ) );
 	if ( vpath == NULL ) {
 		PlReportErrorF( PL_RESULT_FILEPATH, "failed to resolve path, %s", path );
 		return NULL;
@@ -939,7 +939,7 @@ static const char *PlVirtualToLocalPath_( PLFileSystemMount *mount, const char *
  * Transform the given path to the direct path
  * relative to anything mounted under the VFS.
  */
-const char *PlResolveVirtualPath_( const char *path, char *dest, size_t size ) {
+const char *PlResolveVirtualPath( const char *path, char *dest, size_t size ) {
 	if ( strncmp( VFS_LOCAL_HINT, path, sizeof( VFS_LOCAL_HINT ) ) == 0 ) {
 		path += sizeof( VFS_LOCAL_HINT );
 		return path;
