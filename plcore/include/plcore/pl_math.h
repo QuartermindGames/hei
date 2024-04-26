@@ -173,7 +173,7 @@ namespace hei {
 }// namespace hei
 #endif
 
-#define PlColourIndex( COLOUR, INDEX )    ( ( uint8_t * ) &( COLOUR ) )[ INDEX ]
+#define PL_COLOUR_INDEX( COLOUR, INDEX )    ( ( uint8_t * ) &( COLOUR ) )[ INDEX ]
 #define PlColourF32Index( COLOUR, INDEX ) ( ( float * ) &( COLOUR ) )[ INDEX ]
 
 typedef struct PLColourF32 {
@@ -498,6 +498,9 @@ typedef struct PLSphere {
 typedef struct PLQuad {
 	float x, y, w, h;
 } PLQuad;
+
+#define PL_QUAD( X, Y, W, H ) \
+	( PLQuad ) { .x = ( X ), .y = ( Y ), .w = ( W ), .h = ( H ) }
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Randomisation

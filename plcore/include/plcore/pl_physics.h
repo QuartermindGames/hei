@@ -63,7 +63,7 @@ typedef struct PLCollision {
 #ifndef __cplusplus
 #	define PlSetupCollisionRay( ORIGIN, DIRECTION ) \
 		( PLCollisionRay ) { ( ORIGIN ), ( DIRECTION ) }
-#	define PlSetupCollisionAABB( ORIGIN, MINS, MAXS ) \
+#	define PL_COLLISION_AABB( ORIGIN, MINS, MAXS ) \
 		( PLCollisionAABB ) { ( ORIGIN ), ( MINS ), ( MAXS ) }
 #	define PlSetupCollisionSphere( ORIGIN, RADIUS ) \
 		( PLCollisionSphere ) { ( ORIGIN ), ( RADIUS ) }

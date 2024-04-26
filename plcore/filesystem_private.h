@@ -33,5 +33,3 @@ typedef struct PLFile {
 	void *fptr;
 	bool isUnmanaged;
 } PLFile;
-
-const char *PlResolveVirtualPath_( const char *path, char *dest, size_t size );

@@ -55,6 +55,9 @@ add_executable(pcmd
 
         ../../extras/pl_extra_okre.c
         ../../extras/pl_extra_kri_wad.c
+
+        ../../extras/image_3dr_tex.c
+        ../../extras/image_rsb.c
 )
 add_dependencies(pcmd
         blitz_plugin
