@@ -57,6 +57,11 @@ static int gl_version_minor = 0;
 
 #define XGL_VERSION( maj, min ) ( ( ( maj ) == gl_version_major && ( min ) <= gl_version_minor ) || ( maj ) < gl_version_major )
 #define XGL_LOG( ... )          gInterface->core->LogMessage( glLogLevel, __VA_ARGS__ )
+#if !defined( NDEBUG )
+#	define XGL_DEBUG( ... ) gInterface->core->LogMessage( glLogLevel, __VA_ARGS__ )
+#else
+#	define XGL_DEBUG( ... )
+#endif
 
 #define XGL_INVALID ( ( unsigned int ) -1 )
 
@@ -293,20 +298,6 @@ static uint32_t boundFrameBuffers[ XGL_MAX_FRAMEBUFFER_TARGETS ] = {
 
 static void GLBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget target_binding ) {
 	uint32_t fbo = ( buffer != NULL ) ? buffer->fbo : 0;
-
-	// this is probably really damn overkill, but essentially determine which target buffer isn't yet bound...
-	if ( target_binding == PLG_FRAMEBUFFER_DEFAULT ) {
-		if ( boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] == fbo && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] == fbo ) {
-			return;
-		} else if ( boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] != fbo && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] == fbo ) {
-			target_binding = PLG_FRAMEBUFFER_DRAW;
-		} else if ( boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] != fbo && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] == fbo ) {
-			target_binding = PLG_FRAMEBUFFER_READ;
-		}
-	} else if ( ( target_binding == PLG_FRAMEBUFFER_DRAW && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] == fbo ) ||
-	            ( target_binding == PLG_FRAMEBUFFER_READ && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] == fbo ) ) {
-		return;
-	}
 
 	XGL_CALL( glBindFramebuffer( TranslateFrameBufferBinding( target_binding ), fbo ) );
 
@@ -778,14 +769,14 @@ typedef struct MeshTranslatePrimitive {
 } MeshTranslatePrimitive;
 
 static MeshTranslatePrimitive primitives[] = {
-        {PLG_MESH_LINES,              GL_LINES,          "LINES"            },
-        { PLG_MESH_LINE_LOOP,         GL_LINE_LOOP,      "LINE_LOOP"        },
-        { PLG_MESH_POINTS,            GL_POINTS,         "POINTS"           },
-        { PLG_MESH_TRIANGLES,         GL_TRIANGLES,      "TRIANGLES"        },
-        { PLG_MESH_TRIANGLE_FAN,      GL_TRIANGLE_FAN,   "TRIANGLE_FAN"     },
-        { PLG_MESH_TRIANGLE_FAN_LINE, GL_LINES,          "TRIANGLE_FAN_LINE"},
-        { PLG_MESH_TRIANGLE_STRIP,    GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"   },
-        { PLG_MESH_QUADS,             GL_TRIANGLES,      "QUADS"            }  // todo, translate
+        {PLG_MESH_LINES,             GL_LINES,          "LINES"            },
+        {PLG_MESH_LINE_LOOP,         GL_LINE_LOOP,      "LINE_LOOP"        },
+        {PLG_MESH_POINTS,            GL_POINTS,         "POINTS"           },
+        {PLG_MESH_TRIANGLES,         GL_TRIANGLES,      "TRIANGLES"        },
+        {PLG_MESH_TRIANGLE_FAN,      GL_TRIANGLE_FAN,   "TRIANGLE_FAN"     },
+        {PLG_MESH_TRIANGLE_FAN_LINE, GL_LINES,          "TRIANGLE_FAN_LINE"},
+        {PLG_MESH_TRIANGLE_STRIP,    GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"   },
+        {PLG_MESH_QUADS,             GL_TRIANGLES,      "QUADS"            }  // todo, translate
 };
 
 static unsigned int TranslatePrimitiveMode( PLGMeshPrimitive mode ) {
@@ -1539,9 +1530,7 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 	}
 	program->num_uniforms = ( unsigned int ) num_uniforms;
 
-#if !defined( NDEBUG )
-	XGL_LOG( "Found %u uniforms in shader\n", program->num_uniforms );
-#endif
+	XGL_DEBUG( "Found %u uniforms in shader\n", program->num_uniforms );
 
 	program->uniforms = gInterface->core->CAlloc( ( size_t ) program->num_uniforms, sizeof( *program->uniforms ), true );
 	unsigned int registered = 0;
@@ -1606,7 +1595,7 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 				break;
 		}
 
-		//GLLog( " %4d (%20s) %s\n", i, program->uniforms[ i ].name, uniformDescriptors[ program->uniforms[ i ].type ] );
+		XGL_DEBUG( " %4d (%20s) %s\n", i, program->uniforms[ i ].name, uniformDescriptors[ program->uniforms[ i ].type ] );
 
 		registered++;
 	}
