@@ -469,6 +469,7 @@ static void *GLReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, u
 
 static void GLBindTexture( const PLGTexture *texture );
 static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter );
+#pragma message "TODO: this should be CreateFrameBufferTextureAttachment, not GET!"
 static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int components, PLGTextureFilter filter ) {
 	PLGTexture *texture = gInterface->CreateTexture();
 	if ( texture == NULL ) {
@@ -1128,88 +1129,6 @@ static const char *GetGLShaderStageDescriptor( GLenum type ) {
 	}
 }
 
-static GLenum TranslateShaderUniformType( PLGShaderUniformType type ) {
-	switch ( type ) {
-		case PLG_UNIFORM_BOOL:
-			return GL_BOOL;
-		case PLG_UNIFORM_DOUBLE:
-			return GL_DOUBLE;
-		case PLG_UNIFORM_FLOAT:
-			return GL_FLOAT;
-		case PLG_UNIFORM_INT:
-			return GL_INT;
-		case PLG_UNIFORM_UINT:
-			return GL_UNSIGNED_INT;
-
-		case PLG_UNIFORM_SAMPLER1D:
-			return GL_SAMPLER_1D;
-		case PLG_UNIFORM_SAMPLER1DSHADOW:
-			return GL_SAMPLER_1D_SHADOW;
-		case PLG_UNIFORM_SAMPLER2D:
-			return GL_SAMPLER_2D;
-		case PLG_UNIFORM_SAMPLER2DSHADOW:
-			return GL_SAMPLER_2D_SHADOW;
-		case PLG_UNIFORM_SAMPLER3D:
-			return GL_SAMPLER_3D;
-		case PLG_UNIFORM_SAMPLERCUBE:
-			return GL_SAMPLER_CUBE;
-
-		case PLG_UNIFORM_VEC2:
-			return GL_FLOAT_VEC2;
-		case PLG_UNIFORM_VEC3:
-			return GL_FLOAT_VEC3;
-		case PLG_UNIFORM_VEC4:
-			return GL_FLOAT_VEC4;
-
-		case PLG_UNIFORM_MAT3:
-			return GL_FLOAT_MAT3;
-
-		default:
-			return SHADER_INVALID_TYPE;
-	}
-}
-
-static unsigned int TranslateGLShaderUniformType( GLenum type ) {
-	switch ( type ) {
-		case GL_BOOL:
-			return PLG_UNIFORM_BOOL;
-		case GL_DOUBLE:
-			return PLG_UNIFORM_DOUBLE;
-		case GL_FLOAT:
-			return PLG_UNIFORM_FLOAT;
-		case GL_INT:
-			return PLG_UNIFORM_INT;
-		case GL_UNSIGNED_INT:
-			return PLG_UNIFORM_UINT;
-
-		case GL_SAMPLER_1D:
-			return PLG_UNIFORM_SAMPLER1D;
-		case GL_SAMPLER_1D_SHADOW:
-			return PLG_UNIFORM_SAMPLER1DSHADOW;
-		case GL_SAMPLER_2D:
-			return PLG_UNIFORM_SAMPLER2D;
-		case GL_SAMPLER_2D_SHADOW:
-			return PLG_UNIFORM_SAMPLER2DSHADOW;
-		case GL_SAMPLER_3D:
-			return PLG_UNIFORM_SAMPLER3D;
-		case GL_SAMPLER_CUBE:
-			return PLG_UNIFORM_SAMPLERCUBE;
-
-		case GL_FLOAT_VEC2:
-			return PLG_UNIFORM_VEC2;
-		case GL_FLOAT_VEC3:
-			return PLG_UNIFORM_VEC3;
-		case GL_FLOAT_VEC4:
-			return PLG_UNIFORM_VEC4;
-
-		case GL_FLOAT_MAT3:
-			return PLG_UNIFORM_MAT3;
-
-		default:
-			return SHADER_INVALID_TYPE;
-	}
-}
-
 /**
  * Inserts the given string into an existing string buffer.
  * Automatically reallocs buffer if it doesn't fit.
@@ -1732,14 +1651,20 @@ static GLenum TranslateCompareFunction( PLGCompareFunction compareFunction ) {
 		case PLG_COMPARE_ALWAYS:
 			return GL_ALWAYS;
 	}
+
+	return XGL_INVALID;
 }
 
 static void GLDepthBufferFunction( PLGCompareFunction compareFunction ) {
-	XGL_CALL( glDepthFunc( TranslateCompareFunction( compareFunction ) ) );
+	GLenum glCompare = TranslateCompareFunction( compareFunction );
+	assert( glCompare != XGL_INVALID );
+	XGL_CALL( glDepthFunc( glCompare ) );
 }
 
 static void GLStencilFunction( PLGCompareFunction compareFunction, int ref, unsigned int mask ) {
-	XGL_CALL( glStencilFunc( TranslateCompareFunction( compareFunction ), ref, mask ) );
+	GLenum glCompare = TranslateCompareFunction( compareFunction );
+	assert( glCompare != XGL_INVALID );
+	XGL_CALL( glStencilFunc( glCompare, ref, mask ) );
 }
 
 static GLenum TranslateStencilOp( PLGStencilOp stencilOp ) {
