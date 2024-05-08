@@ -63,6 +63,8 @@ const char *PlPrefixPath( PLPath dst, const char *src, bool truncate );
 
 void PlNormalizePath( char *path, size_t length );
 
+char *PlGetFolderForPath( PLPath dst, PLPath src );
+
 char *PlGetUserName( char *out, size_t n );
 
 const char *PlGetWorkingDirectory( void );
