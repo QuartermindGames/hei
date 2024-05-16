@@ -499,6 +499,9 @@ typedef struct PLQuad {
 	float x, y, w, h;
 } PLQuad;
 
+#define PL_QUAD( X, Y, W, H ) \
+	( PLQuad ) { .x = ( X ), .y = ( Y ), .w = ( W ), .h = ( H ) }
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Randomisation
 

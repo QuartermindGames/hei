@@ -331,31 +331,55 @@ void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, const PLColourF32 *co
 	PlgImmBegin( PLG_MESH_LINES );
 
 	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->mins.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->mins.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->mins.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->mins.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->mins.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->mins.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->mins.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->mins.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 
 	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->maxs.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->maxs.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->maxs.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->maxs.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->maxs.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->maxs.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->maxs.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->maxs.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 
 	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->mins.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->maxs.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->mins.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->maxs.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->mins.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->maxs.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->mins.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->maxs.z );
+	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
 
 	PlgImmDraw();
 

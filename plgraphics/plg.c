@@ -177,8 +177,6 @@ bool PlgSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, uns
 }
 
 void *PlgReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf ) {
-	assert( frameBuffer != NULL );
-
 	CallReturningGfxFunction( ReadFrameBufferRegion, NULL, frameBuffer, x, y, w, h, dstSize, dstBuf );
 }
 
