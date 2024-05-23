@@ -347,7 +347,7 @@ unsigned int PlgGetNumShaderUniformElements( const PLGShaderProgram *program, in
 
 static int ValidateShaderUniformSlot( PLGShaderProgram *program, int slot ) {
 	if ( slot == -1 ) {
-		GfxLog( "Invalid shader uniform slot, \"%d\"!\n", slot );
+		GfxLog( "Invalid shader uniform slot!\n" );
 		return -1;
 	} else if ( ( unsigned int ) ( slot ) >= program->num_uniforms ) {
 		GfxLog( "Potential overflow for uniform slot! (%d / %d)\n", slot, program->num_uniforms );

@@ -33,7 +33,7 @@
 
 #	if defined( _MSC_VER )
 #		if !defined( S_ISREG ) && defined( S_IFMT ) && defined( S_IFREG )
-#			define S_ISREG( m ) ( ( ( m ) &S_IFMT ) == S_IFREG )
+#			define S_ISREG( m ) ( ( ( m ) & S_IFMT ) == S_IFREG )
 #		endif
 #	endif
 #else
@@ -141,6 +141,16 @@ void PlNormalizePath( char *path, size_t length ) {
 
 		path[ i ] = '/';
 	}
+}
+
+char *PlGetFolderForPath( PLPath dst, PLPath src ) {
+	char *c = strrchr( src, '/' );
+	if ( c == NULL ) {
+		return NULL;
+	}
+
+	snprintf( dst, ( ( c - src ) + 1 ), "%s", src );
+	return dst;
 }
 
 /** FS Mounting **/
