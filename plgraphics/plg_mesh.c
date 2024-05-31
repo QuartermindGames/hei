@@ -390,3 +390,7 @@ PLCollisionAABB PlgGenerateAabbFromVertices( const PLGVertex *vertices, unsigned
 PLCollisionAABB PlgGenerateAabbFromMesh( const PLGMesh *mesh, bool absolute ) {
 	return PlgGenerateAabbFromVertices( mesh->vertices, mesh->num_verts, absolute );
 }
+
+unsigned int PlgGetNumTrianglesForPolygon( unsigned int numVertices ) {
+	return ( numVertices < 3 ) ? 0 : numVertices - 2;
+}
