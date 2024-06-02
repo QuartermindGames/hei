@@ -539,11 +539,7 @@ bool PlCreatePath( const char *path ) {
 // Returns the extension for the file.
 const char *PlGetFileExtension( const char *in ) {
 	const char *s = strrchr( in, '.' );
-	if ( !s || s == in ) {
-		return "";
-	}
-
-	return s + 1;
+	return s != NULL ? s + 1 : NULL;
 }
 
 // Strips the extension from the filename.
@@ -792,7 +788,29 @@ void PlScanDirectory( const char *path, const char *extension, void ( *Function 
 	PLFileSystemMount *location = fs_mount_root;
 	while ( location != NULL ) {
 		if ( location->type == PL_FS_MOUNT_PACKAGE ) {
-			// todo: Only works for directories for now
+			PLPackage *package = location->pkg;
+			for ( unsigned int i = 0; i < package->table_size; ++i ) {
+				//HACK: urgh, packages don't have the concept of '.' or './', so let's work around that
+
+				const char *subPath;
+				if ( *path == '.' ) {
+					subPath = *( path + 1 ) == '/' ? path + 2 : path + 1;
+				} else {
+					subPath = path;
+				}
+
+				size_t l = strlen( subPath );
+				if ( strncmp( package->table[ i ].fileName, subPath, l ) != 0 ) {
+					continue;
+				}
+
+				const char *indexExtension = PlGetFileExtension( package->table[ i ].fileName );
+				if ( indexExtension == NULL || strcmp( indexExtension, extension ) != 0 ) {
+					continue;
+				}
+
+				Function( package->table[ i ].fileName, userData );
+			}
 		} else if ( location->type == PL_FS_MOUNT_DIR ) {
 			char mounted_path[ PL_SYSTEM_MAX_PATH * 2 ];
 			snprintf( mounted_path, sizeof( mounted_path ), "%s/%s", location->path, normPath );

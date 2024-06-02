@@ -165,6 +165,8 @@ void PlgDrawSubMeshes( PLGMesh *mesh, int32_t *firstSubMeshes, int32_t *subMeshe
 PLCollisionAABB PlgGenerateAabbFromVertices( const PLGVertex *vertices, unsigned int numVertices, bool absolute );
 PLCollisionAABB PlgGenerateAabbFromMesh( const PLGMesh *mesh, bool absolute );
 
+unsigned int PlgGetNumTrianglesForPolygon( unsigned int numVertices );
+
 void PlgGenerateMeshNormals( PLGMesh *mesh, bool perFace );
 void PlgGenerateMeshTangentBasis( PLGMesh *mesh );
 
