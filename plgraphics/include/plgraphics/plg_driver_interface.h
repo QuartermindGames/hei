@@ -20,7 +20,7 @@ PL_EXTERN_C
  * either audio/video.
  */
 
-#define PLG_INTERFACE_VERSION_MAJOR 6
+#define PLG_INTERFACE_VERSION_MAJOR 7
 #define PLG_INTERFACE_VERSION_MINOR 0
 #define PLG_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR }
@@ -80,19 +80,23 @@ typedef struct PLGDriverImportTable {
 	void ( *SetClearColour )( const PLColourF32 *rgba );
 	void ( *ClearBuffers )( unsigned int buffers );
 
-	void ( *DrawPixel )( int x, int y, const PLColour *colour );
-
 	void ( *SetDepthBufferMode )( unsigned int mode );
 
 	void ( *DepthMask )( bool enable );
 	void ( *ColourMask )( bool r, bool g, bool b, bool a );
 
 	// Mesh
+#pragma message "TODO: this should all be removed!!"
 	void ( *CreateMesh )( PLGMesh *mesh );
 	void ( *UploadMesh )( PLGMesh *mesh, PLGShaderProgram *program ); /* todo: deprecate? */
 	void ( *DrawMesh )( PLGMesh *mesh, PLGShaderProgram *program );
 	void ( *DrawInstancedMesh )( PLGMesh *mesh, PLGShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount );
 	void ( *DeleteMesh )( PLGMesh *mesh );
+
+	//TODO: new API...replaces the above
+	void ( *Draw )( const PLGVertexLayout *layout, PLGShaderProgram *program, unsigned int baseVertexIndex, unsigned int numVertices );
+	void ( *DrawInstanced )( const PLGVertexLayout *layout, PLGShaderProgram *program, unsigned int baseVertexIndex, unsigned int numVertices, const PLMatrix4 *transforms, unsigned int numInstances );
+	void ( *DrawPixel )( int x, int y, const PLColourF32 *colour );
 
 	// Framebuffer
 	bool ( *CreateFrameBuffer )( PLGFrameBuffer *buffer );

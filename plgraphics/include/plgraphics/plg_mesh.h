@@ -1,8 +1,6 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #pragma once
 
@@ -38,11 +36,28 @@ typedef struct PLGVertex {
 	PLVector3 tangent, bitangent;
 	PLVector2 st[ 16 ];
 	PLColourF32 colour;
+	PLColourF32 light;
 } PLGVertex;
 
 typedef struct PLGTexture PLGTexture;
 
+typedef enum PLGDataType {
+	PLG_DATA_TYPE_UINT8,
+	PLG_DATA_TYPE_INT8,
+
+	PLG_DATA_TYPE_UINT16,
+	PLG_DATA_TYPE_INT16,
+
+	PLG_DATA_TYPE_UINT32,
+	PLG_DATA_TYPE_INT32,
+
+	PLG_DATA_TYPE_FLOAT,
+} PLGDataType;
+
 //////////////////////////////////////////////////////////////////
+// GPU Memory Block
+//	Represents a block of vertex or other data provided to the
+//	GPU.
 //////////////////////////////////////////////////////////////////
 
 #define PLG_MAX_VERTEX_LAYOUT_ELEMENTS 64
@@ -64,6 +79,7 @@ typedef enum PLGVertexLayoutElementType {
 typedef struct PLGVertexLayoutElement {
 	char identifier[ 64 ];
 	PLGVertexLayoutElementType type;
+	PLGDataType dataType;
 	intptr_t offset;
 	unsigned int numSubElements;
 } PLGVertexLayoutElement;
@@ -71,12 +87,22 @@ typedef struct PLGVertexLayoutElement {
 typedef struct PLGVertexLayout {
 	PLGVertexLayoutElement elements[ PLG_MAX_VERTEX_LAYOUT_ELEMENTS ];
 	unsigned int numElements;
-	void *data;
+	void *vertexData;
+	void *driverData;
+	bool dirty;
 } PLGVertexLayout;
 
+void PlgInitializeVertexLayout( PLGVertexLayout *layout );
+void PlgFreeVertexLayout( PLGVertexLayout *layout );
+
 void PlgClearVertexLayout( PLGVertexLayout *layout );
-void PlgSetVertexLayoutElement( PLGVertexLayout *layout, PLGVertexLayoutElementType type, intptr_t offset, unsigned int numElements, bool status );
+void PlgSetVertexLayoutElement( PLGVertexLayout *layout, PLGVertexLayoutElementType type, PLGDataType dataType, intptr_t offset, unsigned int numElements );
 void PlgSetVertexLayoutData( PLGVertexLayout *layout, void *data );
+void PlgMarkVertexLayoutAsDirty( PLGVertexLayout *layout );
+
+typedef struct PLGVertexBuffer {
+	void *driverData;
+} PLGVertexBuffer;
 
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////

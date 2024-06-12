@@ -56,15 +56,6 @@ if (CMAKE_TESTING_ENABLED)
 endif ()
 
 if (PL_BUILD_PLUGINS)
-    add_subdirectory(plugins/driver_opengl/)
-    #add_subdirectory(plugins/driver_vulkan/)
-    if (WIN32)
-        add_subdirectory(plugins/driver_d3d12/)
-        if (EXISTS "${CMAKE_SOURCE_DIR}/plugins/driver_glide/CMakeLists.txt")
-            add_subdirectory(plugins/driver_glide/)
-        endif ()
-    endif ()
-
     add_subdirectory(plugins/valve/)
 endif (PL_BUILD_PLUGINS)
 
