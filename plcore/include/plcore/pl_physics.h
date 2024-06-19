@@ -60,16 +60,14 @@ typedef struct PLCollision {
 	float penetration;
 } PLCollision;
 
-#ifndef __cplusplus
-#	define PlSetupCollisionRay( ORIGIN, DIRECTION ) \
-		( PLCollisionRay ) { ( ORIGIN ), ( DIRECTION ) }
-#	define PL_COLLISION_AABB( ORIGIN, MINS, MAXS ) \
-		( PLCollisionAABB ) { ( ORIGIN ), ( MINS ), ( MAXS ) }
-#	define PlSetupCollisionSphere( ORIGIN, RADIUS ) \
-		( PLCollisionSphere ) { ( ORIGIN ), ( RADIUS ) }
-#	define PlSetupCollisionPlane( ORIGIN, NORMAL ) \
-		( PLCollisionPlane ) { ( ORIGIN ), ( NORMAL ) }
-#endif
+#define PlSetupCollisionRay( ORIGIN, DIRECTION ) \
+	( PLCollisionRay ) { ( ORIGIN ), ( DIRECTION ) }
+#define PL_COLLISION_AABB( ORIGIN, MINS, MAXS ) \
+	( PLCollisionAABB ) { ( ORIGIN ), ( MINS ), ( MAXS ) }
+#define PlSetupCollisionSphere( ORIGIN, RADIUS ) \
+	( PLCollisionSphere ) { ( ORIGIN ), ( RADIUS ) }
+#define PlSetupCollisionPlane( ORIGIN, NORMAL ) \
+	( PLCollisionPlane ) { ( ORIGIN ), ( NORMAL ) }
 
 float PlComputeSphereFromCoords( const PLVector3 *vertices, unsigned int numVertices );
 
