@@ -104,6 +104,7 @@ PLHashTableNode *PlInsertHashTableNode( PLHashTable *hashTable, const void *key,
 	node->keySize = keySize;
 	node->key = PL_NEW_( char, keySize + 1 );
 	node->value = value;
+	node->table = hashTable;
 
 	memcpy( node->key, key, node->keySize );
 
