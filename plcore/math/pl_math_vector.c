@@ -42,7 +42,7 @@ PLVector4 PlTransformVector4( const PLVector4 *v, const PLMatrix4 *m ) {
 	                ( m->pl_m4pos( 1, 1 ) * v->y ) +
 	                ( m->pl_m4pos( 1, 2 ) * v->z ) +
 	                ( m->pl_m4pos( 1, 3 ) * v->w ),
-	        /* y */
+	        /* z */
 	        ( m->pl_m4pos( 2, 0 ) * v->x ) +
 	                ( m->pl_m4pos( 2, 1 ) * v->y ) +
 	                ( m->pl_m4pos( 2, 2 ) * v->z ) +
