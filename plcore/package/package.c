@@ -281,21 +281,23 @@ void PlRegisterStandardPackageLoaders( unsigned int flags ) {
 	} PackageLoader;
 
 	static const PackageLoader loaders[] = {
-	        {PL_PACKAGE_LOAD_FORMAT_ZIP,          "zip", PlLoadZipPackage,   NULL                   },
-	        { PL_PACKAGE_LOAD_FORMAT_ZIP,         "pak", PlLoadZipPackage,   NULL                   },
-	        { PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk3", PlLoadZipPackage,   NULL                   },
-	        { PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk4", PlLoadZipPackage,   NULL                   },
-	        { PL_PACKAGE_LOAD_FORMAT_WAD_DOOM,    "wad", PlLoadIWADPackage_, NULL                   },
-	        { PL_PACKAGE_LOAD_FORMAT_WAD_QUAKE,   "wad", PlLoadWAD2Package_, NULL                   },
-	        { PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mad", PlLoadMadPackage,   NULL                   },
-	        { PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mtd", PlLoadMadPackage,   NULL                   },
-	        { PL_PACKAGE_LOAD_FORMAT_PAK_QUAKE,   "pak", PlLoadPAKPackage_,  NULL                   },
-	        { PL_PACKAGE_LOAD_FORMAT_TAB_SFA,     "tab", PlLoadTabPackage,   NULL                   },
-	        { PL_PACKAGE_LOAD_FORMAT_BIN_FRESH,   "bin", NULL,               PlParseFreshBinPackage_},
-	        { PL_PACKAGE_LOAD_FORMAT_DFS,         "dfs", PlLoadDFSPackage,   NULL                   },
-	        { PL_PACKAGE_LOAD_FORMAT_VPK_VTMB,    "vpk", PlLoadVPKPackage_,  NULL                   },
-	        { PL_PACKAGE_LOAD_FORMAT_GRP,         "grp", NULL,               PlParseGrpPackage_     },
-	        { PL_PACKAGE_LOAD_FORMAT_VPP,         "vpp", NULL,               PlParseVppPackage      },
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "zip", PlLoadZipPackage,   NULL                   },
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pak", PlLoadZipPackage,   NULL                   },
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk3", PlLoadZipPackage,   NULL                   },
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk4", PlLoadZipPackage,   NULL                   },
+	        {PL_PACKAGE_LOAD_FORMAT_WAD_DOOM,    "wad", PlLoadIWADPackage_, NULL                   },
+	        {PL_PACKAGE_LOAD_FORMAT_WAD_QUAKE,   "wad", PlLoadWAD2Package_, NULL                   },
+	        {PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mad", PlLoadMadPackage,   NULL                   },
+	        {PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mtd", PlLoadMadPackage,   NULL                   },
+	        {PL_PACKAGE_LOAD_FORMAT_PAK_QUAKE,   "pak", PlLoadPAKPackage_,  NULL                   },
+	        {PL_PACKAGE_LOAD_FORMAT_TAB_SFA,     "tab", PlLoadTabPackage,   NULL                   },
+	        {PL_PACKAGE_LOAD_FORMAT_BIN_FRESH,   "bin", NULL,               PlParseFreshBinPackage_},
+	        {PL_PACKAGE_LOAD_FORMAT_DFS,         "dfs", PlLoadDFSPackage,   NULL                   },
+	        {PL_PACKAGE_LOAD_FORMAT_VPK_VTMB,    "vpk", PlLoadVPKPackage_,  NULL                   },
+	        {PL_PACKAGE_LOAD_FORMAT_GRP,         "grp", NULL,               PlParseGrpPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_VPP,         "vpp", NULL,               PlParseVppPackage      },
+	        {PL_PACKAGE_LOAD_FORMAT_OPK,         "opk", NULL,               PlParseOpkPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_INU,         "inu", NULL,               PlParseInuPackage_     },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaders ); ++i ) {

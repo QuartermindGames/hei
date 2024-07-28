@@ -5,7 +5,7 @@
 
 // Quickly whipped up loader for 3D Realms' TEX format
 
-PLImage *PlParse3drTexImage( PLFile *file ) {
+PLImage *PlParse3drTexImage_( PLFile *file ) {
 	// possibly some sort of image mode? non-zero for alpha textures
 	uint16_t mode = PL_READUINT16( file, false, NULL );
 	if ( mode != 0 && mode != 0x500 ) {
@@ -85,8 +85,4 @@ PLImage *PlParse3drTexImage( PLFile *file ) {
 	PL_DELETE( dst );
 
 	return image;
-}
-
-void PlRegister3drTexImageLoader( void ) {
-	PlRegisterImageLoader( "tex", PlParse3drTexImage );
 }

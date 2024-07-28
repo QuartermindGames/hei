@@ -22,5 +22,7 @@ PLPackage *PlLoadTabPackage( const char *path );
 
 PLPackage *PlParseFreshBinPackage_( PLFile *file );
 PLPackage *PlParseGrpPackage_( PLFile *file );
+PLPackage *PlParseOpkPackage_( PLFile *file );// Outcast
+PLPackage *PlParseInuPackage_( PLFile *file );// White Fear / Inuits
 
 PL_EXTERN_C_END
