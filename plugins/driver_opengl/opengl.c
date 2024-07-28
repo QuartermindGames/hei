@@ -987,13 +987,13 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 		if ( mesh->numSubMeshes > 0 ) {
 			XGL_CALL( glMultiDrawElements( mode, mesh->subMeshes, GL_UNSIGNED_INT, NULL, mesh->numSubMeshes ) );
 		} else {
-			XGL_CALL( glDrawElements( mode, mesh->num_indices, GL_UNSIGNED_INT, 0 ) );
+			XGL_CALL( glDrawRangeElements( mode, mesh->startIndex, mesh->num_indices, mesh->endIndex, GL_UNSIGNED_INT, 0 ) );
 		}
 	} else {
 		if ( mesh->numSubMeshes > 0 ) {
 			XGL_CALL( glMultiDrawArrays( mode, mesh->firstSubMeshes, mesh->subMeshes, mesh->numSubMeshes ) );
 		} else {
-			XGL_CALL( glDrawArrays( mode, 0, mesh->num_verts ) );
+			XGL_CALL( glDrawArrays( mode, mesh->startIndex, mesh->num_verts ) );
 		}
 	}
 

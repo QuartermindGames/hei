@@ -180,6 +180,7 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 				memcpy( mesh->indices, indicies, sizeof( unsigned int ) * numIndices );
 				mesh->num_indices = numIndices;
 				mesh->num_triangles = numTriangles;
+				mesh->endIndex = mesh->num_indices;
 			}
 		}
 	}
@@ -242,6 +243,7 @@ void PlgClearMeshVertices( PLGMesh *mesh ) {
 }
 
 void PlgClearMeshTriangles( PLGMesh *mesh ) {
+	mesh->endIndex = mesh->startIndex = 0;
 	mesh->num_triangles = mesh->num_indices = 0;
 	mesh->isDirty = true;
 }
@@ -330,6 +332,8 @@ unsigned int PlgAddMeshTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, 
 	if ( mesh->num_indices >= mesh->maxIndices ) {
 		mesh->indices = PlReAllocA( mesh->indices, ( mesh->maxIndices += 16 ) * sizeof( unsigned int ) );
 	}
+
+	mesh->endIndex = mesh->num_indices;
 
 	mesh->indices[ triangleIndex ] = x;
 	mesh->indices[ triangleIndex + 1 ] = y;
