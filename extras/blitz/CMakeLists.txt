@@ -1,8 +1,9 @@
-project(blitz_plugin)
 add_library(blitz_plugin SHARED
         blitz.c
         blitz_format_dat.c
-        blitz_format_spt.c)
+        blitz_format_psi.c
+        blitz_format_spt.c
+)
 
 target_compile_definitions(blitz_plugin PRIVATE
         PL_COMPILE_PLUGIN)
