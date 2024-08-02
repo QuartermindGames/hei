@@ -237,6 +237,9 @@ void PlSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
 
 		case PL_VAR_STRING:
 			var->s_value = &var->value[ 0 ];
+			if ( var->ptrValue != NULL ) {
+				snprintf( var->ptrValue, PL_VAR_VALUE_LENGTH, "%s", value );
+			}
 			break;
 
 		case PL_VAR_F32:
@@ -265,6 +268,7 @@ void PlSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
 	}
 
 	strncpy( var->value, value, sizeof( var->value ) );
+
 	if ( var->CallbackFunction != NULL ) {
 		var->CallbackFunction( var );
 	}
