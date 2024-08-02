@@ -1,5 +1,6 @@
-/* SPDX-License-Identifier: MIT */
-/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "blitz.h"
 
@@ -168,6 +169,82 @@ static void command_blitz_dump_strings( unsigned int argc, char **argv ) {
 	gInterface->ScanDirectory( argv[ 1 ], NULL, index_file_callback, true, file );
 }
 
+/***********************************************************/
+/** Convert RAW images **/
+
+static PLImage *RawToImage( const uint16_t *buf, size_t size ) {
+	// for now, I can only assume they're all this size...
+	static const unsigned int RAW_WIDTH = 512;
+	static const unsigned int RAW_HEIGHT = 256;
+	static const unsigned int RAW_SIZE = RAW_WIDTH * RAW_HEIGHT * 2;
+	if ( size != RAW_SIZE ) {
+		printf( "Unexpected raw image size (%zu != %u)!\n", size, RAW_SIZE );
+		return NULL;
+	}
+
+	PLImage *image = gInterface->CreateImage( NULL, RAW_WIDTH, RAW_HEIGHT, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+	if ( image == NULL ) {
+		printf( "Failed to create raw image container: %s\n", gInterface->GetError() );
+		return NULL;
+	}
+
+	const unsigned int shiftR = 0;
+	const unsigned int shiftG = 5;
+	const unsigned int shiftB = 10;
+
+	PLColour *colour = ( PLColour * ) &image->data[ 0 ][ 0 ];
+	for ( unsigned int i = 0; i < size / 2; ++i ) {
+		uint16_t c = htole16( buf[ i ] );
+		colour->r = ( ( c & ( 31 << shiftR ) ) >> shiftR ) << 3;
+		colour->g = ( ( c & ( 31 << shiftG ) ) >> shiftG ) << 3;
+		colour->b = ( ( c & ( 31 << shiftB ) ) >> shiftB ) << 3;
+		colour->r |= colour->r >> 5;
+		colour->g |= colour->g >> 5;
+		colour->b |= colour->b >> 5;
+		colour->a = 255;
+		colour++;
+	}
+
+	return image;
+}
+
+static void ConvertRawImage( const char *path ) {
+	PLFile *file = gInterface->OpenFile( path, true );
+	if ( file == NULL ) {
+		printf( "Failed to open raw image (%s): %s\n", path, gInterface->GetError() );
+		return;
+	}
+
+	size_t size = gInterface->GetFileSize( file );
+	const uint16_t *buf = gInterface->GetFileData( file );
+	PLImage *out = RawToImage( buf, size );
+	if ( out != NULL ) {
+		const char *filename = strrchr( path, '/' );
+		if ( filename == NULL ) {
+			filename = path;
+		} else {
+			filename = filename + 1;
+		}
+
+		PLPath writePath;
+		gInterface->SetupPath( writePath, true, "%s.png", filename );
+		gInterface->WriteImage( out, writePath );
+	}
+	gInterface->CloseFile( file );
+}
+
+static void ConvertRawCommand( PL_UNUSED unsigned int argc, char **argv ) {
+	ConvertRawImage( argv[ 1 ] );
+}
+
+static void BulkConvertCallback( const char *path, PL_UNUSED void *user ) {
+	ConvertRawImage( path );
+}
+
+static void BulkConvertRawCommand( PL_UNUSED unsigned int argc, PL_UNUSED char **argv ) {
+	gInterface->ScanDirectory( argv[ 1 ], "raw", BulkConvertCallback, true, NULL );
+}
+
 const PLPluginExportTable *gInterface = NULL;
 PL_EXPORT void PLInitializePlugin( const PLPluginExportTable *functionTable ) {
 	gInterface = functionTable;
@@ -185,4 +262,16 @@ PL_EXPORT void PLInitializePlugin( const PLPluginExportTable *functionTable ) {
 	                                    "Scan through and dump all identifiable strings from PSI files. "
 	                                    "You'll need to specify the input path.",
 	                                    1, command_blitz_dump_strings );
+
+	gInterface->RegisterConsoleCommand( "blitz_convert_raw",
+	                                    "Convert .raw images.",
+	                                    1, ConvertRawCommand );
+	gInterface->RegisterConsoleCommand( "blitz_convert_raw_bulk",
+	                                    "Converts all .raw images in a given directory.",
+	                                    1, BulkConvertRawCommand );
+
+	void Blitz_Format_Psi_ConvertModelCommand( unsigned int argc, char **argv );
+	gInterface->RegisterConsoleCommand( "blitz_convert_model",
+	                                    "Converts the given model to SMD/OBJ.",
+	                                    1, Blitz_Format_Psi_ConvertModelCommand );
 }

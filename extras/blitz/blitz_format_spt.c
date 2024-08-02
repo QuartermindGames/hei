@@ -1,5 +1,6 @@
-/* SPDX-License-Identifier: MIT */
-/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "blitz.h"
 
@@ -21,8 +22,8 @@ typedef enum SPTFormat {
 } SPTFormat;
 
 typedef enum SPTFlags {
-	SPT_FLAGS_END = 1,
-	SPT_FLAGS_8BPP = 2,
+	SPT_FLAGS_END = 1, // indicates that it's the last image
+	SPT_FLAGS_8BPP = 2,// if this flag isn't set, it seems to be 4bpp
 	SPT_FLAGS_ALPHA = 16,
 } SPTFlags;
 

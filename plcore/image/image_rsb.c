@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
-#include "plcore/pl_image.h"
+#include "image_private.h"
 
 // Red Storm Entertainment RSB Format
 
 static const uint32_t RSB_VERSION_MIN = 0;
 static const uint32_t RSB_VERSION_MAX = 1;
 
-PLImage *PlParseRsbImage( PLFile *file ) {
+PLImage *PlParseRsbImage_( PLFile *file ) {
 	// always 1
 	uint32_t version = PL_READUINT32( file, false, NULL );
 	if ( version < RSB_VERSION_MIN || version > RSB_VERSION_MAX ) {
@@ -65,8 +65,4 @@ PLImage *PlParseRsbImage( PLFile *file ) {
 	PL_DELETE( src );
 
 	return image;
-}
-
-void PlRegisterRsbImageLoader( void ) {
-	PlRegisterImageLoader( "rsb", PlParseRsbImage );
 }

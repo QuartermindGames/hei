@@ -51,6 +51,8 @@ mounted packages before falling back to the local FS
   - Valve VTX (via plugin) (*read*)
   - Herdy Gerdy HGT (*read*)
   - Angel Engine TEX (*read*)
+  - 3D Realms' TEX (*read*)
+  - Red Storm Entertainment RSB Format (*read*)
   - Can easily be extended to support other image formats either via the API or via plugins
 
 Below is a table of all supported package formats.
@@ -71,10 +73,10 @@ Below is a table of all supported package formats.
 | RID/RIM      | Eradicator                                          | Extra         | R    |
 | FTactics PAK | Future Tactics                                      | Extra         | R    |
 | Kri WAD      | The Mark of Kri                                     | Extra         | R    |
-| WFear INU    |                                                     | Extra         | R    |
+| WFear INU    |                                                     | Core          | R    |
 | Haven DAT    | Haven Call of the King                              | Extra         | R    |
 | VSR          | Sentient                                            | Extra         | R    |
-| OPK          | Outcast                                             | Extra         | R    |
+| OPK          | Outcast                                             | Core          | R    |
 | AITD PAK     | Alone in the Dark                                   | Extra         | R    |
 | Ice3D DAT    | BioShock 3D                                         | Extra         | R    |
 | Angel DAT    | Angel Studios                                       | Extra         | R    |
