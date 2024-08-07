@@ -40,7 +40,7 @@ typedef struct PLConsoleVariable {
 
 	PLVariableType type;
 
-	void ( *CallbackFunction )( const struct PLConsoleVariable *variable );
+	void ( *CallbackFunction )( struct PLConsoleVariable *variable );
 
 	/////////////////////////////
 
@@ -71,7 +71,7 @@ const char *PlGetConsoleVariableDefaultValue( const char *name );
 void PlSetConsoleVariable( PLConsoleVariable *var, const char *value );
 void PlSetConsoleVariableByName( const char *name, const char *value );
 
-PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void *ptrValue, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive );
+PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void *ptrValue, void ( *CallbackFunction )( PLConsoleVariable * ), bool archive );
 
 /* fetch and cache console var for trivial lookup */
 #	define PL_GET_CVAR( NAME, STORE )                    \

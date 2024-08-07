@@ -110,7 +110,7 @@ static size_t _pl_num_variables = 0;
 static size_t _pl_variables_size = 512;
 static PLHashTable *variableHashes = NULL;
 
-PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void *ptrValue, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive ) {
+PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void *ptrValue, void ( *CallbackFunction )( PLConsoleVariable * ), bool archive ) {
 	FunctionStart();
 
 	PL_ASSERT( _pl_variables );
