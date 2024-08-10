@@ -27,7 +27,7 @@
 #	define SECURITY_WIN32
 
 #	include <security.h>
-#	include <ShlObj.h>
+#	include <shlobj.h>
 #	include <direct.h>
 #	include <io.h>
 

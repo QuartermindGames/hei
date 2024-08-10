@@ -5,7 +5,7 @@
  */
 
 #if defined( WIN32 )
-#	include <Windows.h>
+#	include <windows.h>
 #endif
 
 #include "pl_private.h"
