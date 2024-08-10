@@ -368,22 +368,54 @@ IMPLEMENT_COMMAND( help ) {
  * Find the specific var/cmd, by name or description.
  */
 static void find_cmd( PL_UNUSED unsigned int argc, char **argv ) {
-	const char *term = argv[ 1 ];
-	Print( "Variables that match the term \"%s\"\n", term );
-	for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
-		if ( ( pl_strcasestr( ( *var )->name, term ) == NULL ) && ( ( *var )->description != NULL && pl_strcasestr( ( *var )->description, term ) == NULL ) ) {
-			continue;
-		}
-
-		PrintVarDetails( ( *var ) );
+	if ( argc <= 1 ) {
+		Print( "No arguments provided!\n" );
+		return;
 	}
-	Print( "Commands that match the term \"%s\"\n", term );
-	for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
-		if ( ( pl_strcasestr( ( *cmd )->name, term ) == NULL ) && ( ( *cmd )->description != NULL && pl_strcasestr( ( *cmd )->description, term ) == NULL ) ) {
-			continue;
-		}
 
-		PrintCmdDetails( ( *cmd ) );
+	const char *term = argv[ 1 ];
+
+	bool findVars = true;
+	bool findCommands = true;
+	if ( argc > 2 ) {
+		if ( strcmp( term, "var" ) == 0 ) {
+			findVars = true;
+			findCommands = false;
+			term = argv[ 2 ];
+		} else if ( strcmp( term, "cmd" ) == 0 ) {
+			findVars = false;
+			findCommands = true;
+			term = argv[ 2 ];
+		}
+	} else {
+		findVars = findCommands = true;
+	}
+
+	if ( term == NULL ) {
+		Print( "Invalid arguments provided!\n" );
+		return;
+	}
+
+	if ( findVars ) {
+		Print( "Variables that match the term \"%s\"\n", term );
+		for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
+			if ( ( pl_strcasestr( ( *var )->name, term ) == NULL ) && ( ( *var )->description != NULL && pl_strcasestr( ( *var )->description, term ) == NULL ) ) {
+				continue;
+			}
+
+			PrintVarDetails( ( *var ) );
+		}
+	}
+
+	if ( findCommands ) {
+		Print( "Commands that match the term \"%s\"\n", term );
+		for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
+			if ( ( pl_strcasestr( ( *cmd )->name, term ) == NULL ) && ( ( *cmd )->description != NULL && pl_strcasestr( ( *cmd )->description, term ) == NULL ) ) {
+				continue;
+			}
+
+			PrintCmdDetails( ( *cmd ) );
+		}
 	}
 }
 
@@ -410,7 +442,9 @@ PLFunctionResult PlInitConsole( void ) {
 	PlRegisterConsoleCommand( "vars", "Prints a list of available variables.", 0, vars_cmd );
 	PlRegisterConsoleCommand( "pwd", "Prints out the current working directory.", 0, pwd_cmd );
 	PlRegisterConsoleCommand( "echo", "Echos the given input to the console output.", 1, echo_cmd );
-	PlRegisterConsoleCommand( "find", "Find the specific var/cmd, by name or description.", 1, find_cmd );
+	PlRegisterConsoleCommand( "find", "Find the specific var/cmd, by name or description."
+	                                  "You can specify 'cmd' or 'vars' to filter.",
+	                          -1, find_cmd );
 
 	/* initialize our internal log levels here
 	 * as we depend on the console variables being setup first */
