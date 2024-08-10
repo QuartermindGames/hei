@@ -165,6 +165,7 @@ void *PlGetImageData( PLImage *image, unsigned int frame, unsigned int mip );
 unsigned int PlGetImageDataSize( const PLImage *image );
 
 PLImage *PlResizeImage( PLImage *image, unsigned int newWidth, unsigned int newHeight );
+PLImage *PlCropImage( PLImage *image, unsigned int newWidth, unsigned int newHeight, unsigned int xOffset, unsigned int yOffset );
 
 // S3TC Library Interface
 void PlBlockDecompressImageDXT1( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image );
