@@ -107,6 +107,7 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	        {PL_IMAGE_FILEFORMAT_PNG,       "png",  LoadStbImage         },
 	        {PL_IMAGE_FILEFORMAT_JPG,       "jpg",  LoadStbImage         },
 	        {PL_IMAGE_FILEFORMAT_JPG,       "jpeg", LoadStbImage         },
+	        {PL_IMAGE_FILEFORMAT_JPG,       "jfif", LoadStbImage         },
 	        {PL_IMAGE_FILEFORMAT_BMP,       "bmp",  LoadStbImage         },
 	        {PL_IMAGE_FILEFORMAT_PSD,       "psd",  LoadStbImage         },
 	        {PL_IMAGE_FILEFORMAT_GIF,       "gif",  LoadStbImage         },
@@ -712,10 +713,10 @@ PLImage *PlCropImage( PLImage *image, unsigned int newWidth, unsigned int newHei
 
 	for ( int y = 0; y < newHeight; y++ ) {
 		for ( int x = 0; x < newWidth; x++ ) {
-			unsigned int srcPixelIndex = (((y + yOffset) * image->width) + (x + xOffset)) * numChannels;
-			unsigned int dstPixelIndex = ((y * newWidth) + x) * numChannels;
+			unsigned int srcPixelIndex = ( ( ( y + yOffset ) * image->width ) + ( x + xOffset ) ) * numChannels;
+			unsigned int dstPixelIndex = ( ( y * newWidth ) + x ) * numChannels;
 			for ( unsigned int channel = 0; channel < numChannels; ++channel ) {
-				dst[dstPixelIndex + channel] = src[srcPixelIndex + channel];
+				dst[ dstPixelIndex + channel ] = src[ srcPixelIndex + channel ];
 			}
 		}
 	}
