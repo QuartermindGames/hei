@@ -103,22 +103,26 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	} SImageLoader;
 
 	static const SImageLoader loaderList[] = {
-	        {PL_IMAGE_FILEFORMAT_TGA,  "tga",  LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_PNG, "png",  LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_JPG, "jpg",  LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_JPG, "jpeg", LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_BMP, "bmp",  LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_PSD, "psd",  LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_GIF, "gif",  LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_HDR, "hdr",  LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_PIC, "pic",  LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_PNM, "pnm",  LoadStbImage   },
-	        { PL_IMAGE_FILEFORMAT_FTX, "ftx",  PlParseFtxImage},
-	        { PL_IMAGE_FILEFORMAT_3DF, "3df",  PlParse3dfImage},
-	        { PL_IMAGE_FILEFORMAT_TIM, "tim",  PlParseTimImage},
-	        { PL_IMAGE_FILEFORMAT_SWL, "swl",  PlParseSwlImage},
-	        { PL_IMAGE_FILEFORMAT_QOI, "qoi",  PlParseQoiImage},
-	        { PL_IMAGE_FILEFORMAT_DDS, "dds",  PlParseDdsImage},
+	        {PL_IMAGE_FILEFORMAT_TGA,       "tga",  LoadStbImage         },
+	        {PL_IMAGE_FILEFORMAT_PNG,       "png",  LoadStbImage         },
+	        {PL_IMAGE_FILEFORMAT_JPG,       "jpg",  LoadStbImage         },
+	        {PL_IMAGE_FILEFORMAT_JPG,       "jpeg", LoadStbImage         },
+	        {PL_IMAGE_FILEFORMAT_JPG,       "jfif", LoadStbImage         },
+	        {PL_IMAGE_FILEFORMAT_BMP,       "bmp",  LoadStbImage         },
+	        {PL_IMAGE_FILEFORMAT_PSD,       "psd",  LoadStbImage         },
+	        {PL_IMAGE_FILEFORMAT_GIF,       "gif",  LoadStbImage         },
+	        {PL_IMAGE_FILEFORMAT_HDR,       "hdr",  LoadStbImage         },
+	        {PL_IMAGE_FILEFORMAT_PIC,       "pic",  LoadStbImage         },
+	        {PL_IMAGE_FILEFORMAT_PNM,       "pnm",  LoadStbImage         },
+	        {PL_IMAGE_FILEFORMAT_FTX,       "ftx",  PlParseFtxImage      },
+	        {PL_IMAGE_FILEFORMAT_3DF,       "3df",  PlParse3dfImage      },
+	        {PL_IMAGE_FILEFORMAT_TIM,       "tim",  PlParseTimImage      },
+	        {PL_IMAGE_FILEFORMAT_SWL,       "swl",  PlParseSwlImage      },
+	        {PL_IMAGE_FILEFORMAT_QOI,       "qoi",  PlParseQoiImage      },
+	        {PL_IMAGE_FILEFORMAT_DDS,       "dds",  PlParseDdsImage      },
+	        {PL_IMAGE_FILEFORMAT_RSB,       "rsb",  PlParseRsbImage_     },
+	        {PL_IMAGE_FILEFORMAT_TEX,       "tex",  PlParse3drTexImage_  },
+	        {PL_IMAGE_FILEFORMAT_ANGEL_TEX, "tex",  PlParseAngelTexImage_},
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
@@ -668,7 +672,7 @@ unsigned int PlGetImageDataSize( const PLImage *image ) {
 
 PLImage *PlResizeImage( PLImage *image, unsigned int newWidth, unsigned int newHeight ) {
 	if ( image->width == newWidth && image->height == newHeight ) {
-		PlReportErrorF( PL_RESULT_FAIL, "image already of width/height" );
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "image already of width/height" );
 		return NULL;
 	}
 
@@ -684,6 +688,37 @@ PLImage *PlResizeImage( PLImage *image, unsigned int newWidth, unsigned int newH
 	                         ( int ) PlGetNumImageFormatChannels( newImage->format ) ) == 0 ) {
 		PlReportErrorF( PL_RESULT_FAIL, "image resize failed" );
 		return NULL;
+	}
+
+	return newImage;
+}
+
+PLImage *PlCropImage( PLImage *image, unsigned int newWidth, unsigned int newHeight, unsigned int xOffset, unsigned int yOffset ) {
+	if ( image->width == newWidth && image->height == newHeight ) {
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "image already of width/height" );
+		return NULL;
+	} else if ( newWidth + xOffset > image->width || newHeight + yOffset > image->height ) {
+		PlReportErrorF( PL_RESULT_INVALID_PARM1, "destination must be smaller than source image" );
+		return NULL;
+	}
+
+	PLImage *newImage = PlCreateImage( NULL, newWidth, newHeight, 0, image->colour_format, image->format );
+	if ( newImage == NULL ) {
+		return NULL;
+	}
+
+	unsigned int numChannels = PlGetNumImageFormatChannels( newImage->format );
+	uint8_t *src = PlGetImageData( image, 0, 0 );
+	uint8_t *dst = PlGetImageData( newImage, 0, 0 );
+
+	for ( int y = 0; y < newHeight; y++ ) {
+		for ( int x = 0; x < newWidth; x++ ) {
+			unsigned int srcPixelIndex = ( ( ( y + yOffset ) * image->width ) + ( x + xOffset ) ) * numChannels;
+			unsigned int dstPixelIndex = ( ( y * newWidth ) + x ) * numChannels;
+			for ( unsigned int channel = 0; channel < numChannels; ++channel ) {
+				dst[ dstPixelIndex + channel ] = src[ srcPixelIndex + channel ];
+			}
+		}
 	}
 
 	return newImage;

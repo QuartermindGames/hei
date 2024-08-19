@@ -10,7 +10,7 @@
 #include <plcore/pl_image.h>
 
 #if defined( _WIN32 )
-#	include <Windows.h>
+#	include <windows.h>
 #	ifdef CreateDirectory
 #		undef CreateDirectory
 #	endif

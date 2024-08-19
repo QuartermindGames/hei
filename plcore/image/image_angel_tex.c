@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
 
-#include <plcore/pl_image.h>
+#include "image_private.h"
 
 typedef struct AngelTEXHeader {
 	uint16_t width;
@@ -19,7 +19,7 @@ typedef enum AngelTEXType {
 	ANGEL_TEX_TYPE_BGRA8_PAL = 14,
 } AngelTEXType;
 
-PLImage *Angel_TEX_ParseImage( PLFile *file ) {
+PLImage *PlParseAngelTexImage_( PLFile *file ) {
 	AngelTEXHeader header;
 	PL_ZERO_( header );
 

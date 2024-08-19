@@ -36,7 +36,7 @@ static bool ParseINUHeader( PLFile *file, uint32_t *tableOffset, uint32_t *table
 	return true;
 }
 
-static PLPackage *ParseINUFile( PLFile *file ) {
+PLPackage *PlParseInuPackage_( PLFile *file ) {
 	uint32_t tocOffset, tocIndices;
 	if ( !ParseINUHeader( file, &tocOffset, &tocIndices ) ) {
 		return NULL;
@@ -81,19 +81,6 @@ static PLPackage *ParseINUFile( PLFile *file ) {
 		package->table[ i ].offset = PlReadInt32( file, false, NULL );
 		package->table[ i ].fileSize = PlReadInt32( file, false, NULL );
 	}
-
-	return package;
-}
-
-PLPackage *WFear_INU_LoadPackage( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
-		return NULL;
-	}
-
-	PLPackage *package = ParseINUFile( file );
-
-	PlCloseFile( file );
 
 	return package;
 }

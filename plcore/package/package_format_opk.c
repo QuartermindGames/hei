@@ -1,14 +1,12 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
-#include <plcore/pl_package.h>
+#include "package_private.h"
 
 /* Outcast OPK format */
 
-static PLPackage *Outcast_OPK_ParseFile( PLFile *file ) {
+PLPackage *PlParseOpkPackage_( PLFile *file ) {
 	static const int32_t opkMagic = 0x6e71;
 	int32_t magic = PlReadInt32( file, false, NULL );
 	if ( magic != opkMagic ) {
@@ -54,19 +52,6 @@ static PLPackage *Outcast_OPK_ParseFile( PLFile *file ) {
 		index->fileSize = PlReadInt32( file, false, &status );
 		index->compressionType = PL_COMPRESSION_IMPLODE;
 	}
-
-	return package;
-}
-
-PLPackage *Outcast_OPK_LoadFile( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
-		return NULL;
-	}
-
-	PLPackage *package = Outcast_OPK_ParseFile( file );
-
-	PlCloseFile( file );
 
 	return package;
 }

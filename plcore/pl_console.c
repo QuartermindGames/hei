@@ -11,7 +11,7 @@
 
 #include <errno.h>
 #if defined( _WIN32 )
-#	include <Windows.h>
+#	include <windows.h>
 #	include <io.h>
 #endif
 
@@ -110,7 +110,7 @@ static size_t _pl_num_variables = 0;
 static size_t _pl_variables_size = 512;
 static PLHashTable *variableHashes = NULL;
 
-PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void *ptrValue, void ( *CallbackFunction )( const PLConsoleVariable * ), bool archive ) {
+PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void *ptrValue, void ( *CallbackFunction )( PLConsoleVariable * ), bool archive ) {
 	FunctionStart();
 
 	PL_ASSERT( _pl_variables );
@@ -237,6 +237,9 @@ void PlSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
 
 		case PL_VAR_STRING:
 			var->s_value = &var->value[ 0 ];
+			if ( var->ptrValue != NULL ) {
+				snprintf( var->ptrValue, PL_VAR_VALUE_LENGTH, "%s", value );
+			}
 			break;
 
 		case PL_VAR_F32:
@@ -265,6 +268,7 @@ void PlSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
 	}
 
 	strncpy( var->value, value, sizeof( var->value ) );
+
 	if ( var->CallbackFunction != NULL ) {
 		var->CallbackFunction( var );
 	}
@@ -364,22 +368,54 @@ IMPLEMENT_COMMAND( help ) {
  * Find the specific var/cmd, by name or description.
  */
 static void find_cmd( PL_UNUSED unsigned int argc, char **argv ) {
-	const char *term = argv[ 1 ];
-	Print( "Variables that match the term \"%s\"\n", term );
-	for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
-		if ( ( pl_strcasestr( ( *var )->name, term ) == NULL ) && ( ( *var )->description != NULL && pl_strcasestr( ( *var )->description, term ) == NULL ) ) {
-			continue;
-		}
-
-		PrintVarDetails( ( *var ) );
+	if ( argc <= 1 ) {
+		Print( "No arguments provided!\n" );
+		return;
 	}
-	Print( "Commands that match the term \"%s\"\n", term );
-	for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
-		if ( ( pl_strcasestr( ( *cmd )->name, term ) == NULL ) && ( ( *cmd )->description != NULL && pl_strcasestr( ( *cmd )->description, term ) == NULL ) ) {
-			continue;
-		}
 
-		PrintCmdDetails( ( *cmd ) );
+	const char *term = argv[ 1 ];
+
+	bool findVars = true;
+	bool findCommands = true;
+	if ( argc > 2 ) {
+		if ( strcmp( term, "var" ) == 0 ) {
+			findVars = true;
+			findCommands = false;
+			term = argv[ 2 ];
+		} else if ( strcmp( term, "cmd" ) == 0 ) {
+			findVars = false;
+			findCommands = true;
+			term = argv[ 2 ];
+		}
+	} else {
+		findVars = findCommands = true;
+	}
+
+	if ( term == NULL ) {
+		Print( "Invalid arguments provided!\n" );
+		return;
+	}
+
+	if ( findVars ) {
+		Print( "Variables that match the term \"%s\"\n", term );
+		for ( PLConsoleVariable **var = _pl_variables; var < _pl_variables + _pl_num_variables; ++var ) {
+			if ( ( pl_strcasestr( ( *var )->name, term ) == NULL ) && ( ( *var )->description != NULL && pl_strcasestr( ( *var )->description, term ) == NULL ) ) {
+				continue;
+			}
+
+			PrintVarDetails( ( *var ) );
+		}
+	}
+
+	if ( findCommands ) {
+		Print( "Commands that match the term \"%s\"\n", term );
+		for ( PLConsoleCommand **cmd = _pl_commands; cmd < _pl_commands + _pl_num_commands; ++cmd ) {
+			if ( ( pl_strcasestr( ( *cmd )->name, term ) == NULL ) && ( ( *cmd )->description != NULL && pl_strcasestr( ( *cmd )->description, term ) == NULL ) ) {
+				continue;
+			}
+
+			PrintCmdDetails( ( *cmd ) );
+		}
 	}
 }
 
@@ -406,7 +442,9 @@ PLFunctionResult PlInitConsole( void ) {
 	PlRegisterConsoleCommand( "vars", "Prints a list of available variables.", 0, vars_cmd );
 	PlRegisterConsoleCommand( "pwd", "Prints out the current working directory.", 0, pwd_cmd );
 	PlRegisterConsoleCommand( "echo", "Echos the given input to the console output.", 1, echo_cmd );
-	PlRegisterConsoleCommand( "find", "Find the specific var/cmd, by name or description.", 1, find_cmd );
+	PlRegisterConsoleCommand( "find", "Find the specific var/cmd, by name or description."
+	                                  "You can specify 'cmd' or 'vars' to filter.",
+	                          -1, find_cmd );
 
 	/* initialize our internal log levels here
 	 * as we depend on the console variables being setup first */

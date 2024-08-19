@@ -123,6 +123,9 @@ typedef struct PLGMesh {
 	unsigned int *indices;
 	unsigned int num_indices;
 	unsigned int maxIndices;
+	unsigned int startIndex;
+	unsigned int endIndex;
+
 	unsigned int num_triangles;
 
 	/* todo: consider throwing out the below */

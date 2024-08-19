@@ -259,17 +259,8 @@ PL_NORETURN( static void MainLoop( void ) ) {
 	}
 }
 
-void PlRegister3drTexImageLoader( void );
-void PlRegisterRsbImageLoader( void );
-
 static void register_image_formats( void ) {
 	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
-
-	PlRegister3drTexImageLoader();
-	PlRegisterRsbImageLoader();
-
-	PLImage *Angel_TEX_ParseImage( PLFile * file );
-	PlRegisterImageLoader( "tex", Angel_TEX_ParseImage );
 
 	PlRegisterImageLoader( "tga", PlParseOkreTexture );
 	PlRegisterImageLoader( "bmDDS", PlParseOkreTexture );
@@ -291,9 +282,6 @@ int main( int argc, char **argv ) {
 
 	PLPackage *IStorm_LST_LoadFile( const char *path );
 	PlRegisterPackageLoader( "lst", IStorm_LST_LoadFile, NULL );
-
-	PLPackage *Outcast_OPK_LoadFile( const char *path );
-	PlRegisterPackageLoader( "pak", Outcast_OPK_LoadFile, NULL );
 
 	PLPackage *AITD_PAK_LoadPackage( const char *path );
 	PlRegisterPackageLoader( "pak", AITD_PAK_LoadPackage, NULL );
@@ -319,9 +307,6 @@ int main( int argc, char **argv ) {
 	PLPackage *PlParseIce3DDatPackage( PLFile * file );
 	PlRegisterPackageLoader( "dat", NULL, PlParseIce3DDatPackage );
 
-	PLPackage *WFear_INU_LoadPackage( const char *path );
-	PlRegisterPackageLoader( "inu", WFear_INU_LoadPackage, NULL );
-
 	PLPackage *asa_format_tre_load( const char *path );
 	PlRegisterPackageLoader( "tre", asa_format_tre_load, NULL );
 
@@ -334,13 +319,8 @@ int main( int argc, char **argv ) {
 
 	PLPath exeDir;
 	if ( PlGetExecutableDirectory( exeDir, sizeof( PLPath ) ) != NULL ) {
-		PlMountLocalLocation( exeDir );
-
-		PlRegisterPlugins( exeDir );
-
-		/* attempt to also register any plugins under a 'plugins' location */
 		PLPath pluginsDir;
-		snprintf( pluginsDir, sizeof( pluginsDir ), PlPathEndsInSlash( exeDir ) ? "%splugins" : "%s/plugins", exeDir );
+		PlSetupPath( pluginsDir, true, PlPathEndsInSlash( exeDir ) ? "%splugins" : "%s/plugins", exeDir );
 		PlRegisterPlugins( pluginsDir );
 	}
 

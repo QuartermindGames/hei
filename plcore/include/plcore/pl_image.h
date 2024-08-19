@@ -114,12 +114,15 @@ enum {
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_HDR, 6 ),
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_PIC, 7 ),
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_PNM, 8 ),
-	PL_BITFLAG( PL_IMAGE_FILEFORMAT_FTX, 9 ), /* todo: move to extras */
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_FTX, 9 ),
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_3DF, 10 ),
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_TIM, 11 ),
-	PL_BITFLAG( PL_IMAGE_FILEFORMAT_SWL, 12 ), /* todo: move to extras */
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_SWL, 12 ),
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_QOI, 13 ),
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_DDS, 14 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_RSB, 15 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_TEX, 16 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_ANGEL_TEX, 17 ),
 };
 
 PL_EXTERN_C
@@ -162,6 +165,7 @@ void *PlGetImageData( PLImage *image, unsigned int frame, unsigned int mip );
 unsigned int PlGetImageDataSize( const PLImage *image );
 
 PLImage *PlResizeImage( PLImage *image, unsigned int newWidth, unsigned int newHeight );
+PLImage *PlCropImage( PLImage *image, unsigned int newWidth, unsigned int newHeight, unsigned int xOffset, unsigned int yOffset );
 
 // S3TC Library Interface
 void PlBlockDecompressImageDXT1( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image );

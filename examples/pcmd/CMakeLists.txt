@@ -34,10 +34,8 @@ add_executable(pcmd
         main.c
 
         ../../extras/angel/angel_dat.c
-        ../../extras/angel/angel_tex.c
         ../../extras/asa/asa.c
         ../../extras/asa/asa_format_tre.c
-        ../../extras/wfear/wfear_inu.c
         ../../extras/aitd/aitd_pak.c
         ../../extras/eradicator_rid.c
 
@@ -48,16 +46,12 @@ add_executable(pcmd
         ../../extras/ice3d_dat.c
         ../../extras/istorm_ibf.c
         ../../extras/mortyr_hal.c
-        ../../extras/outcast_opk.c
         ../../extras/outwars_ff.c
         ../../extras/package/package_rof.c
         ../../extras/sentient_vsr.c
 
         ../../extras/pl_extra_okre.c
         ../../extras/pl_extra_kri_wad.c
-
-        ../../extras/image_3dr_tex.c
-        ../../extras/image_rsb.c
 )
 add_dependencies(pcmd
         blitz_plugin
