@@ -1,8 +1,6 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include <plcore/pl_parse.h>
 #include <plgraphics/plg_driver_interface.h>
@@ -347,7 +345,7 @@ unsigned int PlgGetNumShaderUniformElements( const PLGShaderProgram *program, in
 
 static int ValidateShaderUniformSlot( PLGShaderProgram *program, int slot ) {
 	if ( slot == -1 ) {
-		GfxLog( "Invalid shader uniform slot, \"%d\"!\n", slot );
+		GfxLog( "Invalid shader uniform slot!\n" );
 		return -1;
 	} else if ( ( unsigned int ) ( slot ) >= program->num_uniforms ) {
 		GfxLog( "Potential overflow for uniform slot! (%d / %d)\n", slot, program->num_uniforms );

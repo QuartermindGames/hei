@@ -1,5 +1,6 @@
-/* SPDX-License-Identifier: MIT */
-/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 /* Titan A.E. */
 "GAMETEXT.TXT",              //0
@@ -16,8 +17,24 @@
         "EXPLORE\\BAN_2.SPT",//25
         "EXPLORE\\BAN_2.XED",//26
 
-        "EXPLORE\\DCH1_2.LND",//35
-
+        "EXPLORE\\DCH1_1.FSK",  //28
+        "EXPLORE\\DCH1_1.LND",  //
+        "EXPLORE\\DCH1_1.RAW",  //
+        "EXPLORE\\DCH1_1.RGN",  //31
+        "EXPLORE\\DCH1_1.SPT",  //
+        "EXPLORE\\DCH1_1.XED",  //33
+        "EXPLORE\\DCH1_2.FSK",  //34
+        "EXPLORE\\DCH1_2.LND",  //35
+        "EXPLORE\\DCH1_2.RAW",  //36
+        "EXPLORE\\DCH1_2.RGN",  //37
+        "EXPLORE\\DCH1_2.SPT",  //38
+        "EXPLORE\\DCH1_2.XED",  //39
+        "EXPLORE\\DCH1_3.FSK",  //
+        "EXPLORE\\DCH1_3.LND",  //41
+        "EXPLORE\\DCH1_3.RAW",  //42
+        "EXPLORE\\DCH1_3.RGN",  //43
+        "EXPLORE\\DCH1_3.SPT",  //44
+        "EXPLORE\\DCH1_3.XED",  //45
         "EXPLORE\\DERELIC1.FSK",//46
         "EXPLORE\\DERELIC1.LND",//47
         "EXPLORE\\DERELIC1.RAW",//48
@@ -25,104 +42,197 @@
         "EXPLORE\\DERELIC1.SPT",//50
         "EXPLORE\\DERELIC1.XED",//51
         "EXPLORE\\DERELIC2.FSK",//52
-        "EXPLORE\\DERELIC2.LND",
-        "EXPLORE\\DERELIC2.RAW",
-        "EXPLORE\\DERELIC2.RGN",
-        "EXPLORE\\DERELIC2.SPT",
+        "EXPLORE\\DERELIC2.LND",//53
+        "EXPLORE\\DERELIC2.RAW",//54
+        "EXPLORE\\DERELIC2.RGN",//55
+        "EXPLORE\\DERELIC2.SPT",//56
         "EXPLORE\\DERELIC2.XED",//57
         "EXPLORE\\DERELIC3.FSK",//58
-        "EXPLORE\\DERELIC3.LND",
-        "EXPLORE\\DERELIC3.RAW",
-        "EXPLORE\\DERELIC3.RGN",
-        "EXPLORE\\DERELIC3.SPT",
+        "EXPLORE\\DERELIC3.LND",//59
+        "EXPLORE\\DERELIC3.RAW",//60
+        "EXPLORE\\DERELIC3.RGN",//61
+        "EXPLORE\\DERELIC3.SPT",//62
         "EXPLORE\\DERELIC3.XED",//63
-
-        "EXPLORE\\DREJ_1.FSK",//76
-        "EXPLORE\\DREJ_1.LND",
-        "EXPLORE\\DREJ_1.RAW",
-        "EXPLORE\\DREJ_1.RGN",
-        "EXPLORE\\DREJ_1.SPT",
-        "EXPLORE\\DREJ_1.XED",
-        "EXPLORE\\DREJ_2.FSK",//82
-        "EXPLORE\\DREJ_2.LND",
-        "EXPLORE\\DREJ_2.RAW",
-        "EXPLORE\\DREJ_2.RGN",
-        "EXPLORE\\DREJ_2.SPT",
-        "EXPLORE\\DREJ_2.XED",//87
-        "EXPLORE\\DREJ_3.FSK",//88
-        "EXPLORE\\DREJ_3.LND",
-        "EXPLORE\\DREJ_3.RAW",
-        "EXPLORE\\DREJ_3.RGN",
-        "EXPLORE\\DREJ_3.SPT",
-        "EXPLORE\\DREJ_3.XED",//93
-        "EXPLORE\\DREJ_4.FSK",//94
-        "EXPLORE\\DREJ_4.LND",
-        "EXPLORE\\DREJ_4.RGN",
-        "EXPLORE\\DREJ_4.SPT",
+        "EXPLORE\\DERELIC4.FSK",//64
+        "EXPLORE\\DERELIC4.LND",//65
+        "EXPLORE\\DERELIC4.RAW",//66
+        "EXPLORE\\DERELIC4.RGN",//67
+        "EXPLORE\\DERELIC4.SPT",//68
+        "EXPLORE\\DERELIC4.XED",//69
+        "EXPLORE\\DERELIC5.FSK",//70
+        "EXPLORE\\DERELIC5.LND",//71
+        "EXPLORE\\DERELIC5.RAW",//72
+        "EXPLORE\\DERELIC5.RGN",//73
+        "EXPLORE\\DERELIC5.SPT",//74
+        "EXPLORE\\DERELIC5.XED",//75
+        "EXPLORE\\DREJ_1.FSK",  //76
+        "EXPLORE\\DREJ_1.LND",  //77
+        "EXPLORE\\DREJ_1.RAW",  //78
+        "EXPLORE\\DREJ_1.RGN",  //79
+        "EXPLORE\\DREJ_1.SPT",  //80
+        "EXPLORE\\DREJ_1.XED",  //81
+        "EXPLORE\\DREJ_2.FSK",  //82
+        "EXPLORE\\DREJ_2.LND",  //83
+        "EXPLORE\\DREJ_2.RAW",  //84
+        "EXPLORE\\DREJ_2.RGN",  //85
+        "EXPLORE\\DREJ_2.SPT",  //86
+        "EXPLORE\\DREJ_2.XED",  //87
+        "EXPLORE\\DREJ_3.FSK",  //88
+        "EXPLORE\\DREJ_3.LND",  //89
+        "EXPLORE\\DREJ_3.RAW",  //90
+        "EXPLORE\\DREJ_3.RGN",  //91
+        "EXPLORE\\DREJ_3.SPT",  //92
+        "EXPLORE\\DREJ_3.XED",  //93
+        "EXPLORE\\DREJ_4.FSK",  //94
+        "EXPLORE\\DREJ_4.LND",  //95
+        "EXPLORE\\DREJ_4.RAW",  //96
+        "EXPLORE\\DREJ_4.RGN",  //97
+        "EXPLORE\\DREJ_4.SPT",  //98
         "EXPLORE\\DREJ_4.XED",  //99
         "EXPLORE\\FITECLUB.FSK",//100
-        "EXPLORE\\FITECLUB.LND",
-        "EXPLORE\\FITECLUB.RAW",
-        "EXPLORE\\FITECLUB.RGN",
-        "EXPLORE\\FITECLUB.SPT",
+        "EXPLORE\\FITECLUB.LND",//101
+        "EXPLORE\\FITECLUB.RAW",//102
+        "EXPLORE\\FITECLUB.RGN",//103
+        "EXPLORE\\FITECLUB.SPT",//104
         "EXPLORE\\FITECLUB.XED",//105
 
-        "EXPLORE\\RESLAB2.LND",//115
-
-        "EXPLORE\\SESH1.FSK",//132
-        "EXPLORE\\SESH1.LND",//133
-        "EXPLORE\\SESH1.RAW",//134
-        "EXPLORE\\SESH1.RGN",//135
-        "EXPLORE\\SESH1.SPT",//136
-        "EXPLORE\\SESH1.XED",//137
-        "EXPLORE\\SESH2.FSK",//138
-        "EXPLORE\\SESH2.LND",//139
-        "EXPLORE\\SESH2.RAW",//140
-        "EXPLORE\\SESH2.RGN",//141
-        "EXPLORE\\SESH2.SPT",//142
-        "EXPLORE\\SESH2.XED",//143
-
+        "EXPLORE\\RESLAB1.FSK", //108
+        "EXPLORE\\RESLAB1.LND", //109
+        "EXPLORE\\RESLAB1.RAW", //110
+        "EXPLORE\\RESLAB1.RGN", //111
+        "EXPLORE\\RESLAB1.SPT", //112
+        "EXPLORE\\RESLAB1.XED", //113
+        "EXPLORE\\RESLAB2.FSK", //114
+        "EXPLORE\\RESLAB2.LND", //115
+        "EXPLORE\\RESLAB2.RAW", //116
+        "EXPLORE\\RESLAB2.RGN", //117
+        "EXPLORE\\RESLAB2.SPT", //118
+        "EXPLORE\\RESLAB2.XED", //119
+        "EXPLORE\\RESLAB3.FSK", //120
+        "EXPLORE\\RESLAB3.LND", //
+        "EXPLORE\\RESLAB3.RAW", //
+        "EXPLORE\\RESLAB3.RGN", //
+        "EXPLORE\\RESLAB3.SPT", //
+        "EXPLORE\\RESLAB3.XED", //
+        "EXPLORE\\RESLAB4.FSK", //
+        "EXPLORE\\RESLAB4.LND", //
+        "EXPLORE\\RESLAB4.RAW", //
+        "EXPLORE\\RESLAB4.RGN", //
+        "EXPLORE\\RESLAB4.SPT", //
+        "EXPLORE\\RESLAB4.XED", //131
+        "EXPLORE\\SESH1.FSK",   //132
+        "EXPLORE\\SESH1.LND",   //133
+        "EXPLORE\\SESH1.RAW",   //134
+        "EXPLORE\\SESH1.RGN",   //135
+        "EXPLORE\\SESH1.SPT",   //136
+        "EXPLORE\\SESH1.XED",   //137
+        "EXPLORE\\SESH2.FSK",   //138
+        "EXPLORE\\SESH2.LND",   //139
+        "EXPLORE\\SESH2.RAW",   //140
+        "EXPLORE\\SESH2.RGN",   //141
+        "EXPLORE\\SESH2.SPT",   //142
+        "EXPLORE\\SESH2.XED",   //143
+        "EXPLORE\\SESH3.FSK",   //144
+        "EXPLORE\\SESH3.LND",   //145
+        "EXPLORE\\SESH3.RAW",   //146
+        "EXPLORE\\SESH3.RGN",   //147
+        "EXPLORE\\SESH3.SPT",   //148
+        "EXPLORE\\SESH3.XED",   //149
         "EXPLORE\\SHOOTGAL.FSK",//150
         "EXPLORE\\SHOOTGAL.LND",//151
         "EXPLORE\\SHOOTGAL.RAW",//152
         "EXPLORE\\SHOOTGAL.RGN",//153
         "EXPLORE\\SHOOTGAL.SPT",//154
         "EXPLORE\\SHOOTGAL.XED",//155
-
+        "EXPLORE\\SLAVE1_1.FSK",//156
         "EXPLORE\\SLAVE1_1.LND",//157
+        "EXPLORE\\SLAVE1_1.RAW",//158
+        "EXPLORE\\SLAVE1_1.RGN",//159
+        "EXPLORE\\SLAVE1_1.SPT",//160
+        "EXPLORE\\SLAVE1_1.XED",//161
+        "EXPLORE\\SLAVE1_2.FSK",//162
         "EXPLORE\\SLAVE1_2.LND",//163
+        "EXPLORE\\SLAVE1_2.RAW",//164
+        "EXPLORE\\SLAVE1_2.RGN",//165
+        "EXPLORE\\SLAVE1_2.SPT",//166
+        "EXPLORE\\SLAVE1_2.XED",//167
+        "EXPLORE\\SLAVE1_3.FSK",//168
         "EXPLORE\\SLAVE1_3.LND",//169
+        "EXPLORE\\SLAVE1_3.RAW",//170
+        "EXPLORE\\SLAVE1_3.RGN",//171
+        "EXPLORE\\SLAVE1_3.SPT",//172
+        "EXPLORE\\SLAVE1_3.XED",//173
+        "EXPLORE\\TAU14_1.FSK", //174
+        "EXPLORE\\TAU14_1.LND", //175
+        "EXPLORE\\TAU14_1.RAW", //176
+        "EXPLORE\\TAU14_1.RGN", //177
+        "EXPLORE\\TAU14_1.SPT", //178
+        "EXPLORE\\TAU14_1.XED", //179
+        "EXPLORE\\TAU14_2.FSK", //180
+        "EXPLORE\\TAU14_2.LND", //181
+        "EXPLORE\\TAU14_2.RAW", //182
+        "EXPLORE\\TAU14_2.RGN", //183
+        "EXPLORE\\TAU14_2.SPT", //184
+        "EXPLORE\\TAU14_2.XED", //185
+        "EXPLORE\\TAU14_3.FSK", //186
+        "EXPLORE\\TAU14_3.LND", //187
+        "EXPLORE\\TAU14_3.RGN", //189
+        "EXPLORE\\TAU14_3.SPT", //190
+        "EXPLORE\\TAU14_3.XED", //191
+        "EXPLORE\\TAU14_4.FSK", //192
+        "EXPLORE\\TAU14_4.LND", //193
+        "EXPLORE\\TAU14_4.RGN", //195
+        "EXPLORE\\TAU14_4.SPT", //196
+        "EXPLORE\\TAU14_4.XED", //197
 
-        "EXPLORE\\TAU14_1.FSK",//174
-        "EXPLORE\\TAU14_1.LND",//175
-        "EXPLORE\\TAU14_1.RAW",//176
-        "EXPLORE\\TAU14_1.RGN",//177
-        "EXPLORE\\TAU14_1.SPT",//178
-        "EXPLORE\\TAU14_1.XED",//179
-        "EXPLORE\\TAU14_2.FSK",//180
-        "EXPLORE\\TAU14_2.LND",//181
-        "EXPLORE\\TAU14_2.RAW",//182
-        "EXPLORE\\TAU14_2.RGN",//183
-        "EXPLORE\\TAU14_2.SPT",//184
-        "EXPLORE\\TAU14_2.XED",//185
-        "EXPLORE\\TAU14_3.FSK",//186
-        "EXPLORE\\TAU14_3.LND",//187
-        "EXPLORE\\TAU14_3.RGN",//189
-        "EXPLORE\\TAU14_3.SPT",//190
-        "EXPLORE\\TAU14_3.XED",//191
-        "EXPLORE\\TAU14_4.FSK",//192
-        "EXPLORE\\TAU14_4.LND",//193
-        "EXPLORE\\TAU14_4.RGN",//195
-        "EXPLORE\\TAU14_4.SPT",//196
-        "EXPLORE\\TAU14_4.XED",//197
-
+        "EXPLORE\\TRADE1_1.FSK",//215
         "EXPLORE\\TRADE1_1.LND",//216
+        "EXPLORE\\TRADE1_1.RAW",//217
+        "EXPLORE\\TRADE1_1.RGN",//218
+        "EXPLORE\\TRADE1_1.SPT",//219
+        "EXPLORE\\TRADE1_1.XED",//220
+        "EXPLORE\\TRADE1_2.FSK",//221
         "EXPLORE\\TRADE1_2.LND",//222
+        "EXPLORE\\TRADE1_2.RAW",//223
+        "EXPLORE\\TRADE1_2.RGN",//224
+        "EXPLORE\\TRADE1_2.SPT",//225
+        "EXPLORE\\TRADE1_2.XED",//226
+        "EXPLORE\\TRADE1_3.FSK",//227
         "EXPLORE\\TRADE1_3.LND",//228
+        "EXPLORE\\TRADE1_3.RAW",//229
+        "EXPLORE\\TRADE1_3.RGN",//230
+        "EXPLORE\\TRADE1_3.SPT",//231
+        "EXPLORE\\TRADE1_3.XED",//232
+        "EXPLORE\\TRADE1_4.FSK",//233
         "EXPLORE\\TRADE1_4.LND",//234
+        "EXPLORE\\TRADE1_4.RGN",//236
+        "EXPLORE\\TRADE1_4.SPT",//237
+        "EXPLORE\\TRADE1_4.XED",//238
+
+        "EXPLORE\\VIGO1ST.FSK", //245
         "EXPLORE\\VIGO1ST.LND", //246
+        "EXPLORE\\VIGO1ST.RAW", //247
+        "EXPLORE\\VIGO1ST.RGN", //248
+        "EXPLORE\\VIGO1ST.SPT", //249
+        "EXPLORE\\VIGO1ST.XED", //250
+        "EXPLORE\\VIGO2ND.FSK", //251
+        "EXPLORE\\VIGO2ND.LND", //252
+        "EXPLORE\\VIGO2ND.RAW", //253
+        "EXPLORE\\VIGO2ND.RGN", //254
+        "EXPLORE\\VIGO2ND.SPT", //255
+        "EXPLORE\\VIGO2ND.XED", //256
+        "EXPLORE\\VIGO_IN.FSK", //257
         "EXPLORE\\VIGO_IN.LND", //258
+        "EXPLORE\\VIGO_IN.RAW", //259
+        "EXPLORE\\VIGO_IN.RGN", //260
+        "EXPLORE\\VIGO_IN.SPT", //261
+        "EXPLORE\\VIGO_IN.XED", //262
+        "EXPLORE\\VIGO_OUT.FSK",//263
         "EXPLORE\\VIGO_OUT.LND",//264
+        "EXPLORE\\VIGO_OUT.RAW",//265
+        "EXPLORE\\VIGO_OUT.RGN",//266
+        "EXPLORE\\VIGO_OUT.SPT",//267
+        "EXPLORE\\VIGO_OUT.XED",//268
 
         "EXPLORE\\COMPUTER\\TAUCOM.PSI",//271
         "EXPLORE\\COMPUTER\\TAUCOM.SPT",//272
@@ -137,12 +247,21 @@
         "EXPLORE\\EVENTS\\TAU14_2.FUK", //284
         "EXPLORE\\EVENTS\\TAU14_3.FUK", //285
         "EXPLORE\\EVENTS\\TAU14_4.FUK", //286
-
-        "EXPLORE\\EVENTS\\DREJ_1.FUK",//295
-        "EXPLORE\\EVENTS\\DREJ_2.FUK",//296
-        "EXPLORE\\EVENTS\\DREJ_3.FUK",//297
-        "EXPLORE\\EVENTS\\DREJ_4.FUK",//298
-        "EXPLORE\\EVENTS\\SESH1.FUK", //299
+        "EXPLORE\\EVENTS\\TRADE1_1.FUK",//287
+        "EXPLORE\\EVENTS\\TRADE1_2.FUK",//288
+        "EXPLORE\\EVENTS\\TRADE1_3.FUK",//289
+        "EXPLORE\\EVENTS\\TRADE1_4.FUK",//290
+        "EXPLORE\\EVENTS\\VIGO1ST.FUK", //291
+        "EXPLORE\\EVENTS\\VIGO_IN.FUK", //292
+        "EXPLORE\\EVENTS\\VIGO_OUT.FUK",//293
+        //294
+        "EXPLORE\\EVENTS\\DREJ_1.FUK",  //295
+        "EXPLORE\\EVENTS\\DREJ_2.FUK",  //296
+        "EXPLORE\\EVENTS\\DREJ_3.FUK",  //297
+        "EXPLORE\\EVENTS\\DREJ_4.FUK",  //298
+        "EXPLORE\\EVENTS\\SESH1.FUK",   //299
+        "EXPLORE\\EVENTS\\SLAVE1_1.FUK",//300
+        "EXPLORE\\EVENTS\\SLAVE1_2.FUK",//301
 
         "EXPLORE\\PICKUPS\\AMMO1.PSI",   //306
         "EXPLORE\\PICKUPS\\AMMO1.SPT",   //307
@@ -182,20 +301,38 @@
         "EXPLORE\\PICKUPS\\CLAWBONE.PSI",//353
         "EXPLORE\\PICKUPS\\CLAWBONE.SPT",//354
 
-        "EXPLORE\\TEXANIM\\ASIGN.SPT", //357
-        "EXPLORE\\TEXANIM\\B0ANIM.SPT",//358
-        "EXPLORE\\TEXANIM\\BSIGN.SPT", //359
-        "EXPLORE\\TEXANIM\\CHANIM.SPT",//360
+        "EXPLORE\\TEXANIM\\ASIGN.SPT",   //357
+        "EXPLORE\\TEXANIM\\B0ANIM.SPT",  //358
+        "EXPLORE\\TEXANIM\\BSIGN.SPT",   //359
+        "EXPLORE\\TEXANIM\\CHANIM.SPT",  //360
+        "EXPLORE\\TEXANIM\\COMPUTA.SPT", //361
+        "EXPLORE\\TEXANIM\\CONDUIT2.SPT",//362
+        "EXPLORE\\TEXANIM\\CONDUIT3.SPT",//363
 
         "EXPLORE\\TEXANIM\\CSLOT.SPT", //365
         "EXPLORE\\TEXANIM\\DCBOX2.SPT",//366
+
+        "EXPLORE\\TEXANIM\\FOICE.SPT",//371
+
+        "EXPLORE\\TEXANIM\\MONI1L.SPT",//374
+        "EXPLORE\\TEXANIM\\MONI5L.SPT",//375
         "EXPLORE\\TEXANIM\\MSPARK.SPT",//376
+        "EXPLORE\\TEXANIM\\NNEON1.SPT",//377
 
-        "EXPLORE\\TEXANIM\\PAW.SPT",//381
-
+        "EXPLORE\\TEXANIM\\PAW.SPT",     //381
+        "EXPLORE\\TEXANIM\\POWERC.SPT",  //382
+        "EXPLORE\\TEXANIM\\SCREW.SPT",   //383
+        "EXPLORE\\TEXANIM\\SCREWB.SPT",  //384
+        "EXPLORE\\TEXANIM\\SIGN04.SPT",  //385
         "EXPLORE\\TEXANIM\\T14BLINK.SPT",//386
         "EXPLORE\\TEXANIM\\T14LITE.SPT", //387
+        "EXPLORE\\TEXANIM\\TSSPAW.SPT",  //388
 
+        "EXPLORE\\TEXANIM\\VIDW_01.SPT",//390
+        "EXPLORE\\TEXANIM\\VIDW_06.SPT",//391
+
+        "EXPLORE\\TEXANIM\\SL08.SPT",            //396
+        "EXPLORE\\TEXANIM\\SLSCR.SPT",           //397
         "EXPLORE\\WEAPONS\\CALEGUN1.PSI",        //398
         "EXPLORE\\WEAPONS\\CALEGUN1.SPT",        //399
         "EXPLORE\\WEAPONS\\WEAP.SPT",            //401
@@ -214,6 +351,10 @@
         "EXPLORE\\WRISTCOM\\WRISTCOM.PSI",//415
         "EXPLORE\\WRISTCOM\\WRISTCOM.SPT",//416
 
+        "EXPLORE\\TEST.FSK",            //418
+        "EXPLORE\\TEST.LND",            //419
+        "EXPLORE\\TEST.SPT",            //420
+        "EXPLORE\\TEST.XED",            //421
         "EXPLORE\\ALIENFNT\\ALIEN1.SPT",//422
 
         "EXPLORE\\OSD\\CODEFRAG.SPT",//424
@@ -225,6 +366,8 @@
         "FLYING\\BACKDRPS\\ENDSCN3.RAW",//430
         "FLYING\\BACKDRPS\\VOLCANO.RAW",//431
 
+        "FLYING\\LEVELS\\BANGKOK.RAD",//437
+        "FLYING\\LEVELS\\BANGKOK.ROB",//438
         "FLYING\\LEVELS\\BANGKOK.SPT",//439
 
         "FLYING\\LEVELS\\BANGKOK2.PSI",//441
@@ -232,17 +375,29 @@
 
         "FLYING\\LEVELS\\BANGKTUN.SPT",//445
 
+        "FLYING\\LEVELS\\CRASH.RAD",//447
+        "FLYING\\LEVELS\\CRASH.ROB",//448
+        "FLYING\\LEVELS\\CRASH.SPT",//449
+
         "FLYING\\LEVELS\\CRASHUNI.PSI",//451
         "FLYING\\LEVELS\\CRASHUNI.SPT",//452
 
         "FLYING\\LEVELS\\SESH_UNI.SPT",//485
+        "FLYING\\LEVELS\\SESHARIM.RAD",//486
 
         "FLYING\\LEVELS\\TAU_PLAN.SPT",//496
         "FLYING\\LEVELS\\TAU_STAR.SPT",//497
 
+        "FLYING\\LEVELS\\TITAN.RAD",//502
+
+        "FLYING\\LEVELS\\TOMTEST.RAD",//504
+        "FLYING\\LEVELS\\TOMTEST.SPT",//505
+
         "FLYING\\LEVELS\\U_PLASMA.SPT",//508
 
         "FLYING\\LEVELS\\U_STARS.SPT",//510
+
+        "FLYING\\LEVELS\\VBOSS1.RAD",//513
 
         "FLYING\\LEVELS\\VOL_MOUN.PSI",//518
         "FLYING\\LEVELS\\VOL_MOUN.SPT",//519
@@ -255,6 +410,9 @@
         "FLYING\\LEVELS\\VOLCANO.STF", //526
 
         "FLYING\\LEVELS\\SESH_UNI.PSI",//529
+        "FLYING\\LEVELS\\BANGKOK.STF", //530
+
+        "FLYING\\LEVELS\\CRASH.STF",//532
 
         "FLYING\\LEVELS\\TAU_PLAN.PSI",//537
         "FLYING\\LEVELS\\TAU_STAR.PSI",//538
@@ -463,6 +621,9 @@
         "MODELS\\HBIKEBOB.PSI",//1070
         "MODELS\\HBIKEBOB.SPT",//1071
         "MODELS\\HOVRBIKE.PSI",//1072
+
+        "MODELS\\IMAKI.PSI",//1076
+
         "MODELS\\IRIS.PSI",    //1078
         "MODELS\\IRIS.SPT",    //1079
         "MODELS\\JUKEBOX.PSI", //1080
@@ -535,8 +696,9 @@
         "MODELS\\GAUOLFLY.PSI",//1224
         "MODELS\\GAUOLFLY.SPT",//1225
 
-        "MODELS\\SESHCLAW.PSI",  //1232
-        "MODELS\\SESHCLAW.SPT",  //1233
+        "MODELS\\SESHCLAW.PSI",//1232
+        "MODELS\\SESHCLAW.SPT",//1233
+
         "MODELS\\SESHTRAP.PSI",  //1238
         "MODELS\\SESHTRAP.SPT",  //1239
         "MODELS\\DMFBEAM.PSI",   //1240
@@ -555,43 +717,49 @@
         "STRTMENU\\STARGRID.PSI",//1257
         "STRTMENU\\STARMAP.PSI", //1258
         "STRTMENU\\STARMAP.SPT", //1259
+
         "STRTMENU\\STRTMENU.RAW",//1261
-        "BIN\\RADDRAW5.BIN",     //1263
-        "BIN\\RADDRAW3.BIN",     //1264
-        "BIN\\RADDRAW4.BIN",     //1265
-        "BIN\\RADDRAW2.BIN",     //1266
 
-        "BIN\\EXPLORE.BIN",  //1268
-        "BIN\\FLYING.BIN",   //1269
-        "BIN\\EXAITAU1.BIN", //1270
-        "BIN\\EXAIVIGO.BIN", //1271
-        "BIN\\EXAITRAD.BIN", //1272
-        "BIN\\EXAIDERE.BIN", //1273
-        "BIN\\MENU.BIN",     //1274
-        "BIN\\FLYBOSS.BIN",  //1275
-        "BIN\\FLYBOSS2.BIN", //1276
-        "BIN\\EXAISESH.BIN", //1277
-        "BIN\\FLYSHUTL.BIN", //1278
-        "BIN\\FLYGAOUL.BIN", //1279
-        "BIN\\RADRACE.BIN",  //1280
-        "SOUND\\BANGKOK.SBH",//1281
+        "BIN\\RADDRAW5.BIN",//1263
+        "BIN\\RADDRAW3.BIN",//1264
+        "BIN\\RADDRAW4.BIN",//1265
+        "BIN\\RADDRAW2.BIN",//1266
 
-        "SOUND\\CRASH.SBB",  //1283
-        "SOUND\\BANGKOK.SBB",//1284
-        "SOUND\\CRASH.SBH",  //1285
-
-        "SOUND\\EXPLORE.SBB",//1290
-        "SOUND\\EXPLORE.SBH",//1291
-
-        "SOUND\\SPACE1.SBB",//1293
-
+        "BIN\\EXPLORE.BIN",   //1268
+        "BIN\\FLYING.BIN",    //1269
+        "BIN\\EXAITAU1.BIN",  //1270
+        "BIN\\EXAIVIGO.BIN",  //1271
+        "BIN\\EXAITRAD.BIN",  //1272
+        "BIN\\EXAIDERE.BIN",  //1273
+        "BIN\\MENU.BIN",      //1274
+        "BIN\\FLYBOSS.BIN",   //1275
+        "BIN\\FLYBOSS2.BIN",  //1276
+        "BIN\\EXAISESH.BIN",  //1277
+        "BIN\\FLYSHUTL.BIN",  //1278
+        "BIN\\FLYGAOUL.BIN",  //1279
+        "BIN\\RADRACE.BIN",   //1280
+        "SOUND\\BANGKOK.SBH", //1281
+        "SOUND\\TAU14.SBB",   //1282
+        "SOUND\\CRASH.SBB",   //1283
+        "SOUND\\BANGKOK.SBB", //1284
+        "SOUND\\CRASH.SBH",   //1285
+        "SOUND\\TAU14.SBH",   //1286
+        "SOUND\\DREJ_IN.SBB", //1287
+        "SOUND\\RACE.SBH",    //1288
+        "SOUND\\RACE.SBB",    //1289
+        "SOUND\\EXPLORE.SBB", //1290
+        "SOUND\\EXPLORE.SBH", //1291
+        "SOUND\\DREJ_IN.SBH", //1292
+        "SOUND\\SPACE1.SBB",  //1293
+        "SOUND\\TITAN.SBB",   //1294
         "SOUND\\FRONTEND.SBB",//1295
         "SOUND\\FRONTEND.SBH",//1296
-
-        "SOUND\\SPACE1.SBH",//1298
-        "SOUND\\BOSS1.SBB", //1299
-
-        "SOUND\\BOSS1.SBH",//1301
+        "SOUND\\TITAN.SBH",   //1297
+        "SOUND\\SPACE1.SBH",  //1298
+        "SOUND\\BOSS1.SBB",   //1299
+        "SOUND\\VBOSS1.SBH",  //1300
+        "SOUND\\BOSS1.SBH",   //1301
+        "SOUND\\VBOSS1.SBB",  //1302
 
         "SOUND\\VOLCANO.SBB",//1305
         "SOUND\\VOLCANO.SBH",//1306

@@ -1,26 +1,6 @@
-/*
-MIT License
-
-Copyright (c) 2017-2024 Mark E Sowden <hogsy@snortysoft.net>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "plugin.h"
 
@@ -57,6 +37,11 @@ static int gl_version_minor = 0;
 
 #define XGL_VERSION( maj, min ) ( ( ( maj ) == gl_version_major && ( min ) <= gl_version_minor ) || ( maj ) < gl_version_major )
 #define XGL_LOG( ... )          gInterface->core->LogMessage( glLogLevel, __VA_ARGS__ )
+#if !defined( NDEBUG )
+#	define XGL_DEBUG( ... ) gInterface->core->LogMessage( glLogLevel, __VA_ARGS__ )
+#else
+#	define XGL_DEBUG( ... )
+#endif
 
 #define XGL_INVALID ( ( unsigned int ) -1 )
 
@@ -290,20 +275,6 @@ static uint32_t boundFrameBuffers[ XGL_MAX_FRAMEBUFFER_TARGETS ] = {
 static void GLBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget target_binding ) {
 	uint32_t fbo = ( buffer != NULL ) ? buffer->fbo : 0;
 
-	// this is probably really damn overkill, but essentially determine which target buffer isn't yet bound...
-	if ( target_binding == PLG_FRAMEBUFFER_DEFAULT ) {
-		if ( boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] == fbo && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] == fbo ) {
-			return;
-		} else if ( boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] != fbo && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] == fbo ) {
-			target_binding = PLG_FRAMEBUFFER_DRAW;
-		} else if ( boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] != fbo && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] == fbo ) {
-			target_binding = PLG_FRAMEBUFFER_READ;
-		}
-	} else if ( ( target_binding == PLG_FRAMEBUFFER_DRAW && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_DRAW ] == fbo ) ||
-	            ( target_binding == PLG_FRAMEBUFFER_READ && boundFrameBuffers[ XGL_FRAMEBUFFER_TARGET_READ ] == fbo ) ) {
-		return;
-	}
-
 	XGL_CALL( glBindFramebuffer( TranslateFrameBufferBinding( target_binding ), fbo ) );
 
 	if ( target_binding == PLG_FRAMEBUFFER_DEFAULT ) {
@@ -474,6 +445,7 @@ static void *GLReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, u
 
 static void GLBindTexture( const PLGTexture *texture );
 static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter );
+#pragma message "TODO: this should be CreateFrameBufferTextureAttachment, not GET!"
 static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int components, PLGTextureFilter filter ) {
 	PLGTexture *texture = gInterface->CreateTexture();
 	if ( texture == NULL ) {
@@ -774,14 +746,14 @@ typedef struct MeshTranslatePrimitive {
 } MeshTranslatePrimitive;
 
 static MeshTranslatePrimitive primitives[] = {
-        {PLG_MESH_LINES,              GL_LINES,          "LINES"            },
-        { PLG_MESH_LINE_LOOP,         GL_LINE_LOOP,      "LINE_LOOP"        },
-        { PLG_MESH_POINTS,            GL_POINTS,         "POINTS"           },
-        { PLG_MESH_TRIANGLES,         GL_TRIANGLES,      "TRIANGLES"        },
-        { PLG_MESH_TRIANGLE_FAN,      GL_TRIANGLE_FAN,   "TRIANGLE_FAN"     },
-        { PLG_MESH_TRIANGLE_FAN_LINE, GL_LINES,          "TRIANGLE_FAN_LINE"},
-        { PLG_MESH_TRIANGLE_STRIP,    GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"   },
-        { PLG_MESH_QUADS,             GL_TRIANGLES,      "QUADS"            }  // todo, translate
+        {PLG_MESH_LINES,             GL_LINES,          "LINES"            },
+        {PLG_MESH_LINE_LOOP,         GL_LINE_LOOP,      "LINE_LOOP"        },
+        {PLG_MESH_POINTS,            GL_POINTS,         "POINTS"           },
+        {PLG_MESH_TRIANGLES,         GL_TRIANGLES,      "TRIANGLES"        },
+        {PLG_MESH_TRIANGLE_FAN,      GL_TRIANGLE_FAN,   "TRIANGLE_FAN"     },
+        {PLG_MESH_TRIANGLE_FAN_LINE, GL_LINES,          "TRIANGLE_FAN_LINE"},
+        {PLG_MESH_TRIANGLE_STRIP,    GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"   },
+        {PLG_MESH_QUADS,             GL_TRIANGLES,      "QUADS"            }  // todo, translate
 };
 
 static unsigned int TranslatePrimitiveMode( PLGMeshPrimitive mode ) {
@@ -1133,88 +1105,6 @@ static const char *GetGLShaderStageDescriptor( GLenum type ) {
 	}
 }
 
-static GLenum TranslateShaderUniformType( PLGShaderUniformType type ) {
-	switch ( type ) {
-		case PLG_UNIFORM_BOOL:
-			return GL_BOOL;
-		case PLG_UNIFORM_DOUBLE:
-			return GL_DOUBLE;
-		case PLG_UNIFORM_FLOAT:
-			return GL_FLOAT;
-		case PLG_UNIFORM_INT:
-			return GL_INT;
-		case PLG_UNIFORM_UINT:
-			return GL_UNSIGNED_INT;
-
-		case PLG_UNIFORM_SAMPLER1D:
-			return GL_SAMPLER_1D;
-		case PLG_UNIFORM_SAMPLER1DSHADOW:
-			return GL_SAMPLER_1D_SHADOW;
-		case PLG_UNIFORM_SAMPLER2D:
-			return GL_SAMPLER_2D;
-		case PLG_UNIFORM_SAMPLER2DSHADOW:
-			return GL_SAMPLER_2D_SHADOW;
-		case PLG_UNIFORM_SAMPLER3D:
-			return GL_SAMPLER_3D;
-		case PLG_UNIFORM_SAMPLERCUBE:
-			return GL_SAMPLER_CUBE;
-
-		case PLG_UNIFORM_VEC2:
-			return GL_FLOAT_VEC2;
-		case PLG_UNIFORM_VEC3:
-			return GL_FLOAT_VEC3;
-		case PLG_UNIFORM_VEC4:
-			return GL_FLOAT_VEC4;
-
-		case PLG_UNIFORM_MAT3:
-			return GL_FLOAT_MAT3;
-
-		default:
-			return SHADER_INVALID_TYPE;
-	}
-}
-
-static unsigned int TranslateGLShaderUniformType( GLenum type ) {
-	switch ( type ) {
-		case GL_BOOL:
-			return PLG_UNIFORM_BOOL;
-		case GL_DOUBLE:
-			return PLG_UNIFORM_DOUBLE;
-		case GL_FLOAT:
-			return PLG_UNIFORM_FLOAT;
-		case GL_INT:
-			return PLG_UNIFORM_INT;
-		case GL_UNSIGNED_INT:
-			return PLG_UNIFORM_UINT;
-
-		case GL_SAMPLER_1D:
-			return PLG_UNIFORM_SAMPLER1D;
-		case GL_SAMPLER_1D_SHADOW:
-			return PLG_UNIFORM_SAMPLER1DSHADOW;
-		case GL_SAMPLER_2D:
-			return PLG_UNIFORM_SAMPLER2D;
-		case GL_SAMPLER_2D_SHADOW:
-			return PLG_UNIFORM_SAMPLER2DSHADOW;
-		case GL_SAMPLER_3D:
-			return PLG_UNIFORM_SAMPLER3D;
-		case GL_SAMPLER_CUBE:
-			return PLG_UNIFORM_SAMPLERCUBE;
-
-		case GL_FLOAT_VEC2:
-			return PLG_UNIFORM_VEC2;
-		case GL_FLOAT_VEC3:
-			return PLG_UNIFORM_VEC3;
-		case GL_FLOAT_VEC4:
-			return PLG_UNIFORM_VEC4;
-
-		case GL_FLOAT_MAT3:
-			return PLG_UNIFORM_MAT3;
-
-		default:
-			return SHADER_INVALID_TYPE;
-	}
-}
-
 /**
  * Inserts the given string into an existing string buffer.
  * Automatically reallocs buffer if it doesn't fit.
@@ -1535,9 +1425,7 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 	}
 	program->num_uniforms = ( unsigned int ) num_uniforms;
 
-#if !defined( NDEBUG )
-	XGL_LOG( "Found %u uniforms in shader\n", program->num_uniforms );
-#endif
+	XGL_DEBUG( "Found %u uniforms in shader\n", program->num_uniforms );
 
 	program->uniforms = gInterface->core->CAlloc( ( size_t ) program->num_uniforms, sizeof( *program->uniforms ), true );
 	unsigned int registered = 0;
@@ -1602,7 +1490,7 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 				break;
 		}
 
-		//GLLog( " %4d (%20s) %s\n", i, program->uniforms[ i ].name, uniformDescriptors[ program->uniforms[ i ].type ] );
+		XGL_DEBUG( " %4d (%20s) %s\n", i, program->uniforms[ i ].name, uniformDescriptors[ program->uniforms[ i ].type ] );
 
 		registered++;
 	}
@@ -1739,14 +1627,20 @@ static GLenum TranslateCompareFunction( PLGCompareFunction compareFunction ) {
 		case PLG_COMPARE_ALWAYS:
 			return GL_ALWAYS;
 	}
+
+	return XGL_INVALID;
 }
 
 static void GLDepthBufferFunction( PLGCompareFunction compareFunction ) {
-	XGL_CALL( glDepthFunc( TranslateCompareFunction( compareFunction ) ) );
+	GLenum glCompare = TranslateCompareFunction( compareFunction );
+	assert( glCompare != XGL_INVALID );
+	XGL_CALL( glDepthFunc( glCompare ) );
 }
 
 static void GLStencilFunction( PLGCompareFunction compareFunction, int ref, unsigned int mask ) {
-	XGL_CALL( glStencilFunc( TranslateCompareFunction( compareFunction ), ref, mask ) );
+	GLenum glCompare = TranslateCompareFunction( compareFunction );
+	assert( glCompare != XGL_INVALID );
+	XGL_CALL( glStencilFunc( glCompare, ref, mask ) );
 }
 
 static GLenum TranslateStencilOp( PLGStencilOp stencilOp ) {

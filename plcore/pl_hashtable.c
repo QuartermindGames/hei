@@ -10,6 +10,7 @@ typedef struct PLHashTableNode {
 	size_t keySize;
 	uint64_t hash;
 	void *value;
+	PLHashTable *table;
 	struct PLHashTableNode *next;
 } PLHashTableNode;
 
@@ -53,6 +54,8 @@ void PlDestroyHashTableEx( PLHashTable *hashTable, void ( *elementDeleter )( voi
 	PL_DELETE( hashTable );
 }
 
+#define GET_INDEX( HASH ) ( unsigned int ) ( ( HASH ) % HASH_TABLE_SIZE )
+
 void PlClearHashTable( PLHashTable *hashTable ) {
 	for ( size_t i = 0; i < HASH_TABLE_SIZE; ++i ) {
 		PLHashTableNode *child = hashTable->nodes[ i ];
@@ -66,8 +69,6 @@ void PlClearHashTable( PLHashTable *hashTable ) {
 
 	hashTable->numNodes = 0;
 }
-
-#define GET_INDEX( HASH ) ( unsigned int ) ( ( HASH ) % HASH_TABLE_SIZE )
 
 void *PlLookupHashTableUserData( const PLHashTable *hashTable, const void *key, size_t keySize ) {
 	assert( key != NULL && keySize != 0 );
@@ -103,6 +104,7 @@ PLHashTableNode *PlInsertHashTableNode( PLHashTable *hashTable, const void *key,
 	node->keySize = keySize;
 	node->key = PL_NEW_( char, keySize + 1 );
 	node->value = value;
+	node->table = hashTable;
 
 	memcpy( node->key, key, node->keySize );
 
@@ -112,6 +114,27 @@ PLHashTableNode *PlInsertHashTableNode( PLHashTable *hashTable, const void *key,
 	hashTable->numNodes++;
 
 	return node;
+}
+
+void PlDestroyHashTableNode( PLHashTableNode *hashTableNode ) {
+	if ( hashTableNode == NULL ) {
+		return;
+	}
+
+	PLHashTable *hashTable = hashTableNode->table;
+	unsigned int index = GET_INDEX( hashTableNode->hash );
+
+	PLHashTableNode **pptr = &( hashTable->nodes[ index ] );
+	while ( *pptr != hashTableNode ) {
+		assert( *pptr != NULL );
+		pptr = &( ( *pptr )->next );
+	}
+
+	*pptr = hashTableNode->next;
+	hashTable->numNodes--;
+
+	PL_DELETE( hashTableNode->key );
+	PL_DELETE( hashTableNode );
 }
 
 unsigned int PlGetNumHashTableNodes( const PLHashTable *hashTable ) {
@@ -131,7 +154,7 @@ PLHashTableNode *PlGetFirstHashTableNode( PLHashTable *hashTable ) {
 	return NULL;
 }
 
-PLHashTableNode *PlGetNextHashTableNode( PLHashTable *hashTable, PLHashTableNode *hashTableNode ) {
+PLHashTableNode *PlGetNextHashTableNode( PLHashTableNode *hashTableNode ) {
 	PLHashTableNode *child = hashTableNode->next;
 	if ( child != NULL ) {
 		return child;
@@ -143,7 +166,7 @@ PLHashTableNode *PlGetNextHashTableNode( PLHashTable *hashTable, PLHashTableNode
 			break;
 		}
 
-		child = hashTable->nodes[ index++ ];
+		child = hashTableNode->table->nodes[ index++ ];
 	}
 
 	return child;

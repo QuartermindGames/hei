@@ -1,5 +1,4 @@
-/* SPDX-License-Identifier: MIT */
-/* Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com> */
+// Copyright © 2020-2024 SnortySoft, Mark E. Sowden <hogsy@snortysoft.net>
 
 #pragma once
 
@@ -16,10 +15,11 @@ void PlDestroyHashTableEx( PLHashTable *hashTable, void ( *elementDeleter )( voi
 void PlClearHashTable( PLHashTable *hashTable );
 void *PlLookupHashTableUserData( const PLHashTable *hashTable, const void *key, size_t keySize );
 PLHashTableNode *PlInsertHashTableNode( PLHashTable *hashTable, const void *key, size_t keySize, void *value );
+void PlDestroyHashTableNode( PLHashTableNode *hashTableNode );
 unsigned int PlGetNumHashTableNodes( const PLHashTable *hashTable );
 
 PLHashTableNode *PlGetFirstHashTableNode( PLHashTable *hashTable );
-PLHashTableNode *PlGetNextHashTableNode( PLHashTable *hashTable, PLHashTableNode *hashTableNode );
+PLHashTableNode *PlGetNextHashTableNode( PLHashTableNode *hashTableNode );
 void *PlGetHashTableNodeUserData( PLHashTableNode *hashTableNode );
 void PlSetHashTableNodeUserData( PLHashTableNode *hashTableNode, void *value );
 

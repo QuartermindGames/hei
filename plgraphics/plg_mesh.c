@@ -1,16 +1,24 @@
 // SPDX-License-Identifier: MIT
 // Hei Platform Library
-// Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
 
-void PlgClearVertexLayout( PLGVertexLayout *layout ) {
-	PL_ZERO( layout, sizeof( PLGVertexLayout ) );
+void PlgInitializeVertexLayout( PLGVertexLayout *layout ) {
+	PlgClearVertexLayout( layout );
 }
 
-void PlgSetVertexLayoutElement( PLGVertexLayout *layout, PLGVertexLayoutElementType type, intptr_t offset, unsigned int numElements, bool status ) {
+void PlgFreeVertexLayout( PLGVertexLayout *layout ) {
+}
+
+void PlgClearVertexLayout( PLGVertexLayout *layout ) {
+	layout->numElements = 0;
+	layout->dirty = true;
+}
+
+void PlgSetVertexLayoutElement( PLGVertexLayout *layout, PLGVertexLayoutElementType type, PLGDataType dataType, intptr_t offset, unsigned int numElements ) {
 	if ( layout->numElements >= PLG_MAX_VERTEX_LAYOUT_ELEMENTS ) {
 		PlReportErrorF( PL_RESULT_MEMORY_EOA, "hit vertex layout element limit (%u >= %u)",
 		                layout->numElements, PLG_MAX_VERTEX_LAYOUT_ELEMENTS );
@@ -19,11 +27,14 @@ void PlgSetVertexLayoutElement( PLGVertexLayout *layout, PLGVertexLayoutElementT
 	layout->elements[ layout->numElements ].numSubElements = numElements;
 	layout->elements[ layout->numElements ].offset = offset;
 	layout->elements[ layout->numElements ].type = type;
+	layout->elements[ layout->numElements ].dataType = dataType;
 	layout->numElements++;
+	layout->dirty = true;
 }
 
 void PlgSetVertexLayoutData( PLGVertexLayout *layout, void *data ) {
-	layout->data = data;
+	layout->vertexData = data;
+	layout->dirty = true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -148,38 +159,15 @@ void PlgApplyMeshLighting( PLGMesh *mesh, const PLGLight *light, PLVector3 posit
 		PLVector3 normal = mesh->vertices[ i ].normal;
 		float angle = ( distance * ( ( normal.x * distvec.x ) + ( normal.y * distvec.y ) + ( normal.z * distvec.z ) ) );
 		if ( angle < 0 ) {
-			mesh->vertices[ i ].colour.r = 0.0f;
-			mesh->vertices[ i ].colour.g = 0.0f;
-			mesh->vertices[ i ].colour.b = 0.0f;
+			mesh->vertices[ i ].light.r = 0.0f;
+			mesh->vertices[ i ].light.g = 0.0f;
+			mesh->vertices[ i ].light.b = 0.0f;
 		} else {
-			mesh->vertices[ i ].colour.r = light->colour.r * PlFloatToByte( angle );
-			mesh->vertices[ i ].colour.g = light->colour.g * PlFloatToByte( angle );
-			mesh->vertices[ i ].colour.b = light->colour.b * PlFloatToByte( angle );
+			mesh->vertices[ i ].light.r = light->colour.r * PlFloatToByte( angle );
+			mesh->vertices[ i ].light.g = light->colour.g * PlFloatToByte( angle );
+			mesh->vertices[ i ].light.b = light->colour.b * PlFloatToByte( angle );
 		}
-		//GfxLog("light angle is %f\n", angle);
 	}
-
-#if 0
-	/*
-	x = Object->Vertices_normalStat[count].x;
-	y = Object->Vertices_normalStat[count].y;
-	z = Object->Vertices_normalStat[count].z;
-
-	angle = (LightDist*((x * Object->Spotlight.x) + (y * Object->Spotlight.y) + (z * Object->Spotlight.z) ));
-	if (angle<0 )
-	{
-	Object->Vertices_screen[count].r = 0;
-	Object->Vertices_screen[count].b = 0;
-	Object->Vertices_screen[count].g = 0;
-	}
-	else
-	{
-	Object->Vertices_screen[count].r = Object->Vertices_local[count].r * angle;
-	Object->Vertices_screen[count].b = Object->Vertices_local[count].b * angle;
-	Object->Vertices_screen[count].g = Object->Vertices_local[count].g * angle;
-	}
-	*/
-#endif
 }
 
 PLGMesh *PlgCreateMesh( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts ) {
@@ -211,12 +199,12 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 	mesh->vertices = ( PLGVertex * ) PlCAllocA( mesh->maxVertices, sizeof( PLGVertex ) );
 
 	PlgSetVertexLayoutData( &mesh->vertexLayout, mesh->vertices );
-	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_POSITION, PL_OFFSETOF( PLGVertex, position ), 3, true );
-	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_NORMAL, PL_OFFSETOF( PLGVertex, normal ), 3, true );
-	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_TANGENT, PL_OFFSETOF( PLGVertex, tangent ), 3, true );
-	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_BITANGENT, PL_OFFSETOF( PLGVertex, bitangent ), 3, true );
-	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_UV, PL_OFFSETOF( PLGVertex, st ), 2, true );
-	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_COLOUR, PL_OFFSETOF( PLGVertex, colour ), 4, true );
+	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_POSITION, PLG_DATA_TYPE_FLOAT, PL_OFFSETOF( PLGVertex, position ), 3 );
+	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_NORMAL, PLG_DATA_TYPE_FLOAT, PL_OFFSETOF( PLGVertex, normal ), 3 );
+	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_TANGENT, PLG_DATA_TYPE_FLOAT, PL_OFFSETOF( PLGVertex, tangent ), 3 );
+	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_BITANGENT, PLG_DATA_TYPE_FLOAT, PL_OFFSETOF( PLGVertex, bitangent ), 3 );
+	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_UV, PLG_DATA_TYPE_FLOAT, PL_OFFSETOF( PLGVertex, st ), 2 );
+	PlgSetVertexLayoutElement( &mesh->vertexLayout, PLG_VERTEX_LAYOUT_ELEMENT_TYPE_COLOUR, PLG_DATA_TYPE_FLOAT, PL_OFFSETOF( PLGVertex, colour ), 4 );
 
 	// If the vertices passed in aren't null, copy them into our vertex list
 	if ( vertices != NULL ) {//-V1051
@@ -420,4 +408,8 @@ PLCollisionAABB PlgGenerateAabbFromVertices( const PLGVertex *vertices, unsigned
 
 PLCollisionAABB PlgGenerateAabbFromMesh( const PLGMesh *mesh, bool absolute ) {
 	return PlgGenerateAabbFromVertices( mesh->vertices, mesh->num_verts, absolute );
+}
+
+unsigned int PlgGetNumTrianglesForPolygon( unsigned int numVertices ) {
+	return ( numVertices < 3 ) ? 0 : numVertices - 2;
 }

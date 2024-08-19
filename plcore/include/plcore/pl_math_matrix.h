@@ -82,9 +82,23 @@ namespace hei {
 			}
 		}
 
+		////////////////////////////////////////////////////////
+
 		inline Matrix4 Translate( const PLVector3 &position ) {
 			return *this *= PlTranslateMatrix4( position );
 		}
+
+		inline void SetTranslation( const hei::Vector3 &position ) {
+			mm[ 3 ][ 0 ] = position.x;
+			mm[ 3 ][ 1 ] = position.y;
+			mm[ 3 ][ 2 ] = position.z;
+		}
+
+		inline PLVector3 GetTranslation() {
+			return PlGetMatrix4Translation( this );
+		}
+
+		////////////////////////////////////////////////////////
 
 		inline Matrix4 Rotate( float angle, const PLVector3 &axis ) {
 			return *this *= PlRotateMatrix4( angle, &axis );
@@ -96,10 +110,6 @@ namespace hei {
 
 		inline PLVector3 GetAngle() {
 			return PlGetMatrix4Angle( this );
-		}
-
-		inline PLVector3 GetTranslation() {
-			return PlGetMatrix4Translation( this );
 		}
 
 		inline PLMatrix4 operator+( PLMatrix4 m2 ) const {
@@ -147,8 +157,7 @@ inline static void PlClearMatrix4( PLMatrix4 *m ) {
 /* Identity */
 
 inline static PLMatrix3 PlMatrix3Identity( void ) {
-	PLMatrix3 m;
-	PlClearMatrix3( &m );
+	PLMatrix3 m = {};
 	m.mm[ 0 ][ 0 ] = 1.0f;
 	m.mm[ 1 ][ 1 ] = 1.0f;
 	m.mm[ 2 ][ 2 ] = 1.0f;
@@ -156,8 +165,7 @@ inline static PLMatrix3 PlMatrix3Identity( void ) {
 }
 
 inline static PLMatrix4 PlMatrix4Identity( void ) {
-	PLMatrix4 m;
-	PlClearMatrix4( &m );
+	PLMatrix4 m = {};
 	m.mm[ 0 ][ 0 ] = 1.0f;
 	m.mm[ 1 ][ 1 ] = 1.0f;
 	m.mm[ 2 ][ 2 ] = 1.0f;
