@@ -8,7 +8,7 @@
 
 #include <plcore/pl_math.h>
 
-PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix, int viewportWidth, int viewportHeight, int viewportX, int viewportY, bool flip ) {
+PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix, const int *viewport, bool flip ) {
 	// Transform world position to clip space
 	PLVector4 posw = PL_VECTOR4( position->x, position->y, position->z, 1.0f );
 	PLVector4 ppos = PlTransformVector4( &posw, viewProjMatrix );
@@ -17,11 +17,49 @@ PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *vi
 	PLVector3 ndc = PlVector3( ppos.x / ppos.w, ppos.y / ppos.w, ppos.z / ppos.w );
 
 	// Scale and offset by viewport parameters to get screen coordinates
-	PLVector2 screen = PlVector2( ( ( ndc.x + 1.0f ) / 2.0f ) * viewportWidth + viewportX,
+	PLVector2 screen = PlVector2( ( ( ndc.x + 1.0f ) / 2.0f ) * viewport[ 2 ] + viewport[ 0 ],
 	                              // Flip the y coordinate by subtracting it from the viewport height
-	                              ( flip ? viewportHeight : 0 ) - ( ( ndc.y + 1.0f ) / 2.0f ) * viewportHeight + viewportY );
+	                              ( flip ? viewport[ 3 ] : 0 ) - ( ( ndc.y + 1.0f ) / 2.0f ) * viewport[ 3 ] + viewport[ 1 ] );
 
 	return screen;
+}
+
+PLVector3 PlConvertScreenToWorld( PLVector3 windowCoordinate, PLMatrix4 modelView, PLMatrix4 projection, const int *viewport ) {
+	windowCoordinate.x = ( windowCoordinate.x - ( float ) ( viewport[ 0 ] ) ) / ( float ) ( viewport[ 2 ] );
+	windowCoordinate.y = ( windowCoordinate.y - ( float ) ( viewport[ 1 ] ) ) / ( float ) ( viewport[ 3 ] );
+
+	windowCoordinate.x = windowCoordinate.x * 2.0f - 1.0f;
+	windowCoordinate.y = windowCoordinate.y * 2.0f - 1.0f;
+	windowCoordinate.z = windowCoordinate.z * 2.0f - 1.0f;
+
+	PLVector4 rayClip = PLVector4( windowCoordinate.x, windowCoordinate.y, -1.0f, 1.0f );
+	PLMatrix4 invProj = PlInverseMatrix4( projection );
+	PLVector4 rayEye = PlTransformVector4( &rayClip, &invProj );
+
+	rayEye = PL_VECTOR4( rayEye.x, rayEye.y, -1.0f, 0.0f );
+
+	PLMatrix4 invModel = PlInverseMatrix4( modelView );
+	PLVector4 objPos = PlTransformVector4( &rayEye, &invModel );
+
+	return PL_VECTOR3( objPos.x, objPos.y, objPos.z );
+}
+
+void PlExtractMatrix4Directions( const PLMatrix4 *matrix, PLVector3 *left, PLVector3 *up, PLVector3 *forward ) {
+	if ( left != NULL ) {
+		left->x = matrix->mm[ 0 ][ 0 ];
+		left->y = matrix->mm[ 0 ][ 1 ];
+		left->z = matrix->mm[ 0 ][ 2 ];
+	}
+	if ( up != NULL ) {
+		up->x = matrix->mm[ 1 ][ 0 ];
+		up->y = matrix->mm[ 1 ][ 1 ];
+		up->z = matrix->mm[ 1 ][ 2 ];
+	}
+	if ( forward != NULL ) {
+		forward->x = matrix->mm[ 2 ][ 0 ];
+		forward->y = matrix->mm[ 2 ][ 1 ];
+		forward->z = matrix->mm[ 2 ][ 2 ];
+	}
 }
 
 PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up ) {
@@ -159,9 +197,13 @@ void PlMultiMatrix( const PLMatrix4 *matrix ) {
 	*curStack = PlMultiplyMatrix4( *curStack, matrix );
 }
 
-void PlRotateMatrix( float angle, float x, float y, float z ) {
-	PLMatrix4 rotation = PlRotateMatrix4( angle, &PlVector3( x, y, z ) );
+void PlRotateMatrix( float angle, const PLVector3 *axis ) {
+	PLMatrix4 rotation = PlRotateMatrix4( angle, axis );
 	PlMultiMatrix( &rotation );
+}
+
+void PlRotateMatrix3f( float angle, float x, float y, float z ) {
+	PlRotateMatrix( angle, &PL_VECTOR3( x, y, z ) );
 }
 
 void PlTranslateMatrix( PLVector3 vector ) {

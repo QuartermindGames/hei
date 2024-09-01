@@ -112,9 +112,9 @@ static void SetupCameraAngles( PLGCamera *camera ) {
 	PlMatrixMode( PL_VIEW_MATRIX );
 	PlLoadIdentityMatrix();
 
-	PlRotateMatrix( PL_DEG2RAD( -camera->angles.x ), 1.0f, 0.0f, 0.0f );
-	PlRotateMatrix( PL_DEG2RAD( -camera->angles.y ), 0.0f, 1.0f, 0.0f );
-	PlRotateMatrix( PL_DEG2RAD( -camera->angles.z ), 0.0f, 0.0f, 1.0f );
+	PlRotateMatrix3f( PL_DEG2RAD( -camera->angles.x ), 1.0f, 0.0f, 0.0f );
+	PlRotateMatrix3f( PL_DEG2RAD( -camera->angles.y ), 0.0f, 1.0f, 0.0f );
+	PlRotateMatrix3f( PL_DEG2RAD( -camera->angles.z ), 0.0f, 0.0f, 1.0f );
 
 	PlTranslateMatrix( ( PLVector3 ){ camera->position.x, camera->position.y, camera->position.z } );
 

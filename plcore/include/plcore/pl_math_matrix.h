@@ -43,7 +43,11 @@ inline static PLMatrix4 PlInverseMatrix4( PLMatrix4 m );
 PLVector3 PlGetMatrix4Translation( const PLMatrix4 *m );
 PLVector3 PlGetMatrix4Angle( const PLMatrix4 *m );
 
-PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix, int viewportWidth, int viewportHeight, int viewportX, int viewportY, bool flip );
+PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix, const int viewport[ 4 ], bool flip );
+PLVector3 PlConvertScreenToWorld( PLVector3 windowCoordinate, PLMatrix4 modelView, PLMatrix4 projection, const int viewport[ 4 ] );
+
+void PlExtractMatrix4Directions( const PLMatrix4 *matrix, PLVector3 *left, PLVector3 *up, PLVector3 *forward );
+;
 
 #ifdef __cplusplus
 namespace hei {
@@ -510,7 +514,8 @@ void PlLoadMatrix( const PLMatrix4 *matrix );
 void PlLoadIdentityMatrix( void );
 
 void PlMultiMatrix( const PLMatrix4 *matrix );
-void PlRotateMatrix( float angle, float x, float y, float z );
+void PlRotateMatrix( float angle, const PLVector3 *axis );
+void PlRotateMatrix3f( float angle, float x, float y, float z );
 void PlTranslateMatrix( PLVector3 vector );
 void PlScaleMatrix( PLVector3 scale );
 void PlInverseMatrix( void );
