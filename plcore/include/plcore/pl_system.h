@@ -152,6 +152,12 @@
 
 // Compiler
 
+#if ( __STDC_VERSION__ == 202311L )//C23
+#	define PL_UNUSED                 [[maybe_unused]]
+#	define PL_DEPRECATED( function ) [[deprecated]] function
+#	define PL_NORETURN( function )   [[noreturn]] function
+#endif
+
 #if defined( _MSC_VER )
 #	define PL_INSTANCE HINSTANCE
 #	define PL_FARPROC  FARPROC
@@ -164,10 +170,15 @@
 #	define PL_EXPORT __declspec( dllexport )
 #	define PL_IMPORT __declspec( dllimport )
 
-#	define PL_UNUSED
-
-#	define PL_DEPRECATED( function ) __declspec( deprecated ) function
-#	define PL_NORETURN( function )   __declspec( noreturn ) function
+#	ifndef PL_UNUSED
+#		define PL_UNUSED
+#	endif
+#	ifndef PL_DEPRECATED
+#		define PL_DEPRECATED( function ) __declspec( deprecated ) function
+#	endif
+#	ifndef PL_NORETURN
+#		define PL_NORETURN( function ) __declspec( noreturn ) function
+#	endif
 
 #	define PL_STATIC_ASSERT( a, b ) static_assert( ( a ), b )
 
@@ -189,10 +200,15 @@
 #	define PL_EXPORT __attribute__( ( visibility( "default" ) ) )
 #	define PL_IMPORT
 
-#	define PL_UNUSED __attribute__( ( unused ) )
-
-#	define PL_DEPRECATED( function ) function __attribute__( ( deprecated ) )
-#	define PL_NORETURN( function )   __attribute__( ( noreturn ) ) function
+#	ifndef PL_UNUSED
+#		define PL_UNUSED __attribute__( ( unused ) )
+#	endif
+#	ifndef PL_DEPRECATED
+#		define PL_DEPRECATED( function ) function __attribute__( ( deprecated ) )
+#	endif
+#	ifndef PL_NORETURN
+#		define PL_NORETURN( function ) __attribute__( ( noreturn ) ) function
+#	endif
 
 #	define PL_STATIC_ASSERT( a, b ) _Static_assert( ( a ), b )
 
