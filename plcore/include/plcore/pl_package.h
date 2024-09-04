@@ -1,8 +1,6 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #pragma once
 
@@ -45,6 +43,7 @@ enum {
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_VPP, 10 ),
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_OPK, 11 ),
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_INU, 12 ),
+	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_ALL_ACCLAIM, 13 ),
 };
 
 PL_EXTERN_C

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-// Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
+// Hei Platform Library
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include <plcore/pl_console.h>
 
@@ -298,6 +299,7 @@ void PlRegisterStandardPackageLoaders( unsigned int flags ) {
 	        {PL_PACKAGE_LOAD_FORMAT_VPP,         "vpp", NULL,               PlParseVppPackage      },
 	        {PL_PACKAGE_LOAD_FORMAT_OPK,         "opk", NULL,               PlParseOpkPackage_     },
 	        {PL_PACKAGE_LOAD_FORMAT_INU,         "inu", NULL,               PlParseInuPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_ALL_ACCLAIM, "all", NULL,               PlParseAllPackage_     },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaders ); ++i ) {
@@ -448,7 +450,7 @@ int PlGetPackageTableIndex( const PLPackage *package, const char *indexName ) {
 			continue;
 		}
 
-		return i;
+		return ( int ) i;
 	}
 
 	PlReportBasicError( PL_RESULT_INVALID_PARM2 );
