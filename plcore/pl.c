@@ -38,9 +38,9 @@ typedef struct PLSubSystem {
 } PLSubSystem;
 
 PLSubSystem pl_subsystems[] = {
-        {PL_SUBSYSTEM_IO,
+        { PL_SUBSYSTEM_IO,
          &PlInitFileSystem,
-         &PlShutdownFileSystem}
+         &PlShutdownFileSystem }
 };
 
 #if 0 /* incomplete interface? */
@@ -482,16 +482,15 @@ int gettimeofday( struct timeval *tp, struct timezone *tzp ) {
 
 #endif
 
-const char *PlGetFormattedTime( void ) {
+const char *PlGetFormattedTime( const char *format, char *buf, size_t bufSize ) {
 	struct timeval time;
 	if ( gettimeofday( &time, NULL ) != 0 ) {
 		return "unknown";
 	}
 
-	static char time_out[ 32 ] = { '\0' };
 	time_t sec = time.tv_sec;
-	strftime( time_out, sizeof( time_out ), "%x %X", localtime( &sec ) );
-	return time_out;
+	strftime( buf, bufSize, format, localtime( &sec ) );
+	return buf;
 }
 
 /**

@@ -317,7 +317,9 @@ IMPLEMENT_COMMAND( echo ) {
 IMPLEMENT_COMMAND( time ) {
 	PL_UNUSEDVAR( argv );
 	PL_UNUSEDVAR( argc );
-	Print( "%s\n", PlGetFormattedTime() );
+
+	char buf[ 64 ];
+	Print( "%s\n", PlGetFormattedTime( "%x %X", buf, sizeof( buf ) ) );
 }
 
 IMPLEMENT_COMMAND( mem ) {
@@ -760,9 +762,12 @@ void PlLogMessage( int id, const char *msg, ... ) {
 		if ( logOutputPath[ 0 ] != '\0' ) {
 			FILE *file = fopen( logOutputPath, "a" );
 			if ( file != NULL ) {
+				char time[ 64 ];
+				PlGetFormattedTime( "%x %X", time, sizeof( time ) );
+
 				// add the prefix to the start
 				char prefix[ 128 ];
-				snprintf( prefix, sizeof( prefix ), "[%s]: ", PlGetFormattedTime() );
+				snprintf( prefix, sizeof( prefix ), "[%s]: ", time );
 
 				size_t nl = strlen( prefix ) + length;
 				char *logBuf = PlCAllocA( nl, sizeof( char ) );

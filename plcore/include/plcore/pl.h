@@ -84,7 +84,7 @@ typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
 #define PL_BITFLAG( A, B ) A = ( 1U << B )
 
 #ifndef offsetof
-#	define PL_OFFSETOF( TYPE, MEMBER ) ( ( size_t ) & ( ( ( TYPE * ) 0 )->MEMBER ) )
+#	define PL_OFFSETOF( TYPE, MEMBER ) ( ( size_t ) &( ( ( TYPE * ) 0 )->MEMBER ) )
 #else
 #	define PL_OFFSETOF( TYPE, MEMBER ) offsetof( TYPE, MEMBER )
 #endif
@@ -208,7 +208,21 @@ bool PlIsSubSystemActive( unsigned int subsystem );
 #	include <plcore/pl_string.h>
 #	include <plcore/pl_memory.h>
 
-const char *PlGetFormattedTime( void );
+/**
+ * Formats the current time based on the provided format string.
+ *
+ * This function retrieves the current time and formats it according to the
+ * specified format string. It stores the formatted time in the provided buffer.
+ *
+ * @param format 	The format string, which follows the same formatting rules
+ *               	as the standard strftime function.
+ * @param buf 		The buffer where the formatted time string will be stored.
+ * @param bufSize 	The size of the buffer.
+ * @return 			A pointer to the formatted time string. If the time cannot be
+ *         			retrieved, the function returns the string "unknown".
+ */
+const char *PlGetFormattedTime( const char *format, char *buf, size_t bufSize );
+
 time_t PlStringToTime( const char *ts );
 
 //////////////////////////////////////////////////////////////////
