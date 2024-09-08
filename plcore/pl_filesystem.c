@@ -86,18 +86,24 @@ const char *PlSetupPath( PLPath dst, bool truncate, const char *msg, ... ) {
 
 	va_list args;
 	va_start( args, msg );
-	int length = pl_vscprintf( msg, args ) + 1;
+	int length = pl_vscprintf( msg, args );
+	va_end( args );
+
 	if ( length <= 0 ) {
 		return NULL;
 	}
 
-	if ( !truncate && ( length >= sizeof( PLPath ) ) ) {
+	if ( !truncate && ( length + 1 >= sizeof( PLPath ) ) ) {
 		PlReportErrorF( PL_RESULT_MEMORY_EOA, "source path is too long" );
 		return NULL;
 	}
 
+	va_start( args, msg );
 	vsnprintf( dst, sizeof( PLPath ), msg, args );
+	va_end( args );
+
 	PlNormalizePath( dst, sizeof( PLPath ) );
+
 	return dst;
 }
 
@@ -109,6 +115,31 @@ const char *PlAppendPath( PLPath dst, const char *src, bool truncate ) {
 	}
 	snprintf( &dst[ as ], sizeof( PLPath ) - as, "%s", src );
 	PlNormalizePath( dst, sizeof( PLPath ) );
+	return dst;
+}
+
+const char *PlAppendPathEx( PLPath dst, bool truncate, const char *msg, ... ) {
+	va_list args;
+	va_start( args, msg );
+	int length = pl_vscprintf( msg, args );
+	va_end( args );
+
+	if ( length <= 0 ) {
+		return NULL;
+	}
+
+	size_t dstSize = strnlen( dst, sizeof( PLPath ) - 1 );
+	if ( !truncate && ( dstSize + ( length + 1 ) >= sizeof( PLPath ) ) ) {
+		PlReportErrorF( PL_RESULT_MEMORY_EOA, "source path is too long" );
+		return NULL;
+	}
+
+	va_start( args, msg );
+	vsnprintf( &dst[ dstSize ], sizeof( PLPath ) - dstSize, msg, args );
+	va_end( args );
+
+	PlNormalizePath( dst, sizeof( PLPath ) );
+
 	return dst;
 }
 

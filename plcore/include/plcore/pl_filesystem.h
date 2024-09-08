@@ -57,8 +57,71 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
+/**
+ * Constructs a formatted path string and stores it in the provided destination buffer.
+ *
+ * The function uses variable arguments to build a formatted string and stores the result in 'dst'.
+ * If 'truncate' is set to `true`, the function will truncate the resulting string if it exceeds
+ * the size of `PLPath`. Otherwise, the function will report an error if the size is exceeded.
+ *
+ * If the length of the constructed path is zero or the path exceeds the maximum allowed length and
+ * 'truncate' is false, the function returns NULL.
+ *
+ * The resulting path is normalized by converting backslashes ('\') to forward slashes ('/'), and
+ * ensuring that trailing slashes are removed.
+ *
+ * @param dst 		The destination buffer of type `PLPath` where the constructed path will be stored.
+ * @param truncate 	A boolean indicating whether to truncate the resulting path if it exceeds the
+ *        			size of `PLPath`.
+ * @param msg 		A format string that specifies how to construct the path.
+ * @param ... 		Additional arguments that will be used in the construction of the formatted string.
+ *
+ * @return 			A pointer to the resulting path stored in 'dst', or NULL if an error occurs.
+ */
 const char *PlSetupPath( PLPath dst, bool truncate, const char *msg, ... );
+
+/**
+ * Append a source path to a destination path, with an option to truncate if necessary.
+ *
+ * This function appends the given source path to the destination path. If the combined
+ * length of both paths exceeds the maximum length and truncation is allowed, it will truncate
+ * the destination path. If truncation is not allowed and the combined length exceeds
+ * the maximum length, it will report an error and return NULL.
+ *
+ * @param dst 		The destination path (of type PLPath).
+ * @param src 		The source path to append to the destination path.
+ * @param truncate 	Flag indicating whether to truncate the destination path if the combined length exceeds the limit.
+ *
+ * @return The modified destination path, or NULL if an error occurred.
+ */
 const char *PlAppendPath( PLPath dst, const char *src, bool truncate );
+
+/**
+ * @brief Appends a formatted string to a destination path with optional truncation.
+ *
+ * This function appends a formatted string, specified by a format string and
+ * optional additional arguments, to an existing destination path.
+ * The resulting path is normalized, converting backslashes ('\\') to forward slashes ('/').
+ *
+ * @param dst 		The destination path buffer where the formatted string should be appended.
+ * @param truncate 	A boolean flag to allow truncation of the resulting path if it exceeds the maximum path length.
+ * @param msg 		The format string that specifies how subsequent arguments are converted for output.
+ * @param ... 		Additional arguments for the format string.
+ *
+ * @return 	A pointer to the destination buffer containing the combined and normalized path,
+ * 			or NULL if the operation fails due to memory constraints or improper formatting.
+ */
+const char *PlAppendPathEx( PLPath dst, bool truncate, const char *msg, ... );
+
+/**
+ * Prefixes a given source path to a destination path, optionally truncating the result if it exceeds the maximum path length.
+ *
+ * @param dst 		The destination path buffer where the prefixed path will be stored.
+ * @param src 		The source path to prefix to the destination path.
+ * @param truncate 	A boolean flag indicating whether to truncate the resulting path if it exceeds the maximum allowed length.
+ *
+ * @return A pointer to the destination path buffer containing the prefixed path, or NULL if an error occurred.
+ */
 const char *PlPrefixPath( PLPath dst, const char *src, bool truncate );
 
 void PlNormalizePath( char *path, size_t length );
