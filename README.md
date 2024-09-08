@@ -73,7 +73,7 @@ Below is a table of all supported package formats.
 | RID/RIM      | Eradicator                                          | Extra         | R    |
 | FTactics PAK | Future Tactics                                      | Extra         | R    |
 | Kri WAD      | The Mark of Kri                                     | Extra         | R    |
-| WFear INU    |                                                     | Core          | R    |
+| WFear INU    | White Fear (Cancelled)                              | Core          | R    |
 | Haven DAT    | Haven Call of the King                              | Extra         | R    |
 | VSR          | Sentient                                            | Extra         | R    |
 | OPK          | Outcast                                             | Core          | R    |

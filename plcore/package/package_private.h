@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-// Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
+// Hei Platform Library
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #pragma once
 
@@ -24,5 +25,6 @@ PLPackage *PlParseFreshBinPackage_( PLFile *file );
 PLPackage *PlParseGrpPackage_( PLFile *file );
 PLPackage *PlParseOpkPackage_( PLFile *file );// Outcast
 PLPackage *PlParseInuPackage_( PLFile *file );// White Fear / Inuits
+PLPackage *PlParseAllPackage_( PLFile *file );// The Last Job
 
 PL_EXTERN_C_END
