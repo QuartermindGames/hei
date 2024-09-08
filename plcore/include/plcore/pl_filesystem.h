@@ -75,7 +75,6 @@ PL_EXTERN_C
  *        			size of `PLPath`.
  * @param msg 		A format string that specifies how to construct the path.
  * @param ... 		Additional arguments that will be used in the construction of the formatted string.
- *
  * @return 			A pointer to the resulting path stored in 'dst', or NULL if an error occurs.
  */
 const char *PlSetupPath( PLPath dst, bool truncate, const char *msg, ... );
@@ -91,8 +90,7 @@ const char *PlSetupPath( PLPath dst, bool truncate, const char *msg, ... );
  * @param dst 		The destination path (of type PLPath).
  * @param src 		The source path to append to the destination path.
  * @param truncate 	Flag indicating whether to truncate the destination path if the combined length exceeds the limit.
- *
- * @return The modified destination path, or NULL if an error occurred.
+ * @return 			The modified destination path, or NULL if an error occurred.
  */
 const char *PlAppendPath( PLPath dst, const char *src, bool truncate );
 
@@ -107,9 +105,8 @@ const char *PlAppendPath( PLPath dst, const char *src, bool truncate );
  * @param truncate 	A boolean flag to allow truncation of the resulting path if it exceeds the maximum path length.
  * @param msg 		The format string that specifies how subsequent arguments are converted for output.
  * @param ... 		Additional arguments for the format string.
- *
- * @return 	A pointer to the destination buffer containing the combined and normalized path,
- * 			or NULL if the operation fails due to memory constraints or improper formatting.
+ * @return 			A pointer to the destination buffer containing the combined and normalized path,
+ * 					or NULL if the operation fails due to memory constraints or improper formatting.
  */
 const char *PlAppendPathEx( PLPath dst, bool truncate, const char *msg, ... );
 
@@ -119,8 +116,7 @@ const char *PlAppendPathEx( PLPath dst, bool truncate, const char *msg, ... );
  * @param dst 		The destination path buffer where the prefixed path will be stored.
  * @param src 		The source path to prefix to the destination path.
  * @param truncate 	A boolean flag indicating whether to truncate the resulting path if it exceeds the maximum allowed length.
- *
- * @return A pointer to the destination path buffer containing the prefixed path, or NULL if an error occurred.
+ * @return 			A pointer to the destination path buffer containing the prefixed path, or NULL if an error occurred.
  */
 const char *PlPrefixPath( PLPath dst, const char *src, bool truncate );
 
@@ -128,6 +124,11 @@ void PlNormalizePath( char *path, size_t length );
 
 char *PlGetFolderForPath( PLPath dst, PLPath src );
 
+/**
+ * Returns the name of the systems current user.
+ *
+ * @param out
+ */
 char *PlGetUserName( char *out, size_t n );
 
 const char *PlGetWorkingDirectory( void );
@@ -136,13 +137,41 @@ void PlSetWorkingDirectory( const char *path );
 const char *PlGetExecutablePath( char *out, size_t outSize );
 const char *PlGetExecutableDirectory( char *out, size_t outSize );
 
+/**
+ * Returns directory for saving application data.
+ *
+ * @param app_name 	Name of your application.
+ * @param out 		Buffer we'll be storing the path to.
+ * @param n 		Length of the buffer.
+ * @return 			Pointer to the output, will return NULL on error.
+ */
 char *PlGetApplicationDataDirectory( const char *app_name, char *out, size_t n );
 
+/**
+ * Checks if the given path ends with a slash character.
+ *
+ * This function determines whether the provided path string ends with either
+ * a forward slash ('/') or a backslash ('\\'). It first calculates the
+ * length of the string and then checks the last character.
+ *
+ * @param p A null-terminated string representing the path to check.
+ * 			It should be a valid string.
+ * @return 	A boolean value:
+ *         	- true: if the path ends with a slash or backslash.
+ *         	- false: otherwise.
+ */
 bool PlPathEndsInSlash( const char *p );
 
 void PlStripExtension( char *dest, size_t length, const char *in );
 
 const char *PlGetFileExtension( const char *in );
+
+/**
+ * Returns pointer to the last component in the given filename.
+ *
+ * @param path
+ * @return
+ */
 const char *PlGetFileName( const char *path );
 
 const char *PlResolveVirtualPath( const char *path, char *dest, size_t size );

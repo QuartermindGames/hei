@@ -590,12 +590,6 @@ void PlStripExtension( char *dest, size_t length, const char *in ) {
 	*dest = 0;
 }
 
-/**
- * Returns pointer to the last component in the given filename.
- *
- * @param path
- * @return
- */
 const char *PlGetFileName( const char *path ) {
 	const char *lslash;
 	if ( ( lslash = strrchr( path, '/' ) ) == NULL ) {
@@ -609,10 +603,6 @@ const char *PlGetFileName( const char *path ) {
 	return path;
 }
 
-/** Returns the name of the systems current user.
- *
- * @param out
- */
 char *PlGetUserName( char *out, size_t n ) {
 #ifdef _WIN32
 	char user_string[ PL_SYSTEM_MAX_USERNAME ];
@@ -631,13 +621,6 @@ char *PlGetUserName( char *out, size_t n ) {
 	return out;
 }
 
-/** Returns directory for saving application data.
- *
- * @param app_name Name of your application.
- * @param out Buffer we'll be storing the path to.
- * @param n Length of the buffer.
- * @return Pointer to the output, will return NULL on error.
- */
 char *PlGetApplicationDataDirectory( const char *app_name, char *out, size_t n ) {
 	if ( PL_INVALID_STRING( app_name ) ) {
 		PlReportErrorF( PL_RESULT_FILEPATH, "invalid app name" );
@@ -663,9 +646,6 @@ char *PlGetApplicationDataDirectory( const char *app_name, char *out, size_t n )
 	return out;
 }
 
-/**
- * Returns true if the path ends in a forward/backward slash.
- */
 bool PlPathEndsInSlash( const char *p ) {
 	size_t l = strlen( p );
 	return ( l > 0 && ( p[ l - 1 ] == '/' || p[ l - 1 ] == '\\' ) );

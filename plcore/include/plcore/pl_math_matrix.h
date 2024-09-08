@@ -21,14 +21,14 @@ PL_EXTERN_C
 typedef struct PLMatrix3 {
 	union {
 		float m[ 9 ];
-		float mm[ 3 ][ 3 ];
+		float mm[ 3 ][ 3 ];// row, col
 	};
 } PLMatrix3;
 
 typedef struct PLMatrix4 {
 	union {
 		float m[ 16 ];
-		float mm[ 4 ][ 4 ];
+		float mm[ 4 ][ 4 ];// row, col
 	};
 } PLMatrix4;
 
