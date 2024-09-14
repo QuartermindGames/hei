@@ -165,8 +165,6 @@ PLGMesh *PlgCreateMesh( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsign
 
 PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
                             const unsigned int *indicies, const PLGVertex *vertices ) {
-	PL_ASSERT( numVerts );
-
 	PLGMesh *mesh = ( PLGMesh * ) PlCAllocA( 1, sizeof( PLGMesh ) );
 	mesh->primitive = primitive;
 	mesh->mode = mode;
@@ -186,10 +184,10 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 	}
 
 	mesh->maxVertices = numVerts;
-	mesh->vertices = ( PLGVertex * ) PlCAllocA( mesh->maxVertices, sizeof( PLGVertex ) );
+	mesh->vertices = PL_NEW_( PLGVertex, mesh->maxVertices );
 
 	// If the vertices passed in aren't null, copy them into our vertex list
-	if ( vertices != NULL ) {//-V1051
+	if ( vertices != NULL && mesh->num_verts > 0 ) {
 		memcpy( mesh->vertices, vertices, sizeof( PLGVertex ) * numVerts );
 		mesh->num_verts = numVerts;
 	}
