@@ -1,4 +1,6 @@
-// Copyright © 2020-2024 SnortySoft, Mark E. Sowden <hogsy@snortysoft.net>
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #pragma once
 
