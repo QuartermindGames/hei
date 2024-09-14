@@ -89,6 +89,7 @@ void PlgDestroyMesh( PLGMesh *mesh );
 
 void PlgDrawEllipse( unsigned int segments, const PLVector2 *position, float w, float h, const PLColour *colour );
 void PlgDrawRectangle( float x, float y, float w, float h, PLColour colour );
+void PlgDrawLineRectangle( float x, float y, float w, float h, PLColour colour );
 void PlgDrawTexturedRectangle( float x, float y, float w, float h, PLGTexture *texture );
 void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
                           float hScale, float vScale, PLGTexture *texture );
@@ -149,6 +150,11 @@ void PlgImmTextureCoord( float s, float t );
 unsigned int PlgImmPushTriangle( unsigned int x, unsigned int y, unsigned int z );
 void PlgImmSetPrimitiveScale( float scale );
 void PlgImmDraw( void );
+
+unsigned int PlgPushTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, unsigned int z );
+unsigned int PlgPushVertex3f( PLGMesh *mesh, float x, float y, float z );
+unsigned int PlgPushVertex3fv( PLGMesh *mesh, const PLVector3 *vec );
+void PlgColour4bv( PLGMesh *mesh, const PLColour *col );
 
 #endif
 

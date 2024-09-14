@@ -71,6 +71,22 @@ void PlgImmDraw( void ) {
 	PlgDrawMesh( currentDynamicMesh );
 }
 
+unsigned int PlgPushTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, unsigned int z ) {
+	return PlgAddMeshTriangle( mesh, x, y, z );
+}
+
+unsigned int PlgPushVertex3f( PLGMesh *mesh, float x, float y, float z ) {
+	return PlgAddMeshVertex( mesh, &PL_VECTOR3( x, y, z ), &pl_vecOrigin3, &PL_COLOUR_WHITE, &pl_vecOrigin2 );
+}
+
+unsigned int PlgPushVertex3fv( PLGMesh *mesh, const PLVector3 *vec ) {
+	return PlgAddMeshVertex( mesh, vec, &pl_vecOrigin3, &PL_COLOUR_WHITE, &pl_vecOrigin2 );
+}
+
+void PlgColour4bv( PLGMesh *mesh, const PLColour *col ) {
+	PlgSetMeshVertexColour( mesh, mesh->num_verts - 1, col );
+}
+
 /****************************************
  ****************************************/
 
@@ -149,6 +165,19 @@ void PlgDrawRectangle( float x, float y, float w, float h, PLColour colour ) {
 
 	SetupRectangleMesh( x, y, w, h, colour );
 
+	PlgImmDraw();
+}
+
+void PlgDrawLineRectangle( float x, float y, float w, float h, PLColour colour ) {
+	PlgImmBegin( PLG_MESH_LINE_LOOP );
+	PlgImmPushVertex( x, y, 0.0f );
+	PlgImmColour( colour.r, colour.g, colour.b, colour.a );
+	PlgImmPushVertex( x + w, y, 0.0f );
+	PlgImmColour( colour.r, colour.g, colour.b, colour.a );
+	PlgImmPushVertex( x + w, y + h, 0.0f );
+	PlgImmColour( colour.r, colour.g, colour.b, colour.a );
+	PlgImmPushVertex( x, y + h, 0.0f );
+	PlgImmColour( colour.r, colour.g, colour.b, colour.a );
 	PlgImmDraw();
 }
 
