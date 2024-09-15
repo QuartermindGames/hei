@@ -161,7 +161,7 @@ typedef const PLGDriverImportTable *( *PLGDriverInitializationFunction )( const 
 PL_EXTERN bool PlgRegisterDriver( const char *path );
 PL_EXTERN unsigned int PlgScanForDrivers( const char *path );
 
-PL_EXTERN const char **PlgGetAvailableDriverInterfaces( unsigned int *numModes );
+PL_EXTERN const PLGDriverDescription **PlgGetAvailableDriverInterfaces( unsigned int *numModes );
 PL_EXTERN PLFunctionResult PlgSetDriver( const char *mode );
 #endif
 

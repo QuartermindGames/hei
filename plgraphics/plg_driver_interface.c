@@ -16,8 +16,7 @@
 #define MAX_GRAPHICS_MODES 16
 
 typedef struct PLGDriver {
-	char identifier[ 32 ];
-	char description[ 64 ];
+	const PLGDriverDescription *description;
 
 	PLLibrary *libPtr; /* library handle */
 	const PLGDriverImportTable *interface;
@@ -93,8 +92,7 @@ bool PlgRegisterDriver( const char *path ) {
 	GfxLog( "Success, adding \"%s\" to drivers list\n", description->identifier );
 
 	PLGDriver *driver = &drivers[ numDrivers++ ];
-	snprintf( driver->description, sizeof( driver->description ), "%s", description->description );
-	snprintf( driver->identifier, sizeof( driver->identifier ), "%s", description->identifier );
+	driver->description = description;
 	driver->interface = NULL;
 	driver->initFunction = InitializeDriver;
 	driver->libPtr = library;
@@ -141,12 +139,12 @@ unsigned int PlgScanForDrivers( const char *path ) {
  * Query what available graphics modes there are so that the
  * host can either choose their preference or attempt each.
  */
-const char **PlgGetAvailableDriverInterfaces( unsigned int *numModes ) {
+const PLGDriverDescription **PlgGetAvailableDriverInterfaces( unsigned int *numModes ) {
 	static unsigned int cachedModes = 0;
-	static const char *descriptors[ MAX_GRAPHICS_MODES ];
+	static const PLGDriverDescription *descriptors[ MAX_GRAPHICS_MODES ];
 	if ( cachedModes != numDrivers ) {
 		for ( unsigned int i = 0; i < numDrivers; ++i ) {
-			descriptors[ i ] = drivers[ i ].identifier;
+			descriptors[ i ] = drivers[ i ].description;
 		}
 	}
 	*numModes = numDrivers;
@@ -162,7 +160,7 @@ PLFunctionResult PlgSetDriver( const char *mode ) {
 
 	const PLGDriverImportTable *interface = NULL;
 	for ( unsigned int i = 0; i < numDrivers; ++i ) {
-		if ( pl_strcasecmp( mode, drivers[ i ].identifier ) != 0 ) {
+		if ( pl_strcasecmp( mode, drivers[ i ].description->identifier ) != 0 ) {
 			continue;
 		}
 
