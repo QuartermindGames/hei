@@ -1162,6 +1162,30 @@ PLFile *PlCreateFileFromMemory( const char *path, void *buf, size_t bufSize, PLF
 	return file;
 }
 
+PLFile *PlCreateFileFromStdio( FILE *stdio, const char *source ) {
+	PLFileOffset size = 0;
+	PLFileOffset offset = pl_ftell( stdio );
+	if ( pl_fseek( stdio, 0, SEEK_END ) == 0 ) {
+		size = pl_ftell( stdio );
+	}
+	pl_fseek( stdio, offset, SEEK_SET );
+
+	if ( size == 0 ) {
+		PlReportErrorF( PL_RESULT_FILEREAD, "failed to determine file size" );
+		return NULL;
+	}
+
+	PLFile *file = PL_NEW( PLFile );
+	file->size = size;
+	file->fptr = stdio;
+
+	if ( source != NULL ) {
+		snprintf( file->path, sizeof( file->path ), "%s", source );
+	}
+
+	return file;
+}
+
 PLFile *PlOpenLocalFile( const char *path, bool cache ) {
 	FILE *sysFile = fopen( path, "rb" );
 	if ( sysFile == NULL ) {
@@ -1171,6 +1195,7 @@ PLFile *PlOpenLocalFile( const char *path, bool cache ) {
 
 	PLFile *file = PL_NEW( PLFile );
 	snprintf( file->path, sizeof( file->path ), "%s", path );
+
 	file->size = PlGetLocalFileSize( path );
 
 	if ( cache ) {
@@ -1246,10 +1271,6 @@ const void *PlGetFileData( const PLFile *ptr ) {
  * @return Number of bytes within file.
  */
 size_t PlGetFileSize( const PLFile *ptr ) {
-	if ( ptr->fptr != NULL ) {
-		return PlGetLocalFileSize( ptr->path );
-	}
-
 	return ptr->size;
 }
 

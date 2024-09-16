@@ -189,6 +189,23 @@ bool PlCreatePath( const char *path );
 // File I/O ...
 
 PLFile *PlCreateFileFromMemory( const char *path, void *buf, size_t bufSize, PLFileMemoryBufferType bufType );
+
+/**
+ * @brief Creates a PLFile structure from a standard C FILE pointer.
+ *
+ * This function initializes a PLFile structure, setting its file pointer to
+ * the given stdio FILE pointer and determining the size of the file. If a
+ * source path is provided, it will be copied into the PLFile's path attribute.
+ * The function does not manage the opening or closing of the FILE pointer
+ * provided.
+ *
+ * @param stdio 	Pointer to a standard C FILE object.
+ * @param source 	Optional string representing the source path of the FILE object.
+ *               	If provided, it will be stored in the PLFile's path attribute.
+ * @return 			A pointer to the newly created PLFile structure.
+ */
+PLFile *PlCreateFileFromStdio( FILE *stdio, const char *source );
+
 PLFile *PlOpenLocalFile( const char *path, bool cache );
 PLFile *PlOpenFile( const char *path, bool cache );
 void PlCloseFile( PLFile *ptr );
