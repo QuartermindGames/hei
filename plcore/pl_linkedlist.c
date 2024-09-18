@@ -226,3 +226,7 @@ void **PlArrayFromLinkedList( PLLinkedList *list, unsigned int *numElements ) {
 	}
 	return elements;
 }
+
+bool PlIsLinkedListEmpty( const PLLinkedList *list ) {
+	return list->front == NULL;
+}

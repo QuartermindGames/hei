@@ -127,7 +127,26 @@ void PlMoveLinkedListNodeToFront( PLLinkedListNode *node );
  */
 void PlMoveLinkedListNodeToBack( PLLinkedListNode *node );
 
+/**
+ * @brief Converts a linked list to an array.
+ *
+ * This function takes a linked list and converts its elements into a dynamically allocated array.
+ * The number of elements in the resulting array is stored in the variable pointed to by `numElements`.
+ *
+ * @param list 			Pointer to the linked list to be converted.
+ * @param numElements 	Pointer to an unsigned int where the number of elements will be stored.
+ * @return 				A pointer to the dynamically allocated array containing the elements of the linked list.
+ *         				The caller is responsible for freeing the allocated memory.
+ */
 void **PlArrayFromLinkedList( PLLinkedList *list, unsigned int *numElements );
+
+/**
+ * @brief Checks whether the linked list is empty.
+ *
+ * @param list 	The linked list to check.
+ * @return 		true if the linked list is empty, false otherwise.
+ */
+bool PlIsLinkedListEmpty( const PLLinkedList *list );
 
 /**
  * A simple iterator macro, can be used like so...
