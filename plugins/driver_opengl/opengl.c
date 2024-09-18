@@ -1169,6 +1169,7 @@ static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *l
 		insert( "uniform mat4 pl_model;\n" );
 		insert( "uniform mat4 pl_view;\n" );
 		insert( "uniform mat4 pl_proj;\n" );
+		insert( "uniform mat4 pl_texture;\n" );
 		if ( stage->type == PLG_SHADER_TYPE_VERTEX ) {
 			insert( "in vec3 pl_vposition;\n" );
 			insert( "in vec3 pl_vnormal;\n" );

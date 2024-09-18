@@ -65,7 +65,16 @@ void PlgImmSetPrimitiveScale( float scale ) {
 }
 
 void PlgImmDraw( void ) {
-	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
+	PLGShaderProgram *program = PlgGetCurrentShaderProgram();
+	if ( program ) {
+		int slot;
+		if ( ( slot = PlgGetShaderUniformSlot( program, "pl_model" ) ) >= 0 ) {
+			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
+		}
+		if ( ( slot = PlgGetShaderUniformSlot( program, "pl_texture" ) ) >= 0 ) {
+			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_TEXTURE_MATRIX ), false );
+		}
+	}
 
 	PlgUploadMesh( currentDynamicMesh );
 	PlgDrawMesh( currentDynamicMesh );
@@ -126,7 +135,13 @@ void PlgDrawEllipse( unsigned int segments, const PLVector2 *position, float w, 
 
 	PlLoadIdentityMatrix();
 
-	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
+	PLGShaderProgram *program = PlgGetCurrentShaderProgram();
+	if ( program ) {
+		int slot;
+		if ( ( slot = PlgGetShaderUniformSlot( program, "pl_model" ) ) >= 0 ) {
+			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
+		}
+	}
 
 	PlgUploadMesh( mesh );
 	PlgDrawMesh( mesh );
@@ -206,7 +221,16 @@ void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVect
 
 	PlLoadIdentityMatrix();
 
-	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
+	PLGShaderProgram *program = PlgGetCurrentShaderProgram();
+	if ( program ) {
+		int slot;
+		if ( ( slot = PlgGetShaderUniformSlot( program, "pl_model" ) ) >= 0 ) {
+			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
+		}
+		if ( ( slot = PlgGetShaderUniformSlot( program, "pl_texture" ) ) >= 0 ) {
+			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_TEXTURE_MATRIX ), false );
+		}
+	}
 
 	PlgUploadMesh( mesh );
 	PlgDrawMesh( mesh );
@@ -228,7 +252,13 @@ void PlgDrawTriangle( int x, int y, unsigned int w, unsigned int h ) {
 
 	PlLoadIdentityMatrix();
 
-	PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
+	PLGShaderProgram *program = PlgGetCurrentShaderProgram();
+	if ( program ) {
+		int slot;
+		if ( ( slot = PlgGetShaderUniformSlot( program, "pl_model" ) ) >= 0 ) {
+			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
+		}
+	}
 
 	PlgUploadMesh( mesh );
 	PlgDrawMesh( mesh );
