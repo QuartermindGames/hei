@@ -153,9 +153,9 @@ bool PlIsLinkedListEmpty( const PLLinkedList *list );
  * 	MyType myVar;
  * 	PL_ITERATE_LINKED_LIST( myVar, MyType, myList ) { logic goes here }
  */
-#define PL_ITERATE_LINKED_LIST( VAR, TYPE, LIST )                                             \
-	for ( PLLinkedListNode *i = PlGetFirstNode( LIST );                                       \
-	      i != NULL && ( ( ( VAR ) = ( TYPE * ) PlGetLinkedListNodeUserData( i ) ) != NULL ); \
-	      i = PlGetNextLinkedListNode( i ) )
+#define PL_ITERATE_LINKED_LIST( VAR, TYPE, LIST, ITR )                                                \
+	for ( PLLinkedListNode * ( ITR ) = PlGetFirstNode( LIST );                                        \
+	      ( ITR ) != NULL && ( ( ( VAR ) = ( TYPE * ) PlGetLinkedListNodeUserData( ITR ) ) != NULL ); \
+	      ( ITR ) = PlGetNextLinkedListNode( ITR ) )
 
 PL_EXTERN_C_END

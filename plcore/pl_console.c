@@ -828,12 +828,10 @@ void PlExecuteConsoleScript( const char *path ) {
 
 	PL_DELETE( buf );
 
-	PLLinkedListNode *node = PlGetFirstNode( queuedCommands );
-	while ( node != NULL ) {
-		char *command = PlGetLinkedListNodeUserData( node );
+	char *command;
+	PL_ITERATE_LINKED_LIST( command, char, queuedCommands, i ) {
 		PlParseConsoleString( command );
 		PL_DELETE( command );
-		node = PlGetNextLinkedListNode( node );
 	}
 	PlDestroyLinkedList( queuedCommands );
 }
