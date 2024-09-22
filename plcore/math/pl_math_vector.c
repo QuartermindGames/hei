@@ -16,18 +16,19 @@ PL_DLL const PLVector4 pl_vecOrigin4 = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 PLVector3 PlTransformVector3( const PLVector3 *v, const PLMatrix4 *m ) {
 	return ( PLVector3 ){
-	        /* x */
 	        ( m->pl_m4pos( 0, 0 ) * v->x ) +
 	                ( m->pl_m4pos( 0, 1 ) * v->y ) +
-	                ( m->pl_m4pos( 0, 2 ) * v->z ),
-	        /* y */
+	                ( m->pl_m4pos( 0, 2 ) * v->z ) +
+	                ( m->pl_m4pos( 0, 3 ) * 1.0 ),
 	        ( m->pl_m4pos( 1, 0 ) * v->x ) +
 	                ( m->pl_m4pos( 1, 1 ) * v->y ) +
-	                ( m->pl_m4pos( 1, 2 ) * v->z ),
-	        /* y */
+	                ( m->pl_m4pos( 1, 2 ) * v->z ) +
+	                ( m->pl_m4pos( 1, 3 ) * 1.0 ),
 	        ( m->pl_m4pos( 2, 0 ) * v->x ) +
 	                ( m->pl_m4pos( 2, 1 ) * v->y ) +
-	                ( m->pl_m4pos( 2, 2 ) * v->z ) };
+	                ( m->pl_m4pos( 2, 2 ) * v->z ) +
+	                ( m->pl_m4pos( 2, 3 ) * 1.0 ),
+	};
 }
 
 PLVector4 PlTransformVector4( const PLVector4 *v, const PLMatrix4 *m ) {
