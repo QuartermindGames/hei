@@ -24,12 +24,12 @@ PLGCamera *PlgCreateCamera( void ) {
 	camera->far = CAMERA_DEFAULT_FAR;
 	camera->mode = PLG_CAMERA_MODE_PERSPECTIVE;
 
-	camera->forward = PLVector3( 0, 0, 1 );
-	camera->up = PLVector3( 0, 1, 0 );
+	camera->forward = PL_VECTOR3( 0, 0, 1 );
+	camera->up = PL_VECTOR3( 0, 1, 0 );
 
-	camera->bounds.mins = PLVector3(
+	camera->bounds.mins = PL_VECTOR3(
 	        -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS );
-	camera->bounds.maxs = PLVector3(
+	camera->bounds.maxs = PL_VECTOR3(
 	        CAMERA_DEFAULT_BOUNDS, CAMERA_DEFAULT_BOUNDS, CAMERA_DEFAULT_BOUNDS );
 
 	return camera;
@@ -205,25 +205,25 @@ bool PlgIsBoxInsideView( const PLGCamera *camera, const PLCollisionAABB *bounds 
 	PLVector3 mins = PlAddVector3( bounds->mins, bounds->origin );
 	PLVector3 maxs = PlAddVector3( bounds->maxs, bounds->origin );
 	for ( unsigned int i = 0; i < 5; ++i ) {
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( mins.x, mins.y, mins.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( mins.x, mins.y, mins.z ) ) >= 0.0f ) {
 			continue;
 		}
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( maxs.x, mins.y, mins.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( maxs.x, mins.y, mins.z ) ) >= 0.0f ) {
 			continue;
 		}
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( mins.x, maxs.y, mins.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( mins.x, maxs.y, mins.z ) ) >= 0.0f ) {
 			continue;
 		}
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( maxs.x, maxs.y, mins.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( maxs.x, maxs.y, mins.z ) ) >= 0.0f ) {
 			continue;
 		}
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( mins.x, mins.y, maxs.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( mins.x, mins.y, maxs.z ) ) >= 0.0f ) {
 			continue;
 		}
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( mins.x, maxs.y, maxs.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( mins.x, maxs.y, maxs.z ) ) >= 0.0f ) {
 			continue;
 		}
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PLVector3( maxs.x, maxs.y, maxs.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( maxs.x, maxs.y, maxs.z ) ) >= 0.0f ) {
 			continue;
 		}
 

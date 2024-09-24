@@ -31,7 +31,7 @@ enum {
 	PL_ALPHA
 };
 
-#define PlFloatToByte( a ) ( uint8_t )( roundf( ( a ) * 255.f ) )
+#define PlFloatToByte( a ) ( uint8_t ) ( roundf( ( a ) * 255.f ) )
 #define PlByteToFloat( a ) ( ( a ) / ( float ) 255 )
 
 #define PlClamp( min, val, max ) ( val ) < ( min ) ? ( min ) : ( ( val ) > ( max ) ? ( max ) : ( val ) )
@@ -173,7 +173,7 @@ namespace hei {
 }// namespace hei
 #endif
 
-#define PL_COLOUR_INDEX( COLOUR, INDEX )    ( ( uint8_t * ) &( COLOUR ) )[ INDEX ]
+#define PL_COLOUR_INDEX( COLOUR, INDEX )  ( ( uint8_t * ) &( COLOUR ) )[ INDEX ]
 #define PlColourF32Index( COLOUR, INDEX ) ( ( float * ) &( COLOUR ) )[ INDEX ]
 
 typedef struct PLColourF32 {

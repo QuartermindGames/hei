@@ -32,8 +32,8 @@ void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertice
 		}
 
 		/* why the weird multiplication at the end here? to roughly match previous scaling values */
-		vertices[ i ].st[ 0 ].x = ( PlVector3Index( vertices[ i ].position, x ) + textureOffset.x ) / textureScale.x;
-		vertices[ i ].st[ 0 ].y = ( PlVector3Index( vertices[ i ].position, y ) + textureOffset.y ) / textureScale.y;
+		vertices[ i ].st[ 0 ].x = ( PL_VECTOR3_I( vertices[ i ].position, x ) + textureOffset.x ) / textureScale.x;
+		vertices[ i ].st[ 0 ].y = ( PL_VECTOR3_I( vertices[ i ].position, y ) + textureOffset.y ) / textureScale.y;
 	}
 }
 
@@ -61,8 +61,8 @@ void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, un
 }
 
 PLVector3 PlgGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3 c ) {
-	PLVector3 x = PLVector3( c.x - b.x, c.y - b.y, c.z - b.z );
-	PLVector3 y = PLVector3( a.x - b.x, a.y - b.y, a.z - b.z );
+	PLVector3 x = PL_VECTOR3( c.x - b.x, c.y - b.y, c.z - b.z );
+	PLVector3 y = PL_VECTOR3( a.x - b.x, a.y - b.y, a.z - b.z );
 	return PlNormalizeVector3( PlVector3CrossProduct( x, y ) );
 }
 
@@ -205,10 +205,10 @@ PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, const PLCol
 		return NULL;
 	}
 
-	PlgAddMeshVertex( mesh, &PLVector3( x, y, 0.0f ), &pl_vecOrigin3, colour, &PLVector2( 0.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, &PLVector3( x, y + h, 0.0f ), &pl_vecOrigin3, colour, &PLVector2( 0.0f, 1.0f ) );
-	PlgAddMeshVertex( mesh, &PLVector3( x + w, y, 0.0f ), &pl_vecOrigin3, colour, &PLVector2( 1.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, &PLVector3( x + w, y + h, 0.0f ), &pl_vecOrigin3, colour, &PLVector2( 1.0f, 1.0f ) );
+	PlgAddMeshVertex( mesh, &PL_VECTOR3( x, y, 0.0f ), &pl_vecOrigin3, colour, &PL_VECTOR2( 0.0f, 0.0f ) );
+	PlgAddMeshVertex( mesh, &PL_VECTOR3( x, y + h, 0.0f ), &pl_vecOrigin3, colour, &PL_VECTOR2( 0.0f, 1.0f ) );
+	PlgAddMeshVertex( mesh, &PL_VECTOR3( x + w, y, 0.0f ), &pl_vecOrigin3, colour, &PL_VECTOR2( 1.0f, 0.0f ) );
+	PlgAddMeshVertex( mesh, &PL_VECTOR3( x + w, y + h, 0.0f ), &pl_vecOrigin3, colour, &PL_VECTOR2( 1.0f, 1.0f ) );
 
 	return mesh;
 }
@@ -271,7 +271,7 @@ void PlgSetMeshVertexNormal( PLGMesh *mesh, unsigned int index, const PLVector3 
 
 void PlgSetMeshVertexST( PLGMesh *mesh, unsigned int index, float s, float t ) {
 	PL_ASSERT( index < mesh->maxVertices );
-	mesh->vertices[ index ].st[ 0 ] = PLVector2( s, t );
+	mesh->vertices[ index ].st[ 0 ] = PL_VECTOR2( s, t );
 }
 
 void PlgSetMeshVertexSTv( PLGMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st ) {

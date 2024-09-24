@@ -52,8 +52,8 @@ PLCollisionAABB PlGenerateAabbFromCoords( const PLVector3 *vertices, unsigned in
 		if ( max < 0 ) { max *= -1; }
 
 		float abs = min > max ? min : max;
-		bounds.maxs = PLVector3( abs, abs, abs );
-		bounds.mins = PLVector3( -abs, -abs, -abs );
+		bounds.maxs = PL_VECTOR3( abs, abs, abs );
+		bounds.mins = PL_VECTOR3( -abs, -abs, -abs );
 	}
 
 	/* abs origin is the middle of the bounding volume (wherever it is) and origin is the transformative point */
@@ -64,7 +64,7 @@ PLCollisionAABB PlGenerateAabbFromCoords( const PLVector3 *vertices, unsigned in
 }
 
 PLVector3 PlGetAabbAbsOrigin( const PLCollisionAABB *bounds, PLVector3 origin ) {
-	PLVector3 absOrigin = PLVector3( ( bounds->mins.x + bounds->maxs.x ) / 2,
+	PLVector3 absOrigin = PL_VECTOR3( ( bounds->mins.x + bounds->maxs.x ) / 2,
 	                                 ( bounds->mins.y + bounds->maxs.y ) / 2,
 	                                 ( bounds->mins.z + bounds->maxs.z ) / 2 );
 	return PlAddVector3( origin, absOrigin );
@@ -175,13 +175,13 @@ bool PlIsRayIntersectingAabb( const PLCollisionAABB *bounds, const PLCollisionRa
 	bool isInside = true;
 
 	for ( unsigned int i = 0; i < 3; ++i ) {
-		if ( PlVector3Index( ray->origin, i ) < PlVector3Index( min, i ) ) {
+		if ( PL_VECTOR3_I( ray->origin, i ) < PL_VECTOR3_I( min, i ) ) {
 			hitQuadrant[ i ] = left;
-			PlVector3Index( candidatePlane, i ) = PlVector3Index( min, i );
+			PL_VECTOR3_I( candidatePlane, i ) = PL_VECTOR3_I( min, i );
 			isInside = false;
-		} else if ( PlVector3Index( ray->origin, i ) > PlVector3Index( max, i ) ) {
+		} else if ( PL_VECTOR3_I( ray->origin, i ) > PL_VECTOR3_I( max, i ) ) {
 			hitQuadrant[ i ] = right;
-			PlVector3Index( candidatePlane, i ) = PlVector3Index( max, i );
+			PL_VECTOR3_I( candidatePlane, i ) = PL_VECTOR3_I( max, i );
 			isInside = false;
 		} else {
 			hitQuadrant[ i ] = middle;
@@ -197,35 +197,35 @@ bool PlIsRayIntersectingAabb( const PLCollisionAABB *bounds, const PLCollisionRa
 	/* Calculate T distances to candidate planes */
 	PLVector3 maxT;
 	for ( unsigned int i = 0; i < 3; ++i ) {
-		if ( hitQuadrant[ i ] != middle && PlVector3Index( ray->direction, i ) != 0.0f ) {
-			PlVector3Index( maxT, i ) = ( PlVector3Index( candidatePlane, i ) - PlVector3Index( ray->origin, i ) ) / PlVector3Index( ray->direction, i );
+		if ( hitQuadrant[ i ] != middle && PL_VECTOR3_I( ray->direction, i ) != 0.0f ) {
+			PL_VECTOR3_I( maxT, i ) = ( PL_VECTOR3_I( candidatePlane, i ) - PL_VECTOR3_I( ray->origin, i ) ) / PL_VECTOR3_I( ray->direction, i );
 		} else {
-			PlVector3Index( maxT, i ) = -1.0f;
+			PL_VECTOR3_I( maxT, i ) = -1.0f;
 		}
 	}
 
 	/* Get largest of the maxT's for final choice of intersection */
 	unsigned int whichPlane = 0;
 	for ( unsigned int i = 1; i < 3; ++i ) {
-		if ( PlVector3Index( maxT, whichPlane ) < PlVector3Index( maxT, i ) ) {
+		if ( PL_VECTOR3_I( maxT, whichPlane ) < PL_VECTOR3_I( maxT, i ) ) {
 			whichPlane = i;
 		}
 	}
 
 	/* Check final candidate actually inside box */
 
-	if ( PlVector3Index( maxT, whichPlane ) < 0.0f ) {
+	if ( PL_VECTOR3_I( maxT, whichPlane ) < 0.0f ) {
 		return false;
 	}
 
 	for ( unsigned int i = 0; i < 3; ++i ) {
 		if ( whichPlane != i ) {
-			PlVector3Index( hitPoint, i ) = PlVector3Index( ray->origin, i ) + PlVector3Index( maxT, whichPlane ) * PlVector3Index( ray->direction, i );
-			if ( PlVector3Index( hitPoint, i ) < PlVector3Index( min, i ) || PlVector3Index( hitPoint, i ) > PlVector3Index( max, i ) ) {
+			PL_VECTOR3_I( hitPoint, i ) = PL_VECTOR3_I( ray->origin, i ) + PL_VECTOR3_I( maxT, whichPlane ) * PL_VECTOR3_I( ray->direction, i );
+			if ( PL_VECTOR3_I( hitPoint, i ) < PL_VECTOR3_I( min, i ) || PL_VECTOR3_I( hitPoint, i ) > PL_VECTOR3_I( max, i ) ) {
 				return false;
 			}
 		} else {
-			PlVector3Index( hitPoint, i ) = PlVector3Index( candidatePlane, i );
+			PL_VECTOR3_I( hitPoint, i ) = PL_VECTOR3_I( candidatePlane, i );
 		}
 	}
 

@@ -98,7 +98,7 @@ PLVector2 PlDivideVector2( PLVector2 v, PLVector2 v2 ) {
 }
 
 PLVector2 PlDivideVector2F( const PLVector2 *v, float f ) {
-	return PlVector2( v->x / f, v->y / f );
+	return PL_VECTOR2( v->x / f, v->y / f );
 }
 
 PLVector3 PlDivideVector3( PLVector3 v, PLVector3 v2 ) {
@@ -128,7 +128,7 @@ PLVector4 PlDivideVector4F( PLVector4 v, float v2 ) {
  ****************************************/
 
 PLVector2 PlSubtractVector2( const PLVector2 *a, const PLVector2 *b ) {
-	return PlVector2( a->x - b->x, a->y - b->y );
+	return PL_VECTOR2( a->x - b->x, a->y - b->y );
 }
 
 PLVector3 PlSubtractVector3( PLVector3 v, PLVector3 v2 ) {
@@ -139,7 +139,7 @@ PLVector3 PlSubtractVector3( PLVector3 v, PLVector3 v2 ) {
 }
 
 PLVector3 PlSubtractVector3F( PLVector3 v, float f ) {
-	return PlSubtractVector3( v, PlVector3( f, f, f ) );
+	return PlSubtractVector3( v, PL_VECTOR3( f, f, f ) );
 }
 
 /****************************************
@@ -147,11 +147,11 @@ PLVector3 PlSubtractVector3F( PLVector3 v, float f ) {
  ****************************************/
 
 PLVector2 PlScaleVector2( const PLVector2 *v, const PLVector2 *scale ) {
-	return PlVector2( v->x * scale->x, v->y * scale->y );
+	return PL_VECTOR2( v->x * scale->x, v->y * scale->y );
 }
 
 PLVector2 PlScaleVector2F( const PLVector2 *v, float scale ) {
-	return PlVector2( v->x * scale, v->y * scale );
+	return PL_VECTOR2( v->x * scale, v->y * scale );
 }
 
 PLVector3 PlScaleVector3( PLVector3 v, PLVector3 v2 ) {
@@ -203,7 +203,7 @@ float PlGetPlaneDotProduct( const PLVector4 *plane, const PLVector3 *vector ) {
  ****************************************/
 
 PLVector3 PlVector3CrossProduct( PLVector3 v, PLVector3 v2 ) {
-	return PlVector3(
+	return PL_VECTOR3(
 	        v.y * v2.z - v.z * v2.y,
 	        v.z * v2.x - v.x * v2.z,
 	        v.x * v2.y - v.y * v2.x );
@@ -214,7 +214,7 @@ PLVector3 PlVector3CrossProduct( PLVector3 v, PLVector3 v2 ) {
  ****************************************/
 
 PLVector3 PlVector3Min( PLVector3 v, PLVector3 v2 ) {
-	return PlVector3(
+	return PL_VECTOR3(
 	        v.x < v2.x ? v.x : v2.x,
 	        v.y < v2.y ? v.y : v2.y,
 	        v.z < v2.z ? v.z : v2.z );
@@ -225,7 +225,7 @@ PLVector3 PlVector3Min( PLVector3 v, PLVector3 v2 ) {
  ****************************************/
 
 PLVector3 PlVector3Max( PLVector3 v, PLVector3 v2 ) {
-	return PlVector3(
+	return PL_VECTOR3(
 	        v.x > v2.x ? v.x : v2.x,
 	        v.y > v2.y ? v.y : v2.y,
 	        v.z > v2.z ? v.z : v2.z );
@@ -249,7 +249,7 @@ float PlVector3Length( const PLVector3 v ) {
 
 PLVector2 plNormalizeVector2( const PLVector2 *v ) {
 	float length = PlGetVector2Length( v );
-	return PlVector2( v->x / length, v->y / length );
+	return PL_VECTOR2( v->x / length, v->y / length );
 }
 
 PLVector3 PlNormalizeVector3( PLVector3 v ) {
@@ -266,7 +266,7 @@ PLVector3 PlNormalizeVector3( PLVector3 v ) {
  * Function that works similarly to D3DXPlaneNormalize.
  */
 PLVector4 PlNormalizePlane( PLVector4 plane ) {
-	float l = PlVector3Length( PlVector3( plane.x, plane.y, plane.z ) );
+	float l = PlVector3Length( PL_VECTOR3( plane.x, plane.y, plane.z ) );
 
 	plane.x /= l;
 	plane.y /= l;
@@ -293,13 +293,13 @@ bool PlCompareVector3( const PLVector3 *v, const PLVector3 *v2 ) {
  ****************************************/
 
 PLVector2 PlClampVector2( const PLVector2 *v, float min, float max ) {
-	return PlVector2(
+	return PL_VECTOR2(
 	        PlClamp( min, v->x, max ),
 	        PlClamp( min, v->y, max ) );
 }
 
 PLVector3 PlClampVector3( const PLVector3 *v, float min, float max ) {
-	return PlVector3(
+	return PL_VECTOR3(
 	        PlClamp( min, v->x, max ),
 	        PlClamp( min, v->y, max ),
 	        PlClamp( min, v->z, max ) );
@@ -349,7 +349,7 @@ const char *PlPrintVector4( const PLVector4 *v, PLVariableType format ) {
  ****************************************/
 
 PLVector2 PlComputeLineNormal( const PLVector2 *x, const PLVector2 *y ) {
-	PLVector2 v = PlVector2( x->y - y->y, y->x - x->x );
+	PLVector2 v = PL_VECTOR2( x->y - y->y, y->x - x->x );
 	return plNormalizeVector2( &v );
 }
 

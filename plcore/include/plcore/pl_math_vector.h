@@ -18,24 +18,6 @@ typedef struct PLVector4 {
 	float x, y, z, w;
 } PLVector4;
 
-/* todo: deprecate all of these bar the PL_ variants */
-#ifndef __cplusplus
-#	define PLVector2( x, y ) \
-		( PLVector2 ) { x, y }
-#endif
-#define PlVector2( X, Y ) \
-	( PLVector2 ) { X, Y }
-#ifndef __cplusplus
-#	define PLVector3( x, y, z ) \
-		( PLVector3 ) { ( float ) ( x ), ( float ) ( y ), ( float ) ( z ) }
-#endif
-#define PlVector3( X, Y, Z ) \
-	( PLVector3 ) { X, Y, Z }
-#ifndef __cplusplus
-#	define PLVector4( x, y, z, w ) \
-		( PLVector4 ) { ( float ) ( x ), ( float ) ( y ), ( float ) ( z ), ( float ) ( w ) }
-#endif
-
 #define PL_VECTOR2( X, Y ) \
 	( PLVector2 ) { X, Y }
 #define PL_VECTOR3( X, Y, Z ) \
@@ -55,9 +37,9 @@ PL_STATIC_ASSERT( PL_MVECNUM( PLVector4 ) == 4, "unexpected vector element num" 
 #define PL_MVEC3NUM PL_GETMVECNUM( PLVector3 )
 #define PL_MVEC4NUM PL_GETMVECNUM( PLVector4 )
 
-#define PlVectorIndex( VECTOR, INDEX )  ( ( float * ) &( VECTOR ) )[ INDEX ]
+#define PL_VECTOR_I( VECTOR, INDEX )  ( ( float * ) &( VECTOR ) )[ INDEX ]
 /* todo: add bound checking to the below implementation??? Or just remove!? */
-#define PlVector3Index( VECTOR, INDEX ) PlVectorIndex( VECTOR, INDEX )
+#define PL_VECTOR3_I( VECTOR, INDEX ) PL_VECTOR_I( VECTOR, INDEX )
 
 /****************************************
  ****************************************/

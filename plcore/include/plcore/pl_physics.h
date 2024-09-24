@@ -117,7 +117,7 @@ inline static bool PlTestLineIntersection( float dst1, float dst2, const PLVecto
 	}
 
 	for ( unsigned int i = 0; i < 3; ++i ) {
-		PlVector3Index( hit, i ) = PlVector3Index( lineStart, i ) + ( PlVector3Index( lineEnd, i ) - PlVector3Index( lineStart, i ) ) * ( -dst1 / ( dst2 - dst1 ) );
+		PL_VECTOR3_I( hit, i ) = PL_VECTOR3_I( lineStart, i ) + ( PL_VECTOR3_I( lineEnd, i ) - PL_VECTOR3_I( lineStart, i ) ) * ( -dst1 / ( dst2 - dst1 ) );
 	}
 
 	return true;

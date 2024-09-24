@@ -14,10 +14,10 @@ PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *vi
 	PLVector4 ppos = PlTransformVector4( &posw, viewProjMatrix );
 
 	// Divide by w to get normalized device coordinates
-	PLVector3 ndc = PlVector3( ppos.x / ppos.w, ppos.y / ppos.w, ppos.z / ppos.w );
+	PLVector3 ndc = PL_VECTOR3( ppos.x / ppos.w, ppos.y / ppos.w, ppos.z / ppos.w );
 
 	// Scale and offset by viewport parameters to get screen coordinates
-	PLVector2 screen = PlVector2( ( ( ndc.x + 1.0f ) / 2.0f ) * viewport[ 2 ] + viewport[ 0 ],
+	PLVector2 screen = PL_VECTOR2( ( ( ndc.x + 1.0f ) / 2.0f ) * viewport[ 2 ] + viewport[ 0 ],
 	                              // Flip the y coordinate by subtracting it from the viewport height
 	                              ( flip ? viewport[ 3 ] : 0 ) - ( ( ndc.y + 1.0f ) / 2.0f ) * viewport[ 3 ] + viewport[ 1 ] );
 
@@ -32,7 +32,7 @@ PLVector3 PlConvertScreenToWorld( PLVector3 windowCoordinate, PLMatrix4 modelVie
 	windowCoordinate.y = windowCoordinate.y * 2.0f - 1.0f;
 	windowCoordinate.z = windowCoordinate.z * 2.0f - 1.0f;
 
-	PLVector4 rayClip = PLVector4( windowCoordinate.x, windowCoordinate.y, -1.0f, 1.0f );
+	PLVector4 rayClip = PL_VECTOR4( windowCoordinate.x, windowCoordinate.y, -1.0f, 1.0f );
 	PLMatrix4 invProj = PlInverseMatrix4( projection );
 	PLVector4 rayEye = PlTransformVector4( &rayClip, &invProj );
 
@@ -94,8 +94,8 @@ PLMatrix4 PlRotateMatrix4( float angle, const PLVector3 *axis ) {
 	float c = cosf( angle );
 	float t = 1.0f - c;
 
-	PLVector3 tv = PlVector3( t * axis->x, t * axis->y, t * axis->z );
-	PLVector3 sv = PlVector3( s * axis->x, s * axis->y, s * axis->z );
+	PLVector3 tv = PL_VECTOR3( t * axis->x, t * axis->y, t * axis->z );
+	PLVector3 sv = PL_VECTOR3( s * axis->x, s * axis->y, s * axis->z );
 
 	PLMatrix4 m;
 
@@ -123,11 +123,11 @@ PLMatrix4 PlRotateMatrix4( float angle, const PLVector3 *axis ) {
 }
 
 PLVector3 PlGetMatrix4Translation( const PLMatrix4 *m ) {
-	return PlVector3( m->pl_m4pos( 0, 3 ), m->pl_m4pos( 1, 3 ), m->pl_m4pos( 2, 3 ) );
+	return PL_VECTOR3( m->pl_m4pos( 0, 3 ), m->pl_m4pos( 1, 3 ), m->pl_m4pos( 2, 3 ) );
 }
 
 PLVector3 PlGetMatrix4Angle( const PLMatrix4 *m ) {
-	PLVector3 out = PlVector3( 0, 0, 0 );
+	PLVector3 out = PL_VECTOR3( 0, 0, 0 );
 	out.y = PL_RAD2DEG( asinf( m->m[ 8 ] ) );
 	if ( m->m[ 10 ] < 0 ) {
 		if ( out.y >= 0 ) {
