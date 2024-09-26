@@ -141,9 +141,9 @@ static void WriteSkeletonBlock( FILE *file, const PLMModel *model ) {
 	if ( model->type == PLM_MODELTYPE_SKELETAL ) {
 		for ( unsigned int i = 0; i < model->internal.skeletal_data.numBones; ++i ) {
 #if 1
-			PLVector3 rotation = PlVector3( model->internal.skeletal_data.bones[ i ].orientation.x,
-			                                model->internal.skeletal_data.bones[ i ].orientation.y,
-			                                model->internal.skeletal_data.bones[ i ].orientation.z );
+			PLVector3 rotation = PL_VECTOR3( model->internal.skeletal_data.bones[ i ].orientation.x,
+			                                 model->internal.skeletal_data.bones[ i ].orientation.y,
+			                                 model->internal.skeletal_data.bones[ i ].orientation.z );
 #else
 			PLVector3 rotation = PlQuaternionToEuler( &model->internal.skeletal_data.bones[ i ].orientation );
 #endif
