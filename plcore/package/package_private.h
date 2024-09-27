@@ -27,5 +27,6 @@ PLPackage *PlParseOpkPackage_( PLFile *file );// Outcast
 PLPackage *PlParseInuPackage_( PLFile *file );// White Fear / Inuits
 PLPackage *PlParseAllPackage_( PLFile *file );// The Last Job
 PLPackage *PlParseAfsPackage_( PLFile *file );// Headhunter
+PLPackage *PlParseAhfPackage_( PLFile *file );// Headhunter
 
 PL_EXTERN_C_END
