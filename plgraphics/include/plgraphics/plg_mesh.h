@@ -93,14 +93,11 @@ void PlgDrawLineRectangle( float x, float y, float w, float h, PLColour colour )
 void PlgDrawTexturedRectangle( float x, float y, float w, float h, PLGTexture *texture );
 void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
                           float hScale, float vScale, PLGTexture *texture );
-void PlgDrawTriangle( int x, int y, unsigned int w, unsigned int h );
 void PlgDrawLines( const PLVector3 *points, unsigned int numPoints, PLColour colour, float thickness );
-void PlgDrawLine( PLMatrix4 transform, PLVector3 startPos, PLColour startColour, PLVector3 endPos, PLColour endColour );
-void PlgDrawSimpleLine( PLMatrix4 transform, PLVector3 startPos, PLVector3 endPos, PLColour colour );
+void PlgDrawLine( PLVector3 startPos, PLColour startColour, PLVector3 endPos, PLColour endColour );
+void PlgDrawSimpleLine( PLVector3 startPos, PLVector3 endPos, PLColour colour );
 void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColour *colour );
 void PlgDrawDottedGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColour *colour );
-void PlgDrawVertexNormals( const PLGVertex *vertices, unsigned int numVertices );
-void PlgDrawMeshNormals( const PLGMesh *mesh );
 void PlgDrawPixel( int x, int y, PLColour colour );
 void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, const PLColour *colour );
 
