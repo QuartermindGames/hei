@@ -56,7 +56,7 @@ void PlmGenerateModelBounds( PLMModel *model ) {
 	}
 
 	/* abs origin is the middle of the bounding volume (wherever it is) and origin is the transformative point */
-	b1.absOrigin = PLVector3( ( b1.mins.x + b1.maxs.x ) / 2, ( b1.mins.y + b1.maxs.y ) / 2, ( b1.mins.z + b1.maxs.z ) / 2 );
+	b1.absOrigin = PL_VECTOR3( ( b1.mins.x + b1.maxs.x ) / 2, ( b1.mins.y + b1.maxs.y ) / 2, ( b1.mins.z + b1.maxs.z ) / 2 );
 	b1.origin = pl_vecOrigin3;
 
 	model->bounds = b1;
