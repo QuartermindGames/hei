@@ -57,14 +57,19 @@ void PlDestroyHashTableEx( PLHashTable *hashTable, void ( *elementDeleter )( voi
 #define GET_INDEX( HASH ) ( unsigned int ) ( ( HASH ) % HASH_TABLE_SIZE )
 
 void PlClearHashTable( PLHashTable *hashTable ) {
+	if ( hashTable->numNodes == 0 ) {
+		return;
+	}
+
 	for ( size_t i = 0; i < HASH_TABLE_SIZE; ++i ) {
 		PLHashTableNode *child = hashTable->nodes[ i ];
 		while ( child != NULL ) {
 			PLHashTableNode *next = child->next;
-			PL_DELETE( child->key );
-			PL_DELETE( child );
+			PL_DELETEN( child->key );
+			PL_DELETEN( child );
 			child = next;
 		}
+		hashTable->nodes[ i ] = NULL;
 	}
 
 	hashTable->numNodes = 0;
@@ -101,11 +106,11 @@ PLHashTableNode *PlInsertHashTableNode( PLHashTable *hashTable, const void *key,
 
 	PLHashTableNode *node = PL_NEW( PLHashTableNode );
 	node->hash = PlGenerateHashFNV1( key, keySize );
-	node->keySize = keySize;
-	node->key = PL_NEW_( char, keySize + 1 );
 	node->value = value;
 	node->table = hashTable;
 
+	node->keySize = keySize;
+	node->key = PL_NEW_( char, keySize + 1 );
 	memcpy( node->key, key, node->keySize );
 
 	unsigned int index = GET_INDEX( node->hash );
