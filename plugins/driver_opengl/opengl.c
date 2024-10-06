@@ -566,7 +566,42 @@ static unsigned int TranslateImageFormat( PLImageFormat format ) {
 }
 
 static unsigned int GetStorageFormatForImageFormat( PLImageFormat format ) {
-	return GL_UNSIGNED_BYTE;
+	switch ( format ) {
+		default:
+		case PL_IMAGEFORMAT_UNKNOWN:
+			return 0;
+		case PL_IMAGEFORMAT_RGB4:
+		case PL_IMAGEFORMAT_RGBA4:
+			return GL_UNSIGNED_SHORT_4_4_4_4;
+		case PL_IMAGEFORMAT_RGB5:
+		case PL_IMAGEFORMAT_RGB5A1:
+			return GL_UNSIGNED_SHORT_5_5_5_1;
+		case PL_IMAGEFORMAT_RGB565:
+			return GL_UNSIGNED_SHORT_5_6_5;
+		case PL_IMAGEFORMAT_R8:
+		case PL_IMAGEFORMAT_RGB8:
+		case PL_IMAGEFORMAT_BGR8:
+		case PL_IMAGEFORMAT_RGBA8:
+		case PL_IMAGEFORMAT_BGRA8:
+		case PL_IMAGEFORMAT_BGRX8:
+			return GL_UNSIGNED_BYTE;
+		case PL_IMAGEFORMAT_RGBA12:
+			return GL_UNSIGNED_INT_10_10_10_2;
+		case PL_IMAGEFORMAT_RGBA16:
+			return GL_UNSIGNED_SHORT;
+		case PL_IMAGEFORMAT_RGBA16F:
+			return GL_HALF_FLOAT;
+		case PL_IMAGEFORMAT_RGBA_DXT1:
+			return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+		case PL_IMAGEFORMAT_RGB_DXT1:
+			return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+		case PL_IMAGEFORMAT_RGBA_DXT3:
+			return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		case PL_IMAGEFORMAT_RGBA_DXT5:
+			return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		case PL_IMAGEFORMAT_RGB_FXT1:
+			return GL_COMPRESSED_RGB_FXT1_3DFX;
+	}
 }
 
 static unsigned int GetColourFormatForImageFormat( PLImageFormat format ) {
@@ -619,27 +654,38 @@ static bool IsCompressedImageFormat( PLImageFormat format ) {
 	}
 }
 
-static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter );
 static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
+	assert( upload->data != NULL && upload->data[ 0 ] != NULL );
+
 	GLBindTexture( texture );
 
-	/* was originally GL_CLAMP; deprecated in GL3+, though some drivers
-	 * still seem to accept it anyway except for newer Intel GPUs apparently */
-	/* todo: make this configurable */
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT ) );
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT ) );
+	GLint wrapMode;
+	switch ( texture->wrapMode ) {
+		default:
+		case PLG_TEXTURE_WRAP_MODE_REPEAT:
+			wrapMode = GL_REPEAT;
+			break;
+		case PLG_TEXTURE_WRAP_MODE_MIRRORED_REPEAT:
+			wrapMode = GL_MIRRORED_REPEAT;
+			break;
+		case PLG_TEXTURE_WRAP_MODE_CLAMP_EDGE:
+			wrapMode = GL_CLAMP_TO_EDGE;
+			break;
+		case PLG_TEXTURE_WRAP_MODE_CLAMP_BORDER:
+			wrapMode = GL_CLAMP_TO_BORDER;
+			break;
+	}
+
+	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode ) );
+	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode ) );
 
 	GLSetTextureFilter( texture, texture->filter );
 
-	unsigned int levels = upload->levels;
-	if ( levels == 0 ) {
-		levels = 1;
-	}
-
-	unsigned int image_format = TranslateImageFormat( upload->format );
-	for ( unsigned int i = 0; i < levels; ++i ) {
-		GLsizei w = ( GLsizei ) ( upload->width / ( unsigned int ) pow( 2, i ) );
-		GLsizei h = ( GLsizei ) ( upload->height / ( unsigned int ) pow( 2, i ) );
+	unsigned int internalFormat = TranslateImageFormat( upload->format );
+	for ( unsigned int i = 0; i < upload->levels; ++i ) {
+		const void *data = upload->data[ i ];
+		GLsizei w = upload->width >> i;
+		GLsizei h = upload->height >> i;
 		if ( IsCompressedImageFormat( upload->format ) ) {
 			GLsizei size;
 			if ( i > 0 ) {
@@ -647,28 +693,19 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 			} else {
 				size = ( GLsizei ) upload->size;
 			}
-			XGL_CALL( glCompressedTexImage2D(
-			        GL_TEXTURE_2D,
-			        i,
-			        image_format,
-			        w, h,
-			        0,
-			        size,
-			        upload->data[ 0 ] ) );
+			XGL_CALL( glCompressedTexImage2D( GL_TEXTURE_2D, i, internalFormat, w, h, 0, size, data ) );
 		} else {
-			XGL_CALL( glTexImage2D(
-			        GL_TEXTURE_2D,
-			        i,
-			        image_format,
-			        w, h,
-			        0,
-			        GetColourFormatForImageFormat( upload->format ),
-			        GetStorageFormatForImageFormat( upload->format ),
-			        upload->data[ 0 ] ) );
+			GLenum format = GetColourFormatForImageFormat( upload->format );
+			assert( format != 0 );
+
+			GLenum type = GetStorageFormatForImageFormat( upload->format );
+			assert( type != 0 );
+
+			XGL_CALL( glTexImage2D( GL_TEXTURE_2D, i, internalFormat, w, h, 0, format, type, data ) );
 		}
 	}
 
-	if ( levels == 1 && !( texture->flags & PLG_TEXTURE_FLAG_NOMIPS ) ) {
+	if ( upload->levels == 1 && !( texture->flags & PLG_TEXTURE_FLAG_NOMIPS ) ) {
 		XGL_CALL( glGenerateMipmap( GL_TEXTURE_2D ) );
 	}
 }
