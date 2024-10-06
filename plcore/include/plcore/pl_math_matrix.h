@@ -35,7 +35,7 @@ typedef struct PLMatrix4 {
 inline static PLMatrix4 PlAddMatrix4( PLMatrix4 m, PLMatrix4 m2 );
 inline static PLMatrix4 PlSubtractMatrix4( PLMatrix4 m, PLMatrix4 m2 );
 inline static PLMatrix4 PlScaleMatrix4( PLMatrix4 m, PLVector3 scale );
-inline static PLMatrix4 PlMultiplyMatrix4( PLMatrix4 m, const PLMatrix4 *m2 );
+inline static PLMatrix4 PlMultiplyMatrix4( const PLMatrix4 *m, const PLMatrix4 *m2 );
 PLMatrix4 PlRotateMatrix4( float angle, const PLVector3 *axis );
 inline static PLMatrix4 PlTranslateMatrix4( PLVector3 v );
 inline static PLMatrix4 PlInverseMatrix4( PLMatrix4 m );
@@ -129,7 +129,7 @@ namespace hei {
 		}
 
 		inline PLMatrix4 operator*( PLMatrix4 m2 ) const {
-			return PlMultiplyMatrix4( *this, &m2 );
+			return PlMultiplyMatrix4( this, &m2 );
 		}
 
 		inline Matrix4 &operator=( const PLMatrix4 &m2 ) {
@@ -241,16 +241,15 @@ inline static PLMatrix4 PlSubtractMatrix4( PLMatrix4 m, PLMatrix4 m2 ) {
 
 /* Multiply */
 
-inline static PLMatrix4 PlMultiplyMatrix4( PLMatrix4 m, const PLMatrix4 *m2 ) {
+inline static PLMatrix4 PlMultiplyMatrix4( const PLMatrix4 *m, const PLMatrix4 *m2 ) {
 	PLMatrix4 out;
-	for ( unsigned int row = 0; row < 4; ++row ) {
-		for ( unsigned int col = 0; col < 4; ++col ) {
+	for ( unsigned int col = 0; col < 4; ++col ) {
+		for ( unsigned int row = 0; row < 4; ++row ) {
 			float sum = 0.0f;
 			for ( unsigned int i = 0; i < 4; ++i ) {
-				sum += m.m[ PL_M4_POS( row, i ) ] * m2->m[ PL_M4_POS( i, col ) ];
+				sum += m->mm[ i ][ row ] * m2->mm[ col ][ i ];
 			}
-
-			out.m[ PL_M4_POS( row, col ) ] = sum;
+			out.mm[ col ][ row ] = sum;
 		}
 	}
 
