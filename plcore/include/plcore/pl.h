@@ -223,6 +223,15 @@ bool PlIsSubSystemActive( unsigned int subsystem );
  */
 const char *PlGetFormattedTime( const char *format, char *buf, size_t bufSize );
 
+/**
+ * Return a basic formatted time string derived from the given epoch timestamp (represented in seconds).
+ * Returned string is represented as UTC. The output string will be overwritten with each function call.
+ *
+ * @param timestamp  64-bit unsigned integer epoch timestamp
+ * @return           Pointer to char array representing formatted date and time string.
+ */
+const char *PlGetFormattedTimeForTimestamp( uint64_t timestamp );
+
 time_t PlStringToTime( const char *ts );
 
 //////////////////////////////////////////////////////////////////

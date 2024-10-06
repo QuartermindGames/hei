@@ -482,6 +482,18 @@ int gettimeofday( struct timeval *tp, struct timezone *tzp ) {
 
 #endif
 
+const char *PlGetFormattedTimeForTimestamp( uint64_t timestamp ) {
+	time_t time = ( time_t ) timestamp;
+
+	struct tm *tmPtr;
+	tmPtr = gmtime( &time );
+
+	static char timeOut[ 32 ];
+	strftime( timeOut, sizeof( timeOut ), "%x %X", tmPtr );
+
+	return timeOut;
+}
+
 const char *PlGetFormattedTime( const char *format, char *buf, size_t bufSize ) {
 	struct timeval time;
 	if ( gettimeofday( &time, NULL ) != 0 ) {
