@@ -302,8 +302,6 @@ int main( int argc, char **argv ) {
 	PLPackage *Outwars_FF_LoadFile( const char *path );
 	PlRegisterPackageLoader( "ff", Outwars_FF_LoadFile, NULL );
 
-	PLPackage *Angel_DAT_LoadPackage( const char *path );
-	PlRegisterPackageLoader( "dat", Angel_DAT_LoadPackage, NULL );
 	PLPackage *PlParseIce3DDatPackage( PLFile * file );
 	PlRegisterPackageLoader( "dat", NULL, PlParseIce3DDatPackage );
 

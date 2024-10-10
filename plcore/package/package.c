@@ -302,6 +302,7 @@ void PlRegisterStandardPackageLoaders( unsigned int flags ) {
 	        {PL_PACKAGE_LOAD_FORMAT_ALL_ACCLAIM, "all", NULL,               PlParseAllPackage_     },
 	        {PL_PACKAGE_LOAD_FORMAT_AFS,         "afs", NULL,               PlParseAfsPackage_     },
 	        {PL_PACKAGE_LOAD_FORMAT_AHF,         "ahf", NULL,               PlParseAhfPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_DAT_ANGEL,   "dat", NULL,               PlParseAngelDatPackage_},
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaders ); ++i ) {

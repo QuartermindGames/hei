@@ -1,8 +1,8 @@
-/* SPDX-License-Identifier: MIT */
-/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
-#include <plcore/pl.h>
-#include <plcore/pl_package.h>
+#include "package_private.h"
 
 #define ANGEL_DAT_MAGIC  PL_MAGIC_TO_NUM( 'D', 'A', 'V', 'E' ) /* oni2 */
 #define ANGEL_DAT_MAGIC2 PL_MAGIC_TO_NUM( 'D', 'a', 'v', 'e' ) /* tsnw, rdr, sh2 */
@@ -21,19 +21,19 @@ typedef struct AngelDATIndex {
 	uint32_t compressedSize;// size on disk - if same as memory, not compressed
 } AngelDATIndex;
 
-static PLPackage *ParseDATFile( PLFile *file ) {
+PLPackage *PlParseAngelDatPackage_( PLFile *file ) {
 	AngelDATHeader header;
 	PL_ZERO_( header );
 
-	header.magic = PlReadInt32( file, false, NULL );
+	header.magic = PL_READUINT32( file, false, NULL );
 	if ( header.magic != ANGEL_DAT_MAGIC && header.magic != ANGEL_DAT_MAGIC2 ) {
 		PlReportBasicError( PL_RESULT_FILETYPE );
 		return NULL;
 	}
 
-	header.tocIndices = PlReadInt32( file, false, NULL );
-	header.tocLength = PlReadInt32( file, false, NULL );
-	header.stringTableLength = PlReadInt32( file, false, NULL );
+	header.tocIndices = PL_READUINT32( file, false, NULL );
+	header.tocLength = PL_READUINT32( file, false, NULL );
+	header.stringTableLength = PL_READUINT32( file, false, NULL );
 
 	size_t fileSize = PlGetFileSize( file );
 	if ( header.tocLength >= fileSize || header.stringTableLength >= fileSize ) {
@@ -46,10 +46,10 @@ static PLPackage *ParseDATFile( PLFile *file ) {
 
 	AngelDATIndex *indices = PL_NEW_( AngelDATIndex, header.tocIndices );
 	for ( unsigned int i = 0; i < header.tocIndices; ++i ) {
-		indices[ i ].nameOffset = PlReadInt32( file, false, NULL );
-		indices[ i ].offset = PlReadInt32( file, false, NULL );
-		indices[ i ].size = PlReadInt32( file, false, NULL );
-		indices[ i ].compressedSize = PlReadInt32( file, false, NULL );
+		indices[ i ].nameOffset = PL_READUINT32( file, false, NULL );
+		indices[ i ].offset = PL_READUINT32( file, false, NULL );
+		indices[ i ].size = PL_READUINT32( file, false, NULL );
+		indices[ i ].compressedSize = PL_READUINT32( file, false, NULL );
 	}
 
 	/* and now seek to the string table */
@@ -82,21 +82,8 @@ static PLPackage *ParseDATFile( PLFile *file ) {
 		strncpy( package->table[ i ].fileName, &names[ indices[ i ].nameOffset ], sizeof( package->table[ i ].fileName ) - 1 );
 	}
 
-	PlFree( indices );
-	PlFree( names );
-
-	return package;
-}
-
-PLPackage *Angel_DAT_LoadPackage( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
-		return NULL;
-	}
-
-	PLPackage *package = ParseDATFile( file );
-
-	PlCloseFile( file );
+	PL_DELETE( indices );
+	PL_DELETE( names );
 
 	return package;
 }

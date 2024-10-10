@@ -75,6 +75,7 @@ mounted packages before falling back to the local FS
 | OPK          | Outcast                                             | Core          | R    |
 | Amuze AHF    | Headhunter                                          | Core          | R    |
 | Amuze AFS    | Headhunter                                          | Core          | R    |
+| Angel DAT    | Angel Studios                                       | Core          | R    |
 | CLU          | Herdy Gerdy                                         | Extra         | R    |
 | IBF          | Iron Storm                                          | Extra         | R    |
 | HAL          | Mortyr                                              | Extra         | R    |
@@ -83,7 +84,6 @@ mounted packages before falling back to the local FS
 | Kri WAD      | The Mark of Kri                                     | Extra         | R    |
 | AITD PAK     | Alone in the Dark                                   | Extra         | R    |
 | Ice3D DAT    | BioShock 3D                                         | Extra         | R    |
-| Angel DAT    | Angel Studios                                       | Extra         | R    |
 | FF           | Outwars                                             | Extra         | R    |
 | Blitz DAT    | Titan A.E., Chicken Run                             | Extra         | R    |
 | SWAT WAD     | Okre Engine (SWAT Global Strike Team)               | Extra         | R    |

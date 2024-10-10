@@ -23,10 +23,11 @@ PLPackage *PlLoadTabPackage( const char *path );
 
 PLPackage *PlParseFreshBinPackage_( PLFile *file );
 PLPackage *PlParseGrpPackage_( PLFile *file );
-PLPackage *PlParseOpkPackage_( PLFile *file );// Outcast
-PLPackage *PlParseInuPackage_( PLFile *file );// White Fear / Inuits
-PLPackage *PlParseAllPackage_( PLFile *file );// The Last Job
-PLPackage *PlParseAfsPackage_( PLFile *file );// Headhunter
-PLPackage *PlParseAhfPackage_( PLFile *file );// Headhunter
+PLPackage *PlParseOpkPackage_( PLFile *file );     // Outcast
+PLPackage *PlParseInuPackage_( PLFile *file );     // White Fear / Inuits
+PLPackage *PlParseAllPackage_( PLFile *file );     // The Last Job
+PLPackage *PlParseAfsPackage_( PLFile *file );     // Headhunter
+PLPackage *PlParseAhfPackage_( PLFile *file );     // Headhunter
+PLPackage *PlParseAngelDatPackage_( PLFile *file );// Oni 2, Red Dead Revolver
 
 PL_EXTERN_C_END

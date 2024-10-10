@@ -33,7 +33,6 @@ set(CMAKE_C_STANDARD 11)
 add_executable(pcmd
         main.c
 
-        ../../extras/angel/angel_dat.c
         ../../extras/asa/asa.c
         ../../extras/asa/asa_format_tre.c
         ../../extras/aitd/aitd_pak.c
@@ -42,7 +41,6 @@ add_executable(pcmd
         ../../extras/package/package_ftactics_pak.c
         ../../extras/package/package_haven_dat.c
 
-        #../../extras/galleon_pkg.c
         ../../extras/ice3d_dat.c
         ../../extras/istorm_ibf.c
         ../../extras/mortyr_hal.c
