@@ -83,7 +83,7 @@ PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up ) {
 	m.mm[ 2 ][ 2 ] = z.z;
 
 	PLMatrix4 pos = PlTranslateMatrix4( ( PLVector3 ){ -eye.x, -eye.y, -eye.z } );
-	return PlMultiplyMatrix4( m, &pos );
+	return PlMultiplyMatrix4( &m, &pos );
 }
 
 /****************************************
@@ -194,7 +194,7 @@ void PlLoadIdentityMatrix( void ) {
 
 void PlMultiMatrix( const PLMatrix4 *matrix ) {
 	PLMatrix4 *curStack = PlGetMatrix( curMatrixMode );
-	*curStack = PlMultiplyMatrix4( *curStack, matrix );
+	*curStack = PlMultiplyMatrix4( curStack, matrix );
 }
 
 void PlRotateMatrix( float angle, const PLVector3 *axis ) {

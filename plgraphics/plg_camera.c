@@ -104,7 +104,7 @@ static void MakeFrustumPlanes( const PLMatrix4 *matrix, PLGViewFrustum outFrustu
 }
 
 static void SetupCameraFrustum( PLGCamera *camera ) {
-	PLMatrix4 viewProj = PlMultiplyMatrix4( camera->internal.proj, &camera->internal.view );
+	PLMatrix4 viewProj = PlMultiplyMatrix4( &camera->internal.proj, &camera->internal.view );
 	MakeFrustumPlanes( &viewProj, camera->frustum );
 }
 
