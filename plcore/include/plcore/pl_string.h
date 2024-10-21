@@ -53,6 +53,8 @@ char *pl_strjoin( const char *a, const char *b );
 
 char *pl_strnreverse( char *string, size_t size );
 
+char *pl_strrstr( char *haystack, const char *needle );
+
 /**
  * http://www.cse.yorku.ca/~oz/hash.html#sdbm
  */

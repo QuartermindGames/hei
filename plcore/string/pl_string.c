@@ -75,3 +75,26 @@ char *pl_strnreverse( char *string, size_t size ) {
 
 	return string;
 }
+
+char *pl_strrstr( char *haystack, const char *needle ) {
+	size_t ns = strlen( needle );
+	if ( ns == 0 ) {
+		return haystack;
+	}
+
+	size_t hs = strlen( haystack );
+	if ( ns > hs ) {
+		return NULL;
+	}
+
+	for ( ssize_t i = hs - ns; i >= 0; --i ) {
+		char *p = &haystack[ i ];
+		if ( strncmp( p, needle, ns ) != 0 ) {
+			continue;
+		}
+
+		return p;
+	}
+
+	return NULL;
+}
