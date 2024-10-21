@@ -283,6 +283,8 @@ inline static PLColourF32 PlVector4ToColourF32( const PLVector4 *v ) {
 #define PL_COLOURF32RGB( R, G, B ) \
 	( PLColourF32 ) { R, G, B, 1.0f }
 
+#define PL_COLOURF32_TO_U8( C ) PL_COLOURU8( PlFloatToByte( ( C ).r ), PlFloatToByte( ( C ).g ), PlFloatToByte( ( C ).b ), PlFloatToByte( ( C ).a ) )
+
 #ifndef __cplusplus
 
 /* todo: deprecate */

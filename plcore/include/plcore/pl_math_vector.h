@@ -94,6 +94,7 @@ PLVector4 PlNormalizePlane( PLVector4 plane );
 
 bool PlCompareVector2( const PLVector2 *v, const PLVector2 *v2 );
 bool PlCompareVector3( const PLVector3 *v, const PLVector3 *v2 );
+bool PlCompareVector4( const PLVector4 *v, const PLVector4 *v2 );
 
 PLVector2 PlClampVector2( const PLVector2 *v, float min, float max );
 PLVector3 PlClampVector3( const PLVector3 *v, float min, float max );

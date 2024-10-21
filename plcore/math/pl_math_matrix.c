@@ -8,18 +8,21 @@
 
 #include <plcore/pl_math.h>
 
-PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix, const int *viewport, bool flip ) {
+PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix, const int *viewport, float *w, bool flip ) {
 	// Transform world position to clip space
 	PLVector4 posw = PL_VECTOR4( position->x, position->y, position->z, 1.0f );
 	PLVector4 ppos = PlTransformVector4( &posw, viewProjMatrix );
+	if ( w != NULL ) {
+		*w = ppos.w;
+	}
 
 	// Divide by w to get normalized device coordinates
 	PLVector3 ndc = PL_VECTOR3( ppos.x / ppos.w, ppos.y / ppos.w, ppos.z / ppos.w );
 
 	// Scale and offset by viewport parameters to get screen coordinates
 	PLVector2 screen = PL_VECTOR2( ( ( ndc.x + 1.0f ) / 2.0f ) * viewport[ 2 ] + viewport[ 0 ],
-	                              // Flip the y coordinate by subtracting it from the viewport height
-	                              ( flip ? viewport[ 3 ] : 0 ) - ( ( ndc.y + 1.0f ) / 2.0f ) * viewport[ 3 ] + viewport[ 1 ] );
+	                               // Flip the y coordinate by subtracting it from the viewport height
+	                               ( flip ? viewport[ 3 ] : 0 ) - ( ( ndc.y + 1.0f ) / 2.0f ) * viewport[ 3 ] + viewport[ 1 ] );
 
 	return screen;
 }

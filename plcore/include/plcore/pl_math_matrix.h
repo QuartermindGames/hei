@@ -43,7 +43,7 @@ inline static PLMatrix4 PlInverseMatrix4( PLMatrix4 m );
 PLVector3 PlGetMatrix4Translation( const PLMatrix4 *m );
 PLVector3 PlGetMatrix4Angle( const PLMatrix4 *m );
 
-PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix, const int viewport[ 4 ], bool flip );
+PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix, const int *viewport, float *w, bool flip );
 PLVector3 PlConvertScreenToWorld( PLVector3 windowCoordinate, PLMatrix4 modelView, PLMatrix4 projection, const int viewport[ 4 ] );
 
 void PlExtractMatrix4Directions( const PLMatrix4 *matrix, PLVector3 *left, PLVector3 *up, PLVector3 *forward );

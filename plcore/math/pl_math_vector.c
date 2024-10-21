@@ -288,6 +288,18 @@ bool PlCompareVector3( const PLVector3 *v, const PLVector3 *v2 ) {
 	return ( ( v->x == v2->x ) && ( v->y == v2->y ) && ( v->z == v2->z ) );
 }
 
+bool PlCompareVector4( const PLVector4 *v, const PLVector4 *v2 ) {
+	for ( unsigned int i = 0; i < 4; ++i ) {
+		if ( PL_VECTOR_I( *v, i ) == PL_VECTOR_I( *v2, i ) ) {
+			continue;
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
 /****************************************
  * Clamp
  ****************************************/
