@@ -469,8 +469,9 @@ static void *GLReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, u
 
 static void GLBindTexture( const PLGTexture *texture );
 static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter );
+static void GLSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode );
 #pragma message "TODO: this should be CreateFrameBufferTextureAttachment, not GET!"
-static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int components, PLGTextureFilter filter ) {
+static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int components, PLGTextureFilter filter, PLGTextureWrapMode wrap ) {
 	PLGTexture *texture = gInterface->CreateTexture();
 	if ( texture == NULL ) {
 		return NULL;
@@ -486,9 +487,7 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 	GLBindTexture( texture );
 
 	GLSetTextureFilter( texture, filter );
-
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ) );
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ) );
+	GLSetTextureWrapMode( texture, wrap );
 
 	/* sigh... */
 	if ( ( components & PLG_BUFFER_DEPTH ) || ( components & PLG_BUFFER_STENCIL ) ) {

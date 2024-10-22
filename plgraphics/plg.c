@@ -125,8 +125,8 @@ void PlgDestroyFrameBuffer( PLGFrameBuffer *buffer ) {
 	PlFree( buffer );
 }
 
-PLGTexture *PlgGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter ) {
-	CallReturningGfxFunction( GetFrameBufferTextureAttachment, NULL, buffer, component, filter );
+PLGTexture *PlgGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter, PLGTextureWrapMode wrap ) {
+	CallReturningGfxFunction( GetFrameBufferTextureAttachment, NULL, buffer, component, filter, wrap );
 }
 
 // should really be 'GetFrameBufferSize', urgh...
