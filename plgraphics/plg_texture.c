@@ -150,8 +150,7 @@ void PlgSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter ) {
 	CallGfxFunction( SetTextureFilter, texture, filter );
 }
 
-void PlgSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode )
-{
+void PlgSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode ) {
 	if ( texture->wrapMode == wrapMode ) {
 		return;
 	}
@@ -161,28 +160,13 @@ void PlgSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode )
 
 /* todo: kill this, favor SetTexture */
 static void BindTexture( const PLGTexture *texture ) {
-	// allow us to pass null texture instances
-	// as it will give us an opportunity to unbind
-	// them on the GPU upon request
-	unsigned int id = 0;
-	if ( texture != NULL ) {
-		id = texture->internal.id;
-	}
-
 	unsigned int unitIndex = PlgGetCurrentTextureUnit();
 	if ( unitIndex >= PlgGetMaxTextureUnits() ) {
 		/* todo: should we let user know ... ? */
 		return;
 	}
 
-	PLGTextureMappingUnit *unit = &gfx_state.tmu[ unitIndex ];
-	if ( id == unit->current_texture ) {
-		return;
-	}
-
 	CallGfxFunction( BindTexture, texture );
-
-	unit->current_texture = id;
 }
 
 void PlgSetTextureFlags( PLGTexture *texture, unsigned int flags ) {
@@ -199,7 +183,7 @@ void PlgSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode ) {
 	        GL_TEXTURE_ENV_MODE,
 	        _plTranslateTextureEnvironmentMode( mode ) );
 #elif defined( PL_MODE_OPENGL_CORE )
-		// todo
+	// todo
 #endif
 
 	gfx_state.tmu[ PlgGetCurrentTextureUnit() ].current_envmode = mode;

@@ -30,3 +30,8 @@ SOFTWARE.
 extern const PLGDriverExportTable *gInterface;
 
 extern int glLogLevel;
+
+typedef struct GLTexture {
+	unsigned int id;
+	unsigned int target;
+} GLTexture;

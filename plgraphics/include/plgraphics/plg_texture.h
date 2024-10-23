@@ -59,10 +59,6 @@ typedef struct PLGTextureMappingUnit {
 } PLGTextureMappingUnit;
 
 typedef struct PLGTexture {
-	struct {
-		unsigned int id;
-	} internal;
-
 	unsigned int flags;
 
 	unsigned int x, y;
@@ -80,6 +76,8 @@ typedef struct PLGTexture {
 
 	PLImageFormat format;
 	PLColourFormat pixel;
+
+	void *driver;// driver specific data
 } PLGTexture;
 
 PL_EXTERN_C

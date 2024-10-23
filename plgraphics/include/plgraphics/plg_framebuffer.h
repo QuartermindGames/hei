@@ -41,6 +41,7 @@ typedef struct PLGFrameBuffer {
 	unsigned int renderBuffers[ PLG_MAX_RENDERBUFFER_TYPES ];
 	unsigned int width;
 	unsigned int height;
+	unsigned int numSamples;
 	PLGFrameBufferRenderFlags flags;
 } PLGFrameBuffer;
 
@@ -51,7 +52,7 @@ enum {
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned int flags );
+PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned int flags, unsigned int numSamples );
 void PlgDestroyFrameBuffer( PLGFrameBuffer *buffer );
 void PlgBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget target_binding );
 void PlgBlitFrameBuffers( PLGFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLGFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, bool linear );

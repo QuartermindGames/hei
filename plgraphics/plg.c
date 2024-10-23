@@ -97,7 +97,7 @@ static bool CreateFrameBuffer( PLGFrameBuffer *frameBuffer ) {
 	CallReturningGfxFunction( CreateFrameBuffer, false, frameBuffer );
 }
 
-PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned int flags ) {
+PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned int flags, unsigned int numSamples ) {
 	if ( flags == 0 ) {
 		return NULL;
 	}
@@ -106,6 +106,7 @@ PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned i
 	buffer->width = w;
 	buffer->height = h;
 	buffer->flags = flags;
+	buffer->numSamples = numSamples;
 
 	if ( !CreateFrameBuffer( buffer ) ) {
 		PlgDestroyFrameBuffer( buffer );

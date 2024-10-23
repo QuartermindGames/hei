@@ -319,24 +319,24 @@ static bool GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
 	if ( buffer->flags & PLG_BUFFER_COLOUR ) {
 		XGL_CALL( glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] ) );
 		XGL_CALL( glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] ) );
-		XGL_CALL( glRenderbufferStorage( GL_RENDERBUFFER, GL_RGBA, ( int ) buffer->width, ( int ) buffer->height ) );
+		XGL_CALL( glRenderbufferStorageMultisample( GL_RENDERBUFFER, buffer->numSamples, GL_RGBA, ( int ) buffer->width, ( int ) buffer->height ) );
 		XGL_CALL( glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] ) );
 	}
 
 	if ( ( buffer->flags & PLG_BUFFER_DEPTH ) && ( buffer->flags & PLG_BUFFER_STENCIL ) ) {
 		XGL_CALL( glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
 		XGL_CALL( glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
-		XGL_CALL( glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, ( int ) buffer->width, ( int ) buffer->height ) );
+		XGL_CALL( glRenderbufferStorageMultisample( GL_RENDERBUFFER, buffer->numSamples, GL_DEPTH24_STENCIL8, ( int ) buffer->width, ( int ) buffer->height ) );
 		XGL_CALL( glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
 	} else if ( buffer->flags & PLG_BUFFER_DEPTH ) {
 		XGL_CALL( glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
 		XGL_CALL( glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
-		XGL_CALL( glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, ( int ) buffer->width, ( int ) buffer->height ) );
+		XGL_CALL( glRenderbufferStorageMultisample( GL_RENDERBUFFER, buffer->numSamples, GL_DEPTH_COMPONENT24, ( int ) buffer->width, ( int ) buffer->height ) );
 		XGL_CALL( glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
 	} else if ( buffer->flags & PLG_BUFFER_STENCIL ) {
 		XGL_CALL( glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] ) );
 		XGL_CALL( glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] ) );
-		XGL_CALL( glRenderbufferStorage( GL_RENDERBUFFER, GL_STENCIL_INDEX8, ( int ) buffer->width, ( int ) buffer->height ) );
+		XGL_CALL( glRenderbufferStorageMultisample( GL_RENDERBUFFER, buffer->numSamples, GL_STENCIL_INDEX8, ( int ) buffer->width, ( int ) buffer->height ) );
 		XGL_CALL( glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] ) );
 	}
 
@@ -470,12 +470,16 @@ static void *GLReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, u
 static void GLBindTexture( const PLGTexture *texture );
 static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter );
 static void GLSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode );
+static unsigned int TranslateWrapMode( PLGTextureWrapMode wrapMode );
 #pragma message "TODO: this should be CreateFrameBufferTextureAttachment, not GET!"
 static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int components, PLGTextureFilter filter, PLGTextureWrapMode wrap ) {
 	PLGTexture *texture = gInterface->CreateTexture();
 	if ( texture == NULL ) {
 		return NULL;
 	}
+
+	// urgh, this is to ensure all interactions with the texture later on are correct
+	( ( GLTexture * ) texture->driver )->target = ( buffer->numSamples > 0 ) ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 
 	/* all of this is going to change later...
 	 * this is just the bare minimum to get things going */
@@ -484,7 +488,8 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 	texture->h = buffer->height;
 
 	GLBindFrameBuffer( buffer, PLG_FRAMEBUFFER_DRAW );
-	GLBindTexture( texture );
+
+	XGL_CALL( glBindTexture( ( ( GLTexture * ) texture->driver )->target, ( ( GLTexture * ) texture->driver )->id ) );
 
 	GLSetTextureFilter( texture, filter );
 	GLSetTextureWrapMode( texture, wrap );
@@ -495,27 +500,31 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 			/* so yeah, this sucks, but if both of these are active we assume it's packed */
 			XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, buffer->width, buffer->height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL ) );
 			if ( components & PLG_BUFFER_DEPTH ) {
-				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture->internal.id, 0 ) );
+				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ( ( GLTexture * ) texture->driver )->id, 0 ) );
 			}
 			if ( components & PLG_BUFFER_STENCIL ) {
-				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture->internal.id, 0 ) );
+				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, ( ( GLTexture * ) texture->driver )->id, 0 ) );
 			}
 		} else {
 			/* otherwise, assumed not packed */
 			if ( components & PLG_BUFFER_DEPTH ) {
 				XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, buffer->width, buffer->height, 0, GL_DEPTH_ATTACHMENT, GL_UNSIGNED_INT, NULL ) );
-				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture->internal.id, 0 ) );
+				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ( ( GLTexture * ) texture->driver )->id, 0 ) );
 			} else if ( components & PLG_BUFFER_STENCIL ) {
 				XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_STENCIL_INDEX8, buffer->width, buffer->height, 0, GL_STENCIL_ATTACHMENT, GL_UNSIGNED_BYTE, NULL ) );
-				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture->internal.id, 0 ) );
+				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, ( ( GLTexture * ) texture->driver )->id, 0 ) );
 			}
 		}
 	} else if ( components & PLG_BUFFER_COLOUR ) {
-		XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, buffer->width, buffer->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL ) );
-		XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->internal.id, 0 ) );
+		if ( buffer->numSamples > 0 ) {
+			XGL_CALL( glTexImage2DMultisample( GL_TEXTURE_2D_MULTISAMPLE, buffer->numSamples, GL_RGBA8, buffer->width, buffer->height, GL_TRUE ) );
+		} else {
+			XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, buffer->width, buffer->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL ) );
+		}
+		XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, ( ( GLTexture * ) texture->driver )->target, ( ( GLTexture * ) texture->driver )->id, 0 ) );
 	}
 
-	GLBindTexture( NULL );
+	XGL_CALL( glBindTexture( ( ( GLTexture * ) texture->driver )->target, 0 ) );
 
 	return texture;
 }
@@ -622,13 +631,18 @@ static unsigned int GetColourFormatForImageFormat( PLImageFormat format ) {
 }
 
 static void GLCreateTexture( PLGTexture *texture ) {
-	XGL_CALL( glGenTextures( 1, &texture->internal.id ) );
+	texture->driver = gInterface->core->MAlloc( sizeof( GLTexture ), true );
+	XGL_CALL( glGenTextures( 1, &( ( GLTexture * ) texture->driver )->id ) );
+	( ( GLTexture * ) texture->driver )->target = GL_TEXTURE_2D;
 
 	texture->wrapMode = PLG_TEXTURE_WRAP_MODE_REPEAT;
 }
 
 static void GLDeleteTexture( PLGTexture *texture ) {
-	XGL_CALL( glDeleteTextures( 1, &texture->internal.id ) );
+	XGL_CALL( glDeleteTextures( 1, &( ( GLTexture * ) texture->driver )->id ) );
+
+	gInterface->core->Free( texture->driver );
+	texture->driver = NULL;
 }
 
 static void GLBindTexture( const PLGTexture *texture ) {
@@ -637,7 +651,7 @@ static void GLBindTexture( const PLGTexture *texture ) {
 		return;
 	}
 
-	XGL_CALL( glBindTexture( GL_TEXTURE_2D, texture->internal.id ) );
+	XGL_CALL( glBindTexture( ( ( GLTexture * ) texture->driver )->target, ( ( GLTexture * ) texture->driver )->id ) );
 }
 
 static bool IsCompressedImageFormat( PLImageFormat format ) {
@@ -658,26 +672,7 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 
 	GLBindTexture( texture );
 
-	GLint wrapMode;
-	switch ( texture->wrapMode ) {
-		default:
-		case PLG_TEXTURE_WRAP_MODE_REPEAT:
-			wrapMode = GL_REPEAT;
-			break;
-		case PLG_TEXTURE_WRAP_MODE_MIRRORED_REPEAT:
-			wrapMode = GL_MIRRORED_REPEAT;
-			break;
-		case PLG_TEXTURE_WRAP_MODE_CLAMP_EDGE:
-			wrapMode = GL_CLAMP_TO_EDGE;
-			break;
-		case PLG_TEXTURE_WRAP_MODE_CLAMP_BORDER:
-			wrapMode = GL_CLAMP_TO_BORDER;
-			break;
-	}
-
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode ) );
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode ) );
-
+	GLSetTextureWrapMode( texture, texture->wrapMode );
 	GLSetTextureFilter( texture, texture->filter );
 
 	unsigned int internalFormat = TranslateImageFormat( upload->format );
@@ -722,26 +717,27 @@ static void GLSetTextureAnisotropy( PLGTexture *texture, uint32_t value ) {
 static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter ) {
 	GLBindTexture( texture );
 
-	int min, mag;
-	GL_TranslateTextureFilterFormat( filter, &min, &mag );
 	if ( filter == PLG_TEXTURE_FILTER_LINEAR || filter == PLG_TEXTURE_FILTER_NEAREST ) {
 		texture->flags |= PLG_TEXTURE_FLAG_NOMIPS;
 	}
 
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag ) );
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min ) );
+	GLenum target = ( ( GLTexture * ) texture->driver )->target;
+	if ( target != GL_TEXTURE_2D_MULTISAMPLE ) {
+		int min, mag;
+		GL_TranslateTextureFilterFormat( filter, &min, &mag );
+		XGL_CALL( glTexParameteri( target, GL_TEXTURE_MAG_FILTER, mag ) );
+		XGL_CALL( glTexParameteri( target, GL_TEXTURE_MIN_FILTER, min ) );
+	}
 
 	texture->filter = filter;
 }
 
-static void GLSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode ) {
-	GLBindTexture( texture );
-
-	int glWrapMode;
+static unsigned int TranslateWrapMode( PLGTextureWrapMode wrapMode ) {
+	unsigned int glWrapMode;
 	switch ( wrapMode ) {
 		default:
 			//TODO: throw error
-			return;
+			return 0;
 		case PLG_TEXTURE_WRAP_MODE_REPEAT:
 			glWrapMode = GL_REPEAT;
 			break;
@@ -756,8 +752,19 @@ static void GLSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMo
 			break;
 	}
 
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapMode ) );
-	XGL_CALL( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapMode ) );
+	return glWrapMode;
+}
+
+static void GLSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode ) {
+	GLBindTexture( texture );
+
+	GLenum target = ( ( GLTexture * ) texture->driver )->target;
+	if ( target != GL_TEXTURE_2D_MULTISAMPLE ) {
+		int glWrapMode = TranslateWrapMode( wrapMode );
+		XGL_CALL( glTexParameteri( ( ( GLTexture * ) texture->driver )->target, GL_TEXTURE_WRAP_S, glWrapMode ) );
+		XGL_CALL( glTexParameteri( ( ( GLTexture * ) texture->driver )->target, GL_TEXTURE_WRAP_T, glWrapMode ) );
+	}
+
 	texture->wrapMode = wrapMode;
 }
 
@@ -790,7 +797,7 @@ static void GLSwizzleTexture( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t
 		        TranslateColourChannel( g ),
 		        TranslateColourChannel( b ),
 		        TranslateColourChannel( a ) };
-		XGL_CALL( glTexParameteriv( GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle ) );
+		XGL_CALL( glTexParameteriv( ( ( GLTexture * ) texture->driver )->target, GL_TEXTURE_SWIZZLE_RGBA, swizzle ) );
 	} else {
 		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "missing software implementation" );
 	}
