@@ -778,7 +778,7 @@ inline static void PlAnglesAxes( PLVector3 angles, PLVector3 *left, PLVector3 *u
 
 	if ( up != NULL ) {
 		up->x = sy * sp * cr - cy * sr;
-		up->y = -cp * cr;
+		up->y = cp * cr;
 		up->z = cy * sp * cr + sy * sr;
 	}
 

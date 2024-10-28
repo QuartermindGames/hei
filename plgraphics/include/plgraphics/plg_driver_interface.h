@@ -89,7 +89,7 @@ typedef struct PLGDriverImportTable {
 
 	// Mesh
 	void ( *CreateMesh )( PLGMesh *mesh );
-	void ( *UploadMesh )( PLGMesh *mesh, PLGShaderProgram *program ); /* todo: deprecate? */
+	void ( *UploadMesh )( PLGMesh *mesh, PLGShaderProgram *program );
 	void ( *DrawMesh )( PLGMesh *mesh, PLGShaderProgram *program );
 	void ( *DrawInstancedMesh )( PLGMesh *mesh, PLGShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount );
 	void ( *DeleteMesh )( PLGMesh *mesh );

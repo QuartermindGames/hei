@@ -52,7 +52,6 @@ typedef struct PLGCamera {
 	unsigned int mode;
 
 	PLVector3 angles, position;
-	PLVector3 forward, up;
 
 	PLGViewFrustum frustum;
 

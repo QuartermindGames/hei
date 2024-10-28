@@ -24,9 +24,6 @@ PLGCamera *PlgCreateCamera( void ) {
 	camera->far = CAMERA_DEFAULT_FAR;
 	camera->mode = PLG_CAMERA_MODE_PERSPECTIVE;
 
-	camera->forward = PL_VECTOR3( 0, 0, 1 );
-	camera->up = PL_VECTOR3( 0, 1, 0 );
-
 	camera->bounds.mins = PL_VECTOR3(
 	        -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS );
 	camera->bounds.maxs = PL_VECTOR3(
@@ -116,7 +113,7 @@ static void SetupCameraAngles( PLGCamera *camera ) {
 	PlRotateMatrix3f( PL_DEG2RAD( -camera->angles.y ), 0.0f, 1.0f, 0.0f );
 	PlRotateMatrix3f( PL_DEG2RAD( -camera->angles.z ), 0.0f, 0.0f, 1.0f );
 
-	PlTranslateMatrix( ( PLVector3 ){ camera->position.x, camera->position.y, camera->position.z } );
+	PlTranslateMatrix( ( PLVector3 ){ -camera->position.x, -camera->position.y, -camera->position.z } );
 
 	camera->internal.view = *PlGetMatrix( PL_VIEW_MATRIX );
 }
