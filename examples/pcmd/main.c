@@ -51,8 +51,11 @@ static void ConvertImageCallback( const char *path, void *userData ) {
 		return;
 	}
 
+	char tmp[ 128 ];
+	PlStripExtension( tmp, sizeof( tmp ), fileName );
+
 	char outPath[ PL_SYSTEM_MAX_PATH ];
-	snprintf( outPath, sizeof( outPath ), "%s%s.png", outDir, fileName );
+	snprintf( outPath, sizeof( outPath ), "%s%s.png", outDir, tmp );
 
 	ConvertImage( path, outPath );
 }
