@@ -26,7 +26,10 @@ int PlGetLineEndType( const char *p );
 
 void PlSkipWhitespace( const char **p );
 void PlSkipLine( const char **p );
+
+unsigned int PlDetermineEnclosedStringLength( const char *p );
 const char *PlParseEnclosedString( const char **p, char *dest, size_t size );
+
 unsigned int PlDetermineTokenLength( const char *p );
 const char *PlParseToken( const char **p, char *dest, size_t size );
 int PlParseInteger( const char **p, bool *status );

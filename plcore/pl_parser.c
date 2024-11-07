@@ -30,7 +30,7 @@ bool PlIsWhitespace( const char *p ) {
 		return false;
 	}
 
-	return isspace( *p );
+	return ( isspace( *p ) || ( *p == '\t' ) );
 }
 
 void PlSkipWhitespace( const char **p ) {
@@ -49,6 +49,30 @@ void PlSkipLine( const char **p ) {
 	while ( NOT_TERMINATING_CHAR( *( *p ) ) ) ( *p )++;
 	if ( *( *p ) == '\r' ) ( *p )++;
 	if ( *( *p ) == '\n' ) ( *p )++;
+}
+
+unsigned int PlDetermineEnclosedStringLength( const char *p ) {
+	PlSkipWhitespace( &p );
+
+	const char *s = p;
+	bool isEnclosed = false;
+	if ( *p == '\"' ) {
+		p++;
+		isEnclosed = true;
+	}
+	size_t i = 0;
+	while ( NOT_TERMINATING_CHAR( *p ) ) {
+		if ( !isEnclosed && ( *p == ' ' || *p == '\t' || *p == '\n' || *p == '\r' ) ) {
+			break;
+		} else if ( isEnclosed && *p == '\"' ) {
+			p++;
+			break;
+		}
+
+		p++;
+	}
+
+	return p - s;
 }
 
 const char *PlParseEnclosedString( const char **p, char *dest, size_t size ) {
@@ -84,17 +108,16 @@ const char *PlParseEnclosedString( const char **p, char *dest, size_t size ) {
 unsigned int PlDetermineTokenLength( const char *p ) {
 	PlSkipWhitespace( &p );
 
-	unsigned int length = 0;
+	const char *s = p;
 	while ( *p != '\0' && *p != ' ' ) {
 		if ( PlIsEndOfLine( p ) ) {
 			break;
 		}
 
-		length++;
 		p++;
 	}
 
-	return length;
+	return p - s;
 }
 
 const char *PlParseToken( const char **p, char *dest, size_t size ) {
@@ -124,7 +147,7 @@ int PlParseInteger( const char **p, bool *status ) {
 		return 0;
 	}
 
-    if ( status != NULL ) *status = true;
+	if ( status != NULL ) *status = true;
 	return ( int ) strtol( num, NULL, 10 );
 }
 
