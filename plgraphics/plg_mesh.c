@@ -220,8 +220,8 @@ void PlgDestroyMesh( PLGMesh *mesh ) {
 
 	CallGfxFunction( DeleteMesh, mesh );
 
-	PL_DELETE( mesh->subMeshes );
-	PL_DELETE( mesh->firstSubMeshes );
+	//PL_DELETE( mesh->subMeshes );
+	//PL_DELETE( mesh->firstSubMeshes );
 
 	PlFree( mesh->vertices );
 	PlFree( mesh->indices );
