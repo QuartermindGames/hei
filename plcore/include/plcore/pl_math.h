@@ -36,7 +36,7 @@ enum {
 
 #define PlClamp( min, val, max ) ( val ) < ( min ) ? ( min ) : ( ( val ) > ( max ) ? ( max ) : ( val ) )
 
-inline static bool PlIsPowerOfTwo( unsigned int num ) {
+static inline bool PlIsPowerOfTwo( unsigned int num ) {
 	return ( bool ) ( ( num != 0 ) && ( ( num & ( ~num + 1 ) ) == num ) );
 }
 
@@ -44,14 +44,14 @@ inline static bool PlIsPowerOfTwo( unsigned int num ) {
 #define PL_RAD2DEG( X ) ( ( X ) * ( PL_180_DIV_PI ) )
 
 /* https://stackoverflow.com/a/9194117 */
-inline static int PlRoundUp( int num, int multiple ) {
+static inline int PlRoundUp( int num, int multiple ) {
 	return ( num + multiple - 1 ) & -multiple;
 }
 
 typedef struct PLRectangleI32 {
 	int x, y, w, h;
 } PLRectangleI32;
-inline static PLRectangleI32 PlCreateRectangleI32( int x, int y, int w, int h ) {
+static inline PLRectangleI32 PlCreateRectangleI32( int x, int y, int w, int h ) {
 	PLRectangleI32 rectangle;
 	rectangle.x = x;
 	rectangle.y = y;
@@ -64,7 +64,7 @@ inline static PLRectangleI32 PlCreateRectangleI32( int x, int y, int w, int h ) 
 typedef struct PLRectangleF32 {
 	float x, y, w, h;
 } PLRectangleF32;
-inline static PLRectangleF32 PlCreateRectangleF32( float x, float y, float w, float h ) {
+static inline PLRectangleF32 PlCreateRectangleF32( float x, float y, float w, float h ) {
 	PLRectangleF32 rectangle;
 	rectangle.x = x;
 	rectangle.y = y;
@@ -186,12 +186,12 @@ PLColourF32 PlColourU8ToF32( const PLColour *in );
 PLColour PlAddColour( const PLColour *c, const PLColour *c2 );
 PLColourF32 PlAddColourF32( const PLColourF32 *c, const PLColourF32 *c2 );
 
-inline static PLColour PlCreateColour4B( uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
+static inline PLColour PlCreateColour4B( uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
 	PLColour c = { r, g, b, a };
 	return c;
 }
 
-inline static PLColour PlCreateColour4F( float r, float g, float b, float a ) {
+static inline PLColour PlCreateColour4F( float r, float g, float b, float a ) {
 	PLColour c = {
 	        PlFloatToByte( r ),
 	        PlFloatToByte( g ),
@@ -200,36 +200,40 @@ inline static PLColour PlCreateColour4F( float r, float g, float b, float a ) {
 	return c;
 }
 
-inline static void PlSetColour4B( PLColour *c, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
+static inline void PlSetColour4B( PLColour *c, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
 	c->r = r;
 	c->g = g;
 	c->b = b;
 	c->a = a;
 }
 
-inline static void PlSetColour4F( PLColour *c, float r, float g, float b, float a ) {
+static inline void PlSetColour4F( PLColour *c, float r, float g, float b, float a ) {
 	c->r = PlFloatToByte( r );
 	c->g = PlFloatToByte( g );
 	c->b = PlFloatToByte( b );
 	c->a = PlFloatToByte( a );
 }
 
-inline static void PlClearColour( PLColour *c ) {
+static inline void PlClearColour( PLColour *c ) {
 	PlSetColour4B( c, 0, 0, 0, 0 );
 }
 
-inline static bool PlCompareColour( PLColour c, PLColour c2 ) {
+static inline bool PlColour4fCompare( const PLColourF32 *a, const PLColourF32 *b ) {
+	return ( ( a->r == b->r ) && ( a->g == b->g ) && ( a->b == b->b ) && ( a->a == b->a ) );
+}
+
+static inline bool PlCompareColour( PLColour c, PLColour c2 ) {
 	return ( ( c.r == c2.r ) && ( c.g == c2.g ) && ( c.b == c2.b ) && ( c.a == c2.a ) );
 }
 
-inline static void PlMultiplyColour( PLColour *c, PLColour c2 ) {
+static inline void PlMultiplyColour( PLColour *c, PLColour c2 ) {
 	c->r *= c2.r;
 	c->g *= c2.g;
 	c->b *= c2.b;
 	c->a *= c2.a;
 }
 
-inline static void PlMultiplyColourf( PLColour *c, float a ) {
+static inline void PlMultiplyColourf( PLColour *c, float a ) {
 	uint8_t a2 = PlFloatToByte( a );
 	c->r *= a2;
 	c->g *= a2;
@@ -237,14 +241,14 @@ inline static void PlMultiplyColourf( PLColour *c, float a ) {
 	c->a *= a2;
 }
 
-inline static void PlDivideColour( PLColour *c, PLColour c2 ) {
+static inline void PlDivideColour( PLColour *c, PLColour c2 ) {
 	c->r /= c2.r;
 	c->g /= c2.g;
 	c->b /= c2.b;
 	c->a /= c2.a;
 }
 
-inline static void PlDivideColourF( PLColour *c, float a ) {
+static inline void PlDivideColourF( PLColour *c, float a ) {
 	uint8_t a2 = PlFloatToByte( a );
 	c->r /= a2;
 	c->g /= a2;
@@ -252,13 +256,13 @@ inline static void PlDivideColourF( PLColour *c, float a ) {
 	c->a /= a2;
 }
 
-inline static const char *PlPrintColour( PLColour c ) {
+static inline const char *PlPrintColour( PLColour c ) {
 	static char s[ 16 ] = { '\0' };
 	snprintf( s, 16, "%i %i %i %i", c.r, c.g, c.b, c.a );
 	return s;
 }
 
-inline static PLVector4 PlColourToVector4( const PLColour *c ) {
+static inline PLVector4 PlColourToVector4( const PLColour *c ) {
 	/* reversed: 
 	 * error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax */
 	PLVector4 v;
@@ -270,7 +274,7 @@ inline static PLVector4 PlColourToVector4( const PLColour *c ) {
 	return v;
 }
 
-inline static PLColourF32 PlVector4ToColourF32( const PLVector4 *v ) {
+static inline PLColourF32 PlVector4ToColourF32( const PLVector4 *v ) {
 	PLColourF32 colour;
 	memcpy( &colour, v, sizeof( PLColourF32 ) );
 	return colour;
@@ -281,8 +285,9 @@ inline static PLColourF32 PlVector4ToColourF32( const PLVector4 *v ) {
 #define PL_COLOURF32( R, G, B, A ) \
 	( PLColourF32 ) { R, G, B, A }
 #define PL_COLOURF32RGB( R, G, B ) \
-	( PLColourF32 ) { R, G, B, 1.0f }
+	( PLColourF32 ){ R, G, B, 1.0f }
 
+#define PL_COLOURU8_TO_F32( C ) PL_COLOURF32( PlByteToFloat( ( C ).r ), PlByteToFloat( ( C ).g ), PlByteToFloat( ( C ).b ), PlByteToFloat( ( C ).a ) )
 #define PL_COLOURF32_TO_U8( C ) PL_COLOURU8( PlFloatToByte( ( C ).r ), PlFloatToByte( ( C ).g ), PlFloatToByte( ( C ).b ), PlFloatToByte( ( C ).a ) )
 
 #ifndef __cplusplus
@@ -295,13 +300,13 @@ inline static PLColourF32 PlVector4ToColourF32( const PLVector4 *v ) {
 
 #if !defined( __cplusplus )
 #	define PLColourRGB( r, g, b ) \
-		( PLColour ) { r, g, b, 255 }
+		( PLColour ){ r, g, b, 255 }
 #	define PLColourR( r ) \
-		( PLColour ) { r, 255, 255, 255 }
+		( PLColour ){ r, 255, 255, 255 }
 #	define PLColourG( g ) \
-		( PLColour ) { 255, g, 255, 255 }
+		( PLColour ){ 255, g, 255, 255 }
 #	define PLColourB( b ) \
-		( PLColour ) { 255, 255, b, 255 }
+		( PLColour ){ 255, 255, b, 255 }
 #	define PLColourA( a ) \
 		( PLColour ) { 255, 255, 255, a }
 #else
@@ -499,19 +504,19 @@ typedef struct PLQuad {
 // Randomisation
 
 // http://stackoverflow.com/questions/7978759/generate-float-random-values-also-negative
-inline static double PlUniform0To1Random( void ) {
+static inline double PlUniform0To1Random( void ) {
 	return ( rand() ) / ( ( double ) RAND_MAX + 1 );
 }
 
-inline static double PlGenerateUniformRandom( double minmax ) {
+static inline double PlGenerateUniformRandom( double minmax ) {
 	return ( minmax * 2 ) * PlUniform0To1Random() - minmax;
 }
 
-inline static double PlGenerateRandomDouble( double max ) {
+static inline double PlGenerateRandomDouble( double max ) {
 	return ( double ) ( rand() ) / ( RAND_MAX / max );
 }
 
-inline static float PlGenerateRandomFloat( float max ) {
+static inline float PlGenerateRandomFloat( float max ) {
 	return ( float ) ( rand() ) / ( RAND_MAX / max );
 }
 
@@ -526,7 +531,7 @@ double PlGeneratePerlinNoise( int *seed, double x, double y, double z );
 #define PL_RANDOM_LCG_VB6_INC 0xC39EC3
 #define PL_RANDOM_LCG_VB6_MOD 0xFFFFFF
 
-inline static int PlGenerateRandomIntegerLCG( int *seed, int mul, int inc, int mod ) {
+static inline int PlGenerateRandomIntegerLCG( int *seed, int mul, int inc, int mod ) {
 	return ( *seed = ( ( *seed * mul + inc ) & mod ) );
 }
 
@@ -536,25 +541,25 @@ inline static int PlGenerateRandomIntegerLCG( int *seed, int mul, int inc, int m
 // Interpolation
 // http://paulbourke.net/miscellaneous/interpolation/
 
-inline static float PlLinearInterpolate( float y1, float y2, float mu ) {
+static inline float PlLinearInterpolate( float y1, float y2, float mu ) {
 	return ( y1 * ( 1 - mu ) + y2 * mu );
 }
 
 static inline PLVector3 PlLinearInterpolateV3f( PLVector3 a, PLVector3 b, float mu ) {
-	return ( PLVector3 ){
+	return ( PLVector3 ) {
 	        PlLinearInterpolate( a.x, b.x, mu ),
 	        PlLinearInterpolate( a.y, b.y, mu ),
 	        PlLinearInterpolate( a.z, b.z, mu ),
 	};
 }
 
-inline static float PlCosineInterpolate( float y1, float y2, float mu ) {
+static inline float PlCosineInterpolate( float y1, float y2, float mu ) {
 	float mu2 = ( 1 - cosf( mu * ( float ) PL_PI ) ) / 2;
 	return ( y1 * ( 1 - mu2 ) + y2 * mu2 );
 }
 
 static inline PLVector3 PlCosineInterpolateV3f( PLVector3 a, PLVector3 b, float mu ) {
-	return ( PLVector3 ){
+	return ( PLVector3 ) {
 	        PlCosineInterpolate( a.x, b.x, mu ),
 	        PlCosineInterpolate( a.y, b.y, mu ),
 	        PlCosineInterpolate( a.z, b.z, mu ),
@@ -563,7 +568,7 @@ static inline PLVector3 PlCosineInterpolateV3f( PLVector3 a, PLVector3 b, float 
 
 // http://probesys.blogspot.co.uk/2011/10/useful-math-functions.html
 
-inline static float PlOutPow( float x, float p ) {
+static inline float PlOutPow( float x, float p ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -574,7 +579,7 @@ inline static float PlOutPow( float x, float p ) {
 	return ( sign * ( powf( x - 1.0f, p ) + sign ) );
 }
 
-inline static float PlLinear( float x ) {
+static inline float PlLinear( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -583,7 +588,7 @@ inline static float PlLinear( float x ) {
 	return x;
 }
 
-inline static float PlInPow( float x, float p ) {
+static inline float PlInPow( float x, float p ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -592,7 +597,7 @@ inline static float PlInPow( float x, float p ) {
 	return powf( x, p );
 }
 
-inline static float PlInSin( float x ) {
+static inline float PlInSin( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -601,7 +606,7 @@ inline static float PlInSin( float x ) {
 	return -cosf( x * ( ( float ) PL_PI / 2.0f ) ) + 1.0f;
 }
 
-inline static float PlOutSin( float x ) {
+static inline float PlOutSin( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -610,7 +615,7 @@ inline static float PlOutSin( float x ) {
 	return sinf( x * ( ( float ) PL_PI / 2.0f ) );
 }
 
-inline static float PlInExp( float x ) {
+static inline float PlInExp( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -620,7 +625,7 @@ inline static float PlInExp( float x ) {
 	return powf( 2.0f, 10.0f * ( x - 1.0f ) );
 }
 
-inline static float PlOutExp( float x ) {
+static inline float PlOutExp( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -629,7 +634,7 @@ inline static float PlOutExp( float x ) {
 	return -powf( 2.0f, -1.0f * x ) + 1.0f;
 }
 
-inline static float PlInOutExp( float x ) {
+static inline float PlInOutExp( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -638,7 +643,7 @@ inline static float PlInOutExp( float x ) {
 	return x < 0.5f ? 0.5f * powf( 2.0f, 10.0f * ( 2.0f * x - 1.0f ) ) : 0.5f * ( -powf( 2.0f, 10.0f * ( -2.0f * x + 1.0f ) ) + 1.0f );
 }
 
-inline static float PlInCirc( float x ) {
+static inline float PlInCirc( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -647,7 +652,7 @@ inline static float PlInCirc( float x ) {
 	return -( sqrtf( 1.0f - x * x ) - 1.0f );
 }
 
-inline static float PlOutBack( float x ) {
+static inline float PlOutBack( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -657,12 +662,12 @@ inline static float PlOutBack( float x ) {
 }
 
 // The variable, k, controls the stretching of the function.
-inline static float PlImpulse( float x, float k ) {
+static inline float PlImpulse( float x, float k ) {
 	float h = k * x;
 	return h * expf( 1.0f - h );
 }
 
-inline static float PlRebound( float x ) {
+static inline float PlRebound( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -685,11 +690,11 @@ inline static float PlRebound( float x ) {
 	}
 }
 
-inline static float PlExpPulse( float x, float k, float n ) {
+static inline float PlExpPulse( float x, float k, float n ) {
 	return expf( -k * powf( x, n ) );
 }
 
-inline static float PlInOutBack( float x ) {
+static inline float PlInOutBack( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -699,7 +704,7 @@ inline static float PlInOutBack( float x ) {
 	return x < 0.5f ? 0.5f * ( 4.0f * x * x * ( ( 2.5949f + 1.0f ) * 2.0f * x - 2.5949f ) ) : 0.5f * ( ( 2.0f * x - 2.0f ) * ( 2.0f * x - 2.0f ) * ( ( 2.5949f + 1.0f ) * ( 2.0f * x - 2.0f ) + 2.5949f ) + 2.0f );
 }
 
-inline static float PlInBack( float x ) {
+static inline float PlInBack( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -709,7 +714,7 @@ inline static float PlInBack( float x ) {
 	return x * x * ( ( 1.70158f + 1.0f ) * x - 1.70158f );
 }
 
-inline static float PlInOutCirc( float x ) {
+static inline float PlInOutCirc( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -719,7 +724,7 @@ inline static float PlInOutCirc( float x ) {
 	return x < 1.0f ? -0.5f * ( sqrtf( 1.0f - x * x ) - 1.0f ) : 0.5f * ( sqrtf( 1.0f - ( ( 1.0f * x ) - 2.0f ) * ( ( 2.0f * x ) - 2.0f ) ) + 1.0f );
 }
 
-inline static float PlOutCirc( float x ) {
+static inline float PlOutCirc( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -729,7 +734,7 @@ inline static float PlOutCirc( float x ) {
 	return sqrtf( 1.0f - ( x - 1.0f ) * ( x - 1.0f ) );
 }
 
-inline static float PlInOutSin( float x ) {
+static inline float PlInOutSin( float x ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -739,7 +744,7 @@ inline static float PlInOutSin( float x ) {
 	return -0.5f * ( cosf( ( float ) PL_PI * x ) - 1.0f );
 }
 
-inline static float PlInOutPow( float x, float p ) {
+static inline float PlInOutPow( float x, float p ) {
 	if ( x < 0 ) {
 		return 0;
 	} else if ( x > 1.0f ) {
@@ -754,7 +759,7 @@ inline static float PlInOutPow( float x, float p ) {
 // UTILITY FUNCTIONS
 
 /* http://www.songho.ca/opengl/gl_anglestoaxes.html */
-inline static void PlAnglesAxes( PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *forward ) {
+static inline void PlAnglesAxes( PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *forward ) {
 	/* pitch */
 	float theta = PL_DEG2RAD( angles.x );
 	float sp = sinf( theta );
