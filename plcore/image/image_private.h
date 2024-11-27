@@ -19,5 +19,6 @@ PLImage *PlParseDdsImage( PLFile *file );
 PLImage *PlParseRsbImage_( PLFile *file );
 PLImage *PlParse3drTexImage_( PLFile *file );
 PLImage *PlParseAngelTexImage_( PLFile *file );
+PLImage *PlParseDtxImage_( PLFile *file );
 
 bool PlWriteQoiImage( const PLImage *image, const char *path );

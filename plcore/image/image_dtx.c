@@ -20,18 +20,18 @@ typedef struct {
 	char commandstring[ 128 ];
 } DTXHeader;
 
-#define DTX_VERSION_2 -2// Lithtech 1.0 (Shogo)
+#define DTX_VERSION_2   -2// Lithtech 1.0 (Shogo)
 // Lithtech 1.5
 // Lithtech 2.0
 // Lithtech 2.2
 // Lithtech 2.4
-#define DTX_VERSION_5 -5// Lithtech Talon (Purge)
+#define DTX_VERSION_5   -5// Lithtech Talon (Purge)
 // Lithtech Jupiter
 // Lithtech Jupiter EX
 #define DTX_VERSION_MIN DTX_VERSION_2
 #define DTX_VERSION_MAX DTX_VERSION_5
 
-#define DTX_GROUP( a ) a.extra[ 0 ]
+#define DTX_GROUP( a )  a.extra[ 0 ]
 #define DTX_MIPMAP( a ) a.extra[ 1 ]
 #define DTX_FORMAT( a ) a.extra[ 2 ]
 #define DTX_OFFSET( a ) a.extra[ 3 ]
@@ -57,7 +57,7 @@ enum DTXFormat {
 	DTX_FORMAT_S3TC_DXT5,
 } DTXFormat;
 
-uint8_t GetDTXFormat( DTXHeader *dtx ) {
+static uint8_t GetDTXFormat( DTXHeader *dtx ) {
 	// This is a little hacky, DTX version 2 images don't seem to use
 	// the extra[2] slot the same way as later versions. So we need to
 	// basically switch it to 0 since 99.9% of textures from that period
@@ -71,104 +71,80 @@ uint8_t GetDTXFormat( DTXHeader *dtx ) {
 	return dtx->extra[ 2 ];
 }
 
-bool PlDtxFormatCheck( PLFile *fin ) {
-	PlRewindFile( fin );
-
-	// Try reading in the type first, as Lithtech has "resource types" rather than idents.
-	int type;
-	if ( PlReadFile( fin, &type, sizeof( int ), 1 ) != 1 ) {
-		return false;
-	}
-
-	return ( type == 0 );
-}
-
-bool PlLoadDtxImage( PLFile *fin, PLImage *out ) {
+PLImage *PlParseDtxImage_( PLFile *file ) {
 	DTXHeader header;
-	if ( PlReadFile( fin, &header, sizeof( DTXHeader ), 1 ) != 1 ) {
-		PlReportErrorF( PL_RESULT_FILEREAD, PlGetResultString( PL_RESULT_FILEREAD ) );
-		return false;
-	} else if ( ( header.version < DTX_VERSION_MAX ) || ( header.version > DTX_VERSION_MIN ) ) {
+	if ( PlReadFile( file, &header, sizeof( DTXHeader ), 1 ) != 1 ) {
+		return NULL;
+	}
+
+	if ( header.version < DTX_VERSION_MAX || header.version > DTX_VERSION_MIN ) {
 		PlReportErrorF( PL_RESULT_FILEVERSION, "invalid version: %d", header.version );
-		return false;
-	} else if ( ( header.width < 8 ) || ( header.height < 8 ) ) {
+		return NULL;
+	}
+	if ( header.width < 8 || header.height < 8 ) {
 		PlReportErrorF( PL_RESULT_IMAGERESOLUTION, "invalid resolution: w(%d) h(%d)", header.width, header.height );
-		return false;
+		return NULL;
 	}
 
-	memset( out, 0, sizeof( PLImage ) );
-
-	out->width = header.width;
-	out->height = header.height;
-
+	size_t size = 0;
+	PLImageFormat imageFormat;
+	PLColourFormat colourFormat;
 	switch ( GetDTXFormat( &header ) ) {
-		case DTX_FORMAT_8PALLETTE:
-			out->size = header.width * header.height;
-			out->format = PL_IMAGEFORMAT_RGB8;
-			out->colour_format = PL_COLOURFORMAT_RGB;
+		case DTX_FORMAT_8PALLETTE: {
+			size = header.width * header.height;
+			imageFormat = PL_IMAGEFORMAT_RGB8;
+			colourFormat = PL_COLOURFORMAT_RGB;
 			break;
-
-		case DTX_FORMAT_S3TC_DXT1:
-			out->size = ( header.width * header.height ) >> 1;
-			out->format = PL_IMAGEFORMAT_RGB_DXT1;
-			out->colour_format = PL_COLOURFORMAT_RGB;
+		}
+		case DTX_FORMAT_S3TC_DXT1: {
+			size = ( header.width * header.height ) >> 1;
+			imageFormat = PL_IMAGEFORMAT_RGB_DXT1;
+			colourFormat = PL_COLOURFORMAT_RGB;
 			break;
-		case DTX_FORMAT_S3TC_DXT3:
-			out->size = header.width * header.height;
-			out->format = PL_IMAGEFORMAT_RGBA_DXT3;
-			out->colour_format = PL_COLOURFORMAT_RGBA;
+		}
+		case DTX_FORMAT_S3TC_DXT3: {
+			size = header.width * header.height;
+			imageFormat = PL_IMAGEFORMAT_RGBA_DXT3;
+			colourFormat = PL_COLOURFORMAT_RGBA;
 			break;
-		case DTX_FORMAT_S3TC_DXT5:
-			out->size = header.width * header.height;
-			out->format = PL_IMAGEFORMAT_RGBA_DXT5;
-			out->colour_format = PL_COLOURFORMAT_RGBA;
+		}
+		case DTX_FORMAT_S3TC_DXT5: {
+			size = header.width * header.height;
+			imageFormat = PL_IMAGEFORMAT_RGBA_DXT5;
+			colourFormat = PL_COLOURFORMAT_RGBA;
 			break;
-
-		case DTX_FORMAT_8:
-			out->size = header.width * header.height;
-			out->format = PL_IMAGEFORMAT_RGB8;
-			out->colour_format = PL_COLOURFORMAT_RGB;
+		}
+		case DTX_FORMAT_8: {
+			size = header.width * header.height;
+			imageFormat = PL_IMAGEFORMAT_RGB8;
+			colourFormat = PL_COLOURFORMAT_RGB;
 			break;
+		}
+		case DTX_FORMAT_32: {
+			size = ( header.width * header.height ) * 4;
+			imageFormat = PL_IMAGEFORMAT_RGBA8;
+			colourFormat = PL_COLOURFORMAT_RGBA;
+			break;
+		}
 		default:
-		case DTX_FORMAT_16:
-		case DTX_FORMAT_32:
-			out->size = ( unsigned int ) ( header.width * header.height * 4 );
-			out->format = PL_IMAGEFORMAT_RGBA8;
-			out->colour_format = PL_COLOURFORMAT_RGBA;
-			break;
+			PlReportErrorF( PL_RESULT_IMAGEFORMAT, "unsupported image format" );
+			return NULL;
 	}
 
-	if ( !out->size ) {
-		PlReportErrorF( PL_RESULT_FILESIZE, "invalid image size" );
-		return false;
+	if ( size == 0 ) {
+		PlReportErrorF( PL_RESULT_IMAGEFORMAT, "invalid image size" );
+		return NULL;
 	}
 
-#if 0
-    for (int i = 0; i < header.mipmaps; i++) {
-    }
-#endif
-
-	out->levels = 1;
-	out->data = PlCAlloc( out->levels, sizeof( uint8_t * ), false );
-	if ( out->data == NULL ) {
-		PlFreeImage( out );
-		return false;
+	PLImage *image = PlCreateImage( NULL, header.width, header.height, 0, colourFormat, imageFormat );
+	if ( image == NULL ) {
+		return NULL;
 	}
 
-	out->data[ 0 ] = PlCAlloc( out->size, sizeof( uint8_t ), false );
-	if ( out->data[ 0 ] == NULL ) {
-		PlFreeImage( out );
-		return false;
+	if ( PlReadFile( file, image->data[ 0 ], sizeof( uint8_t ), size ) != size ) {
+		PlDestroyImage( image );
+		image = NULL;
 	}
 
-	PlReadFile( fin, out->data[ 0 ], sizeof( uint8_t ), out->size );
-
-	/*	for (unsigned int i = 0; i < (unsigned int)size; i += 4)
-    {
-    image[i + 0] ^= image[i + 2];
-    image[i + 2] ^= image[i + 0];
-    image[i + 0] ^= image[i + 2];
-    }*/
-
-	return true;
+	return image;
 }
