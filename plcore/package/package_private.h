@@ -29,5 +29,6 @@ PLPackage *PlParseAfsPackage_( PLFile *file );     // Headhunter
 PLPackage *PlParseAhfPackage_( PLFile *file );     // Headhunter
 PLPackage *PlParseAngelDatPackage_( PLFile *file );// Oni 2, Red Dead Revolver
 PLPackage *PlParseHalPackage_( PLFile *file );     // Mortyr
+PLPackage *PlParseIce3DDatPackage_( PLFile *file );// Bioshock 3D
 
 PL_EXTERN_C_END

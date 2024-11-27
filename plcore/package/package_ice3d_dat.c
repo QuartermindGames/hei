@@ -2,9 +2,9 @@
 // Hei Platform Library
 // Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
-#include <plcore/pl_package.h>
+#include "package_private.h"
 
-PLPackage *PlParseIce3DDatPackage( PLFile *file ) {
+PLPackage *PlParseIce3DDatPackage_( PLFile *file ) {
 	uint16_t versionMajor = PL_READUINT16( file, false, NULL );
 	uint16_t versionMinor = PL_READUINT16( file, false, NULL );
 	if ( versionMajor != 1 || versionMinor != 4 ) {
