@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
-// Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
+// Hei Platform Library
+// Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
-#include "package_private.h"
+#include "../package_private.h"
 
 #define PAK_MAGIC PL_MAGIC_TO_NUM( 'P', 'A', 'C', 'K' )
 
 #define PAK_INDEX_FILENAME_LENGTH 56
 #define PAK_INDEX_LENGTH          64
 
-static PLPackage *ParsePAKFile( PLFile *file ) {
+PLPackage *PlParsePakPackage_( PLFile *file ) {
 	uint32_t magic = PlReadInt32( file, false, NULL );
 	if ( magic != PAK_MAGIC ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid magic: %X", magic );
@@ -39,19 +40,6 @@ static PLPackage *ParsePAKFile( PLFile *file ) {
 		package->table[ i ].offset = PlReadInt32( file, false, NULL );
 		package->table[ i ].fileSize = PlReadInt32( file, false, NULL );
 	}
-
-	return package;
-}
-
-PLPackage *PlLoadPAKPackage_( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
-		return NULL;
-	}
-
-	PLPackage *package = ParsePAKFile( file );
-
-	PlCloseFile( file );
 
 	return package;
 }

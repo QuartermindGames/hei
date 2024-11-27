@@ -27,17 +27,12 @@ typedef struct MADIndex {
 	uint32_t length;
 } MADIndex;
 
-PLPackage *PlLoadMadPackage( const char *path ) {
+PLPackage *PlParseMadPackage_( PLFile *file ) {
 	FunctionStart();
-
-	PLFile *fh = PlOpenFile( path, false );
-	if ( fh == NULL ) {
-		return NULL;
-	}
 
 	PLPackage *package = NULL;
 
-	size_t file_size = PlGetLocalFileSize( path );
+	size_t file_size = PlGetFileSize( file );
 	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
 		goto FAILED;
 	}
@@ -51,7 +46,7 @@ PLPackage *PlLoadMadPackage( const char *path ) {
 
 	while ( ( num_indices + 1 ) * sizeof( MADIndex ) <= data_begin ) {
 		MADIndex index;
-		if ( PlReadFile( fh, &index, sizeof( MADIndex ), 1 ) != 1 ) {
+		if ( PlReadFile( file, &index, sizeof( MADIndex ), 1 ) != 1 ) {
 			/* EOF, or read error */
 			goto FAILED;
 		}
@@ -78,15 +73,13 @@ PLPackage *PlLoadMadPackage( const char *path ) {
 	}
 
 	/* Allocate the basic package structure now we know how many files are in the archive. */
-	package = PlCreatePackageHandle( path, num_indices, NULL );
+	package = PlCreatePackageHandle( PlGetFilePath( file ), num_indices, NULL );
 
 	/* Rewind the file handle and populate package->table with the metadata from the headers. */
 
-	PlRewindFile( fh );
-
 	for ( unsigned int i = 0; i < num_indices; ++i ) {
 		MADIndex index;
-		if ( PlReadFile( fh, &index, sizeof( MADIndex ), 1 ) != 1 ) {
+		if ( PlReadFile( file, &index, sizeof( MADIndex ), 1 ) != 1 ) {
 			/* EOF, or read error */
 			PlReportErrorF( PL_RESULT_FILEREAD, "failed to read MAD index %d", i );
 			goto FAILED;
@@ -98,15 +91,11 @@ PLPackage *PlLoadMadPackage( const char *path ) {
 		package->table[ i ].offset = index.offset;
 	}
 
-	PlCloseFile( fh );
-
 	return package;
 
 FAILED:
 
 	PlDestroyPackage( package );
-
-	PlCloseFile( fh );
 
 	return NULL;
 }

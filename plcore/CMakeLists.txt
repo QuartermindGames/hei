@@ -78,6 +78,11 @@ file(
 
 file(GLOB PLATFORM_PACKAGE_FILES
         package/*.c
+
+        package/amuze/amuze_afs.c
+        package/amuze/amuze_ahf.c
+        package/id/id_pak.c
+        package/id/id_wad.c
         )
 file(GLOB PLATFORM_IMAGE_FILES
         image/*.c

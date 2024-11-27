@@ -66,7 +66,7 @@ static char *ReadString( PLFile *file, char **dst, uint32_t offset ) {
 	return *dst;
 }
 
-PLPackage *PlParseDFSFile( PLFile *file ) {
+PLPackage *PlParseDfsPackage_( PLFile *file ) {
 	size_t fileSize = PlGetFileSize( file );
 	if ( fileSize == 0 ) {
 		PlReportError( PL_RESULT_FILESIZE, PL_FUNCTION, "empty file" );
@@ -81,7 +81,7 @@ PLPackage *PlParseDFSFile( PLFile *file ) {
 	PlReadInt32( file, false, NULL );// unknown
 	PlReadInt32( file, false, NULL );// unknown
 
-	uint32_t numFiles = ( uint32_t ) PlReadInt32( file, false, NULL );
+	uint32_t numFiles = PL_READUINT32( file, false, NULL );
 	if ( numFiles <= 0 ) {
 		PlReportError( PL_RESULT_FILEERR, PL_FUNCTION, "invalid number of files" );
 		return NULL;
@@ -89,7 +89,7 @@ PLPackage *PlParseDFSFile( PLFile *file ) {
 
 	PlReadInt32( file, false, NULL );// unknown
 
-	uint32_t stringTableSize = ( uint32_t ) PlReadInt32( file, false, NULL );
+	uint32_t stringTableSize = PL_READUINT32( file, false, NULL );
 	if ( stringTableSize <= 0 || stringTableSize >= fileSize ) {
 		PlReportError( PL_RESULT_FILEERR, PL_FUNCTION, "invalid string table size" );
 		return NULL;
@@ -98,7 +98,7 @@ PLPackage *PlParseDFSFile( PLFile *file ) {
 	PlReadInt32( file, false, NULL );// unknown
 	PlReadInt32( file, false, NULL );// unknown
 
-	uint32_t stringTableOffset = ( uint32_t ) PlReadInt32( file, false, NULL );
+	uint32_t stringTableOffset = PL_READUINT32( file, false, NULL );
 	if ( stringTableOffset <= 0 || stringTableOffset >= fileSize ) {
 		PlReportError( PL_RESULT_FILEERR, PL_FUNCTION, "invalid string table offset" );
 		return NULL;
@@ -110,10 +110,10 @@ PLPackage *PlParseDFSFile( PLFile *file ) {
 
 	for ( uint32_t i = 0; i < numFiles; ++i ) {
 		// urgh...
-		uint32_t nameOffset = ( uint32_t ) PlReadInt32( file, false, NULL );
-		uint32_t nameExtendedOffset = ( uint32_t ) PlReadInt32( file, false, NULL );
-		uint32_t dirOffset = ( uint32_t ) PlReadInt32( file, false, NULL );
-		uint32_t extensionOffset = ( uint32_t ) PlReadInt32( file, false, NULL );
+		uint32_t nameOffset = PL_READUINT32( file, false, NULL );
+		uint32_t nameExtendedOffset = PL_READUINT32( file, false, NULL );
+		uint32_t dirOffset = PL_READUINT32( file, false, NULL );
+		uint32_t extensionOffset = PL_READUINT32( file, false, NULL );
 
 		char *c = package->table[ i ].fileName;
 		ReadString( file, &c, stringTableOffset + dirOffset );
@@ -122,22 +122,9 @@ PLPackage *PlParseDFSFile( PLFile *file ) {
 		ReadString( file, &c, stringTableOffset + extensionOffset );
 		pl_strntolower( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ) );
 
-		package->table[ i ].offset = ( uint32_t ) PlReadInt32( file, false, NULL );
-		package->table[ i ].fileSize = ( uint32_t ) PlReadInt32( file, false, NULL );
+		package->table[ i ].offset = PL_READUINT32( file, false, NULL );
+		package->table[ i ].fileSize = PL_READUINT32( file, false, NULL );
 	}
-
-	return package;
-}
-
-PLPackage *PlLoadDFSPackage( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
-		return NULL;
-	}
-
-	PLPackage *package = PlParseDFSFile( file );
-
-	PlCloseFile( file );
 
 	return package;
 }

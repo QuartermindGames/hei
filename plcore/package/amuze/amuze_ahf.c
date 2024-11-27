@@ -4,7 +4,7 @@
 
 #include "plcore/pl_math.h"
 
-#include "package_private.h"
+#include "../package_private.h"
 
 /* Headhunter AHF package format
  *

@@ -2,7 +2,7 @@
 // Hei Platform Library
 // Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
-#include "package_private.h"
+#include "../package_private.h"
 
 /* Headhunter AFS package format
  *

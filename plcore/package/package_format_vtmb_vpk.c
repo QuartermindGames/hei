@@ -10,7 +10,7 @@
 #define VPK_TOC_OFFSET   5
 #define VPK_TOC_NUMFILES 9
 
-static PLPackage *ParseVPKFile( PLFile *file ) {
+PLPackage *PlParseVpkPackage_( PLFile *file ) {
 	size_t size = PlGetFileSize( file );
 
 	if ( !PlFileSeek( file, size - VPK_TOC_NUMFILES, PL_SEEK_SET ) ) {
@@ -44,19 +44,6 @@ static PLPackage *ParseVPKFile( PLFile *file ) {
 		package->table[ i ].offset = PlReadInt32( file, false, NULL );
 		package->table[ i ].fileSize = PlReadInt32( file, false, NULL );
 	}
-
-	return package;
-}
-
-PLPackage *PlLoadVPKPackage_( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
-		return NULL;
-	}
-
-	PLPackage *package = ParseVPKFile( file );
-
-	PlCloseFile( file );
 
 	return package;
 }

@@ -277,32 +277,31 @@ void PlRegisterStandardPackageLoaders( unsigned int flags ) {
 	typedef struct PackageLoader {
 		unsigned int flag;
 		const char *extension;
-		PLPackage *( *loadFunction )( const char *path );//TODO: kill this...
 		PLPackage *( *parseFunction )( PLFile *file );
 	} PackageLoader;
 
 	static const PackageLoader loaders[] = {
-	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "zip", PlLoadZipPackage,   NULL                   },
-	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pak", PlLoadZipPackage,   NULL                   },
-	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk3", PlLoadZipPackage,   NULL                   },
-	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk4", PlLoadZipPackage,   NULL                   },
-	        {PL_PACKAGE_LOAD_FORMAT_WAD_DOOM,    "wad", PlLoadIWADPackage_, NULL                   },
-	        {PL_PACKAGE_LOAD_FORMAT_WAD_QUAKE,   "wad", PlLoadWAD2Package_, NULL                   },
-	        {PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mad", PlLoadMadPackage,   NULL                   },
-	        {PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mtd", PlLoadMadPackage,   NULL                   },
-	        {PL_PACKAGE_LOAD_FORMAT_PAK_QUAKE,   "pak", PlLoadPAKPackage_,  NULL                   },
-	        {PL_PACKAGE_LOAD_FORMAT_TAB_SFA,     "tab", PlLoadTabPackage,   NULL                   },
-	        {PL_PACKAGE_LOAD_FORMAT_BIN_FRESH,   "bin", NULL,               PlParseFreshBinPackage_},
-	        {PL_PACKAGE_LOAD_FORMAT_DFS,         "dfs", PlLoadDFSPackage,   NULL                   },
-	        {PL_PACKAGE_LOAD_FORMAT_VPK_VTMB,    "vpk", PlLoadVPKPackage_,  NULL                   },
-	        {PL_PACKAGE_LOAD_FORMAT_GRP,         "grp", NULL,               PlParseGrpPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_VPP,         "vpp", NULL,               PlParseVppPackage      },
-	        {PL_PACKAGE_LOAD_FORMAT_OPK,         "opk", NULL,               PlParseOpkPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_INU,         "inu", NULL,               PlParseInuPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_ALL_ACCLAIM, "all", NULL,               PlParseAllPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_AFS,         "afs", NULL,               PlParseAfsPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_AHF,         "ahf", NULL,               PlParseAhfPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_DAT_ANGEL,   "dat", NULL,               PlParseAngelDatPackage_},
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "zip", PlParseZipPackage      },
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pak", PlParseZipPackage      },
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk3", PlParseZipPackage      },
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk4", PlParseZipPackage      },
+	        {PL_PACKAGE_LOAD_FORMAT_WAD_DOOM,    "wad", PlParseWadPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_WAD_QUAKE,   "wad", PlParseQWadPackage_    },
+	        {PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mad", PlParseMadPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mtd", PlParseMadPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_PAK_QUAKE,   "pak", PlParsePakPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_BIN_FRESH,   "bin", PlParseFreshBinPackage_},
+	        {PL_PACKAGE_LOAD_FORMAT_DFS,         "dfs", PlParseDfsPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_VPK_VTMB,    "vpk", PlParseVpkPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_GRP,         "grp", PlParseGrpPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_VPP,         "vpp", PlParseVppPackage      },
+	        {PL_PACKAGE_LOAD_FORMAT_OPK,         "opk", PlParseOpkPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_INU,         "inu", PlParseInuPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_ALL_ACCLAIM, "all", PlParseAllPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_AFS,         "afs", PlParseAfsPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_AHF,         "ahf", PlParseAhfPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_DAT_ANGEL,   "dat", PlParseAngelDatPackage_},
+	        {PL_PACKAGE_LOAD_FORMAT_HAL,         "hal", PlParseHalPackage_     },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaders ); ++i ) {
@@ -310,7 +309,7 @@ void PlRegisterStandardPackageLoaders( unsigned int flags ) {
 			continue;
 		}
 
-		PlRegisterPackageLoader( loaders[ i ].extension, loaders[ i ].loadFunction, loaders[ i ].parseFunction );
+		PlRegisterPackageLoader( loaders[ i ].extension, NULL, loaders[ i ].parseFunction );
 	}
 }
 

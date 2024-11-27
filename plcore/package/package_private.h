@@ -11,14 +11,13 @@
 
 PL_EXTERN_C
 
-PLPackage *PlParseDFSFile( PLFile *file );
-PLPackage *PlLoadDFSPackage( const char *path );
+PLPackage *PlParseDfsPackage_( PLFile *file );
 
-PLPackage *PlLoadIWADPackage_( const char *path );
-PLPackage *PlLoadWAD2Package_( const char *path );
-PLPackage *PlLoadPAKPackage_( const char *path );
-PLPackage *PlLoadVPKPackage_( const char *path );
-PLPackage *PlLoadMadPackage( const char *path );
+PLPackage *PlParseWadPackage_( PLFile *file );
+PLPackage *PlParseQWadPackage_( PLFile *file );
+PLPackage *PlParsePakPackage_( PLFile *file );
+PLPackage *PlParseVpkPackage_( PLFile *file );
+PLPackage *PlParseMadPackage_( PLFile *file );
 PLPackage *PlLoadTabPackage( const char *path );
 
 PLPackage *PlParseFreshBinPackage_( PLFile *file );
@@ -29,5 +28,6 @@ PLPackage *PlParseAllPackage_( PLFile *file );     // The Last Job
 PLPackage *PlParseAfsPackage_( PLFile *file );     // Headhunter
 PLPackage *PlParseAhfPackage_( PLFile *file );     // Headhunter
 PLPackage *PlParseAngelDatPackage_( PLFile *file );// Oni 2, Red Dead Revolver
+PLPackage *PlParseHalPackage_( PLFile *file );     // Mortyr
 
 PL_EXTERN_C_END
