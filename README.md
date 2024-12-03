@@ -119,6 +119,7 @@ This hasn't received as much attention so support is very limited (.
 
 # Users
 
+- [hei-cmd](https://github.com/QuartermindGames/hei-cmd), a command-line utility for using features of Hei
 - [ApeTech](https://www.hogsy.me/ape.htm), a 3D game engine written in C
 - [OpenHoW](https://github.com/TalonBraveInfo/OpenHoW), a reimplementation of Hogs of War
 
