@@ -31,4 +31,10 @@ PLPackage *PlParseAngelDatPackage_( PLFile *file );// Oni 2, Red Dead Revolver
 PLPackage *PlParseHalPackage_( PLFile *file );     // Mortyr
 PLPackage *PlParseIce3DDatPackage_( PLFile *file );// Bioshock 3D
 
+#if ( RAR_SUPPORTED == 1 )
+
+PLPackage *PlParseRarPackage_( PLFile *file );
+
+#endif
+
 PL_EXTERN_C_END

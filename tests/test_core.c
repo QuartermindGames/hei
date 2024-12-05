@@ -139,12 +139,30 @@ FUNC_TEST( pl_filesystem ) {
 FUNC_TEST_END()
 
 FUNC_TEST( pl_package ) {
+	PlRegisterStandardPackageLoaders( PL_PACKAGE_LOAD_FORMAT_ALL );
+
+#if 0
 	PLPackage *packageHandle = PlCreatePackageHandle( "testdata/blob.bin", 0, NULL );
 	if ( packageHandle == NULL ) {
 		RETURN_FAILURE( "Failed to create package handle!\n" );
 	}
 
 	PlAppendPackageFromFile( packageHandle, NULL, "testdata/images/dice.png", PL_COMPRESSION_GZIP )
+#endif
+}
+FUNC_TEST_END()
+
+FUNC_TEST( pl_package_rar ) {
+	PLPackage *package = PlLoadPackage( "testdata/pack.rar" );
+	if ( package == NULL ) {
+		RETURN_FAILURE( "Failed to load package!\n" );
+	}
+
+	if ( PlGetPackageTableSize( package ) == 0 ) {
+		RETURN_FAILURE( "Empty package!\n" );
+	}
+
+	PlDestroyPackage( package );
 }
 FUNC_TEST_END()
 
@@ -417,6 +435,10 @@ int main( int argc, char **argv ) {
 	/* memory */
 	CALL_FUNC_TEST( HeapMemory )
 	CALL_FUNC_TEST( GroupMemory )
+
+	/* package */
+	CALL_FUNC_TEST( pl_package )
+	CALL_FUNC_TEST( pl_package_rar )
 
 	TEST_RUN_END
 }

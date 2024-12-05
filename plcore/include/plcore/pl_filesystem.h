@@ -166,6 +166,8 @@ void PlStripExtension( char *dest, size_t length, const char *in );
 
 const char *PlGetFileExtension( const char *in );
 
+char *PlGetTempName( PLPath dst );
+
 /**
  * Returns pointer to the last component in the given filename.
  *

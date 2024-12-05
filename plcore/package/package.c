@@ -303,6 +303,9 @@ void PlRegisterStandardPackageLoaders( unsigned int flags ) {
 	        {PL_PACKAGE_LOAD_FORMAT_DAT_ANGEL,   "dat", PlParseAngelDatPackage_},
 	        {PL_PACKAGE_LOAD_FORMAT_HAL,         "hal", PlParseHalPackage_     },
 	        {PL_PACKAGE_LOAD_FORMAT_DAT_ICE3D,   "dat", PlParseIce3DDatPackage_},
+#if ( RAR_SUPPORTED == 1 )
+	        {PL_PACKAGE_LOAD_FORMAT_RAR,         "rar", PlParseRarPackage_     },
+#endif
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaders ); ++i ) {

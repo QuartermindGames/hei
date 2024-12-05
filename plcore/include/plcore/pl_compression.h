@@ -17,6 +17,10 @@ typedef enum PLCompressionType {
 
 	PL_COMPRESSION_LZRW1,
 
+#if ( RAR_SUPPORTED == 1 )
+	PL_COMPRESSION_RAR,
+#endif
+
 	PL_MAX_COMPRESSION_FORMATS
 } PLCompressionType;
 

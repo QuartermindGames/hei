@@ -590,6 +590,22 @@ void PlStripExtension( char *dest, size_t length, const char *in ) {
 	*dest = 0;
 }
 
+char *PlGetTempName( PLPath dst ) {
+#if ( PL_SYSTEM_OS == PL_SYSTEM_OS_LINUX )
+	char *c = tempnam( "/tmp", "file" );
+	if ( c == NULL ) {
+		PlReportErrorF( PL_RESULT_FAIL, "failed to fetch temporary filename" );
+		return NULL;
+	}
+
+	PlSetupPath( dst, true, "%s", c );
+
+	free( c );
+
+	return dst;
+#endif
+}
+
 const char *PlGetFileName( const char *path ) {
 	const char *lslash;
 	if ( ( lslash = strrchr( path, '/' ) ) == NULL ) {

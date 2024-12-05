@@ -37,7 +37,7 @@ file(
         pl_compression.c
         pl_console.c
         pl_filesystem.c
-        
+
         pl_memory.c
         pl_parser.c
         pl_library.c
@@ -83,10 +83,11 @@ file(GLOB PLATFORM_PACKAGE_FILES
         package/amuze/amuze_ahf.c
         package/id/id_pak.c
         package/id/id_wad.c
-        )
+        package/package_rar.cpp
+)
 file(GLOB PLATFORM_IMAGE_FILES
         image/*.c
-        )
+)
 
 if (PL_COMPILE_STATIC)
     add_library(plcore STATIC
@@ -115,7 +116,7 @@ if (PL_FILESYSTEM_64)
             PRIVATE
             __USE_LARGEFILE64=1
             _FILE_OFFSET_BITS=64
-            )
+    )
 endif ()
 
 # Platform specific libraries should be provided here
@@ -128,6 +129,15 @@ elseif (WIN32)
     target_link_libraries(plcore Secur32 ws2_32 Psapi)
 endif ()
 
+find_file(LIBUNRAR_AVAILABLE unrar/unpack.hpp)
+if (LIBUNRAR_AVAILABLE)
+    message(STATUS "Found libunrar, will be used for RAR support!")
+    target_compile_definitions(plcore PRIVATE RAR_SUPPORTED=1)
+    target_link_libraries(plcore unrar)
+else ()
+    message(WARNING "libunrar was not found, RAR support will be disabled.")
+endif ()
+
 set_property(TARGET plcore PROPERTY C_STANDARD_REQUIRED 11)
 
 target_include_directories(plcore
@@ -136,4 +146,4 @@ target_include_directories(plcore
         ${CMAKE_SYSTEM_INCLUDE_PATH}
         PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}"
-        )
+)
