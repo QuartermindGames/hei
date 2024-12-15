@@ -129,7 +129,7 @@ elseif (WIN32)
     target_link_libraries(plcore Secur32 ws2_32 Psapi)
 endif ()
 
-find_file(LIBUNRAR_AVAILABLE unrar/unpack.hpp)
+find_file(LIBUNRAR_AVAILABLE unrar/dll.hpp)
 if (LIBUNRAR_AVAILABLE)
     message(STATUS "Found libunrar, will be used for RAR support!")
     target_compile_definitions(plcore PRIVATE RAR_SUPPORTED=1)

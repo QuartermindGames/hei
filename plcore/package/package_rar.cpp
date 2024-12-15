@@ -6,7 +6,10 @@
 
 #if ( RAR_SUPPORTED == 1 )
 
-#	include <unrar/rar.hpp>
+#	ifndef _WIN32
+#		define _UNIX /* Needed to make dll.hpp work on non-Windows. */
+#	endif
+
 #	include <unrar/dll.hpp>
 
 static void *OpenRarFile( PLFile *file, PLPackageIndex *index ) {
