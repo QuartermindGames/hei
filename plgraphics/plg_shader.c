@@ -482,23 +482,3 @@ void PlgSetShaderUniformValueByIndex( PLGShaderProgram *program, int slot, const
 void PlgSetShaderUniformValue( PLGShaderProgram *program, const char *name, const void *value, bool transpose ) {
 	PlgSetShaderUniformValueByIndex( program, PlgGetShaderUniformSlot( program, name ), value, transpose );
 }
-
-void plSetShaderUniformFloat( PLGShaderProgram *program, int slot, float value ) {
-	PlgSetShaderUniformValueByIndex( program, slot, &value, false );
-}
-
-void plSetShaderUniformVector3( PLGShaderProgram *program, int slot, PLVector3 value ) {
-	PlgSetShaderUniformValueByIndex( program, slot, &value, false );
-}
-
-void plSetShaderUniformVector4( PLGShaderProgram *program, int slot, PLVector4 value ) {
-	PlgSetShaderUniformValueByIndex( program, slot, &value, false );
-}
-
-void plSetShaderUniformInt( PLGShaderProgram *program, int slot, int value ) {
-	PlgSetShaderUniformValueByIndex( program, slot, &value, false );
-}
-
-void plSetShaderUniformMatrix4( PLGShaderProgram *program, int slot, PLMatrix4 value, bool transpose ) {
-	PlgSetShaderUniformValueByIndex( program, slot, &value, transpose );
-}

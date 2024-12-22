@@ -20,7 +20,7 @@ PL_EXTERN_C
  * either audio/video.
  */
 
-#define PLG_INTERFACE_VERSION_MAJOR 6
+#define PLG_INTERFACE_VERSION_MAJOR 7
 #define PLG_INTERFACE_VERSION_MINOR 0
 #define PLG_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR }
@@ -148,6 +148,8 @@ typedef struct PLGDriverImportTable {
 
 	// v3.2
 	void ( *SetTextureWrapMode )( PLGTexture *texture, PLGTextureWrapMode wrapMode );
+
+	void ( *SetClipPlane )( const PLVector4 *clipPlane );
 } PLGDriverImportTable;
 
 #if !defined( PL_COMPILE_PLUGIN )

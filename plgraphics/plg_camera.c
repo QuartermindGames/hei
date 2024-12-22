@@ -100,7 +100,7 @@ static void MakeFrustumPlanes( const PLMatrix4 *matrix, PLGViewFrustum outFrustu
 	outFrustum[ PLG_FRUSTUM_PLANE_NEAR ] = PlNormalizePlane( outFrustum[ PLG_FRUSTUM_PLANE_NEAR ] );
 }
 
-static void SetupCameraFrustum( PLGCamera *camera ) {
+void PlgSetupCameraFrustum( PLGCamera *camera ) {
 	PLMatrix4 viewProj = PlMultiplyMatrix4( &camera->internal.proj, &camera->internal.view );
 	MakeFrustumPlanes( &viewProj, camera->frustum );
 }
@@ -188,7 +188,7 @@ void PlgSetupCamera( PLGCamera *camera ) {
 	}
 
 	/* setup the camera frustum */
-	SetupCameraFrustum( camera );
+	PlgSetupCameraFrustum( camera );
 
 	// Copy camera matrices
 	PlgSetViewMatrix( &camera->internal.view );

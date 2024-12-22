@@ -804,6 +804,20 @@ static void GLSwizzleTexture( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t
 }
 
 /////////////////////////////////////////////////////////////
+
+static PLVector4 clipPlane;
+
+static void GLSetClipPlane( const PLVector4 *clip ) {
+	if ( clip == NULL ) {
+		glDisable( GL_CLIP_DISTANCE0 );
+		return;
+	}
+
+	glEnable( GL_CLIP_DISTANCE0 );
+	clipPlane = *clip;
+}
+
+/////////////////////////////////////////////////////////////
 // Mesh
 
 typedef struct MeshTranslatePrimitive {
@@ -941,6 +955,12 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 		return;
 	}
 
+	// Set up the default uniforms
+	unsigned int slot;
+	if ( ( slot = ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_CLIP_PLANE ] ) != 0 ) {
+		XGL_CALL( glUniform4fv( slot, 1, ( float * ) &clipPlane ) );
+	}
+
 	if ( mesh->primitiveScale != 0.0f ) {
 		if ( mesh->primitive == PLG_MESH_LINES ) {
 			XGL_CALL( glLineWidth( mesh->primitiveScale ) );
@@ -985,7 +1005,8 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 	if ( mesh->buffers[ BUFFER_VERTEX_DATA ] == 0 ) {
 		XGL_LOG( "invalid vertex buffer provided, skipping draw!\n" );
 		return;
-	} else if ( mesh->num_indices > 0 && mesh->buffers[ BUFFER_ELEMENT_DATA ] == 0 ) {
+	}
+	if ( mesh->num_indices > 0 && mesh->buffers[ BUFFER_ELEMENT_DATA ] == 0 ) {
 		XGL_LOG( "invalid element buffer provided, skipping draw!\n" );
 		return;
 	}
@@ -1213,12 +1234,14 @@ static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *l
 		insert( "uniform mat4 pl_view;\n" );
 		insert( "uniform mat4 pl_proj;\n" );
 		insert( "uniform mat4 pl_texture;\n" );
+		insert( "uniform vec4 pl_clipplane;\n" );
 		if ( stage->type == PLG_SHADER_TYPE_VERTEX ) {
 			insert( "in vec3 pl_vposition;\n" );
 			insert( "in vec3 pl_vnormal;\n" );
 			insert( "in vec2 pl_vuv;\n" );
 			insert( "in vec4 pl_vcolour;\n" );
 			insert( "in vec3 pl_vtangent, pl_vbitangent;\n" );
+			insert( "out float gl_ClipDistance[1];\n" );
 			insert( "#define PLG_COMPILE_VERTEX 1\n" );
 		} else if ( stage->type == PLG_SHADER_TYPE_FRAGMENT ) {
 			insert( "out vec4 pl_frag;\n" );
@@ -1323,9 +1346,13 @@ static void GLCreateShaderProgram( PLGShaderProgram *program ) {
 		XGL_LOG( "Failed to generate shader program!\n" );
 		return;
 	}
+
+	program->driver = gInterface->core->MAlloc( sizeof( OGLShaderProgram ), true );
 }
 
 static void GLDestroyShaderProgram( PLGShaderProgram *program ) {
+	gInterface->core->Free( program->driver );
+
 	if ( program->internal.id == 0 ) {
 		return;
 	}
@@ -1483,6 +1510,12 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 	XGL_CALL( program->internal.v_colour = glGetAttribLocation( program->internal.id, "pl_vcolour" ) );
 	XGL_CALL( program->internal.v_tangent = glGetAttribLocation( program->internal.id, "pl_vtangent" ) );
 	XGL_CALL( program->internal.v_bitangent = glGetAttribLocation( program->internal.id, "pl_vbitangent" ) );
+
+	XGL_CALL( ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_MODEL_MATRIX ] = glGetUniformLocation( program->internal.id, "pl_model" ) );
+	XGL_CALL( ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_VIEW_MATRIX ] = glGetUniformLocation( program->internal.id, "pl_view" ) );
+	XGL_CALL( ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_PROJECTION_MATRIX ] = glGetUniformLocation( program->internal.id, "pl_proj" ) );
+	XGL_CALL( ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_TEXTURE_MATRIX ] = glGetUniformLocation( program->internal.id, "pl_texture" ) );
+	XGL_CALL( ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_CLIP_PLANE ] = glGetUniformLocation( program->internal.id, "pl_clipplane" ) );
 
 	int num_uniforms = 0;
 	XGL_CALL( glGetProgramiv( program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms ) );
@@ -2041,4 +2074,6 @@ PLGDriverImportTable graphicsInterface = {
         .DepthBufferFunction = GLDepthBufferFunction,
         .StencilBufferFunction = GLStencilFunction,
         .StencilOp = GLStencilOp,
+
+        .SetClipPlane = GLSetClipPlane,
 };

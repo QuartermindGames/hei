@@ -82,6 +82,15 @@ void PlgGetViewport( int *x, int *y, int *width, int *height );
 void PlgClipViewport( int x, int y, int width, int height );
 void PlgSetViewport( int x, int y, int width, int height );
 
+/**
+ * This will typically be called by the SetupCamera
+ * method, but if you want a little more control you
+ * can call this instead.
+ *
+ * @param camera Instance of the camera.
+ */
+void PlgSetupCameraFrustum( PLGCamera *camera );
+
 /***** TEMPORARY CRAP START *****/
 
 void PlgSetViewMatrix( const PLMatrix4 *viewMatrix );

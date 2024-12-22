@@ -39,7 +39,7 @@ void PlgInitializeInternalMeshes( void ); /* plg_draw.c */
 PLFunctionResult PlgInitializeGraphics( void ) {
 	memset( &gfx_state, 0, sizeof( GfxState ) );
 
-	LOG_LEVEL_GRAPHICS = PlAddLogLevel( "plgraphics", ( PLColour ){ 0, 255, 255, 255 },
+	LOG_LEVEL_GRAPHICS = PlAddLogLevel( "plgraphics", ( PLColour ) { 0, 255, 255, 255 },
 #if !defined( NDEBUG )
 	                                    true
 #else
@@ -258,4 +258,10 @@ void PlgStencilBufferFunction( PLGCompareFunction function, int reference, unsig
 
 void PlgStencilOp( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp depthFailOp, PLGStencilOp depthPassOp ) {
 	CallGfxFunction( StencilOp, face, stencilFailOp, depthFailOp, depthPassOp );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+void PlgSetClipPlane( const PLVector4 *clip ) {
+	CallGfxFunction( SetClipPlane, clip );
 }

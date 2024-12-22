@@ -225,6 +225,8 @@ typedef struct PLGShaderProgram {
 	} internal;
 
 	char id[ PLG_MAX_SHADER_PROGRAM_ID ];
+
+	void *driver;// driver specific data
 } PLGShaderProgram;
 
 typedef struct PLGPolygon PLGPolygon;
@@ -249,6 +251,8 @@ PL_EXTERN_C
 
 PLFunctionResult PlgInitializeGraphics( void );
 void PlgShutdownGraphics( void );
+
+void PlgSetClipPlane( const PLVector4 *clip );
 
 PLGShaderStage *PlgCreateShaderStage( PLGShaderStageType type );
 void PlgDestroyShaderStage( PLGShaderStage *stage );

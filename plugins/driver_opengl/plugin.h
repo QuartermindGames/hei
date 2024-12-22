@@ -35,3 +35,18 @@ typedef struct GLTexture {
 	unsigned int id;
 	unsigned int target;
 } GLTexture;
+
+typedef enum OGLDefaultUniform {
+	OGL_DEFAULT_UNIFORM_MODEL_MATRIX,
+	OGL_DEFAULT_UNIFORM_VIEW_MATRIX,
+	OGL_DEFAULT_UNIFORM_PROJECTION_MATRIX,
+	OGL_DEFAULT_UNIFORM_TEXTURE_MATRIX,
+
+	OGL_DEFAULT_UNIFORM_CLIP_PLANE,
+
+	OGL_MAX_DEFAULT_UNIFORMS
+} OGLDefaultUniform;
+
+typedef struct OGLShaderProgram {
+	unsigned int defaultUniforms[ OGL_MAX_DEFAULT_UNIFORMS ];
+} OGLShaderProgram;
