@@ -244,6 +244,10 @@ void PlgColourMask( bool r, bool g, bool b, bool a ) {
 	CallGfxFunction( ColourMask, r, g, b, a );
 }
 
+void PlgStencilMask( unsigned int mask ) {
+	CallGfxFunction( StencilMask, mask );
+}
+
 /*===========================
 	BUFFER OPERATIONS
 ===========================*/

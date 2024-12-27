@@ -533,6 +533,10 @@ static void GLColourMask( bool r, bool g, bool b, bool a ) {
 	XGL_CALL( glColorMask( r, g, b, a ) );
 }
 
+static void GLStencilMask( unsigned int mask ) {
+	XGL_CALL( glStencilMask( mask ) );
+}
+
 /////////////////////////////////////////////////////////////
 // Stencil Operations
 
@@ -2033,6 +2037,7 @@ PLGDriverImportTable graphicsInterface = {
 
         .DepthMask = GLDepthMask,
         .ColourMask = GLColourMask,
+        .StencilMask = GLStencilMask,
 
         .CreateMesh = GLCreateMesh,
         .UploadMesh = GLUploadMesh,
