@@ -130,6 +130,11 @@ elseif (WIN32)
 endif ()
 
 find_file(LIBUNRAR_AVAILABLE unrar/dll.hpp)
+if (NOT LIBUNRAR_AVAILABLE)
+    # under freebsd, it's under libunrar, rather than unrar
+    find_file(LIBUNRAR_AVAILABLE libunrar/dll.hpp)
+endif ()
+
 if (LIBUNRAR_AVAILABLE)
     message(STATUS "Found libunrar, will be used for RAR support!")
     target_compile_definitions(plcore PRIVATE RAR_SUPPORTED=1)
