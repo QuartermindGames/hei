@@ -133,6 +133,11 @@ find_file(LIBUNRAR_AVAILABLE unrar/dll.hpp)
 if (NOT LIBUNRAR_AVAILABLE)
     # under freebsd, it's under libunrar, rather than unrar
     find_file(LIBUNRAR_AVAILABLE libunrar/dll.hpp)
+    if (LIBUNRAR_AVAILABLE)
+        target_compile_definitions(plcore PRIVATE RAR_LIBUNRAR=1)
+    endif ()
+else ()
+    target_compile_definitions(plcore PRIVATE RAR_UNRAR=1)
 endif ()
 
 if (LIBUNRAR_AVAILABLE)

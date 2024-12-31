@@ -10,7 +10,11 @@
 #		define _UNIX /* Needed to make dll.hpp work on non-Windows. */
 #	endif
 
-#	include <unrar/dll.hpp>
+#	if defined( RAR_UNRAR )
+#		include <unrar/dll.hpp>
+#	elif defined( RAR_LIBUNRAR )
+#		include <libunrar/dll.hpp>
+#	endif
 
 static void *OpenRarFile( PLFile *file, PLPackageIndex *index ) {
 	PLPath path;
