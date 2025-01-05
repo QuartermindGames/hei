@@ -147,7 +147,7 @@ static const char *ReadName( PLFile *file, PLFileOffset offset, char *dst, size_
 
 	for ( unsigned int i = 0; i < dstSize - 1; ++i ) {
 		bool status;
-		char c = ( char ) PlReadInt8( file, &status );
+		char c = PlReadInt8( file, &status );
 		if ( c == '\0' || !status ) {
 			break;
 		}
@@ -258,12 +258,14 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 
 		cpjModel.numVerts = PlReadInt32( file, false, NULL );
 		uint32_t ofsVerts = PlReadInt32( file, false, NULL );
+		dprint( "Num verts = %d\n", cpjModel.numVerts );
 
 		uint32_t numEdges = PlReadInt32( file, false, NULL );
 		uint32_t ofsEdges = PlReadInt32( file, false, NULL );
 
 		cpjModel.numTriangles = PlReadInt32( file, false, NULL );
 		uint32_t ofsTriangles = PlReadInt32( file, false, NULL );
+		dprint( "Num triangles = %d\n", cpjModel.numTriangles );
 
 		/* mounts */
 		PlReadInt32( file, false, NULL );
@@ -340,6 +342,7 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 
 		surface->numTextures = PlReadInt32( file, false, NULL );
 		uint32_t ofsTextures = PlReadInt32( file, false, NULL );
+		dprint( "\tSurface textures = %d\n", surface->numTextures );
 
 		/* according to the spec, this should be the same as the geo's number of tris */
 		uint32_t numTriangles = PlReadInt32( file, false, NULL );
@@ -348,6 +351,7 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 			PlReportErrorF( PL_RESULT_FILEERR, "invalid number of triangles in SRFB (%u != %u)", numTriangles, cpjModel.numTriangles );
 			return NULL;
 		}
+		dprint( "\tSurface triangles = %u\n", numTriangles );
 
 		uint32_t ofsTriangles = PlReadInt32( file, false, NULL );
 
@@ -362,6 +366,7 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 			uint32_t ofsName = PlReadInt32( file, false, NULL );
 			ReadName( file, baseOffset + ofsName, surface->textures[ i ], sizeof( surface->textures[ i ] ) );
 			PlReadInt32( file, false, NULL ); /* optional name */
+			dprint( "\tTexture %u = %s\n", i, surface->textures[ i ] );
 		}
 
 		PlFileSeek( file, baseOffset + ofsUVCoords, PL_SEEK_SET );
@@ -377,11 +382,11 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 			for ( unsigned int j = 0; j < 3; ++j ) {
 				surface->triangles[ i ].uvIndex[ j ] = PlReadInt16( file, false, NULL );
 			}
-			surface->triangles[ i ].texture = PlReadInt8( file, NULL );
+			surface->triangles[ i ].texture = ( unsigned char ) PlReadInt8( file, NULL );
 			PlReadInt8( file, NULL );
 			PlReadInt32( file, false, NULL );
 
-			surface->triangles[ i ].smoothingGroup = PlReadInt8( file, NULL );
+			surface->triangles[ i ].smoothingGroup = ( unsigned char ) PlReadInt8( file, NULL );
 			if ( ( surface->triangles[ i ].smoothingGroup + 1 ) > cpjModel.numSmoothingGroups ) {
 				cpjModel.numSmoothingGroups = surface->triangles[ i ].smoothingGroup + 1;
 			}
@@ -506,6 +511,10 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 			                                   &PL_COLOUR_WHITE,
 			                                   &surface->uvCoords[ surface->triangles[ j ].uvIndex[ 2 ] ] );
 
+			meshes[ i ]->vertices[ x ].weightIndex = &cpjModel.vertices[ cpjModel.triangles[ j ].x ] - cpjModel.vertices;
+			meshes[ i ]->vertices[ y ].weightIndex = &cpjModel.vertices[ cpjModel.triangles[ j ].y ] - cpjModel.vertices;
+			meshes[ i ]->vertices[ z ].weightIndex = &cpjModel.vertices[ cpjModel.triangles[ j ].z ] - cpjModel.vertices;
+
 			if ( surface->triangles[ j ].texture != i ) {
 				continue;
 			}
@@ -519,12 +528,16 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 	}
 	PL_DELETE( normals );
 
-	PLMSkeletalModelData skeletalModelData;
-	SetupSkeletalData( &cpjModel, &skeletalModelData );
-
-	PLMModel *model = PlmCreateSkeletalModel( meshes, cpjModel.surfaces[ 0 ].numTextures,
-	                                          skeletalModelData.bones, skeletalModelData.numBones,
-	                                          skeletalModelData.weights, skeletalModelData.numBoneWeights );
+	PLMModel *model;
+	if ( cpjModel.numBones > 0 ) {
+		PLMSkeletalModelData skeletalModelData;
+		SetupSkeletalData( &cpjModel, &skeletalModelData );
+		model = PlmCreateSkeletalModel( meshes, cpjModel.surfaces[ 0 ].numTextures,
+		                                skeletalModelData.bones, skeletalModelData.numBones,
+		                                skeletalModelData.weights, skeletalModelData.numBoneWeights );
+	} else {
+		model = PlmCreateStaticModel( meshes, cpjModel.surfaces[ 0 ].numTextures );
+	}
 
 	model->numMaterials = cpjModel.surfaces[ 0 ].numTextures;
 	model->materials = PL_NEW_( PLPath, model->numMaterials );
