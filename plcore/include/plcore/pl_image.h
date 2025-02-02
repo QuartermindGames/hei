@@ -124,6 +124,7 @@ enum {
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_TEX, 16 ),
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_ANGEL_TEX, 17 ),
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_DTX, 18 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_HSM, 19 ),
 };
 
 PL_EXTERN_C
@@ -172,6 +173,14 @@ PLImage *PlCropImage( PLImage *image, unsigned int newWidth, unsigned int newHei
 void PlBlockDecompressImageDXT1( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image );
 void PlBlockDecompressImageDXT3( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image );
 void PlBlockDecompressImageDXT5( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image );
+
+PLImage *PlParse3dfImage( PLFile *file );
+PLImage *PlParseFtxImage( PLFile *file );
+PLImage *PlParseTimImage( PLFile *file );
+PLImage *PlParseSwlImage( PLFile *file );
+PLImage *PlParseQoiImage( PLFile *file );
+PLImage *PlParseDdsImage( PLFile *file );
+PLImage *PlParseHsmImage( PLFile *file );
 
 #endif
 

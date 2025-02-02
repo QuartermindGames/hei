@@ -124,6 +124,7 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	        {PL_IMAGE_FILEFORMAT_TEX,       "tex",  PlParse3drTexImage_  },
 	        {PL_IMAGE_FILEFORMAT_ANGEL_TEX, "tex",  PlParseAngelTexImage_},
 	        {PL_IMAGE_FILEFORMAT_DTX,       "dtx",  PlParseDtxImage_     },
+	        {PL_IMAGE_FILEFORMAT_HSM,       "hsm",  PlParseHsmImage      },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
