@@ -25,4 +25,9 @@ PLHashTableNode *PlGetNextHashTableNode( PLHashTableNode *hashTableNode );
 void *PlGetHashTableNodeUserData( PLHashTableNode *hashTableNode );
 void PlSetHashTableNodeUserData( PLHashTableNode *hashTableNode, void *value );
 
+#define PL_ITERATE_HASHED_LIST( VAR, TYPE, LIST, ITR )                                               \
+	for ( PLHashTableNode * ( ITR ) = PlGetFirstHashTableNode( LIST );                               \
+	      ( ITR ) != NULL && ( ( ( VAR ) = ( TYPE * ) PlGetHashTableNodeUserData( ITR ) ) != NULL ); \
+	      ( ITR ) = PlGetNextHashTableNode( ITR ) )
+
 PL_EXTERN_C_END
