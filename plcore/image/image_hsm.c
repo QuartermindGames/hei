@@ -41,6 +41,7 @@ PLImage *PlParseHsmImage( PLFile *file ) {
 	// not currently sure of these...
 	PL_READUINT32( file, true, &status );
 	PL_READUINT32( file, true, &status );
+	PL_READUINT16( file, true, &status );
 	if ( !status ) {
 		return NULL;
 	}
