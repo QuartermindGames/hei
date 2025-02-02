@@ -96,6 +96,7 @@ mounted packages before falling back to the local FS
 | Haven DAT    | Haven Call of the King                                                | C             | R    |
 | VSR          | Sentient                                                              | C             | R    |
 | ALL          | [The Last Job](https://www.gamesthatwerent.com/2024/09/the-last-job/) | B             | R    |
+| P5CK         | Free Radical Design games                                             | B             | R    |
 
 ## plgraphics
 - Provides a relatively simple abstraction layer
@@ -107,7 +108,7 @@ mounted packages before falling back to the local FS
 ## plmodel
 
 Model API supports static and animated per-vertex/skeletal formats.
-This hasn't received as much attention so support is very limited (.
+This hasn't received as much attention so support is very limited.
 
 | Format         | Usages                  | Support Level | Mode |
 |----------------|-------------------------|---------------|------|

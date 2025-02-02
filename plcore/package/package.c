@@ -21,7 +21,7 @@ typedef struct BlstUser {
 } BlstUser;
 
 static unsigned int BlstCbIn( void *how, unsigned char **buf ) {
-	BlstUser *user = ( BlstUser * ) how;
+	BlstUser *user = how;
 	if ( user->buffer == NULL ) {
 		return 0;
 	}
@@ -31,7 +31,7 @@ static unsigned int BlstCbIn( void *how, unsigned char **buf ) {
 }
 
 static int BlstCbOut( void *how, unsigned char *buf, unsigned int len ) {
-	BlstUser *user = ( BlstUser * ) how;
+	BlstUser *user = how;
 	if ( user->length >= user->maxLength ) {
 		return 1;
 	}
@@ -306,6 +306,7 @@ void PlRegisterStandardPackageLoaders( unsigned int flags ) {
 #if ( RAR_SUPPORTED == 1 )
 	        {PL_PACKAGE_LOAD_FORMAT_RAR,         "rar", PlParseRarPackage_     },
 #endif
+	        {PL_PACKAGE_LOAD_FORMAT_FRD_PAK,     "pak", PlParseFrdPakPackage_  },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaders ); ++i ) {

@@ -27,6 +27,12 @@ static PLPackage *FTactics_PAK_ParseFile( PLFile *file ) {
 		return NULL;
 	}
 
+	//TODO: urgh need a better way of validating this...
+	if ( numFiles == 0 || numFiles > INT16_MAX ) {
+		PlReportErrorF( PL_RESULT_FILETYPE, "invalid number of files in package" );
+		return NULL;
+	}
+
 	PakIndex *indices = PlCAllocA( numFiles, sizeof( PakIndex ) );
 	if ( indices == NULL ) {
 		return NULL;
