@@ -152,10 +152,18 @@ inline static bool PlIsAabbIntersectingLine( const PLCollisionAABB *bounds, cons
 	return false;
 }
 
-PLCollision PlIsAabbIntersectingPlane( const PLCollisionAABB *aabb, const PLCollisionPlane *plane );
-
 bool PlIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere );
 PLCollision PlIsSphereIntersectingPlane( const PLCollisionSphere *sphere, const PLCollisionPlane *plane );
+
+/**
+ * Tests if an AABB is intersecting with a plane, and returns the point of intersection.
+ *
+ * @param aabb		Input AABB to test against.
+ * @param plane		Input plane to test again.
+ * @param result	Output result.
+ * @return			True on intersection, otherwise false.
+ */
+bool PlIsAabbIntersectingPlane( const PLCollisionAABB *aabb, const PLCollisionPlane *plane, PLCollision *result );
 
 /* https://github.com/erich666/GraphicsGems/blob/master/gemsii/intersect/intsph.c */
 inline static bool PlIsRayIntersectingSphere( const PLCollisionSphere *sphere, const PLCollisionRay *ray, float *enterDistance, float *leaveDistance ) {
