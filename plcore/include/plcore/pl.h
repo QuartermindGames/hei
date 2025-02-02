@@ -42,11 +42,7 @@ support.
 #	include <string.h>
 #	include <ctype.h>
 #	include <math.h>
-#	include <setjmp.h>
 #	include <time.h>
-
-#	include <sys/stat.h>
-#	include <sys/types.h>
 #endif
 
 #ifdef __cplusplus
