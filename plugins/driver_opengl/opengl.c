@@ -1233,7 +1233,7 @@ static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *l
 	/* built-ins */
 #define insert( str ) dstPos = InsertString( ( str ), &dstBuffer, &actualLength, &maxLength )
 	if ( head ) {
-		insert( "#version 150 core\n" );//OpenGL 3.2 == GLSL 150
+		insert( "#version 430 core\n" );//OpenGL 3.2 == GLSL 150
 		insert( "uniform mat4 pl_model;\n" );
 		insert( "uniform mat4 pl_view;\n" );
 		insert( "uniform mat4 pl_proj;\n" );
