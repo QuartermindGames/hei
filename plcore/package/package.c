@@ -82,9 +82,11 @@ static void *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 
 	if ( pi->compressionType != PL_COMPRESSION_NONE ) {
 		switch ( pi->compressionType ) {
-			default:
+			default: {
 				PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported compression type for packages" );
-				break;
+				PL_DELETE( dataPtr );
+				return NULL;
+			}
 			case PL_COMPRESSION_DEFLATE:
 			case PL_COMPRESSION_GZIP: {
 				uint8_t *decompressedPtr = PL_NEW_( uint8_t, pi->fileSize );
@@ -281,32 +283,33 @@ void PlRegisterStandardPackageLoaders( unsigned int flags ) {
 	} PackageLoader;
 
 	static const PackageLoader loaders[] = {
-	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "zip", PlParseZipPackage      },
-	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pak", PlParseZipPackage      },
-	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk3", PlParseZipPackage      },
-	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk4", PlParseZipPackage      },
-	        {PL_PACKAGE_LOAD_FORMAT_WAD_DOOM,    "wad", PlParseWadPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_WAD_QUAKE,   "wad", PlParseQWadPackage_    },
-	        {PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mad", PlParseMadPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mtd", PlParseMadPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_PAK_QUAKE,   "pak", PlParsePakPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_BIN_FRESH,   "bin", PlParseFreshBinPackage_},
-	        {PL_PACKAGE_LOAD_FORMAT_DFS,         "dfs", PlParseDfsPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_VPK_VTMB,    "vpk", PlParseVpkPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_GRP,         "grp", PlParseGrpPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_VPP,         "vpp", PlParseVppPackage      },
-	        {PL_PACKAGE_LOAD_FORMAT_OPK,         "opk", PlParseOpkPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_INU,         "inu", PlParseInuPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_ALL_ACCLAIM, "all", PlParseAllPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_AFS,         "afs", PlParseAfsPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_AHF,         "ahf", PlParseAhfPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_DAT_ANGEL,   "dat", PlParseAngelDatPackage_},
-	        {PL_PACKAGE_LOAD_FORMAT_HAL,         "hal", PlParseHalPackage_     },
-	        {PL_PACKAGE_LOAD_FORMAT_DAT_ICE3D,   "dat", PlParseIce3DDatPackage_},
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "zip",   PlParseZipPackage      },
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pak",   PlParseZipPackage      },
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk3",   PlParseZipPackage      },
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "pk4",   PlParseZipPackage      },
+	        {PL_PACKAGE_LOAD_FORMAT_ZIP,         "cache", PlParseZipPackage      },
+	        {PL_PACKAGE_LOAD_FORMAT_WAD_DOOM,    "wad",   PlParseWadPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_WAD_QUAKE,   "wad",   PlParseQWadPackage_    },
+	        {PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mad",   PlParseMadPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_MAD_GREMLIN, "mtd",   PlParseMadPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_PAK_QUAKE,   "pak",   PlParsePakPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_BIN_FRESH,   "bin",   PlParseFreshBinPackage_},
+	        {PL_PACKAGE_LOAD_FORMAT_DFS,         "dfs",   PlParseDfsPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_VPK_VTMB,    "vpk",   PlParseVpkPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_GRP,         "grp",   PlParseGrpPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_VPP,         "vpp",   PlParseVppPackage      },
+	        {PL_PACKAGE_LOAD_FORMAT_OPK,         "opk",   PlParseOpkPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_INU,         "inu",   PlParseInuPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_ALL_ACCLAIM, "all",   PlParseAllPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_AFS,         "afs",   PlParseAfsPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_AHF,         "ahf",   PlParseAhfPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_DAT_ANGEL,   "dat",   PlParseAngelDatPackage_},
+	        {PL_PACKAGE_LOAD_FORMAT_HAL,         "hal",   PlParseHalPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_DAT_ICE3D,   "dat",   PlParseIce3DDatPackage_},
 #if ( RAR_SUPPORTED == 1 )
-	        {PL_PACKAGE_LOAD_FORMAT_RAR,         "rar", PlParseRarPackage_     },
+	        {PL_PACKAGE_LOAD_FORMAT_RAR,         "rar",   PlParseRarPackage_     },
 #endif
-	        {PL_PACKAGE_LOAD_FORMAT_FRD_PAK,     "pak", PlParseFrdPakPackage_  },
+	        {PL_PACKAGE_LOAD_FORMAT_FRD_PAK,     "pak",   PlParseFrdPakPackage_  },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaders ); ++i ) {
