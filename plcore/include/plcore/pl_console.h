@@ -33,6 +33,9 @@ PL_EXTERN_C
  * to catch the case in which it might not be registered */
 #define PL_LOG_INIT_LEVEL ( -1 )
 
+#define PL_VAR_VALUE_LENGTH 512
+typedef char PLConsoleString[ PL_VAR_VALUE_LENGTH ];
+
 /* todo: make this structure private */
 typedef struct PLConsoleVariable {
 	char *name;
@@ -44,7 +47,6 @@ typedef struct PLConsoleVariable {
 
 	/////////////////////////////
 
-#define PL_VAR_VALUE_LENGTH 512
 
 	union {
 		float f_value;
