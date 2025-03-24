@@ -897,7 +897,7 @@ static void GLUploadMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 
 	if ( mesh->buffers[ BUFFER_ELEMENT_DATA ] != 0 ) {
 		XGL_CALL( glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mesh->buffers[ BUFFER_ELEMENT_DATA ] ) );
-		XGL_CALL( glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( unsigned int ) * mesh->num_indices, &mesh->indices[ 0 ], drawMode ) );
+		XGL_CALL( glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( GLuint ) * mesh->num_indices, &mesh->indices[ 0 ], drawMode ) );
 	}
 
 	mesh->isDirty = false;
@@ -1055,13 +1055,13 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 		if ( mesh->numSubMeshes > 0 ) {
 			XGL_CALL( glMultiDrawElements( mode, mesh->subMeshes, GL_UNSIGNED_INT, NULL, mesh->numSubMeshes ) );
 		} else {
-			XGL_CALL( glDrawRangeElements( mode, mesh->startIndex, mesh->num_indices, mesh->endIndex, GL_UNSIGNED_INT, 0 ) );
+			XGL_CALL( glDrawElements( mode, mesh->range, GL_UNSIGNED_INT, ( void * ) ( mesh->start * sizeof( GLuint ) ) ) );
 		}
 	} else {
 		if ( mesh->numSubMeshes > 0 ) {
 			XGL_CALL( glMultiDrawArrays( mode, mesh->firstSubMeshes, mesh->subMeshes, mesh->numSubMeshes ) );
 		} else {
-			XGL_CALL( glDrawArrays( mode, mesh->startIndex, mesh->num_verts ) );
+			XGL_CALL( glDrawArrays( mode, mesh->start, mesh->num_verts ) );
 		}
 	}
 
