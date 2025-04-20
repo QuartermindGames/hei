@@ -29,6 +29,7 @@ PL_EXTERN_C
 void *PlCompress_Deflate( const void *src, size_t srcLength, size_t *dstLength );
 void *PlCompress_LZRW1( const void *src, size_t length, size_t *outLength );
 
+void *PlDecompress_Deflate( const void *src, size_t srcLength, size_t *dstLength, bool raw );
 void *PlDecompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength );
 
 PL_EXTERN_C_END

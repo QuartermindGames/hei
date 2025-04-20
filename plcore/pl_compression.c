@@ -1,5 +1,6 @@
-/* SPDX-License-Identifier: MIT */
-/* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
+// SPDX-License-Identifier: MIT
+// Hei Platform Library
+// Copyright © 2020-2025 Quartermind Games, Mark E. Sowden <hogsy@snortysoft.net>
 
 #include <plcore/pl_compression.h>
 
@@ -23,6 +24,39 @@ void *PlCompress_Deflate( const void *src, size_t srcLength, size_t *dstLength )
 
 	*dstLength = compressedLength;
 	return compressedData;
+}
+
+void *PlDecompress_Deflate( const void *src, size_t srcLength, size_t *dstLength, bool raw ) {
+	uint8_t *dst = PL_NEW_( uint8_t, srcLength );
+
+	mz_stream stream;
+	PL_ZERO_( stream );
+	stream.next_in = src;
+	stream.avail_in = srcLength;
+	stream.next_out = dst;
+	stream.avail_out = *dstLength;
+
+	int status = mz_inflateInit2( &stream, raw ? -MZ_DEFAULT_WINDOW_BITS : MZ_DEFAULT_WINDOW_BITS );
+	if ( status == MZ_OK ) {
+		status = mz_inflate( &stream, MZ_FINISH );
+		if ( status == MZ_STREAM_END ) {
+			*dstLength = stream.total_out;
+			if ( ( status = mz_inflateEnd( &stream ) ) != MZ_OK ) {
+				PL_DELETEN( dst );
+			}
+		} else {
+			mz_inflateEnd( &stream );
+			PL_DELETEN( dst );
+		}
+	} else {
+		PL_DELETEN( dst );
+	}
+
+	if ( dst == NULL ) {
+		PlReportErrorF( PL_RESULT_FILEERR, "decompression failed (%s)", zError( status ) );
+	}
+
+	return dst;
 }
 
 /****************************************

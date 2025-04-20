@@ -96,7 +96,7 @@ static void *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 				dataPtr = decompressedPtr;
 				if ( status != Z_OK ) {
 					PL_DELETE( dataPtr );
-					PlReportErrorF( PL_RESULT_FILEREAD, "failed to decompress buffer (%s)", zError( status ) );
+					PlReportErrorF( PL_RESULT_FILEERR, "failed to decompress buffer (%s)", zError( status ) );
 					return NULL;
 				}
 				break;
