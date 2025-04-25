@@ -1943,7 +1943,8 @@ static void MessageCallback(
 static PLFunctionResult GLInitialize( void ) {
 	glewExperimental = true;
 	GLenum err = glewInit();
-	if ( err != GLEW_OK ) {
+	// under wayland, glx requests aren't available; https://github.com/nigels-com/glew/issues/172
+	if ( err != GLEW_OK && err != GLEW_ERROR_NO_GLX_DISPLAY ) {
 		gInterface->core->ReportError( PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", ( char * ) glewGetErrorString( err ) );
 		return PL_RESULT_GRAPHICSINIT;
 	}
