@@ -36,4 +36,12 @@ void PlDestroyVectorArrayElements( PLVectorArray *vectorArray, void ( *elementDe
 void PlDestroyVectorArray( PLVectorArray *vectorArray );
 void PlDestroyVectorArrayEx( PLVectorArray *vectorArray, void ( *elementDeleter )( void *user ) );
 
+/**
+ * This destroys the vector array instance, but leaves the allocated data behind.
+ * Useful if you want to take ownership of it via PlGetVectorArrayDataEx.
+ *
+ * @param vectorArray Instance of the vector array.
+ */
+void PlDestroyVectorArrayContainer( PLVectorArray *vectorArray );
+
 PL_EXTERN_C_END

@@ -136,3 +136,7 @@ void PlDestroyVectorArrayEx( PLVectorArray *vectorArray, void ( *elementDeleter 
 	PlDestroyVectorArrayElements( vectorArray, elementDeleter );
 	PlDestroyVectorArray( vectorArray );
 }
+
+void PlDestroyVectorArrayContainer( PLVectorArray *vectorArray ) {
+	PL_DELETE( vectorArray );
+}
