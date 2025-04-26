@@ -77,6 +77,10 @@ void PlSetLinkedListNodeUserData( PLLinkedListNode *node, void *userPtr ) {
  * Keep in mind this does not free any user data!
  */
 void PlDestroyLinkedListNode( PLLinkedListNode *node ) {
+	if ( node == NULL ) {
+		return;
+	}
+
 	if ( node->prev != NULL ) {
 		node->prev->next = node->next;
 	}
