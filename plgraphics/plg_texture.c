@@ -141,12 +141,6 @@ void PlgSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter ) {
 		return;
 	}
 
-	// If the texture doesn't use a mipmap, but the filter mode requested does, ignore it
-	if ( ( texture->flags & PLG_TEXTURE_FLAG_NOMIPS ) && !( ( filter == PLG_TEXTURE_FILTER_NEAREST ) || ( filter == PLG_TEXTURE_FILTER_LINEAR ) ) ) {
-		// todo: report this as an error
-		return;
-	}
-
 	CallGfxFunction( SetTextureFilter, texture, filter );
 }
 

@@ -703,34 +703,77 @@ static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 		}
 	}
 
-	if ( upload->levels == 1 && !( texture->flags & PLG_TEXTURE_FLAG_NOMIPS ) ) {
+	if ( upload->levels == 1 && !( texture->filter == PLG_TEXTURE_FILTER_LINEAR || texture->filter == PLG_TEXTURE_FILTER_NEAREST ) ) {
 		XGL_CALL( glGenerateMipmap( GL_TEXTURE_2D ) );
+		texture->flags &= ~PLG_TEXTURE_FLAG_NOMIPS;
+	} else if ( upload->levels > 1 ) {
+		texture->flags &= ~PLG_TEXTURE_FLAG_NOMIPS;
+	} else {
+		texture->flags |= PLG_TEXTURE_FLAG_NOMIPS;
+	}
+}
+
+static GLenum target_to_query( GLenum target ) {
+	switch ( target ) {
+		default:
+			return 0;
+		case GL_TEXTURE_2D:
+			return GL_TEXTURE_BINDING_2D;
+		case GL_TEXTURE_3D:
+			return GL_TEXTURE_BINDING_3D;
+		case GL_TEXTURE_CUBE_MAP:
+			return GL_TEXTURE_CUBE_MAP;
+		case GL_TEXTURE_2D_ARRAY:
+			return GL_TEXTURE_BINDING_2D_ARRAY;
+		case GL_TEXTURE_BUFFER:
+			return GL_TEXTURE_BINDING_BUFFER;
+		case GL_TEXTURE_RECTANGLE:
+			return GL_TEXTURE_BINDING_RECTANGLE;
 	}
 }
 
 static void GLSetTextureAnisotropy( PLGTexture *texture, uint32_t value ) {
-	if ( !GLEW_EXT_texture_filter_anisotropic ) {
-		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "EXT_texture_filter_anisotropic is unsupported" );
-		return;
-	}
+	GLenum target = ( ( GLTexture * ) texture->driver )->target;
+	GLuint id = ( ( GLTexture * ) texture->driver )->id;
+	if ( XGL_VERSION( 4, 6 ) ) {
+		XGL_CALL( glTextureParameterf( id, GL_TEXTURE_MAX_ANISOTROPY, ( float ) value ) );
+	} else if ( GLEW_EXT_texture_filter_anisotropic ) {
+		GLenum query = target_to_query( target );
+		assert( query != 0 );
 
-	GLBindTexture( texture );
-	XGL_CALL( glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, ( float ) value ) );
+		GLint curId;
+		XGL_CALL( glGetIntegerv( query, &curId ) );
+
+		XGL_CALL( glBindTexture( target, id ) );
+		XGL_CALL( glTexParameterf( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, ( float ) value ) );
+		XGL_CALL( glBindTexture( target, curId ) );
+	} else {
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "EXT_texture_filter_anisotropic is unsupported" );
+	}
 }
 
 static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter ) {
-	GLBindTexture( texture );
-
-	if ( filter == PLG_TEXTURE_FILTER_LINEAR || filter == PLG_TEXTURE_FILTER_NEAREST ) {
-		texture->flags |= PLG_TEXTURE_FLAG_NOMIPS;
-	}
-
 	GLenum target = ( ( GLTexture * ) texture->driver )->target;
 	if ( target != GL_TEXTURE_2D_MULTISAMPLE ) {
 		int min, mag;
 		GL_TranslateTextureFilterFormat( filter, &min, &mag );
-		XGL_CALL( glTexParameteri( target, GL_TEXTURE_MAG_FILTER, mag ) );
-		XGL_CALL( glTexParameteri( target, GL_TEXTURE_MIN_FILTER, min ) );
+
+		GLuint id = ( ( GLTexture * ) texture->driver )->id;
+		if ( XGL_VERSION( 4, 5 ) ) {
+			XGL_CALL( glTextureParameteri( id, GL_TEXTURE_MAG_FILTER, mag ) );
+			XGL_CALL( glTextureParameteri( id, GL_TEXTURE_MIN_FILTER, min ) );
+		} else {
+			GLenum query = target_to_query( target );
+			assert( query != 0 );
+
+			GLint curId;
+			XGL_CALL( glGetIntegerv( query, &curId ) );
+
+			XGL_CALL( glBindTexture( target, id ) );
+			XGL_CALL( glTexParameteri( target, GL_TEXTURE_MAG_FILTER, mag ) );
+			XGL_CALL( glTexParameteri( target, GL_TEXTURE_MIN_FILTER, min ) );
+			XGL_CALL( glBindTexture( target, curId ) );
+		}
 	}
 
 	texture->filter = filter;
