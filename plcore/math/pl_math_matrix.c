@@ -27,7 +27,7 @@ PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *vi
 	return screen;
 }
 
-PLVector3 PlConvertScreenToWorld( PLVector3 windowCoordinate, PLMatrix4 modelView, PLMatrix4 projection, const int *viewport ) {
+PLVector3 PlConvertScreenToWorld( PLVector3 windowCoordinate, PLMatrix4 modelView, PLMatrix4 projection, const int viewport[ 4 ] ) {
 	windowCoordinate.x = ( windowCoordinate.x - ( float ) ( viewport[ 0 ] ) ) / ( float ) ( viewport[ 2 ] );
 	windowCoordinate.y = ( windowCoordinate.y - ( float ) ( viewport[ 1 ] ) ) / ( float ) ( viewport[ 3 ] );
 

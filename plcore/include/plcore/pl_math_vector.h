@@ -25,6 +25,15 @@ typedef struct PLVector4 {
 #define PL_VECTOR4( X, Y, Z, W ) \
 	( PLVector4 ) { X, Y, Z, W }
 
+#define PL_VEC2TO3( X ) PL_VECTOR3( X.x, X.y, 0.0f )
+#define PL_VEC2TO4( X ) PL_VECTOR4( X.x, X.y, 0.0f, 0.0f )
+
+#define PL_VEC3TO2( X ) PL_VECTOR2( X.x, X.y )
+#define PL_VEC3TO4( X ) PL_VECTOR4( X.x, X.y, X.z, 0.0f )
+
+#define PL_VEC4TO2( X ) PL_VECTOR2( X.x, X.y )
+#define PL_VEC4TO3( X ) PL_VECTOR3( X.x, X.y, X.z )
+
 /* these will give you the number of elements in each type
  * of vector. 												*/
 #define PL_MVECNUM( x ) ( sizeof( x ) / sizeof( float ) )
