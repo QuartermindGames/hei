@@ -82,13 +82,11 @@ void PlgGetViewport( int *x, int *y, int *width, int *height );
 void PlgClipViewport( int x, int y, int width, int height );
 void PlgSetViewport( int x, int y, int width, int height );
 
-/**
- * This will typically be called by the SetupCamera
- * method, but if you want a little more control you
- * can call this instead.
- *
- * @param camera Instance of the camera.
- */
+// Frustum; it's typically not necessary to call these yourself unless you want more specific behaviour
+// Setup camera will typically call this based on the settings you've provided for your camera.
+
+void PlgMakeFrustumPlanes( const PLMatrix4 *matrix, PLGViewFrustum outFrustum );
+void PlgSetupCameraFrustumFromMatrix( PLGCamera *camera, const PLMatrix4 *projMatrix, const PLMatrix4 *viewMatrix );
 void PlgSetupCameraFrustum( PLGCamera *camera );
 
 /***** TEMPORARY CRAP START *****/

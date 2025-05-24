@@ -61,7 +61,7 @@ float PlgGetCameraFieldOfView( const PLGCamera *camera ) {
 	return camera->fov;
 }
 
-static void MakeFrustumPlanes( const PLMatrix4 *matrix, PLGViewFrustum outFrustum ) {
+void PlgMakeFrustumPlanes( const PLMatrix4 *matrix, PLGViewFrustum outFrustum ) {
 	// Right
 	outFrustum[ PLG_FRUSTUM_PLANE_RIGHT ].x = matrix->m[ 3 ] - matrix->m[ 0 ];
 	outFrustum[ PLG_FRUSTUM_PLANE_RIGHT ].y = matrix->m[ 7 ] - matrix->m[ 4 ];
@@ -100,9 +100,13 @@ static void MakeFrustumPlanes( const PLMatrix4 *matrix, PLGViewFrustum outFrustu
 	outFrustum[ PLG_FRUSTUM_PLANE_NEAR ] = PlNormalizePlane( outFrustum[ PLG_FRUSTUM_PLANE_NEAR ] );
 }
 
+void PlgSetupCameraFrustumFromMatrix( PLGCamera *camera, const PLMatrix4 *projMatrix, const PLMatrix4 *viewMatrix ) {
+	PLMatrix4 viewProj = PlMultiplyMatrix4( projMatrix, viewMatrix );
+	PlgMakeFrustumPlanes( &viewProj, camera->frustum );
+}
+
 void PlgSetupCameraFrustum( PLGCamera *camera ) {
-	PLMatrix4 viewProj = PlMultiplyMatrix4( &camera->internal.proj, &camera->internal.view );
-	MakeFrustumPlanes( &viewProj, camera->frustum );
+	PlgSetupCameraFrustumFromMatrix( camera, &camera->internal.proj, &camera->internal.view );
 }
 
 static void SetupCameraAngles( PLGCamera *camera ) {
@@ -113,7 +117,7 @@ static void SetupCameraAngles( PLGCamera *camera ) {
 	PlRotateMatrix3f( PL_DEG2RAD( -camera->angles.y ), 0.0f, 1.0f, 0.0f );
 	PlRotateMatrix3f( PL_DEG2RAD( -camera->angles.z ), 0.0f, 0.0f, 1.0f );
 
-	PlTranslateMatrix( ( PLVector3 ){ -camera->position.x, -camera->position.y, -camera->position.z } );
+	PlTranslateMatrix( ( PLVector3 ) { -camera->position.x, -camera->position.y, -camera->position.z } );
 
 	camera->internal.view = *PlGetMatrix( PL_VIEW_MATRIX );
 }
