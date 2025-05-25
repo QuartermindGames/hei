@@ -27,21 +27,20 @@ PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *vi
 	return screen;
 }
 
-PLVector3 PlConvertScreenToWorld( PLVector3 windowCoordinate, PLMatrix4 modelView, PLMatrix4 projection, const int viewport[ 4 ] ) {
+PLVector3 PlConvertScreenToWorld( PLVector2 windowCoordinate, const PLMatrix4 *viewMatrix, const PLMatrix4 *projMatrix, const int *viewport ) {
 	windowCoordinate.x = ( windowCoordinate.x - ( float ) ( viewport[ 0 ] ) ) / ( float ) ( viewport[ 2 ] );
 	windowCoordinate.y = ( windowCoordinate.y - ( float ) ( viewport[ 1 ] ) ) / ( float ) ( viewport[ 3 ] );
 
 	windowCoordinate.x = windowCoordinate.x * 2.0f - 1.0f;
 	windowCoordinate.y = windowCoordinate.y * 2.0f - 1.0f;
-	windowCoordinate.z = windowCoordinate.z * 2.0f - 1.0f;
 
 	PLVector4 rayClip = PL_VECTOR4( windowCoordinate.x, windowCoordinate.y, -1.0f, 1.0f );
-	PLMatrix4 invProj = PlInverseMatrix4( projection );
+	PLMatrix4 invProj = PlInverseMatrix4( *projMatrix );
 	PLVector4 rayEye = PlTransformVector4( &rayClip, &invProj );
 
 	rayEye = PL_VECTOR4( rayEye.x, rayEye.y, -1.0f, 0.0f );
 
-	PLMatrix4 invModel = PlInverseMatrix4( modelView );
+	PLMatrix4 invModel = PlInverseMatrix4( *viewMatrix );
 	PLVector4 objPos = PlTransformVector4( &rayEye, &invModel );
 
 	return PL_VECTOR3( objPos.x, objPos.y, objPos.z );
@@ -85,7 +84,7 @@ PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up ) {
 	m.mm[ 1 ][ 2 ] = z.y;
 	m.mm[ 2 ][ 2 ] = z.z;
 
-	PLMatrix4 pos = PlTranslateMatrix4( ( PLVector3 ){ -eye.x, -eye.y, -eye.z } );
+	PLMatrix4 pos = PlTranslateMatrix4( ( PLVector3 ) { -eye.x, -eye.y, -eye.z } );
 	return PlMultiplyMatrix4( &m, &pos );
 }
 

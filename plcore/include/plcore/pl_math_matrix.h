@@ -44,10 +44,9 @@ PLVector3 PlGetMatrix4Translation( const PLMatrix4 *m );
 PLVector3 PlGetMatrix4Angle( const PLMatrix4 *m );
 
 PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix, const int *viewport, float *w, bool flip );
-PLVector3 PlConvertScreenToWorld( PLVector3 windowCoordinate, PLMatrix4 modelView, PLMatrix4 projection, const int viewport[ 4 ] );
+PLVector3 PlConvertScreenToWorld( PLVector2 windowCoordinate, const PLMatrix4 *viewMatrix, const PLMatrix4 *projMatrix, const int *viewport );
 
 void PlExtractMatrix4Directions( const PLMatrix4 *matrix, PLVector3 *left, PLVector3 *up, PLVector3 *forward );
-;
 
 #ifdef __cplusplus
 namespace hei {
