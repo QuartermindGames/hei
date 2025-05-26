@@ -467,6 +467,31 @@ const char *PlGetMountLocationPath( const PLFileSystemMount *fileSystemMount ) {
 	return fileSystemMount->path;
 }
 
+PLFileSystemMount *PlGetMountLocationForPath( const char *path ) {
+	if ( path == NULL || *path == '\0' ) {
+		PlReportBasicError( PL_RESULT_INVALID_PARM1 );
+		return NULL;
+	}
+
+	PLFileSystemMount *match = NULL;
+	size_t matchLength = 0;
+	for ( PLFileSystemMount *mount = fs_mount_root; mount != NULL; mount = mount->next ) {
+		size_t mountLength = strlen( mount->path );
+		if ( match != NULL && matchLength >= mountLength ) {
+			continue;
+		}
+
+		if ( strncmp( mount->path, path, mountLength ) == 0 ) {
+			if ( path[ mountLength ] == '\0' || path[ mountLength ] == '/' ) {
+				match = mount;
+				matchLength = mountLength;
+			}
+		}
+	}
+
+	return match;
+}
+
 /****/
 
 PLFunctionResult PlInitFileSystem( void ) {

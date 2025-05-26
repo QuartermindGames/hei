@@ -261,6 +261,15 @@ void PlClearMountedLocations( void );
 PLFileSystemMountType PlGetMountLocationType( const PLFileSystemMount *fileSystemMount );
 const char *PlGetMountLocationPath( const PLFileSystemMount *fileSystemMount );
 
+/**
+ * Attempts to find a mount that matches closely to the given path.
+ * This is unreliable, so probably avoid it!
+ *
+ * @param path	Path to match.
+ * @return		Pointer to a filesystem mount instance on success, otherwise null.
+ */
+PLFileSystemMount *PlGetMountLocationForPath( const char *path );
+
 /****/
 
 void PlClearFileAliases( void );
