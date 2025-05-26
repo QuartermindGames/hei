@@ -15,7 +15,10 @@ PLHashTable *PlCreateHashTable( void );
 void PlDestroyHashTable( PLHashTable *hashTable );
 void PlDestroyHashTableEx( PLHashTable *hashTable, void ( *elementDeleter )( void *user ) );
 void PlClearHashTable( PLHashTable *hashTable );
+
+PLHashTableNode *PlLookupHashTableNode( const PLHashTable *hashTable, const void *key, size_t keySize );
 void *PlLookupHashTableUserData( const PLHashTable *hashTable, const void *key, size_t keySize );
+
 PLHashTableNode *PlInsertHashTableNode( PLHashTable *hashTable, const void *key, size_t keySize, void *value );
 void PlDestroyHashTableNode( PLHashTableNode *hashTableNode );
 unsigned int PlGetNumHashTableNodes( const PLHashTable *hashTable );

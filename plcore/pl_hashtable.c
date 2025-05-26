@@ -75,8 +75,7 @@ void PlClearHashTable( PLHashTable *hashTable ) {
 	hashTable->numNodes = 0;
 }
 
-void *PlLookupHashTableUserData( const PLHashTable *hashTable, const void *key, size_t keySize ) {
-	assert( key != NULL && keySize != 0 );
+PLHashTableNode *PlLookupHashTableNode( const PLHashTable *hashTable, const void *key, size_t keySize ) {
 	if ( key == NULL || keySize == 0 ) {
 		return NULL;
 	}
@@ -85,11 +84,20 @@ void *PlLookupHashTableUserData( const PLHashTable *hashTable, const void *key, 
 	unsigned int index = GET_INDEX( hash );
 	for ( PLHashTableNode *node = hashTable->nodes[ index ]; node != NULL; node = node->next ) {
 		if ( keySize == node->keySize && memcmp( key, node->key, keySize ) == 0 ) {
-			return node->value;
+			return node;
 		}
 	}
 
 	return NULL;
+}
+
+void *PlLookupHashTableUserData( const PLHashTable *hashTable, const void *key, size_t keySize ) {
+	PLHashTableNode *node = PlLookupHashTableNode( hashTable, key, keySize );
+	if ( node == NULL ) {
+		return NULL;
+	}
+
+	return node->value;
 }
 
 PLHashTableNode *PlInsertHashTableNode( PLHashTable *hashTable, const void *key, size_t keySize, void *value ) {
