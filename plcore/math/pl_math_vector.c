@@ -15,7 +15,7 @@ PL_DLL const PLVector4 pl_vecOrigin4 = { 0.0f, 0.0f, 0.0f, 0.0f };
  ****************************************/
 
 PLVector3 PlTransformVector3( const PLVector3 *v, const PLMatrix4 *m ) {
-	return ( PLVector3 ){
+	return ( PLVector3 ) {
 	        ( m->pl_m4pos( 0, 0 ) * v->x ) +
 	                ( m->pl_m4pos( 0, 1 ) * v->y ) +
 	                ( m->pl_m4pos( 0, 2 ) * v->z ) +
@@ -168,6 +168,20 @@ PLVector3 PlScaleVector3F( PLVector3 v, float f ) {
 	return v;
 }
 
+PLVector4 PlScaleVector4( const PLVector4 *v, const PLVector4 *scale ) {
+	return PL_VECTOR4( v->x * scale->x,
+	                   v->y * scale->y,
+	                   v->z * scale->z,
+	                   v->w * scale->w );
+}
+
+PLVector4 PlScaleVector4F( const PLVector4 *v, float scale ) {
+	return PL_VECTOR4( v->x * scale,
+	                   v->y * scale,
+	                   v->z * scale,
+	                   v->w * scale );
+}
+
 /****************************************
  * Inverse
  ****************************************/
@@ -188,7 +202,11 @@ float PlVector2DotProduct( const PLVector2 *a, const PLVector2 *b ) {
 }
 
 float PlVector3DotProduct( PLVector3 v, PLVector3 v2 ) {
-	return ( v.x * v2.x + v.y * v2.y + v.z * v2.z );
+	return v.x * v2.x + v.y * v2.y + v.z * v2.z;
+}
+
+float PlVector4DotProduct( const PLVector4 *a, const PLVector4 *b ) {
+	return a->x * b->x + a->y * b->y + a->z * b->z + a->w * b->w;
 }
 
 /**

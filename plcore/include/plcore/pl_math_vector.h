@@ -81,11 +81,14 @@ PLVector2 PlScaleVector2( const PLVector2 *v, const PLVector2 *scale );
 PLVector2 PlScaleVector2F( const PLVector2 *v, float scale );
 PLVector3 PlScaleVector3( PLVector3 v, PLVector3 v2 );
 PLVector3 PlScaleVector3F( PLVector3 v, float f );
+PLVector4 PlScaleVector4( const PLVector4 *v, const PLVector4 *scale );
+PLVector4 PlScaleVector4F( const PLVector4 *v, float scale );
 
 PLVector3 PlInverseVector3( PLVector3 v );
 
 float PlVector2DotProduct( const PLVector2 *a, const PLVector2 *b );
 float PlVector3DotProduct( PLVector3 v, PLVector3 v2 );
+float PlVector4DotProduct( const PLVector4 *a, const PLVector4 *b );
 float PlGetPlaneDotProduct( const PLVector4 *plane, const PLVector3 *vector );
 
 PLVector3 PlVector3CrossProduct( PLVector3 v, PLVector3 v2 );
