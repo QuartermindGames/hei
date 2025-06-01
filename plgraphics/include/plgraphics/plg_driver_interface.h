@@ -150,7 +150,7 @@ typedef struct PLGDriverImportTable {
 	// v3.2
 	void ( *SetTextureWrapMode )( PLGTexture *texture, PLGTextureWrapMode wrapMode );
 
-	void ( *SetClipPlane )( const PLVector4 *clipPlane );
+	void ( *SetClipPlane )( const PLVector4 *clipPlane, const PLMatrix4 *clipPlaneMatrix, bool transpose );
 } PLGDriverImportTable;
 
 #if !defined( PL_COMPILE_PLUGIN )

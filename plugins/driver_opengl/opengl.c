@@ -853,8 +853,9 @@ static void GLSwizzleTexture( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t
 /////////////////////////////////////////////////////////////
 
 static PLVector4 clipPlane;
+static PLMatrix4 clipPlaneMatrix;
 
-static void GLSetClipPlane( const PLVector4 *clip ) {
+static void GLSetClipPlane( const PLVector4 *clip, const PLMatrix4 *transform, bool transpose ) {
 	if ( clip == NULL ) {
 		glDisable( GL_CLIP_DISTANCE0 );
 		return;
@@ -862,6 +863,11 @@ static void GLSetClipPlane( const PLVector4 *clip ) {
 
 	glEnable( GL_CLIP_DISTANCE0 );
 	clipPlane = *clip;
+
+	clipPlaneMatrix = transform != NULL ? *transform : PlMatrix4Identity();
+	if ( transpose ) {
+		clipPlaneMatrix = PlTransposeMatrix4( &clipPlaneMatrix );
+	}
 }
 
 /////////////////////////////////////////////////////////////
@@ -1006,6 +1012,9 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 	unsigned int slot;
 	if ( ( slot = ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_CLIP_PLANE ] ) != 0 ) {
 		XGL_CALL( glUniform4fv( slot, 1, ( float * ) &clipPlane ) );
+	}
+	if ( ( slot = ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_CLIP_PLANE_MATRIX ] ) != 0 ) {
+		XGL_CALL( glUniformMatrix4fv( slot, 1, GL_FALSE, clipPlaneMatrix.m ) );
 	}
 
 	if ( mesh->primitiveScale != 0.0f ) {
@@ -1282,6 +1291,7 @@ static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *l
 		insert( "uniform mat4 pl_proj;\n" );
 		insert( "uniform mat4 pl_texture;\n" );
 		insert( "uniform vec4 pl_clipplane;\n" );
+		insert( "uniform mat4 pl_clipplane_matrix;\n" );
 		if ( stage->type == PLG_SHADER_TYPE_VERTEX ) {
 			insert( "in vec3 pl_vposition;\n" );
 			insert( "in vec3 pl_vnormal;\n" );
@@ -1535,14 +1545,14 @@ static void GLSetShaderUniformValue( PLGShaderProgram *program, int slot, const 
 	}
 }
 
-static void GLSetShaderUniformMatrix4( PLGShaderProgram *program, int slot, PLMatrix4 value, bool transpose ) {
+static void GLSetShaderUniformMatrix4( PLGShaderProgram *program, int slot, const PLMatrix4 *value, bool transpose ) {
 	PL_UNUSEDVAR( program );
 
 	if ( !XGL_VERSION( 2, 0 ) ) {
 		return;
 	}
 
-	XGL_CALL( glUniformMatrix4fv( slot, 1, transpose ? GL_TRUE : GL_FALSE, value.m ) );
+	XGL_CALL( glUniformMatrix4fv( slot, 1, transpose ? GL_TRUE : GL_FALSE, value->m ) );
 }
 
 static void RegisterShaderProgramData( PLGShaderProgram *program ) {
@@ -1563,6 +1573,7 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 	XGL_CALL( ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_PROJECTION_MATRIX ] = glGetUniformLocation( program->internal.id, "pl_proj" ) );
 	XGL_CALL( ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_TEXTURE_MATRIX ] = glGetUniformLocation( program->internal.id, "pl_texture" ) );
 	XGL_CALL( ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_CLIP_PLANE ] = glGetUniformLocation( program->internal.id, "pl_clipplane" ) );
+	XGL_CALL( ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_CLIP_PLANE_MATRIX ] = glGetUniformLocation( program->internal.id, "pl_clipplane_matrix" ) );
 
 	int num_uniforms = 0;
 	XGL_CALL( glGetProgramiv( program->internal.id, GL_ACTIVE_UNIFORMS, &num_uniforms ) );

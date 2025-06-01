@@ -254,7 +254,7 @@ PL_EXTERN_C
 PLFunctionResult PlgInitializeGraphics( void );
 void PlgShutdownGraphics( void );
 
-void PlgSetClipPlane( const PLVector4 *clip );
+void PlgSetClipPlane( const PLVector4 *clip, const PLMatrix4 *clipMatrix, bool transpose );
 
 PLGShaderStage *PlgCreateShaderStage( PLGShaderStageType type );
 void PlgDestroyShaderStage( PLGShaderStage *stage );

@@ -266,6 +266,6 @@ void PlgStencilOp( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-void PlgSetClipPlane( const PLVector4 *clip ) {
-	CallGfxFunction( SetClipPlane, clip );
+void PlgSetClipPlane( const PLVector4 *clip, const PLMatrix4 *clipMatrix, bool transpose ) {
+	CallGfxFunction( SetClipPlane, clip, clipMatrix, transpose );
 }
