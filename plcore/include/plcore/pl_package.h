@@ -53,6 +53,7 @@ enum {
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_RAR, 19 ),
 #endif
 	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_FRD_PAK, 20 ),
+	PL_BITFLAG( PL_PACKAGE_LOAD_FORMAT_PAK_VENOM, 21 ),
 };
 
 PL_EXTERN_C
@@ -82,6 +83,7 @@ PLPackage *PlLoadZipPackage( const char *path );
 PLPackage *PlParseZipPackage( PLFile *file );
 
 PLPackage *PlParseVppPackage( PLFile *file );
+PLPackage *PlParseVenomPakPackage( PLFile *file );
 
 #	if 0// Write API - excluded for now...
 
