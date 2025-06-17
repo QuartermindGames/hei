@@ -140,21 +140,16 @@ static void WriteSkeletonBlock( FILE *file, const PLMModel *model ) {
 	fprintf( file, "skeleton\ntime 0\n" );
 	if ( model->type == PLM_MODELTYPE_SKELETAL ) {
 		for ( unsigned int i = 0; i < model->internal.skeletal_data.numBones; ++i ) {
-#if 1
-			PLVector3 rotation = PL_VECTOR3( model->internal.skeletal_data.bones[ i ].orientation.x,
-			                                 model->internal.skeletal_data.bones[ i ].orientation.y,
-			                                 model->internal.skeletal_data.bones[ i ].orientation.z );
-#else
 			PLVector3 rotation = PlQuaternionToEuler( &model->internal.skeletal_data.bones[ i ].orientation );
-#endif
 			fprintf( file, "%u %f %f %f %f %f %f\n",
 			         i,                                                   /* bone id */
 			         model->internal.skeletal_data.bones[ i ].position.x, /* bone pos */
 			         model->internal.skeletal_data.bones[ i ].position.y,
 			         model->internal.skeletal_data.bones[ i ].position.z,
-			         rotation.x, /* bone rot */
-			         rotation.y,
-			         rotation.z );
+			         // *sigh* ... we need to flip these around, bad input (will fix later)
+			         rotation.z, /* bone rot */
+			         rotation.x,
+			         rotation.y );
 		}
 	} else {
 		/* write out dummy bone coords! */
@@ -205,21 +200,23 @@ static void WriteTrianglesBlock( FILE *file, const PLMModel *model ) {
 			}
 
 			if ( model->type == PLM_MODELTYPE_SKELETAL ) {
-				SMD_WriteVertex( file,
-				                 model,
-				                 &model->internal.skeletal_data.weights[ model->meshes[ j ]->indices[ k ] ],
-				                 &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k ] ] );
-				k++;
-				SMD_WriteVertex( file,
-				                 model,
-				                 &model->internal.skeletal_data.weights[ model->meshes[ j ]->indices[ k ] ],
-				                 &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k ] ] );
-				k++;
-				SMD_WriteVertex( file,
-				                 model,
-				                 &model->internal.skeletal_data.weights[ model->meshes[ j ]->indices[ k ] ],
-				                 &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k ] ] );
-				k++;
+				const PLGVertex *vx = &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k ] ];
+				const PLGVertex *vy = &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k + 1 ] ];
+				const PLGVertex *vz = &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k + 2 ] ];
+
+				const PLMSkeletalVertex *svx = &model->internal.skeletal_data.vertices[ j ][ model->meshes[ j ]->indices[ k ] ];
+				const PLMSkeletalVertex *svy = &model->internal.skeletal_data.vertices[ j ][ model->meshes[ j ]->indices[ k + 1 ] ];
+				const PLMSkeletalVertex *svz = &model->internal.skeletal_data.vertices[ j ][ model->meshes[ j ]->indices[ k + 2 ] ];
+
+				const PLMBoneWeight *bx = &model->internal.skeletal_data.weights[ svx->weightIndex ];
+				const PLMBoneWeight *by = &model->internal.skeletal_data.weights[ svy->weightIndex ];
+				const PLMBoneWeight *bz = &model->internal.skeletal_data.weights[ svz->weightIndex ];
+
+				SMD_WriteVertex( file, model, bx, vx );
+				SMD_WriteVertex( file, model, by, vy );
+				SMD_WriteVertex( file, model, bz, vz );
+
+				k += 3;
 			} else {
 				SMD_WriteVertex( file, model, NULL, &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k++ ] ] );
 				SMD_WriteVertex( file, model, NULL, &model->meshes[ j ]->vertices[ model->meshes[ j ]->indices[ k++ ] ] );
