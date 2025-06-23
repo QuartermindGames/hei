@@ -237,6 +237,11 @@ static PLMModel *CreateSkeletalModel( PLMModel *model, PLMBone *bones, unsigned 
 
 	model->internal.skeletal_data.rootIndex = 0;
 
+	model->internal.skeletal_data.vertices = PL_NEW_( PLMSkeletalVertex *, model->numMeshes );
+	for ( unsigned int i = 0; i < model->numMeshes; ++i ) {
+		model->internal.skeletal_data.vertices[ i ] = PL_NEW_( PLMSkeletalVertex, model->meshes[ i ]->num_verts );
+	}
+
 	return model;
 }
 
@@ -258,42 +263,20 @@ void PlmDestroyModel( PLMModel *model ) {
 			continue;
 		}
 
+		if ( model->type == PLM_MODELTYPE_SKELETAL ) {
+			PL_DELETE( model->internal.skeletal_data.vertices[ i ] );
+		}
+
 		PlgDestroyMesh( model->meshes[ i ] );
 	}
 
-	PlFree( model->meshes );
-	PlFree( model->materials );
+	PL_DELETE( model->meshes );
+	PL_DELETE( model->materials );
 
 	if ( model->type == PLM_MODELTYPE_SKELETAL ) {
-		PlFree( model->internal.skeletal_data.bones );
+		PL_DELETE( model->internal.skeletal_data.bones );
+		PL_DELETE( model->internal.skeletal_data.vertices );
 	}
 
-	PlFree( model );
-}
-
-void PlmDrawModel( PLMModel *model ) {
-	PL_ASSERT( model );
-
-	/* todo: currently only deals with static... */
-
-	PLGShaderProgram *old_program = PlgGetCurrentShaderProgram();
-	for ( unsigned int i = 0; i < model->numMeshes; ++i ) {
-		if ( model->meshes[ i ]->shader_program != NULL ) {
-			PlgSetShaderProgram( model->meshes[ i ]->shader_program );
-		}
-
-		PlgSetTexture( model->meshes[ i ]->texture, 0 );
-
-		PlgSetShaderUniformValue( PlgGetCurrentShaderProgram(), "pl_model", &model->modelMatrix, false );
-
-		PlgUploadMesh( model->meshes[ i ] );
-		PlgDrawMesh( model->meshes[ i ] );
-	}
-
-	PlgSetShaderProgram( old_program );
-	PlgSetTexture( NULL, 0 );
-}
-
-void PlmDrawModelSkeleton( PLMModel *model ) {
-	//TODO
+	PL_DELETE( model );
 }

@@ -495,6 +495,10 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 		meshes[ i ] = PlgCreateMesh( PLG_MESH_TRIANGLES, PLG_DRAW_STATIC, cpjModel.numTriangles, cpjModel.numVerts );
 		meshes[ i ]->materialIndex = i;
 		for ( unsigned int j = 0; j < cpjModel.numTriangles; ++j ) {
+			if ( surface->triangles[ j ].texture != i ) {
+				continue;
+			}
+
 			unsigned int x = PlgAddMeshVertex( meshes[ i ],
 			                                   &cpjModel.vertices[ cpjModel.triangles[ j ].x ].position,
 			                                   &normals[ surface->triangles[ j ].smoothingGroup ][ cpjModel.triangles[ j ].x ],
@@ -511,14 +515,6 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 			                                   &PL_COLOUR_WHITE,
 			                                   &surface->uvCoords[ surface->triangles[ j ].uvIndex[ 2 ] ] );
 
-			meshes[ i ]->vertices[ x ].weightIndex = &cpjModel.vertices[ cpjModel.triangles[ j ].x ] - cpjModel.vertices;
-			meshes[ i ]->vertices[ y ].weightIndex = &cpjModel.vertices[ cpjModel.triangles[ j ].y ] - cpjModel.vertices;
-			meshes[ i ]->vertices[ z ].weightIndex = &cpjModel.vertices[ cpjModel.triangles[ j ].z ] - cpjModel.vertices;
-
-			if ( surface->triangles[ j ].texture != i ) {
-				continue;
-			}
-
 			PlgAddMeshTriangle( meshes[ i ], x, y, z );
 		}
 	}
@@ -532,14 +528,32 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 	if ( cpjModel.numBones > 0 ) {
 		PLMSkeletalModelData skeletalModelData;
 		SetupSkeletalData( &cpjModel, &skeletalModelData );
-		model = PlmCreateSkeletalModel( meshes, cpjModel.surfaces[ 0 ].numTextures,
+		model = PlmCreateSkeletalModel( meshes, surface->numTextures,
 		                                skeletalModelData.bones, skeletalModelData.numBones,
 		                                skeletalModelData.weights, skeletalModelData.numBoneWeights );
+
+		// a little awkward, but weight indices need to be setup here,
+		// rather than as they were earlier...as skeletal model setup allocates storage *sigh*
+		// in hindsight this should've been setup before - and you instead
+		// pass SkeletalModelData into the create method, maybe... ??? *bangs head on desk*
+
+		for ( unsigned int i = 0; i < surface->numTextures; ++i ) {
+			PLMSkeletalVertex *vertices = model->internal.skeletal_data.vertices[ i ];
+			for ( unsigned int j = 0, k = 0; j < cpjModel.numTriangles; ++j ) {
+				if ( surface->triangles[ j ].texture != model->meshes[ i ]->materialIndex ) {
+					continue;
+				}
+
+				vertices[ k++ ].weightIndex = &cpjModel.vertices[ cpjModel.triangles[ j ].x ] - cpjModel.vertices;
+				vertices[ k++ ].weightIndex = &cpjModel.vertices[ cpjModel.triangles[ j ].y ] - cpjModel.vertices;
+				vertices[ k++ ].weightIndex = &cpjModel.vertices[ cpjModel.triangles[ j ].z ] - cpjModel.vertices;
+			}
+		}
 	} else {
-		model = PlmCreateStaticModel( meshes, cpjModel.surfaces[ 0 ].numTextures );
+		model = PlmCreateStaticModel( meshes, surface->numTextures );
 	}
 
-	model->numMaterials = cpjModel.surfaces[ 0 ].numTextures;
+	model->numMaterials = surface->numTextures;
 	model->materials = PL_NEW_( PLPath, model->numMaterials );
 	for ( unsigned int i = 0; i < cpjModel.surfaces[ 0 ].numTextures; ++i ) {
 		snprintf( model->materials[ i ], sizeof( PLPath ), "%s.bmp", cpjModel.surfaces[ 0 ].textures[ i ] );

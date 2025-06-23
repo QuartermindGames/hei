@@ -84,6 +84,10 @@ typedef struct PLMModelBone {
 	PLQuaternion orientation;
 } PLMBone;
 
+typedef struct PLMSkeletalVertex {
+	unsigned int weightIndex;
+} PLMSkeletalVertex;
+
 typedef struct PLMSkeletalModelData {
 	unsigned int rootIndex; /* root bone */
 
@@ -92,6 +96,9 @@ typedef struct PLMSkeletalModelData {
 
 	unsigned int numBoneWeights; /* should be the same as the number of vertices */
 	PLMBoneWeight *weights;
+
+	// this should match the vertices under your meshes!
+	PLMSkeletalVertex **vertices;
 } PLMSkeletalModelData;
 
 typedef struct PLMModel {
@@ -119,7 +126,6 @@ typedef struct PLMModel {
 		/* model type data */
 		union {
 			PLMSkeletalModelData skeletal_data; /* skeletal animation data */
-			//PLStaticModelData       static_data;    /* static model data */
 			PLMVertexAnimModelData vertex_data; /* per-vertex animation data */
 		};
 	} internal;
@@ -143,10 +149,6 @@ PLMModel *PlmLoadObjModel( const char *path );
 PLMModel *PlmLoadCpjModel( const char *path );
 
 void PlmDestroyModel( PLMModel *model );
-
-void PlmDrawModel( PLMModel *model );
-void PlmDrawModelBounds( const PLMModel *model );
-void PlmDrawModelSkeleton( PLMModel *model );
 
 void PlmGenerateModelNormals( PLMModel *model, bool perFace );
 void PlmGenerateModelBounds( PLMModel *model );
