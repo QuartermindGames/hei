@@ -2029,7 +2029,7 @@ static PLFunctionResult GLInitialize( void ) {
 
 	XGL_CALL( glGetIntegerv( GL_NUM_EXTENSIONS, ( GLint * ) ( &gl_num_extensions ) ) );
 	for ( unsigned int i = 0; i < gl_num_extensions; ++i ) {
-		const uint8_t *extension = glGetStringi( GL_EXTENSIONS, i );
+		const char *extension = ( char * ) glGetStringi( GL_EXTENSIONS, i );
 		snprintf( gl_extensions[ i ], sizeof( gl_extensions[ i ] ), "%s", extension );
 		//GLLog( "    %s\n", extension );
 	}
