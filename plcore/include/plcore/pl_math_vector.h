@@ -100,6 +100,16 @@ PLVector3 PlVector3Max( PLVector3 v, PLVector3 v2 );
 float PlGetVector2Length( const PLVector2 *v );
 float PlVector3Length( const PLVector3 v );
 
+static inline float PlVector2Distance( const PLVector2 *a, const PLVector2 *b ) {
+	PLVector2 sub = PlSubtractVector2( a, b );
+	return PlGetVector2Length( &sub );
+}
+
+static inline float PlVector3Distance( const PLVector3 *a, const PLVector3 *b ) {
+	PLVector3 sub = PlSubtractVector3( *a, *b );
+	return PlVector3Length( sub );
+}
+
 PLVector2 plNormalizeVector2( const PLVector2 *v );
 PLVector3 PlNormalizeVector3( PLVector3 v );
 PLVector4 PlNormalizePlane( PLVector4 plane );
