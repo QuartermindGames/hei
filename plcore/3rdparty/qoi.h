@@ -1,30 +1,10 @@
 /*
 
+Copyright (c) 2021, Dominic Szablewski - https://phoboslab.org
+SPDX-License-Identifier: MIT
+
+
 QOI - The "Quite OK Image" format for fast, lossless image compression
-
-Dominic Szablewski - https://phoboslab.org
-
-
--- LICENSE: The MIT License(MIT)
-
-Copyright(c) 2021 Dominic Szablewski
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files(the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and / or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions :
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
 
 -- About
 
@@ -424,13 +404,12 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	channels = desc->channels;
 
 	for (px_pos = 0; px_pos < px_len; px_pos += channels) {
+		px.rgba.r = pixels[px_pos + 0];
+		px.rgba.g = pixels[px_pos + 1];
+		px.rgba.b = pixels[px_pos + 2];
+
 		if (channels == 4) {
-			px = *(qoi_rgba_t *)(pixels + px_pos);
-		}
-		else {
-			px.rgba.r = pixels[px_pos + 0];
-			px.rgba.g = pixels[px_pos + 1];
-			px.rgba.b = pixels[px_pos + 2];
+			px.rgba.a = pixels[px_pos + 3];
 		}
 
 		if (px.v == px_prev.v) {
@@ -448,7 +427,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 				run = 0;
 			}
 
-			index_pos = QOI_COLOR_HASH(px) % 64;
+			index_pos = QOI_COLOR_HASH(px) & (64 - 1);
 
 			if (index[index_pos].v == px.v) {
 				bytes[p++] = QOI_OP_INDEX | index_pos;
@@ -595,16 +574,15 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 				run = (b1 & 0x3f);
 			}
 
-			index[QOI_COLOR_HASH(px) % 64] = px;
+			index[QOI_COLOR_HASH(px) & (64 - 1)] = px;
 		}
 
+		pixels[px_pos + 0] = px.rgba.r;
+		pixels[px_pos + 1] = px.rgba.g;
+		pixels[px_pos + 2] = px.rgba.b;
+		
 		if (channels == 4) {
-			*(qoi_rgba_t*)(pixels + px_pos) = px;
-		}
-		else {
-			pixels[px_pos + 0] = px.rgba.r;
-			pixels[px_pos + 1] = px.rgba.g;
-			pixels[px_pos + 2] = px.rgba.b;
+			pixels[px_pos + 3] = px.rgba.a;
 		}
 	}
 
@@ -616,7 +594,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 
 int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
 	FILE *f = fopen(filename, "wb");
-	int size;
+	int size, err;
 	void *encoded;
 
 	if (!f) {
@@ -630,10 +608,41 @@ int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
 	}
 
 	fwrite(encoded, 1, size, f);
+	fflush(f);
+	err = ferror(f);
 	fclose(f);
 
 	QOI_FREE(encoded);
-	return size;
+	return err ? 0 : size;
+}
+
+void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
+	FILE *f = fopen(filename, "rb");
+	int size, bytes_read;
+	void *pixels, *data;
+
+	if (!f) {
+		return NULL;
+	}
+
+	fseek(f, 0, SEEK_END);
+	size = ftell(f);
+	if (size <= 0 || fseek(f, 0, SEEK_SET) != 0) {
+		fclose(f);
+		return NULL;
+	}
+
+	data = QOI_MALLOC(size);
+	if (!data) {
+		fclose(f);
+		return NULL;
+	}
+
+	bytes_read = fread(data, 1, size, f);
+	fclose(f);
+	pixels = (bytes_read != size) ? NULL : qoi_decode(data, bytes_read, desc, channels);
+	QOI_FREE(data);
+	return pixels;
 }
 
 #endif /* QOI_NO_STDIO */

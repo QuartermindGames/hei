@@ -13,18 +13,25 @@
 #include "3rdparty/qoi.h"
 
 PLImage *PlParseQoiImage( PLFile *file ) {
-	qoi_desc desc;
-	uint8_t *dstBuf = qoi_decode( PlGetFileData( file ), ( int ) PlGetFileSize( file ), &desc, 0 );
+	PLImage *image = NULL;
 
-	if ( dstBuf == NULL ) {
-		PlReportErrorF( PL_RESULT_FILEREAD, "failed to decode qoi image" );
-		return NULL;
+	int size = ( int ) PlGetFileSize( file );
+	uint8_t *buf = PL_NEW_( uint8_t, size + 1 );
+	if ( PlReadFile( file, buf, sizeof( uint8_t ), size ) == size ) {
+		qoi_desc desc;
+		uint8_t *dstBuf = qoi_decode( buf, size, &desc, 0 );
+		if ( dstBuf == NULL ) {
+			PlReportErrorF( PL_RESULT_FILEREAD, "failed to decode qoi image" );
+			return NULL;
+		}
+
+		image = PlCreateImage( dstBuf, desc.width, desc.height, 0, PL_COLOURFORMAT_RGBA,
+		                       ( desc.channels == 4 ) ? PL_IMAGEFORMAT_RGBA8 : PL_IMAGEFORMAT_RGB8 );
+
+		PL_DELETE( dstBuf );
 	}
 
-	PLImage *image = PlCreateImage( dstBuf, desc.width, desc.height, 0, PL_COLOURFORMAT_RGBA,
-	                                ( desc.channels == 4 ) ? PL_IMAGEFORMAT_RGBA8 : PL_IMAGEFORMAT_RGB8 );
-
-	PlFree( dstBuf );
+	PL_DELETE( buf );
 
 	return image;
 }
