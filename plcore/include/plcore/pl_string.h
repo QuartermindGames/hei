@@ -55,6 +55,8 @@ char *pl_strnreverse( char *string, size_t size );
 
 char *pl_strrstr( char *haystack, const char *needle );
 
+size_t pl_strlcat( char *dst, const char *src, size_t size );
+
 /**
  * http://www.cse.yorku.ca/~oz/hash.html#sdbm
  */

@@ -14,12 +14,13 @@
 A collection of relatively small utility libraries written in C11 that can be used as the foundation for various applications, though probably more oriented towards games.
 Includes APIs for dealing with images, graphics, models, IO and much more.
 
-Originally created around 2014/2015 as a support library for another game, it's since found
-a new life supporting [ApeTech](https://www.hogsy.me/ape.htm) and other projects.
+Originally created around 2014/2015 as a support library for another game, it's since found a new life supporting [ApeTech](https://www.hogsy.me/ape.htm) and other projects.
 Do let me know if you find any use of it, and I'll give you a shoutout!
 
 **Keep in mind this is likely far from the most efficient library in the world.
 If performance is a big priority for you, then I would highly recommend looking elsewhere!**
+
+Mind that `plcore` is standalone, while `plmodel` and `plgraphics` depend on `plcore`.
 
 # Features
 

@@ -98,3 +98,16 @@ char *pl_strrstr( char *haystack, const char *needle ) {
 
 	return NULL;
 }
+
+size_t pl_strlcat( char *dst, const char *src, size_t size ) {
+	size_t dsize = strlen( dst );
+	size_t ssize = strlen( src );
+	size_t avail = size > dsize ? size - dsize - 1 : 0;
+	if ( avail > 0 ) {
+		size_t cpy = ssize < avail ? ssize : avail;
+		memcpy( dst + dsize, src, cpy );
+		dst[ dsize + cpy ] = '\0';
+	}
+
+	return dsize + ssize;
+}
