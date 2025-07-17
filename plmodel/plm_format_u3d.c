@@ -50,10 +50,10 @@ typedef struct U3DDataHeader {
 	uint32_t unused[ 3 ];
 } U3DDataHeader;
 
-#define U3D_FLAG_UNLIT 16
-#define U3D_FLAG_FLAT 32
+#define U3D_FLAG_UNLIT       16
+#define U3D_FLAG_FLAT        32
 #define U3D_FLAG_ENVIRONMENT 64
-#define U3D_FLAG_NEAREST 128
+#define U3D_FLAG_NEAREST     128
 
 enum U3DType {
 	U3D_TYPE_NORMAL,
@@ -159,9 +159,15 @@ static PLMModel *ReadU3DModelData( PLFile *data_ptr, PLFile *anim_ptr ) {
 
 /**
  * Load U3D model from local path.
- * @param path Path to the U3D Data file.
+ * @param file Path to the U3D Data file.
  */
-PLMModel *PlmLoadU3DModel( const char *path ) {
+PLMModel *PlmParseU3dModel( PLFile *file ) {
+	const char *path = PlGetFilePath( file );
+	if ( path == NULL || *path == '\0' ) {
+		PlReportErrorF( PL_RESULT_FILEPATH, "failed to fetch path for file" );
+		return NULL;
+	}
+
 	char anim_path[ PL_SYSTEM_MAX_PATH ];
 	snprintf( anim_path, sizeof( anim_path ), "%s", path );
 	char *p_ext = strstr( anim_path, "Data" );
@@ -174,20 +180,13 @@ PLMModel *PlmLoadU3DModel( const char *path ) {
 		}
 	}
 
-	if ( !PlFileExists( anim_path ) ) {
-		PlReportErrorF( PL_RESULT_FILEPATH, "failed to find anim companion for \"%s\" at \"%s\"", path, anim_path );
+	PLFile *anim_ptr = PlOpenFile( anim_path, false );
+	if ( anim_ptr == NULL ) {
 		return NULL;
 	}
 
-	PLFile *anim_ptr = PlOpenFile( anim_path, false );
-	PLFile *data_ptr = PlOpenFile( path, false );
+	PLMModel *model_ptr = ReadU3DModelData( file, anim_ptr );
 
-	PLMModel *model_ptr = NULL;
-	if ( anim_ptr != NULL && data_ptr != NULL ) {
-		model_ptr = ReadU3DModelData( data_ptr, anim_ptr );
-	}
-
-	PlCloseFile( data_ptr );
 	PlCloseFile( anim_ptr );
 
 	return model_ptr;

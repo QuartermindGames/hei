@@ -328,7 +328,7 @@ static PLMModel *ParsePly( const char *buf ) {
 	return NULL;
 }
 
-PLMModel *PlmDeserializePly( PLFile *file ) {
+PLMModel *PlmParsePlyModel( PLFile *file ) {
 	char token[ 32 ];
 	// first just validate it's a 'ply' file
 	PlReadString( file, token, sizeof( token ) );

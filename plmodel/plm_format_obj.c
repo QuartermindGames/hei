@@ -70,13 +70,8 @@ static ObjVectorLst *GetVectorIndex( ObjVectorLst *start, unsigned int idx ) {
 	return cur;
 }
 
-PLMModel *PlmLoadObjModel( const char *path ) {
-	PLFile *fp = PlOpenFile( path, false );
-	if ( fp == NULL ) {
-		return NULL;
-	}
-
-	ObjHandle *obj = PlMAllocA( sizeof( ObjHandle ) );
+PLMModel *PlmParseObjModel( PLFile *file ) {
+	ObjHandle *obj = PL_NEW( ObjHandle );
 
 	ObjVectorLst **cur_v = &( obj->vertex_positions );
 	ObjVectorLst **cur_vn = &( obj->vertex_normals );
@@ -87,10 +82,12 @@ PLMModel *PlmLoadObjModel( const char *path ) {
 	*cur_face = NULL;
 
 	char tk[ 256 ];
-	while ( PlReadString( fp, tk, sizeof( tk ) ) != NULL ) {
+	while ( PlReadString( file, tk, sizeof( tk ) ) != NULL ) {
 		if ( tk[ 0 ] == '\0' || tk[ 0 ] == '#' || tk[ 0 ] == 'o' || tk[ 0 ] == 'g' || tk[ 0 ] == 's' ) {
 			continue;
-		} else if ( tk[ 0 ] == 'v' && tk[ 1 ] == ' ' ) { /* vertex position */
+		}
+
+		if ( tk[ 0 ] == 'v' && tk[ 1 ] == ' ' ) { /* vertex position */
 			ObjVectorLst *this_v = PlMAllocA( sizeof( ObjVectorLst ) );
 			unsigned int n = sscanf( &tk[ 2 ], "%f %f %f", &this_v->v.x, &this_v->v.y, &this_v->v.z );
 			if ( n < 3 ) {
@@ -103,7 +100,8 @@ PLMModel *PlmLoadObjModel( const char *path ) {
 			this_v->next = NULL;
 			cur_v = &( this_v->next );
 			continue;
-		} else if ( tk[ 0 ] == 'v' && tk[ 1 ] == 't' ) { /* vertex texture */
+		}
+		if ( tk[ 0 ] == 'v' && tk[ 1 ] == 't' ) { /* vertex texture */
 			ObjVectorLst *this_vt = PlMAllocA( sizeof( ObjVectorLst ) );
 			unsigned int n = sscanf( &tk[ 2 ], "%f %f", &this_vt->v.x, &this_vt->v.y );
 			if ( n < 2 ) {
@@ -116,7 +114,8 @@ PLMModel *PlmLoadObjModel( const char *path ) {
 			this_vt->next = NULL;
 			cur_vt = &( this_vt->next );
 			continue;
-		} else if ( tk[ 0 ] == 'v' && tk[ 1 ] == 'n' ) { /* vertex normal */
+		}
+		if ( tk[ 0 ] == 'v' && tk[ 1 ] == 'n' ) { /* vertex normal */
 			ObjVectorLst *this_vn = PlMAllocA( sizeof( ObjVectorLst ) );
 			if ( sscanf( &tk[ 2 ], "%f %f %f", &this_vn->v.x, &this_vn->v.y, &this_vn->v.z ) < 3 ) {
 				ModelLog( "Invalid vertex normal, less than 3 coords!\n\"%s\"\n", tk );
@@ -126,7 +125,8 @@ PLMModel *PlmLoadObjModel( const char *path ) {
 			this_vn->next = NULL;
 			cur_vn = &( this_vn->next );
 			continue;
-		} else if ( tk[ 0 ] == 'f' && tk[ 1 ] == ' ' ) { /* face */
+		}
+		if ( tk[ 0 ] == 'f' && tk[ 1 ] == ' ' ) { /* face */
 			int idx[ 64 ];
 			unsigned int num_elements = 1;
 
@@ -151,8 +151,6 @@ PLMModel *PlmLoadObjModel( const char *path ) {
 
 		ModelLog( "Unknown/unsupported parameter '%s', ignoring!\n", tk[ 0 ] );
 	}
-
-	PlCloseFile( fp );
 
 	/* right we're finally done, time to see what we hauled... */
 

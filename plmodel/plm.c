@@ -8,8 +8,7 @@
 
 typedef struct ModelLoader {
 	const char *ext;
-	PLMModel *( *LoadFunction )( const char *path );
-	PLMModel *( *Deserialize )( PLFile *file );
+	PLMModel *( *parseCallback )( PLFile *file );
 	void *( *Serialize )( PLMModel *model );
 } ModelLoader;
 
@@ -94,15 +93,14 @@ bool PlmWriteModel( const char *path, PLMModel *model, PLMModelOutputType type )
 	}
 }
 
-void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char * ), PLMModel *( *Deserialize )( PLFile * ) ) {
+void PlmRegisterModelLoader( const char *ext, PLMModel *( *Deserialize )( PLFile * ) ) {
 	if ( num_model_loaders >= MAX_OBJECT_INTERFACES ) {
 		PlReportBasicError( PL_RESULT_MEMORY_EOA );
 		return;
 	}
 
 	model_interfaces[ num_model_loaders ].ext = ext;
-	model_interfaces[ num_model_loaders ].LoadFunction = LoadFunction;
-	model_interfaces[ num_model_loaders ].Deserialize = Deserialize;
+	model_interfaces[ num_model_loaders ].parseCallback = Deserialize;
 	num_model_loaders++;
 }
 
@@ -110,16 +108,15 @@ void PlmRegisterStandardModelLoaders( unsigned int flags ) {
 	typedef struct SModelLoader {
 		unsigned int flag;
 		const char *extension;
-		PLMModel *( *LoadFunction )( const char *path );
-		PLMModel *( *Deserialize )( PLFile *file );
+		PLMModel *( *parseCallback )( PLFile *file );
 	} SModelLoader;
 	static const SModelLoader loaderList[] = {
-	        { PLM_MODEL_FILEFORMAT_CYCLONE, "mdl", PlmLoadRequiemModel },
-	        { PLM_MODEL_FILEFORMAT_HDV, "hdv", PlmLoadHdvModel },
-	        { PLM_MODEL_FILEFORMAT_U3D, "3d", PlmLoadU3DModel },
-	        { PLM_MODEL_FILEFORMAT_OBJ, "obj", PlmLoadObjModel },
-	        { PLM_MODEL_FILEFORMAT_CPJ, "cpj", PlmLoadCpjModel },
-	        { PLM_MODEL_FILEFORMAT_PLY, "ply", NULL, PlmDeserializePly },
+	        {PLM_MODEL_FILEFORMAT_CYCLONE, "mdl", PlmParseRequiemModel},
+	        {PLM_MODEL_FILEFORMAT_HDV,     "hdv", PlmParseHdvModel    },
+	        //{PLM_MODEL_FILEFORMAT_U3D,     "3d",  PlmParseU3dModel    },
+	        //{PLM_MODEL_FILEFORMAT_OBJ,     "obj", PlmParseObjModel    },
+	        {PLM_MODEL_FILEFORMAT_CPJ,     "cpj", PlmParseCpjModel    },
+	        //{PLM_MODEL_FILEFORMAT_PLY,     "ply", PlmParsePlyModel    },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
@@ -127,7 +124,7 @@ void PlmRegisterStandardModelLoaders( unsigned int flags ) {
 			continue;
 		}
 
-		PlmRegisterModelLoader( loaderList[ i ].extension, loaderList[ i ].LoadFunction, loaderList[ i ].Deserialize );
+		PlmRegisterModelLoader( loaderList[ i ].extension, loaderList[ i ].parseCallback );
 	}
 }
 
@@ -137,61 +134,45 @@ void PlmClearModelLoaders( void ) {
 }
 
 PLMModel *PlmLoadModel( const char *path ) {
-	if ( !PlFileExists( path ) ) {
-		PlReportErrorF( PL_RESULT_FILEREAD, "failed to load model, %s", path );
+	PLFile *file = PlOpenFile( path, false );
+	if ( file == NULL ) {
 		return NULL;
 	}
 
-	PLMModel *model = NULL;
-
 	const char *extension = PlGetFileExtension( path );
-	size_t ext_len = strlen( extension );
+	const size_t ext_len = strlen( extension );
 	for ( unsigned int i = 0; i < num_model_loaders; ++i ) {
 		if ( pl_strcasecmp( extension, model_interfaces[ i ].ext ) != 0 ) {
 			continue;
 		}
 
-		// first attempt to load it in using ye old method
-		if ( model_interfaces[ i ].LoadFunction != NULL ) {
-			model = model_interfaces[ i ].LoadFunction( path );
-			if ( model != NULL ) {
-				break;
-			}
+		if ( model_interfaces[ i ].parseCallback == NULL ) {
+			continue;
 		}
 
-		if ( model_interfaces[ i ].Deserialize != NULL ) {
-			// eventually this should only get loaded the once, once LoadFunction is gone,
-			// and then just rewound each time
-			PLFile *file = PlOpenFile( path, false );
-			if ( file == NULL ) {
-				// break in this case, as if this fails it's likely every other attempt will
-				break;
-			}
-
-			model = model_interfaces[ i ].Deserialize( file );
-
-			// again, we'll eventually only need to do this once, once LoadFunction is out of the picture
-			PlCloseFile( file );
-
-			if ( model != NULL ) {
-				break;
-			}
+		PLMModel *model = model_interfaces[ i ].parseCallback( file );
+		if ( model == NULL ) {
+			PlRewindFile( file );
+			continue;
 		}
-	}
 
-	if ( model != NULL ) {
+		PlCloseFile( file );
+
 		const char *name = PlGetFileName( path );
 		if ( !PL_INVALID_STRING( name ) ) {
 			size_t nme_len = strlen( name );
 			strncpy( model->name, name, nme_len - ( ext_len + 1 ) );
 		} else {
-			snprintf( model->name, sizeof( model->name ), "null" );
+			*model->name = '\0';
 		}
 
 		strncpy( model->path, path, sizeof( model->path ) );
+
+		return model;
 	}
 
-	return model;
+	PlCloseFile( file );
+	return NULL;
 }
 
 static PLMModel *CreateModel( PLMModelType type, PLGMesh **meshes, unsigned int numMeshes ) {

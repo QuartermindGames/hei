@@ -225,7 +225,7 @@ static PLVector3 **GenerateNormalsPerGroup( const CPJModel *cpjModel ) {
 	return normals;
 }
 
-static PLMModel *ParseCPJModel( PLFile *file ) {
+PLMModel *PlmParseCpjModel( PLFile *file ) {
 	unsigned int magic = PlReadInt32( file, false, NULL );
 	if ( magic != PL_MAGIC_TO_NUM( 'R', 'I', 'F', 'F' ) ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "unexpected magic" );
@@ -560,18 +560,6 @@ static PLMModel *ParseCPJModel( PLFile *file ) {
 	}
 
 	CPJModel_Free( &cpjModel );
-
-	return model;
-}
-
-PLMModel *PlmLoadCpjModel( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL )
-		return NULL;
-
-	PLMModel *model = ParseCPJModel( file );
-
-	PlCloseFile( file );
 
 	return model;
 }

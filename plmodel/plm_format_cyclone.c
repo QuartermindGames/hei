@@ -29,7 +29,7 @@ enum {
 	MDL_FLAG_UNLIT = ( 1 << 1 ),
 };
 
-#define MAX_MODEL_NAME 128
+#define MAX_MODEL_NAME   128
 #define MAX_TEXTURE_NAME 64
 
 #define MAX_INDICES_PER_POLYGON 9
@@ -238,7 +238,7 @@ static PLMModel *LoadStaticRequiemModel( PLFile *fp ) {
 
 		if ( polygons[ i ].num_indices < MIN_INDICES_PER_POLYGON || polygons[ i ].num_indices > MAX_INDICES_PER_POLYGON ) {
 			PlReportErrorF( PL_RESULT_FILEREAD, "invalid number of indices, %d, required for polygon %d! (offset: %ld)",
-			             polygons[ i ].num_indices, i, PlGetFileOffset( fp ) );
+			                polygons[ i ].num_indices, i, PlGetFileOffset( fp ) );
 			return NULL;
 		}
 
@@ -323,18 +323,12 @@ static PLMModel *LoadStaticRequiemModel( PLFile *fp ) {
 	return model;
 }
 
-PLMModel *PlmLoadRequiemModel( const char *path ) {
-	PLFile *fp = PlOpenFile( path, false );
-	if ( fp == NULL ) {
-		return NULL;
-	}
-
+PLMModel *PlmParseRequiemModel( PLFile *file ) {
 	/* attempt to figure out what kind of model it is */
 
 	bool status;
-	int len = PlReadInt8( fp, &status );
+	const int8_t len = PlReadInt8( file, &status );
 	if ( !status ) {
-		PlCloseFile( fp );
 		return NULL;
 	}
 
@@ -342,12 +336,10 @@ PLMModel *PlmLoadRequiemModel( const char *path ) {
 	if ( len == 0 ) {
 		/* assume it's an animated model */
 		ModelLog( "Texture name length of %d, assuming animated Requiem model...\n", len );
-		model_ptr = LoadAnimatedRequiemModel( fp );
+		model_ptr = LoadAnimatedRequiemModel( file );
 	} else {
-		model_ptr = LoadStaticRequiemModel( fp );
+		model_ptr = LoadStaticRequiemModel( file );
 	}
-
-	PlCloseFile( fp );
 
 	return model_ptr;
 }

@@ -14,16 +14,9 @@ extern int LOG_LEVEL_MODEL;
 
 PL_EXTERN_C
 
-PLMModel *PlmDeserializePly( PLFile *file );
-
-// old api design, this is being deprecated
-PLMModel *PlmLoadHdvModel( const char *path );
-PLMModel *PlmLoadU3DModel( const char *path );
-PLMModel *PlmLoadObjModel( const char *path );
-PLMModel *PlmLoadRequiemModel( const char *path );
+PLMModel *PlmParsePlyModel( PLFile *file );
+PLMModel *PlmParseU3dModel( PLFile *file );
+PLMModel *PlmParseObjModel( PLFile *file );
 PLMModel *PlmLoadSmdModel( const char *path );
-
-bool PlmWriteSmdModel( PLMModel *model, const char *path );
-bool PlmWriteObjModel( PLMModel *model, const char *path );
 
 PL_EXTERN_C_END

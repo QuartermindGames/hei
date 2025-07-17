@@ -142,11 +142,14 @@ PLMModel *PlmCreateBasicSkeletalModel( PLGMesh *mesh, PLMBone *bones, unsigned i
 
 PLMModel *PlmLoadModel( const char *path );
 
-PLMModel *PlmLoadU3DModel( const char *path );
-PLMModel *PlmLoadHdvModel( const char *path );
-PLMModel *PlmLoadRequiemModel( const char *path );
-PLMModel *PlmLoadObjModel( const char *path );
-PLMModel *PlmLoadCpjModel( const char *path );
+PLMModel *PlmParseU3dModel( PLFile *file );
+PLMModel *PlmParseHdvModel( PLFile *file );
+PLMModel *PlmParseRequiemModel( PLFile *file );
+PLMModel *PlmParseObjModel( PLFile *file );
+PLMModel *PlmParseCpjModel( PLFile *file );
+
+bool PlmWriteSmdModel( PLMModel *model, const char *path );
+bool PlmWriteObjModel( PLMModel *model, const char *path );
 
 void PlmDestroyModel( PLMModel *model );
 
@@ -168,7 +171,7 @@ enum {
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-void PlmRegisterModelLoader( const char *ext, PLMModel *( *LoadFunction )( const char * ), PLMModel *( *Deserialize )( PLFile * ) );
+void PlmRegisterModelLoader( const char *ext, PLMModel *( *Deserialize )( PLFile * ) );
 void PlmRegisterStandardModelLoaders( unsigned int flags );
 void PlmClearModelLoaders( void );
 
