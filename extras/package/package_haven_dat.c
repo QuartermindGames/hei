@@ -107,7 +107,7 @@ PLPackage *PlxParseHavenPackage( PLFile *file ) {
 	for ( unsigned int i = 1; i < numStrings; ++i ) {
 		// current string
 		const char *c = &buf[ tree[ i ].offset ];
-		printf( "%d %d %d %s\n", i, tree[ i ].l, tree[ i ].r, c );
+		//printf( "%d %d %d %s\n", i, tree[ i ].l, tree[ i ].r, c );
 
 		if ( i < numStrings - 1 ) {
 			if ( tree[ i ].r == 0 ) {
