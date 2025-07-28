@@ -503,23 +503,6 @@ typedef struct PLQuad {
 /////////////////////////////////////////////////////////////////////////////////////
 // Randomisation
 
-// http://stackoverflow.com/questions/7978759/generate-float-random-values-also-negative
-static inline double PlUniform0To1Random( void ) {
-	return ( rand() ) / ( ( double ) RAND_MAX + 1 );
-}
-
-static inline double PlGenerateUniformRandom( double minmax ) {
-	return ( minmax * 2 ) * PlUniform0To1Random() - minmax;
-}
-
-static inline double PlGenerateRandomDouble( double max ) {
-	return ( double ) ( rand() ) / ( RAND_MAX / max );
-}
-
-static inline float PlGenerateRandomFloat( float max ) {
-	return ( float ) ( rand() ) / ( RAND_MAX / max );
-}
-
 int *PlSeedRandom( int seed );
 int *PlSeedPerlin( const int *hashTable );
 
