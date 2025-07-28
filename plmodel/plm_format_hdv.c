@@ -105,7 +105,7 @@ PLMModel *PlmParseHdvModel( PLFile *file ) {
 		return NULL;
 	}
 
-#if 1 /* debug */
+#if 0 /* debug */
 	srand( mesh->num_verts );
 	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
 		uint8_t r = ( uint8_t ) ( rand() % 255 );
