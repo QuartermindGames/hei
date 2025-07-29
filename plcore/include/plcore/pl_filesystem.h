@@ -166,8 +166,6 @@ void PlStripExtension( char *dest, size_t length, const char *in );
 
 const char *PlGetFileExtension( const char *in );
 
-char *PlGetTempName( PLPath dst );
-
 /**
  * Returns pointer to the last component in the given filename.
  *
@@ -275,6 +273,13 @@ PLFileSystemMount *PlGetMountLocationForPath( const char *path );
 void PlClearFileAliases( void );
 void PlAddFileAlias( const char *alias, const char *target );
 const char *PlGetPathForAlias( const char *alias );
+
+/////////////////////////////////////////////////////////////////////////////////////
+// New API
+// TODO: move these under an entirely new module...
+/////////////////////////////////////////////////////////////////////////////////////
+
+char *hei_fs_get_temp_path( char *dst, size_t dstSize );
 
 #endif
 

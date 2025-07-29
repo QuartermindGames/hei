@@ -615,22 +615,6 @@ void PlStripExtension( char *dest, size_t length, const char *in ) {
 	*dest = 0;
 }
 
-char *PlGetTempName( PLPath dst ) {
-#if ( PL_SYSTEM_OS == PL_SYSTEM_OS_LINUX )
-	char *c = tempnam( "/tmp", "file" );
-	if ( c == NULL ) {
-		PlReportErrorF( PL_RESULT_FAIL, "failed to fetch temporary filename" );
-		return NULL;
-	}
-
-	PlSetupPath( dst, true, "%s", c );
-
-	free( c );
-
-	return dst;
-#endif
-}
-
 const char *PlGetFileName( const char *path ) {
 	const char *lslash;
 	if ( ( lslash = strrchr( path, '/' ) ) == NULL ) {
@@ -1638,4 +1622,37 @@ const char *PlGetPathForAlias( const char *alias ) {
 	}
 
 	return NULL;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// New API
+// TODO: move these under an entirely new module...
+/////////////////////////////////////////////////////////////////////////////////////
+
+char *hei_fs_get_temp_path( char *dst, size_t dstSize ) {
+#if ( PL_SYSTEM_OS == PL_SYSTEM_OS_LINUX )
+
+	char dir[] = "/tmp/heiXXXXXX";
+	if ( mkdtemp( dir ) == NULL ) {
+		PlReportErrorF( PL_RESULT_FILETYPE, "failed to set temporary write location" );
+		return NULL;
+	}
+
+	snprintf( dst, dstSize, "%s", dir );
+
+#elif ( PL_SYSTEM_OS == PL_SYSTEM_OS_WINDOWS )
+
+	//TODO: this is untested...
+
+	char dir[ 128 ];
+	GetTempPath( sizeof( dir ), dir );
+	if ( !PlCreateDirectory( dir ) ) {
+		return NULL;
+	}
+
+	snprintf( dst, dstSize, "%s", dir );
+
+#endif
+
+	return dst;
 }

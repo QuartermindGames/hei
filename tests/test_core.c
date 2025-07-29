@@ -3,6 +3,7 @@
 // Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "tests.h"
+#include "plcore/pl_image.h"
 
 #include "plcore/pl_package.h"
 
@@ -153,7 +154,7 @@ FUNC_TEST( pl_package ) {
 FUNC_TEST_END()
 
 FUNC_TEST( pl_package_rar ) {
-	PLPackage *package = PlLoadPackage( "testdata/pack.rar" );
+	PLPackage *package = PlLoadPackage( "testdata/pack_rar.rar" );
 	if ( package == NULL ) {
 		RETURN_FAILURE( "Failed to load package!\n" );
 	}
@@ -162,6 +163,19 @@ FUNC_TEST( pl_package_rar ) {
 		RETURN_FAILURE( "Empty package!\n" );
 	}
 
+	PlCreateDirectory( "testdata/dump" );
+	PlExtractPackage( package, "testdata/dump" );
+
+	if ( !PlFileExists( "testdata/dump/models/test_box.ply" ) ) {
+		RETURN_FAILURE( "Failed to extract package!\n" );
+	}
+
+	PLImage *image = PlLoadImage( "testdata/dump/images/dice.png" );
+	if ( image == NULL ) {
+		RETURN_FAILURE( "Data integrity test failed for package extraction!\n" );
+	}
+
+	PlDestroyImage( image );
 	PlDestroyPackage( package );
 }
 FUNC_TEST_END()
@@ -416,6 +430,8 @@ int main( int argc, char **argv ) {
 		fprintf( stderr, "Failed to initialize Hei: %s\n", PlGetError() );
 		return EXIT_FAILURE;
 	}
+
+	PlRegisterStandardImageLoaders( PL_IMAGE_FILEFORMAT_ALL );
 
 	TEST_RUN_INIT
 
