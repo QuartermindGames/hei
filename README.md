@@ -2,14 +2,21 @@
 
 ![Logo](resources/logo.png)
 
+# qmfw
+
+A C23 framework for games, software and everything in-between.
+
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTalonBraveInfo%2Fplatform.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FTalonBraveInfo%2Fplatform?ref=badge_shield)
 [![CodeFactor](https://www.codefactor.io/repository/github/quartermindgames/hei/badge)](https://www.codefactor.io/repository/github/quartermindgames/hei)
 
-[Features](#features) | [Users](#users) | [License](#license)
+[Features](#features) | [Roadmap](#roadmap) | [Users](#users) | [License](#license)
 
 </div>
 
 ----
+
+**NOTICE:** This library is going through a significant refactor.
+See [the roadmap](#roadmap) below for details.
 
 A collection of relatively small utility libraries written in C11 that can be used as the foundation for various applications, though probably more oriented towards games.
 Includes APIs for dealing with images, graphics, models, IO and much more.
@@ -118,6 +125,18 @@ This hasn't received as much attention so support is very limited.
 | Triton HDV     | Into the Shadows        | C             | R    |
 | Unreal 3D      | Unreal Engine 1 + 2     | F             | R    |
 | Valve SMD      | Source Engine           | C             | W    |
+
+# Roadmap
+
+As of July 2025, I've decided to start work on a radical overhaul of the library.
+
+- [ ] Rename repository to qmfw / qmframework
+- [ ] Switch to C23
+- [ ] Split plcore into multiple libraries (e.g., `qmimage`, `qmmath`, etc.)
+- [ ] Refactor `plgraphics` into `qmgfx`, and slim it down
+- [ ] Refactor `plmodel` into `qmmodel`
+- [ ] Discard `plwindow` api
+- [ ] Ensure better test coverage
 
 # Users
 
