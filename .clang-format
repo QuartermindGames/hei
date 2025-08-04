@@ -1,21 +1,40 @@
 BasedOnStyle: LLVM
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
-AlignArrayOfStructures: Left
-AlignConsecutiveMacros: AcrossComments
+AlignConsecutiveAssignments: true
+AlignConsecutiveBitFields: true
+AlignConsecutiveMacros: true
+AlignConsecutiveDeclarations: true
+AlignEscapedNewlines: Left
+AlignTrailingComments: true
 AlignOperands: true
+AlignArrayOfStructures: Left
 AllowAllArgumentsOnNextLine: false
 AllowAllConstructorInitializersOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: Always
-AllowShortCaseLabelsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: Always
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: true
 AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: Yes
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Allman
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: Always
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeCatch: false
+  BeforeElse: false
+  IndentBraces: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: true
 BreakBeforeBinaryOperators: None
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeColon
@@ -51,4 +70,5 @@ SpacesInParentheses: true
 SpacesInSquareBrackets: true
 TabWidth: 4
 UseTab: ForIndentation
-SortIncludes: false
+SortIncludes: Never
+LineEnding: LF

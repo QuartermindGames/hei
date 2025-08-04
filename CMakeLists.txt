@@ -67,3 +67,6 @@ endif (PL_BUILD_PLUGINS)
 if (PL_BUILD_EXAMPLES)
     add_subdirectory(examples/cpj_dumper)
 endif ()
+
+# New
+add_subdirectory(src/qmmath)
