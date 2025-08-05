@@ -47,7 +47,6 @@ enable_testing()
 add_subdirectory(plcore)
 add_subdirectory(plgraphics)
 add_subdirectory(plmodel)
-add_subdirectory(plwindow)
 
 if (CMAKE_TESTING_ENABLED)
     add_subdirectory(tests)
@@ -69,4 +68,5 @@ if (PL_BUILD_EXAMPLES)
 endif ()
 
 # New
+add_subdirectory(src/qmos)
 add_subdirectory(src/qmmath)
