@@ -15,7 +15,7 @@ A C23 framework for games, software and everything in-between.
 
 ----
 
-**NOTICE:** This library is going through a significant refactor.
+> [!CAUTION] This library is going through a significant refactor.
 See [the roadmap](#roadmap) below for details.
 
 A collection of relatively small utility libraries written in C11 that can be used as the foundation for various applications, though probably more oriented towards games.
