@@ -471,7 +471,7 @@ static void GLBindTexture( const PLGTexture *texture );
 static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter );
 static void GLSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode );
 static unsigned int TranslateWrapMode( PLGTextureWrapMode wrapMode );
-#pragma message "TODO: this should be CreateFrameBufferTextureAttachment, not GET!"
+//TODO: this should be CreateFrameBufferTextureAttachment, not GET!
 static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int components, PLGTextureFilter filter, PLGTextureWrapMode wrap ) {
 	PLGTexture *texture = gInterface->CreateTexture();
 	if ( texture == NULL ) {
@@ -1785,6 +1785,8 @@ static GLenum TranslateCompareFunction( PLGCompareFunction compareFunction ) {
 			return GL_GEQUAL;
 		case PLG_COMPARE_ALWAYS:
 			return GL_ALWAYS;
+		default:
+			break;
 	}
 
 	return XGL_INVALID;

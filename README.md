@@ -136,7 +136,7 @@ As of July 2025, I've decided to start work on a radical overhaul of the library
 - [ ] Split plcore into multiple libraries (e.g., `qmimage`, `qmmath`, etc.)
 - [ ] Refactor `plgraphics` into `qmgfx`, and slim it down
 - [ ] Refactor `plmodel` into `qmmodel`
-- [ ] Discard `plwindow` api
+- [x] Discard `plwindow` api
 - [ ] Ensure better test coverage
 
 # Users
