@@ -76,8 +76,8 @@ void PlRegisterConsoleCommand( const char *name, const char *description, int ar
 		PL_ZERO( cmd, sizeof( PLConsoleCommand ) );
 		cmd->Callback = CallbackFunction;
 
-		size_t s = strlen( name );
-		cmd->name = PL_NEW_( char, s + 1 );
+		size_t s = strlen( name ) + 1;
+		cmd->name = PL_NEW_( char, s );
 		strncpy( cmd->name, name, s );
 		pl_strtolower( cmd->name );
 
@@ -87,8 +87,8 @@ void PlRegisterConsoleCommand( const char *name, const char *description, int ar
 		strncpy( cmd->name, name, s );
 
 		if ( description != NULL ) {
-			s = strlen( description );
-			cmd->description = PL_NEW_( char, s + 1 );
+			s = strlen( description ) + 1;
+			cmd->description = PL_NEW_( char, s );
 			strncpy( cmd->description, description, s );
 		}
 
@@ -141,8 +141,8 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *desc
 
 		out->archive = archive;
 
-		size_t s = strlen( name );
-		out->name = PL_NEW_( char, s + 1 );
+		size_t s = strlen( name ) + 1;
+		out->name = PL_NEW_( char, s );
 		strncpy( out->name, name, s );
 		pl_strtolower( out->name );
 
@@ -152,8 +152,8 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *desc
 		strncpy( out->name, name, s );
 
 		if ( description != NULL ) {
-			s = strlen( description );
-			out->description = PL_NEW_( char, s + 1 );
+			s = strlen( description ) + 1;
+			out->description = PL_NEW_( char, s );
 			strncpy( out->description, description, s );
 		}
 
@@ -267,7 +267,7 @@ void PlSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
 			break;
 	}
 
-	strncpy( var->value, value, sizeof( var->value ) );
+	snprintf( var->value, sizeof( var->value ), "%s", value );
 
 	if ( var->CallbackFunction != NULL ) {
 		var->CallbackFunction( var );
@@ -665,7 +665,7 @@ void PlSetupLogOutput( const char *path ) {
 		return;
 	}
 
-	strncpy( logOutputPath, path, sizeof( logOutputPath ) );
+	snprintf( logOutputPath, sizeof( logOutputPath ), "%s", path );
 	if ( PlFileExists( logOutputPath ) ) {
 		unlink( logOutputPath );
 	}

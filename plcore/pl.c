@@ -380,7 +380,7 @@ void PlReportError( PLFunctionResult result, const char *function, const char *m
 
 	va_end( args );
 
-	strncpy( loc_function, function, sizeof( loc_function ) );
+	snprintf( loc_function, sizeof( loc_function ), "%s", function );
 
 	global_result = result;
 }

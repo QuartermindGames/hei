@@ -229,7 +229,7 @@ PLImage *PlLoadImage( const char *path ) {
 			continue;
 		}
 
-		strncpy( image->path, path, sizeof( image->path ) );
+		snprintf( image->path, sizeof( image->path ), "%s", path );
 		return image;
 	}
 

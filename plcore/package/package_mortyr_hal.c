@@ -65,7 +65,7 @@ PLPackage *PlParseHalPackage_( PLFile *file ) {
 		PLPackageIndex *index = &package->table[ i ];
 		index->offset = indices[ i ].offset;
 		index->fileSize = indices[ i ].size;
-		strncpy( index->fileName, indices[ i ].name, sizeof( index->fileName ) );
+		snprintf( index->fileName, sizeof( index->fileName ), "%s", indices[ i ].name );
 	}
 
 	PlFree( indices );
