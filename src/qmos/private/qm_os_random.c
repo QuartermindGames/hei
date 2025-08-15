@@ -7,6 +7,14 @@
 
 #include "qmos/public/qm_os.h"
 
+#if defined( _WIN32 )
+static int rand_r( unsigned int *seed )
+{
+	*seed = *seed * 1103515245 + 12345;
+	return *seed / 65536 % ( RAND_MAX - 1 );
+}
+#endif
+
 unsigned int qm_os_random_seed_initialize()
 {
 	return ( unsigned int ) time( nullptr ) + ( unsigned int ) clock();

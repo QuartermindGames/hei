@@ -76,6 +76,11 @@ char *pl_strnreverse( char *string, size_t size ) {
 	return string;
 }
 
+#if defined( _MSC_VER )
+// ssize_t isn't available per MSVC :(
+typedef intptr_t ssize_t;
+#endif
+
 char *pl_strrstr( char *haystack, const char *needle ) {
 	size_t ns = strlen( needle );
 	if ( ns == 0 ) {

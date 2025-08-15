@@ -2,13 +2,31 @@
 
 #pragma once
 
-/////////////////////////////////////////////////////////////////////////////////////
-// Random
-/////////////////////////////////////////////////////////////////////////////////////
+// technically MSVC isn't supported right now by this library, 
+// at least not until C23 is formally supported, however these 
+// *may* help it compile...
+#if defined( _MSC_VER ) && !defined( __cplusplus )
+#	define nullptr   NULL
+#	define constexpr const
+#endif
 
-unsigned int qm_os_random_seed_initialize();
+#if defined( __cplusplus )
+extern "C"
+{
+#endif
 
-int qm_os_random_int( unsigned int *seed );
+	/////////////////////////////////////////////////////////////////////////////////////
+	// Random
+	// Please note that these are no way reliable or secure!
+	/////////////////////////////////////////////////////////////////////////////////////
 
-float qm_os_random_float( unsigned int *seed, float max );
-float qm_os_random_uniform_float( unsigned int *seed, float minMax );
+	unsigned int qm_os_random_seed_initialize();
+
+	int qm_os_random_int( unsigned int *seed );
+
+	float qm_os_random_float( unsigned int *seed, float max );
+	float qm_os_random_uniform_float( unsigned int *seed, float minMax );
+
+#if defined( __cplusplus )
+};
+#endif
