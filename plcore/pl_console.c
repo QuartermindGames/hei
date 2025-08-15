@@ -31,13 +31,13 @@ static PLConsoleCommand *PlGetConsoleCommand( const char *name ) {
 	}
 
 	// convert it so it's case insensitive here...
-	size_t s = strlen( name );
-	char *tmp = PL_NEW_( char, s + 1 );
+	size_t s = strlen( name ) + 1;
+	char *tmp = PL_NEW_( char, s );
 	for ( unsigned int i = 0; i < s; ++i ) {
 		tmp[ i ] = ( char ) tolower( name[ i ] );
 	}
 
-	PLConsoleCommand *command = ( PLConsoleCommand * ) PlLookupHashTableUserData( commandHashes, tmp, s );
+	PLConsoleCommand *command = PlLookupHashTableUserData( commandHashes, tmp, s );
 
 	PL_DELETE( tmp );
 
@@ -184,13 +184,13 @@ PLConsoleVariable *PlGetConsoleVariable( const char *name ) {
 	}
 
 	// convert it so it's case insensitive here...
-	size_t s = strlen( name );
-	char *tmp = PL_NEW_( char, s + 1 );
+	size_t s = strlen( name ) + 1;
+	char *tmp = PL_NEW_( char, s );
 	for ( unsigned int i = 0; i < s; ++i ) {
 		tmp[ i ] = ( char ) tolower( name[ i ] );
 	}
 
-	PLConsoleVariable *var = ( PLConsoleVariable * ) PlLookupHashTableUserData( variableHashes, tmp, s );
+	PLConsoleVariable *var = PlLookupHashTableUserData( variableHashes, tmp, s );
 
 	PL_DELETE( tmp );
 
