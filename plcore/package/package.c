@@ -339,14 +339,14 @@ PLPackage *PlLoadPackage( const char *path ) {
 			if ( pl_strncasecmp( ext, package_loaders[ i ].ext, sizeof( package_loaders[ i ].ext ) ) == 0 ) {
 				PLPackage *package = package_loaders[ i ].LoadFunction( path );
 				if ( package != NULL ) {
-					strncpy( package->path, path, sizeof( package->path ) );
+					snprintf( package->path, sizeof( package->path ), "%s", path );
 					return package;
 				}
 			}
 		} else if ( PL_INVALID_STRING( ext ) && PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
 			PLPackage *package = package_loaders[ i ].LoadFunction( path );
 			if ( package != NULL ) {
-				strncpy( package->path, path, sizeof( package->path ) );
+				snprintf( package->path, sizeof( package->path ), "%s", path );
 				return package;
 			}
 		}
@@ -385,7 +385,7 @@ PLPackage *PlLoadPackage( const char *path ) {
 	PlCloseFile( file );
 
 	if ( package != NULL && *package->path == '\0' ) {
-		strncpy( package->path, path, sizeof( package->path ) );
+		snprintf( package->path, sizeof( package->path ), "%s", path );
 	} else if ( PlGetFunctionResult() == PL_RESULT_SUCCESS ) {
 		/* this was clearly not the case... */
 		PlReportBasicError( PL_RESULT_UNSUPPORTED );
