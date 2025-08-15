@@ -208,7 +208,7 @@ bool PlgUploadTextureImage( PLGTexture *texture, const PLImage *upload ) {
 	if ( file_name == NULL || file_name[ 0 ] == '\0' ) {
 		strncpy( texture->name, "null", sizeof( texture->name ) );
 	} else {
-		strncpy( texture->name, file_name, sizeof( texture->name ) );
+		snprintf( texture->name, sizeof( texture->name ), "%s", file_name );
 	}
 
 	BindTexture( texture );
