@@ -70,3 +70,4 @@ endif ()
 # New
 add_subdirectory(src/qmos)
 #add_subdirectory(src/qmmath)
+add_subdirectory(src/qmfs)

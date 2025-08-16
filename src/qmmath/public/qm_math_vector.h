@@ -22,7 +22,7 @@ typedef struct QmMathVector2f
 
 static inline QmMathVector2f qm_math_vector2f( const float x, const float y )
 {
-	return ( QmMathVector2f ) { x, y };
+	return ( QmMathVector2f ) { .x = x, .y = y };
 }
 
 static inline QmMathVector2f qm_math_vector2f_add( const QmMathVector2f src, const QmMathVector2f add )
@@ -71,7 +71,7 @@ typedef struct QmMathVector3f
 
 static inline QmMathVector3f qm_math_vector3f( const float x, const float y, const float z )
 {
-	return ( QmMathVector3f ) { x, y, z };
+	return ( QmMathVector3f ) { .x = x, .y = y, .z = z };
 }
 
 static inline QmMathVector3f qm_math_vector3f_add( const QmMathVector3f src, const QmMathVector3f add )
@@ -121,7 +121,7 @@ typedef struct QmMathVector4f
 
 static inline QmMathVector4f qm_math_vector4f( const float x, const float y, const float z, const float w )
 {
-	return ( QmMathVector4f ) { x, y, z, w };
+	return ( QmMathVector4f ) { .x = x, .y = y, .z = z, .w = w };
 }
 
 static inline QmMathVector4f qm_math_vector4f_scale( const QmMathVector4f src, const QmMathVector4f scale )
