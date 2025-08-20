@@ -36,7 +36,9 @@ SOFTWARE.
 #	include <GL/glxew.h>
 #endif
 
-#define DEBUG_GL
+#if !defined( NDEBUG )
+#	define DEBUG_GL
+#endif
 
 struct {
 	bool generate_mipmap;
@@ -1951,6 +1953,11 @@ static void MessageCallback(
 	PL_UNUSEDVAR( id );
 	PL_UNUSEDVAR( length );
 	PL_UNUSEDVAR( param );
+
+	if ( severity == GL_DEBUG_SEVERITY_LOW )
+	{
+		return;
+	}
 
 	const char *s_severity;
 	switch ( severity ) {
