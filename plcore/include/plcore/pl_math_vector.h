@@ -6,7 +6,9 @@
 
 #pragma once
 
-#include "qmmath/public/qm_math.h"
+#include <stdbool.h>
+
+#include "qmmath/public/qm_math_vector.h"
 
 typedef QmMathVector2f PLVector2;
 typedef QmMathVector3f PLVector3;

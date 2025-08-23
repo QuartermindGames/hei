@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <stdbool.h>
+
 #include "qmmath/public/qm_math_vector.h"
 
 #include <plcore/pl.h>
