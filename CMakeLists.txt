@@ -44,6 +44,10 @@ endif ()
 
 enable_testing()
 
+add_subdirectory(src/qmos)
+add_subdirectory(src/qmmath)
+add_subdirectory(src/qmfs)
+
 add_subdirectory(plcore)
 add_subdirectory(plgraphics)
 add_subdirectory(plmodel)
@@ -66,8 +70,3 @@ endif (PL_BUILD_PLUGINS)
 if (PL_BUILD_EXAMPLES)
     add_subdirectory(examples/cpj_dumper)
 endif ()
-
-# New
-add_subdirectory(src/qmos)
-#add_subdirectory(src/qmmath)
-add_subdirectory(src/qmfs)

@@ -182,7 +182,7 @@ PLVector3 PlParseVector( const char **p, bool *status ) {
 	float y = PlParseFloat( p, status );
 	float z = PlParseFloat( p, status );
 	if ( *( *p ) == ')' ) { ( *p )++; }
-	return PL_VECTOR3( x, y, z );
+	return qm_math_vector3f( x, y, z );
 }
 
 /**

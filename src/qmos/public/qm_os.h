@@ -1,4 +1,4 @@
-// Copyright © 2020-2025 Quartermind Games, Mark E. Sowden <hogsy@snortysoft.net>
+// Copyright © 2017-2025 Quartermind Games, Mark E. Sowden <hogsy@snortysoft.net>
 
 #pragma once
 
@@ -111,7 +111,6 @@ enum
 
 #define QM_OS_MIN( A, B )            ( ( A ) < ( B ) ? ( A ) : ( B ) )
 #define QM_OS_MAX( A, B )            ( ( A ) > ( B ) ? ( A ) : ( B ) )
-#define QM_OS_CLAMP( MIN, VAL, MAX ) ( VAL ) < ( MIN ) ? ( MIN ) : ( ( VAL ) > ( MAX ) ? ( MAX ) : ( VAL ) )
 
 #define QM_OS_BIT_FLAG( A, B ) A = ( 1U << B )
 

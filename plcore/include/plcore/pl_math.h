@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "qmmath/public/qm_math_vector.h"
+
 #include <plcore/pl.h>
 
 PL_EXTERN_C
@@ -263,7 +265,7 @@ static inline const char *PlPrintColour( PLColour c ) {
 }
 
 static inline PLVector4 PlColourToVector4( const PLColour *c ) {
-	/* reversed: 
+	/* reversed:
 	 * error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax */
 	PLVector4 v;
 	v.x = PlByteToFloat( c->r );
@@ -528,24 +530,27 @@ static inline float PlLinearInterpolate( float y1, float y2, float mu ) {
 	return ( y1 * ( 1 - mu ) + y2 * mu );
 }
 
-static inline PLVector3 PlLinearInterpolateV3f( PLVector3 a, PLVector3 b, float mu ) {
+static inline PLVector3 PlLinearInterpolateV3f( PLVector3 a, PLVector3 b, float mu )
+{
 	return ( PLVector3 ) {
-	        PlLinearInterpolate( a.x, b.x, mu ),
-	        PlLinearInterpolate( a.y, b.y, mu ),
-	        PlLinearInterpolate( a.z, b.z, mu ),
+	        .x = PlLinearInterpolate( a.x, b.x, mu ),
+	        .y = PlLinearInterpolate( a.y, b.y, mu ),
+	        .z = PlLinearInterpolate( a.z, b.z, mu ),
 	};
 }
 
-static inline float PlCosineInterpolate( float y1, float y2, float mu ) {
+static inline float PlCosineInterpolate( float y1, float y2, float mu )
+{
 	float mu2 = ( 1 - cosf( mu * ( float ) PL_PI ) ) / 2;
 	return ( y1 * ( 1 - mu2 ) + y2 * mu2 );
 }
 
-static inline PLVector3 PlCosineInterpolateV3f( PLVector3 a, PLVector3 b, float mu ) {
+static inline PLVector3 PlCosineInterpolateV3f( PLVector3 a, PLVector3 b, float mu )
+{
 	return ( PLVector3 ) {
-	        PlCosineInterpolate( a.x, b.x, mu ),
-	        PlCosineInterpolate( a.y, b.y, mu ),
-	        PlCosineInterpolate( a.z, b.z, mu ),
+	        .x = PlCosineInterpolate( a.x, b.x, mu ),
+	        .y = PlCosineInterpolate( a.y, b.y, mu ),
+	        .z = PlCosineInterpolate( a.z, b.z, mu ),
 	};
 }
 

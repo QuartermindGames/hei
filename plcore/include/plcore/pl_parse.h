@@ -8,6 +8,8 @@
 
 #include <plcore/pl.h>
 
+#include "pl_math_vector.h"
+
 enum {
 	PL_PARSE_NL_INVALID = -1,
 	PL_PARSE_NL_EOF = 0,
@@ -16,8 +18,6 @@ enum {
 };
 
 PL_EXTERN_C
-
-typedef struct PLVector3 PLVector3;
 
 #if !defined( PL_COMPILE_PLUGIN )
 

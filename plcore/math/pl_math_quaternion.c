@@ -7,7 +7,7 @@
 #include <plcore/pl_math.h>
 
 PLQuaternion PlMultiplyQuaternion( const PLQuaternion *q, const PLQuaternion *q2 ) {
-	return PlQuaternion(
+	return qm_math_vector4f(
 	        ( q->x * q2->w ) + ( q->w * q2->x ) + ( q->y * q2->z ) - ( q->z * q2->y ),
 	        ( q->y * q2->w ) + ( q->w * q2->y ) + ( q->z * q2->x ) - ( q->x * q2->z ),
 	        ( q->z * q2->w ) + ( q->w * q2->z ) + ( q->x * q2->y ) - ( q->y * q2->x ),
@@ -15,7 +15,7 @@ PLQuaternion PlMultiplyQuaternion( const PLQuaternion *q, const PLQuaternion *q2
 }
 
 PLQuaternion PlMultiplyQuaternion3FV( const PLQuaternion *q, const PLVector3 *v ) {
-	return PlQuaternion(
+	return qm_math_vector4f(
 	        ( q->w * v->x ) + ( q->y * v->z ) - ( q->z * v->y ),
 	        ( q->w * v->y ) + ( q->z * v->x ) - ( q->x * v->z ),
 	        ( q->w * v->z ) + ( q->x * v->y ) - ( q->y * v->x ),
@@ -23,19 +23,19 @@ PLQuaternion PlMultiplyQuaternion3FV( const PLQuaternion *q, const PLVector3 *v 
 }
 
 PLQuaternion PlScaleQuaternion( const PLQuaternion *q, float a ) {
-	return PlQuaternion( q->x * a, q->y * a, q->z * a, q->w * a );
+	return qm_math_vector4f( q->x * a, q->y * a, q->z * a, q->w * a );
 }
 
 PLQuaternion PlAddQuaternion( const PLQuaternion *q, const PLQuaternion *q2 ) {
-	return PlQuaternion( q->x + q2->x, q->y + q2->y, q->z + q2->z, q->w + q2->w );
+	return qm_math_vector4f( q->x + q2->x, q->y + q2->y, q->z + q2->z, q->w + q2->w );
 }
 
 PLQuaternion PlAddQuaternionF( const PLQuaternion *q, float a ) {
-	return PlQuaternion( q->x + a, q->y + a, q->z + a, q->z + a );
+	return qm_math_vector4f( q->x + a, q->y + a, q->z + a, q->z + a );
 }
 
 PLQuaternion PlInverseQuaternion( const PLQuaternion *q ) {
-	return PlQuaternion( -q->x, -q->y, -q->z, q->w );
+	return qm_math_vector4f( -q->x, -q->y, -q->z, q->w );
 }
 
 float PlQuaternionDotProduct( const PLQuaternion *q, const PLQuaternion *q2 ) {

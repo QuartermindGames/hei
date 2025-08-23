@@ -156,3 +156,5 @@ target_include_directories(plcore
         PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}"
 )
+
+target_link_libraries(plcore qm-math qm-os)

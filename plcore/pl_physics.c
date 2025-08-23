@@ -11,7 +11,7 @@
 float PlComputeSphereFromCoords( const PLVector3 *vertices, unsigned int numVertices ) {
 	float maxRadius = 0.0f;
 	for ( unsigned int i = 0; i < numVertices; ++i ) {
-		float radius = PlVector3Length( vertices[ i ] );
+		float radius = qm_math_vector3f_length( vertices[ i ] );
 		if ( radius > maxRadius ) {
 			maxRadius = radius;
 		}
@@ -24,8 +24,8 @@ float PlComputeSphereFromCoords( const PLVector3 *vertices, unsigned int numVert
 PLCollisionAABB PlGenerateAabbFromCoords( const PLVector3 *vertices, unsigned int numVertices, bool absolute ) {
 	PLCollisionAABB bounds;
 	if ( absolute ) {
-		bounds.maxs = ( PLVector3 ) { vertices[ 0 ].x, vertices[ 0 ].y, vertices[ 0 ].z };
-		bounds.mins = ( PLVector3 ) { vertices[ 0 ].x, vertices[ 0 ].y, vertices[ 0 ].z };
+		bounds.maxs = qm_math_vector3f( vertices[ 0 ].x, vertices[ 0 ].y, vertices[ 0 ].z );
+		bounds.mins = qm_math_vector3f( vertices[ 0 ].x, vertices[ 0 ].y, vertices[ 0 ].z );
 
 		for ( unsigned int i = 0; i < numVertices; ++i ) {
 			if ( bounds.maxs.x < vertices[ i ].x ) { bounds.maxs.x = vertices[ i ].x; }
@@ -52,8 +52,8 @@ PLCollisionAABB PlGenerateAabbFromCoords( const PLVector3 *vertices, unsigned in
 		if ( max < 0 ) { max *= -1; }
 
 		float abs = min > max ? min : max;
-		bounds.maxs = PL_VECTOR3( abs, abs, abs );
-		bounds.mins = PL_VECTOR3( -abs, -abs, -abs );
+		bounds.maxs = qm_math_vector3f( abs, abs, abs );
+		bounds.mins = qm_math_vector3f( -abs, -abs, -abs );
 	}
 
 	/* abs origin is the middle of the bounding volume (wherever it is) and origin is the transformative point */
@@ -63,18 +63,19 @@ PLCollisionAABB PlGenerateAabbFromCoords( const PLVector3 *vertices, unsigned in
 	return bounds;
 }
 
-PLVector3 PlGetAabbAbsOrigin( const PLCollisionAABB *bounds, PLVector3 origin ) {
-	PLVector3 absOrigin = PL_VECTOR3( ( bounds->mins.x + bounds->maxs.x ) / 2,
-	                                  ( bounds->mins.y + bounds->maxs.y ) / 2,
-	                                  ( bounds->mins.z + bounds->maxs.z ) / 2 );
-	return PlAddVector3( origin, absOrigin );
+PLVector3 PlGetAabbAbsOrigin( const PLCollisionAABB *bounds, PLVector3 origin )
+{
+	PLVector3 absOrigin = qm_math_vector3f( ( bounds->mins.x + bounds->maxs.x ) / 2,
+	                                        ( bounds->mins.y + bounds->maxs.y ) / 2,
+	                                        ( bounds->mins.z + bounds->maxs.z ) / 2 );
+	return qm_math_vector3f_add( origin, absOrigin );
 }
 
 bool PlIsAabbIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB *bBounds ) {
-	PLVector3 aMax = PlAddVector3( aBounds->maxs, aBounds->origin );
-	PLVector3 aMin = PlAddVector3( aBounds->mins, aBounds->origin );
-	PLVector3 bMax = PlAddVector3( bBounds->maxs, bBounds->origin );
-	PLVector3 bMin = PlAddVector3( bBounds->mins, bBounds->origin );
+	PLVector3 aMax = qm_math_vector3f_add( aBounds->maxs, aBounds->origin );
+	PLVector3 aMin = qm_math_vector3f_add( aBounds->mins, aBounds->origin );
+	PLVector3 bMax = qm_math_vector3f_add( bBounds->maxs, bBounds->origin );
+	PLVector3 bMin = qm_math_vector3f_add( bBounds->mins, bBounds->origin );
 
 	return !(
 	        aMax.x < bMin.x ||
@@ -86,8 +87,8 @@ bool PlIsAabbIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB
 }
 
 bool PlIsPointIntersectingAabb( const PLCollisionAABB *bounds, PLVector3 point ) {
-	PLVector3 max = PlAddVector3( bounds->maxs, bounds->origin );
-	PLVector3 min = PlAddVector3( bounds->mins, bounds->origin );
+	PLVector3 max = qm_math_vector3f_add( bounds->maxs, bounds->origin );
+	PLVector3 min = qm_math_vector3f_add( bounds->mins, bounds->origin );
 
 	return !(
 	        point.x > max.x ||
@@ -98,22 +99,23 @@ bool PlIsPointIntersectingAabb( const PLCollisionAABB *bounds, PLVector3 point )
 	        point.z < min.z );
 }
 
-static PLVector3 FindClosestPointOnAabb( const PLCollisionAABB *bounds, const PLVector3 *point ) {
-	return ( PLVector3 ) {
+static PLVector3 FindClosestPointOnAabb( const PLCollisionAABB *bounds, const PLVector3 *point )
+{
+	return qm_math_vector3f(
 	        PL_MAX( bounds->mins.x, PL_MIN( bounds->maxs.x, point->x ) ),
 	        PL_MAX( bounds->mins.y, PL_MIN( bounds->maxs.y, point->y ) ),
-	        PL_MAX( bounds->mins.z, PL_MIN( bounds->maxs.z, point->z ) ) };
+	        PL_MAX( bounds->mins.z, PL_MIN( bounds->maxs.z, point->z ) ) );
 }
 
 bool PlIsSphereIntersectingAabb( const PLCollisionSphere *sphere, const PLCollisionAABB *bounds ) {
 	PLVector3 point = FindClosestPointOnAabb( bounds, &sphere->origin );
-	float distance = PlVector3Length( PlSubtractVector3( point, sphere->origin ) );
+	float distance = qm_math_vector3f_length( qm_math_vector3f_sub( point, sphere->origin ) );
 	return ( distance <= sphere->radius );
 }
 
 bool PlIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere ) {
-	PLVector3 difference = PlSubtractVector3( aSphere->origin, bSphere->origin );
-	float distance = PlVector3Length( difference );
+	PLVector3 difference = qm_math_vector3f_sub( aSphere->origin, bSphere->origin );
+	float distance = qm_math_vector3f_length( difference );
 	float sum_radius = aSphere->radius + bSphere->radius;
 	return distance < sum_radius;
 }
@@ -122,21 +124,21 @@ PLCollision PlIsSphereIntersectingPlane( const PLCollisionSphere *sphere, const 
 	PLCollision collision;
 	PL_ZERO_( collision );
 
-	PLVector3 pDist = PlSubtractVector3( sphere->origin, plane->origin );
+	PLVector3 pDist = qm_math_vector3f_sub( sphere->origin, plane->origin );
 
 	/* distance from the sphere to the plane */
-	float distance = PlVector3DotProduct( plane->normal, pDist ) - ( sphere->radius * 2.0f );
+	float distance = qm_math_vector3f_dot_product( plane->normal, pDist ) - ( sphere->radius * 2.0f );
 
 	collision.contactNormal = plane->normal;
-	collision.contactPoint = PlScaleVector3F( PlSubtractVector3( sphere->origin, plane->normal ), distance );
+	collision.contactPoint = qm_math_vector3f_scale_float( qm_math_vector3f_sub( sphere->origin, plane->normal ), distance );
 	collision.penetration = -distance;
 
 	return collision;
 }
 
 bool PlIsAabbIntersectingPlane( const PLCollisionAABB *aabb, const PLCollisionPlane *plane, PLCollision *result ) {
-	float distance = PlVector3DotProduct( plane->normal, aabb->origin ) -
-	                 PlVector3DotProduct( plane->normal, plane->origin );
+	float distance = qm_math_vector3f_dot_product( plane->normal, aabb->origin ) -
+	                 qm_math_vector3f_dot_product( plane->normal, plane->origin );
 
 	PLVector3 halfDimension;
 	halfDimension.x = ( aabb->maxs.x - aabb->mins.x ) / 2.0f;
@@ -151,7 +153,7 @@ bool PlIsAabbIntersectingPlane( const PLCollisionAABB *aabb, const PLCollisionPl
 		*result = ( PLCollision ) {};
 		result->penetration = extents - distance;
 		result->contactNormal = plane->normal;
-		result->contactPoint = PlScaleVector3F( PlAddVector3( aabb->origin, plane->normal ), result->penetration );
+		result->contactPoint = qm_math_vector3f_scale_float( qm_math_vector3f_add( aabb->origin, plane->normal ), result->penetration );
 		return true;
 	}
 
@@ -160,8 +162,8 @@ bool PlIsAabbIntersectingPlane( const PLCollisionAABB *aabb, const PLCollisionPl
 
 /* https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c */
 bool PlIsRayIntersectingAabb( const PLCollisionAABB *bounds, const PLCollisionRay *ray, PLVector3 *hitPoint ) {
-	PLVector3 max = PlAddVector3( bounds->maxs, bounds->origin );
-	PLVector3 min = PlAddVector3( bounds->mins, bounds->origin );
+	PLVector3 max = qm_math_vector3f_add( bounds->maxs, bounds->origin );
+	PLVector3 min = qm_math_vector3f_add( bounds->mins, bounds->origin );
 
 	/* Find candidate planes */
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Hei Platform Library
-// Copyright © 2020-2025 Quartermind Games, Mark E. Sowden <hogsy@snortysoft.net>
+// Copyright © 2017-2025 Quartermind Games, Mark E. Sowden <hogsy@snortysoft.net>
 
 #include <plcore/pl_compression.h>
 
