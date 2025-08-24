@@ -63,15 +63,6 @@ const char *PlPrintQuaternion( const PLQuaternion *q ) {
 	return s;
 }
 
-void PlComputeQuaternionW( PLQuaternion *q ) {
-	float t = 1.f - ( q->x * q->x ) - ( q->y * q->y ) - ( q->z * q->z );
-	if ( t < 0 ) {
-		q->w = 0;
-	} else {
-		q->w = -sqrtf( t );
-	}
-}
-
 PLVector3 PlQuaternionToEuler( const PLQuaternion *q ) {
 	PLVector3 v;
 
@@ -93,26 +84,6 @@ PLVector3 PlQuaternionToEuler( const PLQuaternion *q ) {
 	v.z = atan2f( sinrCosp, cosrCosp );
 
 	return v;
-}
-
-PLQuaternion PlEulerToQuaternion( const PLVector3 *v ) {
-	/* pitch */
-	float cp = cosf( v->x * 0.5f );
-	float sp = sinf( v->x * 0.5f );
-	/* yaw */
-	float cy = cosf( v->y * 0.5f );
-	float sy = sinf( v->y * 0.5f );
-	/* roll */
-	float cr = cosf( v->z * 0.5f );
-	float sr = sinf( v->z * 0.5f );
-
-	PLQuaternion q;
-	q.x = sr * cp * cy - cr * sp * sy;
-	q.y = cr * sp * cy + sr * cp * sy;
-	q.z = cr * cp * sy - sr * sp * cy;
-	q.w = cr * cp * cy + sr * sp * sy;
-
-	return q;
 }
 
 /* pulled from here: http://tfc.duke.free.fr/coding/md5-specs-en.html */

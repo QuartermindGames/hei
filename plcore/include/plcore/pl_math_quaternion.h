@@ -30,9 +30,6 @@ PLQuaternion PlNormalizeQuaternion( const PLQuaternion *q );
 
 const char *PlPrintQuaternion( const PLQuaternion *q );
 
-void PlComputeQuaternionW( PLQuaternion *q );
-
 PLVector3 PlQuaternionToEuler( const PLQuaternion *q );
-PLQuaternion PlEulerToQuaternion( const PLVector3 *v );
 
 PLQuaternion PlRotateQuaternionPoint( const PLQuaternion *q, const PLVector3 *point );
