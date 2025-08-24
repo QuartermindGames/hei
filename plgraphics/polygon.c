@@ -66,9 +66,9 @@ void PlgGeneratePolygonFaceNormal( PLGPolygon *polygon ) {
 		        polygon->vertices[ b ].position,
 		        polygon->vertices[ c ].position );
 
-		normals[ a ] = PlAddVector3( normals[ a ], normal );
-		normals[ b ] = PlAddVector3( normals[ b ], normal );
-		normals[ c ] = PlAddVector3( normals[ c ], normal );
+		normals[ a ] = qm_math_vector3f_add( normals[ a ], normal );
+		normals[ b ] = qm_math_vector3f_add( normals[ b ], normal );
+		normals[ c ] = qm_math_vector3f_add( normals[ c ], normal );
 	}
 
 	polygon->normal = normals[ 0 ];

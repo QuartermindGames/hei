@@ -41,11 +41,11 @@ PLGMesh *PlgImmBegin( PLGMeshPrimitive primitive ) {
 }
 
 unsigned int PlgImmPushVertex( float x, float y, float z ) {
-	return ( currentVertex = PlgAddMeshVertex( currentDynamicMesh, &PL_VECTOR3( x, y, z ), &pl_vecOrigin3, &PL_COLOUR_WHITE, &pl_vecOrigin2 ) );
+	return ( currentVertex = PlgAddMeshVertex( currentDynamicMesh, &QM_MATH_VECTOR3F( x, y, z ), &pl_vecOrigin3, &PL_COLOUR_WHITE, &pl_vecOrigin2 ) );
 }
 
 void PlgImmNormal( float x, float y, float z ) {
-	PlgSetMeshVertexNormal( currentDynamicMesh, currentVertex, &PL_VECTOR3( x, y, z ) );
+	PlgSetMeshVertexNormal( currentDynamicMesh, currentVertex, &QM_MATH_VECTOR3F( x, y, z ) );
 }
 
 void PlgImmColour( uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
@@ -85,7 +85,7 @@ unsigned int PlgPushTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, uns
 }
 
 unsigned int PlgPushVertex3f( PLGMesh *mesh, float x, float y, float z ) {
-	return PlgAddMeshVertex( mesh, &PL_VECTOR3( x, y, z ), &pl_vecOrigin3, &PL_COLOUR_WHITE, &pl_vecOrigin2 );
+	return PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x, y, z ), &pl_vecOrigin3, &PL_COLOUR_WHITE, &pl_vecOrigin2 );
 }
 
 unsigned int PlgPushVertex3fv( PLGMesh *mesh, const PLVector3 *vec ) {
@@ -122,7 +122,7 @@ void PlgDrawEllipse( unsigned int segments, const PLVector2 *position, float w, 
 			break;
 		}
 
-		PLVector3 coord = PL_VECTOR3(
+		PLVector3 coord = qm_math_vector3f(
 		        ( position->x + w ) + cosf( PL_DEG2RAD( ( float ) i ) ) * w,
 		        ( position->y + h ) + sinf( PL_DEG2RAD( ( float ) i ) ) * h,
 		        0.0f );
@@ -199,15 +199,15 @@ void PlgDrawLineRectangle( float x, float y, float w, float h, PLColour colour )
 void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr, float hScale, float vScale, PLGTexture *texture ) {
 	PLGMesh *mesh = GetInternalMesh( PLG_MESH_TRIANGLES );
 
-	PLVector3 upperDist = PlSubtractVector3( *ul, *ur );
-	float quadWidth = PlVector3Length( upperDist ) / hScale;
-	PLVector3 lowerDist = PlSubtractVector3( *ll, *ul );
-	float quadHeight = PlVector3Length( lowerDist ) / vScale;
+	PLVector3 upperDist = qm_math_vector3f_sub( *ul, *ur );
+	float quadWidth = qm_math_vector3f_length( upperDist ) / hScale;
+	PLVector3 lowerDist = qm_math_vector3f_sub( *ll, *ul );
+	float quadHeight = qm_math_vector3f_length( lowerDist ) / vScale;
 
-	PlgAddMeshVertex( mesh, ul, &pl_vecOrigin3, &PL_COLOUR_WHITE, &PL_VECTOR2( 0.0f, quadHeight / texture->h ) );
-	PlgAddMeshVertex( mesh, ur, &pl_vecOrigin3, &PL_COLOUR_WHITE, &PL_VECTOR2( quadWidth / texture->w, quadHeight / texture->h ) );
-	PlgAddMeshVertex( mesh, ll, &pl_vecOrigin3, &PL_COLOUR_WHITE, &PL_VECTOR2( 0.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, lr, &pl_vecOrigin3, &PL_COLOUR_WHITE, &PL_VECTOR2( quadWidth / texture->w, 0.0f ) );
+	PlgAddMeshVertex( mesh, ul, &pl_vecOrigin3, &PL_COLOUR_WHITE, &QM_MATH_VECTOR2F( 0.0f, quadHeight / texture->h ) );
+	PlgAddMeshVertex( mesh, ur, &pl_vecOrigin3, &PL_COLOUR_WHITE, &QM_MATH_VECTOR2F( quadWidth / texture->w, quadHeight / texture->h ) );
+	PlgAddMeshVertex( mesh, ll, &pl_vecOrigin3, &PL_COLOUR_WHITE, &QM_MATH_VECTOR2F( 0.0f, 0.0f ) );
+	PlgAddMeshVertex( mesh, lr, &pl_vecOrigin3, &PL_COLOUR_WHITE, &QM_MATH_VECTOR2F( quadWidth / texture->w, 0.0f ) );
 
 	PlgAddMeshTriangle( mesh, 0, 1, 2 );
 	PlgAddMeshTriangle( mesh, 2, 1, 3 );

@@ -49,9 +49,9 @@ void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, un
 			        vertices[ b ].position,
 			        vertices[ c ].position );
 
-			vertices[ a ].normal = PlAddVector3( vertices[ a ].normal, normal );
-			vertices[ b ].normal = PlAddVector3( vertices[ b ].normal, normal );
-			vertices[ c ].normal = PlAddVector3( vertices[ c ].normal, normal );
+			vertices[ a ].normal = qm_math_vector3f_add( vertices[ a ].normal, normal );
+			vertices[ b ].normal = qm_math_vector3f_add( vertices[ b ].normal, normal );
+			vertices[ c ].normal = qm_math_vector3f_add( vertices[ c ].normal, normal );
 		}
 
 		return;
@@ -61,9 +61,9 @@ void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, un
 }
 
 PLVector3 PlgGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3 c ) {
-	PLVector3 x = PL_VECTOR3( c.x - b.x, c.y - b.y, c.z - b.z );
-	PLVector3 y = PL_VECTOR3( a.x - b.x, a.y - b.y, a.z - b.z );
-	return PlNormalizeVector3( PlVector3CrossProduct( x, y ) );
+	PLVector3 x = qm_math_vector3f( c.x - b.x, c.y - b.y, c.z - b.z );
+	PLVector3 y = qm_math_vector3f( a.x - b.x, a.y - b.y, a.z - b.z );
+	return qm_math_vector3f_normalize( qm_math_vector3f_cross_product( x, y ) );
 }
 
 void PlgGenerateMeshNormals( PLGMesh *mesh, bool perFace ) {
@@ -83,13 +83,13 @@ void PlgGenerateVertexTangentBasis( PLGVertex *vertices, unsigned int numVertice
 		PLVector3 up, forward;
 		PlAnglesAxes( v->normal, NULL, &up, &forward );
 
-		v->tangent = PlVector3CrossProduct( v->normal, forward );
-		if ( PlVector3Length( v->tangent ) == 0 ) {
-			v->tangent = PlVector3CrossProduct( v->normal, up );
+		v->tangent = qm_math_vector3f_cross_product( v->normal, forward );
+		if ( qm_math_vector3f_length( v->tangent ) == 0 ) {
+			v->tangent = qm_math_vector3f_cross_product( v->normal, up );
 		}
 
-		v->tangent = PlNormalizeVector3( v->tangent );
-		v->bitangent = PlNormalizeVector3( PlVector3CrossProduct( v->normal, v->tangent ) );
+		v->tangent = qm_math_vector3f_normalize( v->tangent );
+		v->bitangent = qm_math_vector3f_normalize( qm_math_vector3f_cross_product( v->normal, v->tangent ) );
 	}
 }
 
@@ -101,18 +101,18 @@ void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, con
 		PLGVertex *c = &vertices[ indices[ 2 ] ];
 
 		/* edges of the triangle, aka, position delta */
-		PLVector3 deltaPos1 = PlSubtractVector3( b->position, a->position );
-		PLVector3 deltaPos2 = PlSubtractVector3( c->position, a->position );
+		PLVector3 deltaPos1 = qm_math_vector3f_sub( b->position, a->position );
+		PLVector3 deltaPos2 = qm_math_vector3f_sub( c->position, a->position );
 
 		/* uv delta */
-		PLVector2 deltaUV1 = PlSubtractVector2( &b->st[ 0 ], &a->st[ 0 ] );
-		PLVector2 deltaUV2 = PlSubtractVector2( &c->st[ 0 ], &a->st[ 0 ] );
+		PLVector2 deltaUV1 = qm_math_vector2f_sub( b->st[ 0 ], a->st[ 0 ] );
+		PLVector2 deltaUV2 = qm_math_vector2f_sub( c->st[ 0 ], a->st[ 0 ] );
 
 		/* now actually compute the tangent and bitangent */
 		float r = 1.0f / ( deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x );
 
-		PLVector3 tangent = PlScaleVector3F( PlSubtractVector3( PlScaleVector3F( deltaPos1, deltaUV2.y ), PlScaleVector3F( deltaPos2, deltaUV1.y ) ), r );
-		PLVector3 bitangent = PlScaleVector3F( PlAddVector3( PlScaleVector3F( deltaPos1, -deltaUV2.x ), PlScaleVector3F( deltaPos2, deltaUV1.x ) ), r );
+		PLVector3 tangent = qm_math_vector3f_scale_float( qm_math_vector3f_sub( qm_math_vector3f_scale_float( deltaPos1, deltaUV2.y ), qm_math_vector3f_scale_float( deltaPos2, deltaUV1.y ) ), r );
+		PLVector3 bitangent = qm_math_vector3f_scale_float( qm_math_vector3f_add( qm_math_vector3f_scale_float( deltaPos1, -deltaUV2.x ), qm_math_vector3f_scale_float( deltaPos2, deltaUV1.x ) ), r );
 
 		a->tangent = b->tangent = c->tangent = tangent;
 		a->bitangent = b->bitangent = c->bitangent = bitangent;
@@ -121,8 +121,8 @@ void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, con
 
 /* software implementation of gouraud shading */
 void PlgApplyMeshLighting( PLGMesh *mesh, const PLGLight *light, PLVector3 position ) {
-	PLVector3 distvec = PlSubtractVector3( position, light->position );
-	float distance = ( PlByteToFloat( light->colour.a ) - PlVector3Length( distvec ) ) / 100.f;
+	PLVector3 distvec = qm_math_vector3f_sub( position, light->position );
+	float distance = ( PlByteToFloat( light->colour.a ) - qm_math_vector3f_length( distvec ) ) / 100.f;
 	for ( unsigned int i = 0; i < mesh->num_verts; i++ ) {
 		PLVector3 normal = mesh->vertices[ i ].normal;
 		float angle = ( distance * ( ( normal.x * distvec.x ) + ( normal.y * distvec.y ) + ( normal.z * distvec.z ) ) );
@@ -205,10 +205,10 @@ PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, const PLCol
 		return NULL;
 	}
 
-	PlgAddMeshVertex( mesh, &PL_VECTOR3( x, y, 0.0f ), &pl_vecOrigin3, colour, &PL_VECTOR2( 0.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, &PL_VECTOR3( x, y + h, 0.0f ), &pl_vecOrigin3, colour, &PL_VECTOR2( 0.0f, 1.0f ) );
-	PlgAddMeshVertex( mesh, &PL_VECTOR3( x + w, y, 0.0f ), &pl_vecOrigin3, colour, &PL_VECTOR2( 1.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, &PL_VECTOR3( x + w, y + h, 0.0f ), &pl_vecOrigin3, colour, &PL_VECTOR2( 1.0f, 1.0f ) );
+	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x, y, 0.0f ), &pl_vecOrigin3, colour, &QM_MATH_VECTOR2F( 0.0f, 0.0f ) );
+	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x, y + h, 0.0f ), &pl_vecOrigin3, colour, &QM_MATH_VECTOR2F( 0.0f, 1.0f ) );
+	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x + w, y, 0.0f ), &pl_vecOrigin3, colour, &QM_MATH_VECTOR2F( 1.0f, 0.0f ) );
+	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x + w, y + h, 0.0f ), &pl_vecOrigin3, colour, &QM_MATH_VECTOR2F( 1.0f, 1.0f ) );
 
 	return mesh;
 }
@@ -248,7 +248,7 @@ void PlgClearMeshTriangles( PLGMesh *mesh ) {
 
 void PlgScaleMesh( PLGMesh *mesh, PLVector3 scale ) {
 	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
-		mesh->vertices[ i ].position = PlScaleVector3( mesh->vertices[ i ].position, scale );
+		mesh->vertices[ i ].position = qm_math_vector3f_scale( mesh->vertices[ i ].position, scale );
 	}
 }
 
@@ -271,7 +271,7 @@ void PlgSetMeshVertexNormal( PLGMesh *mesh, unsigned int index, const PLVector3 
 
 void PlgSetMeshVertexST( PLGMesh *mesh, unsigned int index, float s, float t ) {
 	PL_ASSERT( index < mesh->maxVertices );
-	mesh->vertices[ index ].st[ 0 ] = PL_VECTOR2( s, t );
+	mesh->vertices[ index ].st[ 0 ] = qm_math_vector2f( s, t );
 }
 
 void PlgSetMeshVertexSTv( PLGMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st ) {

@@ -8,7 +8,7 @@
 
 #include <stdbool.h>
 
-#include "qmmath/public/qm_math_vector.h"
+#include "../../src/qmmath/public/qm_math_vector.h"
 
 typedef QmMathVector2f PLVector2;
 typedef QmMathVector3f PLVector3;

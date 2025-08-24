@@ -55,9 +55,9 @@ static void SWDrawMesh( PLGMesh *mesh ) {
 		case PLG_MESH_LINES: {
 			for ( unsigned int i = 0; i < mesh->num_verts; i += 2 ) {
 				PLGVertex a = mesh->vertices[ i ];
-				a.position = PlScaleVector3( a.position, transform );
+				a.position = qm_math_vector3f_scale( a.position, transform );
 				PLGVertex b = mesh->vertices[ i ];
-				b.position = PlScaleVector3( b.position, transform );
+				b.position = qm_math_vector3f_scale( b.position, transform );
 				SWDrawLine( &a, &b );
 			}
 			break;
@@ -66,7 +66,7 @@ static void SWDrawMesh( PLGMesh *mesh ) {
 		case PLG_MESH_POINTS: {
 			for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
 				PLGVertex a = mesh->vertices[ i ];
-				a.position = PlScaleVector3( a.position, transform );
+				a.position = qm_math_vector3f_scale( a.position, transform );
 				SWDrawPixel( ( int ) a.position.x, ( int ) a.position.y, a.colour );
 			}
 			break;

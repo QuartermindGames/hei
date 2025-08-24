@@ -65,7 +65,7 @@ void PlExtractMatrix4Directions( const PLMatrix4 *matrix, PLVector3 *left, PLVec
 }
 
 PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up ) {
-	PLVector3 z = PlNormalizeVector3( PlSubtractVector3( eye, center ) );
+	PLVector3 z = PlNormalizeVector3( qm_math_vector3f_sub( eye, center ) );
 	PLVector3 x = PlNormalizeVector3( PlVector3CrossProduct( up, z ) );
 	PLVector3 y = PlVector3CrossProduct( z, x );
 
