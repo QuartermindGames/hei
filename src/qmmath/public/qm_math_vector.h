@@ -382,8 +382,42 @@ extern "C"
 	/////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
 
+	// A few different helper methods -
+	// these should likely go somewhere else, but they can live here for now
+
+	/**
+	 * Compute a radius from a given number of vertices.
+	 * @param vertices Array of vertices to use for determining radius.
+	 * @param numVertices The number of vertices in the array.
+	 * @return The radius.
+	 */
 	float qm_math_compute_radius( const QmMathVector3f *vertices, unsigned int numVertices );
-	void  qm_math_compute_min_max( const QmMathVector3f *vertices, unsigned int numVertices, QmMathVector3f *minsDst, QmMathVector3f *maxsDst, bool absolute );
+
+	/**
+	 * Compute the min and max volume from a given number of vertices.
+	 * @param vertices Array of vertices to use for determining min and max.
+	 * @param numVertices The number of vertices in the array.
+	 * @param minsDst The destination for the min.
+	 * @param maxsDst The destination for the max.
+	 * @param absolute
+	 */
+	void qm_math_compute_min_max( const QmMathVector3f *vertices, unsigned int numVertices, QmMathVector3f *minsDst, QmMathVector3f *maxsDst, bool absolute );
+
+	/**
+	 * Compute the normal based on a given set of vertices.
+	 * @param vertices Array of vertices to use for computing the face normal.
+	 * @param numVertices The number of vertices in the array.
+	 * @return Normalized normal for the face.
+	 */
+	QmMathVector3f qm_math_compute_polygon_normal( const QmMathVector3f *vertices, unsigned int numVertices );
+
+	/**
+	 * Determine whether a polygon is convex or not.
+	 * @param vertices Array of vertices.
+	 * @param numVertices The number of vertices in the array.
+	 * @return Returns true if the given polygon is determined to be convex.
+	 */
+	bool qm_math_is_polygon_convex( const QmMathVector2f *vertices, unsigned int numVertices );
 
 #if defined( __cplusplus )
 };

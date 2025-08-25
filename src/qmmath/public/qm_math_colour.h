@@ -3,7 +3,6 @@
 #pragma once
 
 #include "qm_math.h"
-#include "qm_math_vector.h"
 
 #if defined( __cplusplus )
 extern "C"

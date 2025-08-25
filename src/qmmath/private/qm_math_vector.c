@@ -70,6 +70,57 @@ void qm_math_compute_min_max( const QmMathVector3f *vertices, const unsigned int
 	}
 }
 
+QmMathVector3f qm_math_compute_polygon_normal( const QmMathVector3f *vertices, unsigned int numVertices )
+{
+	QmMathVector3f normal = {};
+	for ( unsigned int i = 0; i < numVertices; i += 3 )
+	{
+		QmMathVector3f a = vertices[ i ];
+		QmMathVector3f b = vertices[ i + 1 ];
+		QmMathVector3f c = vertices[ i + 2 ];
+
+		QmMathVector3f x = qm_math_vector3f( c.x - b.x, c.y - b.y, c.z - b.z );
+		QmMathVector3f y = qm_math_vector3f( a.x - b.x, a.y - b.y, a.z - b.z );
+		QmMathVector3f n = qm_math_vector3f_normalize( qm_math_vector3f_cross_product( x, y ) );
+
+		normal = qm_math_vector3f_add( normal, n );
+	}
+
+	return qm_math_vector3f_normalize( normal );
+}
+
+bool qm_math_is_polygon_convex( const QmMathVector2f *vertices, const unsigned int numVertices )
+{
+	if ( numVertices < 4 )
+	{
+		return true;
+	}
+
+	bool sign = false;
+	for ( unsigned int i = 0; i < numVertices; ++i )
+	{
+		QmMathVector2f a;
+		a.x = vertices[ ( i + 2 ) % numVertices ].x - vertices[ ( i + 1 ) % numVertices ].x;
+		a.y = vertices[ ( i + 2 ) % numVertices ].y - vertices[ ( i + 1 ) % numVertices ].y;
+
+		QmMathVector2f b;
+		b.x = vertices[ i ].x - vertices[ ( i + 1 ) % numVertices ].x;
+		b.y = vertices[ i ].y - vertices[ ( i + 1 ) % numVertices ].y;
+
+		float cp = a.x * b.y - a.y * b.x;
+		if ( i == 0 )
+		{
+			sign = cp > 0.0f;
+		}
+		else if ( sign != ( cp > 0 ) )
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // Print
 /////////////////////////////////////////////////////////////////////////////////////
