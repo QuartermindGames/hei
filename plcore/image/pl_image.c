@@ -549,7 +549,7 @@ void PlClearImageAlpha( PLImage *image ) {
 	}
 }
 
-void PlReplaceImageColour( PLImage *image, PLColour target, PLColour dest ) {
+void PlReplaceImageColour( PLImage *image, QmMathColour4ub target, QmMathColour4ub dest ) {
 	unsigned int num_colours = PlGetNumImageFormatChannels( image->format );
 	switch ( image->format ) {
 		case PL_IMAGEFORMAT_RGB8:
@@ -557,14 +557,14 @@ void PlReplaceImageColour( PLImage *image, PLColour target, PLColour dest ) {
 			for ( unsigned int i = 0; i < image->size; i += num_colours ) {
 				uint8_t *pixel = &image->data[ 0 ][ i ];
 				if ( num_colours == 4 ) {
-					if ( PlCompareColour( PLColour( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ], pixel[ 3 ] ), target ) ) {
+					if ( PlCompareColour( qm_math_colour4ub( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ], pixel[ 3 ] ), target ) ) {
 						pixel[ 0 ] = dest.r;
 						pixel[ 1 ] = dest.g;
 						pixel[ 2 ] = dest.b;
 						pixel[ 3 ] = dest.a;
 					}
 				} else {
-					if ( PlCompareColour( PLColourRGB( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ] ), target ) ) {
+					if ( PlCompareColour( QM_MATH_COLOUR4UB_RGB( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ] ), target ) ) {
 						pixel[ 0 ] = dest.r;
 						pixel[ 1 ] = dest.g;
 						pixel[ 2 ] = dest.b;

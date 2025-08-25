@@ -43,27 +43,6 @@ PLSubSystem pl_subsystems[] = {
          &PlShutdownFileSystem }
 };
 
-#if 0 /* incomplete interface? */
-typedef struct PLArgument {
-    const char *parm;
-
-    void*(*Callback)(const char *arg);
-} PLArgument;
-
-PLArgument arguments[]={
-        { "arg0" },
-        { "arg1" },
-};
-
-void plParseArguments(PLArgument args[], unsigned int size) {
-    for(unsigned int i = 0; i < size; i++) {
-        if(args[i].Callback) {
-            args[i].Callback("");
-        }
-    }
-}
-#endif
-
 typedef struct PLArguments {
 	const char *exe_name;
 	const char *arguments[ 256 ];
@@ -171,16 +150,6 @@ const char *PlGetCommandLineArgumentValueByIndex( unsigned int index ) {
 	return pl_arguments.arguments[ index ];
 }
 
-bool _plIsSubSystemActive( unsigned int subsystem ) {
-	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( pl_subsystems ); i++ ) {
-		if ( pl_subsystems[ i ].subsystem == subsystem ) {
-			return pl_subsystems[ i ].active;
-		}
-	}
-
-	return false;
-}
-
 void PlShutdown( void ) {
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( pl_subsystems ); i++ ) {
 		if ( !pl_subsystems[ i ].active ) {
@@ -195,52 +164,6 @@ void PlShutdown( void ) {
 	}
 
 	PlShutdownConsole();
-}
-
-/*-------------------------------------------------------------------
- * ERROR HANDLING
- *-----------------------------------------------------------------*/
-
-bool PlIsDebuggerPresent( void ) {
-#if defined( WIN32 )
-
-	return IsDebuggerPresent();
-
-#else
-
-	// https://stackoverflow.com/a/24969863
-
-	char buf[ 4096 ];
-	const int status = open( "/proc/self/status", O_RDONLY );
-	if ( status == -1 ) {
-		return false;
-	}
-
-	const ssize_t numRead = read( status, buf, sizeof( buf ) - 1 );
-	close( status );
-
-	if ( numRead <= 0 ) {
-		return false;
-	}
-
-	buf[ numRead ] = '\0';
-	static const char tracerPidString[] = "TracerPid:";
-	const char *tracerPidPtr = strstr( buf, tracerPidString );
-	if ( tracerPidPtr == NULL ) {
-		return false;
-	}
-
-	for ( const char *c = tracerPidPtr + sizeof( tracerPidString ) - 1; c <= buf + numRead; ++c ) {
-		if ( isspace( *c ) ) {
-			continue;
-		}
-
-		return isdigit( *c ) != 0 && *c != '0';
-	}
-
-	return false;
-
-#endif
 }
 
 /*-------------------------------------------------------------------
@@ -656,116 +579,4 @@ const PLPluginExportTable *PlGetExportTable( void ) {
 	exportTable.ReAlloc = PlReAlloc;
 	exportTable.Free = PlFree;
 	return &exportTable;
-}
-
-/**
- * Attempts to load the given plugin and validate it.
- */
-bool PlRegisterPlugin( const char *path ) {
-	PlClearError();
-
-	DebugPrint( "Registering plugin: \"%s\"\n", path );
-
-	PLLibrary *library = PlLoadLibrary( path, false );
-	if ( library == NULL ) {
-		return false;
-	}
-
-	PLPluginInitializationFunction InitializePlugin;
-	PLPluginQueryFunction RegisterPlugin = ( PLPluginQueryFunction ) PlGetLibraryProcedure( library, PL_PLUGIN_QUERY_FUNCTION );
-	if ( RegisterPlugin != NULL ) {
-		InitializePlugin = ( PLPluginInitializationFunction ) PlGetLibraryProcedure( library, PL_PLUGIN_INIT_FUNCTION );
-		if ( InitializePlugin != NULL ) {
-			/* now fetch the plugin description */
-			const PLPluginDescription *description = RegisterPlugin();
-			if ( description != NULL ) {
-				if ( description->interfaceVersion[ 0 ] != PL_PLUGIN_INTERFACE_VERSION_MAJOR ) {
-					PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported core interface version" );
-				} else {
-					DebugPrint( "Found plugin (%s)\n", description->description );
-				}
-			} else {
-				PlReportErrorF( PL_RESULT_FAIL, "failed to fetch plugin description" );
-			}
-		}
-	}
-
-	if ( RegisterPlugin == NULL || InitializePlugin == NULL || PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
-		PlUnloadLibrary( library );
-		return false;
-	}
-
-	DebugPrint( "Success, adding \"%s\" to plugins list\n", path );
-
-	if ( plugins == NULL ) {
-		plugins = PlCreateLinkedList();
-	}
-
-	PLPlugin *plugin = PlMAllocA( sizeof( PLPlugin ) );
-	plugin->initFunction = InitializePlugin;
-	plugin->libPtr = library;
-	plugin->node = PlInsertLinkedListNode( plugins, plugin );
-
-	numPlugins++;
-
-	return true;
-}
-
-/**
- * Private callback when scanning for plugins.
- */
-static void RegisterScannedPlugin( const char *path, void *unused ) {
-	PL_UNUSEDVAR( unused );
-
-	/* validate it's actually a plugin */
-	size_t length = strlen( path );
-	const char *c = strrchr( path, '_' );
-	if ( c == NULL ) {
-		return;
-	}
-
-	/* remaining length */
-	length -= c - path;
-	if ( pl_strncasecmp( c, "_plugin" PL_SYSTEM_LIBRARY_EXTENSION, length ) != 0 ) {
-		return;
-	}
-
-	PlRegisterPlugin( path );
-}
-
-/**
- * Scans for libraries in the given directory for supporting other model formats.
- */
-void PlRegisterPlugins( const char *pluginDir ) {
-	PlClearError();
-
-	if ( !PlPathExists( pluginDir ) ) {
-		PlReportBasicError( PL_RESULT_INVALID_PARM1 );
-		return;
-	}
-
-	Print( "Scanning for plugins in \"%s\"\n", pluginDir );
-
-	PlScanDirectory( pluginDir, &PL_SYSTEM_LIBRARY_EXTENSION[ 1 ], RegisterScannedPlugin, false, NULL );
-
-	Print( "Done, %d plugins loaded.\n", numPlugins );
-}
-
-/**
- * Iterate over all the registered plugins and initialize each.
- */
-void PlInitializePlugins( void ) {
-	if ( plugins == NULL ) {
-		/* no plugins registered */
-		return;
-	}
-
-	PLLinkedListNode *node = PlGetFirstNode( plugins );
-	while ( node != NULL ) {
-		PLPlugin *plugin = ( PLPlugin * ) PlGetLinkedListNodeUserData( node );
-
-		plugin->initFunction( PlGetExportTable() );
-
-		node = PlGetNextLinkedListNode( node );
-	}
 }

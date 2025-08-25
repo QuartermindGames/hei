@@ -14,7 +14,7 @@ PLQuaternion PlMultiplyQuaternion( const PLQuaternion *q, const PLQuaternion *q2
 	        ( q->w * q2->w ) - ( q->x * q2->x ) - ( q->y * q2->y ) - ( q->z * q2->z ) );
 }
 
-PLQuaternion PlMultiplyQuaternion3FV( const PLQuaternion *q, const PLVector3 *v ) {
+PLQuaternion PlMultiplyQuaternion3FV( const PLQuaternion *q, const QmMathVector3f *v ) {
 	return qm_math_vector4f(
 	        ( q->w * v->x ) + ( q->y * v->z ) - ( q->z * v->y ),
 	        ( q->w * v->y ) + ( q->z * v->x ) - ( q->x * v->z ),
@@ -63,8 +63,8 @@ const char *PlPrintQuaternion( const PLQuaternion *q ) {
 	return s;
 }
 
-PLVector3 PlQuaternionToEuler( const PLQuaternion *q ) {
-	PLVector3 v;
+QmMathVector3f PlQuaternionToEuler( const PLQuaternion *q ) {
+	QmMathVector3f v;
 
 	/* pitch */
 	float sinp = 2.0f * ( q->w * q->y - q->z * q->x );
@@ -87,7 +87,7 @@ PLVector3 PlQuaternionToEuler( const PLQuaternion *q ) {
 }
 
 /* pulled from here: http://tfc.duke.free.fr/coding/md5-specs-en.html */
-PLQuaternion PlRotateQuaternionPoint( const PLQuaternion *q, const PLVector3 *point ) {
+PLQuaternion PlRotateQuaternionPoint( const PLQuaternion *q, const QmMathVector3f *point ) {
 	PLQuaternion b = PlInverseQuaternion( q );
 	b = PlNormalizeQuaternion( &b );
 

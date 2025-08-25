@@ -379,6 +379,12 @@ extern "C"
 		return src;
 	}
 
+	/////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	float qm_math_compute_radius( const QmMathVector3f *vertices, unsigned int numVertices );
+	void  qm_math_compute_min_max( const QmMathVector3f *vertices, unsigned int numVertices, QmMathVector3f *minsDst, QmMathVector3f *maxsDst, bool absolute );
+
 #if defined( __cplusplus )
 };
 #endif

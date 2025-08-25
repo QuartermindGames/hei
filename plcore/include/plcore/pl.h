@@ -161,8 +161,6 @@ PL_EXTERN PLFunctionResult PlInitialize( int argc, char **argv );
 PL_EXTERN PLFunctionResult PlInitializeSubSystems( unsigned int subsystems );
 PL_EXTERN void PlShutdown( void );
 
-bool PlIsDebuggerPresent( void );
-
 /******************************************************************/
 /* ERROR HANDLING */
 
@@ -193,12 +191,6 @@ bool PlHasCommandLineArgument( const char *arg );
 //////////////////////////////////////////////////////////////////
 
 unsigned long pl_crc32( const void *data, size_t length, unsigned long crc );
-
-//////////////////////////////////////////////////////////////////
-
-bool PlIsSubSystemActive( unsigned int subsystem );
-
-//////////////////////////////////////////////////////////////////
 
 /* standard headers */
 #	include <plcore/pl_string.h>
@@ -241,9 +233,6 @@ void PlUnloadLibrary( PLLibrary *library );
  **/
 
 const struct PLPluginExportTable *PlGetExportTable( void );
-bool PlRegisterPlugin( const char *path );
-void PlRegisterPlugins( const char *pluginDir );
-void PlInitializePlugins( void );
 
 #endif
 

@@ -32,7 +32,7 @@ SOFTWARE.
 #include <plgraphics/plg_mesh.h>
 
 typedef struct PLAnimationFrame {
-	PLVector3 transform;
+	QmMathVector3f transform;
 } PLAnimationFrame;
 
 typedef struct PLAnimation {
@@ -80,7 +80,7 @@ typedef struct PLMBoneWeight {
 typedef struct PLMModelBone {
 	char name[ 64 ];
 	unsigned int parent;
-	PLVector3 position;
+	QmMathVector3f position;
 	PLQuaternion orientation;
 } PLMBone;
 

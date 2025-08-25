@@ -44,14 +44,14 @@ enum {
 	PLG_MAX_FRUSTUM_PLANES
 };
 
-typedef PLVector4 PLGViewFrustum[ PLG_MAX_FRUSTUM_PLANES ];
+typedef QmMathVector4f PLGViewFrustum[ PLG_MAX_FRUSTUM_PLANES ];
 
 typedef struct PLGCamera {
 	float fov;
 	float near, far;
 	unsigned int mode;
 
-	PLVector3 angles, position;
+	QmMathVector3f angles, position;
 
 	PLGViewFrustum frustum;
 

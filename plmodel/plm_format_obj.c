@@ -33,7 +33,7 @@ SOFTWARE.
 /* Obj Static Model Format */
 
 typedef struct ObjVectorLst {
-	PLVector3 v;
+	QmMathVector3f v;
 	struct ObjVectorLst *next;
 } ObjVectorLst;
 

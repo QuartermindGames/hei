@@ -423,7 +423,7 @@ static void find_cmd( PL_UNUSED unsigned int argc, char **argv ) {
 
 //////////////////////////////////////////////
 
-void ( *ConsoleOutputCallback )( int level, const char *msg, PLColour colour );
+void ( *ConsoleOutputCallback )( int level, const char *msg, QmMathColour4ub colour );
 
 static void InitializeDefaultLogLevels( void );
 PLFunctionResult PlInitConsole( void ) {
@@ -493,7 +493,7 @@ void PlShutdownConsole( void ) {
 	ConsoleOutputCallback = NULL;
 }
 
-void PlSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg, PLColour colour ) ) {
+void PlSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg, QmMathColour4ub colour ) ) {
 	ConsoleOutputCallback = Callback;
 }
 
@@ -601,7 +601,7 @@ void PlParseConsoleString( const char *string ) {
 typedef struct LogLevel {
 	bool isReserved;
 	char prefix[ 64 ];// e.g. 'warning, 'error'
-	PLColour colour;
+	QmMathColour4ub colour;
 	PLConsoleVariable *var;
 } LogLevel;
 static LogLevel levels[ MAX_LOG_LEVELS ];
@@ -616,17 +616,17 @@ int LOG_LEVEL_FILESYSTEM = 0;
 static void InitializeDefaultLogLevels( void ) {
 	memset( levels, 0, sizeof( LogLevel ) * MAX_LOG_LEVELS );
 
-	LOG_LEVEL_LOW = PlAddLogLevel( "plcore", ( PLColour ){ 255, 255, 255, 255 }, true );
-	LOG_LEVEL_MEDIUM = PlAddLogLevel( "plcore/warning", ( PLColour ){ 255, 255, 0, 255 }, true );
-	LOG_LEVEL_HIGH = PlAddLogLevel( "plcore/error", ( PLColour ){ 255, 0, 0, 255 }, true );
-	LOG_LEVEL_DEBUG = PlAddLogLevel( "plcore/debug", ( PLColour ){ 255, 255, 255, 255 },
+	LOG_LEVEL_LOW = PlAddLogLevel( "plcore", ( QmMathColour4ub ){ 255, 255, 255, 255 }, true );
+	LOG_LEVEL_MEDIUM = PlAddLogLevel( "plcore/warning", ( QmMathColour4ub ){ 255, 255, 0, 255 }, true );
+	LOG_LEVEL_HIGH = PlAddLogLevel( "plcore/error", ( QmMathColour4ub ){ 255, 0, 0, 255 }, true );
+	LOG_LEVEL_DEBUG = PlAddLogLevel( "plcore/debug", ( QmMathColour4ub ){ 255, 255, 255, 255 },
 #if !defined( NDEBUG )
 	                                 true
 #else
 	                                 false
 #endif
 	);
-	LOG_LEVEL_FILESYSTEM = PlAddLogLevel( "plcore/filesystem", ( PLColour ){ 0, 255, 255, 255 }, true );
+	LOG_LEVEL_FILESYSTEM = PlAddLogLevel( "plcore/filesystem", ( QmMathColour4ub ){ 0, 255, 255, 255 }, true );
 }
 
 /**
@@ -671,7 +671,7 @@ void PlSetupLogOutput( const char *path ) {
 	}
 }
 
-int PlAddLogLevel( const char *prefix, PLColour colour, bool status ) {
+int PlAddLogLevel( const char *prefix, QmMathColour4ub colour, bool status ) {
 	int i = GetNextFreeLogLevel();
 	if ( i == -1 ) {
 		return -1;

@@ -44,8 +44,8 @@ typedef struct GfxState {
 
 	PLGCullMode current_cullmode;
 
-	PLColour current_clearcolour;
-	PLColour current_colour;// Current global colour.
+	QmMathColour4ub current_clearcolour;
+	QmMathColour4ub current_colour;// Current global colour.
 
 	bool current_capabilities[ PLG_GFX_MAX_STATES ];// Enabled capabilities.
 	unsigned int current_textureunit;

@@ -32,7 +32,7 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-extern PLGPolygon *PlgCreatePolygon( PLGTexture *texture, PLVector2 textureOffset, PLVector2 textureScale, float textureRotation );
+extern PLGPolygon *PlgCreatePolygon( PLGTexture *texture, QmMathVector2f textureOffset, QmMathVector2f textureScale, float textureRotation );
 extern void PlgDestroyPolygon( PLGPolygon *polygon );
 
 extern void PlgGeneratePolygonNormals( PLGPolygon *polygon );
@@ -44,7 +44,7 @@ extern unsigned int PlgGetNumOfPolygonVertices( const PLGPolygon *polygon );
 extern PLGVertex *PlgGetPolygonVertex( PLGPolygon *polygon, unsigned int vertIndex );
 extern PLGVertex *PlgGetPolygonVertices( PLGPolygon *polygon, unsigned int *numVertices );
 extern PLGTexture *PlgGetPolygonTexture( PLGPolygon *polygon );
-extern PLVector3 PlgGetPolygonFaceNormal( const PLGPolygon *polygon );
+extern QmMathVector3f PlgGetPolygonFaceNormal( const PLGPolygon *polygon );
 extern unsigned int PlgGetNumOfPolygonTriangles( const PLGPolygon *polygon );
 extern unsigned int *PlgConvertPolygonToTriangles( const PLGPolygon *polygon, unsigned int *numTriangles );
 extern PLGMesh *PlgConvertPolygonToMesh( const PLGPolygon *polygon );

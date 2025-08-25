@@ -34,10 +34,10 @@ typedef enum PLGMeshDrawMode {
 } PLGMeshDrawMode;
 
 typedef struct PLGVertex {
-	PLVector3 position, normal;
-	PLVector3 tangent, bitangent;
-	PLVector2 st[ 16 ];
-	PLColour colour;
+	QmMathVector3f position, normal;
+	QmMathVector3f tangent, bitangent;
+	QmMathVector2f st[ 16 ];
+	QmMathColour4ub colour;
 } PLGVertex;
 
 typedef struct PLGTexture PLGTexture;
@@ -84,39 +84,39 @@ typedef struct PLCollisionAABB PLCollisionAABB;
 PLGMesh *PlgCreateMesh( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts );
 PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
                             const unsigned int *indicies, const PLGVertex *vertices );
-PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, const PLColour *colour );
+PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, const QmMathColour4ub *colour );
 void PlgDestroyMesh( PLGMesh *mesh );
 
-void PlgDrawEllipse( unsigned int segments, const PLVector2 *position, float w, float h, const PLColour *colour );
-void PlgDrawRectangle( float x, float y, float w, float h, PLColour colour );
-void PlgDrawLineRectangle( float x, float y, float w, float h, PLColour colour );
+void PlgDrawEllipse( unsigned int segments, const QmMathVector2f *position, float w, float h, const QmMathColour4ub *colour );
+void PlgDrawRectangle( float x, float y, float w, float h, QmMathColour4ub colour );
+void PlgDrawLineRectangle( float x, float y, float w, float h, QmMathColour4ub colour );
 void PlgDrawTexturedRectangle( float x, float y, float w, float h, PLGTexture *texture );
-void PlgDrawTexturedQuad( const PLVector3 *ul, const PLVector3 *ur, const PLVector3 *ll, const PLVector3 *lr,
+void PlgDrawTexturedQuad( const QmMathVector3f *ul, const QmMathVector3f *ur, const QmMathVector3f *ll, const QmMathVector3f *lr,
                           float hScale, float vScale, PLGTexture *texture );
-void PlgDrawLines( const PLVector3 *points, unsigned int numPoints, PLColour colour, float thickness );
-void PlgDrawLine( PLVector3 startPos, PLColour startColour, PLVector3 endPos, PLColour endColour );
-void PlgDrawSimpleLine( PLVector3 startPos, PLVector3 endPos, PLColour colour );
-void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColour *colour );
-void PlgDrawDottedGrid( int x, int y, int w, int h, unsigned int gridSize, const PLColour *colour );
-void PlgDrawPixel( int x, int y, PLColour colour );
-void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, const PLColour *colour );
+void PlgDrawLines( const QmMathVector3f *points, unsigned int numPoints, QmMathColour4ub colour, float thickness );
+void PlgDrawLine( QmMathVector3f startPos, QmMathColour4ub startColour, QmMathVector3f endPos, QmMathColour4ub endColour );
+void PlgDrawSimpleLine( QmMathVector3f startPos, QmMathVector3f endPos, QmMathColour4ub colour );
+void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize, const QmMathColour4ub *colour );
+void PlgDrawDottedGrid( int x, int y, int w, int h, unsigned int gridSize, const QmMathColour4ub *colour );
+void PlgDrawPixel( int x, int y, QmMathColour4ub colour );
+void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, const QmMathColour4ub *colour );
 
 void PlgClearMesh( PLGMesh *mesh );
 void PlgClearMeshVertices( PLGMesh *mesh );
 void PlgClearMeshTriangles( PLGMesh *mesh );
 
-void PlgScaleMesh( PLGMesh *mesh, PLVector3 scale );
+void PlgScaleMesh( PLGMesh *mesh, QmMathVector3f scale );
 void PlgSetMeshTrianglePosition( PLGMesh *mesh, unsigned int *index, unsigned int x, unsigned int y, unsigned int z );
-void PlgSetMeshVertexPosition( PLGMesh *mesh, unsigned int index, const PLVector3 *vector );
-void PlgSetMeshVertexNormal( PLGMesh *mesh, unsigned int index, const PLVector3 *vector );
+void PlgSetMeshVertexPosition( PLGMesh *mesh, unsigned int index, const QmMathVector3f *vector );
+void PlgSetMeshVertexNormal( PLGMesh *mesh, unsigned int index, const QmMathVector3f *vector );
 void PlgSetMeshVertexST( PLGMesh *mesh, unsigned int index, float s, float t );
 void PlgSetMeshVertexSTv( PLGMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st );
-void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, const PLColour *colour );
-void PlgSetMeshUniformColour( PLGMesh *mesh, const PLColour *colour );
+void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, const QmMathColour4ub *colour );
+void PlgSetMeshUniformColour( PLGMesh *mesh, const QmMathColour4ub *colour );
 void PlgSetMeshShaderProgram( PLGMesh *mesh, struct PLGShaderProgram *program );
 void PlgSetMeshPrimitiveScale( PLGMesh *mesh, float scale );
 
-unsigned int PlgAddMeshVertex( PLGMesh *mesh, const PLVector3 *position, const PLVector3 *normal, const PLColour *colour, const PLVector2 *st );
+unsigned int PlgAddMeshVertex( PLGMesh *mesh, const QmMathVector3f *position, const QmMathVector3f *normal, const QmMathColour4ub *colour, const QmMathVector2f *st );
 unsigned int PlgAddMeshTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, unsigned int z );
 
 void PlgUploadMesh( PLGMesh *mesh );
@@ -133,10 +133,10 @@ void PlgGenerateMeshTangentBasis( PLGMesh *mesh );
 
 void PlgGenerateVertexTangentBasis( PLGVertex *vertices, unsigned int numVertices );
 void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles );
-void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertices, PLVector2 textureOffset, PLVector2 textureScale );
+void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertices, QmMathVector2f textureOffset, QmMathVector2f textureScale );
 void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, unsigned int *indices, unsigned int numTriangles, bool perFace );
 
-PLVector3 PlgGenerateVertexNormal( PLVector3 a, PLVector3 b, PLVector3 c );
+QmMathVector3f PlgGenerateVertexNormal( QmMathVector3f a, QmMathVector3f b, QmMathVector3f c );
 
 /* immediate mode style api */
 PLGMesh *PlgImmBegin( PLGMeshPrimitive primitive );
@@ -150,8 +150,8 @@ void PlgImmDraw( void );
 
 unsigned int PlgPushTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, unsigned int z );
 unsigned int PlgPushVertex3f( PLGMesh *mesh, float x, float y, float z );
-unsigned int PlgPushVertex3fv( PLGMesh *mesh, const PLVector3 *vec );
-void PlgColour4bv( PLGMesh *mesh, const PLColour *col );
+unsigned int PlgPushVertex3fv( PLGMesh *mesh, const QmMathVector3f *vec );
+void PlgColour4bv( PLGMesh *mesh, const QmMathColour4ub *col );
 
 #endif
 

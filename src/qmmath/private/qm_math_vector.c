@@ -4,8 +4,71 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <assert.h>
+#include <float.h>
 
 #include "qmmath/public/qm_math_vector.h"
+
+float qm_math_compute_radius( const QmMathVector3f *vertices, unsigned int numVertices )
+{
+	float maxRadius = 0.0f;
+	for ( unsigned int i = 0; i < numVertices; ++i )
+	{
+		float radius = qm_math_vector3f_length( vertices[ i ] );
+		if ( radius > maxRadius )
+		{
+			maxRadius = radius;
+		}
+	}
+
+	return maxRadius;
+}
+
+void qm_math_compute_min_max( const QmMathVector3f *vertices, const unsigned int numVertices, QmMathVector3f *minsDst, QmMathVector3f *maxsDst, const bool absolute )
+{
+	assert( minsDst != nullptr && maxsDst != nullptr );
+
+	*minsDst = ( QmMathVector3f ) {};
+	*maxsDst = ( QmMathVector3f ) {};
+
+	if ( absolute )
+	{
+		*maxsDst = qm_math_vector3f( vertices[ 0 ].x, vertices[ 0 ].y, vertices[ 0 ].z );
+		*minsDst = qm_math_vector3f( vertices[ 0 ].x, vertices[ 0 ].y, vertices[ 0 ].z );
+
+		for ( unsigned int i = 0; i < numVertices; ++i )
+		{
+			if ( maxsDst->x < vertices[ i ].x ) { maxsDst->x = vertices[ i ].x; }
+			if ( maxsDst->y < vertices[ i ].y ) { maxsDst->y = vertices[ i ].y; }
+			if ( maxsDst->z < vertices[ i ].z ) { maxsDst->z = vertices[ i ].z; }
+			if ( minsDst->x > vertices[ i ].x ) { minsDst->x = vertices[ i ].x; }
+			if ( minsDst->y > vertices[ i ].y ) { minsDst->y = vertices[ i ].y; }
+			if ( minsDst->z > vertices[ i ].z ) { minsDst->z = vertices[ i ].z; }
+		}
+	}
+	else
+	{
+		// this technically still doesn't, but it's better
+		float max = FLT_MIN;
+		float min = FLT_MAX;
+		for ( unsigned int i = 0; i < numVertices; ++i )
+		{
+			if ( vertices[ i ].x > max ) { max = vertices[ i ].x; }
+			if ( vertices[ i ].y > max ) { max = vertices[ i ].y; }
+			if ( vertices[ i ].z > max ) { max = vertices[ i ].z; }
+			if ( vertices[ i ].x < min ) { min = vertices[ i ].x; }
+			if ( vertices[ i ].y < min ) { min = vertices[ i ].y; }
+			if ( vertices[ i ].z < min ) { min = vertices[ i ].z; }
+		}
+
+		if ( min < 0 ) { min *= -1; }
+		if ( max < 0 ) { max *= -1; }
+
+		float abs = min > max ? min : max;
+		*maxsDst  = qm_math_vector3f( abs, abs, abs );
+		*minsDst  = qm_math_vector3f( -abs, -abs, -abs );
+	}
+}
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Print

@@ -45,7 +45,7 @@ PLImage *PlParseRsbImage_( PLFile *file ) {
 		unsigned int size = width * height;
 		uint8_t *src = PL_NEW_( uint8_t, size );
 		if ( PlReadFile( file, src, sizeof( uint8_t ), size ) == size ) {
-			PLColour *dst = PL_NEW_( PLColour, size );
+			QmMathColour4ub *dst = PL_NEW_( QmMathColour4ub, size );
 			for ( unsigned int i = 0; i < size; ++i ) {
 				dst[ i ].r = palette[ src[ i ] ].b;
 				dst[ i ].g = palette[ src[ i ] ].g;
@@ -69,7 +69,7 @@ PLImage *PlParseRsbImage_( PLFile *file ) {
 		unsigned int size = width * height;
 		uint16_t *src = PL_NEW_( uint16_t, size );
 		if ( PlReadFile( file, src, sizeof( uint16_t ), size ) == size ) {
-			PLColour *dst = PL_NEW_( PLColour, size );
+			QmMathColour4ub *dst = PL_NEW_( QmMathColour4ub, size );
 			uint32_t maskR = ( 1 << r ) - 1;
 			uint32_t maskG = ( 1 << g ) - 1;
 			uint32_t maskB = ( 1 << b ) - 1;

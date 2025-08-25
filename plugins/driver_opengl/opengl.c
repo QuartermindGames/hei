@@ -174,7 +174,7 @@ static void GLGetMaxTextureSize( unsigned int *s ) {
 
 /////////////////////////////////////////////////////////////
 
-static void GLSetClearColour( PLColour rgba ) {
+static void GLSetClearColour( QmMathColour4ub rgba ) {
 	XGL_CALL( glClearColor(
 	        PlByteToFloat( rgba.r ),
 	        PlByteToFloat( rgba.g ),
@@ -854,10 +854,10 @@ static void GLSwizzleTexture( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t
 
 /////////////////////////////////////////////////////////////
 
-static PLVector4 clipPlane;
+static QmMathVector4f clipPlane;
 static PLMatrix4 clipPlaneMatrix;
 
-static void GLSetClipPlane( const PLVector4 *clip, const PLMatrix4 *transform, bool transpose ) {
+static void GLSetClipPlane( const QmMathVector4f *clip, const PLMatrix4 *transform, bool transpose ) {
 	if ( clip == NULL ) {
 		glDisable( GL_CLIP_DISTANCE0 );
 		return;

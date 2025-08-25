@@ -47,7 +47,7 @@ PLImage *PlParse3drTexImage_( PLFile *file ) {
 		return NULL;
 	}
 
-	PLColour *dst = PL_NEW_( PLColour, size );
+	QmMathColour4ub *dst = PL_NEW_( QmMathColour4ub, size );
 	if ( mode == 0x500 ) {
 		const unsigned int shiftA = 12;
 		const unsigned int shiftR = 8;

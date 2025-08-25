@@ -112,7 +112,7 @@ PLMModel *PlmParseHdvModel( PLFile *file ) {
 		uint8_t g = ( uint8_t ) ( rand() % 255 );
 		uint8_t b = ( uint8_t ) ( rand() % 255 );
 		PlgSetMeshVertexPosition( mesh, i, &PL_VECTOR3( -vertices[ i ].x / 100, -vertices[ i ].y / 100, vertices[ i ].z / 100 ) );
-		PlgSetMeshVertexColour( mesh, i, &PLColour( r, g, b, 255 ) );
+		PlgSetMeshVertexColour( mesh, i, &QmMathColour4ub( r, g, b, 255 ) );
 	}
 #endif
 

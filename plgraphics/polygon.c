@@ -8,17 +8,17 @@
 
 typedef struct PLGPolygon {
 	PLGTexture *texture;
-	PLVector2 textureOffset;
-	PLVector2 textureScale;
+	QmMathVector2f textureOffset;
+	QmMathVector2f textureScale;
 	float textureRotation;
 
-	PLVector3 normal;
+	QmMathVector3f normal;
 
 	PLGVertex vertices[ PLG_POLYGON_MAX_SIDES ];
 	unsigned int numVertices;
 } PLGPolygon;
 
-PLGPolygon *PlgCreatePolygon( PLGTexture *texture, PLVector2 textureOffset, PLVector2 textureScale, float textureRotation ) {
+PLGPolygon *PlgCreatePolygon( PLGTexture *texture, QmMathVector2f textureOffset, QmMathVector2f textureScale, float textureRotation ) {
 	PLGPolygon *polygon = PlCAllocA( 1, sizeof( PLGPolygon ) );
 	polygon->texture = texture;
 	polygon->textureOffset = textureOffset;
@@ -55,13 +55,13 @@ void PlgGeneratePolygonFaceNormal( PLGPolygon *polygon ) {
 	unsigned int numTriangles;
 	unsigned int *indices = PlgConvertPolygonToTriangles( polygon, &numTriangles );
 
-	PLVector3 *normals = PlMAllocA( sizeof( PLVector3 ) * polygon->numVertices );
+	QmMathVector3f *normals = PlMAllocA( sizeof( QmMathVector3f ) * polygon->numVertices );
 	for ( unsigned int i = 0, idx = 0; i < numTriangles; ++i, idx += 3 ) {
 		unsigned int a = indices[ idx ];
 		unsigned int b = indices[ idx + 1 ];
 		unsigned int c = indices[ idx + 2 ];
 
-		PLVector3 normal = PlgGenerateVertexNormal(
+		QmMathVector3f normal = PlgGenerateVertexNormal(
 		        polygon->vertices[ a ].position,
 		        polygon->vertices[ b ].position,
 		        polygon->vertices[ c ].position );
@@ -136,7 +136,7 @@ PLGTexture *PlgGetPolygonTexture( PLGPolygon *polygon ) {
 	return polygon->texture;
 }
 
-PLVector3 PlgGetPolygonFaceNormal( const PLGPolygon *polygon ) {
+QmMathVector3f PlgGetPolygonFaceNormal( const PLGPolygon *polygon ) {
 	return polygon->normal;
 }
 

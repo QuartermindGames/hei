@@ -41,7 +41,7 @@ PLLibrary *PlLoadLibrary( const char *path, bool appendPath ) {
 	}
 #endif
 
-	return ( PLLibrary* ) libraryHandle;
+	return libraryHandle;
 }
 
 void *PlGetLibraryProcedure( PLLibrary *library, const char *procedureName ) {

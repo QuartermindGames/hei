@@ -117,7 +117,7 @@ static void SetupCameraAngles( PLGCamera *camera ) {
 	PlRotateMatrix3f( PL_DEG2RAD( -camera->angles.y ), 0.0f, 1.0f, 0.0f );
 	PlRotateMatrix3f( PL_DEG2RAD( -camera->angles.z ), 0.0f, 0.0f, 1.0f );
 
-	PlTranslateMatrix( ( PLVector3 ) { -camera->position.x, -camera->position.y, -camera->position.z } );
+	PlTranslateMatrix( ( QmMathVector3f ) { -camera->position.x, -camera->position.y, -camera->position.z } );
 
 	camera->internal.view = *PlGetMatrix( PL_VIEW_MATRIX );
 }
@@ -203,8 +203,8 @@ void PlgSetupCamera( PLGCamera *camera ) {
  * Checks that the given bounding box is within the view space.
  */
 bool PlgIsBoxInsideView( const PLGCamera *camera, const PLCollisionAABB *bounds ) {
-	PLVector3 mins = qm_math_vector3f_add( bounds->mins, bounds->origin );
-	PLVector3 maxs = qm_math_vector3f_add( bounds->maxs, bounds->origin );
+	QmMathVector3f mins = qm_math_vector3f_add( bounds->mins, bounds->origin );
+	QmMathVector3f maxs = qm_math_vector3f_add( bounds->maxs, bounds->origin );
 	for ( unsigned int i = 0; i < 5; ++i ) {
 		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &QM_MATH_VECTOR3F( mins.x, mins.y, mins.z ) ) >= 0.0f ) {
 			continue;

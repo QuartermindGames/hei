@@ -63,8 +63,8 @@ PLImage *PlParseAngelTexImage_( PLFile *file ) {
 				return NULL;
 			}
 
-			PLColour palette[ 256 ];
-			if ( PlReadFile( file, palette, sizeof( PLColour ), 256 ) != 256 ) {
+			QmMathColour4ub palette[ 256 ];
+			if ( PlReadFile( file, palette, sizeof( QmMathColour4ub ), 256 ) != 256 ) {
 				return NULL;
 			}
 

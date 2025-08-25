@@ -34,7 +34,7 @@ typedef struct CPJSurface {
 	CPJName *textures;
 
 	unsigned int numUVCoords;
-	PLVector2 *uvCoords;
+	QmMathVector2f *uvCoords;
 
 	CPJSurfaceTriangle *triangles;
 } CPJSurface;
@@ -42,9 +42,9 @@ typedef struct CPJSurface {
 typedef struct CPJBone {
 	CPJName name;
 	unsigned int parent;
-	PLVector3 scale;
+	QmMathVector3f scale;
 	PLQuaternion rotation;
-	PLVector3 transform;
+	QmMathVector3f transform;
 	float length;
 } CPJBone;
 
@@ -55,7 +55,7 @@ typedef struct CPJBoneWeight {
 
 typedef struct CPJVertex {
 	uint8_t flags;
-	PLVector3 position;
+	QmMathVector3f position;
 
 	unsigned int numWeights;
 	CPJBoneWeight weights[ CPJ_MAX_BONE_WEIGHTS ];
@@ -193,32 +193,32 @@ static void SetupSkeletalData( const CPJModel *cpjModel, PLMSkeletalModelData *s
  * This basically generates a set of normals depending
  * on the given smoothing group.
  */
-static PLVector3 **GenerateNormalsPerGroup( const CPJModel *cpjModel ) {
-	PLVector3 **normals = PL_NEW_( PLVector3 *, cpjModel->numSmoothingGroups );
+static QmMathVector3f **GenerateNormalsPerGroup( const CPJModel *cpjModel ) {
+	QmMathVector3f **normals = PL_NEW_( QmMathVector3f *, cpjModel->numSmoothingGroups );
 	for ( unsigned int i = 0; i < cpjModel->numSmoothingGroups; ++i ) {
-		normals[ i ] = PL_NEW_( PLVector3, cpjModel->numVerts );
+		normals[ i ] = PL_NEW_( QmMathVector3f, cpjModel->numVerts );
 
 		for ( unsigned int j = 0; j < cpjModel->numTriangles; ++j ) {
 			if ( cpjModel->surfaces[ 0 ].triangles[ j ].smoothingGroup != i ) {
 				continue;
 			}
 
-			normals[ i ][ cpjModel->triangles[ j ].x ] = PlAddVector3( normals[ i ][ cpjModel->triangles[ j ].x ],
+			normals[ i ][ cpjModel->triangles[ j ].x ] = qm_math_vector3f_add( normals[ i ][ cpjModel->triangles[ j ].x ],
 			                                                           PlgGenerateVertexNormal( cpjModel->vertices[ cpjModel->triangles[ j ].x ].position,
 			                                                                                    cpjModel->vertices[ cpjModel->triangles[ j ].y ].position,
 			                                                                                    cpjModel->vertices[ cpjModel->triangles[ j ].z ].position ) );
-			normals[ i ][ cpjModel->triangles[ j ].y ] = PlAddVector3( normals[ i ][ cpjModel->triangles[ j ].y ],
+			normals[ i ][ cpjModel->triangles[ j ].y ] = qm_math_vector3f_add( normals[ i ][ cpjModel->triangles[ j ].y ],
 			                                                           PlgGenerateVertexNormal( cpjModel->vertices[ cpjModel->triangles[ j ].x ].position,
 			                                                                                    cpjModel->vertices[ cpjModel->triangles[ j ].y ].position,
 			                                                                                    cpjModel->vertices[ cpjModel->triangles[ j ].z ].position ) );
-			normals[ i ][ cpjModel->triangles[ j ].z ] = PlAddVector3( normals[ i ][ cpjModel->triangles[ j ].z ],
+			normals[ i ][ cpjModel->triangles[ j ].z ] = qm_math_vector3f_add( normals[ i ][ cpjModel->triangles[ j ].z ],
 			                                                           PlgGenerateVertexNormal( cpjModel->vertices[ cpjModel->triangles[ j ].x ].position,
 			                                                                                    cpjModel->vertices[ cpjModel->triangles[ j ].y ].position,
 			                                                                                    cpjModel->vertices[ cpjModel->triangles[ j ].z ].position ) );
 		}
 
 		for ( unsigned int j = 0; j < cpjModel->numVerts; ++j ) {
-			normals[ i ][ j ] = PlNormalizeVector3( normals[ i ][ j ] );
+			normals[ i ][ j ] = qm_math_vector3f_normalize( normals[ i ][ j ] );
 		}
 	}
 
@@ -370,7 +370,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 		}
 
 		PlFileSeek( file, baseOffset + ofsUVCoords, PL_SEEK_SET );
-		surface->uvCoords = PL_NEW_( PLVector2, surface->numUVCoords );
+		surface->uvCoords = PL_NEW_( QmMathVector2f, surface->numUVCoords );
 		for ( unsigned int i = 0; i < surface->numUVCoords; ++i ) {
 			surface->uvCoords[ i ].x = PlReadFloat32( file, false, NULL );
 			surface->uvCoords[ i ].y = -PlReadFloat32( file, false, NULL );
@@ -488,7 +488,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 	const CPJSurface *surface = &cpjModel.surfaces[ 0 ];
 
 	/* generate normals per smoothing group */
-	PLVector3 **normals = GenerateNormalsPerGroup( &cpjModel );
+	QmMathVector3f **normals = GenerateNormalsPerGroup( &cpjModel );
 
 	PLGMesh **meshes = PL_NEW_( PLGMesh *, surface->numTextures );
 	for ( unsigned int i = 0; i < surface->numTextures; ++i ) {

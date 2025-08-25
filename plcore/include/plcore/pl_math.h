@@ -9,6 +9,7 @@
 #include <stdbool.h>
 
 #include "../../src/qmmath/public/qm_math_vector.h"
+#include "../../src/qmmath/public/qm_math_colour.h"
 
 #include <plcore/pl.h>
 
@@ -83,161 +84,49 @@ static inline PLRectangleF32 PlCreateRectangleF32( float x, float y, float w, fl
 /////////////////////////////////////////////////////////////////////////////////////
 // Colour
 
-typedef struct PLColour {
-	uint8_t r, g, b, a;
-} PLColour;
-
-#ifdef __cplusplus
-namespace hei {
-	struct Colour : PLColour {
-		Colour() : Colour( 255, 255, 255, 255 ) {}
-		Colour( const uint8_t c[] ) : Colour( c[ 0 ], c[ 1 ], c[ 2 ], c[ 3 ] ) {}
-		Colour( uint8_t c, uint8_t c2, uint8_t c3, uint8_t c4 = 255 ) {
-			r = c;
-			g = c2;
-			b = c3;
-			a = c4;
-		}
-
-		Colour( int c, int c2, int c3, int c4 = 255 ) : Colour( ( uint8_t ) c, ( uint8_t ) c2, ( uint8_t ) c3, ( uint8_t ) c4 ) {}
-		Colour( float c, float c2, float c3, float c4 = 1.0f ) : Colour( PlFloatToByte( c ), PlFloatToByte( c2 ), PlFloatToByte( c3 ), PlFloatToByte( c4 ) ) {}
-
-		inline PLVector4 ToVec4() const {
-			return { PlByteToFloat( r ), PlByteToFloat( g ), PlByteToFloat( b ), PlByteToFloat( a ) };
-		}
-
-		inline void operator*=( const PLColour &v ) {
-			r *= v.r;
-			g *= v.g;
-			b *= v.b;
-			a *= v.a;
-		}
-		inline void operator*=( uint8_t c ) {
-			r *= c;
-			g *= c;
-			g *= c;
-			a *= c;
-		}
-		inline void operator+=( const PLColour &v ) {
-			r += v.r;
-			g += v.g;
-			b += v.b;
-			a += v.a;
-		}
-		inline void operator-=( const PLColour &v ) {
-			r -= v.r;
-			g -= v.g;
-			b -= v.b;
-			a -= v.a;
-		}
-		inline void operator/=( const Colour &v ) {
-			r /= v.r;
-			g /= v.g;
-			b /= v.b;
-			a /= v.a;
-		}
-
-		inline Colour operator-( const Colour &c ) const {
-			return { r - c.r, g - c.g, b - c.b, a - c.a };
-		}
-		inline Colour operator-( uint8_t c ) const {
-			return { r - c, g - c, b - c, a - c };
-		}
-		inline Colour operator-() const {
-			return { -r, -g, -b, -a };
-		}
-		inline Colour operator*( const Colour &v ) const {
-			return { r * v.r, g * v.g, b * v.b, a * v.a };
-		}
-		inline Colour operator+( const Colour &v ) const {
-			return { r + v.r, g + v.g, b + v.b, a + v.a };
-		}
-		inline Colour operator/( const Colour &v ) const {
-			return { r / v.r, g / v.g, b / v.b, a / v.a };
-		}
-		inline Colour operator/( uint8_t c ) const {
-			return { r / c, g / c, b / c, a / c };
-		}
-		inline uint8_t &operator[]( const unsigned int i ) {
-			return *( ( &r ) + i );
-		}
-		inline bool operator>( const Colour &v ) const {
-			return ( ( r > v.r ) && ( g > v.g ) && ( b > v.b ) && ( a > v.a ) );
-		}
-		inline bool operator<( const Colour &v ) const {
-			return ( ( r < v.r ) && ( g < v.g ) && ( b < v.b ) && ( a < v.a ) );
-		}
-		inline bool operator>=( const Colour &v ) const {
-			return ( ( r >= v.r ) && ( g >= v.g ) && ( b >= v.b ) && ( a >= v.a ) );
-		}
-		inline bool operator<=( const Colour &v ) const {
-			return ( ( r <= v.r ) && ( g <= v.g ) && ( b <= v.b ) && ( a <= v.a ) );
-		}
-	};
-}// namespace hei
-#endif
-
 #define PL_COLOUR_INDEX( COLOUR, INDEX )  ( ( uint8_t * ) &( COLOUR ) )[ INDEX ]
 #define PlColourF32Index( COLOUR, INDEX ) ( ( float * ) &( COLOUR ) )[ INDEX ]
 
-typedef struct PLColourF32 {
-	float r, g, b, a;
-} PLColourF32;
+QmMathColour4ub PlColourF32ToU8( const QmMathColour4f *in );
+QmMathColour4f PlColourU8ToF32( const QmMathColour4ub *in );
 
-PLColour PlColourF32ToU8( const PLColourF32 *in );
-PLColourF32 PlColourU8ToF32( const PLColour *in );
+QmMathColour4ub PlAddColour( const QmMathColour4ub *c, const QmMathColour4ub *c2 );
+QmMathColour4f PlAddColourF32( const QmMathColour4f *c, const QmMathColour4f *c2 );
 
-PLColour PlAddColour( const PLColour *c, const PLColour *c2 );
-PLColourF32 PlAddColourF32( const PLColourF32 *c, const PLColourF32 *c2 );
-
-static inline PLColour PlCreateColour4B( uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
-	PLColour c = { r, g, b, a };
-	return c;
-}
-
-static inline PLColour PlCreateColour4F( float r, float g, float b, float a ) {
-	PLColour c = {
-	        PlFloatToByte( r ),
-	        PlFloatToByte( g ),
-	        PlFloatToByte( b ),
-	        PlFloatToByte( a ) };
-	return c;
-}
-
-static inline void PlSetColour4B( PLColour *c, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
+static inline void PlSetColour4B( QmMathColour4ub *c, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
 	c->r = r;
 	c->g = g;
 	c->b = b;
 	c->a = a;
 }
 
-static inline void PlSetColour4F( PLColour *c, float r, float g, float b, float a ) {
+static inline void PlSetColour4F( QmMathColour4ub *c, float r, float g, float b, float a ) {
 	c->r = PlFloatToByte( r );
 	c->g = PlFloatToByte( g );
 	c->b = PlFloatToByte( b );
 	c->a = PlFloatToByte( a );
 }
 
-static inline void PlClearColour( PLColour *c ) {
+static inline void PlClearColour( QmMathColour4ub *c ) {
 	PlSetColour4B( c, 0, 0, 0, 0 );
 }
 
-static inline bool PlColour4fCompare( const PLColourF32 *a, const PLColourF32 *b ) {
+static inline bool PlColour4fCompare( const QmMathColour4f *a, const QmMathColour4f *b ) {
 	return ( ( a->r == b->r ) && ( a->g == b->g ) && ( a->b == b->b ) && ( a->a == b->a ) );
 }
 
-static inline bool PlCompareColour( PLColour c, PLColour c2 ) {
+static inline bool PlCompareColour( QmMathColour4ub c, QmMathColour4ub c2 ) {
 	return ( ( c.r == c2.r ) && ( c.g == c2.g ) && ( c.b == c2.b ) && ( c.a == c2.a ) );
 }
 
-static inline void PlMultiplyColour( PLColour *c, PLColour c2 ) {
+static inline void PlMultiplyColour( QmMathColour4ub *c, QmMathColour4ub c2 ) {
 	c->r *= c2.r;
 	c->g *= c2.g;
 	c->b *= c2.b;
 	c->a *= c2.a;
 }
 
-static inline void PlMultiplyColourf( PLColour *c, float a ) {
+static inline void PlMultiplyColourf( QmMathColour4ub *c, float a ) {
 	uint8_t a2 = PlFloatToByte( a );
 	c->r *= a2;
 	c->g *= a2;
@@ -245,14 +134,14 @@ static inline void PlMultiplyColourf( PLColour *c, float a ) {
 	c->a *= a2;
 }
 
-static inline void PlDivideColour( PLColour *c, PLColour c2 ) {
+static inline void PlDivideColour( QmMathColour4ub *c, QmMathColour4ub c2 ) {
 	c->r /= c2.r;
 	c->g /= c2.g;
 	c->b /= c2.b;
 	c->a /= c2.a;
 }
 
-static inline void PlDivideColourF( PLColour *c, float a ) {
+static inline void PlDivideColourF( QmMathColour4ub *c, float a ) {
 	uint8_t a2 = PlFloatToByte( a );
 	c->r /= a2;
 	c->g /= a2;
@@ -260,223 +149,175 @@ static inline void PlDivideColourF( PLColour *c, float a ) {
 	c->a /= a2;
 }
 
-static inline const char *PlPrintColour( PLColour c ) {
+static inline const char *PlPrintColour( QmMathColour4ub c ) {
 	static char s[ 16 ] = { '\0' };
 	snprintf( s, 16, "%i %i %i %i", c.r, c.g, c.b, c.a );
 	return s;
 }
 
-static inline PLVector4 PlColourToVector4( const PLColour *c ) {
-	/* reversed:
-	 * error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax */
-	PLVector4 v;
-	v.x = PlByteToFloat( c->r );
-	v.y = PlByteToFloat( c->g );
-	v.z = PlByteToFloat( c->b );
-	v.w = PlByteToFloat( c->a );
-
-	return v;
-}
-
-static inline PLColourF32 PlVector4ToColourF32( const PLVector4 *v ) {
-	PLColourF32 colour;
-	memcpy( &colour, v, sizeof( PLColourF32 ) );
+static inline QmMathColour4f PlVector4ToColourF32( const QmMathVector4f *v ) {
+	QmMathColour4f colour;
+	memcpy( &colour, v, sizeof( QmMathColour4f ) );
 	return colour;
 }
 
-#define PL_COLOURU8( R, G, B, A ) \
-	( PLColour ) { R, G, B, A }
-#define PL_COLOURF32( R, G, B, A ) \
-	( PLColourF32 ) { R, G, B, A }
 #define PL_COLOURF32RGB( R, G, B ) \
-	( PLColourF32 ){ R, G, B, 1.0f }
+	( QmMathColour4f ){ R, G, B, 1.0f }
 
-#define PL_COLOURU8_TO_F32( C ) PL_COLOURF32( PlByteToFloat( ( C ).r ), PlByteToFloat( ( C ).g ), PlByteToFloat( ( C ).b ), PlByteToFloat( ( C ).a ) )
-#define PL_COLOURF32_TO_U8( C ) PL_COLOURU8( PlFloatToByte( ( C ).r ), PlFloatToByte( ( C ).g ), PlFloatToByte( ( C ).b ), PlFloatToByte( ( C ).a ) )
-
-#ifndef __cplusplus
-
-/* todo: deprecate */
-#	define PLColour( r, g, b, a ) \
-		( PLColour ) { r, g, b, a }
-
-#endif
-
-#if !defined( __cplusplus )
-#	define PLColourRGB( r, g, b ) \
-		( PLColour ){ r, g, b, 255 }
-#	define PLColourR( r ) \
-		( PLColour ){ r, 255, 255, 255 }
-#	define PLColourG( g ) \
-		( PLColour ){ 255, g, 255, 255 }
-#	define PLColourB( b ) \
-		( PLColour ){ 255, 255, b, 255 }
-#	define PLColourA( a ) \
-		( PLColour ) { 255, 255, 255, a }
-#else
-#	define PLColourRGB( r, g, b ) \
-		{ r, g, b, 255 }
-#	define PLColourR( r ) \
-		{ r, 255, 255, 255 }
-#	define PLColourG( g ) \
-		{ 255, g, 255, 255 }
-#	define PLColourB( b ) \
-		{ 255, 255, b, 255 }
-#	define PLColourA( a ) \
-		{ 255, 255, 255, a }
-#endif
+#define PL_COLOURU8_TO_F32( C ) QM_MATH_COLOUR4F( PlByteToFloat( ( C ).r ), PlByteToFloat( ( C ).g ), PlByteToFloat( ( C ).b ), PlByteToFloat( ( C ).a ) )
+#define PL_COLOURF32_TO_U8( C ) QM_MATH_COLOUR4UB( PlFloatToByte( ( C ).r ), PlFloatToByte( ( C ).g ), PlFloatToByte( ( C ).b ), PlFloatToByte( ( C ).a ) )
 
 /* pinks */
-#define PL_COLOUR_PINK                   PLColourRGB( 255, 192, 203 )
-#define PL_COLOUR_LIGHT_PINK             PLColourRGB( 255, 182, 193 )
-#define PL_COLOUR_HOT_PINK               PLColourRGB( 255, 105, 180 )
-#define PL_COLOUR_DEEP_PINK              PLColourRGB( 255, 20, 147 )
-#define PL_COLOUR_PALE_VIOLET_RED        PLColourRGB( 219, 112, 147 )
-#define PL_COLOUR_MEDIUM_VIOLET_RED      PLColourRGB( 199, 21, 133 )
+#define PL_COLOUR_PINK                   QM_MATH_COLOUR4UB_RGB( 255, 192, 203 )
+#define PL_COLOUR_LIGHT_PINK             QM_MATH_COLOUR4UB_RGB( 255, 182, 193 )
+#define PL_COLOUR_HOT_PINK               QM_MATH_COLOUR4UB_RGB( 255, 105, 180 )
+#define PL_COLOUR_DEEP_PINK              QM_MATH_COLOUR4UB_RGB( 255, 20, 147 )
+#define PL_COLOUR_PALE_VIOLET_RED        QM_MATH_COLOUR4UB_RGB( 219, 112, 147 )
+#define PL_COLOUR_MEDIUM_VIOLET_RED      QM_MATH_COLOUR4UB_RGB( 199, 21, 133 )
 /* reds */
-#define PL_COLOUR_LIGHT_SALMON           PLColourRGB( 255, 160, 122 )
-#define PL_COLOUR_SALMON                 PLColourRGB( 250, 128, 114 )
-#define PL_COLOUR_DARK_SALMON            PLColourRGB( 233, 150, 122 )
-#define PL_COLOUR_LIGHT_CORAL            PLColourRGB( 240, 128, 128 )
-#define PL_COLOUR_INDIAN_RED             PLColourRGB( 205, 92, 92 )
-#define PL_COLOUR_CRIMSON                PLColourRGB( 220, 20, 60 )
-#define PL_COLOUR_FIRE_BRICK             PLColourRGB( 178, 34, 34 )
-#define PL_COLOUR_DARK_RED               PLColourRGB( 139, 0, 0 )
-#define PL_COLOUR_RED                    PLColourRGB( 255, 0, 0 )
+#define PL_COLOUR_LIGHT_SALMON           QM_MATH_COLOUR4UB_RGB( 255, 160, 122 )
+#define PL_COLOUR_SALMON                 QM_MATH_COLOUR4UB_RGB( 250, 128, 114 )
+#define PL_COLOUR_DARK_SALMON            QM_MATH_COLOUR4UB_RGB( 233, 150, 122 )
+#define PL_COLOUR_LIGHT_CORAL            QM_MATH_COLOUR4UB_RGB( 240, 128, 128 )
+#define PL_COLOUR_INDIAN_RED             QM_MATH_COLOUR4UB_RGB( 205, 92, 92 )
+#define PL_COLOUR_CRIMSON                QM_MATH_COLOUR4UB_RGB( 220, 20, 60 )
+#define PL_COLOUR_FIRE_BRICK             QM_MATH_COLOUR4UB_RGB( 178, 34, 34 )
+#define PL_COLOUR_DARK_RED               QM_MATH_COLOUR4UB_RGB( 139, 0, 0 )
+#define PL_COLOUR_RED                    QM_MATH_COLOUR4UB_RGB( 255, 0, 0 )
 /* oranges */
-#define PL_COLOUR_ORANGE_RED             PLColourRGB( 255, 69, 0 )
-#define PL_COLOUR_TOMATO                 PLColourRGB( 255, 99, 71 )
-#define PL_COLOUR_CORAL                  PLColourRGB( 255, 127, 80 )
-#define PL_COLOUR_DARK_ORANGE            PLColourRGB( 255, 140, 0 )
-#define PL_COLOUR_ORANGE                 PLColourRGB( 255, 165, 0 )
+#define PL_COLOUR_ORANGE_RED             QM_MATH_COLOUR4UB_RGB( 255, 69, 0 )
+#define PL_COLOUR_TOMATO                 QM_MATH_COLOUR4UB_RGB( 255, 99, 71 )
+#define PL_COLOUR_CORAL                  QM_MATH_COLOUR4UB_RGB( 255, 127, 80 )
+#define PL_COLOUR_DARK_ORANGE            QM_MATH_COLOUR4UB_RGB( 255, 140, 0 )
+#define PL_COLOUR_ORANGE                 QM_MATH_COLOUR4UB_RGB( 255, 165, 0 )
 /* yellows */
-#define PL_COLOUR_YELLOW                 PLColourRGB( 255, 255, 0 )
-#define PL_COLOUR_LIGHT_YELLOW           PLColourRGB( 255, 255, 224 )
-#define PL_COLOUR_LEMON_CHIFFON          PLColourRGB( 255, 250, 205 )
-#define PL_COLOUR_LIGHT_GOLDENROD_YELLOW PLColourRGB( 250, 250, 210 )
-#define PL_COLOUR_PAPAYA_WHIP            PLColourRGB( 255, 239, 213 )
-#define PL_COLOUR_MOCCASIN               PLColourRGB( 255, 228, 181 )
-#define PL_COLOUR_PEACH_PUFF             PLColourRGB( 255, 218, 185 )
-#define PL_COLOUR_PALE_GOLDENROD         PLColourRGB( 238, 232, 170 )
-#define PL_COLOUR_KHAKI                  PLColourRGB( 240, 230, 140 )
-#define PL_COLOUR_DARK_KHAKI             PLColourRGB( 189, 183, 107 )
-#define PL_COLOUR_GOLD                   PLColourRGB( 255, 215, 0 )
+#define PL_COLOUR_YELLOW                 QM_MATH_COLOUR4UB_RGB( 255, 255, 0 )
+#define PL_COLOUR_LIGHT_YELLOW           QM_MATH_COLOUR4UB_RGB( 255, 255, 224 )
+#define PL_COLOUR_LEMON_CHIFFON          QM_MATH_COLOUR4UB_RGB( 255, 250, 205 )
+#define PL_COLOUR_LIGHT_GOLDENROD_YELLOW QM_MATH_COLOUR4UB_RGB( 250, 250, 210 )
+#define PL_COLOUR_PAPAYA_WHIP            QM_MATH_COLOUR4UB_RGB( 255, 239, 213 )
+#define PL_COLOUR_MOCCASIN               QM_MATH_COLOUR4UB_RGB( 255, 228, 181 )
+#define PL_COLOUR_PEACH_PUFF             QM_MATH_COLOUR4UB_RGB( 255, 218, 185 )
+#define PL_COLOUR_PALE_GOLDENROD         QM_MATH_COLOUR4UB_RGB( 238, 232, 170 )
+#define PL_COLOUR_KHAKI                  QM_MATH_COLOUR4UB_RGB( 240, 230, 140 )
+#define PL_COLOUR_DARK_KHAKI             QM_MATH_COLOUR4UB_RGB( 189, 183, 107 )
+#define PL_COLOUR_GOLD                   QM_MATH_COLOUR4UB_RGB( 255, 215, 0 )
 /* browns */
-#define PL_COLOUR_CORNSILK               PLColourRGB( 255, 248, 220 )
-#define PL_COLOUR_BLANCHED_ALMOND        PLColourRGB( 255, 235, 205 )
-#define PL_COLOUR_BISQUE                 PLColourRGB( 255, 228, 196 )
-#define PL_COLOUR_NAVAJO_WHITE           PLColourRGB( 255, 222, 173 )
-#define PL_COLOUR_WHEAT                  PLColourRGB( 245, 222, 179 )
-#define PL_COLOUR_BURLY_WOOD             PLColourRGB( 222, 184, 135 )
-#define PL_COLOUR_TAN                    PLColourRGB( 210, 180, 140 )
-#define PL_COLOUR_ROSY_BROWN             PLColourRGB( 188, 143, 143 )
-#define PL_COLOUR_SANDY_BROWN            PLColourRGB( 244, 164, 96 )
-#define PL_COLOUR_GOLDENROD              PLColourRGB( 218, 165, 32 )
-#define PL_COLOUR_DARK_GOLDENROD         PLColourRGB( 184, 134, 11 )
-#define PL_COLOUR_PERU                   PLColourRGB( 205, 133, 63 )
-#define PL_COLOUR_CHOCOLATE              PLColourRGB( 210, 105, 30 )
-#define PL_COLOUR_SADDLE_BROWN           PLColourRGB( 139, 69, 19 )
-#define PL_COLOUR_SIENNA                 PLColourRGB( 160, 82, 45 )
-#define PL_COLOUR_BROWN                  PLColourRGB( 165, 42, 42 )
-#define PL_COLOUR_MAROON                 PLColourRGB( 128, 0, 0 )
+#define PL_COLOUR_CORNSILK               QM_MATH_COLOUR4UB_RGB( 255, 248, 220 )
+#define PL_COLOUR_BLANCHED_ALMOND        QM_MATH_COLOUR4UB_RGB( 255, 235, 205 )
+#define PL_COLOUR_BISQUE                 QM_MATH_COLOUR4UB_RGB( 255, 228, 196 )
+#define PL_COLOUR_NAVAJO_WHITE           QM_MATH_COLOUR4UB_RGB( 255, 222, 173 )
+#define PL_COLOUR_WHEAT                  QM_MATH_COLOUR4UB_RGB( 245, 222, 179 )
+#define PL_COLOUR_BURLY_WOOD             QM_MATH_COLOUR4UB_RGB( 222, 184, 135 )
+#define PL_COLOUR_TAN                    QM_MATH_COLOUR4UB_RGB( 210, 180, 140 )
+#define PL_COLOUR_ROSY_BROWN             QM_MATH_COLOUR4UB_RGB( 188, 143, 143 )
+#define PL_COLOUR_SANDY_BROWN            QM_MATH_COLOUR4UB_RGB( 244, 164, 96 )
+#define PL_COLOUR_GOLDENROD              QM_MATH_COLOUR4UB_RGB( 218, 165, 32 )
+#define PL_COLOUR_DARK_GOLDENROD         QM_MATH_COLOUR4UB_RGB( 184, 134, 11 )
+#define PL_COLOUR_PERU                   QM_MATH_COLOUR4UB_RGB( 205, 133, 63 )
+#define PL_COLOUR_CHOCOLATE              QM_MATH_COLOUR4UB_RGB( 210, 105, 30 )
+#define PL_COLOUR_SADDLE_BROWN           QM_MATH_COLOUR4UB_RGB( 139, 69, 19 )
+#define PL_COLOUR_SIENNA                 QM_MATH_COLOUR4UB_RGB( 160, 82, 45 )
+#define PL_COLOUR_BROWN                  QM_MATH_COLOUR4UB_RGB( 165, 42, 42 )
+#define PL_COLOUR_MAROON                 QM_MATH_COLOUR4UB_RGB( 128, 0, 0 )
 /* greens */
-#define PL_COLOUR_DARK_OLIVE_GREEN       PLColourRGB( 85, 107, 47 )
-#define PL_COLOUR_OLIVE                  PLColourRGB( 128, 128, 0 )
-#define PL_COLOUR_OLIVE_DRAB             PLColourRGB( 107, 142, 35 )
-#define PL_COLOUR_YELLOW_GREEN           PLColourRGB( 154, 205, 50 )
-#define PL_COLOUR_LIME_GREEN             PLColourRGB( 50, 205, 50 )
-#define PL_COLOUR_LIME                   PLColourRGB( 0, 255, 0 )
-#define PL_COLOUR_LAWN_GREEN             PLColourRGB( 124, 252, 0 )
-#define PL_COLOUR_CHARTREUSE             PLColourRGB( 127, 255, 0 )
-#define PL_COLOUR_GREEN_YELLOW           PLColourRGB( 173, 255, 47 )
-#define PL_COLOUR_SPRING_GREEN           PLColourRGB( 0, 255, 127 )
-#define PL_COLOUR_MEDIUM_SPRING_GREEN    PLColourRGB( 0, 250, 154 )
-#define PL_COLOUR_LIGHT_GREEN            PLColourRGB( 144, 238, 144 )
-#define PL_COLOUR_PALE_GREEN             PLColourRGB( 152, 251, 152 )
-#define PL_COLOUR_DARK_SEA_GREEN         PLColourRGB( 143, 188, 143 )
-#define PL_COLOUR_MEDIUM_AQUAMARINE      PLColourRGB( 102, 205, 170 )
-#define PL_COLOUR_MEDIUM_SEA_GREEN       PLColourRGB( 60, 179, 113 )
-#define PL_COLOUR_SEA_GREEN              PLColourRGB( 46, 139, 87 )
-#define PL_COLOUR_FOREST_GREEN           PLColourRGB( 34, 139, 34 )
-#define PL_COLOUR_GREEN                  PLColourRGB( 0, 128, 0 )
-#define PL_COLOUR_DARK_GREEN             PLColourRGB( 0, 100, 0 )
+#define PL_COLOUR_DARK_OLIVE_GREEN       QM_MATH_COLOUR4UB_RGB( 85, 107, 47 )
+#define PL_COLOUR_OLIVE                  QM_MATH_COLOUR4UB_RGB( 128, 128, 0 )
+#define PL_COLOUR_OLIVE_DRAB             QM_MATH_COLOUR4UB_RGB( 107, 142, 35 )
+#define PL_COLOUR_YELLOW_GREEN           QM_MATH_COLOUR4UB_RGB( 154, 205, 50 )
+#define PL_COLOUR_LIME_GREEN             QM_MATH_COLOUR4UB_RGB( 50, 205, 50 )
+#define PL_COLOUR_LIME                   QM_MATH_COLOUR4UB_RGB( 0, 255, 0 )
+#define PL_COLOUR_LAWN_GREEN             QM_MATH_COLOUR4UB_RGB( 124, 252, 0 )
+#define PL_COLOUR_CHARTREUSE             QM_MATH_COLOUR4UB_RGB( 127, 255, 0 )
+#define PL_COLOUR_GREEN_YELLOW           QM_MATH_COLOUR4UB_RGB( 173, 255, 47 )
+#define PL_COLOUR_SPRING_GREEN           QM_MATH_COLOUR4UB_RGB( 0, 255, 127 )
+#define PL_COLOUR_MEDIUM_SPRING_GREEN    QM_MATH_COLOUR4UB_RGB( 0, 250, 154 )
+#define PL_COLOUR_LIGHT_GREEN            QM_MATH_COLOUR4UB_RGB( 144, 238, 144 )
+#define PL_COLOUR_PALE_GREEN             QM_MATH_COLOUR4UB_RGB( 152, 251, 152 )
+#define PL_COLOUR_DARK_SEA_GREEN         QM_MATH_COLOUR4UB_RGB( 143, 188, 143 )
+#define PL_COLOUR_MEDIUM_AQUAMARINE      QM_MATH_COLOUR4UB_RGB( 102, 205, 170 )
+#define PL_COLOUR_MEDIUM_SEA_GREEN       QM_MATH_COLOUR4UB_RGB( 60, 179, 113 )
+#define PL_COLOUR_SEA_GREEN              QM_MATH_COLOUR4UB_RGB( 46, 139, 87 )
+#define PL_COLOUR_FOREST_GREEN           QM_MATH_COLOUR4UB_RGB( 34, 139, 34 )
+#define PL_COLOUR_GREEN                  QM_MATH_COLOUR4UB_RGB( 0, 128, 0 )
+#define PL_COLOUR_DARK_GREEN             QM_MATH_COLOUR4UB_RGB( 0, 100, 0 )
 /* cyans */
-#define PL_COLOUR_AQUA                   PLColourRGB( 0, 255, 255 )
+#define PL_COLOUR_AQUA                   QM_MATH_COLOUR4UB_RGB( 0, 255, 255 )
 #define PL_COLOUR_CYAN                   PL_COLOUR_AQUA
-#define PL_COLOUR_LIGHT_CYAN             PLColourRGB( 224, 255, 255 )
-#define PL_COLOUR_PALE_TURQUOISE         PLColourRGB( 175, 238, 238 )
-#define PL_COLOUR_AQUAMARINE             PLColourRGB( 127, 255, 212 )
-#define PL_COLOUR_TURQUOISE              PLColourRGB( 64, 224, 208 )
-#define PL_COLOUR_MEDIUM_TURQUOISE       PLColourRGB( 72, 209, 204 )
-#define PL_COLOUR_DARK_TURQUOISE         PLColourRGB( 0, 206, 209 )
-#define PL_COLOUR_LIGHT_SEA_GREEN        PLColourRGB( 32, 178, 170 )
-#define PL_COLOUR_CADET_BLUE             PLColourRGB( 95, 158, 160 )
-#define PL_COLOUR_DARK_CYAN              PLColourRGB( 0, 139, 139 )
-#define PL_COLOUR_TEAL                   PLColourRGB( 0, 128, 128 )
+#define PL_COLOUR_LIGHT_CYAN             QM_MATH_COLOUR4UB_RGB( 224, 255, 255 )
+#define PL_COLOUR_PALE_TURQUOISE         QM_MATH_COLOUR4UB_RGB( 175, 238, 238 )
+#define PL_COLOUR_AQUAMARINE             QM_MATH_COLOUR4UB_RGB( 127, 255, 212 )
+#define PL_COLOUR_TURQUOISE              QM_MATH_COLOUR4UB_RGB( 64, 224, 208 )
+#define PL_COLOUR_MEDIUM_TURQUOISE       QM_MATH_COLOUR4UB_RGB( 72, 209, 204 )
+#define PL_COLOUR_DARK_TURQUOISE         QM_MATH_COLOUR4UB_RGB( 0, 206, 209 )
+#define PL_COLOUR_LIGHT_SEA_GREEN        QM_MATH_COLOUR4UB_RGB( 32, 178, 170 )
+#define PL_COLOUR_CADET_BLUE             QM_MATH_COLOUR4UB_RGB( 95, 158, 160 )
+#define PL_COLOUR_DARK_CYAN              QM_MATH_COLOUR4UB_RGB( 0, 139, 139 )
+#define PL_COLOUR_TEAL                   QM_MATH_COLOUR4UB_RGB( 0, 128, 128 )
 /* blues */
-#define PL_COLOUR_LIGHT_STEEL_BLUE       PLColourRGB( 176, 196, 222 )
-#define PL_COLOUR_POWDER_BLUE            PLColourRGB( 176, 224, 230 )
-#define PL_COLOUR_LIGHT_BLUE             PLColourRGB( 173, 216, 230 )
-#define PL_COLOUR_SKY_BLUE               PLColourRGB( 135, 206, 235 )
-#define PL_COLOUR_LIGHT_SKY_BLUE         PLColourRGB( 135, 206, 250 )
-#define PL_COLOUR_DEEP_SKY_BLUE          PLColourRGB( 0, 191, 255 )
-#define PL_COLOUR_DODGER_BLUE            PLColourRGB( 30, 144, 255 )
-#define PL_COLOUR_CORNFLOWER_BLUE        PLColourRGB( 100, 149, 237 )
-#define PL_COLOUR_STEEL_BLUE             PLColourRGB( 70, 130, 180 )
-#define PL_COLOUR_ROYAL_BLUE             PLColourRGB( 65, 105, 225 )
-#define PL_COLOUR_BLUE                   PLColourRGB( 0, 0, 255 )
-#define PL_COLOUR_MEDIUM_BLUE            PLColourRGB( 0, 0, 205 )
-#define PL_COLOUR_DARK_BLUE              PLColourRGB( 0, 0, 139 )
-#define PL_COLOUR_NAVY                   PLColourRGB( 0, 0, 128 )
-#define PL_COLOUR_MIDNIGHT_BLUE          PLColourRGB( 25, 25, 112 )
+#define PL_COLOUR_LIGHT_STEEL_BLUE       QM_MATH_COLOUR4UB_RGB( 176, 196, 222 )
+#define PL_COLOUR_POWDER_BLUE            QM_MATH_COLOUR4UB_RGB( 176, 224, 230 )
+#define PL_COLOUR_LIGHT_BLUE             QM_MATH_COLOUR4UB_RGB( 173, 216, 230 )
+#define PL_COLOUR_SKY_BLUE               QM_MATH_COLOUR4UB_RGB( 135, 206, 235 )
+#define PL_COLOUR_LIGHT_SKY_BLUE         QM_MATH_COLOUR4UB_RGB( 135, 206, 250 )
+#define PL_COLOUR_DEEP_SKY_BLUE          QM_MATH_COLOUR4UB_RGB( 0, 191, 255 )
+#define PL_COLOUR_DODGER_BLUE            QM_MATH_COLOUR4UB_RGB( 30, 144, 255 )
+#define PL_COLOUR_CORNFLOWER_BLUE        QM_MATH_COLOUR4UB_RGB( 100, 149, 237 )
+#define PL_COLOUR_STEEL_BLUE             QM_MATH_COLOUR4UB_RGB( 70, 130, 180 )
+#define PL_COLOUR_ROYAL_BLUE             QM_MATH_COLOUR4UB_RGB( 65, 105, 225 )
+#define PL_COLOUR_BLUE                   QM_MATH_COLOUR4UB_RGB( 0, 0, 255 )
+#define PL_COLOUR_MEDIUM_BLUE            QM_MATH_COLOUR4UB_RGB( 0, 0, 205 )
+#define PL_COLOUR_DARK_BLUE              QM_MATH_COLOUR4UB_RGB( 0, 0, 139 )
+#define PL_COLOUR_NAVY                   QM_MATH_COLOUR4UB_RGB( 0, 0, 128 )
+#define PL_COLOUR_MIDNIGHT_BLUE          QM_MATH_COLOUR4UB_RGB( 25, 25, 112 )
 /* purples */
-#define PL_COLOUR_LAVENDER               PLColourRGB( 230, 230, 250 )
-#define PL_COLOUR_THISTLE                PLColourRGB( 216, 191, 216 )
-#define PL_COLOUR_PLUM                   PLColourRGB( 221, 160, 221 )
-#define PL_COLOUR_VIOLET                 PLColourRGB( 238, 130, 238 )
-#define PL_COLOUR_ORCHID                 PLColourRGB( 218, 112, 214 )
-#define PL_COLOUR_FUCHSIA                PLColourRGB( 255, 0, 255 )
+#define PL_COLOUR_LAVENDER               QM_MATH_COLOUR4UB_RGB( 230, 230, 250 )
+#define PL_COLOUR_THISTLE                QM_MATH_COLOUR4UB_RGB( 216, 191, 216 )
+#define PL_COLOUR_PLUM                   QM_MATH_COLOUR4UB_RGB( 221, 160, 221 )
+#define PL_COLOUR_VIOLET                 QM_MATH_COLOUR4UB_RGB( 238, 130, 238 )
+#define PL_COLOUR_ORCHID                 QM_MATH_COLOUR4UB_RGB( 218, 112, 214 )
+#define PL_COLOUR_FUCHSIA                QM_MATH_COLOUR4UB_RGB( 255, 0, 255 )
 #define PL_COLOUR_MAGENTA                PL_COLOUR_FUCHSIA
-#define PL_COLOUR_MEDIUM_ORCHID          PLColourRGB( 186, 85, 211 )
-#define PL_COLOUR_MEDIUM_PURPLE          PLColourRGB( 147, 112, 219 )
-#define PL_COLOUR_BLUE_VIOLET            PLColourRGB( 138, 42, 226 )
-#define PL_COLOUR_DARK_VIOLET            PLColourRGB( 148, 0, 211 )
-#define PL_COLOUR_DARK_ORCHID            PLColourRGB( 153, 50, 204 )
-#define PL_COLOUR_DARK_MAGNENTA          PLColourRGB( 139, 0, 139 )
-#define PL_COLOUR_PURPLE                 PLColourRGB( 128, 0, 128 )
-#define PL_COLOUR_INDIGO                 PLColourRGB( 75, 0, 130 )
-#define PL_COLOUR_DARK_SLATE_BLUE        PLColourRGB( 72, 61, 139 )
-#define PL_COLOUR_SLATE_BLUE             PLColourRGB( 106, 90, 205 )
-#define PL_COLOUR_MEDIUM_SLATE_BLUE      PLColourRGB( 123, 104, 238 )
+#define PL_COLOUR_MEDIUM_ORCHID          QM_MATH_COLOUR4UB_RGB( 186, 85, 211 )
+#define PL_COLOUR_MEDIUM_PURPLE          QM_MATH_COLOUR4UB_RGB( 147, 112, 219 )
+#define PL_COLOUR_BLUE_VIOLET            QM_MATH_COLOUR4UB_RGB( 138, 42, 226 )
+#define PL_COLOUR_DARK_VIOLET            QM_MATH_COLOUR4UB_RGB( 148, 0, 211 )
+#define PL_COLOUR_DARK_ORCHID            QM_MATH_COLOUR4UB_RGB( 153, 50, 204 )
+#define PL_COLOUR_DARK_MAGNENTA          QM_MATH_COLOUR4UB_RGB( 139, 0, 139 )
+#define PL_COLOUR_PURPLE                 QM_MATH_COLOUR4UB_RGB( 128, 0, 128 )
+#define PL_COLOUR_INDIGO                 QM_MATH_COLOUR4UB_RGB( 75, 0, 130 )
+#define PL_COLOUR_DARK_SLATE_BLUE        QM_MATH_COLOUR4UB_RGB( 72, 61, 139 )
+#define PL_COLOUR_SLATE_BLUE             QM_MATH_COLOUR4UB_RGB( 106, 90, 205 )
+#define PL_COLOUR_MEDIUM_SLATE_BLUE      QM_MATH_COLOUR4UB_RGB( 123, 104, 238 )
 /* whites */
-#define PL_COLOUR_WHITE                  PLColourRGB( 255, 255, 255 )
-#define PL_COLOUR_SNOW                   PLColourRGB( 255, 250, 250 )
-#define PL_COLOUR_HONEYDEW               PLColourRGB( 240, 255, 240 )
-#define PL_COLOUR_MINT_CREAM             PLColourRGB( 245, 255, 250 )
-#define PL_COLOUR_AZURE                  PLColourRGB( 240, 255, 255 )
-#define PL_COLOUR_ALICE_BLUE             PLColourRGB( 240, 248, 255 )
-#define PL_COLOUR_GHOST_WHITE            PLColourRGB( 248, 248, 255 )
-#define PL_COLOUR_WHITE_SMOKE            PLColourRGB( 245, 245, 245 )
-#define PL_COLOUR_SEASHELL               PLColourRGB( 255, 245, 238 )
-#define PL_COLOUR_BEIGE                  PLColourRGB( 245, 245, 220 )
-#define PL_COLOUR_OLD_LACE               PLColourRGB( 253, 245, 230 )
-#define PL_COLOUR_FLORAL_WHITE           PLColourRGB( 255, 250, 240 )
-#define PL_COLOUR_IVORY                  PLColourRGB( 255, 255, 240 )
-#define PL_COLOUR_ANTIQUE_WHITE          PLColourRGB( 250, 235, 215 )
-#define PL_COLOUR_LINEN                  PLColourRGB( 250, 240, 230 )
-#define PL_COLOUR_LAVENDER_BLUSH         PLColourRGB( 255, 240, 245 )
-#define PL_COLOUR_MISTY_ROSE             PLColourRGB( 255, 228, 225 )
+#define PL_COLOUR_WHITE                  QM_MATH_COLOUR4UB_RGB( 255, 255, 255 )
+#define PL_COLOUR_SNOW                   QM_MATH_COLOUR4UB_RGB( 255, 250, 250 )
+#define PL_COLOUR_HONEYDEW               QM_MATH_COLOUR4UB_RGB( 240, 255, 240 )
+#define PL_COLOUR_MINT_CREAM             QM_MATH_COLOUR4UB_RGB( 245, 255, 250 )
+#define PL_COLOUR_AZURE                  QM_MATH_COLOUR4UB_RGB( 240, 255, 255 )
+#define PL_COLOUR_ALICE_BLUE             QM_MATH_COLOUR4UB_RGB( 240, 248, 255 )
+#define PL_COLOUR_GHOST_WHITE            QM_MATH_COLOUR4UB_RGB( 248, 248, 255 )
+#define PL_COLOUR_WHITE_SMOKE            QM_MATH_COLOUR4UB_RGB( 245, 245, 245 )
+#define PL_COLOUR_SEASHELL               QM_MATH_COLOUR4UB_RGB( 255, 245, 238 )
+#define PL_COLOUR_BEIGE                  QM_MATH_COLOUR4UB_RGB( 245, 245, 220 )
+#define PL_COLOUR_OLD_LACE               QM_MATH_COLOUR4UB_RGB( 253, 245, 230 )
+#define PL_COLOUR_FLORAL_WHITE           QM_MATH_COLOUR4UB_RGB( 255, 250, 240 )
+#define PL_COLOUR_IVORY                  QM_MATH_COLOUR4UB_RGB( 255, 255, 240 )
+#define PL_COLOUR_ANTIQUE_WHITE          QM_MATH_COLOUR4UB_RGB( 250, 235, 215 )
+#define PL_COLOUR_LINEN                  QM_MATH_COLOUR4UB_RGB( 250, 240, 230 )
+#define PL_COLOUR_LAVENDER_BLUSH         QM_MATH_COLOUR4UB_RGB( 255, 240, 245 )
+#define PL_COLOUR_MISTY_ROSE             QM_MATH_COLOUR4UB_RGB( 255, 228, 225 )
 /* blacks */
-#define PL_COLOUR_GAINSBORO              PLColourRGB( 220, 220, 220 )
-#define PL_COLOUR_LIGHT_GRAY             PLColourRGB( 211, 211, 211 )
-#define PL_COLOUR_SILVER                 PLColourRGB( 192, 192, 192 )
-#define PL_COLOUR_DARK_GRAY              PLColourRGB( 169, 169, 169 )
-#define PL_COLOUR_GRAY                   PLColourRGB( 128, 128, 128 )
-#define PL_COLOUR_DIM_GRAY               PLColourRGB( 105, 105, 105 )
-#define PL_COLOUR_LIGHT_SLATE_GRAY       PLColourRGB( 119, 135, 153 )
-#define PL_COLOUR_SLATE_GRAY             PLColourRGB( 112, 128, 144 )
-#define PL_COLOUR_DARK_SLATE_GRAY        PLColourRGB( 47, 79, 79 )
-#define PL_COLOUR_BLACK                  PLColourRGB( 0, 0, 0 )
+#define PL_COLOUR_GAINSBORO              QM_MATH_COLOUR4UB_RGB( 220, 220, 220 )
+#define PL_COLOUR_LIGHT_GRAY             QM_MATH_COLOUR4UB_RGB( 211, 211, 211 )
+#define PL_COLOUR_SILVER                 QM_MATH_COLOUR4UB_RGB( 192, 192, 192 )
+#define PL_COLOUR_DARK_GRAY              QM_MATH_COLOUR4UB_RGB( 169, 169, 169 )
+#define PL_COLOUR_GRAY                   QM_MATH_COLOUR4UB_RGB( 128, 128, 128 )
+#define PL_COLOUR_DIM_GRAY               QM_MATH_COLOUR4UB_RGB( 105, 105, 105 )
+#define PL_COLOUR_LIGHT_SLATE_GRAY       QM_MATH_COLOUR4UB_RGB( 119, 135, 153 )
+#define PL_COLOUR_SLATE_GRAY             QM_MATH_COLOUR4UB_RGB( 112, 128, 144 )
+#define PL_COLOUR_DARK_SLATE_GRAY        QM_MATH_COLOUR4UB_RGB( 47, 79, 79 )
+#define PL_COLOUR_BLACK                  QM_MATH_COLOUR4UB_RGB( 0, 0, 0 )
 
 #define PL_COLOURF32_WHITE PL_COLOURF32RGB( 1.0f, 1.0f, 1.0f )
 #define PL_COLOURF32_BLACK PL_COLOURF32RGB( 0.0f, 0.0f, 0.0f )
@@ -489,10 +330,10 @@ static inline PLColourF32 PlVector4ToColourF32( const PLVector4 *v ) {
 // Sphere
 
 typedef struct PLSphere {
-	PLVector3 position;
+	QmMathVector3f position;
 	float radius;
 
-	PLColour colour;
+	QmMathColour4ub colour;
 } PLSphere;
 
 // Quad
@@ -532,9 +373,9 @@ static inline float PlLinearInterpolate( float y1, float y2, float mu ) {
 	return ( y1 * ( 1 - mu ) + y2 * mu );
 }
 
-static inline PLVector3 PlLinearInterpolateV3f( PLVector3 a, PLVector3 b, float mu )
+static inline QmMathVector3f PlLinearInterpolateV3f( QmMathVector3f a, QmMathVector3f b, float mu )
 {
-	return ( PLVector3 ) {
+	return ( QmMathVector3f ) {
 	        .x = PlLinearInterpolate( a.x, b.x, mu ),
 	        .y = PlLinearInterpolate( a.y, b.y, mu ),
 	        .z = PlLinearInterpolate( a.z, b.z, mu ),
@@ -547,9 +388,9 @@ static inline float PlCosineInterpolate( float y1, float y2, float mu )
 	return ( y1 * ( 1 - mu2 ) + y2 * mu2 );
 }
 
-static inline PLVector3 PlCosineInterpolateV3f( PLVector3 a, PLVector3 b, float mu )
+static inline QmMathVector3f PlCosineInterpolateV3f( QmMathVector3f a, QmMathVector3f b, float mu )
 {
-	return ( PLVector3 ) {
+	return ( QmMathVector3f ) {
 	        .x = PlCosineInterpolate( a.x, b.x, mu ),
 	        .y = PlCosineInterpolate( a.y, b.y, mu ),
 	        .z = PlCosineInterpolate( a.z, b.z, mu ),
@@ -749,7 +590,7 @@ static inline float PlInOutPow( float x, float p ) {
 // UTILITY FUNCTIONS
 
 /* http://www.songho.ca/opengl/gl_anglestoaxes.html */
-static inline void PlAnglesAxes( PLVector3 angles, PLVector3 *left, PLVector3 *up, PLVector3 *forward ) {
+static inline void PlAnglesAxes( QmMathVector3f angles, QmMathVector3f *left, QmMathVector3f *up, QmMathVector3f *forward ) {
 	/* pitch */
 	float theta = PL_DEG2RAD( angles.x );
 	float sp = sinf( theta );

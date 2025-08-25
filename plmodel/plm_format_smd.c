@@ -140,7 +140,7 @@ static void WriteSkeletonBlock( FILE *file, const PLMModel *model ) {
 	fprintf( file, "skeleton\ntime 0\n" );
 	if ( model->type == PLM_MODELTYPE_SKELETAL ) {
 		for ( unsigned int i = 0; i < model->internal.skeletal_data.numBones; ++i ) {
-			PLVector3 rotation = PlQuaternionToEuler( &model->internal.skeletal_data.bones[ i ].orientation );
+			QmMathVector3f rotation = PlQuaternionToEuler( &model->internal.skeletal_data.bones[ i ].orientation );
 			fprintf( file, "%u %f %f %f %f %f %f\n",
 			         i,                                                   /* bone id */
 			         model->internal.skeletal_data.bones[ i ].position.x, /* bone pos */

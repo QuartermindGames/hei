@@ -32,8 +32,8 @@ typedef struct PLPrimitive {
 	unsigned int numPolygons;
 	unsigned int maxPolygons;
 	
-	PLVector3 position;
-	PLVector3 angles;
+	QmMathVector3f position;
+	QmMathVector3f angles;
 } PLPrimitive;
 
 PLPrimitive *plCreatePrimitive( void ) {

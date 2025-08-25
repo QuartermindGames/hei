@@ -38,25 +38,25 @@ For more information, please refer to <http://unlicense.org>
 PL_EXTERN_C
 
 typedef struct PLCollisionRay {
-	PLVector3 origin, direction;
+	QmMathVector3f origin, direction;
 } PLCollisionRay;
 
 typedef struct PLCollisionAABB {
-	PLVector3 origin, mins, maxs, absOrigin;
+	QmMathVector3f origin, mins, maxs, absOrigin;
 } PLCollisionAABB;
 
 typedef struct PLCollisionSphere {
-	PLVector3 origin;
+	QmMathVector3f origin;
 	float radius;
 } PLCollisionSphere;
 
 typedef struct PLCollisionPlane {
-	PLVector3 origin, normal;
+	QmMathVector3f origin, normal;
 } PLCollisionPlane;
 
 typedef struct PLCollision {
-	PLVector3 contactNormal;
-	PLVector3 contactPoint;
+	QmMathVector3f contactNormal;
+	QmMathVector3f contactPoint;
 	float penetration;
 } PLCollision;
 
@@ -69,28 +69,25 @@ typedef struct PLCollision {
 #define PlSetupCollisionPlane( ORIGIN, NORMAL ) \
 	( PLCollisionPlane ) { ( ORIGIN ), ( NORMAL ) }
 
-float PlComputeSphereFromCoords( const PLVector3 *vertices, unsigned int numVertices );
-
-PLCollisionAABB PlGenerateAabbFromCoords( const PLVector3 *vertices, unsigned int numVertices, bool absolute );
-PLVector3 PlGetAabbAbsOrigin( const PLCollisionAABB *bounds, PLVector3 origin );
+QmMathVector3f PlGetAabbAbsOrigin( const PLCollisionAABB *bounds, QmMathVector3f origin );
 
 bool PlIsAabbIntersecting( const PLCollisionAABB *aBounds, const PLCollisionAABB *bBounds );
-bool PlIsPointIntersectingAabb( const PLCollisionAABB *bounds, PLVector3 point );
+bool PlIsPointIntersectingAabb( const PLCollisionAABB *bounds, QmMathVector3f point );
 bool PlIsSphereIntersectingAabb( const PLCollisionSphere *sphere, const PLCollisionAABB *bounds );
 
 /**
  * Get which side of a line a point is on.
  */
-inline static float PlTestPointLinePosition( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd ) {
+inline static float PlTestPointLinePosition( const QmMathVector2f *position, const QmMathVector2f *lineStart, const QmMathVector2f *lineEnd ) {
 	return ( lineEnd->x - lineStart->x ) * ( position->y - lineStart->y ) - ( lineEnd->y - lineStart->y ) * ( position->x - lineStart->x );
 }
 
-inline static bool PlIsPointIntersectingLine( const PLVector2 *position, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal, float *intersection ) {
+inline static bool PlIsPointIntersectingLine( const QmMathVector2f *position, const QmMathVector2f *lineStart, const QmMathVector2f *lineEnd, const QmMathVector2f *lineNormal, float *intersection ) {
 	*intersection = 0.0f;
 
 #if 0
-	PLVector2 xCoord = ( lineEnd->x > lineStart->x ) ? PLVector2( lineEnd->x, lineStart->x ) : PLVector2( lineStart->x, lineEnd->x );
-	PLVector2 yCoord = ( lineEnd->y > lineStart->y ) ? PLVector2( lineEnd->y, lineStart->y ) : PLVector2( lineStart->y, lineEnd->y );
+	QmMathVector2f xCoord = ( lineEnd->x > lineStart->x ) ? QmMathVector2f( lineEnd->x, lineStart->x ) : QmMathVector2f( lineStart->x, lineEnd->x );
+	QmMathVector2f yCoord = ( lineEnd->y > lineStart->y ) ? QmMathVector2f( lineEnd->y, lineStart->y ) : QmMathVector2f( lineStart->y, lineEnd->y );
 	if( !( position->x > xCoord.x && position->x < xCoord.y ) && !( position->y > yCoord.x && position->y < yCoord.y ) ) {
 		return false;
 	}
@@ -111,7 +108,7 @@ inline static bool PlIsPointIntersectingLine( const PLVector2 *position, const P
 	return ( *intersection <= 1000.0f );
 }
 
-inline static bool PlTestLineIntersection( float dst1, float dst2, const PLVector3 *lineStart, const PLVector3 *lineEnd, PLVector3 *hit ) {
+inline static bool PlTestLineIntersection( float dst1, float dst2, const QmMathVector3f *lineStart, const QmMathVector3f *lineEnd, QmMathVector3f *hit ) {
 	if ( ( dst1 * dst2 ) >= 0.0f || dst1 == dst2 ) {
 		return false;
 	}
@@ -127,14 +124,14 @@ inline static bool PlTestLineIntersection( float dst1, float dst2, const PLVecto
  * Checks whether or not AABB is intersecting with the given line.
  * Currently only works in 2D space (X & Z).
  */
-inline static bool PlIsAabbIntersectingLine( const PLCollisionAABB *bounds, const PLVector2 *lineStart, const PLVector2 *lineEnd, const PLVector2 *lineNormal ) {
+inline static bool PlIsAabbIntersectingLine( const PLCollisionAABB *bounds, const QmMathVector2f *lineStart, const QmMathVector2f *lineEnd, const QmMathVector2f *lineNormal ) {
 #if 0
-	PLVector2 origin = PLVector2( bounds->origin.x, bounds->origin.z );
+	QmMathVector2f origin = QmMathVector2f( bounds->origin.x, bounds->origin.z );
 
-	PLVector2 a = plAddVector2( PLVector2( bounds->mins.x, bounds->mins.z ), origin );
-	PLVector2 b = plAddVector2( PLVector2( bounds->maxs.x, bounds->mins.z ), origin );
-	//PLVector2 c = plAddVector2( PLVector2( bounds->mins.x, bounds->maxs.z ), origin );
-	//PLVector2 d = plAddVector2( PLVector2( bounds->maxs.x, bounds->maxs.z ), origin );
+	QmMathVector2f a = plAddVector2( QmMathVector2f( bounds->mins.x, bounds->mins.z ), origin );
+	QmMathVector2f b = plAddVector2( QmMathVector2f( bounds->maxs.x, bounds->mins.z ), origin );
+	//QmMathVector2f c = plAddVector2( QmMathVector2f( bounds->mins.x, bounds->maxs.z ), origin );
+	//QmMathVector2f d = plAddVector2( QmMathVector2f( bounds->maxs.x, bounds->maxs.z ), origin );
 
 	float aR, bR, cR, dR;
 	plIsPointIntersectingLine( &a, lineStart, lineEnd, lineNormal, &aR );
@@ -144,7 +141,7 @@ inline static bool PlIsAabbIntersectingLine( const PLCollisionAABB *bounds, cons
 
 #	if 0
 	if( x == 0.0f || y == 0.0f ) {
-		return PLVector2( x, y );
+		return QmMathVector2f( x, y );
 	}
 #	endif
 #endif
@@ -167,7 +164,7 @@ bool PlIsAabbIntersectingPlane( const PLCollisionAABB *aabb, const PLCollisionPl
 
 /* https://github.com/erich666/GraphicsGems/blob/master/gemsii/intersect/intsph.c */
 inline static bool PlIsRayIntersectingSphere( const PLCollisionSphere *sphere, const PLCollisionRay *ray, float *enterDistance, float *leaveDistance ) {
-	PLVector3 d = qm_math_vector3f_sub( ray->origin, sphere->origin );
+	QmMathVector3f d = qm_math_vector3f_sub( ray->origin, sphere->origin );
 	float u = qm_math_vector3f_dot_product( d, d ) - sphere->radius * sphere->radius;
 	float bsq = qm_math_vector3f_dot_product( d, ray->direction );
 	float disc = bsq * bsq - u;
@@ -182,7 +179,7 @@ inline static bool PlIsRayIntersectingSphere( const PLCollisionSphere *sphere, c
 	return false;
 }
 
-bool PlIsRayIntersectingAabb( const PLCollisionAABB *bounds, const PLCollisionRay *ray, PLVector3 *hitPoint );
+bool PlIsRayIntersectingAabb( const PLCollisionAABB *bounds, const PLCollisionRay *ray, QmMathVector3f *hitPoint );
 
 PL_EXTERN_C_END
 

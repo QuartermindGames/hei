@@ -17,3 +17,10 @@
 
 #define QM_MATH_DEG2RAD( X ) ( ( X ) * ( QM_MATH_PI_DIV_180 ) )
 #define QM_MATH_RAD2DEG( X ) ( ( X ) * ( QM_MATH_180_DIV_PI ) )
+
+#define QM_MATH_FTOB( NUM ) ( unsigned char ) ( ( NUM ) * 255.f )
+#define QM_MATH_BTOF( NUM ) ( ( NUM ) / ( float ) 255 )
+
+#define QM_MATH_IS_POW2( NUM ) ( ( NUM ) != 0 && ( ( NUM ) & ~( NUM ) + 1 ) == ( NUM ) )
+
+#define QM_MATH_ROUND_UP( NUM, MUL ) ( ( NUM ) + ( MUL ) - 1 & -( MUL ) )

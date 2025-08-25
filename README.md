@@ -19,10 +19,10 @@ A C23 framework for games, software and everything in-between.
 > This library is going through a significant refactor.
 See [the roadmap](#roadmap) below for details.
 
-A collection of relatively small utility libraries written in C11 that can be used as the foundation for various applications, though probably more oriented towards games.
+A collection of relatively small utility libraries written in C23 that can be used as the foundation for various applications, though probably more oriented towards games.
 Includes APIs for dealing with images, graphics, models, IO and much more.
 
-Originally created around 2014/2015 as a support library for another game, it's since found a new life supporting [ApeTech](https://www.hogsy.me/ape.htm) and other projects.
+Originally created around 2014/2015 as a support library for a game, it's since found a new life supporting [ApeTech](https://www.hogsy.me/ape.htm) and other projects.
 Do let me know if you find any use of it, and I'll give you a shoutout!
 
 **Keep in mind this is likely far from the most efficient library in the world.
@@ -132,7 +132,7 @@ This hasn't received as much attention so support is very limited.
 As of July 2025, I've decided to start work on a radical overhaul of the library.
 
 - [ ] Rename repository to qmfw / qmframework
-- [ ] Switch to C23
+- [x] Switch to C23
 - [ ] Split plcore into multiple libraries (e.g., `qmimage`, `qmmath`, etc.)
 - [ ] Refactor `plgraphics` into `qmgfx`, and slim it down
 - [ ] Refactor `plmodel` into `qmmodel`

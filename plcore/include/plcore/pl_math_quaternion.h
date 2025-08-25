@@ -9,13 +9,13 @@
 /******************************************************************/
 /* Quaternions */
 
-typedef PLVector4 PLQuaternion;
+typedef QmMathVector4f PLQuaternion;
 
 #define PlQuaternion( x, y, z, w ) \
 	( PLQuaternion ) { ( float ) ( x ), ( float ) ( y ), ( float ) ( z ), ( float ) ( w ) }
 
 PLQuaternion PlMultiplyQuaternion( const PLQuaternion *q, const PLQuaternion *q2 );
-PLQuaternion PlMultiplyQuaternion3FV( const PLQuaternion *q, const PLVector3 *v );
+PLQuaternion PlMultiplyQuaternion3FV( const PLQuaternion *q, const QmMathVector3f *v );
 
 PLQuaternion PlScaleQuaternion( const PLQuaternion *q, float a );
 
@@ -30,6 +30,6 @@ PLQuaternion PlNormalizeQuaternion( const PLQuaternion *q );
 
 const char *PlPrintQuaternion( const PLQuaternion *q );
 
-PLVector3 PlQuaternionToEuler( const PLQuaternion *q );
+QmMathVector3f PlQuaternionToEuler( const PLQuaternion *q );
 
-PLQuaternion PlRotateQuaternionPoint( const PLQuaternion *q, const PLVector3 *point );
+PLQuaternion PlRotateQuaternionPoint( const PLQuaternion *q, const QmMathVector3f *point );

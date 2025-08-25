@@ -379,13 +379,13 @@ void PlgSetShaderUniformDefaultValueByIndex( PLGShaderProgram *program, int slot
 			program->uniforms[ slot ].defaultDouble = *( double * ) defaultValue;
 			break;
 		case PLG_UNIFORM_VEC2:
-			program->uniforms[ slot ].defaultVec2 = *( PLVector2 * ) defaultValue;
+			program->uniforms[ slot ].defaultVec2 = *( QmMathVector2f * ) defaultValue;
 			break;
 		case PLG_UNIFORM_VEC3:
-			program->uniforms[ slot ].defaultVec3 = *( PLVector3 * ) defaultValue;
+			program->uniforms[ slot ].defaultVec3 = *( QmMathVector3f * ) defaultValue;
 			break;
 		case PLG_UNIFORM_VEC4:
-			program->uniforms[ slot ].defaultVec4 = *( PLVector4 * ) defaultValue;
+			program->uniforms[ slot ].defaultVec4 = *( QmMathVector4f * ) defaultValue;
 			break;
 		case PLG_UNIFORM_MAT3:
 			program->uniforms[ slot ].defaultMat3 = *( PLMatrix3 * ) defaultValue;

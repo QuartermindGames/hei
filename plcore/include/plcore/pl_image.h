@@ -146,7 +146,7 @@ PL_EXTERN bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format );
 
 PL_EXTERN void PlInvertImageColour( PLImage *image );
 void PlClearImageAlpha( PLImage *image );
-PL_EXTERN void PlReplaceImageColour( PLImage *image, PLColour target, PLColour dest );
+PL_EXTERN void PlReplaceImageColour( PLImage *image, QmMathColour4ub target, QmMathColour4ub dest );
 
 PL_EXTERN bool PlFlipImageVertical( PLImage *image );
 

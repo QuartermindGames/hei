@@ -99,7 +99,7 @@ typedef struct PLConsoleCommand {
 void PlGetConsoleCommands( PLConsoleCommand ***cmds, size_t *num_cmds );
 void PlRegisterConsoleCommand( const char *name, const char *description, int args, void ( *CallbackFunction )( unsigned int argc, char *argv[] ) );
 
-void PlSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg, PLColour colour ) );
+void PlSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg, QmMathColour4ub colour ) );
 
 const char **PlAutocompleteConsoleString( const char *string, unsigned int *numElements );
 void PlParseConsoleString( const char *string );
@@ -109,7 +109,7 @@ void PlExecuteConsoleScript( const char *path );
 /////////////////////////////////////////////////////////////////////////////////////
 
 void PlSetupLogOutput( const char *path );
-int PlAddLogLevel( const char *prefix, PLColour colour, bool status );
+int PlAddLogLevel( const char *prefix, QmMathColour4ub colour, bool status );
 void PlRemoveLogLevel( int id );
 void PlSetLogLevelStatus( int id, bool status );
 void PlLogMessage( int id, const char *msg, ... );

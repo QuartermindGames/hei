@@ -10,16 +10,16 @@
  * Type Conversion
  ****************************************/
 
-PLColour PlColourF32ToU8( const PLColourF32 *in ) {
-	return ( PLColour ){
+QmMathColour4ub PlColourF32ToU8( const QmMathColour4f *in ) {
+	return ( QmMathColour4ub ){
 	        PlFloatToByte( in->r ),
 	        PlFloatToByte( in->g ),
 	        PlFloatToByte( in->b ),
 	        PlFloatToByte( in->a ) };
 }
 
-PLColourF32 PlColourU8ToF32( const PLColour *in ) {
-	return ( PLColourF32 ){
+QmMathColour4f PlColourU8ToF32( const QmMathColour4ub *in ) {
+	return ( QmMathColour4f ){
 	        PlByteToFloat( in->r ),
 	        PlByteToFloat( in->g ),
 	        PlByteToFloat( in->b ),
@@ -30,16 +30,16 @@ PLColourF32 PlColourU8ToF32( const PLColour *in ) {
  * Addition
  ****************************************/
 
-PLColour PlAddColour( const PLColour *c, const PLColour *c2 ) {
-	return ( PLColour ){
+QmMathColour4ub PlAddColour( const QmMathColour4ub *c, const QmMathColour4ub *c2 ) {
+	return ( QmMathColour4ub ){
 	        c->r + c2->r,
 	        c->g + c2->g,
 	        c->b + c2->b,
 	        c->a + c2->a };
 }
 
-PLColourF32 PlAddColourF32( const PLColourF32 *c, const PLColourF32 *c2 ) {
-	return ( PLColourF32 ){
+QmMathColour4f PlAddColourF32( const QmMathColour4f *c, const QmMathColour4f *c2 ) {
+	return ( QmMathColour4f ){
 		c->r + c2->r,
 		c->g + c2->g,
 		c->b + c2->b,

@@ -77,10 +77,10 @@ typedef struct PLGDriverImportTable {
 	void ( *SetBlendMode )( PLGBlend a, PLGBlend b );
 	void ( *SetCullMode )( PLGCullMode mode );
 
-	void ( *SetClearColour )( PLColour rgba );
+	void ( *SetClearColour )( QmMathColour4ub rgba );
 	void ( *ClearBuffers )( unsigned int buffers );
 
-	void ( *DrawPixel )( int x, int y, PLColour colour );
+	void ( *DrawPixel )( int x, int y, QmMathColour4ub colour );
 
 	void ( *SetDepthBufferMode )( unsigned int mode );
 
@@ -150,7 +150,7 @@ typedef struct PLGDriverImportTable {
 	// v3.2
 	void ( *SetTextureWrapMode )( PLGTexture *texture, PLGTextureWrapMode wrapMode );
 
-	void ( *SetClipPlane )( const PLVector4 *clipPlane, const PLMatrix4 *clipPlaneMatrix, bool transpose );
+	void ( *SetClipPlane )( const QmMathVector4f *clipPlane, const PLMatrix4 *clipPlaneMatrix, bool transpose );
 } PLGDriverImportTable;
 
 #if !defined( PL_COMPILE_PLUGIN )

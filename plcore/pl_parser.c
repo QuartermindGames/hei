@@ -175,7 +175,7 @@ double PlParseDouble( const char **p, bool *status ) {
 	return strtod( num, NULL );
 }
 
-PLVector3 PlParseVector( const char **p, bool *status ) {
+QmMathVector3f PlParseVector( const char **p, bool *status ) {
 	PlSkipWhitespace( p );
 	if ( *( *p ) == '(' ) { ( *p )++; }
 	float x = PlParseFloat( p, status );
