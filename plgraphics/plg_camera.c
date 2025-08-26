@@ -7,6 +7,7 @@
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 #define CAMERA_DEFAULT_BOUNDS 5
 #define CAMERA_DEFAULT_FOV    75.f
@@ -14,7 +15,7 @@
 #define CAMERA_DEFAULT_FAR    1000.f
 
 PLGCamera *PlgCreateCamera( void ) {
-	PLGCamera *camera = ( PLGCamera * ) PlCAlloc( 1, sizeof( PLGCamera ), false );
+	PLGCamera *camera = QM_OS_MEMORY_CALLOC( 1, sizeof( PLGCamera ) );
 	if ( camera == NULL ) {
 		return NULL;
 	}
@@ -37,7 +38,7 @@ void PlgDestroyCamera( PLGCamera *camera ) {
 		return;
 	}
 
-	PL_DELETE( camera );
+	qm_os_memory_free( camera );
 }
 
 /**
@@ -166,7 +167,7 @@ void PlgSetViewport( int x, int y, int width, int height ) {
 }
 
 void PlgSetupCamera( PLGCamera *camera ) {
-	PL_ASSERT( camera );
+	assert( camera );
 
 	switch ( camera->mode ) {
 		case PLG_CAMERA_MODE_PERSPECTIVE: {

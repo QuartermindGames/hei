@@ -53,7 +53,7 @@ static SMDNode *SMD_ReadNodes( PLFile *file, unsigned int *numNodes ) {
 	PlFileSeek( file, pos, PL_SEEK_SET );
 
 	/* allocate our nodes list */
-	SMDNode *nodes = PlMAllocA( *numNodes * sizeof( SMDNode ) );
+	SMDNode *nodes = QM_OS_MEMORY_MALLOC_( *numNodes * sizeof( SMDNode ) );
 	SMDNode *curNode = nodes;
 	while ( PlReadString( file, buffer, sizeof( buffer ) ) != NULL ) {
 		if ( strcmp( buffer, "end\n" ) == 0 ) {

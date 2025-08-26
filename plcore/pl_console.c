@@ -8,6 +8,7 @@
 #include <plcore/pl_hashtable.h>
 
 #include "pl_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 #include <errno.h>
 #if defined( _WIN32 )
@@ -32,14 +33,14 @@ static PLConsoleCommand *PlGetConsoleCommand( const char *name ) {
 
 	// convert it so it's case insensitive here...
 	size_t s = strlen( name ) + 1;
-	char *tmp = PL_NEW_( char, s );
+	char *tmp = QM_OS_MEMORY_NEW_( char, s );
 	for ( unsigned int i = 0; i < s; ++i ) {
 		tmp[ i ] = ( char ) tolower( name[ i ] );
 	}
 
 	PLConsoleCommand *command = PlLookupHashTableUserData( commandHashes, tmp, s );
 
-	PL_DELETE( tmp );
+	qm_os_memory_free( tmp );
 
 	return command;
 }
@@ -59,7 +60,7 @@ void PlRegisterConsoleCommand( const char *name, const char *description, int ar
 
 	// Deal with resizing the array dynamically...
 	if ( ( 1 + _pl_num_commands ) > _pl_commands_size ) {
-		_pl_commands = ( PLConsoleCommand ** ) PlReAllocA( _pl_commands, ( _pl_commands_size += 128 ) * sizeof( PLConsoleCommand ) );
+		_pl_commands = ( PLConsoleCommand ** ) qm_os_memory_realloc( _pl_commands, ( _pl_commands_size += 128 ) * sizeof( PLConsoleCommand ) );
 	}
 
 	if ( commandHashes == NULL ) {
@@ -67,7 +68,7 @@ void PlRegisterConsoleCommand( const char *name, const char *description, int ar
 	}
 
 	if ( _pl_num_commands < _pl_commands_size ) {
-		_pl_commands[ _pl_num_commands ] = ( PLConsoleCommand * ) PlMAllocA( sizeof( PLConsoleCommand ) );
+		_pl_commands[ _pl_num_commands ] = QM_OS_MEMORY_NEW( PLConsoleCommand );
 		if ( !_pl_commands[ _pl_num_commands ] ) {
 			return;
 		}
@@ -77,7 +78,7 @@ void PlRegisterConsoleCommand( const char *name, const char *description, int ar
 		cmd->Callback = CallbackFunction;
 
 		size_t s = strlen( name ) + 1;
-		cmd->name = PL_NEW_( char, s );
+		cmd->name = QM_OS_MEMORY_NEW_( char, s );
 		strncpy( cmd->name, name, s );
 		pl_strtolower( cmd->name );
 
@@ -88,7 +89,7 @@ void PlRegisterConsoleCommand( const char *name, const char *description, int ar
 
 		if ( description != NULL ) {
 			s = strlen( description ) + 1;
-			cmd->description = PL_NEW_( char, s );
+			cmd->description = QM_OS_MEMORY_NEW_( char, s );
 			strncpy( cmd->description, description, s );
 		}
 
@@ -113,7 +114,7 @@ static PLHashTable *variableHashes = NULL;
 PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *description, const char *defaultValue, PLVariableType type, void *ptrValue, void ( *CallbackFunction )( PLConsoleVariable * ), bool archive ) {
 	FunctionStart();
 
-	PL_ASSERT( _pl_variables );
+	assert( _pl_variables );
 
 	if ( PlGetConsoleVariable( name ) != NULL ) {
 		PlReportErrorF( PL_RESULT_INVALID_PARM1, "variable with name has already been registered" );
@@ -122,7 +123,7 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *desc
 
 	// Deal with resizing the array dynamically...
 	if ( ( 1 + _pl_num_variables ) > _pl_variables_size ) {
-		_pl_variables = ( PLConsoleVariable ** ) PlReAllocA( _pl_variables, ( _pl_variables_size += 128 ) * sizeof( PLConsoleVariable ) );
+		_pl_variables = ( PLConsoleVariable ** ) qm_os_memory_realloc( _pl_variables, ( _pl_variables_size += 128 ) * sizeof( PLConsoleVariable ) );
 	}
 
 	if ( variableHashes == NULL ) {
@@ -131,7 +132,7 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *desc
 
 	PLConsoleVariable *out = NULL;
 	if ( _pl_num_variables < _pl_variables_size ) {
-		_pl_variables[ _pl_num_variables ] = ( PLConsoleVariable * ) PlMAllocA( sizeof( PLConsoleVariable ) );
+		_pl_variables[ _pl_num_variables ] = ( PLConsoleVariable * ) QM_OS_MEMORY_MALLOC_( sizeof( PLConsoleVariable ) );
 		out = _pl_variables[ _pl_num_variables ];
 
 		out->type = type;
@@ -142,7 +143,7 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *desc
 		out->archive = archive;
 
 		size_t s = strlen( name ) + 1;
-		out->name = PL_NEW_( char, s );
+		out->name = QM_OS_MEMORY_NEW_( char, s );
 		strncpy( out->name, name, s );
 		pl_strtolower( out->name );
 
@@ -153,7 +154,7 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *desc
 
 		if ( description != NULL ) {
 			s = strlen( description ) + 1;
-			out->description = PL_NEW_( char, s );
+			out->description = QM_OS_MEMORY_NEW_( char, s );
 			strncpy( out->description, description, s );
 		}
 
@@ -185,14 +186,14 @@ PLConsoleVariable *PlGetConsoleVariable( const char *name ) {
 
 	// convert it so it's case insensitive here...
 	size_t s = strlen( name ) + 1;
-	char *tmp = PL_NEW_( char, s );
+	char *tmp = QM_OS_MEMORY_NEW_( char, s );
 	for ( unsigned int i = 0; i < s; ++i ) {
 		tmp[ i ] = ( char ) tolower( name[ i ] );
 	}
 
 	PLConsoleVariable *var = PlLookupHashTableUserData( variableHashes, tmp, s );
 
-	PL_DELETE( tmp );
+	qm_os_memory_free( tmp );
 
 	return var;
 }
@@ -217,7 +218,7 @@ const char *PlGetConsoleVariableDefaultValue( const char *name ) {
 
 // Set console variable, with sanity checks...
 void PlSetConsoleVariable( PLConsoleVariable *var, const char *value ) {
-	PL_ASSERT( var );
+	assert( var );
 	switch ( var->type ) {
 		default:
 			PrintWarning( "Unknown variable type %d, failed to set!\n", var->type );
@@ -328,8 +329,8 @@ IMPLEMENT_COMMAND( mem ) {
 	/* this intentionally sucks for now... */
 	Print( "System usage:        %llu\n"
 	       "Local/tracked usage: %llu\n",
-	       PlGetCurrentMemoryUsage(),
-	       PlGetTotalAllocatedMemory() );
+	       qm_os_memory_get_usage(),
+	       qm_os_memory_get_total() );
 }
 
 IMPLEMENT_COMMAND( cmds ) {
@@ -429,11 +430,11 @@ static void InitializeDefaultLogLevels( void );
 PLFunctionResult PlInitConsole( void ) {
 	ConsoleOutputCallback = NULL;
 
-	if ( ( _pl_commands = ( PLConsoleCommand ** ) PlMAllocA( sizeof( PLConsoleCommand * ) * _pl_commands_size ) ) == NULL ) {
+	if ( ( _pl_commands = ( PLConsoleCommand ** ) QM_OS_MEMORY_MALLOC_( sizeof( PLConsoleCommand * ) * _pl_commands_size ) ) == NULL ) {
 		return PL_RESULT_MEMORY_ALLOCATION;
 	}
 
-	if ( ( _pl_variables = ( PLConsoleVariable ** ) PlMAllocA( sizeof( PLConsoleVariable * ) * _pl_variables_size ) ) == NULL ) {
+	if ( ( _pl_variables = ( PLConsoleVariable ** ) QM_OS_MEMORY_MALLOC_( sizeof( PLConsoleVariable * ) * _pl_variables_size ) ) == NULL ) {
 		return PL_RESULT_MEMORY_ALLOCATION;
 	}
 
@@ -465,12 +466,13 @@ void PlShutdownConsole( void ) {
 				continue;
 			}
 
-			PL_DELETE( ( *cmd )->name );
-			PL_DELETE( ( *cmd )->description );
+			qm_os_memory_free( ( *cmd )->name );
+			qm_os_memory_free( ( *cmd )->description );
 
-			PL_DELETE( ( *cmd ) );
+			qm_os_memory_free( ( *cmd ) );
 		}
-		PL_DELETEN( _pl_commands );
+		qm_os_memory_free( _pl_commands );
+		_pl_commands = NULL;
 	}
 
 	PlDestroyHashTable( variableHashes );
@@ -482,12 +484,13 @@ void PlShutdownConsole( void ) {
 				continue;
 			}
 
-			PL_DELETE( ( *var )->name );
-			PL_DELETE( ( *var )->description );
+			qm_os_memory_free( ( *var )->name );
+			qm_os_memory_free( ( *var )->description );
 
-			PL_DELETE( ( *var ) );
+			qm_os_memory_free( ( *var ) );
 		}
-		PL_DELETEN( _pl_variables );
+		qm_os_memory_free( _pl_variables );
+		_pl_variables = NULL;
 	}
 
 	ConsoleOutputCallback = NULL;
@@ -538,11 +541,11 @@ void PlParseConsoleString( const char *string ) {
 
 	static char **argv = NULL;
 	if ( argv == NULL ) {
-		if ( ( argv = ( char ** ) PlMAllocA( sizeof( char * ) * CONSOLE_MAX_ARGUMENTS ) ) == NULL ) {
+		if ( ( argv = ( char ** ) QM_OS_MEMORY_MALLOC_( sizeof( char * ) * CONSOLE_MAX_ARGUMENTS ) ) == NULL ) {
 			return;
 		}
 		for ( char **arg = argv; arg < argv + CONSOLE_MAX_ARGUMENTS; ++arg ) {
-			( *arg ) = ( char * ) PlMAllocA( sizeof( char ) * 1024 );
+			( *arg ) = ( char * ) QM_OS_MEMORY_MALLOC_( sizeof( char ) * 1024 );
 			if ( ( *arg ) == NULL ) {
 				break;// continue to our doom... ?
 			}
@@ -730,7 +733,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 	if ( length <= 0 )
 		return;
 
-	char *buf = PL_NEW_( char, length );
+	char *buf = QM_OS_MEMORY_NEW_( char, length );
 	vsnprintf( buf, length, msg, args );
 
 	va_end( args );
@@ -739,9 +742,9 @@ void PlLogMessage( int id, const char *msg, ... ) {
 #if 0
 	if ( *l->prefix != '\0' ) {
 		length += ( int ) strlen( l->prefix ) + 3;
-		char *tmp = PL_NEW_( char, length );
+		char *tmp = QM_OS_MEMORY_NEW_( char, length );
 		snprintf( tmp, length, "[%s] %s", l->prefix, buf );
-		PL_DELETE( buf );
+		qm_os_memory_free( buf );
 		buf = tmp;
 	}
 #endif
@@ -770,7 +773,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 				snprintf( prefix, sizeof( prefix ), "[%s]: ", time );
 
 				size_t nl = strlen( prefix ) + length;
-				char *logBuf = PlCAllocA( nl, sizeof( char ) );
+				char *logBuf = QM_OS_MEMORY_CALLOC( nl, sizeof( char ) );
 				snprintf( logBuf, nl, "%s%s", prefix, buf );
 
 				if ( fwrite( logBuf, sizeof( char ), nl, file ) != nl ) {
@@ -779,7 +782,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 				}
 				fclose( file );
 
-				PlFree( logBuf );
+				qm_os_memory_free( logBuf );
 			} else {
 				// todo, needs to be more appropriate; return details on exact issue
 				avoid_recursion = true;
@@ -788,7 +791,7 @@ void PlLogMessage( int id, const char *msg, ... ) {
 		}
 	}
 
-	PlFree( buf );
+	qm_os_memory_free( buf );
 }
 
 unsigned int PlGetNumLogLevels( void ) {
@@ -806,7 +809,7 @@ void PlExecuteConsoleScript( const char *path ) {
 	}
 
 	size_t length = PlGetFileSize( file );
-	char *buf = PL_NEW_( char, length + 1 );
+	char *buf = QM_OS_MEMORY_NEW_( char, length + 1 );
 	memcpy( buf, PlGetFileData( file ), length );
 	PlCloseFile( file );
 
@@ -820,18 +823,18 @@ void PlExecuteConsoleScript( const char *path ) {
 			continue;
 		}
 
-		char *command = PL_NEW_( char, ++l );
+		char *command = QM_OS_MEMORY_NEW_( char, ++l );
 		PlParseLine( &p, command, l );
 
 		PlInsertLinkedListNode( queuedCommands, command );
 	}
 
-	PL_DELETE( buf );
+	qm_os_memory_free( buf );
 
 	char *command;
 	PL_ITERATE_LINKED_LIST( command, char, queuedCommands, i ) {
 		PlParseConsoleString( command );
-		PL_DELETE( command );
+		qm_os_memory_free( command );
 	}
 	PlDestroyLinkedList( queuedCommands );
 }

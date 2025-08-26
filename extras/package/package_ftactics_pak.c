@@ -33,7 +33,7 @@ static PLPackage *FTactics_PAK_ParseFile( PLFile *file ) {
 		return NULL;
 	}
 
-	PakIndex *indices = PlCAllocA( numFiles, sizeof( PakIndex ) );
+	PakIndex *indices = QM_OS_MEMORY_CALLOC( numFiles, sizeof( PakIndex ) );
 	if ( indices == NULL ) {
 		return NULL;
 	}
@@ -70,7 +70,7 @@ static PLPackage *FTactics_PAK_ParseFile( PLFile *file ) {
 		package->table[ i ].offset = indices[ i ].offset;
 	}
 
-	PlFree( indices );
+	qm_os_memory_free( indices );
 
 	return package;
 }

@@ -4,6 +4,9 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
+#include "qmos/public/qm_os_memory.h"
+
+
 #include <plgraphics/plg_polygon.h>
 
 typedef struct PLGPolygon {
@@ -19,7 +22,7 @@ typedef struct PLGPolygon {
 } PLGPolygon;
 
 PLGPolygon *PlgCreatePolygon( PLGTexture *texture, QmMathVector2f textureOffset, QmMathVector2f textureScale, float textureRotation ) {
-	PLGPolygon *polygon = PlCAllocA( 1, sizeof( PLGPolygon ) );
+	PLGPolygon *polygon = QM_OS_MEMORY_CALLOC( 1, sizeof( PLGPolygon ) );
 	polygon->texture = texture;
 	polygon->textureOffset = textureOffset;
 	polygon->textureScale = textureScale;
@@ -32,7 +35,7 @@ void PlgDestroyPolygon( PLGPolygon *polygon ) {
 		return;
 	}
 
-	PlFree( polygon );
+	qm_os_memory_free( polygon );
 }
 
 /**
@@ -45,7 +48,7 @@ void PlgGeneratePolygonNormals( PLGPolygon *polygon ) {
 	PlgGenerateVertexNormals( polygon->vertices, polygon->numVertices, indices, numTriangles, true );
 	PlgGenerateTangentBasis( polygon->vertices, polygon->numVertices, indices, numTriangles );
 
-	PlFree( indices );
+	qm_os_memory_free( indices );
 }
 
 /**
@@ -55,7 +58,7 @@ void PlgGeneratePolygonFaceNormal( PLGPolygon *polygon ) {
 	unsigned int numTriangles;
 	unsigned int *indices = PlgConvertPolygonToTriangles( polygon, &numTriangles );
 
-	QmMathVector3f *normals = PlMAllocA( sizeof( QmMathVector3f ) * polygon->numVertices );
+	QmMathVector3f *normals = QM_OS_MEMORY_MALLOC_( sizeof( QmMathVector3f ) * polygon->numVertices );
 	for ( unsigned int i = 0, idx = 0; i < numTriangles; ++i, idx += 3 ) {
 		unsigned int a = indices[ idx ];
 		unsigned int b = indices[ idx + 1 ];
@@ -73,8 +76,8 @@ void PlgGeneratePolygonFaceNormal( PLGPolygon *polygon ) {
 
 	polygon->normal = normals[ 0 ];
 
-	PlFree( normals );
-	PlFree( indices );
+	qm_os_memory_free( normals );
+	qm_os_memory_free( indices );
 }
 
 void PlgAddPolygonVertex( PLGPolygon *polygon, const PLGVertex *vertex ) {
@@ -158,7 +161,7 @@ unsigned int *PlgConvertPolygonToTriangles( const PLGPolygon *polygon, unsigned 
 		return NULL;
 	}
 
-	unsigned int *indices = PlMAllocA( sizeof( unsigned int ) * ( *numTriangles * 3 ) );
+	unsigned int *indices = QM_OS_MEMORY_MALLOC_( sizeof( unsigned int ) * ( *numTriangles * 3 ) );
 	unsigned int *index = indices;
 	for ( unsigned int i = 1; i + 1 < polygon->numVertices; ++i ) {
 		index[ 0 ] = 0;
@@ -179,7 +182,7 @@ PLGMesh *PlgConvertPolygonToMesh( const PLGPolygon *polygon ) {
 
 	PLGMesh *mesh = PlgCreateMeshInit( PLG_MESH_TRIANGLES, PLG_DRAW_STATIC, numTriangles, polygon->numVertices, indices, polygon->vertices );
 
-	PlFree( indices );
+	qm_os_memory_free( indices );
 
 	return mesh;
 }

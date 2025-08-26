@@ -8,6 +8,7 @@
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 /* shader implementation */
 
@@ -22,7 +23,7 @@
  * @return the new shader stage.
  */
 PLGShaderStage *PlgCreateShaderStage( PLGShaderStageType type ) {
-	PLGShaderStage *stage = PL_NEW( PLGShaderStage );
+	PLGShaderStage *stage = QM_OS_MEMORY_NEW( PLGShaderStage );
 	stage->type = type;
 
 	CallGfxFunction( CreateShaderStage, stage );
@@ -108,7 +109,7 @@ PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type ) 
 	}
 
 	size_t length = PlGetFileSize( fp );
-	char *buf = PlMAlloc( length + 1, false );
+	char *buf = QM_OS_MEMORY_MALLOC_( length + 1 );
 	if ( buf == NULL ) {
 		return NULL;
 	}
@@ -125,7 +126,7 @@ PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type ) 
 	PLGShaderStage *stage = PlgParseShaderStage( type, buf, length );
 	snprintf( stage->path, sizeof( stage->path ), "%s", path );
 
-	PlFree( buf );
+	qm_os_memory_free( buf );
 	return stage;
 }
 
@@ -139,7 +140,7 @@ PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type ) 
  * @return the new shader program.
  */
 PLGShaderProgram *PlgCreateShaderProgram( void ) {
-	PLGShaderProgram *program = PlCAllocA( 1, sizeof( PLGShaderProgram ) );
+	PLGShaderProgram *program = QM_OS_MEMORY_CALLOC( 1, sizeof( PLGShaderProgram ) );
 
 	CallGfxFunction( CreateShaderProgram, program );
 
@@ -162,16 +163,16 @@ void PlgDestroyShaderProgram( PLGShaderProgram *program, bool free_stages ) {
 		if ( program->stages[ i ] != NULL ) {
 			CallGfxFunction( DetachShaderStage, program, program->stages[ i ] );
 			if ( free_stages ) {
-				PlFree( program->stages[ i ] );
+				qm_os_memory_free( program->stages[ i ] );
 			}
 		}
 	}
 
 	CallGfxFunction( DestroyShaderProgram, program );
 
-	PlFree( program->uniforms );
-	PlFree( program->attributes );
-	PlFree( program );
+	qm_os_memory_free( program->uniforms );
+	qm_os_memory_free( program->attributes );
+	qm_os_memory_free( program );
 }
 
 void PlgSetShaderProgramId( PLGShaderProgram *program, const char *id ) {
@@ -206,8 +207,8 @@ const char *PlgGetShaderCacheLocation( void ) {
 }
 
 void PlgAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stage ) {
-	PL_ASSERT( program != NULL );
-	PL_ASSERT( stage != NULL );
+	assert( program != NULL );
+	assert( stage != NULL );
 	program->stages[ program->num_stages++ ] = stage;
 	CallGfxFunction( AttachShaderStage, program, stage );
 }

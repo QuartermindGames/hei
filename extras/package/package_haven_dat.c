@@ -76,7 +76,7 @@ PLPackage *PlxParseHavenPackage( PLFile *file ) {
 
 	PL_READUINT32( file, false, NULL );// unsure...
 
-	DatTreeIndex *tree = PL_NEW_( DatTreeIndex, numStrings );
+	DatTreeIndex *tree = QM_OS_MEMORY_NEW_( DatTreeIndex, numStrings );
 	for ( unsigned int i = 0; i < numStrings; ++i ) {
 		tree[ i ].offset = PL_READUINT32( file, false, NULL );// offset into string table
 		tree[ i ].l = PlReadInt16( file, false, NULL );
@@ -85,10 +85,10 @@ PLPackage *PlxParseHavenPackage( PLFile *file ) {
 
 	// read in the strings - we can just copy out what we need
 	const size_t bufSize = PlGetFileSize( file ) - PlGetFileOffset( file );
-	char *buf = PL_NEW_( char, bufSize );
+	char *buf = QM_OS_MEMORY_NEW_( char, bufSize );
 	if ( PlReadFile( file, buf, sizeof( char ), bufSize ) != bufSize ) {
-		PL_DELETE( tree );
-		PL_DELETE( buf );
+		qm_os_memory_free( tree );
+		qm_os_memory_free( buf );
 		PlDestroyPackage( package );
 		return NULL;
 	}
@@ -143,8 +143,8 @@ PLPackage *PlxParseHavenPackage( PLFile *file ) {
 	}
 
 	// cleanup
-	PL_DELETE( tree );
-	PL_DELETE( buf );
+	qm_os_memory_free( tree );
+	qm_os_memory_free( buf );
 
 	return package;
 }

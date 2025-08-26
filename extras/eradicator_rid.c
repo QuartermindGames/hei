@@ -58,10 +58,10 @@ PLPackage *Eradicator_RID_LoadFile( const char *path ) {
 
 	PlFileSeek( filePtr, tableOffset, PL_SEEK_SET );
 
-	BdirIndex *indices = PlMAllocA( tableSize );
+	BdirIndex *indices = QM_OS_MEMORY_MALLOC_( tableSize );
 	for ( unsigned int i = 0; i < numLumps; ++i ) {
 #define cleanup()       \
-	PlFree( indices ); \
+	qm_os_memory_free( indices ); \
 	PlCloseFile( filePtr )
 		if ( PlReadFile( filePtr, indices[ i ].name, 1, 12 ) != 12 ) {
 			cleanup();
@@ -87,7 +87,7 @@ PLPackage *Eradicator_RID_LoadFile( const char *path ) {
 	PlCloseFile( filePtr );
 
 	if ( !status ) {
-		PlFree( indices );
+		qm_os_memory_free( indices );
 		return NULL;
 	}
 
@@ -101,7 +101,7 @@ PLPackage *Eradicator_RID_LoadFile( const char *path ) {
 		strncpy( index->fileName, indices[ i ].name, sizeof( index->fileName ) );
 	}
 
-	PlFree( indices );
+	qm_os_memory_free( indices );
 
 	return package;
 }

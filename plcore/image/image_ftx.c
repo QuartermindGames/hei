@@ -5,6 +5,7 @@
  */
 
 #include "image_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 /*	Ritual's FTX Format	*/
 
@@ -26,18 +27,18 @@ PLImage *PlParseFtxImage( PLFile *file ) {
 	}
 
 	unsigned int size = header.width * header.height * 4;
-	uint8_t *buffer = PlMAlloc( size, true );
+	uint8_t *buffer = QM_OS_MEMORY_MALLOC_( size );
 	size_t rSize = PlReadFile( file, buffer, sizeof( uint8_t ), size );
 
 	if ( rSize != size ) {
-		PlFree( buffer );
+		qm_os_memory_free( buffer );
 		return NULL;
 	}
 
 	PLImage *image = PlCreateImage( buffer, header.width, header.height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
 	/* create image makes a copy of the buffer */
-	PlFree( buffer );
+	qm_os_memory_free( buffer );
 
 	return image;
 }

@@ -7,6 +7,7 @@
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 /**
  * Generate cubic coordinates for the given vertices.
@@ -67,7 +68,7 @@ QmMathVector3f PlgGenerateVertexNormal( QmMathVector3f a, QmMathVector3f b, QmMa
 }
 
 void PlgGenerateMeshNormals( PLGMesh *mesh, bool perFace ) {
-	PL_ASSERT( mesh );
+	assert( mesh );
 
 	PlgGenerateVertexNormals( mesh->vertices, mesh->num_verts, mesh->indices, mesh->num_triangles, perFace );
 }
@@ -165,7 +166,7 @@ PLGMesh *PlgCreateMesh( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsign
 
 PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
                             const unsigned int *indicies, const PLGVertex *vertices ) {
-	PLGMesh *mesh = ( PLGMesh * ) PlCAllocA( 1, sizeof( PLGMesh ) );
+	PLGMesh *mesh = ( PLGMesh * ) QM_OS_MEMORY_CALLOC( 1, sizeof( PLGMesh ) );
 	mesh->primitive = primitive;
 	mesh->mode = mode;
 
@@ -173,7 +174,7 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 		if ( mesh->primitive == PLG_MESH_TRIANGLES ) {
 			unsigned int numIndices = numTriangles * 3; /* todo: this is too assumptious... */
 			mesh->maxIndices = numIndices;
-			mesh->indices = PlCAllocA( mesh->maxIndices, sizeof( unsigned int ) );
+			mesh->indices = QM_OS_MEMORY_CALLOC( mesh->maxIndices, sizeof( unsigned int ) );
 			if ( indicies != NULL ) {
 				memcpy( mesh->indices, indicies, sizeof( unsigned int ) * numIndices );
 				mesh->num_indices = numIndices;
@@ -184,7 +185,7 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 	}
 
 	mesh->maxVertices = numVerts;
-	mesh->vertices = PL_NEW_( PLGVertex, mesh->maxVertices );
+	mesh->vertices = QM_OS_MEMORY_NEW_( PLGVertex, mesh->maxVertices );
 
 	// If the vertices passed in aren't null, copy them into our vertex list
 	if ( vertices != NULL && mesh->num_verts > 0 ) {
@@ -220,12 +221,12 @@ void PlgDestroyMesh( PLGMesh *mesh ) {
 
 	CallGfxFunction( DeleteMesh, mesh );
 
-	//PL_DELETE( mesh->subMeshes );
-	//PL_DELETE( mesh->firstSubMeshes );
+	//qm_os_memory_free( mesh->subMeshes );
+	//qm_os_memory_free( mesh->firstSubMeshes );
 
-	PlFree( mesh->vertices );
-	PlFree( mesh->indices );
-	PlFree( mesh );
+	qm_os_memory_free( mesh->vertices );
+	qm_os_memory_free( mesh->indices );
+	qm_os_memory_free( mesh );
 }
 
 void PlgClearMesh( PLGMesh *mesh ) {
@@ -253,24 +254,24 @@ void PlgScaleMesh( PLGMesh *mesh, QmMathVector3f scale ) {
 }
 
 void PlgSetMeshTrianglePosition( PLGMesh *mesh, unsigned int *index, unsigned int x, unsigned int y, unsigned int z ) {
-	PL_ASSERT( *index < mesh->maxIndices );
+	assert( *index < mesh->maxIndices );
 	mesh->indices[ ( *index )++ ] = x;
 	mesh->indices[ ( *index )++ ] = y;
 	mesh->indices[ ( *index )++ ] = z;
 }
 
 void PlgSetMeshVertexPosition( PLGMesh *mesh, unsigned int index, const QmMathVector3f *vector ) {
-	PL_ASSERT( index < mesh->maxVertices );
+	assert( index < mesh->maxVertices );
 	mesh->vertices[ index ].position = *vector;
 }
 
 void PlgSetMeshVertexNormal( PLGMesh *mesh, unsigned int index, const QmMathVector3f *vector ) {
-	PL_ASSERT( index < mesh->maxVertices );
+	assert( index < mesh->maxVertices );
 	mesh->vertices[ index ].normal = *vector;
 }
 
 void PlgSetMeshVertexST( PLGMesh *mesh, unsigned int index, float s, float t ) {
-	PL_ASSERT( index < mesh->maxVertices );
+	assert( index < mesh->maxVertices );
 	mesh->vertices[ index ].st[ 0 ] = qm_math_vector2f( s, t );
 }
 
@@ -287,7 +288,7 @@ void PlgSetMeshVertexSTv( PLGMesh *mesh, uint8_t unit, unsigned int index, unsig
 }
 
 void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, const QmMathColour4ub *colour ) {
-	PL_ASSERT( index < mesh->maxVertices );
+	assert( index < mesh->maxVertices );
 	mesh->vertices[ index ].colour = *colour;
 }
 
@@ -312,7 +313,7 @@ void PlgSetMeshPrimitiveScale( PLGMesh *mesh, float scale ) {
 unsigned int PlgAddMeshVertex( PLGMesh *mesh, const QmMathVector3f *position, const QmMathVector3f *normal, const QmMathColour4ub *colour, const QmMathVector2f *st ) {
 	unsigned int vertexIndex = mesh->num_verts++;
 	if ( vertexIndex >= mesh->maxVertices ) {
-		mesh->vertices = PlReAllocA( mesh->vertices, ( mesh->maxVertices += 16 ) * sizeof( PLGVertex ) );
+		mesh->vertices = qm_os_memory_realloc( mesh->vertices, ( mesh->maxVertices += 16 ) * sizeof( PLGVertex ) );
 	}
 
 	PlgSetMeshVertexPosition( mesh, vertexIndex, position );
@@ -328,7 +329,7 @@ unsigned int PlgAddMeshTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, 
 
 	mesh->num_indices += 3;
 	if ( mesh->num_indices >= mesh->maxIndices ) {
-		mesh->indices = PlReAllocA( mesh->indices, ( mesh->maxIndices += 16 ) * sizeof( unsigned int ) );
+		mesh->indices = qm_os_memory_realloc( mesh->indices, ( mesh->maxIndices += 16 ) * sizeof( unsigned int ) );
 	}
 
 	mesh->range = mesh->num_indices;
@@ -377,7 +378,7 @@ void PlgDrawInstancedMesh( PLGMesh *mesh, const PLMatrix4 *transforms, unsigned 
 }
 
 PLCollisionAABB PlgGenerateAabbFromVertices( const PLGVertex *vertices, unsigned int numVertices, bool absolute ) {
-	QmMathVector3f *vvertices = PlMAllocA( sizeof( QmMathVector3f ) * numVertices );
+	QmMathVector3f *vvertices = QM_OS_MEMORY_MALLOC_( sizeof( QmMathVector3f ) * numVertices );
 	for ( unsigned int i = 0; i < numVertices; ++i ) {
 		vvertices[ i ] = vertices[ i ].position;
 	}
@@ -388,7 +389,7 @@ PLCollisionAABB PlgGenerateAabbFromVertices( const PLGVertex *vertices, unsigned
 	bounds.absOrigin = PlGetAabbAbsOrigin( &bounds, pl_vecOrigin3 );
 	bounds.origin    = pl_vecOrigin3;
 
-	PlFree( vvertices );
+	qm_os_memory_free( vvertices );
 
 	return bounds;
 }

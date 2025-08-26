@@ -5,6 +5,7 @@
  */
 
 #include "image_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 /* Ritual Entertainment's SWL Format, used by SiN */
 
@@ -41,7 +42,7 @@ PLImage *PlParseSwlImage( PLFile *fin ) {
 		return false;
 	}
 
-	PLImage *out = PlMAlloc( sizeof( PLImage ), true );
+	PLImage *out = QM_OS_MEMORY_MALLOC_( sizeof( PLImage ) );
 	out->width = header.width;
 	out->height = header.height;
 	out->levels = 4;
@@ -58,17 +59,17 @@ PLImage *PlParseSwlImage( PLFile *fin ) {
 		}
 
 		size_t buf_size = mip_w * mip_h;
-		uint8_t *buf = PlMAllocA( buf_size );
+		uint8_t *buf = QM_OS_MEMORY_MALLOC_( buf_size );
 		if ( PlReadFile( fin, buf, 1, buf_size ) != buf_size ) {
 			PlDestroyImage( out );
-			PlFree( buf );
+			qm_os_memory_free( buf );
 			return false;
 		}
 
-		out->data = PlCAllocA( out->levels, sizeof( uint8_t * ) );
+		out->data = QM_OS_MEMORY_CALLOC( out->levels, sizeof( uint8_t * ) );
 
 		size_t level_size = PlGetImageSize( out->format, mip_w, mip_h );
-		out->data[ i ] = PlCAllocA( level_size, sizeof( uint8_t ) );
+		out->data[ i ] = QM_OS_MEMORY_CALLOC( level_size, sizeof( uint8_t ) );
 
 		/* now we fill in the buf we just allocated,
     	 * by using the palette */
@@ -85,7 +86,7 @@ PLImage *PlParseSwlImage( PLFile *fin ) {
 			out->data[ i ][ k + 3 ] = 255; /*(uint8_t) (255 - palette[buf[j]].a);*/
 		}
 
-		PlFree( buf );
+		qm_os_memory_free( buf );
 	}
 
 	return out;

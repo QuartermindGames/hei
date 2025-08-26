@@ -58,7 +58,6 @@ support.
 typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
 
 #include <assert.h>
-#define PL_ASSERT( a ) assert( a )//TODO: remove - deprecated
 
 #define PL_UNUSEDVAR( ... ) ( void ) ( __VA_ARGS__ )
 

@@ -147,7 +147,7 @@ else ()
     message(WARNING "libunrar was not found, RAR support will be disabled.")
 endif ()
 
-set_property(TARGET plcore PROPERTY C_STANDARD_REQUIRED 11)
+set_property(TARGET plcore PROPERTY C_STANDARD_REQUIRED 23)
 
 target_include_directories(plcore
         PUBLIC

@@ -9,6 +9,7 @@
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 /*	Graphics	*/
 
@@ -102,7 +103,7 @@ PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned i
 		return NULL;
 	}
 
-	PLGFrameBuffer *buffer = PL_NEW( PLGFrameBuffer );
+	PLGFrameBuffer *buffer = QM_OS_MEMORY_NEW( PLGFrameBuffer );
 	buffer->width = w;
 	buffer->height = h;
 	buffer->flags = flags;
@@ -123,7 +124,7 @@ void PlgDestroyFrameBuffer( PLGFrameBuffer *buffer ) {
 
 	CallGfxFunction( DeleteFrameBuffer, buffer );
 
-	PlFree( buffer );
+	qm_os_memory_free( buffer );
 }
 
 PLGTexture *PlgGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter, PLGTextureWrapMode wrap ) {

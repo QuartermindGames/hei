@@ -2,6 +2,7 @@
 /* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
 
 #include "image_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 typedef struct AngelTEXHeader {
 	uint16_t width;
@@ -70,7 +71,7 @@ PLImage *PlParseAngelTexImage_( PLFile *file ) {
 
 			image = PlCreateImage( NULL, header.width, header.height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
-			uint8_t *pixels = PL_NEW_( uint8_t, numPixels );
+			uint8_t *pixels = QM_OS_MEMORY_NEW_( uint8_t, numPixels );
 			PlReadFile( file, pixels, sizeof( uint8_t ), numPixels );
 
 			uint8_t *dst = image->data[ 0 ];
@@ -84,7 +85,7 @@ PLImage *PlParseAngelTexImage_( PLFile *file ) {
 				}
 			}
 
-			PlFree( pixels );
+			qm_os_memory_free( pixels );
 			break;
 		}
 	}

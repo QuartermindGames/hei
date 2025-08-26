@@ -2,6 +2,7 @@
 // Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "package_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 #define DFS_MAGIC   PL_MAGIC_TO_NUM( 'S', 'F', 'D', 'X' )
 #define DFS_VERSION 1// Area 51 is 3 - will see about adding support later
@@ -21,9 +22,10 @@ static void *LoadPackageFile( PLFile *file, PLPackageIndex *index ) {
 	void *data = NULL;
 	PLFile *dataFile = PlOpenFile( dataPath, false );
 	if ( PlFileSeek( dataFile, ( signed ) index->offset, PL_SEEK_SET ) ) {
-		data = PL_NEW_( uint8_t, index->fileSize );
+		data = QM_OS_MEMORY_NEW_( uint8_t, index->fileSize );
 		if ( PlReadFile( dataFile, data, sizeof( char ), index->fileSize ) != index->fileSize ) {
-			PL_DELETEN( data );
+			qm_os_memory_free( data );
+			data = NULL;
 		}
 	}
 

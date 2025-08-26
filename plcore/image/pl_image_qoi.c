@@ -4,10 +4,11 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
+#include "qmos/public/qm_os_memory.h"
 #include "image_private.h"
 
-#define QOI_MALLOC( sz ) PlMAllocA( sz )
-#define QOI_FREE( p )    PlFree( p )
+#define QOI_MALLOC( sz ) QM_OS_MEMORY_MALLOC_( sz )
+#define QOI_FREE( p )    qm_os_memory_free( p )
 
 #define QOI_IMPLEMENTATION
 #include "3rdparty/qoi.h"
@@ -16,7 +17,7 @@ PLImage *PlParseQoiImage( PLFile *file ) {
 	PLImage *image = NULL;
 
 	int size = ( int ) PlGetFileSize( file );
-	uint8_t *buf = PL_NEW_( uint8_t, size + 1 );
+	uint8_t *buf = QM_OS_MEMORY_NEW_( uint8_t, size + 1 );
 	if ( PlReadFile( file, buf, sizeof( uint8_t ), size ) == size ) {
 		qoi_desc desc;
 		uint8_t *dstBuf = qoi_decode( buf, size, &desc, 0 );
@@ -28,10 +29,10 @@ PLImage *PlParseQoiImage( PLFile *file ) {
 		image = PlCreateImage( dstBuf, desc.width, desc.height, 0, PL_COLOURFORMAT_RGBA,
 		                       ( desc.channels == 4 ) ? PL_IMAGEFORMAT_RGBA8 : PL_IMAGEFORMAT_RGB8 );
 
-		PL_DELETE( dstBuf );
+		qm_os_memory_free( dstBuf );
 	}
 
-	PL_DELETE( buf );
+	qm_os_memory_free( buf );
 
 	return image;
 }

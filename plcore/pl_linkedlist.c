@@ -1,6 +1,9 @@
 /* SPDX-License-Identifier: MIT */
 /* Copyright © 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com> */
 
+#include "qmos/public/qm_os_memory.h"
+
+
 #include <plcore/pl.h>
 #include <plcore/pl_linkedlist.h>
 
@@ -18,11 +21,11 @@ typedef struct PLLinkedList {
 } PLLinkedList;
 
 PLLinkedList *PlCreateLinkedList( void ) {
-	return PL_NEW( PLLinkedList );
+	return QM_OS_MEMORY_NEW( PLLinkedList );
 }
 
 PLLinkedListNode *PlInsertLinkedListNode( PLLinkedList *list, void *userPtr ) {
-	PLLinkedListNode *node = PL_NEW( PLLinkedListNode );
+	PLLinkedListNode *node = QM_OS_MEMORY_NEW( PLLinkedListNode );
 	if ( list->front == NULL ) {
 		list->front = node;
 	}
@@ -99,7 +102,7 @@ void PlDestroyLinkedListNode( PLLinkedListNode *node ) {
 
 	list->numNodes--;
 
-	PL_DELETE( node );
+	qm_os_memory_free( node );
 }
 
 void PlDestroyLinkedListNodes( PLLinkedList *list ) {
@@ -115,7 +118,7 @@ void PlDestroyLinkedList( PLLinkedList *list ) {
 	}
 
 	PlDestroyLinkedListNodes( list );
-	PL_DELETE( list );
+	qm_os_memory_free( list );
 }
 
 void PlDestroyLinkedListNodesEx( PLLinkedList *list, void ( *elementDeleter )( void *user ) ) {
@@ -219,7 +222,7 @@ void **PlArrayFromLinkedList( PLLinkedList *list, unsigned int *numElements ) {
 
 	// Allocate container for all the elements
 	*numElements = PlGetNumLinkedListNodes( list );
-	void **elements = PL_NEW_( void *, *numElements );
+	void **elements = QM_OS_MEMORY_NEW_( void *, *numElements );
 
 	// Now fillerup
 	PLLinkedListNode *node = PlGetFirstNode( list );

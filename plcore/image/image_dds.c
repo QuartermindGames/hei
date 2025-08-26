@@ -5,6 +5,7 @@
  */
 
 #include "image_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 #define DDS_MAGIC      PL_MAGIC_TO_NUM( 'D', 'D', 'S', ' ' )
 #define DDS_MAGIC_DXT1 PL_MAGIC_TO_NUM( 'D', 'X', 'T', '1' )
@@ -179,14 +180,14 @@ PLImage *PlParseDdsImage( PLFile *file ) {
 	unsigned int mipW = image.width;
 	unsigned int mipH = image.height;
 
-	image.data = PlCAllocA( image.levels, sizeof( uint8_t * ) );
+	image.data = QM_OS_MEMORY_CALLOC( image.levels, sizeof( uint8_t * ) );
 	for ( unsigned int i = 0; i < image.levels; ++i ) {
 		unsigned int size = ( ( mipW + 3 ) / 4 ) * ( ( mipH + 3 ) / 4 ) * bytesPerBlock;
 		if ( i == 0 ) {
 			image.size = size;
 		}
 
-		image.data[ i ] = PlMAllocA( size );
+		image.data[ i ] = QM_OS_MEMORY_MALLOC_( size );
 		if ( PlReadFile( file, image.data[ i ], sizeof( uint8_t ), size ) != size ) {
 			PlFreeImage( &image );
 			return NULL;
@@ -196,7 +197,7 @@ PLImage *PlParseDdsImage( PLFile *file ) {
 		mipH /= 2;
 	}
 
-	PLImage *out = PlMAllocA( sizeof( PLImage ) );
+	PLImage *out = QM_OS_MEMORY_MALLOC_( sizeof( PLImage ) );
 	memcpy( out, &image, sizeof( PLImage ) );
 
 	snprintf( out->path, sizeof( out->path ), "%s", PlGetFilePath( file ) );

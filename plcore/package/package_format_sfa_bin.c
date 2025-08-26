@@ -4,6 +4,7 @@
 #include "package_private.h"
 
 #include "3rdparty/portable_endian.h"
+#include "qmos/public/qm_os_memory.h"
 
 /* Loader for SFA TAB/BIN format */
 
@@ -34,19 +35,19 @@ PLPackage *PlLoadTabPackage( const char *path ) {
 
 	unsigned int num_indices = ( unsigned int ) ( tab_size / sizeof( TabIndex ) );
 
-	TabIndex *indices = PlMAllocA( num_indices * sizeof( TabIndex ) );
+	TabIndex *indices = QM_OS_MEMORY_MALLOC_( num_indices * sizeof( TabIndex ) );
 	size_t ret = PlReadFile( fp, indices, sizeof( TabIndex ), num_indices );
 	PlCloseFile( fp );
 
 	if ( ret != num_indices ) {
-		PlFree( indices );
+		qm_os_memory_free( indices );
 		return NULL;
 	}
 
 	/* swap be to le */
 	for ( unsigned int i = 0; i < num_indices; ++i ) {
 		if ( indices[ i ].start > tab_size || indices[ i ].end > tab_size ) {
-			PlFree( indices );
+			qm_os_memory_free( indices );
 			PlReportErrorF( PL_RESULT_FILESIZE, "offset outside of file bounds" );
 			return NULL;
 		}
@@ -63,7 +64,7 @@ PLPackage *PlLoadTabPackage( const char *path ) {
 		index->offset = indices[ i ].start;
 	}
 
-	PlFree( indices );
+	qm_os_memory_free( indices );
 
 	return package;
 }

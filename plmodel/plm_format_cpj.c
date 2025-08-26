@@ -86,13 +86,13 @@ typedef struct CPJModel {
 } CPJModel;
 
 static void CPJModel_Free( CPJModel *model ) {
-	PL_DELETE( model->vertices );
-	PL_DELETE( model->triangles );
+	qm_os_memory_free( model->vertices );
+	qm_os_memory_free( model->triangles );
 	for ( unsigned int i = 0; i < model->numSurfaces; ++i ) {
-		PL_DELETE( model->surfaces[ i ].textures );
+		qm_os_memory_free( model->surfaces[ i ].textures );
 	}
-	PL_DELETE( model->surfaces );
-	PL_DELETE( model->bones );
+	qm_os_memory_free( model->surfaces );
+	qm_os_memory_free( model->bones );
 }
 
 typedef struct CPJChunkInfo {
@@ -165,7 +165,7 @@ static void SetupSkeletalData( const CPJModel *cpjModel, PLMSkeletalModelData *s
 	PL_ZERO( skeletalModelData, sizeof( PLMSkeletalModelData ) );
 
 	skeletalModelData->numBones = cpjModel->numBones;
-	skeletalModelData->bones = PL_NEW_( PLMBone, skeletalModelData->numBones );
+	skeletalModelData->bones = QM_OS_MEMORY_NEW_( PLMBone, skeletalModelData->numBones );
 	for ( unsigned int i = 0; i < skeletalModelData->numBones; ++i ) {
 		skeletalModelData->bones[ i ].orientation = cpjModel->bones[ i ].rotation;
 		skeletalModelData->bones[ i ].position = cpjModel->bones[ i ].transform;
@@ -174,7 +174,7 @@ static void SetupSkeletalData( const CPJModel *cpjModel, PLMSkeletalModelData *s
 	}
 
 	skeletalModelData->numBoneWeights = cpjModel->numVerts;
-	skeletalModelData->weights = PL_NEW_( PLMBoneWeight, skeletalModelData->numBoneWeights );
+	skeletalModelData->weights = QM_OS_MEMORY_NEW_( PLMBoneWeight, skeletalModelData->numBoneWeights );
 	for ( unsigned int i = 0; i < skeletalModelData->numBoneWeights; ++i ) {
 		unsigned int numWeights = cpjModel->vertices[ i ].numWeights;
 		if ( numWeights >= PLM_MAX_BONE_WEIGHTS ) {
@@ -194,9 +194,9 @@ static void SetupSkeletalData( const CPJModel *cpjModel, PLMSkeletalModelData *s
  * on the given smoothing group.
  */
 static QmMathVector3f **GenerateNormalsPerGroup( const CPJModel *cpjModel ) {
-	QmMathVector3f **normals = PL_NEW_( QmMathVector3f *, cpjModel->numSmoothingGroups );
+	QmMathVector3f **normals = QM_OS_MEMORY_NEW_( QmMathVector3f *, cpjModel->numSmoothingGroups );
 	for ( unsigned int i = 0; i < cpjModel->numSmoothingGroups; ++i ) {
-		normals[ i ] = PL_NEW_( QmMathVector3f, cpjModel->numVerts );
+		normals[ i ] = QM_OS_MEMORY_NEW_( QmMathVector3f, cpjModel->numVerts );
 
 		for ( unsigned int j = 0; j < cpjModel->numTriangles; ++j ) {
 			if ( cpjModel->surfaces[ 0 ].triangles[ j ].smoothingGroup != i ) {
@@ -279,7 +279,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 
 		/* fetch the vertices */
 		PlFileSeek( file, baseOffset + ofsVerts, PL_SEEK_SET );
-		cpjModel.vertices = PL_NEW_( CPJVertex, cpjModel.numVerts );
+		cpjModel.vertices = QM_OS_MEMORY_NEW_( CPJVertex, cpjModel.numVerts );
 		for ( unsigned int i = 0; i < cpjModel.numVerts; ++i ) {
 			cpjModel.vertices[ i ].flags = PlReadInt8( file, NULL ); /* flags */
 			PlReadInt8( file, NULL );                                /* group */
@@ -298,7 +298,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 		 * to fetch the edges as the triangles are edge-based... and then we can get the true
 		 * vertices that each triangle is *actually* using */
 		PlFileSeek( file, baseOffset + ofsEdges, PL_SEEK_SET );
-		CPJEdge *edges = PL_NEW_( CPJEdge, numEdges );
+		CPJEdge *edges = QM_OS_MEMORY_NEW_( CPJEdge, numEdges );
 		for ( unsigned int i = 0; i < numEdges; ++i ) {
 			edges[ i ].x = ( uint16_t ) PlReadInt16( file, false, NULL );
 			edges[ i ].y = ( uint16_t ) PlReadInt16( file, false, NULL );
@@ -310,7 +310,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 
 		/* and now fetch the triangles */
 		PlFileSeek( file, baseOffset + ofsTriangles, PL_SEEK_SET );
-		CPJTriangle *triangle = cpjModel.triangles = PL_NEW_( CPJTriangle, cpjModel.numTriangles );
+		CPJTriangle *triangle = cpjModel.triangles = QM_OS_MEMORY_NEW_( CPJTriangle, cpjModel.numTriangles );
 		for ( unsigned int i = 0; i < cpjModel.numTriangles; ++i, ++triangle ) {
 			triangle->x = edges[ ( uint16_t ) PlReadInt16( file, false, NULL ) ].y;
 			triangle->y = edges[ ( uint16_t ) PlReadInt16( file, false, NULL ) ].y;
@@ -318,7 +318,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 			PlReadInt16( file, false, NULL ); /* unused */
 		}
 
-		PL_DELETE( edges );
+		qm_os_memory_free( edges );
 	} else {
 		CPJModel_Free( &cpjModel );
 		return NULL;
@@ -335,7 +335,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 		}
 
 		cpjModel.numSurfaces++;
-		cpjModel.surfaces = PlReAllocA( cpjModel.surfaces, sizeof( CPJSurface ) * cpjModel.numSurfaces );
+		cpjModel.surfaces = qm_os_memory_realloc( cpjModel.surfaces, sizeof( CPJSurface ) * cpjModel.numSurfaces );
 		CPJSurface *surface = &cpjModel.surfaces[ cpjModel.numSurfaces - 1 ];
 
 		dprint( "Parsing surface\n" );
@@ -361,7 +361,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 		PLFileOffset baseOffset = PlGetFileOffset( file );
 
 		PlFileSeek( file, baseOffset + ofsTextures, PL_SEEK_SET );
-		surface->textures = PL_NEW_( CPJName, surface->numTextures );
+		surface->textures = QM_OS_MEMORY_NEW_( CPJName, surface->numTextures );
 		for ( unsigned int i = 0; i < surface->numTextures; ++i ) {
 			uint32_t ofsName = PlReadInt32( file, false, NULL );
 			ReadName( file, baseOffset + ofsName, surface->textures[ i ], sizeof( surface->textures[ i ] ) );
@@ -370,14 +370,14 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 		}
 
 		PlFileSeek( file, baseOffset + ofsUVCoords, PL_SEEK_SET );
-		surface->uvCoords = PL_NEW_( QmMathVector2f, surface->numUVCoords );
+		surface->uvCoords = QM_OS_MEMORY_NEW_( QmMathVector2f, surface->numUVCoords );
 		for ( unsigned int i = 0; i < surface->numUVCoords; ++i ) {
 			surface->uvCoords[ i ].x = PlReadFloat32( file, false, NULL );
 			surface->uvCoords[ i ].y = -PlReadFloat32( file, false, NULL );
 		}
 
 		PlFileSeek( file, baseOffset + ofsTriangles, PL_SEEK_SET );
-		surface->triangles = PL_NEW_( CPJSurfaceTriangle, numTriangles );
+		surface->triangles = QM_OS_MEMORY_NEW_( CPJSurfaceTriangle, numTriangles );
 		for ( unsigned int i = 0; i < numTriangles; ++i ) {
 			for ( unsigned int j = 0; j < 3; ++j ) {
 				surface->triangles[ i ].uvIndex[ j ] = PlReadInt16( file, false, NULL );
@@ -437,7 +437,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 
 		/* and now fetch the booones */
 		PlFileSeek( file, baseOffset + ofsBones, PL_SEEK_SET );
-		cpjModel.bones = PL_NEW_( CPJBone, cpjModel.numBones );
+		cpjModel.bones = QM_OS_MEMORY_NEW_( CPJBone, cpjModel.numBones );
 		for ( unsigned int i = 0; i < cpjModel.numBones; ++i ) {
 			uint32_t ofsName = PlReadInt32( file, false, NULL );
 			ReadName( file, baseOffset + ofsName, cpjModel.bones[ i ].name, sizeof( cpjModel.bones[ i ].name ) );
@@ -461,7 +461,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 		}
 
 		PlFileSeek( file, baseOffset + ofsWeights, PL_SEEK_SET );
-		CPJBoneWeight *weights = PL_NEW_( CPJBoneWeight, numWeights );
+		CPJBoneWeight *weights = QM_OS_MEMORY_NEW_( CPJBoneWeight, numWeights );
 		for ( unsigned int i = 0; i < numWeights; ++i ) {
 			weights[ i ].boneIndex = PlReadInt32( file, false, NULL );
 			weights[ i ].weightFactor = PlReadFloat32( file, false, NULL );
@@ -482,7 +482,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 			}
 		}
 
-		PL_DELETE( weights );
+		qm_os_memory_free( weights );
 	}
 
 	const CPJSurface *surface = &cpjModel.surfaces[ 0 ];
@@ -490,7 +490,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 	/* generate normals per smoothing group */
 	QmMathVector3f **normals = GenerateNormalsPerGroup( &cpjModel );
 
-	PLGMesh **meshes = PL_NEW_( PLGMesh *, surface->numTextures );
+	PLGMesh **meshes = QM_OS_MEMORY_NEW_( PLGMesh *, surface->numTextures );
 	for ( unsigned int i = 0; i < surface->numTextures; ++i ) {
 		meshes[ i ] = PlgCreateMesh( PLG_MESH_TRIANGLES, PLG_DRAW_STATIC, cpjModel.numTriangles, cpjModel.numVerts );
 		meshes[ i ]->materialIndex = i;
@@ -520,9 +520,9 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 	}
 
 	for ( unsigned int i = 0; i < cpjModel.numSmoothingGroups; ++i ) {
-		PL_DELETE( normals[ i ] );
+		qm_os_memory_free( normals[ i ] );
 	}
-	PL_DELETE( normals );
+	qm_os_memory_free( normals );
 
 	PLMModel *model;
 	if ( cpjModel.numBones > 0 ) {
@@ -554,7 +554,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 	}
 
 	model->numMaterials = surface->numTextures;
-	model->materials = PL_NEW_( PLPath, model->numMaterials );
+	model->materials = QM_OS_MEMORY_NEW_( PLPath, model->numMaterials );
 	for ( unsigned int i = 0; i < cpjModel.surfaces[ 0 ].numTextures; ++i ) {
 		snprintf( model->materials[ i ], sizeof( PLPath ), "%s.bmp", cpjModel.surfaces[ 0 ].textures[ i ] );
 	}

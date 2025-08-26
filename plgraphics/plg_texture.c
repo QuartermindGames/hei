@@ -7,20 +7,21 @@
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 static void CheckTMUStates( void ) {
 	if ( gfx_state.tmu != NULL ) {
 		return;
 	}
 
-	gfx_state.tmu = ( PLGTextureMappingUnit * ) PlCAllocA( PlgGetMaxTextureUnits(), sizeof( PLGTextureMappingUnit ) );
+	gfx_state.tmu = ( PLGTextureMappingUnit * ) QM_OS_MEMORY_CALLOC( PlgGetMaxTextureUnits(), sizeof( PLGTextureMappingUnit ) );
 	for ( unsigned int i = 0; i < PlgGetMaxTextureUnits(); i++ ) {
 		gfx_state.tmu[ i ].current_envmode = PLG_TEXTUREMODE_REPLACE;
 	}
 }
 
 void PlgShutdownTextures( void ) {
-	PlFree( gfx_state.tmu );
+	qm_os_memory_free( gfx_state.tmu );
 }
 
 /* todo: move into generic GET handler */
@@ -35,7 +36,7 @@ unsigned int PlgGetMaxTextureSize( void ) {
 }
 
 PLGTexture *PlgCreateTexture( void ) {
-	PLGTexture *texture = PlCAllocA( 1, sizeof( PLGTexture ) );
+	PLGTexture *texture = QM_OS_MEMORY_CALLOC( 1, sizeof( PLGTexture ) );
 	texture->format = PL_IMAGEFORMAT_RGBA8;
 	texture->w = 8;
 	texture->h = 8;
@@ -51,7 +52,7 @@ void PlgDestroyTexture( PLGTexture *texture ) {
 
 	CallGfxFunction( DeleteTexture, texture );
 
-	PlFree( texture );
+	qm_os_memory_free( texture );
 }
 
 /**
@@ -186,7 +187,7 @@ void PlgSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode ) {
 /////////////////////
 
 bool PlgUploadTextureImage( PLGTexture *texture, const PLImage *upload ) {
-	PL_ASSERT( texture );
+	assert( texture );
 
 	texture->w = upload->width;
 	texture->h = upload->height;

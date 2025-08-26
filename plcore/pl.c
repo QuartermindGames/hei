@@ -4,6 +4,9 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
+#include "qmos/public/qm_os_memory.h"
+
+
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_linkedlist.h>
 #include <plcore/pl_parse.h>
@@ -573,10 +576,44 @@ static PLPluginExportTable exportTable = {
         .PrefixPath = PlPrefixPath,
 };
 
-const PLPluginExportTable *PlGetExportTable( void ) {
-	exportTable.MAlloc = PlMAlloc;
-	exportTable.CAlloc = PlCAlloc;
-	exportTable.ReAlloc = PlReAlloc;
-	exportTable.Free = PlFree;
+static void *p_malloc( size_t size, bool die )
+{
+	void *p = qm_os_memory_alloc( size, sizeof( char ), NULL );
+	if ( p == NULL && die )
+	{
+		abort();
+	}
+
+	return p;
+}
+
+static void *p_calloc( size_t num, size_t size, bool die )
+{
+	void *p = qm_os_memory_alloc( num, size, NULL );
+	if ( p == NULL && die )
+	{
+		abort();
+	}
+
+	return p;
+}
+
+static void *p_realloc( void *ptr, size_t size, bool die )
+{
+	void *p = qm_os_memory_realloc( ptr, size );
+	if ( p == NULL && die )
+	{
+		abort();
+	}
+
+	return p;
+}
+
+const PLPluginExportTable *PlGetExportTable( void )
+{
+	exportTable.MAlloc  = p_malloc;
+	exportTable.CAlloc  = p_calloc;
+	exportTable.ReAlloc = p_realloc;
+	exportTable.Free    = qm_os_memory_free;
 	return &exportTable;
 }

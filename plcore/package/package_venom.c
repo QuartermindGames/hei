@@ -5,6 +5,7 @@
 
 #include "package_private.h"
 #include "plcore/pl_parse.h"
+#include "qmos/public/qm_os_memory.h"
 
 // big-endian
 
@@ -33,9 +34,9 @@ PLPackage *PlParseVenomPakPackage( PLFile *file ) {
 	PlReadInt32( file, true, NULL );// unk0
 
 	size_t bufSize = headerSize - PlGetFileOffset( file );
-	char *buf = PL_NEW_( char, bufSize + 1 );
+	char *buf = QM_OS_MEMORY_NEW_( char, bufSize + 1 );
 	if ( PlReadFile( file, buf, sizeof( char ), bufSize ) != bufSize ) {
-		PL_DELETE( buf );
+		qm_os_memory_free( buf );
 		return NULL;
 	}
 
@@ -74,7 +75,7 @@ PLPackage *PlParseVenomPakPackage( PLFile *file ) {
 		}
 	}
 
-	PL_DELETE( buf );
+	qm_os_memory_free( buf );
 
 	return package;
 }

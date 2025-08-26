@@ -5,6 +5,7 @@
  */
 
 #include "image_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 /*  http://rewiki.regengedanken.de/wiki/.TIM
  *  https://mrclick.zophar.net/TilEd/download/timgfx.txt
@@ -124,7 +125,7 @@ static bool TIM_ReadFile( PLFile *fin, PLImage *out ) {
 			goto ERR_CLEANUP;
 		}
 
-		palette = PlCAlloc( palette_size, sizeof( uint16_t ), false );
+		palette = QM_OS_MEMORY_CALLOC( palette_size, sizeof( uint16_t ) );
 		if ( palette == NULL ) {
 			goto ERR_CLEANUP;
 		}
@@ -150,7 +151,7 @@ static bool TIM_ReadFile( PLFile *fin, PLImage *out ) {
 
 	/* Read in the image data. */
 	size_t image_data_len = image_info.image_size - sizeof( image_info );
-	image_data = PlMAllocA( image_data_len );
+	image_data = QM_OS_MEMORY_MALLOC_( image_data_len );
 	if ( image_data == NULL ) {
 		goto ERR_CLEANUP;
 	}
@@ -196,12 +197,12 @@ static bool TIM_ReadFile( PLFile *fin, PLImage *out ) {
 	out->size = PlGetImageSize( out->format, out->width, out->height );
 	out->levels = 1;
 
-	out->data = PlCAlloc( out->levels, sizeof( uint8_t * ), false );
+	out->data = QM_OS_MEMORY_CALLOC( out->levels, sizeof( uint8_t * ) );
 	if ( out->data == NULL ) {
 		goto ERR_CLEANUP;
 	}
 
-	out->data[ 0 ] = PlCAlloc( out->size, sizeof( uint8_t ), false );
+	out->data[ 0 ] = QM_OS_MEMORY_CALLOC( out->size, sizeof( uint8_t ) );
 	if ( out->data[ 0 ] == NULL ) {
 		goto ERR_CLEANUP;
 	}
@@ -265,8 +266,8 @@ static bool TIM_ReadFile( PLFile *fin, PLImage *out ) {
 			goto ERR_CLEANUP;
 	}
 
-	PlFree( image_data );
-	PlFree( palette );
+	qm_os_memory_free( image_data );
+	qm_os_memory_free( palette );
 
 	return true;
 
@@ -276,12 +277,12 @@ UNEXPECTED_EOF:
 ERR_CLEANUP:
 
 	if ( out->data != NULL ) {
-		PlFree( out->data[ 0 ] );
-		PlFree( out->data );
+		qm_os_memory_free( out->data[ 0 ] );
+		qm_os_memory_free( out->data );
 	}
 
-	PlFree( image_data );
-	PlFree( palette );
+	qm_os_memory_free( image_data );
+	qm_os_memory_free( palette );
 
 	return false;
 }
@@ -293,9 +294,9 @@ PLImage *PlParseTimImage( PLFile *file ) {
 
 	PlRewindFile( file );
 
-	PLImage *image = PlCAllocA( 1, sizeof( PLImage ) );
+	PLImage *image = QM_OS_MEMORY_CALLOC( 1, sizeof( PLImage ) );
 	if ( !TIM_ReadFile( file, image ) ) {
-		PlFree( image );
+		qm_os_memory_free( image );
 		image = NULL;
 	}
 

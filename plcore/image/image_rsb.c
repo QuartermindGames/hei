@@ -2,6 +2,7 @@
 // Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "image_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 // Red Storm Entertainment RSB Format
 
@@ -43,9 +44,9 @@ PLImage *PlParseRsbImage_( PLFile *file ) {
 		PlReadFile( file, palette, sizeof( RGBA ), 256 );
 
 		unsigned int size = width * height;
-		uint8_t *src = PL_NEW_( uint8_t, size );
+		uint8_t *src = QM_OS_MEMORY_NEW_( uint8_t, size );
 		if ( PlReadFile( file, src, sizeof( uint8_t ), size ) == size ) {
-			QmMathColour4ub *dst = PL_NEW_( QmMathColour4ub, size );
+			QmMathColour4ub *dst = QM_OS_MEMORY_NEW_( QmMathColour4ub, size );
 			for ( unsigned int i = 0; i < size; ++i ) {
 				dst[ i ].r = palette[ src[ i ] ].b;
 				dst[ i ].g = palette[ src[ i ] ].g;
@@ -56,10 +57,10 @@ PLImage *PlParseRsbImage_( PLFile *file ) {
 
 			image = PlCreateImage( dst, width, height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
-			PL_DELETE( dst );
+			qm_os_memory_free( dst );
 		}
 
-		PL_DELETE( src );
+		qm_os_memory_free( src );
 	} else {
 		uint32_t r = PL_READUINT32( file, false, NULL );
 		uint32_t g = PL_READUINT32( file, false, NULL );
@@ -67,9 +68,9 @@ PLImage *PlParseRsbImage_( PLFile *file ) {
 		uint32_t a = PL_READUINT32( file, false, NULL );
 
 		unsigned int size = width * height;
-		uint16_t *src = PL_NEW_( uint16_t, size );
+		uint16_t *src = QM_OS_MEMORY_NEW_( uint16_t, size );
 		if ( PlReadFile( file, src, sizeof( uint16_t ), size ) == size ) {
-			QmMathColour4ub *dst = PL_NEW_( QmMathColour4ub, size );
+			QmMathColour4ub *dst = QM_OS_MEMORY_NEW_( QmMathColour4ub, size );
 			uint32_t maskR = ( 1 << r ) - 1;
 			uint32_t maskG = ( 1 << g ) - 1;
 			uint32_t maskB = ( 1 << b ) - 1;
@@ -89,10 +90,10 @@ PLImage *PlParseRsbImage_( PLFile *file ) {
 
 			image = PlCreateImage( dst, width, height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
-			PL_DELETE( dst );
+			qm_os_memory_free( dst );
 		}
 
-		PL_DELETE( src );
+		qm_os_memory_free( src );
 	}
 
 	return image;

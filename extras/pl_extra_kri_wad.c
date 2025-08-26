@@ -48,13 +48,13 @@ static DirTable *ParseDirTable( PLFile *file, unsigned int numEntries, DirTable 
 	}
 
 	unsigned int blockSize = PL_READUINT32( file, false, NULL );
-	table->offsets = PL_NEW_( unsigned int, ( numEntries - 1 ) );
+	table->offsets = QM_OS_MEMORY_NEW_( unsigned int, ( numEntries - 1 ) );
 	for ( unsigned int i = 0; i < ( numEntries - 1 ); ++i ) {
 		table->offsets[ i ] = PL_READUINT32( file, false, NULL );
 	}
 
 	blockSize = ( blockSize - numEntries * 4 ) + 4;
-	table->stream = PL_NEW_( char, blockSize );
+	table->stream = QM_OS_MEMORY_NEW_( char, blockSize );
 	PlReadFile( file, table->stream, sizeof( char ), blockSize );
 
 	table->isInitialized = true;
@@ -84,7 +84,7 @@ PLPackage *PlParseKriPackage( PLFile *file ) {
 		return NULL;
 	}
 
-	uint8_t *stream = PL_NEW_( uint8_t, tableSize );
+	uint8_t *stream = QM_OS_MEMORY_NEW_( uint8_t, tableSize );
 	PlReadFile( file, stream, sizeof( uint8_t ), tableSize );
 
 	PLFileOffset offset = PlGetFileOffset( file );
@@ -127,7 +127,7 @@ PLPackage *PlParseKriPackage( PLFile *file ) {
 
 	FreeDirTable( &dirTable );
 
-	PL_DELETE( stream );
+	qm_os_memory_free( stream );
 
 	return package;
 }

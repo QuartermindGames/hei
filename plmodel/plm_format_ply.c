@@ -257,7 +257,7 @@ static bool ParseHeader( const char **p ) {
 			}
 			snprintf( property->name, sizeof( PLYName ), "%s", token );
 
-			property->data = PL_NEW_( PLYData, element->num );
+			property->data = QM_OS_MEMORY_NEW_( PLYData, element->num );
 
 			element->numProperties++;
 		} else if ( strcmp( token, "end_header" ) == 0 ) {
@@ -302,9 +302,9 @@ static void Cleanup( void ) {
 					continue;
 				}
 
-				PL_DELETE( property->data[ k ].subDataElements );
+				qm_os_memory_free( property->data[ k ].subDataElements );
 			}
-			PL_DELETE( property->data );
+			qm_os_memory_free( property->data );
 		}
 	}
 }
@@ -345,7 +345,7 @@ PLMModel *PlmParsePlyModel( PLFile *file ) {
 
 	// now let's load the whole damn thing into memory
 	size_t size = PlGetFileSize( file );
-	char *buf = PL_NEW_( char, size + 1 );
+	char *buf = QM_OS_MEMORY_NEW_( char, size + 1 );
 	PlReadFile( file, buf, sizeof( char ), size );
 
 	// parse through the buffer
@@ -353,7 +353,7 @@ PLMModel *PlmParsePlyModel( PLFile *file ) {
 
 	// and now cleanup
 	Cleanup();
-	PL_DELETE( buf );
+	qm_os_memory_free( buf );
 
 	return model;
 }

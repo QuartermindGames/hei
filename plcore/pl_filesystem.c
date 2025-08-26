@@ -18,6 +18,7 @@
 
 #include "filesystem_private.h"
 #include "pl_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 #if defined( _WIN32 )
 
@@ -376,7 +377,7 @@ void PlClearMountedLocation( PLFileSystemMount *location ) {
 		fs_mount_ceiling = location->prev;
 	}
 
-	PlFree( location );
+	qm_os_memory_free( location );
 }
 
 /**
@@ -401,7 +402,7 @@ static void PlInsertMountLocation_( PLFileSystemMount *location ) {
 
 PLFileSystemMount *PlMountLocalLocation( const char *path ) {
 	if ( PlLocalPathExists( path ) ) { /* attempt to mount it as a path */
-		PLFileSystemMount *location = PlMAllocA( sizeof( PLFileSystemMount ) );
+		PLFileSystemMount *location = QM_OS_MEMORY_MALLOC_( sizeof( PLFileSystemMount ) );
 		PlInsertMountLocation_( location );
 		location->type = PL_FS_MOUNT_DIR;
 		snprintf( location->path, sizeof( location->path ), "%s", path );
@@ -427,7 +428,7 @@ PLFileSystemMount *PlMountLocalLocation( const char *path ) {
 
 	PLPackage *pkg = PlLoadPackage( path );
 	if ( pkg != NULL ) {
-		PLFileSystemMount *location = PlMAllocA( sizeof( PLFileSystemMount ) );
+		PLFileSystemMount *location = QM_OS_MEMORY_MALLOC_( sizeof( PLFileSystemMount ) );
 		PlInsertMountLocation_( location );
 		location->type = PL_FS_MOUNT_PACKAGE;
 		location->pkg = pkg;
@@ -736,7 +737,7 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 						Function( filePath, userData );
 
 						// Tack it onto the list
-						cur = PL_NEW( FSScanInstance );
+						cur = QM_OS_MEMORY_NEW( FSScanInstance );
 						strncpy( cur->path, filePath, sizeof( cur->path ) );
 						cur->next = *fileList;
 						*fileList = cur;
@@ -861,7 +862,7 @@ void PlScanDirectory( const char *path, const char *extension, void ( *Function 
 	while ( current != NULL ) {
 		FSScanInstance *prev = current;
 		current = current->next;
-		PlFree( prev );
+		qm_os_memory_free( prev );
 	}
 }
 
@@ -1168,10 +1169,10 @@ size_t PlGetLocalFileSize( const char *path ) {
  * If 'isOwner' is true, the file handle takes ownership of the buffer and frees it.
  */
 PLFile *PlCreateFileFromMemory( const char *path, void *buf, size_t bufSize, PLFileMemoryBufferType bufType ) {
-	PLFile *file = PlMAllocA( sizeof( PLFile ) );
+	PLFile *file = QM_OS_MEMORY_MALLOC_( sizeof( PLFile ) );
 
 	if ( bufType == PL_FILE_MEMORYBUFFERTYPE_COPY ) {
-		file->data = PlMAllocA( bufSize );
+		file->data = QM_OS_MEMORY_MALLOC_( bufSize );
 		memcpy( file->data, buf, bufSize );
 	} else {
 		if ( bufType == PL_FILE_MEMORYBUFFERTYPE_UNMANAGED ) {
@@ -1200,7 +1201,7 @@ PLFile *PlCreateFileFromStdio( FILE *stdio, const char *source ) {
 		return NULL;
 	}
 
-	PLFile *file = PL_NEW( PLFile );
+	PLFile *file = QM_OS_MEMORY_NEW( PLFile );
 	file->size = size;
 	file->fptr = stdio;
 
@@ -1218,13 +1219,13 @@ PLFile *PlOpenLocalFile( const char *path, bool cache ) {
 		return NULL;
 	}
 
-	PLFile *file = PL_NEW( PLFile );
+	PLFile *file = QM_OS_MEMORY_NEW( PLFile );
 	snprintf( file->path, sizeof( file->path ), "%s", path );
 
 	file->size = PlGetLocalFileSize( path );
 
 	if ( cache ) {
-		file->data = PL_NEW_( uint8_t, file->size );
+		file->data = QM_OS_MEMORY_NEW_( uint8_t, file->size );
 		file->pos = file->data;
 		if ( fread( file->data, sizeof( uint8_t ), file->size, sysFile ) != file->size ) {
 			FSLog( "Failed to read complete file (%s)!\n", path );
@@ -1272,9 +1273,9 @@ void PlCloseFile( PLFile *ptr ) {
 	}
 
 	if ( !ptr->isUnmanaged ) {
-		PlFree( ptr->data );
+		qm_os_memory_free( ptr->data );
 	}
-	PlFree( ptr );
+	qm_os_memory_free( ptr );
 }
 
 /**
@@ -1547,11 +1548,11 @@ const void *PlCacheFile( PLFile *file ) {
 	PlRewindFile( file );
 
 	/* allocate the new buffer and attempt to read in the whole thing */
-	file->data = PlMAllocA( s );
+	file->data = QM_OS_MEMORY_MALLOC_( s );
 	if ( PlReadFile( file, file->data, sizeof( char ), s ) != s ) {
 		/* seek back and restore where we were */
 		PlFileSeek( file, ( long ) p, PL_SEEK_SET );
-		PlFree( file->data );
+		qm_os_memory_free( file->data );
 		return NULL;
 	}
 

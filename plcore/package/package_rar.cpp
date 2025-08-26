@@ -4,6 +4,7 @@
 // Purpose: Load and extract RAR archives.
 
 #include "package_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 #if ( RAR_SUPPORTED == 1 )
 
@@ -62,7 +63,7 @@ static void *OpenRarFile( PLFile *file, PLPackageIndex *index ) {
 			break;
 		}
 
-		buf = PL_NEW_( uint8_t, headerData.UnpSize + 1 );
+		buf = QM_OS_MEMORY_NEW_( uint8_t, headerData.UnpSize + 1 );
 		if ( PlReadFile( tmpFile, buf, sizeof( uint8_t ), headerData.UnpSize ) != headerData.UnpSize ) {
 			PlCloseFile( tmpFile );
 			break;
@@ -101,7 +102,7 @@ extern "C" PLPackage *PlParseRarPackage_( PLFile *file ) {
 		RARHeaderDataEx headerData = {};
 		while ( RARReadHeaderEx( handle, &headerData ) == 0 ) {
 			if ( package->table_size >= package->maxTableSize ) {
-				package->table = static_cast< PLPackageIndex * >( PL_REALLOCA( package->table, sizeof( PLPackageIndex ) * ( package->maxTableSize + 16 ) ) );
+				package->table = static_cast< PLPackageIndex * >( qm_os_memory_realloc( package->table, sizeof( PLPackageIndex ) * ( package->maxTableSize + 16 ) ) );
 				package->maxTableSize += 16;
 			}
 

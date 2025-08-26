@@ -6,6 +6,7 @@
 
 #define MINIZ_NO_ARCHIVE_APIS
 #include "3rdparty/miniz/miniz.h"
+#include "qmos/public/qm_os_memory.h"
 
 /*
  * Expose miniz functionality through the platform library,
@@ -14,11 +15,11 @@
 
 void *PlCompress_Deflate( const void *src, size_t srcLength, size_t *dstLength ) {
 	unsigned long compressedLength = mz_compressBound( ( mz_ulong ) srcLength );
-	void *compressedData = PL_NEW_( char, compressedLength );
+	void *compressedData = qm_os_memory_alloc( compressedLength, sizeof( char ), NULL );
 	int status = mz_compress( compressedData, &compressedLength, src, ( mz_ulong ) srcLength );
 	if ( status != MZ_OK ) {
 		PlReportErrorF( PL_RESULT_FAIL, "failed to compress data: %s", mz_error( status ) );
-		PL_DELETE( compressedData );
+		qm_os_memory_free( compressedData );
 		return NULL;
 	}
 
@@ -27,7 +28,7 @@ void *PlCompress_Deflate( const void *src, size_t srcLength, size_t *dstLength )
 }
 
 void *PlDecompress_Deflate( const void *src, size_t srcLength, size_t *dstLength, bool raw ) {
-	uint8_t *dst = PL_NEW_( uint8_t, srcLength );
+	uint8_t *dst = qm_os_memory_alloc( srcLength, sizeof( uint8_t ), NULL );
 
 	mz_stream stream;
 	PL_ZERO_( stream );
@@ -42,14 +43,17 @@ void *PlDecompress_Deflate( const void *src, size_t srcLength, size_t *dstLength
 		if ( status == MZ_STREAM_END ) {
 			*dstLength = stream.total_out;
 			if ( ( status = mz_inflateEnd( &stream ) ) != MZ_OK ) {
-				PL_DELETEN( dst );
+				qm_os_memory_free( dst );
+				dst = NULL;
 			}
 		} else {
 			mz_inflateEnd( &stream );
-			PL_DELETEN( dst );
+			qm_os_memory_free( dst );
+			dst = NULL;
 		}
 	} else {
-		PL_DELETEN( dst );
+		qm_os_memory_free( dst );
+		dst = NULL;
 	}
 
 	if ( dst == NULL ) {
@@ -83,7 +87,7 @@ void *PlCompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength ) {
 	const uint8_t *hash[ 4096 ];
 	uint16_t control = 0, control_bits = 0;
 
-	uint8_t *dst = PL_NEW_( uint8_t, srcLength + LZRW1_FLAG_BYTES );
+	uint8_t *dst = qm_os_memory_alloc( srcLength + LZRW1_FLAG_BYTES, sizeof( uint8_t ), NULL );
 	uint8_t *p_dst = dst;
 	*p_dst = LZRW1_FLAG_COMPRESS;
 	p_dst += LZRW1_FLAG_BYTES;
@@ -153,7 +157,7 @@ void *PlCompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength ) {
 	}
 
 	*dstLength = p_dst - dst;
-	dst = PlReAllocA( dst, *dstLength );
+	dst = qm_os_memory_realloc( dst, *dstLength );
 
 	return dst;
 }
@@ -164,14 +168,14 @@ void *PlCompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength ) {
 void *PlDecompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength ) {
 	if ( *( int * ) src == LZRW1_FLAG_COPY ) {
 		*dstLength = srcLength - LZRW1_FLAG_BYTES;
-		void *dst = PL_NEW_( uint8_t, *dstLength );
+		void *dst = qm_os_memory_alloc( *dstLength, sizeof( uint8_t ), NULL );
 		memcpy( dst, ( char * ) src + LZRW1_FLAG_BYTES, *dstLength );
 		return dst;
 	}
 
 	static const unsigned int padSize = 512;
 	unsigned int allocSize = ( unsigned int ) srcLength + padSize;
-	uint8_t *dst = PL_NEW_( uint8_t, allocSize );
+	uint8_t *dst = qm_os_memory_alloc( allocSize, sizeof( uint8_t ), NULL );
 	uint8_t *p_dst = dst;
 
 	const uint8_t *p_src = ( uint8_t * ) src + LZRW1_FLAG_BYTES;
@@ -193,7 +197,7 @@ void *PlDecompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength )
 				*p_dst++ = *p++;
 				*dstLength = p_dst - dst;
 				if ( *dstLength >= allocSize ) {
-					dst = PlReAllocA( dst, allocSize += padSize );
+					dst = qm_os_memory_realloc( dst, allocSize += padSize );
 					p_dst = dst + *dstLength;
 				}
 			}
@@ -201,7 +205,7 @@ void *PlDecompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength )
 			*p_dst++ = *p_src++;
 			*dstLength = p_dst - dst;
 			if ( *dstLength >= allocSize ) {
-				dst = PlReAllocA( dst, allocSize += padSize );
+				dst = qm_os_memory_realloc( dst, allocSize += padSize );
 				p_dst = dst + *dstLength;
 			}
 		}
@@ -211,7 +215,7 @@ void *PlDecompress_LZRW1( const void *src, size_t srcLength, size_t *dstLength )
 	}
 
 	/* now downscale it */
-	dst = PlReAllocA( dst, *dstLength );
+	dst = qm_os_memory_realloc( dst, *dstLength );
 
 	return dst;
 }
