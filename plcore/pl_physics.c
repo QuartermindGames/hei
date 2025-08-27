@@ -56,8 +56,12 @@ static QmMathVector3f FindClosestPointOnAabb( const PLCollisionAABB *bounds, con
 
 bool PlIsSphereIntersectingAabb( const PLCollisionSphere *sphere, const PLCollisionAABB *bounds ) {
 	QmMathVector3f point = FindClosestPointOnAabb( bounds, &sphere->origin );
-	float distance = qm_math_vector3f_length( qm_math_vector3f_sub( point, sphere->origin ) );
-	return ( distance <= sphere->radius );
+
+	QmMathVector3f diff = qm_math_vector3f_sub( point, sphere->origin );
+	float distance = qm_math_vector3f_dot_product( diff, diff );
+	float radius = sphere->radius * sphere->radius;
+
+	return distance <= radius;
 }
 
 bool PlIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollisionSphere *bSphere ) {
