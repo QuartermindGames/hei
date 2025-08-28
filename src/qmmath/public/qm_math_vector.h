@@ -30,6 +30,10 @@ extern "C"
 #define QM_MATH_VECTOR2F( X, Y ) \
 	( QmMathVector2f ) { .x = ( X ), .y = ( Y ) }
 
+#if ( __STDC_VERSION__ >= 202000L )
+	static constexpr QmMathVector2f QM_MATH_VECTOR2F_ZERO = ( QmMathVector2f ) {};
+#endif
+
 	static inline QmMathVector2f qm_math_vector2f( const float x, const float y )
 	{
 		return QM_MATH_VECTOR2F( x, y );
@@ -56,6 +60,10 @@ extern "C"
 
 #define QM_MATH_VECTOR3F( X, Y, Z ) \
 	( QmMathVector3f ) { .x = ( X ), .y = ( Y ), .z = ( Z ) }
+
+#if ( __STDC_VERSION__ >= 202000L )
+	static constexpr QmMathVector3f QM_MATH_VECTOR3F_ZERO = ( QmMathVector3f ) {};
+#endif
 
 	static inline QmMathVector3f qm_math_vector3f( const float x, const float y, const float z )
 	{
@@ -84,6 +92,10 @@ extern "C"
 
 #define QM_MATH_VECTOR4F( X, Y, Z, W ) \
 	( QmMathVector4f ) { .x = ( X ), .y = ( Y ), .z = ( Z ), .w = ( W ) }
+
+#if ( __STDC_VERSION__ >= 202000L )
+	static constexpr QmMathVector4f QM_MATH_VECTOR4F_ZERO = ( QmMathVector4f ) {};
+#endif
 
 	static inline QmMathVector4f qm_math_vector4f( const float x, const float y, const float z, const float w )
 	{

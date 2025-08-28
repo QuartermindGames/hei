@@ -3,12 +3,52 @@
 // Author:  Mark E. Sowden
 
 #include "qmos/public/qm_os.h"
+#include "qmos/public/qm_os_memory.h"
 
 #include <ctype.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
-static int decimal_to_binary( int value )
+char *qm_os_string_alloc( size_t *size, const char *format, ... )
+{
+	va_list v;
+	va_start( v, format );
+	int n = vsnprintf( nullptr, 0, format, v );
+	va_end( v );
+
+	if ( n < 0 )
+	{
+		return nullptr;
+	}
+
+	size_t sn = n + 1;
+
+	char *string = qm_os_memory_alloc( sn, sizeof( char ), nullptr );
+	if ( string == nullptr )
+	{
+		return nullptr;
+	}
+
+	va_start( v, format );
+	n = vsnprintf( string, sn, format, v );
+	va_end( v );
+
+	if ( n < 0 )
+	{
+		qm_os_memory_free( string );
+		string = nullptr;
+	}
+
+	if ( size != nullptr )
+	{
+		*size = sn;
+	}
+
+	return string;
+}
+
+static int decimal_to_binary( const int value )
 {
 	if ( value == 0 )
 	{
