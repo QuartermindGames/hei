@@ -8,45 +8,45 @@
 
 #include <plcore/pl_math.h>
 
-PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix, const int *viewport, float *w, bool flip ) {
+QmMathVector2f PlConvertWorldToScreen( const QmMathVector3f *position, const PLMatrix4 *viewProjMatrix, const int *viewport, float *w, bool flip ) {
 	// Transform world position to clip space
-	PLVector4 posw = PL_VECTOR4( position->x, position->y, position->z, 1.0f );
-	PLVector4 ppos = PlTransformVector4( &posw, viewProjMatrix );
+	QmMathVector4f posw = qm_math_vector4f( position->x, position->y, position->z, 1.0f );
+	QmMathVector4f ppos = PlTransformVector4( &posw, viewProjMatrix );
 	if ( w != NULL ) {
 		*w = ppos.w;
 	}
 
 	// Divide by w to get normalized device coordinates
-	PLVector3 ndc = PL_VECTOR3( ppos.x / ppos.w, ppos.y / ppos.w, ppos.z / ppos.w );
+	QmMathVector3f ndc = qm_math_vector3f( ppos.x / ppos.w, ppos.y / ppos.w, ppos.z / ppos.w );
 
 	// Scale and offset by viewport parameters to get screen coordinates
-	PLVector2 screen = PL_VECTOR2( ( ( ndc.x + 1.0f ) / 2.0f ) * viewport[ 2 ] + viewport[ 0 ],
-	                               // Flip the y coordinate by subtracting it from the viewport height
-	                               ( flip ? viewport[ 3 ] : 0 ) - ( ( ndc.y + 1.0f ) / 2.0f ) * viewport[ 3 ] + viewport[ 1 ] );
+	QmMathVector2f screen = qm_math_vector2f( ( ( ndc.x + 1.0f ) / 2.0f ) * viewport[ 2 ] + viewport[ 0 ],
+	                                     // Flip the y coordinate by subtracting it from the viewport height
+	                                     ( flip ? viewport[ 3 ] : 0 ) - ( ( ndc.y + 1.0f ) / 2.0f ) * viewport[ 3 ] + viewport[ 1 ] );
 
 	return screen;
 }
 
-PLVector3 PlConvertScreenToWorld( PLVector2 windowCoordinate, const PLMatrix4 *viewMatrix, const PLMatrix4 *projMatrix, const int *viewport ) {
+QmMathVector3f PlConvertScreenToWorld( QmMathVector2f windowCoordinate, const PLMatrix4 *viewMatrix, const PLMatrix4 *projMatrix, const int *viewport ) {
 	windowCoordinate.x = ( windowCoordinate.x - ( float ) ( viewport[ 0 ] ) ) / ( float ) ( viewport[ 2 ] );
 	windowCoordinate.y = ( windowCoordinate.y - ( float ) ( viewport[ 1 ] ) ) / ( float ) ( viewport[ 3 ] );
 
 	windowCoordinate.x = windowCoordinate.x * 2.0f - 1.0f;
 	windowCoordinate.y = windowCoordinate.y * 2.0f - 1.0f;
 
-	PLVector4 rayClip = PL_VECTOR4( windowCoordinate.x, windowCoordinate.y, -1.0f, 1.0f );
+	QmMathVector4f rayClip = qm_math_vector4f( windowCoordinate.x, windowCoordinate.y, -1.0f, 1.0f );
 	PLMatrix4 invProj = PlInverseMatrix4( *projMatrix );
-	PLVector4 rayEye = PlTransformVector4( &rayClip, &invProj );
+	QmMathVector4f rayEye = PlTransformVector4( &rayClip, &invProj );
 
-	rayEye = PL_VECTOR4( rayEye.x, rayEye.y, -1.0f, 0.0f );
+	rayEye = qm_math_vector4f( rayEye.x, rayEye.y, -1.0f, 0.0f );
 
 	PLMatrix4 invModel = PlInverseMatrix4( *viewMatrix );
-	PLVector4 objPos = PlTransformVector4( &rayEye, &invModel );
+	QmMathVector4f objPos = PlTransformVector4( &rayEye, &invModel );
 
-	return PL_VECTOR3( objPos.x, objPos.y, objPos.z );
+	return qm_math_vector3f( objPos.x, objPos.y, objPos.z );
 }
 
-void PlExtractMatrix4Directions( const PLMatrix4 *matrix, PLVector3 *left, PLVector3 *up, PLVector3 *forward ) {
+void PlExtractMatrix4Directions( const PLMatrix4 *matrix, QmMathVector3f *left, QmMathVector3f *up, QmMathVector3f *forward ) {
 	if ( left != NULL ) {
 		left->x = matrix->mm[ 0 ][ 0 ];
 		left->y = matrix->mm[ 0 ][ 1 ];
@@ -64,10 +64,10 @@ void PlExtractMatrix4Directions( const PLMatrix4 *matrix, PLVector3 *left, PLVec
 	}
 }
 
-PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up ) {
-	PLVector3 z = PlNormalizeVector3( PlSubtractVector3( eye, center ) );
-	PLVector3 x = PlNormalizeVector3( PlVector3CrossProduct( up, z ) );
-	PLVector3 y = PlVector3CrossProduct( z, x );
+PLMatrix4 PlLookAt( QmMathVector3f eye, QmMathVector3f center, QmMathVector3f up ) {
+	QmMathVector3f z = qm_math_vector3f_normalize( qm_math_vector3f_sub( eye, center ) );
+	QmMathVector3f x = qm_math_vector3f_normalize( qm_math_vector3f_cross_product( up, z ) );
+	QmMathVector3f y = qm_math_vector3f_cross_product( z, x );
 
 	PLMatrix4 m = PlMatrix4Identity();
 
@@ -84,20 +84,20 @@ PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up ) {
 	m.mm[ 1 ][ 2 ] = z.y;
 	m.mm[ 2 ][ 2 ] = z.z;
 
-	PLMatrix4 pos = PlTranslateMatrix4( ( PLVector3 ) { -eye.x, -eye.y, -eye.z } );
+	PLMatrix4 pos = PlTranslateMatrix4( ( QmMathVector3f ) { -eye.x, -eye.y, -eye.z } );
 	return PlMultiplyMatrix4( &m, &pos );
 }
 
 /****************************************
  ****************************************/
 
-PLMatrix4 PlRotateMatrix4( float angle, const PLVector3 *axis ) {
+PLMatrix4 PlRotateMatrix4( float angle, const QmMathVector3f *axis ) {
 	float s = sinf( angle );
 	float c = cosf( angle );
 	float t = 1.0f - c;
 
-	PLVector3 tv = PL_VECTOR3( t * axis->x, t * axis->y, t * axis->z );
-	PLVector3 sv = PL_VECTOR3( s * axis->x, s * axis->y, s * axis->z );
+	QmMathVector3f tv = qm_math_vector3f( t * axis->x, t * axis->y, t * axis->z );
+	QmMathVector3f sv = qm_math_vector3f( s * axis->x, s * axis->y, s * axis->z );
 
 	PLMatrix4 m;
 
@@ -124,12 +124,12 @@ PLMatrix4 PlRotateMatrix4( float angle, const PLVector3 *axis ) {
 	return m;
 }
 
-PLVector3 PlGetMatrix4Translation( const PLMatrix4 *m ) {
-	return PL_VECTOR3( m->pl_m4pos( 0, 3 ), m->pl_m4pos( 1, 3 ), m->pl_m4pos( 2, 3 ) );
+QmMathVector3f PlGetMatrix4Translation( const PLMatrix4 *m ) {
+	return qm_math_vector3f( m->pl_m4pos( 0, 3 ), m->pl_m4pos( 1, 3 ), m->pl_m4pos( 2, 3 ) );
 }
 
-PLVector3 PlGetMatrix4Angle( const PLMatrix4 *m ) {
-	PLVector3 out = PL_VECTOR3( 0, 0, 0 );
+QmMathVector3f PlGetMatrix4Angle( const PLMatrix4 *m ) {
+	QmMathVector3f out = qm_math_vector3f( 0, 0, 0 );
 	out.y = PL_RAD2DEG( asinf( m->m[ 8 ] ) );
 	if ( m->m[ 10 ] < 0 ) {
 		if ( out.y >= 0 ) {
@@ -199,21 +199,21 @@ void PlMultiMatrix( const PLMatrix4 *matrix ) {
 	*curStack = PlMultiplyMatrix4( curStack, matrix );
 }
 
-void PlRotateMatrix( float angle, const PLVector3 *axis ) {
+void PlRotateMatrix( float angle, const QmMathVector3f *axis ) {
 	PLMatrix4 rotation = PlRotateMatrix4( angle, axis );
 	PlMultiMatrix( &rotation );
 }
 
 void PlRotateMatrix3f( float angle, float x, float y, float z ) {
-	PlRotateMatrix( angle, &PL_VECTOR3( x, y, z ) );
+	PlRotateMatrix( angle, &QM_MATH_VECTOR3F( x, y, z ) );
 }
 
-void PlTranslateMatrix( PLVector3 vector ) {
+void PlTranslateMatrix( QmMathVector3f vector ) {
 	PLMatrix4 translate = PlTranslateMatrix4( vector );
 	PlMultiMatrix( &translate );
 }
 
-void PlScaleMatrix( PLVector3 scale ) {
+void PlScaleMatrix( QmMathVector3f scale ) {
 	PLMatrix4 *curStack = PlGetMatrix( curMatrixMode );
 	*curStack = PlScaleMatrix4( *curStack, scale );
 }

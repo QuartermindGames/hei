@@ -9,29 +9,30 @@
 
 #include "filesystem_private.h"
 #include "image_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #if defined( STB_IMAGE_WRITE_IMPLEMENTATION )
-#	define STBIW_MALLOC( sz )        PlMAllocA( sz )
-#	define STBIW_REALLOC( p, newsz ) PlReAllocA( p, newsz )
-#	define STBIW_FREE( p )           PlFree( p )
+#	define STBIW_MALLOC( sz )        QM_OS_MEMORY_MALLOC_( sz )
+#	define STBIW_REALLOC( p, newsz ) qm_os_memory_realloc( p, newsz )
+#	define STBIW_FREE( p )           qm_os_memory_free( p )
 
 #	include "stb_image_write.h"
 #endif
 
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #if defined( STB_IMAGE_RESIZE_IMPLEMENTATION )
-#	define STBIR_MALLOC( sz, ... ) PlMAllocA( sz )
-#	define STBIR_FREE( p, ... )    PlFree( p )
+#	define STBIR_MALLOC( sz, ... ) QM_OS_MEMORY_MALLOC_( sz )
+#	define STBIR_FREE( p, ... )    qm_os_memory_free( p )
 
 #	include "stb_image_resize.h"
 #endif
 
 #define STB_IMAGE_IMPLEMENTATION
 #if defined( STB_IMAGE_IMPLEMENTATION )
-#	define STBI_MALLOC( sz )        PlMAllocA( sz )
-#	define STBI_REALLOC( p, newsz ) PlReAllocA( p, newsz )
-#	define STBI_FREE( p )           PlFree( p )
+#	define STBI_MALLOC( sz )        QM_OS_MEMORY_MALLOC_( sz )
+#	define STBI_REALLOC( p, newsz ) qm_os_memory_realloc( p, newsz )
+#	define STBI_FREE( p )           qm_os_memory_free( p )
 
 #	define STB_IMAGE_WRITE_STATIC
 #	include "stb_image.h"
@@ -43,27 +44,27 @@ static PLImage *LoadStbImage( PLFile *file ) {
 		return NULL;
 	}
 
-	void *tmp = PlMAllocA( s );
+	void *tmp = QM_OS_MEMORY_MALLOC_( s );
 	PlReadFile( file, tmp, sizeof( char ), s );
 
 	int x, y, component;
 	unsigned char *data = stbi_load_from_memory( tmp, ( int ) s, &x, &y, &component, 4 );
 
-	PlFree( tmp );
+	qm_os_memory_free( tmp );
 
 	if ( data == NULL ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "failed to read in image (%s)", stbi_failure_reason() );
 		return NULL;
 	}
 
-	PLImage *image = PlCAllocA( 1, sizeof( PLImage ) );
+	PLImage *image = QM_OS_MEMORY_CALLOC( 1, sizeof( PLImage ) );
 	image->colour_format = PL_COLOURFORMAT_RGBA;
 	image->format = PL_IMAGEFORMAT_RGBA8;
 	image->width = ( unsigned int ) x;
 	image->height = ( unsigned int ) y;
 	image->size = PlGetImageSize( image->format, image->width, image->height );
 	image->levels = 1;
-	image->data = PlCAllocA( image->levels, sizeof( uint8_t * ) );
+	image->data = QM_OS_MEMORY_CALLOC( image->levels, sizeof( uint8_t * ) );
 	image->data[ 0 ] = data;
 
 	return image;
@@ -141,7 +142,7 @@ void PlClearImageLoaders( void ) {
 }
 
 PLImage *PlCreateImage( void *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat ) {
-	PLImage *image = PlMAlloc( sizeof( PLImage ), false );
+	PLImage *image = QM_OS_MEMORY_MALLOC_( sizeof( PLImage ) );
 	if ( image == NULL ) {
 		return NULL;
 	}
@@ -155,18 +156,18 @@ PLImage *PlCreateImage( void *buf, unsigned int w, unsigned int h, unsigned int 
 
 	if ( numFrames > 0 ) {
 		image->numFrames = numFrames;
-		image->frames = PL_NEW_( PLImageFrame, image->numFrames );
+		image->frames = QM_OS_MEMORY_NEW_( PLImageFrame, image->numFrames );
 		for ( unsigned int i = 0; i < image->numFrames; ++i ) {
-			image->frames[ i ].data = PL_NEW_( void *, image->levels );
+			image->frames[ i ].data = QM_OS_MEMORY_NEW_( void *, image->levels );
 		}
 	} else { /* todo: kill this */
-		image->data = PlCAlloc( image->levels, sizeof( uint8_t * ), false );
+		image->data = QM_OS_MEMORY_CALLOC( image->levels, sizeof( uint8_t * ) );
 		if ( image->data == NULL ) {
 			PlDestroyImage( image );
 			return NULL;
 		}
 
-		image->data[ 0 ] = PlCAlloc( image->size, sizeof( uint8_t ), false );
+		image->data[ 0 ] = QM_OS_MEMORY_CALLOC( image->size, sizeof( uint8_t ) );
 		if ( image->data[ 0 ] == NULL ) {
 			PlDestroyImage( image );
 			return NULL;
@@ -187,19 +188,19 @@ void PlDestroyImage( PLImage *image ) {
 
 	/* todo: kill this */
 	for ( unsigned int levels = 0; levels < image->levels; ++levels ) {
-		PlFree( image->data[ levels ] );
+		qm_os_memory_free( image->data[ levels ] );
 	}
 
 	for ( unsigned int i = 0; i < image->numFrames; ++i ) {
 		for ( unsigned int j = 0; j < image->frames[ i ].numMips; ++j ) {
-			PL_DELETE( image->frames[ i ].data[ j ] );
+			qm_os_memory_free( image->frames[ i ].data[ j ] );
 		}
-		PL_DELETE( image->frames[ i ].data );
+		qm_os_memory_free( image->frames[ i ].data );
 	}
-	PL_DELETE( image->frames );
+	qm_os_memory_free( image->frames );
 
-	PlFree( image->data );
-	PlFree( image );
+	qm_os_memory_free( image->data );
+	qm_os_memory_free( image );
 }
 
 /**
@@ -229,7 +230,7 @@ PLImage *PlLoadImage( const char *path ) {
 			continue;
 		}
 
-		strncpy( image->path, path, sizeof( image->path ) );
+		snprintf( image->path, sizeof( image->path ), "%s", path );
 		return image;
 	}
 
@@ -315,7 +316,7 @@ static bool RGB8toRGBA8( PLImage *image ) {
 	size_t num_pixels = image->size / 3;
 
 	RGB8 *src = ( RGB8 * ) image->data[ 0 ];
-	RGBA8 *dst = PlMAllocA( size );
+	RGBA8 *dst = QM_OS_MEMORY_MALLOC_( size );
 	for ( size_t i = 0; i < num_pixels; ++i ) {
 		dst->r = src->r;
 		dst->g = src->g;
@@ -325,7 +326,7 @@ static bool RGB8toRGBA8( PLImage *image ) {
 		src++;
 	}
 
-	PlFree( image->data[ 0 ] );
+	qm_os_memory_free( image->data[ 0 ] );
 
 	image->data[ 0 ] = ( uint8_t * ) ( &dst[ 0 ] );
 	image->size = size;
@@ -338,7 +339,7 @@ static bool RGB8toRGBA8( PLImage *image ) {
 #define scale_5to8( i ) ( ( ( ( double ) ( i ) ) / 31 ) * 255 )
 
 static uint8_t *ImageDataRGB5A1toRGBA8( const uint8_t *src, size_t n_pixels ) {
-	uint8_t *dst = PlMAlloc( n_pixels * 4, false );
+	uint8_t *dst = QM_OS_MEMORY_MALLOC_( n_pixels * 4 );
 	if ( dst == NULL ) {
 		return NULL;
 	}
@@ -376,7 +377,7 @@ bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
 
 		case PL_IMAGEFORMAT_RGB5A1: {
 			if ( new_format == PL_IMAGEFORMAT_RGBA8 ) {
-				uint8_t **levels = PlCAllocA( image->levels, sizeof( uint8_t * ) );
+				uint8_t **levels = QM_OS_MEMORY_CALLOC( image->levels, sizeof( uint8_t * ) );
 
 				/* Make a new copy of each detail level in the new format. */
 
@@ -388,10 +389,10 @@ bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
 					if ( levels[ l ] == NULL ) {
 						/* Memory allocation failed, ditch any buffers we've created so far. */
 						for ( unsigned int m = 0; m < l; ++m ) {
-							PlFree( levels[ m ] );
+							qm_os_memory_free( levels[ m ] );
 						}
 
-						PlFree( levels );
+						qm_os_memory_free( levels );
 
 						PlReportErrorF( PL_RESULT_MEMORY_ALLOCATION, "couldn't allocate memory for image data" );
 						return false;
@@ -404,10 +405,10 @@ bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
 				/* Now that all levels have been converted, free and replace the old buffers. */
 
 				for ( unsigned int l = 0; l < image->levels; ++l ) {
-					PlFree( image->data[ l ] );
+					qm_os_memory_free( image->data[ l ] );
 				}
 
-				PlFree( image->data );
+				qm_os_memory_free( image->data );
 				image->data = levels;
 
 				image->format = new_format;
@@ -549,7 +550,7 @@ void PlClearImageAlpha( PLImage *image ) {
 	}
 }
 
-void PlReplaceImageColour( PLImage *image, PLColour target, PLColour dest ) {
+void PlReplaceImageColour( PLImage *image, QmMathColour4ub target, QmMathColour4ub dest ) {
 	unsigned int num_colours = PlGetNumImageFormatChannels( image->format );
 	switch ( image->format ) {
 		case PL_IMAGEFORMAT_RGB8:
@@ -557,14 +558,14 @@ void PlReplaceImageColour( PLImage *image, PLColour target, PLColour dest ) {
 			for ( unsigned int i = 0; i < image->size; i += num_colours ) {
 				uint8_t *pixel = &image->data[ 0 ][ i ];
 				if ( num_colours == 4 ) {
-					if ( PlCompareColour( PLColour( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ], pixel[ 3 ] ), target ) ) {
+					if ( PlCompareColour( qm_math_colour4ub( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ], pixel[ 3 ] ), target ) ) {
 						pixel[ 0 ] = dest.r;
 						pixel[ 1 ] = dest.g;
 						pixel[ 2 ] = dest.b;
 						pixel[ 3 ] = dest.a;
 					}
 				} else {
-					if ( PlCompareColour( PLColourRGB( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ] ), target ) ) {
+					if ( PlCompareColour( QM_MATH_COLOUR4UB_RGB( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ] ), target ) ) {
 						pixel[ 0 ] = dest.r;
 						pixel[ 1 ] = dest.g;
 						pixel[ 2 ] = dest.b;
@@ -588,10 +589,10 @@ void PlFreeImage( PLImage *image ) {
 	}
 
 	for ( unsigned int levels = 0; levels < image->levels; ++levels ) {
-		PlFree( image->data[ levels ] );
+		qm_os_memory_free( image->data[ levels ] );
 	}
 
-	PlFree( image->data );
+	qm_os_memory_free( image->data );
 }
 
 bool PlFlipImageVertical( PLImage *image ) {
@@ -606,7 +607,7 @@ bool PlFlipImageVertical( PLImage *image ) {
 
 	unsigned int bytes_per_row = width * bytes_per_pixel;
 
-	unsigned char *swap = PlMAlloc( bytes_per_row, false );
+	unsigned char *swap = QM_OS_MEMORY_MALLOC_( bytes_per_row );
 	if ( swap == NULL ) {
 		return false;
 	}
@@ -625,7 +626,7 @@ bool PlFlipImageVertical( PLImage *image ) {
 		height /= 2;
 	}
 
-	PlFree( swap );
+	qm_os_memory_free( swap );
 
 	return true;
 }

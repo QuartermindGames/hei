@@ -32,12 +32,12 @@ typedef struct PLPrimitive {
 	unsigned int numPolygons;
 	unsigned int maxPolygons;
 	
-	PLVector3 position;
-	PLVector3 angles;
+	QmMathVector3f position;
+	QmMathVector3f angles;
 } PLPrimitive;
 
 PLPrimitive *plCreatePrimitive( void ) {
-	PLPrimitive *primitive = PlCAllocA( 1, sizeof( PLPrimitive ) );
+	PLPrimitive *primitive = QM_OS_MEMORY_CALLOC( 1, sizeof( PLPrimitive ) );
 
 	
 
@@ -153,12 +153,12 @@ void plDestroyDisconnectedPrimitivePolygons( PLPrimitive *primitive ) {
 			continue;
 		}
 
-		PLPolygon **polygons = PlCAllocA( numPolys, sizeof( *PLPolygon ) );
+		PLPolygon **polygons = QM_OS_MEMORY_CALLOC( numPolys, sizeof( *PLPolygon ) );
 		plGetAdjacentPrimitivePolygons( prim, i, polygons, numPolys );
 
 		/* blah... */
 
-		PlFree( polygons );
+		qm_os_memory_free( polygons );
 #endif
 	}
 
@@ -167,7 +167,7 @@ void plDestroyDisconnectedPrimitivePolygons( PLPrimitive *primitive ) {
 		return;
 	}
 
-	PLPolygon *polygons = PlCAllocA( numActualPolys, sizeof( PLPolygon ) );
+	PLPolygon *polygons = QM_OS_MEMORY_CALLOC( numActualPolys, sizeof( PLPolygon ) );
 	for( unsigned int i = 0; i < numActualPolys; ++i ) {
 		if( &primitive->polygons[ i ] == NULL ) {
 			continue;

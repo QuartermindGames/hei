@@ -3,6 +3,7 @@
 // Copyright © 2017-2025 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "image_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 /**
  * Nexus, an early prototype using Plasma, seems to use HSM versions 0 and 1.
@@ -47,14 +48,14 @@ PLImage *PlParseHsmImage( PLFile *file ) {
 	}
 
 	unsigned int size = width * height * 4;
-	uint8_t *buf = PL_NEW_( uint8_t, size );
+	uint8_t *buf = QM_OS_MEMORY_NEW_( uint8_t, size );
 	if ( PlReadFile( file, buf, sizeof( uint8_t ), size ) != size ) {
-		PL_DELETE( buf );
+		qm_os_memory_free( buf );
 		return NULL;
 	}
 
 	PLImage *image = PlCreateImage( buf, width, height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
-	PL_DELETE( buf );
+	qm_os_memory_free( buf );
 	return image;
 }

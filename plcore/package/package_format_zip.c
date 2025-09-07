@@ -4,6 +4,7 @@
 #include <plcore/pl_linkedlist.h>
 
 #include "package_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 /*
  * todo:
@@ -57,10 +58,10 @@ static bool ParseZipFileHeader( PLFile *file, ZipFileHeader *header ) {
 	header->uncompressedSize = PlReadInt32( file, false, NULL );
 
 	header->nameSize = PlReadInt16( file, false, NULL );
-	header->name = PL_NEW_( char, header->nameSize + 1 );
+	header->name = QM_OS_MEMORY_NEW_( char, header->nameSize + 1 );
 
 	header->extraSize = PlReadInt16( file, false, NULL );
-	header->extra = PL_NEW_( char, header->extraSize );
+	header->extra = QM_OS_MEMORY_NEW_( char, header->extraSize );
 
 	PlReadFile( file, header->name, sizeof( char ), header->nameSize );
 	PlReadFile( file, header->extra, sizeof( char ), header->extraSize );
@@ -86,9 +87,9 @@ PLPackage *PlParseZipPackage( PLFile *file ) {
 	PLLinkedList *files = PlCreateLinkedList();
 
 	while ( true ) {
-		ZipFileHeader *store = PL_NEW( ZipFileHeader );
+		ZipFileHeader *store = QM_OS_MEMORY_NEW( ZipFileHeader );
 		if ( !ParseZipFileHeader( file, store ) ) {
-			PL_DELETE( store );
+			qm_os_memory_free( store );
 			break;
 		}
 
@@ -98,7 +99,7 @@ PLPackage *PlParseZipPackage( PLFile *file ) {
 		 * which is great, but we're not specifically interested in these */
 		const char *c = &store->name[ store->nameSize - 1 ];
 		if ( *c == '/' || *c == '\\' ) {
-			PL_DELETE( store );
+			qm_os_memory_free( store );
 			continue;
 		}
 #endif
@@ -133,9 +134,9 @@ PLPackage *PlParseZipPackage( PLFile *file ) {
 				break;
 		}
 
-		PL_DELETE( store->name );
-		PL_DELETE( store->extra );
-		PL_DELETE( store );
+		qm_os_memory_free( store->name );
+		qm_os_memory_free( store->extra );
+		qm_os_memory_free( store );
 
 		node = PlGetNextLinkedListNode( node );
 	}

@@ -3,6 +3,7 @@
 // Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "../package_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 /* id Software's WAD package format */
 
@@ -46,24 +47,24 @@ PLPackage *PlParseWadPackage_( PLFile *file ) {
 
 	PlFileSeek( file, tableOffset, PL_SEEK_SET );
 
-	WadIndex *indices = PlMAllocA( tableSize );
+	WadIndex *indices = QM_OS_MEMORY_MALLOC_( tableSize );
 	for ( int i = 0; i < numLumps; ++i ) {
 		indices[ i ].offset = PlReadInt32( file, false, NULL );
 		if ( indices[ i ].offset == 0 || indices[ i ].offset >= tableOffset ) {
-			PlFree( indices );
+			qm_os_memory_free( indices );
 			PlReportErrorF( PL_RESULT_FILEREAD, "invalid file offset for index %d", i );
 			return NULL;
 		}
 
 		indices[ i ].size = PlReadInt32( file, false, NULL );
 		if ( indices[ i ].size >= ( int ) PlGetFileSize( file ) ) {
-			PlFree( indices );
+			qm_os_memory_free( indices );
 			PlReportErrorF( PL_RESULT_FILEREAD, "invalid file size for index %d", i );
 			return NULL;
 		}
 
 		if ( PlReadFile( file, indices[ i ].name, 1, 8 ) != 8 ) {
-			PlFree( indices );
+			qm_os_memory_free( indices );
 			return NULL;
 		}
 	}

@@ -25,7 +25,7 @@ static void dump_file_strings( const char *path, void *user ) {
 		PlRewindFile( file );
 
 		size_t size = PlGetFileSize( file );
-		char *buf = PL_NEW_( char, size + 1 );
+		char *buf = QM_OS_MEMORY_NEW_( char, size + 1 );
 		PlReadFile( file, buf, sizeof( char ), size );
 
 		const char *p = buf;
@@ -80,7 +80,7 @@ static void dump_file_strings( const char *path, void *user ) {
 			printf( "Unexpected second line in file: %s\n", path );
 		}
 
-		PL_DELETE( buf );
+		qm_os_memory_free( buf );
 	} else if ( magic == ATR_MAGIC ) {
 		uint16_t headerType = PlReadInt16( file, false, NULL );
 		if ( headerType == 130 ) {

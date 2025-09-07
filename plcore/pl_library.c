@@ -20,7 +20,7 @@ PLLibrary *PlLoadLibrary( const char *path, bool appendPath ) {
 	if ( appendPath ) {
 		snprintf( sysPath, sizeof( sysPath ), "%s%s", path, PL_SYSTEM_LIBRARY_EXTENSION );
 	} else {
-		strncpy( sysPath, path, sizeof( sysPath ) );
+		snprintf( sysPath, sizeof( sysPath ), "%s", path );
 	}
 
 	/* check that it actually exists first, since Windows doesn't give a very verbose message for these cases */
@@ -41,7 +41,7 @@ PLLibrary *PlLoadLibrary( const char *path, bool appendPath ) {
 	}
 #endif
 
-	return ( PLLibrary* ) libraryHandle;
+	return libraryHandle;
 }
 
 void *PlGetLibraryProcedure( PLLibrary *library, const char *procedureName ) {

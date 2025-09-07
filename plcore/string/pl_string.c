@@ -4,6 +4,9 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
+#include "qmos/public/qm_os_memory.h"
+
+
 #include <plcore/pl.h>
 
 /**
@@ -13,7 +16,7 @@
 char *pl_strchunksplit( const char *string, unsigned int insLength, const char *seperator ) {
 	size_t sl = strlen( string );
 	size_t pl = strlen( seperator );
-	char *dest = ( char * ) PlMAllocA( ( sl + ( pl * ( sl / insLength ) ) ) + 1 );
+	char *dest = ( char * ) QM_OS_MEMORY_MALLOC_( ( sl + ( pl * ( sl / insLength ) ) ) + 1 );
 	char *p = dest;
 	for ( size_t i = 0, j = 1; i < sl; ++i, ++j ) {
 		*p++ = string[ i ];
@@ -37,7 +40,7 @@ char *pl_strinsert( const char *string, char **buf, size_t *bufSize, size_t *max
 	*bufSize += strLength;
 	if ( *bufSize >= *maxBufSize ) {
 		*maxBufSize = *bufSize + strLength;
-		*buf = PlReAllocA( *buf, *maxBufSize );
+		*buf = qm_os_memory_realloc( *buf, *maxBufSize );
 	}
 
 	/* now copy it into our buffer */
@@ -50,7 +53,7 @@ char *pl_strinsert( const char *string, char **buf, size_t *bufSize, size_t *max
  * Joins two strings together; returns a newly allocated null-terminated buffer.
  */
 char *pl_strnjoin( const char *a, size_t aSize, const char *b, size_t bSize ) {
-	char *buf = PL_NEW_( char, aSize + bSize + 1 );
+	char *buf = QM_OS_MEMORY_NEW_( char, aSize + bSize + 1 );
 	strncpy( buf, a, aSize );
 	strncpy( buf + aSize, b, bSize );
 	return buf;
@@ -75,6 +78,11 @@ char *pl_strnreverse( char *string, size_t size ) {
 
 	return string;
 }
+
+#if defined( _MSC_VER )
+// ssize_t isn't available per MSVC :(
+typedef intptr_t ssize_t;
+#endif
 
 char *pl_strrstr( char *haystack, const char *needle ) {
 	size_t ns = strlen( needle );

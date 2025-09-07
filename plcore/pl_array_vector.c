@@ -5,6 +5,7 @@
  */
 
 #include "pl_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 #include <plcore/pl_array_vector.h>
 
@@ -19,7 +20,7 @@ void PlResizeVectorArray( PLVectorArray *vectorArray, unsigned int newMaxElement
 		return;
 	}
 
-	vectorArray->data = PlReAllocA( vectorArray->data, sizeof( void * ) * newMaxElements );
+	vectorArray->data = qm_os_memory_realloc( vectorArray->data, sizeof( void * ) * newMaxElements );
 	vectorArray->maxElements = newMaxElements;
 }
 
@@ -102,9 +103,9 @@ void *PlGetVectorArrayBack( PLVectorArray *vectorArray ) {
  * Create a vector array.
  */
 PLVectorArray *PlCreateVectorArray( unsigned int maxElements ) {
-	PLVectorArray *vectorArray = PL_NEW( PLVectorArray );
+	PLVectorArray *vectorArray = qm_os_memory_alloc( 1, sizeof( PLVectorArray ), NULL );
 	vectorArray->maxElements = maxElements;
-	vectorArray->data = PL_NEW_( void *, vectorArray->maxElements );
+	vectorArray->data = qm_os_memory_alloc( vectorArray->maxElements, sizeof( void * ), NULL );
 	return vectorArray;
 }
 
@@ -124,8 +125,8 @@ void PlDestroyVectorArray( PLVectorArray *vectorArray ) {
 	}
 
 	PlClearVectorArray( vectorArray );
-	PL_DELETE( vectorArray->data );
-	PL_DELETE( vectorArray );
+	qm_os_memory_free( vectorArray->data );
+	qm_os_memory_free( vectorArray );
 }
 
 void PlDestroyVectorArrayEx( PLVectorArray *vectorArray, void ( *elementDeleter )( void *user ) ) {
@@ -138,5 +139,5 @@ void PlDestroyVectorArrayEx( PLVectorArray *vectorArray, void ( *elementDeleter 
 }
 
 void PlDestroyVectorArrayContainer( PLVectorArray *vectorArray ) {
-	PL_DELETE( vectorArray );
+	qm_os_memory_free( vectorArray );
 }

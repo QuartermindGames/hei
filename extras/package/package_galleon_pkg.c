@@ -75,20 +75,20 @@ static PLPackage *PKG_ReadFile( PLFile *file ) {
 	}
 
 	unsigned int maxFiles = 2048;
-	PkgIndex *fileTable = PlMAlloc( sizeof( PkgIndex ) * maxFiles, true );
+	PkgIndex *fileTable = QM_OS_MEMORY_MALLOC_( sizeof( PkgIndex ) * maxFiles, true );
 	unsigned int numFiles = 0;
 
 	char fileExtension[ 16 ];
 	uint8_t rule;
 	while ( ( rule = PlReadInt8( file, &status ) ) != PKG_TERM_END_TABLE ) {
 		if ( !status ) {
-			PlFree( fileTable );
+			qm_os_memory_free( fileTable );
 			return NULL;
 		}
 
 		if ( numFiles >= maxFiles ) {
 			maxFiles += 16;
-			fileTable = PlReAlloc( fileTable, sizeof( PkgIndex ) * maxFiles, true );
+			fileTable = qm_os_memory_realloc( fileTable, sizeof( PkgIndex ) * maxFiles, true );
 		}
 
 		PkgIndex *curIndex = &fileTable[ numFiles ];

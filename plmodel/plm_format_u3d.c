@@ -129,7 +129,7 @@ static PLMModel *ReadU3DModelData( PLFile *data_ptr, PLFile *anim_ptr ) {
 	PlFileSeek( data_ptr, 12, PL_SEEK_CUR );
 
 	/* read all the triangle data from the data file */
-	U3DTriangle *triangles = PlCAllocA( data_hdr.numpolys, sizeof( U3DTriangle ) );
+	U3DTriangle *triangles = QM_OS_MEMORY_CALLOC( data_hdr.numpolys, sizeof( U3DTriangle ) );
 	PlReadFile( data_ptr, triangles, sizeof( U3DTriangle ), data_hdr.numpolys );
 	PlCloseFile( data_ptr );
 
@@ -137,20 +137,20 @@ static PLMModel *ReadU3DModelData( PLFile *data_ptr, PLFile *anim_ptr ) {
 	qsort( triangles, data_hdr.numpolys, sizeof( U3DTriangle ), CompareTriangles );
 
 	/* read in all of the animation data from the anim file */
-	U3DVertex *vertices = PlCAllocA( ( size_t ) data_hdr.numverts * anim_hdr.frames, sizeof( U3DVertex ) );
+	U3DVertex *vertices = QM_OS_MEMORY_CALLOC( ( size_t ) data_hdr.numverts * anim_hdr.frames, sizeof( U3DVertex ) );
 	PlReadFile( anim_ptr, vertices, sizeof( U3DVertex ), ( size_t ) data_hdr.numverts * anim_hdr.frames );
 	PlCloseFile( anim_ptr );
 
-	PLMModel *model_ptr = PlCAllocA( 1, sizeof( PLMModel ) );
+	PLMModel *model_ptr = QM_OS_MEMORY_CALLOC( 1, sizeof( PLMModel ) );
 	model_ptr->type = PLM_MODELTYPE_VERTEX;
-	model_ptr->internal.vertex_data.animations = PlCAllocA( anim_hdr.frames, sizeof( PLMVertexAnimationFrame ) );
+	model_ptr->internal.vertex_data.animations = QM_OS_MEMORY_CALLOC( anim_hdr.frames, sizeof( PLMVertexAnimationFrame ) );
 
 	for ( unsigned int i = 0; i < anim_hdr.frames; ++i ) {
 		PLMVertexAnimationFrame *frame = &model_ptr->internal.vertex_data.animations[ i ];
 	}
 
-	PlFree( triangles );
-	PlFree( vertices );
+	qm_os_memory_free( triangles );
+	qm_os_memory_free( vertices );
 
 	PlmGenerateModelBounds( model_ptr );
 

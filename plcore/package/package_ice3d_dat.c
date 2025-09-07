@@ -3,6 +3,7 @@
 // Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "package_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 PLPackage *PlParseIce3DDatPackage_( PLFile *file ) {
 	uint16_t versionMajor = PL_READUINT16( file, false, NULL );
@@ -26,10 +27,10 @@ PLPackage *PlParseIce3DDatPackage_( PLFile *file ) {
 		package->table[ i ].fileSize = PL_READUINT32( file, false, NULL );
 
 		uint32_t stringSize = PL_READUINT32( file, false, NULL );
-		char *buf = PL_NEW_( char, stringSize + 1 );
+		char *buf = QM_OS_MEMORY_NEW_( char, stringSize + 1 );
 		PlReadFile( file, buf, sizeof( char ), stringSize );
 		snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ), "%s", buf );
-		PL_DELETE( buf );
+		qm_os_memory_free( buf );
 
 		package->table[ i ].offset = PL_READUINT32( file, false, NULL ) + 8;
 	}

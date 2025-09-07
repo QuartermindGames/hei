@@ -8,7 +8,7 @@
 
 PL_EXTERN_C
 
-typedef struct PLLinkedList PLLinkedList;
+typedef struct PLLinkedList     PLLinkedList;
 typedef struct PLLinkedListNode PLLinkedListNode;
 
 /**
@@ -153,9 +153,9 @@ bool PlIsLinkedListEmpty( const PLLinkedList *list );
  * 	MyType myVar;
  * 	PL_ITERATE_LINKED_LIST( myVar, MyType, myList ) { logic goes here }
  */
-#define PL_ITERATE_LINKED_LIST( VAR, TYPE, LIST, ITR )                                                \
-	for ( PLLinkedListNode * ( ITR ) = PlGetFirstNode( LIST );                                        \
-	      ( ITR ) != NULL && ( ( ( VAR ) = ( TYPE * ) PlGetLinkedListNodeUserData( ITR ) ) != NULL ); \
-	      ( ITR ) = PlGetNextLinkedListNode( ITR ) )
+#define PL_ITERATE_LINKED_LIST( VAR, TYPE, LIST, ITR )                                                                                                     \
+	for ( PLLinkedListNode * ( ITR##_ ), *( ITR ) = PlGetFirstNode( LIST );                                                                                \
+	      ( ITR ) != NULL && ( ( ITR##_ ) = PlGetNextLinkedListNode( ( ITR ) ), ( ( ( VAR ) = ( TYPE * ) PlGetLinkedListNodeUserData( ITR ) ) != NULL ) ); \
+	      ( ITR ) = ( ITR##_ ) )
 
 PL_EXTERN_C_END

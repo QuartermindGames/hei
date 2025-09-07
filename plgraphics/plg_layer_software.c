@@ -16,7 +16,7 @@ static uint8_t *drawBuffer = NULL;
 
 #define SWGetDisplayBufferSize( WIDTH, HEIGHT ) PlGetImageSize( PL_IMAGEFORMAT_RGBA8, WIDTH, HEIGHT )
 
-static void SWSetClearColour( PLColour colour ) {}
+static void SWSetClearColour( QmMathColour4ub colour ) {}
 
 static void SWClearBuffers( unsigned int buffers ) {
 	if ( drawBuffer == NULL ) {
@@ -36,13 +36,13 @@ static void SWClearBuffers( unsigned int buffers ) {
 
 /**********************************************************/
 
-static void SWDrawPixel( int x, int y, PLColour colour ) {
+static void SWDrawPixel( int x, int y, QmMathColour4ub colour ) {
 	unsigned int pos = y * gfx_state.viewport.w + x;
 	if ( pos >= SWGetDisplayBufferSize( gfx_state.viewport.w, gfx_state.viewport.h ) ) {
 		return;
 	}
 
-	PLColour *buffer = ( PLColour * ) drawBuffer;
+	QmMathColour4ub *buffer = ( QmMathColour4ub * ) drawBuffer;
 	buffer[ pos ] = colour;
 }
 
@@ -50,14 +50,14 @@ static void SWDrawLine( const PLGVertex *start, const PLGVertex *end ) {
 }
 
 static void SWDrawMesh( PLGMesh *mesh ) {
-	PLVector3 transform = PlGetMatrix4Translation( PlGetMatrix( PL_MODELVIEW_MATRIX ) );
+	QmMathVector3f transform = PlGetMatrix4Translation( PlGetMatrix( PL_MODELVIEW_MATRIX ) );
 	switch ( mesh->primitive ) {
 		case PLG_MESH_LINES: {
 			for ( unsigned int i = 0; i < mesh->num_verts; i += 2 ) {
 				PLGVertex a = mesh->vertices[ i ];
-				a.position = PlScaleVector3( a.position, transform );
+				a.position = qm_math_vector3f_scale( a.position, transform );
 				PLGVertex b = mesh->vertices[ i ];
-				b.position = PlScaleVector3( b.position, transform );
+				b.position = qm_math_vector3f_scale( b.position, transform );
 				SWDrawLine( &a, &b );
 			}
 			break;
@@ -66,7 +66,7 @@ static void SWDrawMesh( PLGMesh *mesh ) {
 		case PLG_MESH_POINTS: {
 			for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
 				PLGVertex a = mesh->vertices[ i ];
-				a.position = PlScaleVector3( a.position, transform );
+				a.position = qm_math_vector3f_scale( a.position, transform );
 				SWDrawPixel( ( int ) a.position.x, ( int ) a.position.y, a.colour );
 			}
 			break;

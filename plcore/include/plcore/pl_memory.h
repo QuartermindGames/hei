@@ -18,35 +18,6 @@ extern PL_DLL void ( *pl_free )( void *ptr );
 typedef void ( *PLMemoryAbortCallbackT )( size_t failSize );
 extern PL_DLL PLMemoryAbortCallbackT pl_memory_abort_cb;
 
-void *PlCAlloc( size_t num, size_t size, bool abortOnFail );
-void *PlMAlloc( size_t size, bool abortOnFail );
-void *PlReAlloc( void *ptr, size_t newSize, bool abortOnFail );
-void PlFree( void *ptr );
-
-extern size_t PlGetTotalAllocatedMemory( void );
-
-extern uint64_t PlGetTotalSystemMemory( void );
-extern uint64_t PlGetTotalAvailableSystemMemory( void );
-extern uint64_t PlGetCurrentMemoryUsage( void );
-
-/* todo: deprecate these... */
-#define PlCAllocA( NUM, SIZE )     PlCAlloc( ( NUM ), ( SIZE ), true )
-#define PlMAllocA( SIZE )          PlMAlloc( ( SIZE ), true )
-#define PlReAllocA( PTR, NEWSIZE ) PlReAlloc( ( PTR ), ( NEWSIZE ), true )
-
-#define PL_CALLOCA( NUM, SIZE )     PlCAlloc( ( NUM ), ( SIZE ), true )
-#define PL_MALLOCA( SIZE )          PlMAlloc( ( SIZE ), true )
-#define PL_REALLOCA( PTR, NEWSIZE ) PlReAlloc( ( PTR ), ( NEWSIZE ), true )
-
-#define PL_NEW( TYPE )       ( TYPE * ) PL_MALLOCA( sizeof( TYPE ) )
-#define PL_NEW_( TYPE, NUM ) ( TYPE * ) PL_CALLOCA( NUM, sizeof( TYPE ) )
-#define PL_DELETE( PTR )     PlFree( PTR )
-#define PL_DELETEN( PTR )     \
-	{                         \
-		PL_DELETE( ( PTR ) ); \
-		( PTR ) = NULL;       \
-	}
-
 typedef struct PLMemoryGroup PLMemoryGroup;
 void PlFlushMemoryGroup( PLMemoryGroup *group );
 PLMemoryGroup *PlCreateMemoryGroup( void );

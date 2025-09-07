@@ -27,7 +27,7 @@ PLPackage *ROF_ParseFile( PLFile *file ) {
 		uint32_t nameOffset;
 	} FileIndex;
 
-	FileIndex *indices = PL_NEW_( FileIndex, numFiles );
+	FileIndex *indices = QM_OS_MEMORY_NEW_( FileIndex, numFiles );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
 		indices[ i ].offset = PL_READUINT32( file, false, NULL );
 		indices[ i ].size = PL_READUINT32( file, false, NULL );
@@ -36,7 +36,7 @@ PLPackage *ROF_ParseFile( PLFile *file ) {
 		indices[ i ].nameOffset = PL_READUINT32( file, false, NULL );
 	}
 
-	char *nameBuffer = PL_NEW_( char, nameTableSize );
+	char *nameBuffer = QM_OS_MEMORY_NEW_( char, nameTableSize );
 	PlReadFile( file, nameBuffer, sizeof( char ), nameTableSize );
 
 	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
@@ -73,8 +73,8 @@ PLPackage *ROF_ParseFile( PLFile *file ) {
 		}
 	}
 
-	PL_DELETE( nameBuffer );
-	PL_DELETE( indices );
+	qm_os_memory_free( nameBuffer );
+	qm_os_memory_free( indices );
 
 	return package;
 }

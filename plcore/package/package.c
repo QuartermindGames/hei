@@ -10,6 +10,7 @@
 #define MINIZ_NO_ARCHIVE_APIS
 #include "../3rdparty/miniz/miniz.h"
 #include "../3rdparty/blast/blast.h"
+#include "qmos/public/qm_os_memory.h"
 
 /****************************************
  * Generic Loader
@@ -74,9 +75,9 @@ static void *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 	}
 
 	size_t size = ( pi->compressionType != PL_COMPRESSION_NONE ) ? pi->compressedSize : pi->fileSize;
-	uint8_t *dataPtr = PL_NEW_( uint8_t, size );
+	uint8_t *dataPtr = QM_OS_MEMORY_NEW_( uint8_t, size );
 	if ( PlReadFile( fh, dataPtr, sizeof( uint8_t ), size ) != size ) {
-		PL_DELETE( dataPtr );
+		qm_os_memory_free( dataPtr );
 		return NULL;
 	}
 
@@ -84,25 +85,25 @@ static void *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 		switch ( pi->compressionType ) {
 			default: {
 				PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported compression type for packages" );
-				PL_DELETE( dataPtr );
+				qm_os_memory_free( dataPtr );
 				return NULL;
 			}
 			case PL_COMPRESSION_DEFLATE:
 			case PL_COMPRESSION_GZIP: {
-				uint8_t *decompressedPtr = PL_NEW_( uint8_t, pi->fileSize );
+				uint8_t *decompressedPtr = QM_OS_MEMORY_NEW_( uint8_t, pi->fileSize );
 				uint32_t uncompressedLength = ( uint32_t ) pi->fileSize;
 				int status = Inflate( decompressedPtr, &uncompressedLength, dataPtr, ( unsigned long ) pi->compressedSize, ( pi->compressionType == PL_COMPRESSION_GZIP ) );
-				PL_DELETE( dataPtr );
+				qm_os_memory_free( dataPtr );
 				dataPtr = decompressedPtr;
 				if ( status != Z_OK ) {
-					PL_DELETE( dataPtr );
+					qm_os_memory_free( dataPtr );
 					PlReportErrorF( PL_RESULT_FILEERR, "failed to decompress buffer (%s)", zError( status ) );
 					return NULL;
 				}
 				break;
 			}
 			case PL_COMPRESSION_IMPLODE: {
-				uint8_t *decompressedPtr = PL_NEW_( uint8_t, pi->fileSize );
+				uint8_t *decompressedPtr = QM_OS_MEMORY_NEW_( uint8_t, pi->fileSize );
 				uint32_t uncompressedLength = ( uint32_t ) pi->fileSize;
 				BlstUser in = {
 				                 .buffer = dataPtr,
@@ -114,7 +115,7 @@ static void *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 				                 .maxLength = uncompressedLength,
 				         };
 				int status = blast( BlstCbIn, &in, BlstCbOut, &out, NULL, NULL );
-				PL_DELETE( dataPtr );
+				qm_os_memory_free( dataPtr );
 				dataPtr = decompressedPtr;
 				if ( status != 0 ) {
 					const char *errmsg;
@@ -139,7 +140,7 @@ static void *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 							break;
 					}
 
-					PL_DELETE( dataPtr );
+					qm_os_memory_free( dataPtr );
 					PlReportErrorF( PL_RESULT_FILEREAD, "%s (%d)", errmsg, status );
 					return NULL;
 				}
@@ -148,7 +149,7 @@ static void *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 			case PL_COMPRESSION_LZRW1: {
 				size_t uncompressedLength = pi->fileSize;
 				void *decompressedPtr = PlDecompress_LZRW1( dataPtr, pi->compressedSize, &uncompressedLength );
-				PL_DELETE( dataPtr );
+				qm_os_memory_free( dataPtr );
 				dataPtr = decompressedPtr;
 				break;
 			}
@@ -165,7 +166,7 @@ static void *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
  * Allocate a new package handle.
  */
 PLPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, void *( *OpenFile )( PLFile *filePtr, PLPackageIndex *index ) ) {
-	PLPackage *package = PlMAllocA( sizeof( PLPackage ) );
+	PLPackage *package = QM_OS_MEMORY_MALLOC_( sizeof( PLPackage ) );
 
 	if ( OpenFile == NULL ) {
 		package->internal.LoadFile = LoadGenericPackageFile;
@@ -174,7 +175,7 @@ PLPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, void
 	}
 
 	package->table_size = package->maxTableSize = tableSize;
-	package->table = PL_NEW_( PLPackageIndex, tableSize );
+	package->table = QM_OS_MEMORY_NEW_( PLPackageIndex, tableSize );
 
 	snprintf( package->path, sizeof( package->path ), "%s", path );
 
@@ -188,8 +189,8 @@ void PlDestroyPackage( PLPackage *package ) {
 		return;
 	}
 
-	PL_DELETE( package->table );
-	PL_DELETE( package );
+	qm_os_memory_free( package->table );
+	qm_os_memory_free( package );
 }
 #if 0// todo
 void plWritePackage(PLPackage *package) {
@@ -339,14 +340,14 @@ PLPackage *PlLoadPackage( const char *path ) {
 			if ( pl_strncasecmp( ext, package_loaders[ i ].ext, sizeof( package_loaders[ i ].ext ) ) == 0 ) {
 				PLPackage *package = package_loaders[ i ].LoadFunction( path );
 				if ( package != NULL ) {
-					strncpy( package->path, path, sizeof( package->path ) );
+					snprintf( package->path, sizeof( package->path ), "%s", path );
 					return package;
 				}
 			}
 		} else if ( PL_INVALID_STRING( ext ) && PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
 			PLPackage *package = package_loaders[ i ].LoadFunction( path );
 			if ( package != NULL ) {
-				strncpy( package->path, path, sizeof( package->path ) );
+				snprintf( package->path, sizeof( package->path ), "%s", path );
 				return package;
 			}
 		}
@@ -385,7 +386,7 @@ PLPackage *PlLoadPackage( const char *path ) {
 	PlCloseFile( file );
 
 	if ( package != NULL && *package->path == '\0' ) {
-		strncpy( package->path, path, sizeof( package->path ) );
+		snprintf( package->path, sizeof( package->path ), "%s", path );
 	} else if ( PlGetFunctionResult() == PL_RESULT_SUCCESS ) {
 		/* this was clearly not the case... */
 		PlReportBasicError( PL_RESULT_UNSUPPORTED );
@@ -410,7 +411,7 @@ PLFile *PlLoadPackageFileByIndex( PLPackage *package, unsigned int index ) {
 
 	uint8_t *dataPtr = package->internal.LoadFile( packageFile, &( package->table[ index ] ) );
 	if ( dataPtr != NULL ) {
-		file = PL_NEW( PLFile );
+		file = QM_OS_MEMORY_NEW( PLFile );
 		snprintf( file->path, sizeof( file->path ), "%s", package->table[ index ].fileName );
 		file->size = package->table[ index ].fileSize;
 		file->data = dataPtr;

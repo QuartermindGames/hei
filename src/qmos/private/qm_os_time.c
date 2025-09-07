@@ -1,12 +1,9 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+// Copyright © 2017-2025 Quartermind Games, Mark E. Sowden <hogsy@snortysoft.net>
+// Purpose: Helper functions for time.
+// Author:  Mark E. Sowden
 
-#include "pl_private.h"
+#include <time.h>
 
-/* MSC doesn't provide clock_gettime, so blergh */
 #if defined( _MSC_VER )
 #	include <Windows.h>
 #endif
@@ -31,24 +28,30 @@
  * Originally written by Daniel Collins (2017), used with permission.
  * https://github.com/solemnwarning/timespec
  */
-static struct timespec timespec_normalise( struct timespec ts ) {
-	while ( ts.tv_nsec >= NSEC_PER_SEC ) {
+static struct timespec timespec_normalise( struct timespec ts )
+{
+	while ( ts.tv_nsec >= NSEC_PER_SEC )
+	{
 		++( ts.tv_sec );
 		ts.tv_nsec -= NSEC_PER_SEC;
 	}
 
-	while ( ts.tv_nsec <= -NSEC_PER_SEC ) {
+	while ( ts.tv_nsec <= -NSEC_PER_SEC )
+	{
 		--( ts.tv_sec );
 		ts.tv_nsec += NSEC_PER_SEC;
 	}
 
-	if ( ts.tv_nsec < 0 && ts.tv_sec > 0 ) {
+	if ( ts.tv_nsec < 0 && ts.tv_sec > 0 )
+	{
 		/* Negative nanoseconds while seconds is positive.
 		 * Decrement tv_sec and roll tv_nsec over.
 		 */
 		--( ts.tv_sec );
 		ts.tv_nsec = NSEC_PER_SEC - ( -1 * ts.tv_nsec );
-	} else if ( ts.tv_nsec > 0 && ts.tv_sec < 0 ) {
+	}
+	else if ( ts.tv_nsec > 0 && ts.tv_sec < 0 )
+	{
 		/* Positive nanoseconds while seconds is negative.
 		 * Increment tv_sec and roll tv_nsec over.
 		 */
@@ -64,7 +67,8 @@ static struct timespec timespec_normalise( struct timespec ts ) {
  *  Originally written by Daniel Collins (2017), used with permission.
  *  https://github.com/solemnwarning/timespec
  */
-static struct timespec timespec_sub( struct timespec ts1, struct timespec ts2 ) {
+static struct timespec timespec_sub( struct timespec ts1, struct timespec ts2 )
+{
 	/* Normalise inputs to prevent tv_nsec rollover if whole-second values
 	 * are packed in it.
 	 */
@@ -81,7 +85,8 @@ static struct timespec timespec_sub( struct timespec ts1, struct timespec ts2 ) 
  *  \brief Converts a timespec to a fractional number of seconds.
  *  Originally written by Daniel Collins (2017), used with permission.
  */
-static double timespec_to_double( const struct timespec *ts ) {
+static double timespec_to_double( const struct timespec *ts )
+{
 	return ( ( double ) ( ts->tv_sec ) + ( ( double ) ( ts->tv_nsec ) / NSEC_PER_SEC ) );
 }
 
@@ -90,62 +95,73 @@ static double timespec_to_double( const struct timespec *ts ) {
  *  Originally written by Daniel Collins (2017), used with permission.
  *  https://github.com/solemnwarning/timespec
  */
-static long timespec_to_ms( const struct timespec *ts ) {
+static long timespec_to_ms( const struct timespec *ts )
+{
 	return ( long ) ( ( ts->tv_sec * 1000 ) + ( ts->tv_nsec / 1000000 ) );
 }
 
-static bool GetTime( struct timespec *ts ) {
+static bool get_time( struct timespec *ts )
+{
 #if defined( _MSC_VER )
+	// MSC doesn't provide clock_gettime
+
 	/* based on public-domain implementation here;
 	 * https://github.com/msys2-contrib/mingw-w64/blob/master/mingw-w64-libraries/winpthreads/src/clock.c
 	 */
 
 	LARGE_INTEGER pf;
-	if ( QueryPerformanceFrequency( &pf ) == 0 ) {
-		PlReportBasicError( PL_RESULT_FAIL );
+	if ( QueryPerformanceFrequency( &pf ) == 0 )
+	{
 		return false;
 	}
 
 	LARGE_INTEGER pc;
-	if ( QueryPerformanceCounter( &pc ) == 0 ) {
-		PlReportBasicError( PL_RESULT_FAIL );
+	if ( QueryPerformanceCounter( &pc ) == 0 )
+	{
 		return false;
 	}
 
 #	define POW10_7 10000000
 #	define POW10_9 1000000000
 
-	ts->tv_sec = pc.QuadPart / pf.QuadPart;
+	ts->tv_sec  = pc.QuadPart / pf.QuadPart;
 	ts->tv_nsec = ( int ) ( ( ( pc.QuadPart % pf.QuadPart ) * POW10_9 + ( pf.QuadPart >> 1 ) ) / pf.QuadPart );
-	if ( ts->tv_nsec >= POW10_9 ) {
+	if ( ts->tv_nsec >= POW10_9 )
+	{
 		ts->tv_sec++;
 		ts->tv_nsec -= POW10_9;
 	}
+
 #else
-	if ( clock_gettime( CLOCK_MONOTONIC, ts ) != 0 ) {
-		PlReportBasicError( PL_RESULT_FAIL );
+
+	if ( clock_gettime( CLOCK_MONOTONIC, ts ) != 0 )
+	{
 		return false;
 	}
+
 #endif
+
 	return true;
 }
 
-/****************************************
- * Public Interface
- ****************************************/
-
-double PlGetCurrentSeconds( void ) {
+double qm_os_time_get_seconds()
+{
 	struct timespec ts;
-	if ( !GetTime( &ts ) ) {
-		return 0;
+	if ( !get_time( &ts ) )
+	{
+		return -1.0;
 	}
+
 	return timespec_to_double( &ts );
 }
 
-long PlGetCurrentMilliseconds( void ) {
+long qm_os_time_get_milliseconds()
+{
 	struct timespec ts;
-	if ( !GetTime( &ts ) ) {
-		return 0;
+	if ( !get_time( &ts ) )
+	{
+		return -1;
 	}
+
 	return timespec_to_ms( &ts );
 }

@@ -34,118 +34,19 @@ typedef struct PLMatrix4 {
 
 inline static PLMatrix4 PlAddMatrix4( PLMatrix4 m, PLMatrix4 m2 );
 inline static PLMatrix4 PlSubtractMatrix4( PLMatrix4 m, PLMatrix4 m2 );
-inline static PLMatrix4 PlScaleMatrix4( PLMatrix4 m, PLVector3 scale );
+inline static PLMatrix4 PlScaleMatrix4( PLMatrix4 m, QmMathVector3f scale );
 inline static PLMatrix4 PlMultiplyMatrix4( const PLMatrix4 *m, const PLMatrix4 *m2 );
-PLMatrix4 PlRotateMatrix4( float angle, const PLVector3 *axis );
-inline static PLMatrix4 PlTranslateMatrix4( PLVector3 v );
+PLMatrix4 PlRotateMatrix4( float angle, const QmMathVector3f *axis );
+inline static PLMatrix4 PlTranslateMatrix4( QmMathVector3f v );
 inline static PLMatrix4 PlInverseMatrix4( PLMatrix4 m );
 
-PLVector3 PlGetMatrix4Translation( const PLMatrix4 *m );
-PLVector3 PlGetMatrix4Angle( const PLMatrix4 *m );
+QmMathVector3f PlGetMatrix4Translation( const PLMatrix4 *m );
+QmMathVector3f PlGetMatrix4Angle( const PLMatrix4 *m );
 
-PLVector2 PlConvertWorldToScreen( const PLVector3 *position, const PLMatrix4 *viewProjMatrix, const int *viewport, float *w, bool flip );
-PLVector3 PlConvertScreenToWorld( PLVector2 windowCoordinate, const PLMatrix4 *viewMatrix, const PLMatrix4 *projMatrix, const int *viewport );
+QmMathVector2f PlConvertWorldToScreen( const QmMathVector3f *position, const PLMatrix4 *viewProjMatrix, const int *viewport, float *w, bool flip );
+QmMathVector3f PlConvertScreenToWorld( QmMathVector2f windowCoordinate, const PLMatrix4 *viewMatrix, const PLMatrix4 *projMatrix, const int *viewport );
 
-void PlExtractMatrix4Directions( const PLMatrix4 *matrix, PLVector3 *left, PLVector3 *up, PLVector3 *forward );
-
-#ifdef __cplusplus
-namespace hei {
-	struct Matrix4 : PLMatrix4 {
-		Matrix4() {
-			Identity();
-		}
-
-		inline void Identity() {
-			m[ 0 ] = 1;
-			m[ 1 ] = 0;
-			m[ 2 ] = 0;
-			m[ 3 ] = 0;
-			m[ 4 ] = 0;
-
-			m[ 5 ] = 1;
-			m[ 6 ] = 0;
-			m[ 7 ] = 0;
-			m[ 8 ] = 0;
-			m[ 9 ] = 0;
-
-			m[ 10 ] = 1;
-			m[ 11 ] = 0;
-			m[ 12 ] = 0;
-			m[ 13 ] = 0;
-			m[ 14 ] = 0;
-
-			m[ 15 ] = 1;
-		}
-
-		inline void Transpose( const Matrix4 &m2 ) {
-			for ( unsigned int j = 0; j < 4; ++j ) {
-				for ( unsigned int i = 0; i < 4; ++i ) {
-					pl_m4pos( i, j ) = m2.pl_m4pos( j, i );
-				}
-			}
-		}
-
-		////////////////////////////////////////////////////////
-
-		inline Matrix4 Translate( const PLVector3 &position ) {
-			return *this *= PlTranslateMatrix4( position );
-		}
-
-		inline void SetTranslation( const hei::Vector3 &position ) {
-			mm[ 3 ][ 0 ] = position.x;
-			mm[ 3 ][ 1 ] = position.y;
-			mm[ 3 ][ 2 ] = position.z;
-		}
-
-		inline PLVector3 GetTranslation() {
-			return PlGetMatrix4Translation( this );
-		}
-
-		////////////////////////////////////////////////////////
-
-		inline Matrix4 Rotate( float angle, const PLVector3 &axis ) {
-			return *this *= PlRotateMatrix4( angle, &axis );
-		}
-
-		inline void Clear() {
-			for ( float &i : m ) { i = 0; }
-		}
-
-		inline PLVector3 GetAngle() {
-			return PlGetMatrix4Angle( this );
-		}
-
-		inline PLMatrix4 operator+( PLMatrix4 m2 ) const {
-			return PlAddMatrix4( *this, m2 );
-		}
-
-		inline PLMatrix4 operator-( PLMatrix4 m2 ) const {
-			return PlSubtractMatrix4( *this, m2 );
-		}
-
-		inline PLMatrix4 operator*( PLVector3 v ) const {
-			return PlScaleMatrix4( *this, v );
-		}
-
-		inline PLMatrix4 operator*( PLMatrix4 m2 ) const {
-			return PlMultiplyMatrix4( this, &m2 );
-		}
-
-		inline Matrix4 &operator=( const PLMatrix4 &m2 ) {
-			memcpy( m, m2.m, sizeof( m ) );
-			return *this;
-		}
-
-		inline Matrix4 &operator*=( PLMatrix4 m2 ) {
-			return *this = *this * m2;
-		}
-
-		inline Matrix4 &operator*=( PLVector3 v ) {
-			return *this = *this * v;
-		}
-	};
-}// namespace hei
-#endif
+void PlExtractMatrix4Directions( const PLMatrix4 *matrix, QmMathVector3f *left, QmMathVector3f *up, QmMathVector3f *forward );
 
 /* ClearMatrix */
 
@@ -269,7 +170,7 @@ inline static bool PlCompareMatrix( const PLMatrix4 *m, const PLMatrix4 *m2 ) {
 	return true;
 }
 
-inline static PLMatrix4 PlScaleMatrix4( PLMatrix4 m, PLVector3 scale ) {
+inline static PLMatrix4 PlScaleMatrix4( PLMatrix4 m, QmMathVector3f scale ) {
 	m.pl_m4pos( 0, 0 ) *= scale.x;
 	m.pl_m4pos( 0, 1 ) *= scale.x;
 	m.pl_m4pos( 0, 2 ) *= scale.x;
@@ -285,7 +186,7 @@ inline static PLMatrix4 PlScaleMatrix4( PLMatrix4 m, PLVector3 scale ) {
 	return m;
 }
 
-inline static PLMatrix4 PlTranslateMatrix4( PLVector3 v ) {
+inline static PLMatrix4 PlTranslateMatrix4( QmMathVector3f v ) {
 	PLMatrix4 m = PlMatrix4Identity();
 	m.mm[ 3 ][ 0 ] = v.x;
 	m.mm[ 3 ][ 1 ] = v.y;
@@ -423,7 +324,7 @@ inline static PLMatrix4 PlInverseMatrix4( PLMatrix4 m ) {
 	return out;
 }
 
-PLMatrix4 PlLookAt( PLVector3 eye, PLVector3 center, PLVector3 up );
+PLMatrix4 PlLookAt( QmMathVector3f eye, QmMathVector3f center, QmMathVector3f up );
 
 inline static PLMatrix4 PlFrustum( float left, float right, float bottom, float top, float nearf, float farf ) {
 	float m0 = 2.0f * nearf;
@@ -512,10 +413,10 @@ void PlLoadMatrix( const PLMatrix4 *matrix );
 void PlLoadIdentityMatrix( void );
 
 void PlMultiMatrix( const PLMatrix4 *matrix );
-void PlRotateMatrix( float angle, const PLVector3 *axis );
+void PlRotateMatrix( float angle, const QmMathVector3f *axis );
 void PlRotateMatrix3f( float angle, float x, float y, float z );
-void PlTranslateMatrix( PLVector3 vector );
-void PlScaleMatrix( PLVector3 scale );
+void PlTranslateMatrix( QmMathVector3f vector );
+void PlScaleMatrix( QmMathVector3f scale );
 void PlInverseMatrix( void );
 
 void PlPushMatrix( void );

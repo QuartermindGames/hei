@@ -33,7 +33,7 @@ SOFTWARE.
 /* Obj Static Model Format */
 
 typedef struct ObjVectorLst {
-	PLVector3 v;
+	QmMathVector3f v;
 	struct ObjVectorLst *next;
 } ObjVectorLst;
 
@@ -53,7 +53,7 @@ typedef struct ObjHandle {
 } ObjHandle;
 
 static void FreeObjHandle( ObjHandle *obj ) {
-	PlFree( obj );
+	qm_os_memory_free( obj );
 }
 
 static ObjVectorLst *GetVectorIndex( ObjVectorLst *start, unsigned int idx ) {
@@ -71,7 +71,7 @@ static ObjVectorLst *GetVectorIndex( ObjVectorLst *start, unsigned int idx ) {
 }
 
 PLMModel *PlmParseObjModel( PLFile *file ) {
-	ObjHandle *obj = PL_NEW( ObjHandle );
+	ObjHandle *obj = QM_OS_MEMORY_NEW( ObjHandle );
 
 	ObjVectorLst **cur_v = &( obj->vertex_positions );
 	ObjVectorLst **cur_vn = &( obj->vertex_normals );
@@ -88,7 +88,7 @@ PLMModel *PlmParseObjModel( PLFile *file ) {
 		}
 
 		if ( tk[ 0 ] == 'v' && tk[ 1 ] == ' ' ) { /* vertex position */
-			ObjVectorLst *this_v = PlMAllocA( sizeof( ObjVectorLst ) );
+			ObjVectorLst *this_v = QM_OS_MEMORY_MALLOC_( sizeof( ObjVectorLst ) );
 			unsigned int n = sscanf( &tk[ 2 ], "%f %f %f", &this_v->v.x, &this_v->v.y, &this_v->v.z );
 			if ( n < 3 ) {
 				ModelLog( "Invalid vertex position, less than 3 coords!\n\"%s\"\n", tk );
@@ -102,7 +102,7 @@ PLMModel *PlmParseObjModel( PLFile *file ) {
 			continue;
 		}
 		if ( tk[ 0 ] == 'v' && tk[ 1 ] == 't' ) { /* vertex texture */
-			ObjVectorLst *this_vt = PlMAllocA( sizeof( ObjVectorLst ) );
+			ObjVectorLst *this_vt = QM_OS_MEMORY_MALLOC_( sizeof( ObjVectorLst ) );
 			unsigned int n = sscanf( &tk[ 2 ], "%f %f", &this_vt->v.x, &this_vt->v.y );
 			if ( n < 2 ) {
 				ModelLog( "Invalid vertex uv, less than 2 coords!\n\"%s\"\n", tk );
@@ -116,7 +116,7 @@ PLMModel *PlmParseObjModel( PLFile *file ) {
 			continue;
 		}
 		if ( tk[ 0 ] == 'v' && tk[ 1 ] == 'n' ) { /* vertex normal */
-			ObjVectorLst *this_vn = PlMAllocA( sizeof( ObjVectorLst ) );
+			ObjVectorLst *this_vn = QM_OS_MEMORY_MALLOC_( sizeof( ObjVectorLst ) );
 			if ( sscanf( &tk[ 2 ], "%f %f %f", &this_vn->v.x, &this_vn->v.y, &this_vn->v.z ) < 3 ) {
 				ModelLog( "Invalid vertex normal, less than 3 coords!\n\"%s\"\n", tk );
 			}
@@ -141,7 +141,7 @@ PLMModel *PlmParseObjModel( PLFile *file ) {
 				pos++;
 			}
 
-			ObjFaceLst *this_face = PlMAllocA( sizeof( ObjFaceLst ) );
+			ObjFaceLst *this_face = QM_OS_MEMORY_MALLOC_( sizeof( ObjFaceLst ) );
 
 			*cur_face = this_face;
 			this_face->next = NULL;
@@ -177,7 +177,7 @@ bool PlmWriteObjModel( PLMModel *model, const char *path ) {
 	/* for now, use the same name as the model for the material */
 	const char *filename = PlGetFileName( path );
 	size_t len = strlen( filename );
-	char *mtl_name = PlMAllocA( len );
+	char *mtl_name = QM_OS_MEMORY_MALLOC_( len );
 	snprintf( mtl_name, len - 4, "%s", PlGetFileName( path ) );
 	fprintf( fp, "mtllib ./%s.mtl\n", mtl_name );
 
@@ -213,7 +213,7 @@ bool PlmWriteObjModel( PLMModel *model, const char *path ) {
 		}
 	}
 
-	PlFree( mtl_name );
+	qm_os_memory_free( mtl_name );
 
 	fclose( fp );
 

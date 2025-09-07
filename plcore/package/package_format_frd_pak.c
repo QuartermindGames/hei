@@ -3,6 +3,7 @@
 // Copyright © 2017-2025 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "package_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 #include <plcore/pl_hashtable.h>
 #include <plcore/pl_parse.h>
@@ -63,7 +64,7 @@ static PLHashTable *populate_name_table( const PLFile *file ) {
 			break;
 		}
 
-		char *name = PL_NEW_( char, strlen( token ) + 1 );
+		char *name = QM_OS_MEMORY_NEW_( char, strlen( token ) + 1 );
 		strcpy( name, token );
 
 		PlInsertHashTableNode( nameTable, &checksum, sizeof( checksum ), name );
@@ -125,7 +126,7 @@ PLPackage *PlParseFrdPakPackage_( PLFile *file ) {
 		}
 	}
 
-	PlDestroyHashTableEx( nameTable, PlFree );
+	PlDestroyHashTableEx( nameTable, qm_os_memory_free );
 
 	if ( i != numFiles ) {
 		PlDestroyPackage( package );

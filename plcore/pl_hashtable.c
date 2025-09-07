@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 /* Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com> */
 
+#include "qmos/public/qm_os_memory.h"
+
 #include <plcore/pl_hashtable.h>
 
 #define HASH_TABLE_SIZE 1024U
@@ -20,7 +22,7 @@ typedef struct PLHashTable {
 } PLHashTable;
 
 PLHashTable *PlCreateHashTable( void ) {
-	return PL_NEW( PLHashTable );
+	return QM_OS_MEMORY_NEW( PLHashTable );
 }
 
 void PlDestroyHashTable( PLHashTable *hashTable ) {
@@ -30,7 +32,7 @@ void PlDestroyHashTable( PLHashTable *hashTable ) {
 
 	PlClearHashTable( hashTable );
 
-	PL_DELETE( hashTable );
+	qm_os_memory_free( hashTable );
 }
 
 void PlDestroyHashTableEx( PLHashTable *hashTable, void ( *elementDeleter )( void *user ) ) {
@@ -45,13 +47,13 @@ void PlDestroyHashTableEx( PLHashTable *hashTable, void ( *elementDeleter )( voi
 			if ( elementDeleter != NULL ) {
 				elementDeleter( child->value );
 			}
-			PL_DELETE( child->key );
-			PL_DELETE( child );
+			qm_os_memory_free( child->key );
+			qm_os_memory_free( child );
 			child = next;
 		}
 	}
 
-	PL_DELETE( hashTable );
+	qm_os_memory_free( hashTable );
 }
 
 #define GET_INDEX( HASH ) ( unsigned int ) ( ( HASH ) % HASH_TABLE_SIZE )
@@ -65,8 +67,8 @@ void PlClearHashTable( PLHashTable *hashTable ) {
 		PLHashTableNode *child = hashTable->nodes[ i ];
 		while ( child != NULL ) {
 			PLHashTableNode *next = child->next;
-			PL_DELETEN( child->key );
-			PL_DELETEN( child );
+			qm_os_memory_free( child->key );
+			qm_os_memory_free( child );
 			child = next;
 		}
 		hashTable->nodes[ i ] = NULL;
@@ -112,13 +114,13 @@ PLHashTableNode *PlInsertHashTableNode( PLHashTable *hashTable, const void *key,
 		return NULL;
 	}
 
-	PLHashTableNode *node = PL_NEW( PLHashTableNode );
+	PLHashTableNode *node = QM_OS_MEMORY_NEW( PLHashTableNode );
 	node->hash = PlGenerateHashFNV1( key, keySize );
 	node->value = value;
 	node->table = hashTable;
 
 	node->keySize = keySize;
-	node->key = PL_NEW_( char, keySize + 1 );
+	node->key = QM_OS_MEMORY_NEW_( char, keySize + 1 );
 	memcpy( node->key, key, node->keySize );
 
 	unsigned int index = GET_INDEX( node->hash );
@@ -146,8 +148,8 @@ void PlDestroyHashTableNode( PLHashTableNode *hashTableNode ) {
 	*pptr = hashTableNode->next;
 	hashTable->numNodes--;
 
-	PL_DELETE( hashTableNode->key );
-	PL_DELETE( hashTableNode );
+	qm_os_memory_free( hashTableNode->key );
+	qm_os_memory_free( hashTableNode );
 }
 
 unsigned int PlGetNumHashTableNodes( const PLHashTable *hashTable ) {

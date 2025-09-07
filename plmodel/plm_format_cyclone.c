@@ -274,13 +274,13 @@ static PLMModel *LoadStaticRequiemModel( PLFile *fp ) {
 
 	for ( unsigned int i = 0; i < num_vertices; ++i ) {
 		PlgSetMeshVertexPosition( mesh, i, &PL_VECTOR3( vertices[ i ].x, vertices[ i ].y, vertices[ i ].z ) );
-		PlgSetMeshVertexColour( mesh, i, &PLColour( 255, 255, 255, 255 ) );
+		PlgSetMeshVertexColour( mesh, i, &QmMathColour4ub( 255, 255, 255, 255 ) );
 	}
 
 	unsigned int cur_index = 0;
 	for ( unsigned int i = 0; i < num_polygons; ++i ) {
 		if ( polygons[ i ].num_indices == 4 ) {// quad
-			PL_ASSERT( ( cur_index + 6 ) <= mesh->num_indices );
+			assert( ( cur_index + 6 ) <= mesh->num_indices );
 			// first triangle
 			mesh->indices[ cur_index++ ] = polygons[ i ].indices[ 0 ];
 			mesh->indices[ cur_index++ ] = polygons[ i ].indices[ 1 ];
@@ -290,7 +290,7 @@ static PLMModel *LoadStaticRequiemModel( PLFile *fp ) {
 			mesh->indices[ cur_index++ ] = polygons[ i ].indices[ 0 ];
 			mesh->indices[ cur_index++ ] = polygons[ i ].indices[ 2 ];
 		} else if ( polygons[ i ].num_indices == 3 ) {// triangle
-			PL_ASSERT( ( cur_index + polygons[ i ].num_indices ) <= mesh->num_indices );
+			assert( ( cur_index + polygons[ i ].num_indices ) <= mesh->num_indices );
 			for ( unsigned int j = 0; j < polygons[ i ].num_indices; ++j ) {
 				mesh->indices[ cur_index++ ] = polygons[ i ].indices[ j ];
 			}

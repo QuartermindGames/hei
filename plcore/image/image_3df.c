@@ -5,6 +5,7 @@
  */
 
 #include "image_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 /**
  * 3dfx 3DF Loader
@@ -98,15 +99,15 @@ PLImage *PlParse3dfImage( PLFile *file ) {
 
 	/* now we can load the actual data in */
 	size_t srcSize = PlGetImageSize( dataFormat, w, h );
-	uint8_t *srcBuf = PlMAlloc( srcSize, true );
+	uint8_t *srcBuf = QM_OS_MEMORY_MALLOC_( srcSize );
 	if ( PlReadFile( file, srcBuf, sizeof( char ), srcSize ) != srcSize ) {
-		PlFree( srcBuf );
+		qm_os_memory_free( srcBuf );
 		return NULL;
 	}
 
 	/* convert it... */
 	size_t dstSize = PlGetImageSize( PL_IMAGEFORMAT_RGBA8, w, h );
-	uint8_t *dstBuf = PlMAlloc( dstSize, true );
+	uint8_t *dstBuf = QM_OS_MEMORY_MALLOC_( dstSize );
 	if ( dataFormat != PL_IMAGEFORMAT_RGBA8 ) {
 		switch ( dataFormat ) {
 			case PL_IMAGEFORMAT_RGB5A1: {
@@ -119,11 +120,11 @@ PLImage *PlParse3dfImage( PLFile *file ) {
 					dstPos += 4;
 				}
 
-				PlFree( srcBuf );
+				qm_os_memory_free( srcBuf );
 				break;
 			}
 			default:
-				PlFree( dstBuf );
+				qm_os_memory_free( dstBuf );
 				dstBuf = srcBuf;
 				break;
 		}
@@ -132,7 +133,7 @@ PLImage *PlParse3dfImage( PLFile *file ) {
 	PLImage *image = PlCreateImage( dstBuf, w, h, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
 	/* no longer need this */
-	PlFree( dstBuf );
+	qm_os_memory_free( dstBuf );
 
 	return image;
 }

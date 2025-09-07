@@ -60,7 +60,7 @@ void PlgBlitFrameBuffers( PLGFrameBuffer *src_buffer, unsigned int src_w, unsign
 PLGTexture *PlgGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter, PLGTextureWrapMode wrap );
 void PlgGetFrameBufferResolution( const PLGFrameBuffer *buffer, unsigned int *width, unsigned int *height );
 
-void PlgSetClearColour( PLColour rgba );
+void PlgSetClearColour( QmMathColour4ub rgba );
 void PlgClearBuffers( unsigned int buffers );
 bool PlgSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height );
 void *PlgReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf );

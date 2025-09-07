@@ -82,9 +82,9 @@ PLPackage *PlParseOkreDirPackage( PLFile *file ) {
 		uint32_t offset;
 	} FIndex;
 	static_assert( sizeof( FIndex ) == 72, "Invalid struct size!" );
-	FIndex *subWads = PL_NEW_( FIndex, numSubWads );
+	FIndex *subWads = QM_OS_MEMORY_NEW_( FIndex, numSubWads );
 	if ( PlReadFile( file, subWads, sizeof( FIndex ), numSubWads ) != numSubWads ) {
-		PL_DELETE( subWads );
+		qm_os_memory_free( subWads );
 		return NULL;
 	}
 
@@ -103,7 +103,7 @@ PLPackage *PlParseOkreDirPackage( PLFile *file ) {
 		}
 	}
 
-	PL_DELETE( subWads );
+	qm_os_memory_free( subWads );
 
 	return package;
 }
@@ -129,7 +129,7 @@ PLPackage *PlParseOkreWadPackage( PLFile *file ) {
 		uint32_t offset;    // position in wad
 		uint32_t sourceSize;// size of the original file
 	} WadEntry;
-	WadEntry *entries = PL_NEW_( WadEntry, numFiles );
+	WadEntry *entries = QM_OS_MEMORY_NEW_( WadEntry, numFiles );
 	for ( uint32_t i = 0; i < numFiles; ++i ) {
 #if 1
 
@@ -196,7 +196,7 @@ PLPackage *PlParseOkreWadPackage( PLFile *file ) {
 		}
 	}
 
-	PL_DELETE( entries );
+	qm_os_memory_free( entries );
 
 	return package;
 }
@@ -231,9 +231,9 @@ PLImage *PlParseOkreTexture( PLFile *file ) {
 		return NULL;
 	}
 
-	uint8_t *buf = PL_NEW_( uint8_t, header.dataSize );
+	uint8_t *buf = QM_OS_MEMORY_NEW_( uint8_t, header.dataSize );
 	if ( PlReadFile( file, buf, sizeof( uint8_t ), header.dataSize ) != header.dataSize ) {
-		PL_DELETE( buf );
+		qm_os_memory_free( buf );
 		return NULL;
 	}
 
@@ -241,17 +241,17 @@ PLImage *PlParseOkreTexture( PLFile *file ) {
 	if ( header.format == 3 ) {
 		//TODO: looks like a grayscale image with palette at end??
 	} else {// DXT1/DXT5
-		uint8_t *dbuf = PL_NEW_( uint8_t, header.width * header.height * 4 );
+		uint8_t *dbuf = QM_OS_MEMORY_NEW_( uint8_t, header.width * header.height * 4 );
 		if ( header.format == 0 ) {
 			PlBlockDecompressImageDXT1( header.width, header.height, buf, dbuf );
 		} else {
 			PlBlockDecompressImageDXT5( header.width, header.height, buf, dbuf );
 		}
 		image = PlCreateImage( dbuf, header.width, header.height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
-		PL_DELETE( dbuf );
+		qm_os_memory_free( dbuf );
 	}
 
-	PL_DELETE( buf );
+	qm_os_memory_free( buf );
 
 	return image;
 }

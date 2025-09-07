@@ -3,6 +3,7 @@
 // Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "package_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 // format is optimized for DVD streaming,
 // so we'll need to respect that
@@ -83,7 +84,7 @@ PLPackage *PlParseVppPackage( PLFile *file ) {
 	PLPackage *package = NULL;
 
 	uint32_t streamSize = calculate_stream_length( ( header->version == 1 ? sizeof( VppEntry ) : sizeof( Vpp2Entry ) ) * header->numFiles );
-	uint8_t *stream = PL_NEW_( uint8_t, streamSize );
+	uint8_t *stream = QM_OS_MEMORY_NEW_( uint8_t, streamSize );
 	if ( PlReadFile( file, stream, sizeof( uint8_t ), streamSize ) == streamSize ) {
 		PLFileOffset baseOffset = PlGetFileOffset( file );
 
@@ -107,7 +108,7 @@ PLPackage *PlParseVppPackage( PLFile *file ) {
 		}
 	}
 
-	PL_DELETE( stream );
+	qm_os_memory_free( stream );
 
 	return package;
 }

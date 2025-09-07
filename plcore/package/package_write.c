@@ -45,7 +45,7 @@ PLPackageIndex *PlAppendPackageFromFile( PLPackage *package, const char *source,
 	if ( package->table_size >= package->maxTableSize ) {
 		static const unsigned int INC = 64;
 		unsigned int newMaxSize = package->maxTableSize + INC;
-		package->table = PL_REALLOCA( package->table, newMaxSize );
+		package->table = qm_os_memory_realloc( package->table, newMaxSize );
 		package->maxTableSize = newMaxSize;
 	}
 

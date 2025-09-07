@@ -2,6 +2,7 @@
 // Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "package_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 /* VPK as used by VTMB - doesn't appear to have any relation
  * to the VPK format introduced by Valve later on, hence the
@@ -36,10 +37,10 @@ PLPackage *PlParseVpkPackage_( PLFile *file ) {
 	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
 		uint32_t nameLength = PlReadInt32( file, false, NULL );
-		char *name = PL_NEW_( char, nameLength + 1 );
+		char *name = QM_OS_MEMORY_NEW_( char, nameLength + 1 );
 		PlReadFile( file, name, sizeof( char ), nameLength );
 		snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ), "%s", name );
-		PL_DELETE( name );
+		qm_os_memory_free( name );
 
 		package->table[ i ].offset = PlReadInt32( file, false, NULL );
 		package->table[ i ].fileSize = PlReadInt32( file, false, NULL );

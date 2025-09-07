@@ -98,10 +98,10 @@ typedef enum PLGLightType {
 } PLGLightType;
 
 typedef struct PLGLight {
-	PLVector3 position;
-	PLVector3 angles;
+	QmMathVector3f position;
+	QmMathVector3f angles;
 
-	PLColour colour;
+	QmMathColour4ub colour;
 
 	PLGLightType type;
 } PLGLight;
@@ -192,9 +192,9 @@ typedef struct PLGShaderProgram {
 			double defaultDouble;
 			float defaultFloat;
 
-			PLVector2 defaultVec2;
-			PLVector3 defaultVec3;
-			PLVector4 defaultVec4;
+			QmMathVector2f defaultVec2;
+			QmMathVector3f defaultVec3;
+			QmMathVector4f defaultVec4;
 
 			PLMatrix3 defaultMat3;
 			PLMatrix4 defaultMat4;
@@ -254,7 +254,7 @@ PL_EXTERN_C
 PLFunctionResult PlgInitializeGraphics( void );
 void PlgShutdownGraphics( void );
 
-void PlgSetClipPlane( const PLVector4 *clip, const PLMatrix4 *clipMatrix, bool transpose );
+void PlgSetClipPlane( const QmMathVector4f *clip, const PLMatrix4 *clipMatrix, bool transpose );
 
 PLGShaderStage *PlgCreateShaderStage( PLGShaderStageType type );
 void PlgDestroyShaderStage( PLGShaderStage *stage );

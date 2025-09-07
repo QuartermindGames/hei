@@ -2,6 +2,7 @@
 // Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "plcore/pl_image.h"
+#include "qmos/public/qm_os_memory.h"
 
 // Quickly whipped up loader for 3D Realms' TEX format
 
@@ -41,13 +42,13 @@ PLImage *PlParse3drTexImage_( PLFile *file ) {
 	PlFileSeek( file, 12, PL_SEEK_CUR );
 
 	unsigned int size = width * height;
-	uint16_t *src = PL_NEW_( uint16_t, size );
+	uint16_t *src = QM_OS_MEMORY_NEW_( uint16_t, size );
 	if ( PlReadFile( file, src, sizeof( uint16_t ), size ) != size ) {
-		PL_DELETE( src );
+		qm_os_memory_free( src );
 		return NULL;
 	}
 
-	PLColour *dst = PL_NEW_( PLColour, size );
+	QmMathColour4ub *dst = QM_OS_MEMORY_NEW_( QmMathColour4ub, size );
 	if ( mode == 0x500 ) {
 		const unsigned int shiftA = 12;
 		const unsigned int shiftR = 8;
@@ -81,8 +82,8 @@ PLImage *PlParse3drTexImage_( PLFile *file ) {
 
 	PLImage *image = PlCreateImage( dst, width, height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
-	PL_DELETE( src );
-	PL_DELETE( dst );
+	qm_os_memory_free( src );
+	qm_os_memory_free( dst );
 
 	return image;
 }

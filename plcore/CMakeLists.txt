@@ -56,7 +56,6 @@ file(
         pl_os_win32.c
 
         pl_physics.c
-        pl_timer.c
 
         string/crc32.c
         string/itoa.c
@@ -148,7 +147,7 @@ else ()
     message(WARNING "libunrar was not found, RAR support will be disabled.")
 endif ()
 
-set_property(TARGET plcore PROPERTY C_STANDARD_REQUIRED 11)
+set_property(TARGET plcore PROPERTY C_STANDARD_REQUIRED 23)
 
 target_include_directories(plcore
         PUBLIC
@@ -157,3 +156,5 @@ target_include_directories(plcore
         PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}"
 )
+
+target_link_libraries(plcore qm-math qm-os)

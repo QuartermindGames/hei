@@ -9,6 +9,7 @@
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 /*	Graphics	*/
 
@@ -39,7 +40,7 @@ void PlgInitializeInternalMeshes( void ); /* plg_draw.c */
 PLFunctionResult PlgInitializeGraphics( void ) {
 	memset( &gfx_state, 0, sizeof( GfxState ) );
 
-	LOG_LEVEL_GRAPHICS = PlAddLogLevel( "plgraphics", ( PLColour ) { 0, 255, 255, 255 },
+	LOG_LEVEL_GRAPHICS = PlAddLogLevel( "plgraphics", ( QmMathColour4ub ) { 0, 255, 255, 255 },
 #if !defined( NDEBUG )
 	                                    true
 #else
@@ -102,7 +103,7 @@ PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned i
 		return NULL;
 	}
 
-	PLGFrameBuffer *buffer = PL_NEW( PLGFrameBuffer );
+	PLGFrameBuffer *buffer = QM_OS_MEMORY_NEW( PLGFrameBuffer );
 	buffer->width = w;
 	buffer->height = h;
 	buffer->flags = flags;
@@ -123,7 +124,7 @@ void PlgDestroyFrameBuffer( PLGFrameBuffer *buffer ) {
 
 	CallGfxFunction( DeleteFrameBuffer, buffer );
 
-	PlFree( buffer );
+	qm_os_memory_free( buffer );
 }
 
 PLGTexture *PlgGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter, PLGTextureWrapMode wrap ) {
@@ -147,7 +148,7 @@ void PlgBlitFrameBuffers( PLGFrameBuffer *src_buffer, unsigned int src_w, unsign
 	CallGfxFunction( BlitFrameBuffers, src_buffer, src_w, src_h, dst_buffer, dst_w, dst_h, linear );
 }
 
-void PlgSetClearColour( PLColour rgba ) {
+void PlgSetClearColour( QmMathColour4ub rgba ) {
 	if ( PlCompareColour( rgba, gfx_state.current_clearcolour ) ) {
 		return;
 	}
@@ -266,6 +267,6 @@ void PlgStencilOp( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-void PlgSetClipPlane( const PLVector4 *clip, const PLMatrix4 *clipMatrix, bool transpose ) {
+void PlgSetClipPlane( const QmMathVector4f *clip, const PLMatrix4 *clipMatrix, bool transpose ) {
 	CallGfxFunction( SetClipPlane, clip, clipMatrix, transpose );
 }

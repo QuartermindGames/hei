@@ -23,7 +23,7 @@ int vkLogLevel;
 PL_EXPORT void PLInitializePlugin( const PLPluginExportTable *functionTable ) {
 	gInterface = functionTable;
 
-	vkLogLevel = gInterface->AddLogLevel( "plugin/vulkan", PLColourRGB( 255, 255, 255 ), true );
+	vkLogLevel = gInterface->AddLogLevel( "plugin/vulkan", QM_MATH_COLOUR4UB_RGB( 255, 255, 255 ), true );
 
 	extern PLGraphicsInterface graphicsInterface;
 	gInterface->RegisterGraphicsMode( "vulkan", &graphicsInterface );

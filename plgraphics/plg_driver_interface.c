@@ -12,6 +12,7 @@
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 #define DRIVER_EXTENSION "_driver"
 
@@ -195,10 +196,10 @@ PLFunctionResult PlgSetDriver( const char *mode ) {
 
 	GfxLog( "Mode \"%s\" initialized!\n", mode );
 
-	PlFree( gfx_state.tmu );
+	qm_os_memory_free( gfx_state.tmu );
 
 	unsigned int numUnits = PlgGetMaxTextureUnits();
-	gfx_state.tmu = ( PLGTextureMappingUnit * ) PlCAllocA( numUnits, sizeof( PLGTextureMappingUnit ) );
+	gfx_state.tmu = ( PLGTextureMappingUnit * ) QM_OS_MEMORY_CALLOC( numUnits, sizeof( PLGTextureMappingUnit ) );
 	for ( unsigned int i = 0; i < numUnits; i++ ) {
 		gfx_state.tmu[ i ].current_envmode = PLG_TEXTUREMODE_REPLACE;
 	}

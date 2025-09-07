@@ -4,10 +4,13 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
+#include "qmos/public/qm_os_memory.h"
+
+
 #include <plcore/pl_math.h>
 
 int *PlSeedRandom( int seed ) {
-	int *s = ( int * ) PlMAllocA( sizeof( int ) );
+	int *s = ( int * ) QM_OS_MEMORY_MALLOC_( sizeof( int ) );
 	*s = seed;
 	return s;
 }
@@ -44,7 +47,7 @@ static const int perlinHash[] = {
  * need to be freed after use.
  */
 int *PlSeedPerlin( const int *hashTable ) {
-	int *s = PL_NEW_( int, PERLIN_NOISE_SAMPLE );
+	int *s = QM_OS_MEMORY_NEW_( int, PERLIN_NOISE_SAMPLE );
 	if ( hashTable == NULL ) {
 		hashTable = perlinHash;
 	}

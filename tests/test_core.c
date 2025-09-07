@@ -230,7 +230,7 @@ FUNC_TEST( StringChunk ) {
 		RETURN_FAILURE( "Returned null!\n" );
 	}
 	bool status = ( strcmp( c, "this this this this this this " ) == 0 );
-	PlFree( c );
+	qm_os_memory_free( c );
 	if ( !status ) {
 		RETURN_FAILURE( "Failed to split string!\n" );
 	}

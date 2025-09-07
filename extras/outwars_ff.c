@@ -24,8 +24,8 @@ PLPackage *Outwars_FF_LoadFile( const char *path ) {
 		uint32_t offset;
 		char name[ 40 ];
 	} OW_FFIndex;
-	OW_FFIndex *indices = PlMAllocA( sizeof( OW_FFIndex ) * num_indices );
-	unsigned int *sizes = PlMAllocA( sizeof( unsigned int ) * num_indices ); /* aren't stored in index data, so we'll calc these */
+	OW_FFIndex *indices = QM_OS_MEMORY_MALLOC_( sizeof( OW_FFIndex ) * num_indices );
+	unsigned int *sizes = QM_OS_MEMORY_MALLOC_( sizeof( unsigned int ) * num_indices ); /* aren't stored in index data, so we'll calc these */
 	if ( num_indices > 0 ) {
 		if ( PlReadFile( fp, indices, sizeof( OW_FFIndex ), num_indices ) == num_indices ) {
 			for ( unsigned int i = 0; i < ( num_indices - 1 ); ++i ) {
@@ -41,13 +41,13 @@ PLPackage *Outwars_FF_LoadFile( const char *path ) {
 	PlCloseFile( fp );
 
 	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
-		PlFree( indices );
-		PlFree( sizes );
+		qm_os_memory_free( indices );
+		qm_os_memory_free( sizes );
 		return NULL;
 	}
 
 	PLPackage *package = PlCreatePackageHandle( path, num_indices - 1, NULL );
-	if ( ( package->table = PlCAlloc( package->table_size, sizeof( struct PLPackageIndex ), false ) ) != NULL ) {
+	if ( ( package->table = QM_OS_MEMORY_CALLOC( package->table_size, sizeof( struct PLPackageIndex ), false ) ) != NULL ) {
 		for ( unsigned int i = 0; i < package->table_size; ++i ) {
 			PLPackageIndex *index = &package->table[ i ];
 			index->offset = indices[ i ].offset;
@@ -59,8 +59,8 @@ PLPackage *Outwars_FF_LoadFile( const char *path ) {
 		package = NULL;
 	}
 
-	PlFree( indices );
-	PlFree( sizes );
+	qm_os_memory_free( indices );
+	qm_os_memory_free( sizes );
 
 	return package;
 }

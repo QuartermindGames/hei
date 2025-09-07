@@ -4,6 +4,9 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
+#include "qmos/public/qm_os_memory.h"
+
+
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_linkedlist.h>
 #include <plcore/pl_parse.h>
@@ -42,27 +45,6 @@ PLSubSystem pl_subsystems[] = {
          &PlInitFileSystem,
          &PlShutdownFileSystem }
 };
-
-#if 0 /* incomplete interface? */
-typedef struct PLArgument {
-    const char *parm;
-
-    void*(*Callback)(const char *arg);
-} PLArgument;
-
-PLArgument arguments[]={
-        { "arg0" },
-        { "arg1" },
-};
-
-void plParseArguments(PLArgument args[], unsigned int size) {
-    for(unsigned int i = 0; i < size; i++) {
-        if(args[i].Callback) {
-            args[i].Callback("");
-        }
-    }
-}
-#endif
 
 typedef struct PLArguments {
 	const char *exe_name;
@@ -171,16 +153,6 @@ const char *PlGetCommandLineArgumentValueByIndex( unsigned int index ) {
 	return pl_arguments.arguments[ index ];
 }
 
-bool _plIsSubSystemActive( unsigned int subsystem ) {
-	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( pl_subsystems ); i++ ) {
-		if ( pl_subsystems[ i ].subsystem == subsystem ) {
-			return pl_subsystems[ i ].active;
-		}
-	}
-
-	return false;
-}
-
 void PlShutdown( void ) {
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( pl_subsystems ); i++ ) {
 		if ( !pl_subsystems[ i ].active ) {
@@ -195,52 +167,6 @@ void PlShutdown( void ) {
 	}
 
 	PlShutdownConsole();
-}
-
-/*-------------------------------------------------------------------
- * ERROR HANDLING
- *-----------------------------------------------------------------*/
-
-bool PlIsDebuggerPresent( void ) {
-#if defined( WIN32 )
-
-	return IsDebuggerPresent();
-
-#else
-
-	// https://stackoverflow.com/a/24969863
-
-	char buf[ 4096 ];
-	const int status = open( "/proc/self/status", O_RDONLY );
-	if ( status == -1 ) {
-		return false;
-	}
-
-	const ssize_t numRead = read( status, buf, sizeof( buf ) - 1 );
-	close( status );
-
-	if ( numRead <= 0 ) {
-		return false;
-	}
-
-	buf[ numRead ] = '\0';
-	static const char tracerPidString[] = "TracerPid:";
-	const char *tracerPidPtr = strstr( buf, tracerPidString );
-	if ( tracerPidPtr == NULL ) {
-		return false;
-	}
-
-	for ( const char *c = tracerPidPtr + sizeof( tracerPidString ) - 1; c <= buf + numRead; ++c ) {
-		if ( isspace( *c ) ) {
-			continue;
-		}
-
-		return isdigit( *c ) != 0 && *c != '0';
-	}
-
-	return false;
-
-#endif
 }
 
 /*-------------------------------------------------------------------
@@ -380,7 +306,7 @@ void PlReportError( PLFunctionResult result, const char *function, const char *m
 
 	va_end( args );
 
-	strncpy( loc_function, function, sizeof( loc_function ) );
+	snprintf( loc_function, sizeof( loc_function ), "%s", function );
 
 	global_result = result;
 }
@@ -650,122 +576,44 @@ static PLPluginExportTable exportTable = {
         .PrefixPath = PlPrefixPath,
 };
 
-const PLPluginExportTable *PlGetExportTable( void ) {
-	exportTable.MAlloc = PlMAlloc;
-	exportTable.CAlloc = PlCAlloc;
-	exportTable.ReAlloc = PlReAlloc;
-	exportTable.Free = PlFree;
+static void *p_malloc( size_t size, bool die )
+{
+	void *p = qm_os_memory_alloc( size, sizeof( char ), NULL );
+	if ( p == NULL && die )
+	{
+		abort();
+	}
+
+	return p;
+}
+
+static void *p_calloc( size_t num, size_t size, bool die )
+{
+	void *p = qm_os_memory_alloc( num, size, NULL );
+	if ( p == NULL && die )
+	{
+		abort();
+	}
+
+	return p;
+}
+
+static void *p_realloc( void *ptr, size_t size, bool die )
+{
+	void *p = qm_os_memory_realloc( ptr, size );
+	if ( p == NULL && die )
+	{
+		abort();
+	}
+
+	return p;
+}
+
+const PLPluginExportTable *PlGetExportTable( void )
+{
+	exportTable.MAlloc  = p_malloc;
+	exportTable.CAlloc  = p_calloc;
+	exportTable.ReAlloc = p_realloc;
+	exportTable.Free    = qm_os_memory_free;
 	return &exportTable;
-}
-
-/**
- * Attempts to load the given plugin and validate it.
- */
-bool PlRegisterPlugin( const char *path ) {
-	PlClearError();
-
-	DebugPrint( "Registering plugin: \"%s\"\n", path );
-
-	PLLibrary *library = PlLoadLibrary( path, false );
-	if ( library == NULL ) {
-		return false;
-	}
-
-	PLPluginInitializationFunction InitializePlugin;
-	PLPluginQueryFunction RegisterPlugin = ( PLPluginQueryFunction ) PlGetLibraryProcedure( library, PL_PLUGIN_QUERY_FUNCTION );
-	if ( RegisterPlugin != NULL ) {
-		InitializePlugin = ( PLPluginInitializationFunction ) PlGetLibraryProcedure( library, PL_PLUGIN_INIT_FUNCTION );
-		if ( InitializePlugin != NULL ) {
-			/* now fetch the plugin description */
-			const PLPluginDescription *description = RegisterPlugin();
-			if ( description != NULL ) {
-				if ( description->interfaceVersion[ 0 ] != PL_PLUGIN_INTERFACE_VERSION_MAJOR ) {
-					PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported core interface version" );
-				} else {
-					DebugPrint( "Found plugin (%s)\n", description->description );
-				}
-			} else {
-				PlReportErrorF( PL_RESULT_FAIL, "failed to fetch plugin description" );
-			}
-		}
-	}
-
-	if ( RegisterPlugin == NULL || InitializePlugin == NULL || PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
-		PlUnloadLibrary( library );
-		return false;
-	}
-
-	DebugPrint( "Success, adding \"%s\" to plugins list\n", path );
-
-	if ( plugins == NULL ) {
-		plugins = PlCreateLinkedList();
-	}
-
-	PLPlugin *plugin = PlMAllocA( sizeof( PLPlugin ) );
-	plugin->initFunction = InitializePlugin;
-	plugin->libPtr = library;
-	plugin->node = PlInsertLinkedListNode( plugins, plugin );
-
-	numPlugins++;
-
-	return true;
-}
-
-/**
- * Private callback when scanning for plugins.
- */
-static void RegisterScannedPlugin( const char *path, void *unused ) {
-	PL_UNUSEDVAR( unused );
-
-	/* validate it's actually a plugin */
-	size_t length = strlen( path );
-	const char *c = strrchr( path, '_' );
-	if ( c == NULL ) {
-		return;
-	}
-
-	/* remaining length */
-	length -= c - path;
-	if ( pl_strncasecmp( c, "_plugin" PL_SYSTEM_LIBRARY_EXTENSION, length ) != 0 ) {
-		return;
-	}
-
-	PlRegisterPlugin( path );
-}
-
-/**
- * Scans for libraries in the given directory for supporting other model formats.
- */
-void PlRegisterPlugins( const char *pluginDir ) {
-	PlClearError();
-
-	if ( !PlPathExists( pluginDir ) ) {
-		PlReportBasicError( PL_RESULT_INVALID_PARM1 );
-		return;
-	}
-
-	Print( "Scanning for plugins in \"%s\"\n", pluginDir );
-
-	PlScanDirectory( pluginDir, &PL_SYSTEM_LIBRARY_EXTENSION[ 1 ], RegisterScannedPlugin, false, NULL );
-
-	Print( "Done, %d plugins loaded.\n", numPlugins );
-}
-
-/**
- * Iterate over all the registered plugins and initialize each.
- */
-void PlInitializePlugins( void ) {
-	if ( plugins == NULL ) {
-		/* no plugins registered */
-		return;
-	}
-
-	PLLinkedListNode *node = PlGetFirstNode( plugins );
-	while ( node != NULL ) {
-		PLPlugin *plugin = ( PLPlugin * ) PlGetLinkedListNodeUserData( node );
-
-		plugin->initFunction( PlGetExportTable() );
-
-		node = PlGetNextLinkedListNode( node );
-	}
 }

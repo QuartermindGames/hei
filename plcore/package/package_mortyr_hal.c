@@ -3,6 +3,7 @@
 // Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "package_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 /* Mortyr's APUK package format */
 
@@ -41,7 +42,7 @@ PLPackage *PlParseHalPackage_( PLFile *file ) {
 		return NULL;
 	}
 
-	FileIndex *indices = PlMAllocA( sizeof( FileIndex ) * numFiles );
+	FileIndex *indices = QM_OS_MEMORY_MALLOC_( sizeof( FileIndex ) * numFiles );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
 		indices[ i ].size = PlReadInt32( file, false, &status );
 		indices[ i ].offset = PlReadInt32( file, false, &status );
@@ -54,7 +55,7 @@ PLPackage *PlParseHalPackage_( PLFile *file ) {
 	}
 
 	if ( !status ) {
-		PlFree( indices );
+		qm_os_memory_free( indices );
 		return NULL;
 	}
 
@@ -65,10 +66,10 @@ PLPackage *PlParseHalPackage_( PLFile *file ) {
 		PLPackageIndex *index = &package->table[ i ];
 		index->offset = indices[ i ].offset;
 		index->fileSize = indices[ i ].size;
-		strncpy( index->fileName, indices[ i ].name, sizeof( index->fileName ) );
+		snprintf( index->fileName, sizeof( index->fileName ), "%s", indices[ i ].name );
 	}
 
-	PlFree( indices );
+	qm_os_memory_free( indices );
 
 	return package;
 }

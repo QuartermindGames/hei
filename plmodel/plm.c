@@ -176,7 +176,7 @@ PLMModel *PlmLoadModel( const char *path ) {
 }
 
 static PLMModel *CreateModel( PLMModelType type, PLGMesh **meshes, unsigned int numMeshes ) {
-	PLMModel *model = PlMAllocA( sizeof( PLMModel ) );
+	PLMModel *model = QM_OS_MEMORY_MALLOC_( sizeof( PLMModel ) );
 	if ( model == NULL ) {
 		return NULL;
 	}
@@ -190,12 +190,12 @@ static PLMModel *CreateModel( PLMModelType type, PLGMesh **meshes, unsigned int 
 }
 
 static PLMModel *CreateBasicModel( PLMModelType type, PLGMesh *mesh ) {
-	PLGMesh **meshes = PlMAllocA( sizeof( PLGMesh * ) );
+	PLGMesh **meshes = QM_OS_MEMORY_MALLOC_( sizeof( PLGMesh * ) );
 	meshes[ 0 ] = mesh;
 
 	PLMModel *model = CreateModel( type, meshes, 1 );
 	if ( model == NULL ) {
-		PlFree( meshes );
+		qm_os_memory_free( meshes );
 		return NULL;
 	}
 
@@ -218,9 +218,9 @@ static PLMModel *CreateSkeletalModel( PLMModel *model, PLMBone *bones, unsigned 
 
 	model->internal.skeletal_data.rootIndex = 0;
 
-	model->internal.skeletal_data.vertices = PL_NEW_( PLMSkeletalVertex *, model->numMeshes );
+	model->internal.skeletal_data.vertices = QM_OS_MEMORY_NEW_( PLMSkeletalVertex *, model->numMeshes );
 	for ( unsigned int i = 0; i < model->numMeshes; ++i ) {
-		model->internal.skeletal_data.vertices[ i ] = PL_NEW_( PLMSkeletalVertex, model->meshes[ i ]->num_verts );
+		model->internal.skeletal_data.vertices[ i ] = QM_OS_MEMORY_NEW_( PLMSkeletalVertex, model->meshes[ i ]->num_verts );
 	}
 
 	return model;
@@ -245,19 +245,19 @@ void PlmDestroyModel( PLMModel *model ) {
 		}
 
 		if ( model->type == PLM_MODELTYPE_SKELETAL ) {
-			PL_DELETE( model->internal.skeletal_data.vertices[ i ] );
+			qm_os_memory_free( model->internal.skeletal_data.vertices[ i ] );
 		}
 
 		PlgDestroyMesh( model->meshes[ i ] );
 	}
 
-	PL_DELETE( model->meshes );
-	PL_DELETE( model->materials );
+	qm_os_memory_free( model->meshes );
+	qm_os_memory_free( model->materials );
 
 	if ( model->type == PLM_MODELTYPE_SKELETAL ) {
-		PL_DELETE( model->internal.skeletal_data.bones );
-		PL_DELETE( model->internal.skeletal_data.vertices );
+		qm_os_memory_free( model->internal.skeletal_data.bones );
+		qm_os_memory_free( model->internal.skeletal_data.vertices );
 	}
 
-	PL_DELETE( model );
+	qm_os_memory_free( model );
 }

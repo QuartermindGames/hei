@@ -7,6 +7,7 @@
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
+#include "qmos/public/qm_os_memory.h"
 
 #define CAMERA_DEFAULT_BOUNDS 5
 #define CAMERA_DEFAULT_FOV    75.f
@@ -14,7 +15,7 @@
 #define CAMERA_DEFAULT_FAR    1000.f
 
 PLGCamera *PlgCreateCamera( void ) {
-	PLGCamera *camera = ( PLGCamera * ) PlCAlloc( 1, sizeof( PLGCamera ), false );
+	PLGCamera *camera = QM_OS_MEMORY_CALLOC( 1, sizeof( PLGCamera ) );
 	if ( camera == NULL ) {
 		return NULL;
 	}
@@ -24,9 +25,9 @@ PLGCamera *PlgCreateCamera( void ) {
 	camera->far = CAMERA_DEFAULT_FAR;
 	camera->mode = PLG_CAMERA_MODE_PERSPECTIVE;
 
-	camera->bounds.mins = PL_VECTOR3(
+	camera->bounds.mins = qm_math_vector3f(
 	        -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS, -CAMERA_DEFAULT_BOUNDS );
-	camera->bounds.maxs = PL_VECTOR3(
+	camera->bounds.maxs = qm_math_vector3f(
 	        CAMERA_DEFAULT_BOUNDS, CAMERA_DEFAULT_BOUNDS, CAMERA_DEFAULT_BOUNDS );
 
 	return camera;
@@ -37,7 +38,7 @@ void PlgDestroyCamera( PLGCamera *camera ) {
 		return;
 	}
 
-	PL_DELETE( camera );
+	qm_os_memory_free( camera );
 }
 
 /**
@@ -117,7 +118,7 @@ static void SetupCameraAngles( PLGCamera *camera ) {
 	PlRotateMatrix3f( PL_DEG2RAD( -camera->angles.y ), 0.0f, 1.0f, 0.0f );
 	PlRotateMatrix3f( PL_DEG2RAD( -camera->angles.z ), 0.0f, 0.0f, 1.0f );
 
-	PlTranslateMatrix( ( PLVector3 ) { -camera->position.x, -camera->position.y, -camera->position.z } );
+	PlTranslateMatrix( ( QmMathVector3f ) { -camera->position.x, -camera->position.y, -camera->position.z } );
 
 	camera->internal.view = *PlGetMatrix( PL_VIEW_MATRIX );
 }
@@ -166,7 +167,7 @@ void PlgSetViewport( int x, int y, int width, int height ) {
 }
 
 void PlgSetupCamera( PLGCamera *camera ) {
-	PL_ASSERT( camera );
+	assert( camera );
 
 	switch ( camera->mode ) {
 		case PLG_CAMERA_MODE_PERSPECTIVE: {
@@ -203,28 +204,28 @@ void PlgSetupCamera( PLGCamera *camera ) {
  * Checks that the given bounding box is within the view space.
  */
 bool PlgIsBoxInsideView( const PLGCamera *camera, const PLCollisionAABB *bounds ) {
-	PLVector3 mins = PlAddVector3( bounds->mins, bounds->origin );
-	PLVector3 maxs = PlAddVector3( bounds->maxs, bounds->origin );
+	QmMathVector3f mins = qm_math_vector3f_add( bounds->mins, bounds->origin );
+	QmMathVector3f maxs = qm_math_vector3f_add( bounds->maxs, bounds->origin );
 	for ( unsigned int i = 0; i < 5; ++i ) {
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( mins.x, mins.y, mins.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &QM_MATH_VECTOR3F( mins.x, mins.y, mins.z ) ) >= 0.0f ) {
 			continue;
 		}
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( maxs.x, mins.y, mins.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &QM_MATH_VECTOR3F( maxs.x, mins.y, mins.z ) ) >= 0.0f ) {
 			continue;
 		}
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( mins.x, maxs.y, mins.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &QM_MATH_VECTOR3F( mins.x, maxs.y, mins.z ) ) >= 0.0f ) {
 			continue;
 		}
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( maxs.x, maxs.y, mins.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &QM_MATH_VECTOR3F( maxs.x, maxs.y, mins.z ) ) >= 0.0f ) {
 			continue;
 		}
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( mins.x, mins.y, maxs.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &QM_MATH_VECTOR3F( mins.x, mins.y, maxs.z ) ) >= 0.0f ) {
 			continue;
 		}
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( mins.x, maxs.y, maxs.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &QM_MATH_VECTOR3F( mins.x, maxs.y, maxs.z ) ) >= 0.0f ) {
 			continue;
 		}
-		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &PL_VECTOR3( maxs.x, maxs.y, maxs.z ) ) >= 0.0f ) {
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &QM_MATH_VECTOR3F( maxs.x, maxs.y, maxs.z ) ) >= 0.0f ) {
 			continue;
 		}
 

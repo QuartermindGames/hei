@@ -114,7 +114,7 @@ typedef struct PLPluginExportTable {
 	void ( *DestroyImage )( PLImage *image );
 	bool ( *ConvertPixelFormat )( PLImage *image, PLImageFormat newFormat );
 	void ( *InvertImageColour )( PLImage *image );
-	void ( *ReplaceImageColour )( PLImage *image, PLColour target, PLColour destination );
+	void ( *ReplaceImageColour )( PLImage *image, QmMathColour4ub target, QmMathColour4ub destination );
 	bool ( *FlipImageVertical )( PLImage *image );
 
 	unsigned int ( *GetImageSize )( PLImageFormat format, unsigned int width, unsigned int height );
@@ -125,7 +125,7 @@ typedef struct PLPluginExportTable {
 	 * CONSOLE API
 	 **/
 
-	int ( *AddLogLevel )( const char *prefix, PLColour colour, bool status );
+	int ( *AddLogLevel )( const char *prefix, QmMathColour4ub colour, bool status );
 	void ( *SetLogLevelStatus )( int id, bool status );
 	void ( *LogMessage )( int id, const char *msg, ... );
 
