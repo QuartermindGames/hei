@@ -31,7 +31,7 @@ float qm_os_random_float( unsigned int *seed, float max )
 }
 
 // http://stackoverflow.com/questions/7978759/generate-float-random-values-also-negative
-static inline float uniform_0_to_1_random( unsigned int *seed )
+static float uniform_0_to_1_random( unsigned int *seed )
 {
 	return rand_r( seed ) / ( ( float ) RAND_MAX + 1 );
 }
