@@ -10,6 +10,32 @@ extern "C"
 #endif
 
 	/////////////////////////////////////////////////////////////////////////////////////
+	// Vector2i
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	typedef struct QmMathVector2i
+	{
+		union
+		{
+			struct
+			{
+				int x;
+				int y;
+			};
+
+			int v[ 2 ];
+		};
+	} QmMathVector2i;
+
+#define QM_MATH_VECTOR2I( X, Y ) \
+	( QmMathVector2i ) { .x = ( X ), .y = ( Y ) }
+
+	static inline QmMathVector2i qm_math_vector2i( const int x, const int y )
+	{
+		return QM_MATH_VECTOR2I( x, y );
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
 	// Vector2f
 	/////////////////////////////////////////////////////////////////////////////////////
 
@@ -29,10 +55,6 @@ extern "C"
 
 #define QM_MATH_VECTOR2F( X, Y ) \
 	( QmMathVector2f ) { .x = ( X ), .y = ( Y ) }
-
-#if ( __STDC_VERSION__ >= 202000L )
-	static constexpr QmMathVector2f QM_MATH_VECTOR2F_ZERO = ( QmMathVector2f ) {};
-#endif
 
 	static inline QmMathVector2f qm_math_vector2f( const float x, const float y )
 	{
@@ -60,10 +82,6 @@ extern "C"
 
 #define QM_MATH_VECTOR3F( X, Y, Z ) \
 	( QmMathVector3f ) { .x = ( X ), .y = ( Y ), .z = ( Z ) }
-
-#if ( __STDC_VERSION__ >= 202000L )
-	static constexpr QmMathVector3f QM_MATH_VECTOR3F_ZERO = ( QmMathVector3f ) {};
-#endif
 
 	static inline QmMathVector3f qm_math_vector3f( const float x, const float y, const float z )
 	{
@@ -93,14 +111,21 @@ extern "C"
 #define QM_MATH_VECTOR4F( X, Y, Z, W ) \
 	( QmMathVector4f ) { .x = ( X ), .y = ( Y ), .z = ( Z ), .w = ( W ) }
 
-#if ( __STDC_VERSION__ >= 202000L )
-	static constexpr QmMathVector4f QM_MATH_VECTOR4F_ZERO = ( QmMathVector4f ) {};
-#endif
-
 	static inline QmMathVector4f qm_math_vector4f( const float x, const float y, const float z, const float w )
 	{
 		return QM_MATH_VECTOR4F( x, y, z, w );
 	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	// Zero
+	/////////////////////////////////////////////////////////////////////////////////////
+
+#if ( __STDC_VERSION__ >= 202000L )
+	static constexpr QmMathVector2i QM_MATH_VECTOR2I_ZERO = ( QmMathVector2i ) {};
+	static constexpr QmMathVector2f QM_MATH_VECTOR2F_ZERO = ( QmMathVector2f ) {};
+	static constexpr QmMathVector3f QM_MATH_VECTOR3F_ZERO = ( QmMathVector3f ) {};
+	static constexpr QmMathVector4f QM_MATH_VECTOR4F_ZERO = ( QmMathVector4f ) {};
+#endif
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Print
