@@ -616,20 +616,21 @@ int LOG_LEVEL_HIGH = 0;
 int LOG_LEVEL_DEBUG = 0;
 int LOG_LEVEL_FILESYSTEM = 0;
 
-static void InitializeDefaultLogLevels( void ) {
+static void InitializeDefaultLogLevels( void )
+{
 	memset( levels, 0, sizeof( LogLevel ) * MAX_LOG_LEVELS );
 
-	LOG_LEVEL_LOW = PlAddLogLevel( "plcore", ( QmMathColour4ub ){ 255, 255, 255, 255 }, true );
-	LOG_LEVEL_MEDIUM = PlAddLogLevel( "plcore/warning", ( QmMathColour4ub ){ 255, 255, 0, 255 }, true );
-	LOG_LEVEL_HIGH = PlAddLogLevel( "plcore/error", ( QmMathColour4ub ){ 255, 0, 0, 255 }, true );
-	LOG_LEVEL_DEBUG = PlAddLogLevel( "plcore/debug", ( QmMathColour4ub ){ 255, 255, 255, 255 },
+	LOG_LEVEL_LOW    = PlAddLogLevel( "plcore", QM_MATH_COLOUR4UB( 255, 255, 255, 255 ), true );
+	LOG_LEVEL_MEDIUM = PlAddLogLevel( "plcore/warning", QM_MATH_COLOUR4UB( 255, 255, 0, 255 ), true );
+	LOG_LEVEL_HIGH   = PlAddLogLevel( "plcore/error", QM_MATH_COLOUR4UB( 255, 0, 0, 255 ), true );
+	LOG_LEVEL_DEBUG  = PlAddLogLevel( "plcore/debug", QM_MATH_COLOUR4UB( 255, 255, 255, 255 ),
 #if !defined( NDEBUG )
 	                                 true
 #else
 	                                 false
 #endif
 	);
-	LOG_LEVEL_FILESYSTEM = PlAddLogLevel( "plcore/filesystem", ( QmMathColour4ub ){ 0, 255, 255, 255 }, true );
+	LOG_LEVEL_FILESYSTEM = PlAddLogLevel( "plcore/filesystem", QM_MATH_COLOUR4UB( 0, 255, 255, 255 ), true );
 }
 
 /**
