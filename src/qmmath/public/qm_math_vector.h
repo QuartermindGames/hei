@@ -36,6 +36,34 @@ extern "C"
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
+	// Vector4i
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	typedef struct QmMathVector4i
+	{
+		union
+		{
+			struct
+			{
+				int x;
+				int y;
+				int z;
+				int w;
+			};
+
+			int v[ 4 ];
+		};
+	} QmMathVector4i;
+
+#define QM_MATH_VECTOR4I( X, Y, Z, W ) \
+	( QmMathVector4i ) { .x = ( X ), .y = ( Y ), .z = ( Z ), .w = ( W ) }
+
+	static inline QmMathVector4i qm_math_vector4i( const int x, const int y, const int z, const int w )
+	{
+		return QM_MATH_VECTOR4I( x, y, z, w );
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
 	// Vector2f
 	/////////////////////////////////////////////////////////////////////////////////////
 
