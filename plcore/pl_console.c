@@ -662,19 +662,6 @@ static int GetNextFreeLogLevel( void ) {
 /////////////////////////////////////////////////////////////////////////////////////
 // public
 
-static char logOutputPath[ PL_SYSTEM_MAX_PATH ] = { '\0' };
-
-void PlSetupLogOutput( const char *path ) {
-	if ( path == NULL || path[ 0 ] == '\0' ) {
-		return;
-	}
-
-	snprintf( logOutputPath, sizeof( logOutputPath ), "%s", path );
-	if ( PlFileExists( logOutputPath ) ) {
-		unlink( logOutputPath );
-	}
-}
-
 int PlAddLogLevel( const char *prefix, QmMathColour4ub colour, bool status ) {
 	int i = GetNextFreeLogLevel();
 	if ( i == -1 ) {
@@ -695,30 +682,6 @@ int PlAddLogLevel( const char *prefix, QmMathColour4ub colour, bool status ) {
 	numLogLevels++;
 
 	return i;
-}
-
-/**
- * Removes the specified log levels.
- * Keep in mind that this will not remove any
- * console variables generated from adding those
- * levels.
- */
-void PlRemoveLogLevel( int id ) {
-	LogLevel *l = GetLogLevelForId( id );
-	if ( l == NULL ) {
-		return;
-	}
-
-	PL_ZERO( l, sizeof( LogLevel ) );
-}
-
-void PlSetLogLevelStatus( int id, bool status ) {
-	LogLevel *l = GetLogLevelForId( id );
-	if ( l == NULL ) {
-		return;
-	}
-
-	PlSetConsoleVariable( l->var, status ? "1" : "0" );
 }
 
 void PlLogMessage( int id, const char *msg, ... ) {
@@ -761,81 +724,5 @@ void PlLogMessage( int id, const char *msg, ... ) {
 		ConsoleOutputCallback( id, buf, l->colour );
 	}
 
-	static bool avoid_recursion = false;
-	if ( !avoid_recursion ) {
-		if ( logOutputPath[ 0 ] != '\0' ) {
-			FILE *file = fopen( logOutputPath, "a" );
-			if ( file != NULL ) {
-				char time[ 64 ];
-				PlGetFormattedTime( "%x %X", time, sizeof( time ) );
-
-				// add the prefix to the start
-				char prefix[ 128 ];
-				snprintf( prefix, sizeof( prefix ), "[%s]: ", time );
-
-				size_t nl = strlen( prefix ) + length;
-				char *logBuf = QM_OS_MEMORY_CALLOC( nl, sizeof( char ) );
-				snprintf( logBuf, nl, "%s%s", prefix, buf );
-
-				if ( fwrite( logBuf, sizeof( char ), nl, file ) != nl ) {
-					avoid_recursion = true;
-					PlReportErrorF( PL_RESULT_FILEERR, "failed to write to log, %s\n%s", logOutputPath, strerror( errno ) );
-				}
-				fclose( file );
-
-				qm_os_memory_free( logBuf );
-			} else {
-				// todo, needs to be more appropriate; return details on exact issue
-				avoid_recursion = true;
-				PlReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", logOutputPath );
-			}
-		}
-	}
-
 	qm_os_memory_free( buf );
-}
-
-unsigned int PlGetNumLogLevels( void ) {
-	return numLogLevels;
-}
-
-/**
- * Loads in a file that provides a command per line
- * and executes each command in order.
- */
-void PlExecuteConsoleScript( const char *path ) {
-	PLFile *file = PlOpenFile( path, true );
-	if ( file == NULL ) {
-		return;
-	}
-
-	size_t length = PlGetFileSize( file );
-	char *buf = QM_OS_MEMORY_NEW_( char, length + 1 );
-	memcpy( buf, PlGetFileData( file ), length );
-	PlCloseFile( file );
-
-	PLLinkedList *queuedCommands = PlCreateLinkedList();
-
-	const char *p = buf;
-	while ( *p != '\0' ) {
-		unsigned int l = PlDetermineLineLength( buf );
-		if ( l == 0 ) {
-			PlSkipLine( &p );
-			continue;
-		}
-
-		char *command = QM_OS_MEMORY_NEW_( char, ++l );
-		PlParseLine( &p, command, l );
-
-		PlInsertLinkedListNode( queuedCommands, command );
-	}
-
-	qm_os_memory_free( buf );
-
-	char *command;
-	PL_ITERATE_LINKED_LIST( command, char, queuedCommands, i ) {
-		PlParseConsoleString( command );
-		qm_os_memory_free( command );
-	}
-	PlDestroyLinkedList( queuedCommands );
 }

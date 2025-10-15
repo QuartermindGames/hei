@@ -104,16 +104,10 @@ void PlSetConsoleOutputCallback( void ( *Callback )( int level, const char *msg,
 const char **PlAutocompleteConsoleString( const char *string, unsigned int *numElements );
 void PlParseConsoleString( const char *string );
 
-void PlExecuteConsoleScript( const char *path );
-
 /////////////////////////////////////////////////////////////////////////////////////
 
-void PlSetupLogOutput( const char *path );
 int PlAddLogLevel( const char *prefix, QmMathColour4ub colour, bool status );
-void PlRemoveLogLevel( int id );
-void PlSetLogLevelStatus( int id, bool status );
 void PlLogMessage( int id, const char *msg, ... );
-unsigned int PlGetNumLogLevels( void );
 
 #	define PlLogWFunction( ID, FORMAT, ... ) PlLogMessage( ( ID ), "(%s) " FORMAT, PL_FUNCTION, ##__VA_ARGS__ )
 

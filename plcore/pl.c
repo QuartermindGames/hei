@@ -531,7 +531,6 @@ static PLPluginExportTable exportTable = {
         .GetPackageFileName = PlGetPackageFileName,
 
         .AddLogLevel = PlAddLogLevel,
-        .SetLogLevelStatus = PlSetLogLevelStatus,
         .LogMessage = PlLogMessage,
         .GetConsoleVariableValue = PlGetConsoleVariableValue,
         .GetConsoleVariableDefaultValue = PlGetConsoleVariableDefaultValue,

@@ -139,6 +139,11 @@ As of July 2025, I've decided to start work on a radical overhaul of the library
 - [x] Discard `plwindow` api
 - [ ] Ensure better test coverage
 
+Also do note the following...
+
+- *pl_console* API is being partially merged into [ApeTech](); variables and commands are being discarded entirely.
+- Plugin API is being discarded.
+
 # Users
 
 - [hei-cmd](https://github.com/QuartermindGames/hei-cmd), a command-line utility for using features of Hei
