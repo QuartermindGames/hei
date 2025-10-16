@@ -162,7 +162,7 @@ static inline QmMathColour4f PlVector4ToColourF32( const QmMathVector4f *v ) {
 }
 
 #define PL_COLOURF32RGB( R, G, B ) \
-	( QmMathColour4f ){ R, G, B, 1.0f }
+	( QmMathColour4f ){ .r = ( R ), .g = ( G ), .b = ( B ), .a = 1.0f }
 
 #define PL_COLOURU8_TO_F32( C ) QM_MATH_COLOUR4F( PlByteToFloat( ( C ).r ), PlByteToFloat( ( C ).g ), PlByteToFloat( ( C ).b ), PlByteToFloat( ( C ).a ) )
 #define PL_COLOURF32_TO_U8( C ) QM_MATH_COLOUR4UB( PlFloatToByte( ( C ).r ), PlFloatToByte( ( C ).g ), PlFloatToByte( ( C ).b ), PlFloatToByte( ( C ).a ) )
