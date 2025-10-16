@@ -101,12 +101,13 @@ typedef struct PLGDriverImportTable {
 	void ( *BindFrameBuffer )( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget targetBinding );
 	PLGTexture *( *GetFrameBufferTextureAttachment )( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter, PLGTextureWrapMode wrap );
 	void ( *BlitFrameBuffers )( PLGFrameBuffer *srcBuffer,
-	                            unsigned int srcW,
-	                            unsigned int srcH,
+	                            unsigned int    srcW,
+	                            unsigned int    srcH,
 	                            PLGFrameBuffer *dstBuffer,
-	                            unsigned int dstW,
-	                            unsigned int dstH,
-	                            bool linear );
+	                            unsigned int    dstW,
+	                            unsigned int    dstH,
+	                            unsigned int    mask,
+	                            bool            linear );
 	void ( *SetFrameBufferSize )( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height );
 
 	// Texture

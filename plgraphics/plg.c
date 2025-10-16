@@ -142,10 +142,10 @@ void PlgBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget targ
 	CallGfxFunction( BindFrameBuffer, buffer, target_binding );
 }
 
-void PlgBlitFrameBuffers( PLGFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLGFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, bool linear ) {
+void PlgBlitFrameBuffers( PLGFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLGFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, unsigned int mask, bool linear ) {
 	//NOTE: NULL is valid for *srcBuffer/*dstBuffer, to bind the SDL window default backbuffer
 	//      SRC and DST can be the same buffer, in order to quickly copy a subregion of the buffer to a new location
-	CallGfxFunction( BlitFrameBuffers, src_buffer, src_w, src_h, dst_buffer, dst_w, dst_h, linear );
+	CallGfxFunction( BlitFrameBuffers, src_buffer, src_w, src_h, dst_buffer, dst_w, dst_h, mask, linear );
 }
 
 void PlgSetClearColour( QmMathColour4ub rgba ) {

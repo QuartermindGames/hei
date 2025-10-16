@@ -422,16 +422,36 @@ static void GLDeleteFrameBuffer( PLGFrameBuffer *buffer ) {
 }
 
 static void GLBlitFrameBuffers( PLGFrameBuffer *src_buffer,
-                                unsigned int src_w,
-                                unsigned int src_h,
+                                unsigned int    src_w,
+                                unsigned int    src_h,
                                 PLGFrameBuffer *dst_buffer,
-                                unsigned int dst_w,
-                                unsigned int dst_h,
-                                bool linear ) {
-	GLBindFrameBuffer( src_buffer, PLG_FRAMEBUFFER_READ );
-	GLBindFrameBuffer( dst_buffer, PLG_FRAMEBUFFER_DRAW );
+                                unsigned int    dst_w,
+                                unsigned int    dst_h,
+                                unsigned int    mask,
+                                bool            linear )
+{
+	GLbitfield bits = 0;
+	if ( mask & PLG_BUFFER_DEPTH )
+	{
+		bits |= GL_DEPTH_BUFFER_BIT;
+		linear = false;
+	}
+	if ( mask & PLG_BUFFER_STENCIL )
+	{
+		bits |= GL_STENCIL_BUFFER_BIT;
+		linear = false;
+	}
+	if ( mask & PLG_BUFFER_COLOUR )
+	{
+		bits |= GL_COLOR_BUFFER_BIT;
+	}
 
-	XGL_CALL( glBlitFramebuffer( 0, 0, src_w, src_h, 0, 0, dst_w, dst_h, GL_COLOR_BUFFER_BIT, linear ? GL_LINEAR : GL_NEAREST ) );
+	XGL_CALL( glBlitNamedFramebuffer( src_buffer ? src_buffer->fbo : 0,
+	                                  dst_buffer ? dst_buffer->fbo : 0,
+	                                  0, 0, src_w, src_h,
+	                                  0, 0, dst_w, dst_h,
+	                                  bits,
+	                                  linear ? GL_LINEAR : GL_NEAREST ) );
 }
 
 static void GLSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height ) {
@@ -510,10 +530,10 @@ static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, un
 		} else {
 			/* otherwise, assumed not packed */
 			if ( components & PLG_BUFFER_DEPTH ) {
-				XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, buffer->width, buffer->height, 0, GL_DEPTH_ATTACHMENT, GL_UNSIGNED_INT, NULL ) );
+				XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, buffer->width, buffer->height, 0,  GL_DEPTH_COMPONENT, GL_FLOAT, NULL ) );
 				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ( ( GLTexture * ) texture->driver )->id, 0 ) );
 			} else if ( components & PLG_BUFFER_STENCIL ) {
-				XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_STENCIL_INDEX8, buffer->width, buffer->height, 0, GL_STENCIL_ATTACHMENT, GL_UNSIGNED_BYTE, NULL ) );
+				XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_STENCIL_INDEX8, buffer->width, buffer->height, 0,  GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, NULL ) );
 				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, ( ( GLTexture * ) texture->driver )->id, 0 ) );
 			}
 		}
@@ -676,12 +696,14 @@ static bool IsCompressedImageFormat( PLImageFormat format ) {
 static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
 	assert( upload->data != NULL && upload->data[ 0 ] != NULL );
 
+	unsigned int internalFormat = TranslateImageFormat( upload->format );
+	assert( internalFormat != 0 );
+
 	GLBindTexture( texture );
 
 	GLSetTextureWrapMode( texture, texture->wrapMode );
 	GLSetTextureFilter( texture, texture->filter );
 
-	unsigned int internalFormat = TranslateImageFormat( upload->format );
 	for ( unsigned int i = 0; i < upload->levels; ++i ) {
 		const void *data = upload->data[ i ];
 		GLsizei w = upload->width >> i;
