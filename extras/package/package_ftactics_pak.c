@@ -4,6 +4,8 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
+#include "qmos/public/qm_os_memory.h"
+
 #include <plcore/pl.h>
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_package.h>

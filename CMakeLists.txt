@@ -48,6 +48,8 @@ add_subdirectory(src/qmos)
 add_subdirectory(src/qmmath)
 add_subdirectory(src/qmfs)
 
+include_directories(src)
+
 add_subdirectory(plcore)
 add_subdirectory(plgraphics)
 add_subdirectory(plmodel)

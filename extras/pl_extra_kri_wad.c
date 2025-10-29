@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
+#include "qmos/public/qm_os_memory.h"
+
 #include <plcore/pl_package.h>
 
 // WAD format as used by The Mark of Kri
@@ -67,8 +69,11 @@ static void FreeDirTable( DirTable *table ) {
 		return;
 	}
 
-	PL_DELETEN( table->offsets );
-	PL_DELETEN( table->stream );
+	qm_os_memory_free( table->offsets );
+	table->offsets = NULL;
+
+	qm_os_memory_free( table->stream );
+	table->stream = NULL;
 }
 
 PLPackage *PlParseKriPackage( PLFile *file ) {

@@ -182,21 +182,22 @@ bool PlmWriteObjModel( PLMModel *model, const char *path ) {
 	fprintf( fp, "mtllib ./%s.mtl\n", mtl_name );
 
 	/* todo: kill duplicated data */
+	char tmp[ 64 ];
 	for ( unsigned int i = 0; i < model->numMeshes; ++i ) {
 		PLGMesh *mesh = model->meshes[ i ];
 		if ( mesh->primitive == PLG_MESH_TRIANGLES ) {
 			fprintf( fp, "o mesh.%0d\n", i );
 			/* print out vertices */
 			for ( unsigned int vi = 0; vi < mesh->num_verts; ++vi ) {
-				fprintf( fp, "v %s\n", PlPrintVector3( &mesh->vertices[ vi ].position, PL_VAR_F32 ) );
+				fprintf( fp, "v %s\n", qm_math_vector3f_print( mesh->vertices[ vi ].position, tmp, sizeof( tmp ) ) );
 			}
 			/* print out texture coords */
 			for ( unsigned int vi = 0; vi < mesh->num_verts; ++vi ) {
-				fprintf( fp, "vt %s\n", PlPrintVector2( &mesh->vertices[ vi ].st[ 0 ], PL_VAR_F32 ) );
+				fprintf( fp, "vt %s\n", qm_math_vector2f_print( mesh->vertices[ vi ].st[ 0 ], tmp, sizeof( tmp ) ) );
 			}
 			/* print out vertex normals */
 			for ( unsigned int vi = 0; vi < mesh->num_verts; ++vi ) {
-				fprintf( fp, "vn %s\n", PlPrintVector3( &mesh->vertices[ vi ].normal, PL_VAR_F32 ) );
+				fprintf( fp, "vn %s\n", qm_math_vector3f_print( mesh->vertices[ vi ].normal, tmp, sizeof( tmp ) ) );
 			}
 			fprintf( fp, "# %d vertices\n", mesh->num_verts );
 

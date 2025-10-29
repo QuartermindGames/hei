@@ -4,6 +4,8 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
+#include "qmos/public/qm_os_memory.h"
+
 #include <plcore/pl_package.h>
 
 /* Outwars FF package format */
@@ -47,7 +49,7 @@ PLPackage *Outwars_FF_LoadFile( const char *path ) {
 	}
 
 	PLPackage *package = PlCreatePackageHandle( path, num_indices - 1, NULL );
-	if ( ( package->table = QM_OS_MEMORY_CALLOC( package->table_size, sizeof( struct PLPackageIndex ), false ) ) != NULL ) {
+	if ( ( package->table = QM_OS_MEMORY_CALLOC( package->table_size, sizeof( struct PLPackageIndex ) ) ) != NULL ) {
 		for ( unsigned int i = 0; i < package->table_size; ++i ) {
 			PLPackageIndex *index = &package->table[ i ];
 			index->offset = indices[ i ].offset;

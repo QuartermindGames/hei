@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "qmos/public/qm_os_memory.h"
+
 #include <plcore/pl.h>
 #include <plcore/pl_console.h>
 

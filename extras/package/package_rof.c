@@ -3,6 +3,8 @@
 // Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 // Purpose: Loader for Oddworld's A.L.I.V.E. 2 ROF packages
 
+#include "qmos/public/qm_os_memory.h"
+
 #include <plcore/pl_package.h>
 
 PLPackage *ROF_ParseFile( PLFile *file ) {

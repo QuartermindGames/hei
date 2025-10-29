@@ -273,8 +273,8 @@ static PLMModel *LoadStaticRequiemModel( PLFile *fp ) {
 	}
 
 	for ( unsigned int i = 0; i < num_vertices; ++i ) {
-		PlgSetMeshVertexPosition( mesh, i, &PL_VECTOR3( vertices[ i ].x, vertices[ i ].y, vertices[ i ].z ) );
-		PlgSetMeshVertexColour( mesh, i, &QmMathColour4ub( 255, 255, 255, 255 ) );
+		PlgSetMeshVertexPosition( mesh, i, &QM_MATH_VECTOR3F( vertices[ i ].x, vertices[ i ].y, vertices[ i ].z ) );
+		PlgSetMeshVertexColour( mesh, i, &QM_MATH_COLOUR4UB( 255, 255, 255, 255 ) );
 	}
 
 	unsigned int cur_index = 0;

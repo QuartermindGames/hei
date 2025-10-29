@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
+#include "qmos/public/qm_os_memory.h"
+
 #include <plcore/pl_package.h>
 #include "plcore/pl_image.h"
 

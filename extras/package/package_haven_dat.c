@@ -3,6 +3,8 @@
 // Copyright © 2017-2025 Mark E Sowden <hogsy@oldtimes-software.com>
 // Purpose: Experimental package interface for Haven Call of the King.
 
+#include "qmos/public/qm_os_memory.h"
+
 #include <plcore/pl_package.h>
 
 #define MAX_DIR_DEPTH 8

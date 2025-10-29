@@ -4,6 +4,8 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
+#include "qmos/public/qm_os_memory.h"
+
 #include <plcore/pl_package.h>
 
 /* Eradicator's BDIR package format */

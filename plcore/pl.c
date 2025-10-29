@@ -6,7 +6,6 @@
 
 #include "qmos/public/qm_os_memory.h"
 
-
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_linkedlist.h>
 #include <plcore/pl_parse.h>
