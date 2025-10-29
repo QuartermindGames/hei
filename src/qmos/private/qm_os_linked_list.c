@@ -23,13 +23,56 @@ typedef struct QmOsLinkedList
 	size_t              size;
 } QmOsLinkedList;
 
-QmOsLinkedList *qm_os_linked_list_create()
+static void linked_list_destructor( void *ptr )
 {
-	return QM_OS_MEMORY_NEW( QmOsLinkedList );
+	QmOsLinkedList *self = ptr;
+	qm_os_linked_list_clear( self );
 }
 
-void qm_os_linked_list_destroy( QmOsLinkedList *self )
+static void linked_list_node_destructor( void *ptr )
 {
+	QmOsLinkedListNode *self = ptr;
+	if ( self->prev != nullptr )
+	{
+		self->prev->next = self->next;
+	}
+	if ( self->next != nullptr )
+	{
+		self->next->prev = self->prev;
+	}
+
+	QmOsLinkedList *parent = self->parent;
+	if ( parent == nullptr )
+	{
+		return;
+	}
+
+	if ( parent->front == self )
+	{
+		parent->front = self->next;
+	}
+	if ( parent->back == self )
+	{
+		parent->back = self->prev;
+	}
+
+	parent->size--;
+}
+
+QmOsLinkedList *qm_os_linked_list_create()
+{
+	return qm_os_memory_alloc( 1, sizeof( QmOsLinkedList ), linked_list_destructor );
+}
+
+void qm_os_linked_list_clear( QmOsLinkedList *self )
+{
+	QmOsLinkedListNode *node = qm_os_linked_list_get_front( self );
+	while ( node != nullptr )
+	{
+		QmOsLinkedListNode *nextNode = qm_os_linked_list_node_get_next( node );
+		qm_os_memory_free( node );
+		node = nextNode;
+	}
 }
 
 size_t qm_os_linked_list_get_size( const QmOsLinkedList *self )
@@ -42,7 +85,7 @@ QmOsLinkedListNode *qm_os_linked_list_push_back( QmOsLinkedList *self, void *dat
 {
 	assert( self != nullptr );
 
-	QmOsLinkedListNode *node = QM_OS_MEMORY_NEW( QmOsLinkedListNode );
+	QmOsLinkedListNode *node = qm_os_memory_alloc( 1, sizeof( QmOsLinkedListNode ), linked_list_node_destructor );
 	if ( node == nullptr )
 	{
 		return nullptr;
@@ -72,7 +115,7 @@ QmOsLinkedListNode *qm_os_linked_list_push_front( QmOsLinkedList *self, void *da
 {
 	assert( self != nullptr );
 
-	QmOsLinkedListNode *node = QM_OS_MEMORY_NEW( QmOsLinkedListNode );
+	QmOsLinkedListNode *node = qm_os_memory_alloc( 1, sizeof( QmOsLinkedListNode ), linked_list_node_destructor );
 	if ( node == nullptr )
 	{
 		return nullptr;

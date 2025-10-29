@@ -25,9 +25,17 @@ extern "C"
 
 	/**
 	 * Allocate a new linked list.
+	 * Call memory_free to destroy (will auto-destroy nodes).
 	 * @return A new linked list instance.
 	 */
 	QmOsLinkedList *qm_os_linked_list_create();
+
+	/**
+	 * Clears all elements under the linked list.
+	 * Size will be zero after calling.
+	 * @param self Linked list instance.
+	 */
+	void qm_os_linked_list_clear( QmOsLinkedList *self );
 
 	/**
 	 * Fetch the number of elements under a linked list.
@@ -36,7 +44,22 @@ extern "C"
 	 */
 	size_t qm_os_linked_list_get_size( const QmOsLinkedList *self );
 
+	/**
+	 * Pushes the given data to the back of the list, via a node.
+	 * Call memory_free to destroy the given node (note this doesn't free the data under the node).
+	 * @param self Linked list instance.
+	 * @param data Data to attach.
+	 * @return Node inside of the list.
+	 */
 	QmOsLinkedListNode *qm_os_linked_list_push_back( QmOsLinkedList *self, void *data );
+
+	/**
+	 * Pushes the given data to the front of the list, via a node.
+	 * Call memory_free to destroy the given node (note this doesn't free the data under the node).
+	 * @param self Linked list instance.
+	 * @param data Data to attach.
+	 * @return Node inside of the list.
+	 */
 	QmOsLinkedListNode *qm_os_linked_list_push_front( QmOsLinkedList *self, void *data );
 
 	QmOsLinkedListNode *qm_os_linked_list_get_front( const QmOsLinkedList *self );

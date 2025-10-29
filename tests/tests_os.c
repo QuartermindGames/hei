@@ -46,7 +46,13 @@ QM_TEST_FUNC( linked_list )
 	QM_OS_LINKED_LIST_ITERATE( item, list, i )
 	{
 		QM_TEST_ASSERT( item != nullptr );
+		qm_os_memory_free( item );
 	}
+
+	qm_os_linked_list_clear( list );
+	QM_TEST_ASSERT( qm_os_linked_list_get_size( list ) == 0 );
+
+	qm_os_memory_free( list );
 }
 QM_TEST_FUNC_END()
 
