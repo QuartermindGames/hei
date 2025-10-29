@@ -168,7 +168,7 @@ int qm_os_string_digit( const char *s, const size_t size )
 			break;
 		}
 
-		if ( !( ( i == 0 && s[ i ] == '-' && isdigit( s[ i + 1 ] ) ) || isdigit( s[ i ] ) ) )
+		if ( ( i == 0 && s[ i ] == '-' && isdigit( s[ i + 1 ] ) ) || isdigit( s[ i ] ) )
 		{
 			return i;
 		}

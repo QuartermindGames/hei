@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include <plcore/pl.h>
-#include <plcore/pl_console.h>
-#include <plcore/pl_array_vector.h>
-#include <plcore/pl_filesystem.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-enum {
+enum
+{
 	TEST_RETURN_SUCCESS,
 	TEST_RETURN_FAILURE,
 	TEST_RETURN_FATAL,
@@ -18,31 +18,42 @@ enum {
 #define TEST_RUN_INIT \
 	bool allPassed = true;
 #define TEST_RUN_END                                        \
-	if ( allPassed ) {                                      \
+	if ( allPassed )                                        \
+	{                                                       \
 		printf( "\nAll tests passed successfully!\n" );     \
 		return EXIT_SUCCESS;                                \
-	} else {                                                \
+	}                                                       \
+	else                                                    \
+	{                                                       \
 		printf( "\nReached end but some tests failed!\n" ); \
 		return EXIT_FAILURE;                                \
 	}
 
-#define FUNC_TEST( NAME )         \
-	uint8_t test_##NAME( void ) { \
+#define QM_TEST_FUNC( NAME )       \
+	uint8_t test_##NAME( void ) \
+	{                           \
 		printf( " " #NAME "... " );
-#define FUNC_TEST_END()         \
+#define QM_TEST_FUNC_END()         \
 	printf( "OK\n" );           \
 	return TEST_RETURN_SUCCESS; \
 	}
 #define CALL_FUNC_TEST( NAME )                                       \
 	{                                                                \
 		int ret = test_##NAME();                                     \
-		if ( ret != TEST_RETURN_SUCCESS ) {                          \
+		if ( ret != TEST_RETURN_SUCCESS )                            \
+		{                                                            \
 			fprintf( stderr, "Failed on " #NAME "!\n" );             \
 			if ( ret == TEST_RETURN_FATAL ) { return EXIT_FAILURE; } \
 			allPassed = false;                                       \
 		}                                                            \
 	}
 
-#define RETURN_FAILURE( ... ) \
+#define QM_TEST_FAIL( ... ) \
 	printf( __VA_ARGS__ );    \
 	return TEST_RETURN_FAILURE
+#define QM_TEST_ASSERT( TEST )                         \
+	if ( !( TEST ) )                                   \
+	{                                                  \
+		printf( "Assert failed on \"" #TEST "\"!\n" ); \
+		return TEST_RETURN_FAILURE;                    \
+	}

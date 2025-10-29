@@ -113,7 +113,7 @@ size_t qm_os_memory_get_block_size( void *ptr )
 {
 	uint8_t *buf = ptr;
 
-	QmOsMemoryBlockHeader *header = ( QmOsMemoryBlockHeader * ) ( buf - sizeof( QmOsMemoryBlockHeader ) );
+	const QmOsMemoryBlockHeader *header = ( QmOsMemoryBlockHeader * ) ( buf - sizeof( QmOsMemoryBlockHeader ) );
 	assert( header != nullptr && header->magic == QM_OS_MEMORY_MAGIC );
 
 	return header->size;
