@@ -1,6 +1,7 @@
 set(CMAKE_C_STANDARD 23)
 
 add_library(qm-os STATIC
+        private/qm_os_linked_list.c
         private/qm_os_memory.c
         private/qm_os_random.c
         private/qm_os_shared_ptr.c
@@ -8,6 +9,7 @@ add_library(qm-os STATIC
         private/qm_os_time.c
 
         public/qm_os.h
+        public/qm_os_linked_list.h
         public/qm_os_memory.h
         public/qm_os_random.h
         public/qm_os_shared_ptr.h
