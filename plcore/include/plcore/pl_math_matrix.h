@@ -171,18 +171,18 @@ inline static bool PlCompareMatrix( const PLMatrix4 *m, const PLMatrix4 *m2 ) {
 }
 
 inline static PLMatrix4 PlScaleMatrix4( PLMatrix4 m, QmMathVector3f scale ) {
-	m.pl_m4pos( 0, 0 ) *= scale.x;
-	m.pl_m4pos( 0, 1 ) *= scale.x;
-	m.pl_m4pos( 0, 2 ) *= scale.x;
-	m.pl_m4pos( 0, 3 ) *= scale.x;
-	m.pl_m4pos( 1, 0 ) *= scale.y;
-	m.pl_m4pos( 1, 1 ) *= scale.y;
-	m.pl_m4pos( 1, 2 ) *= scale.y;
-	m.pl_m4pos( 1, 3 ) *= scale.y;
-	m.pl_m4pos( 2, 0 ) *= scale.z;
-	m.pl_m4pos( 2, 1 ) *= scale.z;
-	m.pl_m4pos( 2, 2 ) *= scale.z;
-	m.pl_m4pos( 2, 3 ) *= scale.z;
+	m.mm[ 0 ][ 0 ] *= scale.x;
+	m.mm[ 0 ][ 1 ] *= scale.x;
+	m.mm[ 0 ][ 2 ] *= scale.x;
+
+	m.mm[ 1 ][ 0 ] *= scale.y;
+	m.mm[ 1 ][ 1 ] *= scale.y;
+	m.mm[ 1 ][ 2 ] *= scale.y;
+
+	m.mm[ 2 ][ 0 ] *= scale.z;
+	m.mm[ 2 ][ 1 ] *= scale.z;
+	m.mm[ 2 ][ 2 ] *= scale.z;
+
 	return m;
 }
 
