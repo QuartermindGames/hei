@@ -37,55 +37,26 @@ enum {
 };
 
 #define PlFloatToByte( a ) ( uint8_t ) ( roundf( ( a ) * 255.f ) )
-#define PlByteToFloat( a ) ( ( a ) / ( float ) 255 )
-
-#define PlClamp( min, val, max ) ( val ) < ( min ) ? ( min ) : ( ( val ) > ( max ) ? ( max ) : ( val ) )
 
 static inline bool PlIsPowerOfTwo( unsigned int num ) {
 	return ( bool ) ( ( num != 0 ) && ( ( num & ( ~num + 1 ) ) == num ) );
 }
 
 #define PL_DEG2RAD( X ) ( ( X ) * ( PL_PI_DIV_180 ) )
-#define PL_RAD2DEG( X ) ( ( X ) * ( PL_180_DIV_PI ) )
 
 /* https://stackoverflow.com/a/9194117 */
 static inline int PlRoundUp( int num, int multiple ) {
 	return ( num + multiple - 1 ) & -multiple;
 }
 
-typedef struct PLRectangleI32 {
-	int x, y, w, h;
-} PLRectangleI32;
-static inline PLRectangleI32 PlCreateRectangleI32( int x, int y, int w, int h ) {
-	PLRectangleI32 rectangle;
-	rectangle.x = x;
-	rectangle.y = y;
-	rectangle.w = w;
-	rectangle.h = h;
-
-	return rectangle;
-}
-
 typedef struct PLRectangleF32 {
 	float x, y, w, h;
 } PLRectangleF32;
-static inline PLRectangleF32 PlCreateRectangleF32( float x, float y, float w, float h ) {
-	PLRectangleF32 rectangle;
-	rectangle.x = x;
-	rectangle.y = y;
-	rectangle.w = w;
-	rectangle.h = h;
-
-	return rectangle;
-}
 
 #include <plcore/pl_math_vector.h>
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Colour
-
-#define PL_COLOUR_INDEX( COLOUR, INDEX )  ( ( uint8_t * ) &( COLOUR ) )[ INDEX ]
-#define PlColourF32Index( COLOUR, INDEX ) ( ( float * ) &( COLOUR ) )[ INDEX ]
 
 QmMathColour4ub PlColourF32ToU8( const QmMathColour4f *in );
 QmMathColour4f PlColourU8ToF32( const QmMathColour4ub *in );
@@ -93,66 +64,12 @@ QmMathColour4f PlColourU8ToF32( const QmMathColour4ub *in );
 QmMathColour4ub PlAddColour( const QmMathColour4ub *c, const QmMathColour4ub *c2 );
 QmMathColour4f PlAddColourF32( const QmMathColour4f *c, const QmMathColour4f *c2 );
 
-static inline void PlSetColour4B( QmMathColour4ub *c, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
-	c->r = r;
-	c->g = g;
-	c->b = b;
-	c->a = a;
-}
-
-static inline void PlSetColour4F( QmMathColour4ub *c, float r, float g, float b, float a ) {
-	c->r = PlFloatToByte( r );
-	c->g = PlFloatToByte( g );
-	c->b = PlFloatToByte( b );
-	c->a = PlFloatToByte( a );
-}
-
-static inline void PlClearColour( QmMathColour4ub *c ) {
-	PlSetColour4B( c, 0, 0, 0, 0 );
-}
-
 static inline bool PlColour4fCompare( const QmMathColour4f *a, const QmMathColour4f *b ) {
 	return ( ( a->r == b->r ) && ( a->g == b->g ) && ( a->b == b->b ) && ( a->a == b->a ) );
 }
 
 static inline bool PlCompareColour( QmMathColour4ub c, QmMathColour4ub c2 ) {
 	return ( ( c.r == c2.r ) && ( c.g == c2.g ) && ( c.b == c2.b ) && ( c.a == c2.a ) );
-}
-
-static inline void PlMultiplyColour( QmMathColour4ub *c, QmMathColour4ub c2 ) {
-	c->r *= c2.r;
-	c->g *= c2.g;
-	c->b *= c2.b;
-	c->a *= c2.a;
-}
-
-static inline void PlMultiplyColourf( QmMathColour4ub *c, float a ) {
-	uint8_t a2 = PlFloatToByte( a );
-	c->r *= a2;
-	c->g *= a2;
-	c->b *= a2;
-	c->a *= a2;
-}
-
-static inline void PlDivideColour( QmMathColour4ub *c, QmMathColour4ub c2 ) {
-	c->r /= c2.r;
-	c->g /= c2.g;
-	c->b /= c2.b;
-	c->a /= c2.a;
-}
-
-static inline void PlDivideColourF( QmMathColour4ub *c, float a ) {
-	uint8_t a2 = PlFloatToByte( a );
-	c->r /= a2;
-	c->g /= a2;
-	c->b /= a2;
-	c->a /= a2;
-}
-
-static inline const char *PlPrintColour( QmMathColour4ub c ) {
-	static char s[ 16 ] = { '\0' };
-	snprintf( s, 16, "%i %i %i %i", c.r, c.g, c.b, c.a );
-	return s;
 }
 
 static inline QmMathColour4f PlVector4ToColourF32( const QmMathVector4f *v ) {
@@ -164,7 +81,7 @@ static inline QmMathColour4f PlVector4ToColourF32( const QmMathVector4f *v ) {
 #define PL_COLOURF32RGB( R, G, B ) \
 	( QmMathColour4f ){ .r = ( R ), .g = ( G ), .b = ( B ), .a = 1.0f }
 
-#define PL_COLOURU8_TO_F32( C ) QM_MATH_COLOUR4F( PlByteToFloat( ( C ).r ), PlByteToFloat( ( C ).g ), PlByteToFloat( ( C ).b ), PlByteToFloat( ( C ).a ) )
+#define PL_COLOURU8_TO_F32( C ) QM_MATH_COLOUR4F( QM_MATH_BTOF( ( C ).r ), QM_MATH_BTOF( ( C ).g ), QM_MATH_BTOF( ( C ).b ), QM_MATH_BTOF( ( C ).a ) )
 #define PL_COLOURF32_TO_U8( C ) QM_MATH_COLOUR4UB( PlFloatToByte( ( C ).r ), PlFloatToByte( ( C ).g ), PlFloatToByte( ( C ).b ), PlFloatToByte( ( C ).a ) )
 
 /* pinks */
@@ -348,7 +265,6 @@ typedef struct PLQuad {
 /////////////////////////////////////////////////////////////////////////////////////
 // Randomisation
 
-int *PlSeedRandom( int seed );
 int *PlSeedPerlin( const int *hashTable );
 
 double PlGeneratePerlinNoise( int *seed, double x, double y, double z );

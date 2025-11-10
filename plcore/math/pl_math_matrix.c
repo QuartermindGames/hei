@@ -130,7 +130,7 @@ QmMathVector3f PlGetMatrix4Translation( const PLMatrix4 *m ) {
 
 QmMathVector3f PlGetMatrix4Angle( const PLMatrix4 *m ) {
 	QmMathVector3f out = qm_math_vector3f( 0, 0, 0 );
-	out.y = PL_RAD2DEG( asinf( m->m[ 8 ] ) );
+	out.y = QM_MATH_RAD2DEG( asinf( m->m[ 8 ] ) );
 	if ( m->m[ 10 ] < 0 ) {
 		if ( out.y >= 0 ) {
 			out.y = 180.f - out.y;
@@ -139,10 +139,10 @@ QmMathVector3f PlGetMatrix4Angle( const PLMatrix4 *m ) {
 		}
 	}
 	if ( m->m[ 0 ] > -PL_EPSILON && m->m[ 0 ] < PL_EPSILON ) {
-		out.x = PL_RAD2DEG( atan2f( m->m[ 1 ], m->m[ 5 ] ) );
+		out.x = QM_MATH_RAD2DEG( atan2f( m->m[ 1 ], m->m[ 5 ] ) );
 	} else {
-		out.z = PL_RAD2DEG( atan2f( -m->m[ 4 ], m->m[ 0 ] ) );
-		out.x = PL_RAD2DEG( atan2f( -m->m[ 9 ], m->m[ 10 ] ) );
+		out.z = QM_MATH_RAD2DEG( atan2f( -m->m[ 4 ], m->m[ 0 ] ) );
+		out.x = QM_MATH_RAD2DEG( atan2f( -m->m[ 9 ], m->m[ 10 ] ) );
 	}
 	return out;
 }

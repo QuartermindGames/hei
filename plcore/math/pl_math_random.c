@@ -9,12 +9,6 @@
 
 #include <plcore/pl_math.h>
 
-int *PlSeedRandom( int seed ) {
-	int *s = ( int * ) QM_OS_MEMORY_MALLOC_( sizeof( int ) );
-	*s = seed;
-	return s;
-}
-
 /****************************************
  * Perlin noise generation, based on 'Improved Noise'.
  * https://mrl.nyu.edu/~perlin/noise/

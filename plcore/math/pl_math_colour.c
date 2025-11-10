@@ -17,7 +17,7 @@ QmMathColour4ub PlColourF32ToU8( const QmMathColour4f *in )
 
 QmMathColour4f PlColourU8ToF32( const QmMathColour4ub *in )
 {
-	return qm_math_colour4f( PlByteToFloat( in->r ), PlByteToFloat( in->g ), PlByteToFloat( in->b ), PlByteToFloat( in->a ) );
+	return qm_math_colour4f( QM_MATH_BTOF( in->r ), QM_MATH_BTOF( in->g ), QM_MATH_BTOF( in->b ), QM_MATH_BTOF( in->a ) );
 }
 
 /****************************************
