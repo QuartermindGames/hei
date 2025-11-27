@@ -19,6 +19,8 @@
 #define PL_SYSTEM_OS_SOLARIS 4
 
 #if defined( _WIN32 )
+#	include <basetsd.h>
+
 #	define PL_SYSTEM_NAME              "WINDOWS"
 #	define PL_SYSTEM_OS                PL_SYSTEM_OS_WINDOWS
 #	define PL_SYSTEM_EXE_EXTENSION     ".exe"
@@ -65,6 +67,9 @@
 #			endif
 #		endif
 #	endif
+
+typedef SSIZE_T ssize_t;
+
 #elif defined( __linux__ )// Linux
 #	ifndef PL_IGNORE_SYSTEM_HEADERS
 #		include <dirent.h>
