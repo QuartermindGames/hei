@@ -2,15 +2,19 @@
 // Purpose: Memory management helpers.
 // Author:  Mark E. Sowden
 
-#if ( QM_OS_SYSTEM == QM_OS_SYSTEM_LINUX ) || ( QM_OS_SYSTEM == QM_OS_SYSTEM_MACOS )
-#	include <sys/resource.h>
-#	include <unistd.h>
-#endif
-
 #include <assert.h>
 #include <stdlib.h>
 
 #include "qmos/public/qm_os_memory.h"
+
+#if ( QM_OS_SYSTEM == QM_OS_SYSTEM_LINUX ) || ( QM_OS_SYSTEM == QM_OS_SYSTEM_MACOS )
+#	include <sys/resource.h>
+#	include <unistd.h>
+#elif ( QM_OS_SYSTEM == QM_OS_SYSTEM_WINDOWS )
+#	define WIN32_LEAN_AND_MEAN
+#	include <windows.h>
+#	include <psapi.h>
+#endif
 
 QM_OS_EXPORT void *( *qmOsMemoryCAllocCallback )( size_t num, size_t size )           = calloc;
 QM_OS_EXPORT void *( *qmOsMemoryReAllocCallback )( void *ptr, size_t newSize )        = realloc;

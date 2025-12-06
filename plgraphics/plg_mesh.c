@@ -123,12 +123,12 @@ void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, con
 /* software implementation of gouraud shading */
 void PlgApplyMeshLighting( PLGMesh *mesh, const PLGLight *light, QmMathVector3f position ) {
 	QmMathVector3f distvec = qm_math_vector3f_sub( position, light->position );
-	float distance = ( PlByteToFloat( light->colour.a ) - qm_math_vector3f_length( distvec ) ) / 100.f;
+	float distance = ( QM_OS_BYTE_TO_FLOAT( light->colour.a ) - qm_math_vector3f_length( distvec ) ) / 100.f;
 	for ( unsigned int i = 0; i < mesh->num_verts; i++ ) {
 		QmMathVector3f normal = mesh->vertices[ i ].normal;
 		float angle = ( distance * ( ( normal.x * distvec.x ) + ( normal.y * distvec.y ) + ( normal.z * distvec.z ) ) );
 		if ( angle < 0 ) {
-			PlClearColour( &mesh->vertices[ i ].colour );
+			mesh->vertices[ i ].colour = ( QmMathColour4ub ){};
 		} else {
 			mesh->vertices[ i ].colour.r = light->colour.r * PlFloatToByte( angle );
 			mesh->vertices[ i ].colour.g = light->colour.g * PlFloatToByte( angle );

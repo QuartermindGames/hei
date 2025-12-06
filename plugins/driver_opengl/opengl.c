@@ -24,6 +24,8 @@ SOFTWARE.
 
 #include "plugin.h"
 
+#include "qmos/public/qm_os.h"
+
 #include <plgraphics/plg.h>
 #include <plgraphics/plg_camera.h>
 
@@ -176,10 +178,10 @@ static void GLGetMaxTextureSize( unsigned int *s ) {
 
 static void GLSetClearColour( QmMathColour4ub rgba ) {
 	XGL_CALL( glClearColor(
-	        PlByteToFloat( rgba.r ),
-	        PlByteToFloat( rgba.g ),
-	        PlByteToFloat( rgba.b ),
-	        PlByteToFloat( rgba.a ) ) );
+	        QM_OS_BYTE_TO_FLOAT( rgba.r ),
+	        QM_OS_BYTE_TO_FLOAT( rgba.g ),
+	        QM_OS_BYTE_TO_FLOAT( rgba.b ),
+	        QM_OS_BYTE_TO_FLOAT( rgba.a ) ) );
 }
 
 static void GLClearBuffers( unsigned int buffers ) {

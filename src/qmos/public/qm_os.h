@@ -17,12 +17,9 @@
 // System Macros
 /////////////////////////////////////////////////////////////////////////////////////
 
-enum
-{
-	QM_OS_SYSTEM_WINDOWS,
-	QM_OS_SYSTEM_LINUX,
-	QM_OS_SYSTEM_MACOS,
-};
+#define QM_OS_SYSTEM_WINDOWS 1
+#define QM_OS_SYSTEM_LINUX   2
+#define QM_OS_SYSTEM_MACOS   3
 
 #if defined( __linux__ )
 #	define QM_OS_SYSTEM_NAME    "Linux"
@@ -36,7 +33,7 @@ enum
 #	define QM_OS_SYSTEM_LIB_EXT ".so"
 #elif defined( _WIN32 )
 #	define QM_OS_SYSTEM_NAME    "Windows"
-#	define QM_OS_SYSTEM_OS      QM_OS_SYSTEM_WINDOWS
+#	define QM_OS_SYSTEM         QM_OS_SYSTEM_WINDOWS
 #	define QM_OS_SYSTEM_EXE_EXT ".exe"
 #	define QM_OS_SYSTEM_LIB_EXT ".dll"
 #else
@@ -109,8 +106,8 @@ enum
 #define QM_OS_ARRAY_ELEMENTS( A )  ( sizeof( A ) / sizeof( *( A ) ) )
 #define QM_OS_MAX_ARRAY_INDEX( A ) ( int ) ( QM_OS_ARRAY_ELEMENTS( A ) - 1 )
 
-#define QM_OS_MIN( A, B )            ( ( A ) < ( B ) ? ( A ) : ( B ) )
-#define QM_OS_MAX( A, B )            ( ( A ) > ( B ) ? ( A ) : ( B ) )
+#define QM_OS_MIN( A, B ) ( ( A ) < ( B ) ? ( A ) : ( B ) )
+#define QM_OS_MAX( A, B ) ( ( A ) > ( B ) ? ( A ) : ( B ) )
 
 #define QM_OS_BIT_FLAG( A, B ) A = ( 1U << B )
 
