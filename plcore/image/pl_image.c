@@ -45,6 +45,11 @@ static PLImage *LoadStbImage( PLFile *file ) {
 	}
 
 	void *tmp = QM_OS_MEMORY_MALLOC_( s );
+	if ( tmp == NULL )
+	{
+		return NULL;
+	}
+
 	PlReadFile( file, tmp, sizeof( char ), s );
 
 	int x, y, component;
@@ -57,15 +62,23 @@ static PLImage *LoadStbImage( PLFile *file ) {
 		return NULL;
 	}
 
-	PLImage *image = QM_OS_MEMORY_CALLOC( 1, sizeof( PLImage ) );
-	image->colour_format = PL_COLOURFORMAT_RGBA;
-	image->format = PL_IMAGEFORMAT_RGBA8;
-	image->width = ( unsigned int ) x;
-	image->height = ( unsigned int ) y;
-	image->size = PlGetImageSize( image->format, image->width, image->height );
-	image->levels = 1;
-	image->data = QM_OS_MEMORY_CALLOC( image->levels, sizeof( uint8_t * ) );
-	image->data[ 0 ] = data;
+	PLImage *image = QM_OS_MEMORY_NEW( PLImage );
+	if ( image != NULL )
+	{
+		image->colour_format = PL_COLOURFORMAT_RGBA;
+		image->format        = PL_IMAGEFORMAT_RGBA8;
+		image->width         = ( unsigned int ) x;
+		image->height        = ( unsigned int ) y;
+
+		image->levels = 1;
+		image->data   = QM_OS_MEMORY_NEW_( uint8_t *, image->levels );
+
+		image->size      = PlGetImageSize( image->format, image->width, image->height );
+		image->data[ 0 ] = data;
+		data             = NULL;
+	}
+
+	qm_os_memory_free( data );
 
 	return image;
 }
@@ -370,9 +383,78 @@ bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
 		return true;
 	}
 
-	switch ( image->format ) {
-		case PL_IMAGEFORMAT_RGB8: {
-			if ( new_format == PL_IMAGEFORMAT_RGBA8 ) { return RGB8toRGBA8( image ); }
+	switch ( image->format )
+	{
+		case PL_IMAGEFORMAT_RGB8:
+		{
+			QmMathColour3ub *src          = ( QmMathColour3ub * ) image->data[ 0 ];
+			size_t           numSrcPixels = image->size / sizeof( QmMathColour3ub );
+			switch ( new_format )
+			{
+				default:
+					break;
+				case PL_IMAGEFORMAT_RGBA8:
+				{
+					return RGB8toRGBA8( image );
+				}
+				case PL_IMAGEFORMAT_R8:
+				{
+					size_t dstSize = PlGetImageSize( PL_IMAGEFORMAT_R8, image->width, image->height );
+					assert( dstSize != 0 );
+
+					typedef struct R8
+					{
+						uint8_t r;
+					} R8;
+					R8 *dst = QM_OS_MEMORY_MALLOC_( dstSize );
+					for ( size_t i = 0; i < numSrcPixels; ++i )
+					{
+						// only copy the red channel, discard the others
+						// (do we really want to do it this way? alternatively, could combine all channels...)
+						dst[ i ].r = src[ i ].r;
+					}
+
+					qm_os_memory_free( image->data[ 0 ] );
+
+					image->data[ 0 ]     = ( uint8_t * ) dst;
+					image->size          = dstSize;
+					image->format        = PL_IMAGEFORMAT_R8;
+					image->colour_format = PL_COLOURFORMAT_RGB;
+
+					return true;
+				}
+			}
+		}
+		case PL_IMAGEFORMAT_RGBA8:
+		{
+			QmMathColour4ub *src          = ( QmMathColour4ub * ) image->data[ 0 ];
+			size_t           numSrcPixels = image->size / sizeof( QmMathColour4ub );
+			if ( new_format == PL_IMAGEFORMAT_R8 )
+			{
+				size_t dstSize = PlGetImageSize( PL_IMAGEFORMAT_R8, image->width, image->height );
+				assert( dstSize != 0 );
+
+				typedef struct R8
+				{
+					uint8_t r;
+				} R8;
+				R8 *dst = QM_OS_MEMORY_NEW_( R8, dstSize );
+				for ( size_t i = 0; i < numSrcPixels; ++i )
+				{
+					// only copy the red channel, discard the others
+					// (do we really want to do it this way? alternatively, could combine all channels...)
+					dst[ i ].r = src[ i ].r;
+				}
+
+				qm_os_memory_free( image->data[ 0 ] );
+
+				image->data[ 0 ]     = ( uint8_t * ) dst;
+				image->size          = dstSize;
+				image->format        = PL_IMAGEFORMAT_R8;
+				image->colour_format = PL_COLOURFORMAT_RGB;
+
+				return true;
+			}
 		}
 
 		case PL_IMAGEFORMAT_RGB5A1: {
@@ -653,6 +735,7 @@ PLImageFormat PlGetImageFormat( const PLImage *image ) { return image->format; }
 
 void *PlGetImageData( PLImage *image, unsigned int frame, unsigned int mip ) {
 	if ( mip >= image->levels ) {
+		PlReportErrorF( PL_RESULT_MEMORY_EOA, "invalid mip" );
 		return NULL;
 	}
 

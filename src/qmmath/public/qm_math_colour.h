@@ -46,6 +46,32 @@ extern "C"
 	// Colour4ub
 	/////////////////////////////////////////////////////////////////////////////////////
 
+	typedef struct QmMathColour3ub
+	{
+		union
+		{
+			struct
+			{
+				unsigned char r;
+				unsigned char g;
+				unsigned char b;
+			};
+
+			unsigned char v[ 3 ];
+		};
+	} QmMathColour3ub;
+
+#define QM_MATH_COLOUR3UB( R, G, B, A ) \
+	( QmMathColour3ub ) { .r = ( R ), .g = ( G ), .b = ( B ) }
+#define QM_MATH_COLOUR3UB_RGB( R, G, B ) QM_MATH_COLOUR3UB( R, G, B )
+#define QM_MATH_COLOUR3UB_R( R )         QM_MATH_COLOUR3UB( R, 255, 255 )
+#define QM_MATH_COLOUR3UB_G( G )         QM_MATH_COLOUR3UB( 255, G, 255 )
+#define QM_MATH_COLOUR3UB_B( B )         QM_MATH_COLOUR3UB( 255, 255, B )
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	// Colour4ub
+	/////////////////////////////////////////////////////////////////////////////////////
+
 	typedef struct QmMathColour4ub
 	{
 		union
