@@ -178,10 +178,10 @@ static void GLGetMaxTextureSize( unsigned int *s ) {
 
 static void GLSetClearColour( QmMathColour4ub rgba ) {
 	XGL_CALL( glClearColor(
-	        QM_OS_BYTE_TO_FLOAT( rgba.r ),
-	        QM_OS_BYTE_TO_FLOAT( rgba.g ),
-	        QM_OS_BYTE_TO_FLOAT( rgba.b ),
-	        QM_OS_BYTE_TO_FLOAT( rgba.a ) ) );
+	        QM_MATH_BTOF( rgba.r ),
+	        QM_MATH_BTOF( rgba.g ),
+	        QM_MATH_BTOF( rgba.b ),
+	        QM_MATH_BTOF( rgba.a ) ) );
 }
 
 static void GLClearBuffers( unsigned int buffers ) {
