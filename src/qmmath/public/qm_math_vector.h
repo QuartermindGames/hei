@@ -153,6 +153,15 @@ extern "C"
 	static constexpr QmMathVector2f QM_MATH_VECTOR2F_ZERO = ( QmMathVector2f ) {};
 	static constexpr QmMathVector3f QM_MATH_VECTOR3F_ZERO = ( QmMathVector3f ) {};
 	static constexpr QmMathVector4f QM_MATH_VECTOR4F_ZERO = ( QmMathVector4f ) {};
+#else
+#	define QM_MATH_VECTOR2I_ZERO \
+		( QmMathVector2i ) {}
+#	define QM_MATH_VECTOR2F_ZERO \
+		( QmMathVector2f ) {}
+#	define QM_MATH_VECTOR3F_ZERO \
+		( QmMathVector3f ) {}
+#	define QM_MATH_VECTOR4F_ZERO \
+		( QmMathVector4f ) {}
 #endif
 
 	/////////////////////////////////////////////////////////////////////////////////////

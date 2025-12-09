@@ -11,6 +11,17 @@
 #if defined( _MSC_VER ) && !defined( __cplusplus )
 #	define nullptr   NULL
 #	define constexpr const
+
+typedef uint8_t bool;
+
+#	ifdef true
+#		undef true
+#	endif
+#	define true 1
+#	ifdef false
+#		undef false
+#	endif
+#	define false 0
 #endif
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -95,6 +106,9 @@ enum
 #if defined( __GNUC__ ) || defined( __GNUG__ )
 #	define QM_OS_IMPORT
 #	define QM_OS_EXPORT __attribute__( ( visibility( "default" ) ) )
+#elif defined( _MSC_VER )
+#	define QM_OS_IMPORT
+#	define QM_OS_EXPORT __declspec( dllexport )
 #else
 #	error "Unsupported compiler!"
 #endif

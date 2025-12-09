@@ -2,6 +2,8 @@
 // Purpose: Helper functions for time.
 // Author:  Mark E. Sowden
 
+#include "qmos/public/qm_os.h"
+
 #include <time.h>
 
 #if defined( _MSC_VER )
