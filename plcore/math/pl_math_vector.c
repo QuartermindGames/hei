@@ -20,15 +20,15 @@ QmMathVector3f PlTransformVector3( const QmMathVector3f *v, const PLMatrix4 *m )
 	        ( m->pl_m4pos( 0, 0 ) * v->x ) +
 	                ( m->pl_m4pos( 0, 1 ) * v->y ) +
 	                ( m->pl_m4pos( 0, 2 ) * v->z ) +
-	                ( m->pl_m4pos( 0, 3 ) * 1.0 ),
+	                ( m->pl_m4pos( 0, 3 ) * 1.0f ),
 	        ( m->pl_m4pos( 1, 0 ) * v->x ) +
 	                ( m->pl_m4pos( 1, 1 ) * v->y ) +
 	                ( m->pl_m4pos( 1, 2 ) * v->z ) +
-	                ( m->pl_m4pos( 1, 3 ) * 1.0 ),
+	                ( m->pl_m4pos( 1, 3 ) * 1.0f ),
 	        ( m->pl_m4pos( 2, 0 ) * v->x ) +
 	                ( m->pl_m4pos( 2, 1 ) * v->y ) +
 	                ( m->pl_m4pos( 2, 2 ) * v->z ) +
-	                ( m->pl_m4pos( 2, 3 ) * 1.0 ) );
+	                ( m->pl_m4pos( 2, 3 ) * 1.0f ) );
 }
 
 QmMathVector4f PlTransformVector4( const QmMathVector4f *v, const PLMatrix4 *m )

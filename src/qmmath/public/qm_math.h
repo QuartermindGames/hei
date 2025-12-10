@@ -6,19 +6,10 @@
 // at least not until C23 is formally supported, however these
 // *may* help it compile...
 #if defined( _MSC_VER ) && !defined( __cplusplus )
+#	include <stdbool.h>
+
 #	define nullptr   NULL
 #	define constexpr const
-
-typedef unsigned char bool;
-
-#	ifdef true
-#		undef true
-#	endif
-#	define true 1
-#	ifdef false
-#		undef false
-#	endif
-#	define false 0
 #endif
 
 #ifdef M_PI

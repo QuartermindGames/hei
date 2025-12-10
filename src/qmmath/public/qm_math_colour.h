@@ -127,7 +127,7 @@ extern "C"
 		                         QM_MATH_CLAMP( min, src.a, max ) );
 	}
 
-	static inline QmMathColour4ub qm_math_colour4ub_clamp( const QmMathColour4ub src, const float min, const float max )
+	static inline QmMathColour4ub qm_math_colour4ub_clamp( const QmMathColour4ub src, const unsigned char min, const unsigned char max )
 	{
 		return qm_math_colour4ub( QM_MATH_CLAMP( min, src.r, max ),
 		                          QM_MATH_CLAMP( min, src.g, max ),
