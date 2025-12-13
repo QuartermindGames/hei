@@ -26,7 +26,6 @@ PL_EXTERN_C
 #define PL_PI_DIV_180 ( PL_PI / 180.f )
 
 #define PL_TAU     6.28318530717f
-#define PL_EPSILON 1.19209290e-7f
 
 enum {
 	// Colours

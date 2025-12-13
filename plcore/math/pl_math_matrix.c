@@ -138,7 +138,7 @@ QmMathVector3f PlGetMatrix4Angle( const PLMatrix4 *m ) {
 			out.y = -180.f - out.y;
 		}
 	}
-	if ( m->m[ 0 ] > -PL_EPSILON && m->m[ 0 ] < PL_EPSILON ) {
+	if ( m->m[ 0 ] > -QM_MATH_EPSILON && m->m[ 0 ] < QM_MATH_EPSILON ) {
 		out.x = QM_MATH_RAD2DEG( atan2f( m->m[ 1 ], m->m[ 5 ] ) );
 	} else {
 		out.z = QM_MATH_RAD2DEG( atan2f( -m->m[ 4 ], m->m[ 0 ] ) );
