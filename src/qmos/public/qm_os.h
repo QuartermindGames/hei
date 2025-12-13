@@ -9,6 +9,8 @@
 // at least not until C23 is formally supported, however these
 // *may* help it compile...
 #if defined( _MSC_VER ) && !defined( __cplusplus )
+#	include <stdbool.h>
+
 #	define nullptr   NULL
 #	define constexpr const
 #endif
@@ -95,6 +97,9 @@ enum
 #if defined( __GNUC__ ) || defined( __GNUG__ )
 #	define QM_OS_IMPORT
 #	define QM_OS_EXPORT __attribute__( ( visibility( "default" ) ) )
+#elif defined( _MSC_VER )
+#	define QM_OS_IMPORT
+#	define QM_OS_EXPORT __declspec( dllexport )
 #else
 #	error "Unsupported compiler!"
 #endif

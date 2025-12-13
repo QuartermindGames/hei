@@ -134,7 +134,7 @@ int qm_os_string_alnum( const char *s, const size_t size )
 
 		if ( isalnum( s[ i ] ) )
 		{
-			return i;
+			return ( int ) i;
 		}
 	}
 
@@ -152,7 +152,7 @@ int qm_os_string_alpha( const char *s, const size_t size )
 
 		if ( isalpha( s[ i ] ) )
 		{
-			return i;
+			return ( int ) i;
 		}
 	}
 
@@ -170,7 +170,7 @@ int qm_os_string_digit( const char *s, const size_t size )
 
 		if ( ( i == 0 && s[ i ] == '-' && isdigit( s[ i + 1 ] ) ) || isdigit( s[ i ] ) )
 		{
-			return i;
+			return ( int ) i;
 		}
 	}
 

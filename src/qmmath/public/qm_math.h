@@ -2,6 +2,16 @@
 
 #pragma once
 
+// technically MSVC isn't supported right now by this library,
+// at least not until C23 is formally supported, however these
+// *may* help it compile...
+#if defined( _MSC_VER ) && !defined( __cplusplus )
+#	include <stdbool.h>
+
+#	define nullptr   NULL
+#	define constexpr const
+#endif
+
 #ifdef M_PI
 #	define QM_MATH_PI ( float ) M_PI
 #else
