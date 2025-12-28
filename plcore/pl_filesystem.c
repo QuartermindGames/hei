@@ -205,92 +205,6 @@ static PLFileSystemMount *fs_mount_ceiling = NULL;
 
 PL_STATIC_ASSERT( sizeof( VFS_LOCAL_HINT ) < VFS_MAX_HINT, "Local hint is larger than maximum hint length, please adjust limit!" );
 
-IMPLEMENT_COMMAND( pkgext ) {
-	const char *path = argv[ 1 ];
-	if ( path == NULL ) {
-		PrintWarning( "Invalid path specified!\n" );
-		return;
-	}
-
-	PLPackage *pkg = PlLoadPackage( path );
-	if ( pkg == NULL ) {
-		PrintWarning( "Failed to load package \"%s\"!\nPL: %s\n", path, PlGetError() );
-		return;
-	}
-
-	for ( unsigned int i = 0; i < pkg->table_size; ++i ) {
-		PLFile *file = PlLoadPackageFileByIndex( pkg, i );
-		if ( file == NULL ) {
-			PrintWarning( "Failed to load file at index %d (\"%s\"): %s\n", i, pkg->table[ i ].fileName, PlGetError() );
-			continue;
-		}
-
-		char pkgPath[ PL_SYSTEM_MAX_PATH ];
-		memset( pkgPath, 0, sizeof( pkgPath ) );
-		strncpy( pkgPath, file->path, strlen( file->path ) - strlen( PlGetFileName( file->path ) ) );
-
-		char outPath[ PL_SYSTEM_MAX_PATH + 10 ];
-		snprintf( outPath, sizeof( outPath ), "extracted/%s", pkgPath );
-		if ( !PlCreatePath( outPath ) ) {
-			PrintWarning( "Failed to create path, \"%s\"!\nPL: %s\n", outPath, PlGetError() );
-			break;
-		}
-
-		snprintf( outPath, sizeof( outPath ), "extracted/%s", file->path );
-		if ( PlFileExists( outPath ) ) {
-			//PrintWarning( "File already exists at destination, skipping!\n" );
-			continue;
-		}
-
-		FILE *fout = fopen( outPath, "wb" );
-		if ( fout == NULL ) {
-			PrintWarning( "Failed to write file to destination, \"%s\"!\n", outPath );
-			continue;
-		}
-		fwrite( PlGetFileData( file ), sizeof( uint8_t ), PlGetFileSize( file ), fout );
-		fclose( fout );
-
-		Print( "(%u/%u) \"%s\"\n", i + 1, pkg->table_size, outPath );
-	}
-	Print( "End\n" );
-
-	PlDestroyPackage( pkg );
-}
-
-IMPLEMENT_COMMAND( pkglst ) {
-	const char *path = argv[ 1 ];
-	if ( path == NULL ) {
-		Print( "Invalid path specified!\n" );
-		return;
-	}
-
-	PLPackage *pkg = PlLoadPackage( path );
-	if ( pkg == NULL ) {
-		Print( "Failed to load package \"%s\"!\nPL: %s\n", path, PlGetError() );
-		return;
-	}
-
-	Print( "Listing contents of %s (%d)...\n", path, pkg->table_size );
-	for ( unsigned int i = 0; i < pkg->table_size; ++i ) {
-		Print( "\n"
-		       " num:    %d\n"
-		       " name:   %s\n"
-		       " size:   %u\n"
-		       " csize:  %u\n"
-		       " ctype:  %d\n"
-		       " offset: %u\n",
-		       i,
-		       pkg->table[ i ].fileName,
-		       pkg->table[ i ].fileSize,
-		       pkg->table[ i ].compressedSize,
-		       pkg->table[ i ].compressionType,
-		       pkg->table[ i ].offset );
-	}
-	Print( "End\n" );
-
-	PlDestroyPackage( pkg );
-}
-
 IMPLEMENT_COMMAND( lstmnt ) {
 	PL_UNUSEDVAR( argv );
 	PL_UNUSEDVAR( argc );
@@ -318,42 +232,8 @@ IMPLEMENT_COMMAND( lstmnt ) {
 	Print( "%d locations mounted\n", numLocations );
 }
 
-IMPLEMENT_COMMAND( unmnt ) {
-	if ( fs_mount_root == NULL ) {
-		Print( "No locations mounted\n" );
-		return;
-	}
-
-	PLFileSystemMount *location = fs_mount_root;
-	while ( location != NULL ) {
-		if ( strcasecmp( argv[ 1 ], location->path ) == 0 ) {
-			PlClearMountedLocation( location );
-			Print( "Done!\n" );
-			return;
-		}
-
-		location = location->next;
-	}
-
-	Print( "Failed to find location: \"%s\"!\n", argv[ 1 ] );
-}
-
-IMPLEMENT_COMMAND( mnt ) {
-	const char *path = argv[ 1 ];
-	if ( path == NULL ) {
-		Print( "Invalid path specified!\n" );
-		return;
-	}
-
-	PlMountLocation( path );
-}
-
 static void PlRegisterFSCommands_( void ) {
-	PlRegisterConsoleCommand( "pkgext", "Extract the contents of a package.", 1, pkgext_cmd );
-	PlRegisterConsoleCommand( "pkglst", "List the contents of a package.", 1, pkglst_cmd );
 	PlRegisterConsoleCommand( "lstmnt", "List all mounted packages and directories.", 0, lstmnt_cmd );
-	PlRegisterConsoleCommand( "unmnt", "Unmount the specified location.", 1, unmnt_cmd );
-	PlRegisterConsoleCommand( "mnt", "Mount the specified location.", 1, mnt_cmd );
 }
 
 void PlClearMountedLocation( PLFileSystemMount *location ) {
@@ -494,17 +374,6 @@ PLFileSystemMount *PlGetMountLocationForPath( const char *path ) {
 }
 
 /****/
-
-PLFunctionResult PlInitFileSystem( void ) {
-	PlRegisterFSCommands_();
-
-	PlClearMountedLocations();
-	return PL_RESULT_SUCCESS;
-}
-
-void PlShutdownFileSystem( void ) {
-	PlClearMountedLocations();
-}
 
 // Checks whether a file has been modified or not.
 bool PlIsFileModified( time_t oldtime, const char *path ) {

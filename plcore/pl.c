@@ -28,23 +28,6 @@
 
 #include "pl_private.h"
 
-/*	Generic functions for platform, such as	error handling.	*/
-
-typedef struct PLSubSystem {
-	unsigned int subsystem;
-
-	PLFunctionResult ( *InitFunction )( void );
-	void ( *ShutdownFunction )( void );
-
-	bool active;
-} PLSubSystem;
-
-PLSubSystem pl_subsystems[] = {
-        { PL_SUBSYSTEM_IO,
-         &PlInitFileSystem,
-         &PlShutdownFileSystem }
-};
-
 typedef struct PLArguments {
 	const char *exe_name;
 	const char *arguments[ 256 ];
@@ -76,23 +59,6 @@ PLFunctionResult PlInitialize( int argc, char **argv ) {
 	PlInitializeMatrixStacks_();
 
 	is_initialized = true;
-
-	return PL_RESULT_SUCCESS;
-}
-
-PLFunctionResult PlInitializeSubSystems( unsigned int subsystems ) {
-	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( pl_subsystems ); i++ ) {
-		if ( !pl_subsystems[ i ].active && ( subsystems & pl_subsystems[ i ].subsystem ) ) {
-			if ( pl_subsystems[ i ].InitFunction ) {
-				PLFunctionResult out = pl_subsystems[ i ].InitFunction();
-				if ( out != PL_RESULT_SUCCESS ) {
-					return out;
-				}
-			}
-
-			pl_subsystems[ i ].active = true;
-		}
-	}
 
 	return PL_RESULT_SUCCESS;
 }
@@ -153,17 +119,7 @@ const char *PlGetCommandLineArgumentValueByIndex( unsigned int index ) {
 }
 
 void PlShutdown( void ) {
-	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( pl_subsystems ); i++ ) {
-		if ( !pl_subsystems[ i ].active ) {
-			continue;
-		}
-
-		if ( pl_subsystems[ i ].ShutdownFunction ) {
-			pl_subsystems[ i ].ShutdownFunction();
-		}
-
-		pl_subsystems[ i ].active = false;
-	}
+	PlClearMountedLocations();
 
 	PlShutdownConsole();
 }

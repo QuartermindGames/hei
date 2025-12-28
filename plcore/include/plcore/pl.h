@@ -157,7 +157,6 @@ PL_EXTERN_C
 #if !defined( PL_COMPILE_PLUGIN )
 
 PL_EXTERN PLFunctionResult PlInitialize( int argc, char **argv );
-PL_EXTERN PLFunctionResult PlInitializeSubSystems( unsigned int subsystems );
 PL_EXTERN void PlShutdown( void );
 
 /******************************************************************/
