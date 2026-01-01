@@ -23,6 +23,12 @@ extern "C"
 	char  *qm_os_string_to_upper( char *s, size_t size );
 	char  *qm_os_string_to_lower( char *s, size_t size );
 
+	/**
+	 * Splits a string up by the given seperator, every length characters.
+	 * Returns a newly allocated buffer on success.
+	 */
+	char *qm_os_string_split( const char *s, size_t size, const char *sep );
+
 #if defined( __cplusplus )
 };
 #endif

@@ -173,7 +173,6 @@ typedef struct PLPluginExportTable {
 	int ( *vscprintf )( const char *format, va_list args );
 	unsigned int ( *strcnt )( const char *s, char c );
 	unsigned int ( *strncnt )( const char *s, char c, unsigned int n );
-	char *( *strchunksplit )( const char *s, unsigned int n, const char *sep );
 	char *( *strinsert )( const char *s, char **buf, size_t *bufSize, size_t *maxBufSize );
 	/* pl_image.h */
 	PLImage *( *CreateImage2 )( void *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat );

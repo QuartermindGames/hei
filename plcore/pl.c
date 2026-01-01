@@ -522,7 +522,6 @@ static PLPluginExportTable exportTable = {
         .vscprintf = pl_vscprintf,
         .strcnt = pl_strcnt,
         .strncnt = pl_strncnt,
-        .strchunksplit = pl_strchunksplit,
         .strinsert = pl_strinsert,
 
         .SetupPath = PlSetupPath,

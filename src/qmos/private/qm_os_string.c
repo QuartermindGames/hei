@@ -206,3 +206,23 @@ char *qm_os_string_to_lower( char *s, const size_t size )
 
 	return s;
 }
+
+char *qm_os_string_split( const char *s, const size_t size, const char *sep )
+{
+	size_t sl   = strlen( s );
+	size_t pl   = strlen( sep );
+	char  *dest = QM_OS_MEMORY_MALLOC_( sl + pl * ( sl / size ) + 1 );
+	char  *p    = dest;
+	for ( size_t i = 0, j = 1; i < sl; ++i, ++j )
+	{
+		*p++ = s[ i ];
+		if ( j == size )
+		{
+			j = 0;
+			strcpy( p, sep );
+			p += pl;
+		}
+	}
+
+	return dest;
+}
