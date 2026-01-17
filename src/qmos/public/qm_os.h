@@ -28,16 +28,25 @@
 #	define QM_OS_SYSTEM         QM_OS_SYSTEM_LINUX
 #	define QM_OS_SYSTEM_EXE_EXT ""
 #	define QM_OS_SYSTEM_LIB_EXT ".so"
+
+#	define QM_OS_SYSTEM_IMPLEMENT_MAIN() \
+		int main( int argc, char **argv ) { return qm_os_main( argc, argv ); }
 #elif defined( __APPLE__ )
 #	define QM_OS_SYSTEM_NAME    "macOS"
 #	define QM_OS_SYSTEM_OS      QM_OS_SYSTEM_MACOS
 #	define QM_OS_SYSTEM_EXE_EXT ""
 #	define QM_OS_SYSTEM_LIB_EXT ".so"
+
+#	define QM_OS_SYSTEM_IMPLEMENT_MAIN() \
+		int main( int argc, char **argv ) { return qm_os_main( argc, argv ); }
 #elif defined( _WIN32 )
 #	define QM_OS_SYSTEM_NAME    "Windows"
 #	define QM_OS_SYSTEM         QM_OS_SYSTEM_WINDOWS
 #	define QM_OS_SYSTEM_EXE_EXT ".exe"
 #	define QM_OS_SYSTEM_LIB_EXT ".dll"
+
+#	define QM_OS_SYSTEM_IMPLEMENT_MAIN() \
+		int WINAPI WinMain( HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw ) { return qm_os_main( __argc, __argv ); }
 #else
 #	error "Unknown target system!"
 #endif
