@@ -10,6 +10,36 @@ extern "C"
 #endif
 
 	/////////////////////////////////////////////////////////////////////////////////////
+	// Colour3f
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	typedef struct QmMathColour3f
+	{
+		union
+		{
+			struct
+			{
+				float r;
+				float g;
+				float b;
+			};
+
+			float v[ 3 ];
+		};
+	} QmMathColour3f;
+
+#define QM_MATH_COLOUR3F( R, G, B ) \
+	( QmMathColour3f ) { .r = ( R ), .g = ( G ), .b = ( B ) }
+#define QM_MATH_COLOUR3F_R( R ) QM_MATH_COLOUR4F( R, 1.0f, 1.0f )
+#define QM_MATH_COLOUR3F_G( G ) QM_MATH_COLOUR4F( 1.0f, G, 1.0f )
+#define QM_MATH_COLOUR3F_B( B ) QM_MATH_COLOUR4F( 1.0f, 1.0f, B )
+
+	static inline QmMathColour3f qm_math_colour3f( const float r, const float g, const float b )
+	{
+		return QM_MATH_COLOUR3F( r, g, b );
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
 	// Colour4f
 	/////////////////////////////////////////////////////////////////////////////////////
 
@@ -43,7 +73,7 @@ extern "C"
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
-	// Colour4ub
+	// Colour3ub
 	/////////////////////////////////////////////////////////////////////////////////////
 
 	typedef struct QmMathColour3ub
@@ -61,12 +91,17 @@ extern "C"
 		};
 	} QmMathColour3ub;
 
-#define QM_MATH_COLOUR3UB( R, G, B, A ) \
+#define QM_MATH_COLOUR3UB( R, G, B ) \
 	( QmMathColour3ub ) { .r = ( R ), .g = ( G ), .b = ( B ) }
 #define QM_MATH_COLOUR3UB_RGB( R, G, B ) QM_MATH_COLOUR3UB( R, G, B )
 #define QM_MATH_COLOUR3UB_R( R )         QM_MATH_COLOUR3UB( R, 255, 255 )
 #define QM_MATH_COLOUR3UB_G( G )         QM_MATH_COLOUR3UB( 255, G, 255 )
 #define QM_MATH_COLOUR3UB_B( B )         QM_MATH_COLOUR3UB( 255, 255, B )
+
+	static inline QmMathColour3ub qm_math_colour3ub( const unsigned char r, const unsigned char g, const unsigned char b )
+	{
+		return QM_MATH_COLOUR3UB( r, g, b );
+	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Colour4ub
