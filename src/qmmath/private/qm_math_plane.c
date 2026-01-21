@@ -46,16 +46,17 @@ QmMathPlaneProjection qm_math_plane_compute_projection( const QmMathPlane *self 
 	float ny = fabsf( self->normal.y );
 	float nz = fabsf( self->normal.z );
 
-	if ( ny > nx && ny < nz )
+	if ( nx > ny && nx > nz )
 	{
-		return COM_MATH_PLANE_PROJECTION_XZ;
-	}
-	if ( nz > nx && nz > ny )
-	{
-		return COM_MATH_PLANE_PROJECTION_XY;
+		return QM_MATH_PLANE_PROJECTION_YZ;
 	}
 
-	return COM_MATH_PLANE_PROJECTION_YZ;
+	if ( ny > nx && ny > nz )
+	{
+		return QM_MATH_PLANE_PROJECTION_XZ;
+	}
+
+	return QM_MATH_PLANE_PROJECTION_XY;
 }
 
 QmMathVector3f qm_math_plane_project_point( const QmMathPlane *self, const QmMathVector3f *point )

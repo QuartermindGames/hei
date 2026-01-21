@@ -1,4 +1,4 @@
-// Copyright © 2017-2025 Quartermind Games, Mark E. Sowden <hogsy@snortysoft.net>
+// Copyright © 2017-2026 Quartermind Games, Mark E. Sowden <markelswo@gmail.com>
 
 #pragma once
 
@@ -25,9 +25,9 @@ extern "C"
 
 	typedef enum QmMathPlaneProjection
 	{
-		COM_MATH_PLANE_PROJECTION_YZ,
-		COM_MATH_PLANE_PROJECTION_XZ,
-		COM_MATH_PLANE_PROJECTION_XY,
+		QM_MATH_PLANE_PROJECTION_YZ,
+		QM_MATH_PLANE_PROJECTION_XZ,
+		QM_MATH_PLANE_PROJECTION_XY,
 	} QmMathPlaneProjection;
 
 	QmMathPlaneProjection qm_math_plane_compute_projection( const QmMathPlane *self );
