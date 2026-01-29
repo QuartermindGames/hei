@@ -137,6 +137,26 @@ extern "C"
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
+	// Zero
+	/////////////////////////////////////////////////////////////////////////////////////
+
+#if ( __STDC_VERSION__ >= 202000L )
+	static constexpr QmMathColour3f  QM_MATH_COLOUR3F_ZERO  = ( QmMathColour3f ) {};
+	static constexpr QmMathColour4f  QM_MATH_COLOUR4F_ZERO  = ( QmMathColour4f ) {};
+	static constexpr QmMathColour3ub QM_MATH_COLOUR3UB_ZERO = ( QmMathColour3ub ) {};
+	static constexpr QmMathColour4ub QM_MATH_COLOUR4UB_ZERO = ( QmMathColour4ub ) {};
+#else
+#	define QM_MATH_COLOUR3F_ZERO \
+		( QmMathColour3f ) {}
+#	define QM_MATH_COLOUR4F_ZERO \
+		( QmMathColour4f ) {}
+#	define QM_MATH_COLOUR3UB_ZERO \
+		( QmMathColour3ub ) {}
+#	define QM_MATH_COLOUR4UB_ZERO \
+		( QmMathColour4ub ) {}
+#endif
+
+	/////////////////////////////////////////////////////////////////////////////////////
 	// Conversion
 	/////////////////////////////////////////////////////////////////////////////////////
 
