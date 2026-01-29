@@ -11,39 +11,43 @@
 
 #define PL_IMAGE_MAX_CHANNELS 4
 
-/** todo
- * 		Wow hogsy, that sure is a big list of pixel formats!
- * 		Thanks for noticing *blush*
- * 		Anyway, I'd like to eventually replace this with a
- * 		pixel descriptor structure - so we explicitly store
- * 		the pixel size, the channel order, flags for ignored
- * 		channels etc., which should mean we can get rid of
- * 		these lists.
- */
+typedef enum QmImageChannelFormat
+{
+	QM_IMAGE_DATA_FORMAT_U8,
+	QM_IMAGE_DATA_FORMAT_F32,
+} QmImageChannelFormat;
 
-//#define PL_NEW_IMAGE_API
-#if defined( PL_NEW_IMAGE_API )
-enum {
-	PL_IMAGE_CHANNEL_RED,
-	PL_IMAGE_CHANNEL_GREEN,
-	PL_IMAGE_CHANNEL_BLUE,
-	PL_IMAGE_CHANNEL_ALPHA,
-	PL_IMAGE_CHANNEL_IGNORED,
-};
+typedef enum QmImageChannelType
+{
+	QM_IMAGE_CHANNEL_TYPE_RED,
+	QM_IMAGE_CHANNEL_TYPE_GREEN,
+	QM_IMAGE_CHANNEL_TYPE_BLUE,
+	QM_IMAGE_CHANNEL_TYPE_ALPHA,
+	QM_IMAGE_CHANNEL_TYPE_IGNORED,
+} QmImageChannelType;
 
-typedef struct PLImageChannelFormatDescriptor {
-	uint8_t type;
-	uint8_t size; /* in bits */
-} PLImageChannelFormatDescriptor;
+typedef struct QmImageChannelFormatDescriptor
+{
+	QmImageChannelType   type;
+	QmImageChannelFormat format;
+} QmImageChannelFormatDescriptor;
 
-typedef struct PLImagePixelFormatDescriptor {
-	uint8_t pixelSize;
-	uint8_t numChannels;
-	PLImageChannelFormatDescriptor channels[ PL_IMAGE_MAX_CHANNELS ];
-} PLImagePixelFormatDescriptor;
-#endif
+typedef struct QmImagePixelFormatDescriptor
+{
+	uint8_t                        numChannels;
+	QmImageChannelFormatDescriptor channels[ PL_IMAGE_MAX_CHANNELS ];
+} QmImagePixelFormatDescriptor;
 
-typedef enum PLImageFormat {
+#define QM_IMAGE_FORMAT_RGB8_DESC()                                                                                           \
+	( QmImagePixelFormatDescriptor ) { .numChannels = 3,                                                                      \
+		                               .channels    = {                                                                       \
+                                               {.format = QM_IMAGE_DATA_FORMAT_U8, .type = QM_IMAGE_CHANNEL_TYPE_RED  },   \
+                                               {.format = QM_IMAGE_DATA_FORMAT_U8, .type = QM_IMAGE_CHANNEL_TYPE_GREEN}, \
+                                               {.format = QM_IMAGE_DATA_FORMAT_U8, .type = QM_IMAGE_CHANNEL_TYPE_BLUE } \
+ }, }
+
+typedef enum PLImageFormat
+{
 	PL_IMAGEFORMAT_UNKNOWN,
 
 	PL_IMAGEFORMAT_R8,
@@ -61,6 +65,9 @@ typedef enum PLImageFormat {
 	PL_IMAGEFORMAT_RGBA16, // 16 16 16 16
 	PL_IMAGEFORMAT_RGBA16F,// 16 16 16 16
 
+	PL_IMAGEFORMAT_RGB32F,
+	PL_IMAGEFORMAT_RGBA32F,
+
 	PL_IMAGEFORMAT_RGBA_DXT1,
 	PL_IMAGEFORMAT_RGB_DXT1,
 	PL_IMAGEFORMAT_RGBA_DXT3,
@@ -70,19 +77,22 @@ typedef enum PLImageFormat {
 } PLImageFormat;
 
 /* todo: deprecate this */
-typedef enum PLColourFormat {
+typedef enum PLColourFormat
+{
 	PL_COLOURFORMAT_RGB,
 	PL_COLOURFORMAT_BGR,
 	PL_COLOURFORMAT_RGBA,
 	PL_COLOURFORMAT_BGRA,
 } PLColourFormat;
 
-typedef struct PLImageFrame {
-	void **data;
+typedef struct PLImageFrame
+{
+	void       **data;
 	unsigned int numMips;
 } PLImageFrame;
 
-typedef struct PLImage {
+typedef struct PLImage
+{
 #if 1
 	uint8_t **data; /* todo: kill this */
 #else
@@ -90,19 +100,20 @@ typedef struct PLImage {
 #endif
 
 	PLImageFrame *frames;
-	unsigned int numFrames;
+	unsigned int  numFrames;
 
-	unsigned int x, y;
-	unsigned int width, height;
-	size_t size;
-	unsigned int levels;
-	char path[ PL_SYSTEM_MAX_PATH ];
-	PLImageFormat format;
+	unsigned int   x, y;
+	unsigned int   width, height;
+	size_t         size;
+	unsigned int   levels;
+	char           path[ PL_SYSTEM_MAX_PATH ];
+	PLImageFormat  format;
 	PLColourFormat colour_format;
-	unsigned int flags;
+	unsigned int   flags;
 } PLImage;
 
-enum {
+enum
+{
 	PL_IMAGE_FILEFORMAT_ALL = 0,
 
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_TGA, 0 ),
@@ -136,21 +147,21 @@ PL_EXTERN void PlRegisterStandardImageLoaders( unsigned int flags );
 PL_EXTERN void PlClearImageLoaders( void );
 
 PL_EXTERN PLImage *PlCreateImage( void *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat );
-PL_EXTERN void PlDestroyImage( PLImage *image );
+PL_EXTERN void     PlDestroyImage( PLImage *image );
 
 PL_EXTERN PLImage *PlLoadImage( const char *path );
 PL_EXTERN PLImage *PlParseImage( PLFile *file );
-PL_EXTERN bool PlWriteImage( const PLImage *image, const char *path, unsigned int quality );
+PL_EXTERN bool     PlWriteImage( const PLImage *image, const char *path, unsigned int quality );
 
 PL_EXTERN bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format );
 
 PL_EXTERN void PlInvertImageColour( PLImage *image );
-void PlClearImageAlpha( PLImage *image );
+void           PlClearImageAlpha( PLImage *image );
 PL_EXTERN void PlReplaceImageColour( PLImage *image, QmMathColour4ub target, QmMathColour4ub dest );
 
 PL_EXTERN bool PlFlipImageVertical( PLImage *image );
 
-PL_EXTERN void PlFreeImage( PLImage *image );
+PL_EXTERN void         PlFreeImage( PLImage *image );
 PL_EXTERN unsigned int PlGetImageSize( PLImageFormat format, unsigned int width, unsigned int height );
 
 unsigned int PlGetImageFormatPixelSize( PLImageFormat format );
@@ -160,11 +171,11 @@ bool PlImageHasAlpha( const PLImage *image );
 
 PL_EXTERN const char **PlGetSupportedImageFormats( unsigned int *numElements );
 
-unsigned int PlGetImageWidth( const PLImage *image );
-unsigned int PlGetImageHeight( const PLImage *image );
+unsigned int  PlGetImageWidth( const PLImage *image );
+unsigned int  PlGetImageHeight( const PLImage *image );
 PLImageFormat PlGetImageFormat( const PLImage *image );
-void *PlGetImageData( PLImage *image, unsigned int frame, unsigned int mip );
-unsigned int PlGetImageDataSize( const PLImage *image );
+void         *PlGetImageData( PLImage *image, unsigned int frame, unsigned int mip );
+unsigned int  PlGetImageDataSize( const PLImage *image );
 
 PLImage *PlResizeImage( PLImage *image, unsigned int newWidth, unsigned int newHeight );
 PLImage *PlCropImage( PLImage *image, unsigned int newWidth, unsigned int newHeight, unsigned int xOffset, unsigned int yOffset );

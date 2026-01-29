@@ -584,6 +584,11 @@ static unsigned int TranslateImageFormat( PLImageFormat format ) {
 		case PL_IMAGEFORMAT_RGB5A1:
 			return GL_RGB5_A1;
 
+		case PL_IMAGEFORMAT_RGB32F:
+			return GL_RGB32F;
+		case PL_IMAGEFORMAT_RGBA32F:
+			return GL_RGBA32F;
+
 		case PL_IMAGEFORMAT_RGB_DXT1:
 			return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 		case PL_IMAGEFORMAT_RGBA_DXT1:
@@ -627,6 +632,9 @@ static unsigned int GetStorageFormatForImageFormat( PLImageFormat format ) {
 			return GL_UNSIGNED_SHORT;
 		case PL_IMAGEFORMAT_RGBA16F:
 			return GL_HALF_FLOAT;
+		case PL_IMAGEFORMAT_RGB32F:
+		case PL_IMAGEFORMAT_RGBA32F:
+			return GL_FLOAT;
 		case PL_IMAGEFORMAT_RGBA_DXT1:
 			return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 		case PL_IMAGEFORMAT_RGB_DXT1:
@@ -650,6 +658,7 @@ static unsigned int GetColourFormatForImageFormat( PLImageFormat format ) {
 		case PL_IMAGEFORMAT_RGB8:
 		case PL_IMAGEFORMAT_RGB_DXT1:
 		case PL_IMAGEFORMAT_RGB_FXT1:
+		case PL_IMAGEFORMAT_RGB32F:
 			return GL_RGB;
 		default:
 			break;
