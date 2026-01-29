@@ -1118,10 +1118,19 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 		XGL_CALL( glEnableVertexAttribArray( program->internal.v_normal ) );
 		XGL_CALL( glVertexAttribPointer( program->internal.v_normal, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, normal ) ) );
 	}
-	if ( program->internal.v_uv != -1 ) {
-		XGL_CALL( glEnableVertexAttribArray( program->internal.v_uv ) );
-		XGL_CALL( glVertexAttribPointer( program->internal.v_uv, 2, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, st ) ) );
+
+	if ( program->internal.v_uv != -1 )
+	{
+		for ( unsigned int i = 0; i < 4; ++i )
+		{
+			XGL_CALL( glEnableVertexAttribArray( program->internal.v_uv + i ) );
+			XGL_CALL( glVertexAttribPointer( program->internal.v_uv + i,
+			                                 2, GL_FLOAT, GL_FALSE,
+			                                 sizeof( PLGVertex ),
+			                                 ( const GLvoid * ) PL_OFFSETOF( PLGVertex, st ) + i * sizeof( QmMathVector2f ) ) );
+		}
 	}
+
 	if ( program->internal.v_colour != -1 ) {
 		XGL_CALL( glEnableVertexAttribArray( program->internal.v_colour ) );
 		XGL_CALL( glVertexAttribPointer( program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, colour ) ) );
