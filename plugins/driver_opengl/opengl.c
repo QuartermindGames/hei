@@ -1339,7 +1339,7 @@ static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *l
 		if ( stage->type == PLG_SHADER_TYPE_VERTEX ) {
 			insert( "in vec3 pl_vposition;\n" );
 			insert( "in vec3 pl_vnormal;\n" );
-			insert( "in vec2 pl_vuv;\n" );
+			insert( "in vec2 pl_vuv[4];\n" );
 			insert( "in vec4 pl_vcolour;\n" );
 			insert( "in vec3 pl_vtangent, pl_vbitangent;\n" );
 			insert( "out float gl_ClipDistance[1];\n" );
