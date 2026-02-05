@@ -34,6 +34,10 @@ extern "C"
 
 	QmMathVector3f qm_math_plane_project_point( const QmMathPlane *self, const QmMathVector3f *point );
 
+	static constexpr QmMathVector3f QM_MATH_PROJECT_YZ[ 2 ] = { QM_MATH_VECTOR3F( 0.0f, 1.0f, 0.0f ), QM_MATH_VECTOR3F( 0.0f, 0.0f, 1.0f ) };
+	static constexpr QmMathVector3f QM_MATH_PROJECT_XZ[ 2 ] = { QM_MATH_VECTOR3F( 1.0f, 0.0f, 0.0f ), QM_MATH_VECTOR3F( 0.0f, 0.0f, 1.0f ) };
+	static constexpr QmMathVector3f QM_MATH_PROJECT_XY[ 2 ] = { QM_MATH_VECTOR3F( 1.0f, 0.0f, 0.0f ), QM_MATH_VECTOR3F( 0.0f, 1.0f, 0.0f ) };
+
 #if defined( __cplusplus )
 };
 #endif
