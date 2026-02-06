@@ -160,15 +160,11 @@ extern "C"
 	// Conversion
 	/////////////////////////////////////////////////////////////////////////////////////
 
-	static inline QmMathColour4f qm_math_colour4ub_to_colour4f( const QmMathColour4ub src )
-	{
-		return qm_math_colour4f( QM_MATH_BTOF( src.r ), QM_MATH_BTOF( src.g ), QM_MATH_BTOF( src.b ), QM_MATH_BTOF( src.a ) );
-	}
+#define QM_MATH_COLOUR4F_TO_4UB( IN ) QM_MATH_COLOUR4UB( QM_MATH_FTOB( ( IN ).r ), QM_MATH_FTOB( ( IN ).g ), QM_MATH_FTOB( ( IN ).b ), QM_MATH_FTOB( ( IN ).a ) )
+#define QM_MATH_COLOUR4F_TO_3UB( IN ) QM_MATH_COLOUR3UB( QM_MATH_FTOB( ( IN ).r ), QM_MATH_FTOB( ( IN ).g ), QM_MATH_FTOB( ( IN ).b ) )
 
-	static inline QmMathColour4ub qm_math_colour4f_to_colour4ub( const QmMathColour4f src )
-	{
-		return qm_math_colour4ub( QM_MATH_FTOB( src.r ), QM_MATH_FTOB( src.g ), QM_MATH_FTOB( src.b ), QM_MATH_FTOB( src.a ) );
-	}
+#define QM_MATH_COLOUR4UB_TO_3UB( IN ) QM_MATH_COLOUR3UB( ( IN ).r, ( IN ).g, ( IN ).b )
+#define QM_MATH_COLOUR4UB_TO_4F( IN )  QM_MATH_COLOUR4F( QM_MATH_BTOF( src.r ), QM_MATH_BTOF( src.g ), QM_MATH_BTOF( src.b ), QM_MATH_BTOF( src.a ) )
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Clamp

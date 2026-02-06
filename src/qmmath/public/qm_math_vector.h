@@ -174,7 +174,7 @@ extern "C"
 #define QM_MATH_VECTOR3F_TO_2F( IN ) QM_MATH_VECTOR2F( ( IN ).x, ( IN ).y )
 #define QM_MATH_VECTOR3F_TO_4F( IN ) QM_MATH_VECTOR4F( ( IN ).x, ( IN ).y, ( IN ).z, 0.0f )
 
-#define QM_MATH_VECTOR4F_TO_2F( In ) QM_MATH_VECTOR2F( ( IN ).x, ( IN ).y )
+#define QM_MATH_VECTOR4F_TO_2F( IN ) QM_MATH_VECTOR2F( ( IN ).x, ( IN ).y )
 #define QM_MATH_VECTOR4F_TO_3F( IN ) QM_MATH_VECTOR3F( ( IN ).x, ( IN ).y, ( IN ).x )
 
 	/////////////////////////////////////////////////////////////////////////////////////
