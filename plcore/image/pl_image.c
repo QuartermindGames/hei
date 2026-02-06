@@ -537,6 +537,7 @@ unsigned int PlGetImageFormatPixelSize( PLImageFormat format ) {
 		case PL_IMAGEFORMAT_RGBA8:
 			return 4;
 		case PL_IMAGEFORMAT_RGBA12:
+		case PL_IMAGEFORMAT_RGB16F:
 			return 6;
 		case PL_IMAGEFORMAT_RGBA16:
 		case PL_IMAGEFORMAT_RGBA16F:

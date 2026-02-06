@@ -14,6 +14,7 @@
 typedef enum QmImageChannelFormat
 {
 	QM_IMAGE_DATA_FORMAT_U8,
+	QM_IMAGE_DATA_FORMAT_F16,
 	QM_IMAGE_DATA_FORMAT_F32,
 } QmImageChannelFormat;
 
@@ -45,24 +46,40 @@ typedef struct QmImagePixelFormatDescriptor
                                                {.format = QM_IMAGE_DATA_FORMAT_U8, .type = QM_IMAGE_CHANNEL_TYPE_GREEN}, \
                                                {.format = QM_IMAGE_DATA_FORMAT_U8, .type = QM_IMAGE_CHANNEL_TYPE_BLUE } \
  }, }
+#define QM_IMAGE_FORMAT_RGB16F_DESC()                                                                                          \
+	( QmImagePixelFormatDescriptor ) { .numChannels = 3,                                                                       \
+		                               .channels    = {                                                                        \
+                                               {.format = QM_IMAGE_DATA_FORMAT_F16, .type = QM_IMAGE_CHANNEL_TYPE_RED  },   \
+                                               {.format = QM_IMAGE_DATA_FORMAT_F16, .type = QM_IMAGE_CHANNEL_TYPE_GREEN}, \
+                                               {.format = QM_IMAGE_DATA_FORMAT_F16, .type = QM_IMAGE_CHANNEL_TYPE_BLUE } \
+ }, }
+#define QM_IMAGE_FORMAT_RGB32F_DESC()                                                                                          \
+	( QmImagePixelFormatDescriptor ) { .numChannels = 3,                                                                       \
+		                               .channels    = {                                                                        \
+                                               {.format = QM_IMAGE_DATA_FORMAT_F32, .type = QM_IMAGE_CHANNEL_TYPE_RED  },   \
+                                               {.format = QM_IMAGE_DATA_FORMAT_F32, .type = QM_IMAGE_CHANNEL_TYPE_GREEN}, \
+                                               {.format = QM_IMAGE_DATA_FORMAT_F32, .type = QM_IMAGE_CHANNEL_TYPE_BLUE } \
+ }, }
 
 typedef enum PLImageFormat
 {
 	PL_IMAGEFORMAT_UNKNOWN,
 
 	PL_IMAGEFORMAT_R8,
-	PL_IMAGEFORMAT_RGB4,   // 4 4 4
-	PL_IMAGEFORMAT_RGBA4,  // 4 4 4 4
-	PL_IMAGEFORMAT_RGB5,   // 5 5 5
-	PL_IMAGEFORMAT_RGB5A1, // 5 5 5 1
-	PL_IMAGEFORMAT_RGB565, // 5 6 5
-	PL_IMAGEFORMAT_RGB8,   // 8 8 8
-	PL_IMAGEFORMAT_BGR8,   // 8 8 8
-	PL_IMAGEFORMAT_RGBA8,  // 8 8 8 8
-	PL_IMAGEFORMAT_BGRA8,  // 8 8 8 8
-	PL_IMAGEFORMAT_BGRX8,  // 8 8 8 0
-	PL_IMAGEFORMAT_RGBA12, // 12 12 12 12
-	PL_IMAGEFORMAT_RGBA16, // 16 16 16 16
+	PL_IMAGEFORMAT_RGB4,  // 4 4 4
+	PL_IMAGEFORMAT_RGBA4, // 4 4 4 4
+	PL_IMAGEFORMAT_RGB5,  // 5 5 5
+	PL_IMAGEFORMAT_RGB5A1,// 5 5 5 1
+	PL_IMAGEFORMAT_RGB565,// 5 6 5
+	PL_IMAGEFORMAT_RGB8,  // 8 8 8
+	PL_IMAGEFORMAT_BGR8,  // 8 8 8
+	PL_IMAGEFORMAT_RGBA8, // 8 8 8 8
+	PL_IMAGEFORMAT_BGRA8, // 8 8 8 8
+	PL_IMAGEFORMAT_BGRX8, // 8 8 8 0
+	PL_IMAGEFORMAT_RGBA12,// 12 12 12 12
+	PL_IMAGEFORMAT_RGBA16,// 16 16 16 16
+
+	PL_IMAGEFORMAT_RGB16F,
 	PL_IMAGEFORMAT_RGBA16F,// 16 16 16 16
 
 	PL_IMAGEFORMAT_RGB32F,

@@ -30,14 +30,39 @@ extern "C"
 
 #define QM_MATH_COLOUR3F( R, G, B ) \
 	( QmMathColour3f ) { .r = ( R ), .g = ( G ), .b = ( B ) }
-#define QM_MATH_COLOUR3F_R( R ) QM_MATH_COLOUR4F( R, 1.0f, 1.0f )
-#define QM_MATH_COLOUR3F_G( G ) QM_MATH_COLOUR4F( 1.0f, G, 1.0f )
-#define QM_MATH_COLOUR3F_B( B ) QM_MATH_COLOUR4F( 1.0f, 1.0f, B )
+#define QM_MATH_COLOUR3F_R( R ) QM_MATH_COLOUR3F( R, 1.0f, 1.0f )
+#define QM_MATH_COLOUR3F_G( G ) QM_MATH_COLOUR3F( 1.0f, G, 1.0f )
+#define QM_MATH_COLOUR3F_B( B ) QM_MATH_COLOUR3F( 1.0f, 1.0f, B )
 
 	static inline QmMathColour3f qm_math_colour3f( const float r, const float g, const float b )
 	{
 		return QM_MATH_COLOUR3F( r, g, b );
 	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	// Colour3f16
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	typedef struct QmMathColour3f16
+	{
+		union
+		{
+			struct
+			{
+				_Float16 r;
+				_Float16 g;
+				_Float16 b;
+			};
+
+			_Float16 v[ 3 ];
+		};
+	} QmMathColour3f16;
+
+#define QM_MATH_COLOUR3F16( R, G, B ) \
+	( QmMathColour3f16 ) { .r = ( R ), .g = ( G ), .b = ( B ) }
+#define QM_MATH_COLOUR3F16_R( R ) QM_MATH_COLOUR3F16( R, 1.0f, 1.0f )
+#define QM_MATH_COLOUR3F16_G( G ) QM_MATH_COLOUR3F16( 1.0f, G, 1.0f )
+#define QM_MATH_COLOUR3F16_B( B ) QM_MATH_COLOUR3F16( 1.0f, 1.0f, B )
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Colour4f
