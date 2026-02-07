@@ -39,6 +39,14 @@ typedef struct QmImagePixelFormatDescriptor
 	QmImageChannelFormatDescriptor channels[ PL_IMAGE_MAX_CHANNELS ];
 } QmImagePixelFormatDescriptor;
 
+#define QM_IMAGE_FORMAT_RGBA8_DESC()                                                                                          \
+	( QmImagePixelFormatDescriptor ) { .numChannels = 4,                                                                      \
+		                               .channels    = {                                                                       \
+                                               {.format = QM_IMAGE_DATA_FORMAT_U8, .type = QM_IMAGE_CHANNEL_TYPE_RED  },   \
+                                               {.format = QM_IMAGE_DATA_FORMAT_U8, .type = QM_IMAGE_CHANNEL_TYPE_GREEN}, \
+                                               {.format = QM_IMAGE_DATA_FORMAT_U8, .type = QM_IMAGE_CHANNEL_TYPE_BLUE },  \
+                                               {.format = QM_IMAGE_DATA_FORMAT_U8, .type = QM_IMAGE_CHANNEL_TYPE_ALPHA}, \
+ }, }
 #define QM_IMAGE_FORMAT_RGB8_DESC()                                                                                           \
 	( QmImagePixelFormatDescriptor ) { .numChannels = 3,                                                                      \
 		                               .channels    = {                                                                       \
