@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-char *qm_os_string_alloc( size_t *size, const char *format, ... )
+char *qm_os_string_alloc( const char *format, ... )
 {
 	va_list v;
 	va_start( v, format );
@@ -22,9 +22,8 @@ char *qm_os_string_alloc( size_t *size, const char *format, ... )
 		return nullptr;
 	}
 
-	size_t sn = n + 1;
-
-	char *string = qm_os_memory_alloc( sn, sizeof( char ), nullptr );
+	size_t sn     = n + 1;
+	char  *string = qm_os_memory_alloc( sn, sizeof( char ), nullptr );
 	if ( string == nullptr )
 	{
 		return nullptr;
@@ -38,11 +37,6 @@ char *qm_os_string_alloc( size_t *size, const char *format, ... )
 	{
 		qm_os_memory_free( string );
 		string = nullptr;
-	}
-
-	if ( size != nullptr )
-	{
-		*size = sn;
 	}
 
 	return string;

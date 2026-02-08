@@ -13,7 +13,7 @@ extern "C"
 {
 #endif
 
-	char  *qm_os_string_alloc( size_t *size, const char *format, ... );
+	char  *qm_os_string_alloc( const char *format, ... );
 	char  *qm_os_string_convert_int( int value, char *dst, size_t dstSize, int base );
 	size_t qm_os_string_count( const char *s, char c, size_t size );
 	char  *qm_os_string_reverse( char *s, size_t size );
