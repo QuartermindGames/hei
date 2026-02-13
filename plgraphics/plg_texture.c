@@ -55,30 +55,6 @@ void PlgDestroyTexture( PLGTexture *texture ) {
 	qm_os_memory_free( texture );
 }
 
-/**
- * Automatically loads in an image and uploads it as a texture.
- */
-PLGTexture *PlgLoadTextureFromImage( const char *path, PLGTextureFilter filter_mode ) {
-	PLImage *image = PlLoadImage( path );
-	if ( image == NULL ) {
-		return NULL;
-	}
-
-	PLGTexture *texture = PlgCreateTexture();
-	if ( texture != NULL ) {
-		/* store the path, so we can easily reload the image if we need to */
-		strncpy( texture->path, image->path, sizeof( texture->path ) );
-
-		texture->filter = filter_mode;
-
-		PlgUploadTextureImage( texture, image );
-	}
-
-	PlDestroyImage( image );
-
-	return texture;
-}
-
 /* todo: move into generic GET handler */
 unsigned int PlgGetMaxTextureUnits( void ) {
 	if ( gfx_state.hw_maxtextureunits != 0 ) {

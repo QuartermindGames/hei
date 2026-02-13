@@ -85,10 +85,8 @@ PL_EXTERN_C
 #if !defined( PL_COMPILE_PLUGIN )
 
 PL_EXTERN PLGTexture *PlgCreateTexture( void );
-PL_EXTERN PLGTexture *PlgLoadTextureFromImage( const char *path, PLGTextureFilter filter_mode );
 PL_EXTERN void PlgDestroyTexture( PLGTexture *texture );
 
-//PL_EXTERN PLresult plUploadTextureData(PLTexture *texture, const PLTextureInfo *upload);
 PL_EXTERN bool PlgUploadTextureImage( PLGTexture *texture, const PLImage *upload );
 
 PL_EXTERN unsigned int PlgGetMaxTextureSize( void );
