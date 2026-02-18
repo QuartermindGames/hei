@@ -38,6 +38,18 @@ extern "C"
 	static constexpr QmMathVector3f QM_MATH_PROJECT_XZ[ 2 ] = { QM_MATH_VECTOR3F( 1.0f, 0.0f, 0.0f ), QM_MATH_VECTOR3F( 0.0f, 0.0f, 1.0f ) };
 	static constexpr QmMathVector3f QM_MATH_PROJECT_XY[ 2 ] = { QM_MATH_VECTOR3F( 1.0f, 0.0f, 0.0f ), QM_MATH_VECTOR3F( 0.0f, 1.0f, 0.0f ) };
 
+	static constexpr QmMathVector3f QM_MATH_PROJECTION_AXIS[ 3 ][ 2 ] = {
+	        {QM_MATH_PROJECT_YZ[ 0 ], QM_MATH_PROJECT_YZ[ 1 ]},
+	        {QM_MATH_PROJECT_XZ[ 0 ], QM_MATH_PROJECT_XZ[ 1 ]},
+	        {QM_MATH_PROJECT_XY[ 0 ], QM_MATH_PROJECT_XY[ 1 ]},
+	};
+
+	static constexpr QmMathVector3f QM_MATH_PROJECTION_NORMAL[ 3 ] = {
+	        [QM_MATH_PLANE_PROJECTION_YZ] = QM_MATH_VECTOR3F( 1.0f, 0.0f, 0.0f ),
+	        [QM_MATH_PLANE_PROJECTION_XZ] = QM_MATH_VECTOR3F( 0.0f, 1.0f, 0.0f ),
+	        [QM_MATH_PLANE_PROJECTION_XY] = QM_MATH_VECTOR3F( 0.0f, 0.0f, 1.0f ),
+	};
+
 #if defined( __cplusplus )
 };
 #endif
