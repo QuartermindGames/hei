@@ -4,7 +4,9 @@
 
 #include "../package_private.h"
 
-#define PAK_MAGIC PL_MAGIC_TO_NUM( 'P', 'A', 'C', 'K' )
+#include "qmos/public/qm_os.h"
+
+#define PAK_MAGIC QM_OS_MAGIC_TO_NUM( 'P', 'A', 'C', 'K' )
 
 #define PAK_INDEX_FILENAME_LENGTH 56
 #define PAK_INDEX_LENGTH          64

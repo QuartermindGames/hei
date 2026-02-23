@@ -12,7 +12,7 @@
  * http://wiki.xentax.com/index.php/Galleon_-_Island_Of_Mystery_(XBox)
  * should handle packages from both the retail game and prototype */
 
-#define PKG_MAGIC   PL_MAGIC_TO_NUM( 'C', 'R', 'S', 'R' )
+#define PKG_MAGIC   QM_OS_MAGIC_TO_NUM( 'C', 'R', 'S', 'R' )
 #define PKG_MAX_DIR 64
 
 /* terminators indicate different things,

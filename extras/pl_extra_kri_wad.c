@@ -8,7 +8,7 @@
 // WAD format as used by The Mark of Kri
 
 static const unsigned int BLOCK_SIZE = 2048U;
-static const unsigned int DIR_MAGIC = PL_MAGIC_TO_NUM( 'D', 'I', 'R', '0' );
+static const unsigned int DIR_MAGIC = QM_OS_MAGIC_TO_NUM( 'D', 'I', 'R', '0' );
 
 typedef struct KRIIndex {
 	int32_t hash;

@@ -7,7 +7,7 @@
 
 /* Mortyr's APUK package format */
 
-#define HAL_MAGIC PL_MAGIC_TO_NUM( 'A', 'P', 'U', 'K' )
+#define HAL_MAGIC QM_OS_MAGIC_TO_NUM( 'A', 'P', 'U', 'K' )
 
 PLPackage *PlParseHalPackage_( PLFile *file ) {
 	int32_t magic = PlReadInt32( file, false, NULL );

@@ -19,9 +19,9 @@ typedef enum PLGFrameBufferObjectTarget {
 } PLGFrameBufferObjectTarget;
 
 typedef enum PLGFrameBufferRenderFlags {
-	PL_BITFLAG( PLG_BUFFER_COLOUR, 0 ),
-	PL_BITFLAG( PLG_BUFFER_DEPTH, 1 ),
-	PL_BITFLAG( PLG_BUFFER_STENCIL, 2 ),
+	QM_OS_BIT_FLAG( PLG_BUFFER_COLOUR, 0 ),
+	QM_OS_BIT_FLAG( PLG_BUFFER_DEPTH, 1 ),
+	QM_OS_BIT_FLAG( PLG_BUFFER_STENCIL, 2 ),
 } PLGFrameBufferRenderFlags;
 
 enum {

@@ -11,7 +11,7 @@
  * 	- zip64 support is currently missing
  */
 
-#define ZIP_FILE_MAGIC PL_MAGIC_TO_NUM( 'P', 'K', '\3', '\4' )
+#define ZIP_FILE_MAGIC QM_OS_MAGIC_TO_NUM( 'P', 'K', '\3', '\4' )
 
 #define ZIP_EXCLUDE_DIRS
 

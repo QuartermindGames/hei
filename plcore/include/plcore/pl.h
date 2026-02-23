@@ -74,15 +74,13 @@ typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
 #define PL_STRINGIFY( num ) #num
 #define PL_TOSTRING( A )    PL_STRINGIFY( A )
 
-#define PL_MAGIC_TO_NUM( A, B, C, D ) ( ( ( D ) << 24 ) + ( ( C ) << 16 ) + ( ( B ) << 8 ) + ( A ) )
-
-#define PL_BITFLAG( A, B ) A = ( 1U << B )
-
 #ifndef offsetof
 #	define PL_OFFSETOF( TYPE, MEMBER ) ( ( size_t ) &( ( ( TYPE * ) 0 )->MEMBER ) )
 #else
 #	define PL_OFFSETOF( TYPE, MEMBER ) offsetof( TYPE, MEMBER )
 #endif
+
+#include "qmos/public/qm_os.h"
 
 typedef enum PLVariableType {
 	PL_VAR_F32,
@@ -141,7 +139,7 @@ typedef enum PLFunctionResult {
 //////////////////////////////////////////////////////////////////
 
 enum {
-	PL_BITFLAG( PL_SUBSYSTEM_IO, 0 ),
+	QM_OS_BIT_FLAG( PL_SUBSYSTEM_IO, 0 ),
 };
 
 #if defined( PL_INTERNAL )

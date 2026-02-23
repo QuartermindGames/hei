@@ -10,7 +10,7 @@
 
 // Loader for Free Radical Design's PAK format.
 
-#define PAK5_MAGIC PL_MAGIC_TO_NUM( 'P', '5', 'C', 'K' )
+#define PAK5_MAGIC QM_OS_MAGIC_TO_NUM( 'P', '5', 'C', 'K' )
 
 typedef struct Pak5Header {
 	uint32_t magic;

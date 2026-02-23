@@ -227,7 +227,7 @@ static QmMathVector3f **GenerateNormalsPerGroup( const CPJModel *cpjModel ) {
 
 PLMModel *PlmParseCpjModel( PLFile *file ) {
 	unsigned int magic = PlReadInt32( file, false, NULL );
-	if ( magic != PL_MAGIC_TO_NUM( 'R', 'I', 'F', 'F' ) ) {
+	if ( magic != QM_OS_MAGIC_TO_NUM( 'R', 'I', 'F', 'F' ) ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "unexpected magic" );
 		return NULL;
 	}
@@ -248,7 +248,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 	cpjModel.numSmoothingGroups = 1;
 
 	/* first fetch the geometry description - there's only one of these it seems per model */
-	if ( SeekChunk( file, PL_MAGIC_TO_NUM( 'G', 'E', 'O', 'B' ), CPJ_OFFSET_START, &chunkInfo ) ) {
+	if ( SeekChunk( file, QM_OS_MAGIC_TO_NUM( 'G', 'E', 'O', 'B' ), CPJ_OFFSET_START, &chunkInfo ) ) {
 		static const unsigned int version = 1;
 		if ( chunkInfo.version != version ) {
 			CPJModel_Free( &cpjModel );
@@ -326,7 +326,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 
 	/* surface chunk - there are multiple of these, per texture */
 	PLFileOffset subOffset = CPJ_OFFSET_START;
-	while ( ( subOffset = SeekChunk( file, PL_MAGIC_TO_NUM( 'S', 'R', 'F', 'B' ), subOffset, &chunkInfo ) ) ) {
+	while ( ( subOffset = SeekChunk( file, QM_OS_MAGIC_TO_NUM( 'S', 'R', 'F', 'B' ), subOffset, &chunkInfo ) ) ) {
 		static const unsigned int version = 1;
 		if ( chunkInfo.version != version ) {
 			CPJModel_Free( &cpjModel );
@@ -406,7 +406,7 @@ PLMModel *PlmParseCpjModel( PLFile *file ) {
 	}
 
 	/* skeleton chunk, not a problem if it doesn't exist as it likely just means it's static */
-	if ( SeekChunk( file, PL_MAGIC_TO_NUM( 'S', 'K', 'L', 'B' ), CPJ_OFFSET_START, &chunkInfo ) ) {
+	if ( SeekChunk( file, QM_OS_MAGIC_TO_NUM( 'S', 'K', 'L', 'B' ), CPJ_OFFSET_START, &chunkInfo ) ) {
 		static const unsigned int version = 1;
 		if ( chunkInfo.version != version ) {
 			CPJModel_Free( &cpjModel );

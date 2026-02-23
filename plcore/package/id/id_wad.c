@@ -11,8 +11,8 @@
 // Doom WAD support
 /////////////////////////////////////////////////////////////////////////////////////
 
-#define WAD_MAGIC   PL_MAGIC_TO_NUM( 'I', 'W', 'A', 'D' )
-#define WAD_MAGIC_2 PL_MAGIC_TO_NUM( 'P', 'W', 'A', 'D' )
+#define WAD_MAGIC   QM_OS_MAGIC_TO_NUM( 'I', 'W', 'A', 'D' )
+#define WAD_MAGIC_2 QM_OS_MAGIC_TO_NUM( 'P', 'W', 'A', 'D' )
 
 typedef struct WadIndex {
 	int32_t offset;
@@ -86,10 +86,10 @@ PLPackage *PlParseWadPackage_( PLFile *file ) {
 // Quake/Half-Life WAD support
 /////////////////////////////////////////////////////////////////////////////////////
 
-#define WAD2_MAGIC       PL_MAGIC_TO_NUM( 'W', 'A', 'D', '2' )
+#define WAD2_MAGIC       QM_OS_MAGIC_TO_NUM( 'W', 'A', 'D', '2' )
 #define WAD2_NAME_LENGTH 16
 
-#define WAD3_MAGIC PL_MAGIC_TO_NUM( 'W', 'A', 'D', '3' )
+#define WAD3_MAGIC QM_OS_MAGIC_TO_NUM( 'W', 'A', 'D', '3' )
 
 typedef struct Wad2Index {
 	int32_t offset;

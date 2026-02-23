@@ -4,6 +4,8 @@
 /* this is a tool whipped up to quickly dump
  * the timestamps out of DNF2001 CPJ files */
 
+#include "qmos/public/qm_os.h"
+
 #include <plcore/pl.h>
 #include <plcore/pl_filesystem.h>
 
@@ -58,7 +60,7 @@ static void DumpHeaderTimestamp( const char *path, void *user ) {
 		return;
 	}
 
-	static unsigned int cpjMagic = PL_MAGIC_TO_NUM( 'R', 'I', 'F', 'F' );
+	static unsigned int cpjMagic = QM_OS_MAGIC_TO_NUM( 'R', 'I', 'F', 'F' );
 	unsigned int magic = PlReadInt32( file, false, NULL );
 	if ( magic != cpjMagic ) {
 		PlCloseFile( file );
@@ -76,7 +78,7 @@ static void DumpHeaderTimestamp( const char *path, void *user ) {
 
 	/* now seek to the commands and fetch additional data */
 	CPJChunkInfo info;
-	if ( SeekChunk( file, PL_MAGIC_TO_NUM( 'M', 'A', 'C', 'B' ), &info ) ) {
+	if ( SeekChunk( file, QM_OS_MAGIC_TO_NUM( 'M', 'A', 'C', 'B' ), &info ) ) {
 		struct {
 			uint32_t numSections;
 			uint32_t sectionsOffset;

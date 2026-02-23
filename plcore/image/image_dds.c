@@ -7,18 +7,18 @@
 #include "image_private.h"
 #include "qmos/public/qm_os_memory.h"
 
-#define DDS_MAGIC      PL_MAGIC_TO_NUM( 'D', 'D', 'S', ' ' )
-#define DDS_MAGIC_DXT1 PL_MAGIC_TO_NUM( 'D', 'X', 'T', '1' )
-#define DDS_MAGIC_DXT2 PL_MAGIC_TO_NUM( 'D', 'X', 'T', '2' )
-#define DDS_MAGIC_DXT3 PL_MAGIC_TO_NUM( 'D', 'X', 'T', '3' )
-#define DDS_MAGIC_DXT4 PL_MAGIC_TO_NUM( 'D', 'X', 'T', '4' )
-#define DDS_MAGIC_DXT5 PL_MAGIC_TO_NUM( 'D', 'X', 'T', '5' )
-#define DDS_MAGIC_ATI1 PL_MAGIC_TO_NUM( 'A', 'T', 'I', '1' )
-#define DDS_MAGIC_ATI2 PL_MAGIC_TO_NUM( 'A', 'T', 'I', '2' )
-#define DDS_MAGIC_BC4U PL_MAGIC_TO_NUM( 'B', 'C', '4', 'U' )
-#define DDS_MAGIC_BC4S PL_MAGIC_TO_NUM( 'B', 'C', '4', 'S' )
-#define DDS_MAGIC_BC5U PL_MAGIC_TO_NUM( 'B', 'C', '5', 'U' )
-#define DDS_MAGIC_BC5S PL_MAGIC_TO_NUM( 'B', 'C', '5', 'S' )
+#define DDS_MAGIC      QM_OS_MAGIC_TO_NUM( 'D', 'D', 'S', ' ' )
+#define DDS_MAGIC_DXT1 QM_OS_MAGIC_TO_NUM( 'D', 'X', 'T', '1' )
+#define DDS_MAGIC_DXT2 QM_OS_MAGIC_TO_NUM( 'D', 'X', 'T', '2' )
+#define DDS_MAGIC_DXT3 QM_OS_MAGIC_TO_NUM( 'D', 'X', 'T', '3' )
+#define DDS_MAGIC_DXT4 QM_OS_MAGIC_TO_NUM( 'D', 'X', 'T', '4' )
+#define DDS_MAGIC_DXT5 QM_OS_MAGIC_TO_NUM( 'D', 'X', 'T', '5' )
+#define DDS_MAGIC_ATI1 QM_OS_MAGIC_TO_NUM( 'A', 'T', 'I', '1' )
+#define DDS_MAGIC_ATI2 QM_OS_MAGIC_TO_NUM( 'A', 'T', 'I', '2' )
+#define DDS_MAGIC_BC4U QM_OS_MAGIC_TO_NUM( 'B', 'C', '4', 'U' )
+#define DDS_MAGIC_BC4S QM_OS_MAGIC_TO_NUM( 'B', 'C', '4', 'S' )
+#define DDS_MAGIC_BC5U QM_OS_MAGIC_TO_NUM( 'B', 'C', '5', 'U' )
+#define DDS_MAGIC_BC5S QM_OS_MAGIC_TO_NUM( 'B', 'C', '5', 'S' )
 
 #define DDS_HEADER_SIZE    124 /* DDSHeader size minus magic */
 #define DDS_HEADER_PF_SIZE 32

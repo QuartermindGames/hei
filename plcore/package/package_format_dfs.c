@@ -4,7 +4,7 @@
 #include "package_private.h"
 #include "qmos/public/qm_os_memory.h"
 
-#define DFS_MAGIC   PL_MAGIC_TO_NUM( 'S', 'F', 'D', 'X' )
+#define DFS_MAGIC   QM_OS_MAGIC_TO_NUM( 'S', 'F', 'D', 'X' )
 #define DFS_VERSION 1// Area 51 is 3 - will see about adding support later
 
 /**

@@ -58,7 +58,7 @@ PLPackage *ROF_ParseFile( PLFile *file ) {
 
 		PlFileSeek( file, indices[ i ].offset, PL_SEEK_SET );
 
-		static const unsigned int magic = PL_MAGIC_TO_NUM( 'd', 'e', 'f', 'T' );
+		static const unsigned int magic = QM_OS_MAGIC_TO_NUM( 'd', 'e', 'f', 'T' );
 		unsigned int rm = PL_READUINT32( file, false, NULL );
 		if ( rm == magic ) {
 			// probably compressed, or we'll assume it is anyway!

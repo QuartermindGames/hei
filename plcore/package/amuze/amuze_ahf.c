@@ -2,6 +2,8 @@
 // Hei Platform Library
 // Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
+#include "qmos/public/qm_os.h"
+
 #include "plcore/pl_math.h"
 
 #include "../package_private.h"
@@ -13,7 +15,7 @@
  */
 
 PLPackage *PlParseAhfPackage_( PLFile *file ) {
-	static const uint32_t MAGIC = PL_MAGIC_TO_NUM( 'A', 'H', 'F', 'F' );
+	static const uint32_t MAGIC = QM_OS_MAGIC_TO_NUM( 'A', 'H', 'F', 'F' );
 	uint32_t tag = PL_READUINT32( file, false, NULL );
 	if ( tag != MAGIC ) {
 		PlReportErrorF( PL_RESULT_FILEERR, "invalid tag (%u != %u)", tag, MAGIC );

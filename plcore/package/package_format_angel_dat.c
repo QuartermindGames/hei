@@ -3,10 +3,12 @@
 // Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "package_private.h"
+
+#include "qmos/public/qm_os.h"
 #include "qmos/public/qm_os_memory.h"
 
-#define ANGEL_DAT_MAGIC  PL_MAGIC_TO_NUM( 'D', 'A', 'V', 'E' ) /* oni2 */
-#define ANGEL_DAT_MAGIC2 PL_MAGIC_TO_NUM( 'D', 'a', 'v', 'e' ) /* tsnw, rdr, sh2 */
+#define ANGEL_DAT_MAGIC  QM_OS_MAGIC_TO_NUM( 'D', 'A', 'V', 'E' ) /* oni2 */
+#define ANGEL_DAT_MAGIC2 QM_OS_MAGIC_TO_NUM( 'D', 'a', 'v', 'e' ) /* tsnw, rdr, sh2 */
 
 typedef struct AngelDATHeader {
 	uint32_t magic;// 'DAVE'/'Dave'
