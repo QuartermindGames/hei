@@ -21,7 +21,7 @@
 #define QM_MATH_PI_DIV_180 ( QM_MATH_PI / 180.f )
 
 #define QM_MATH_TAU     6.28318530717f
-#define QM_MATH_EPSILON 1.19209290e-7f
+#define QM_MATH_EPSILON 1e-6f
 
 #define QM_MATH_CLAMP( MIN, VAL, MAX ) ( VAL ) < ( MIN ) ? ( MIN ) : ( ( VAL ) > ( MAX ) ? ( MAX ) : ( VAL ) )
 
