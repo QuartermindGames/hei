@@ -45,12 +45,6 @@ PLLinkedListNode *PlInsertLinkedListNode( PLLinkedList *list, void *userPtr ) {
 	return node;
 }
 
-PLLinkedListNode *PlInsertFrontLinkedListNode( PLLinkedList *list, void *userPtr ) {
-	PLLinkedListNode *node = PlInsertLinkedListNode( list, userPtr );
-	PlMoveLinkedListNodeToFront( node );
-	return node;
-}
-
 PLLinkedListNode *PlGetNextLinkedListNode( PLLinkedListNode *node ) {
 	return node->next;
 }
@@ -69,10 +63,6 @@ PLLinkedListNode *PlGetLastNode( PLLinkedList *list ) {
 
 void *PlGetLinkedListNodeUserData( PLLinkedListNode *node ) {
 	return node->userPtr;
-}
-
-void PlSetLinkedListNodeUserData( PLLinkedListNode *node, void *userPtr ) {
-	node->userPtr = userPtr;
 }
 
 /**
@@ -161,77 +151,6 @@ void PlIterateLinkedList( PLLinkedList *linkedList, PLLinkedListIteratorCallback
 			break;
 		}
 	}
-}
-
-/**
- * Move the given node to the head/start of the list.
- */
-void PlMoveLinkedListNodeToFront( PLLinkedListNode *node ) {
-	PLLinkedList *list = node->list;
-	if ( list->front == node ) {
-		return;
-	}
-
-	if ( list->back == node ) {
-		list->back = node->prev;
-	}
-
-	if ( node->prev != NULL ) {
-		node->prev->next = node->next;
-		node->prev = NULL;
-	}
-	if ( node->next != NULL ) {
-		node->next->prev = node->prev;
-	}
-
-	node->next = list->front;
-
-	list->front->prev = node;
-	list->front = node;
-}
-
-/**
- * Move the given node to the tail/end of the list.
- */
-void PlMoveLinkedListNodeToBack( PLLinkedListNode *node ) {
-	PLLinkedList *list = node->list;
-	if ( list->back == node ) {
-		return;
-	}
-
-	if ( list->front == node ) {
-		list->front = node->next;
-	}
-
-	if ( node->prev != NULL ) {
-		node->prev->next = node->next;
-	}
-	if ( node->next != NULL ) {
-		node->next->prev = node->prev;
-		node->next = NULL;
-	}
-
-	node->prev = list->back;
-
-	list->back->next = node;
-	list->back = node;
-}
-
-void **PlArrayFromLinkedList( PLLinkedList *list, unsigned int *numElements ) {
-	unsigned int i = 0;
-
-	// Allocate container for all the elements
-	*numElements = PlGetNumLinkedListNodes( list );
-	void **elements = QM_OS_MEMORY_NEW_( void *, *numElements );
-
-	// Now fillerup
-	PLLinkedListNode *node = PlGetFirstNode( list );
-	while ( node != NULL ) {
-		void *data = PlGetLinkedListNodeUserData( node );
-		elements[ i++ ] = data;
-		node = PlGetNextLinkedListNode( node );
-	}
-	return elements;
 }
 
 bool PlIsLinkedListEmpty( const PLLinkedList *list ) {

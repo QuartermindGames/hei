@@ -16,7 +16,7 @@ typedef struct PLLinkedListNode PLLinkedListNode;
  *
  * @return	Pointer to the new linked list container.
  */
-PLLinkedList *PlCreateLinkedList( void );
+PL_DEPRECATED( PLLinkedList *PlCreateLinkedList( void ) );
 
 /**
  * Inserts a new node into the specified linked list.
@@ -25,23 +25,14 @@ PLLinkedList *PlCreateLinkedList( void );
  * @param userPtr 	A pointer to the data you want attached to the node.
  * @return 			A pointer to the new node in the list.
  */
-PLLinkedListNode *PlInsertLinkedListNode( PLLinkedList *list, void *userPtr );
-
-/**
- * Inserts a new node into the start of the specified linked list.
- *
- * @param list 		List to add the node to.
- * @param userPtr 	A pointer to the data you want attached to the node.
- * @return 			A pointer to the new node in the list.
- */
-PLLinkedListNode *PlInsertFrontLinkedListNode( PLLinkedList *list, void *userPtr );
+PL_DEPRECATED( PLLinkedListNode *PlInsertLinkedListNode( PLLinkedList *list, void *userPtr ) );
 
 /**
  * Destroys the specified linked list. Doesn't free user data.
  *
  * @param list	List to destroy.
  */
-void PlDestroyLinkedList( PLLinkedList *list );
+PL_DEPRECATED( void PlDestroyLinkedList( PLLinkedList *list ) );
 
 /**
  * An extended variation of the destroy function, allowing for deletion of user data.
@@ -49,21 +40,21 @@ void PlDestroyLinkedList( PLLinkedList *list );
  * @param list 				List to destroy.
  * @param elementDeleter 	A callback for your destructor for user data.
  */
-void PlDestroyLinkedListEx( PLLinkedList *list, void ( *elementDeleter )( void *user ) );
+PL_DEPRECATED( void PlDestroyLinkedListEx( PLLinkedList *list, void ( *elementDeleter )( void *user ) ) );
 
 /**
  * Destroys an individual node and automatically removes it from the parent list.
  *
  * @param node	Node to destroy.
  */
-void PlDestroyLinkedListNode( PLLinkedListNode *node );
+PL_DEPRECATED( void PlDestroyLinkedListNode( PLLinkedListNode *node ) );
 
 /**
  * Destroys all the nodes under the linked list. Doesn't free user data.
  *
  * @param list	List to clear.
  */
-void PlDestroyLinkedListNodes( PLLinkedList *list );
+PL_DEPRECATED( void PlDestroyLinkedListNodes( PLLinkedList *list ) );
 
 /**
  * Destroys all the nodes under the linked list, allowing for deletion of user data.
@@ -71,12 +62,12 @@ void PlDestroyLinkedListNodes( PLLinkedList *list );
  * @param list 				List to clear.
  * @param elementDeleter 	A callback for your destructor for user data.
  */
-void PlDestroyLinkedListNodesEx( PLLinkedList *list, void ( *elementDeleter )( void *user ) );
+PL_DEPRECATED( void PlDestroyLinkedListNodesEx( PLLinkedList *list, void ( *elementDeleter )( void *user ) ) );
 
-PLLinkedListNode *PlGetNextLinkedListNode( PLLinkedListNode *node );
-PLLinkedListNode *PlGetPrevLinkedListNode( PLLinkedListNode *node );
-PLLinkedListNode *PlGetFirstNode( PLLinkedList *list );
-PLLinkedListNode *PlGetLastNode( PLLinkedList *list );
+PL_DEPRECATED( PLLinkedListNode *PlGetNextLinkedListNode( PLLinkedListNode *node ) );
+PL_DEPRECATED( PLLinkedListNode *PlGetPrevLinkedListNode( PLLinkedListNode *node ) );
+PL_DEPRECATED( PLLinkedListNode *PlGetFirstNode( PLLinkedList *list ) );
+PL_DEPRECATED( PLLinkedListNode *PlGetLastNode( PLLinkedList *list ) );
 
 /**
  * Returns the user data for the given node.
@@ -84,15 +75,7 @@ PLLinkedListNode *PlGetLastNode( PLLinkedList *list );
  * @param node	Node to fetch the user data from.
  * @return 		A pointer to the user data.
  */
-void *PlGetLinkedListNodeUserData( PLLinkedListNode *node );
-
-/**
- * Set the user data for the given node to something else.
- *
- * @param node 		Node to set user data.
- * @param userPtr 	A pointer to your user data to attach to the node.
- */
-void PlSetLinkedListNodeUserData( PLLinkedListNode *node, void *userPtr );
+PL_DEPRECATED( void *PlGetLinkedListNodeUserData( PLLinkedListNode *node ) );
 
 /**
  * Returns the number of nodes under the list.
@@ -100,7 +83,7 @@ void PlSetLinkedListNodeUserData( PLLinkedListNode *node, void *userPtr );
  * @param list 	The list to query.
  * @return 		The number of nodes under the given list.
  */
-unsigned int PlGetNumLinkedListNodes( PLLinkedList *list );
+PL_DEPRECATED( unsigned int PlGetNumLinkedListNodes( PLLinkedList *list ) );
 
 /**
  * Returns the parent list for a given node.
@@ -108,37 +91,10 @@ unsigned int PlGetNumLinkedListNodes( PLLinkedList *list );
  * @param node 	A pointer to the specific node you want the parent of.
  * @return 		The parent list of the given node.
  */
-PLLinkedList *PlGetLinkedListNodeContainer( PLLinkedListNode *node );
+PL_DEPRECATED( PLLinkedList *PlGetLinkedListNodeContainer( PLLinkedListNode *node ) );
 
 typedef void ( *PLLinkedListIteratorCallback )( void *userData, bool *breakEarly );
-void PlIterateLinkedList( PLLinkedList *linkedList, PLLinkedListIteratorCallback callbackHandler, bool forward );
-
-/**
- * Moves the given node to the front of the list.
- *
- * @param node	The node to move.
- */
-void PlMoveLinkedListNodeToFront( PLLinkedListNode *node );
-
-/**
- * Moves the given node to the back of the list.
- *
- * @param node	The node to move.
- */
-void PlMoveLinkedListNodeToBack( PLLinkedListNode *node );
-
-/**
- * @brief Converts a linked list to an array.
- *
- * This function takes a linked list and converts its elements into a dynamically allocated array.
- * The number of elements in the resulting array is stored in the variable pointed to by `numElements`.
- *
- * @param list 			Pointer to the linked list to be converted.
- * @param numElements 	Pointer to an unsigned int where the number of elements will be stored.
- * @return 				A pointer to the dynamically allocated array containing the elements of the linked list.
- *         				The caller is responsible for freeing the allocated memory.
- */
-void **PlArrayFromLinkedList( PLLinkedList *list, unsigned int *numElements );
+PL_DEPRECATED( void PlIterateLinkedList( PLLinkedList *linkedList, PLLinkedListIteratorCallback callbackHandler, bool forward ) );
 
 /**
  * @brief Checks whether the linked list is empty.
@@ -146,7 +102,7 @@ void **PlArrayFromLinkedList( PLLinkedList *list, unsigned int *numElements );
  * @param list 	The linked list to check.
  * @return 		true if the linked list is empty, false otherwise.
  */
-bool PlIsLinkedListEmpty( const PLLinkedList *list );
+PL_DEPRECATED( bool PlIsLinkedListEmpty( const PLLinkedList *list ) );
 
 /**
  * A simple iterator macro, can be used like so...
