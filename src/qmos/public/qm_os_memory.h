@@ -32,8 +32,9 @@ extern "C"
 #define QM_OS_MEMORY_MALLOC_( SIZE )            QM_OS_MEMORY_MALLOC( SIZE, NULL )
 #define QM_OS_MEMORY_CALLOC( NUM, SIZE )        qm_os_memory_alloc( NUM, SIZE, NULL )
 
-#define QM_OS_MEMORY_NEW( TYPE )       ( TYPE * ) QM_OS_MEMORY_MALLOC_( sizeof( TYPE ) )
-#define QM_OS_MEMORY_NEW_( TYPE, NUM ) ( TYPE * ) qm_os_memory_alloc( NUM, sizeof( TYPE ), NULL )
+#define QM_OS_MEMORY_NEW( TYPE )               ( TYPE * ) QM_OS_MEMORY_MALLOC_( sizeof( TYPE ) )
+#define QM_OS_MEMORY_NEW_( TYPE, NUM )         ( TYPE * ) qm_os_memory_alloc( NUM, sizeof( TYPE ), NULL )
+#define QM_OS_MEMORY_NEW_D( TYPE, DESTRUCTOR ) ( TYPE * ) QM_OS_MEMORY_MALLOC( sizeof( TYPE ), DESTRUCTOR )
 
 	/**
 	 * Returns the size of an allocated block of memory,
