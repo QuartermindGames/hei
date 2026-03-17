@@ -57,9 +57,6 @@ typedef struct PLRectangleF32 {
 /////////////////////////////////////////////////////////////////////////////////////
 // Colour
 
-QmMathColour4ub PlColourF32ToU8( const QmMathColour4f *in );
-QmMathColour4f PlColourU8ToF32( const QmMathColour4ub *in );
-
 QmMathColour4ub PlAddColour( const QmMathColour4ub *c, const QmMathColour4ub *c2 );
 QmMathColour4f PlAddColourF32( const QmMathColour4f *c, const QmMathColour4f *c2 );
 
@@ -79,9 +76,6 @@ static inline QmMathColour4f PlVector4ToColourF32( const QmMathVector4f *v ) {
 
 #define PL_COLOURF32RGB( R, G, B ) \
 	( QmMathColour4f ){ .r = ( R ), .g = ( G ), .b = ( B ), .a = 1.0f }
-
-#define PL_COLOURU8_TO_F32( C ) QM_MATH_COLOUR4F( QM_MATH_BTOF( ( C ).r ), QM_MATH_BTOF( ( C ).g ), QM_MATH_BTOF( ( C ).b ), QM_MATH_BTOF( ( C ).a ) )
-#define PL_COLOURF32_TO_U8( C ) QM_MATH_COLOUR4UB( PlFloatToByte( ( C ).r ), PlFloatToByte( ( C ).g ), PlFloatToByte( ( C ).b ), PlFloatToByte( ( C ).a ) )
 
 /* pinks */
 #define PL_COLOUR_PINK                   QM_MATH_COLOUR4UB_RGB( 255, 192, 203 )

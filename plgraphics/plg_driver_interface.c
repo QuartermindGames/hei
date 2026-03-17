@@ -22,7 +22,7 @@ typedef struct PLGDriver {
 	char identifier[ 32 ];
 	char description[ 64 ];
 
-	PLLibrary *libPtr; /* library handle */
+	QmOsLibrary *libPtr; /* library handle */
 	const PLGDriverImportTable *interface;
 	PLGDriverInitializationFunction initFunction; /* initialization function */
 } PLGDriver;
@@ -49,7 +49,7 @@ bool PlgRegisterDriver( const char *path ) {
 
 	GfxLog( "Registering driver: \"%s\"\n", path );
 
-	PLLibrary *library = PlLoadLibrary( path, false );
+	QmOsLibrary *library = qm_os_library_load( path, false );
 	if ( library == NULL ) {
 		GfxLog( "Failed to load library: %s\n", PlGetError() );
 		return false;
@@ -57,13 +57,13 @@ bool PlgRegisterDriver( const char *path ) {
 
 	const PLGDriverDescription *description;
 	PLGDriverInitializationFunction InitializeDriver;
-	PLGDriverQueryFunction RegisterDriver = ( PLGDriverQueryFunction ) PlGetLibraryProcedure( library, PLG_DRIVER_QUERY_FUNCTION );
+	PLGDriverQueryFunction RegisterDriver = ( PLGDriverQueryFunction ) qm_os_library_get_procedure( library, PLG_DRIVER_QUERY_FUNCTION );
 	if ( RegisterDriver != NULL ) {
 		/* now fetch the driver description */
 		description = RegisterDriver();
 		if ( description == NULL ) {
 			GfxLog( "Failed to fetch description from library: \"%s\"!\n", path );
-			PlUnloadLibrary( library );
+			qm_os_library_unload( library );
 			return false;
 		}
 #if !defined( NDEBUG )
@@ -84,12 +84,12 @@ bool PlgRegisterDriver( const char *path ) {
 			PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported graphics interface version" );
 		}
 
-		InitializeDriver = ( PLGDriverInitializationFunction ) PlGetLibraryProcedure( library, PLG_DRIVER_INIT_FUNCTION );
+		InitializeDriver = ( PLGDriverInitializationFunction ) qm_os_library_get_procedure( library, PLG_DRIVER_INIT_FUNCTION );
 	}
 
 	if ( RegisterDriver == NULL || InitializeDriver == NULL || PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
 		GfxLog( "Failed to load library!\nPL: %s\n", PlGetError() );
-		PlUnloadLibrary( library );
+		qm_os_library_unload( library );
 		return false;
 	}
 
@@ -120,7 +120,7 @@ static void RegisterScannedDriver( const char *path, void *unused ) {
 
 	/* remaining length */
 	length -= c - path;
-	if ( pl_strncasecmp( c, DRIVER_EXTENSION PL_SYSTEM_LIBRARY_EXTENSION, length ) != 0 ) {
+	if ( pl_strncasecmp( c, DRIVER_EXTENSION QM_OS_SYSTEM_LIB_EXT, length ) != 0 ) {
 		return;
 	}
 
@@ -136,7 +136,7 @@ static void RegisterScannedDriver( const char *path, void *unused ) {
  */
 unsigned int PlgScanForDrivers( const char *path ) {
 	unsigned int numDriversBefore = numDrivers;
-	PlScanDirectory( path, ( PL_SYSTEM_LIBRARY_EXTENSION ) + 1, RegisterScannedDriver, false, NULL );
+	PlScanDirectory( path, ( QM_OS_SYSTEM_LIB_EXT ) + 1, RegisterScannedDriver, false, NULL );
 	return numDrivers - numDriversBefore;
 }
 

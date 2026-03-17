@@ -109,7 +109,7 @@ void PlParseConsoleString( const char *string );
 int PlAddLogLevel( const char *prefix, QmMathColour4ub colour, bool status );
 void PlLogMessage( int id, const char *msg, ... );
 
-#	define PlLogWFunction( ID, FORMAT, ... ) PlLogMessage( ( ID ), "(%s) " FORMAT, PL_FUNCTION, ##__VA_ARGS__ )
+#	define PlLogWFunction( ID, FORMAT, ... ) PlLogMessage( ( ID ), "(%s) " FORMAT, __FUNCTION__, ##__VA_ARGS__ )
 
 #endif /* !defined( PL_COMPILE_PLUGIN ) */
 

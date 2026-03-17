@@ -14,13 +14,13 @@ static PLPluginDescription pluginDesc = {
 
 const PLPluginExportTable *gInterface = NULL;
 
-PL_EXPORT const PLPluginDescription *PLQueryPlugin( unsigned int interfaceVersion ) {
+QM_OS_EXPORT const PLPluginDescription *PLQueryPlugin( unsigned int interfaceVersion ) {
 	return &pluginDesc;
 }
 
 int vkLogLevel;
 
-PL_EXPORT void PLInitializePlugin( const PLPluginExportTable *functionTable ) {
+QM_OS_EXPORT void PLInitializePlugin( const PLPluginExportTable *functionTable ) {
 	gInterface = functionTable;
 
 	vkLogLevel = gInterface->AddLogLevel( "plugin/vulkan", QM_MATH_COLOUR4UB_RGB( 255, 255, 255 ), true );

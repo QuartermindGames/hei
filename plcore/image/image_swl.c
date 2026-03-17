@@ -18,13 +18,13 @@ typedef struct SWLHeader {
 PLImage *PlParseSwlImage( PLFile *fin ) {
 	SWLHeader header;
 	if ( PlReadFile( fin, &header, sizeof( header ), 1 ) != 1 ) {
-		return NULL;
+		return nullptr;
 	}
 
 	if ( header.width > 512 || header.width == 0 ||
 	     header.height > 512 || header.height == 0 ) {
 		PlReportBasicError( PL_RESULT_IMAGERESOLUTION );
-		return NULL;
+		return nullptr;
 	}
 
 	struct {
@@ -32,14 +32,14 @@ PLImage *PlParseSwlImage( PLFile *fin ) {
 	} palette[ 256 ];
 	if ( PlReadFile( fin, palette, 4, 256 ) != 256 ) {
 		PlReportBasicError( PL_RESULT_FILEREAD );
-		return false;
+		return nullptr;
 	}
 
 	/* according to sources, this is a collection of misc data that's
    	 * specific to SiN itself, so we'll skip it. */
 	if ( !PlFileSeek( fin, 0x4D4, PL_SEEK_SET ) ) {
 		PlReportBasicError( PL_RESULT_FILEREAD );
-		return false;
+		return nullptr;
 	}
 
 	PLImage *out = QM_OS_MEMORY_MALLOC_( sizeof( PLImage ) );
@@ -63,7 +63,7 @@ PLImage *PlParseSwlImage( PLFile *fin ) {
 		if ( PlReadFile( fin, buf, 1, buf_size ) != buf_size ) {
 			PlDestroyImage( out );
 			qm_os_memory_free( buf );
-			return false;
+			return nullptr;
 		}
 
 		out->data = QM_OS_MEMORY_CALLOC( out->levels, sizeof( uint8_t * ) );

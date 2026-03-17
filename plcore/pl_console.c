@@ -370,7 +370,7 @@ IMPLEMENT_COMMAND( help ) {
 /**
  * Find the specific var/cmd, by name or description.
  */
-static void find_cmd( PL_UNUSED unsigned int argc, char **argv ) {
+static void find_cmd( [[maybe_unused]] unsigned int argc, char **argv ) {
 	if ( argc <= 1 ) {
 		Print( "No arguments provided!\n" );
 		return;

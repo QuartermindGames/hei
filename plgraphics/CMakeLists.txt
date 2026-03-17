@@ -25,6 +25,7 @@ SOFTWARE.
 project(plgraphics)
 option(PLG_COMPILE_STATIC "Compile as static library" ON)
 
+set(CMAKE_C_STANDARD 23)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 file(GLOB PLG_SOURCE_FILES

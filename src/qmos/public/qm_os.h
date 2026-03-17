@@ -123,7 +123,7 @@ enum
 #define QM_OS_MIN( A, B ) ( ( A ) < ( B ) ? ( A ) : ( B ) )
 #define QM_OS_MAX( A, B ) ( ( A ) > ( B ) ? ( A ) : ( B ) )
 
-#define QM_OS_BIT_FLAG( A, B ) A = ( 1U << B )
+#define QM_OS_BIT_FLAG( A, B ) A = ( 1U << ( B ) )
 
 #define QM_OS_MAGIC_TO_NUM( A, B, C, D ) ( ( ( D ) << 24 ) + ( ( C ) << 16 ) + ( ( B ) << 8 ) + ( A ) )
 

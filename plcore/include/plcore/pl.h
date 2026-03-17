@@ -143,12 +143,12 @@ enum {
 };
 
 #if defined( PL_INTERNAL )
-#	define PL_DLL PL_EXPORT
+#	define PL_DLL QM_OS_EXPORT
 #else
-#	define PL_DLL PL_IMPORT
+#	define PL_DLL QM_OS_IMPORT
 #endif
 
-typedef void PLLibrary; /* handle to dll/module */
+typedef void QmOsLibrary; /* handle to dll/module */
 
 PL_EXTERN_C
 
@@ -167,7 +167,7 @@ const char *PlGetResultString( PLFunctionResult result );
 const char *PlGetError( void );// Returns the last recorded error.
 
 void PlReportError( PLFunctionResult result, const char *function, const char *message, ... );
-#	define PlReportErrorF( type, ... ) PlReportError( type, PL_FUNCTION, __VA_ARGS__ )
+#	define PlReportErrorF( type, ... ) PlReportError( type, __FUNCTION__, __VA_ARGS__ )
 #	define PlReportBasicError( type )  PlReportErrorF( ( type ), PlGetResultString( ( type ) ) )
 
 /******************************************************************/
@@ -220,9 +220,9 @@ time_t PlStringToTime( const char *ts );
 
 //////////////////////////////////////////////////////////////////
 
-PLLibrary *PlLoadLibrary( const char *path, bool appendPath );
-void *PlGetLibraryProcedure( PLLibrary *library, const char *procedureName );
-void PlUnloadLibrary( PLLibrary *library );
+QmOsLibrary *qm_os_library_load( const char *path, bool appendPath );
+void *qm_os_library_get_procedure( QmOsLibrary *library, const char *procedureName );
+void qm_os_library_unload( QmOsLibrary *library );
 
 /**
  * Plugin Interface

@@ -8,35 +8,34 @@
 #	include <windows.h>
 #endif
 
-#include "pl_private.h"
-#include "filesystem_private.h"
+#include "plcore/pl.h"
 
 /**
  * Loads the specified library module.
  * If appendPath is true, the system-specific extension is automatically added.
  */
-PLLibrary *PlLoadLibrary( const char *path, bool appendPath ) {
+QmOsLibrary *qm_os_library_load( const char *path, bool appendPath )
+{
 	char sysPath[ PL_SYSTEM_MAX_PATH ];
-	if ( appendPath ) {
-		snprintf( sysPath, sizeof( sysPath ), "%s%s", path, PL_SYSTEM_LIBRARY_EXTENSION );
-	} else {
-		snprintf( sysPath, sizeof( sysPath ), "%s", path );
+	if ( appendPath )
+	{
+		snprintf( sysPath, sizeof( sysPath ), "%s%s", path, QM_OS_SYSTEM_LIB_EXT );
 	}
-
-	/* check that it actually exists first, since Windows doesn't give a very verbose message for these cases */
-	if ( !PlLocalFileExists( sysPath ) ) {
-		PlReportErrorF( PL_RESULT_FILEPATH, "failed to find library, \"%s\"", sysPath );
-		return NULL;
+	else
+	{
+		snprintf( sysPath, sizeof( sysPath ), "%s", path );
 	}
 
 #if defined( WIN32 )
 	HMODULE libraryHandle = LoadLibrary( sysPath );
-	if ( libraryHandle == NULL ) {
+	if ( libraryHandle == NULL )
+	{
 		PlReportErrorF( PL_RESULT_INVALID_PARM1, "failed to load library (%d)", GetLastError() );
 	}
 #else /* unix */
 	void *libraryHandle = dlopen( sysPath, RTLD_LAZY );
-	if ( libraryHandle == NULL ) {
+	if ( libraryHandle == NULL )
+	{
 		PlReportErrorF( PL_RESULT_INVALID_PARM1, "failed to load library (%s)", dlerror() );
 	}
 #endif
@@ -44,17 +43,20 @@ PLLibrary *PlLoadLibrary( const char *path, bool appendPath ) {
 	return libraryHandle;
 }
 
-void *PlGetLibraryProcedure( PLLibrary *library, const char *procedureName ) {
+void *qm_os_library_get_procedure( QmOsLibrary *library, const char *procedureName )
+{
 	void *myProcedure;
 
 #if defined( WIN32 )
 	myProcedure = GetProcAddress( ( HMODULE ) library, procedureName );
-	if ( myProcedure == NULL ) {
+	if ( myProcedure == NULL )
+	{
 		PlReportErrorF( PL_RESULT_INVALID_PARM2, "failed to find procedure \"%s\" (%d)", procedureName, GetLastError() );
 	}
 #else /* unix */
 	myProcedure = dlsym( library, procedureName );
-	if ( myProcedure == NULL ) {
+	if ( myProcedure == NULL )
+	{
 		PlReportErrorF( PL_RESULT_INVALID_PARM2, "failed to find procedure \"%s\" (%s)", procedureName, dlerror() );
 	}
 #endif
@@ -62,13 +64,16 @@ void *PlGetLibraryProcedure( PLLibrary *library, const char *procedureName ) {
 	return myProcedure;
 }
 
-void PlUnloadLibrary( PLLibrary *library ) {
+void qm_os_library_unload( QmOsLibrary *library )
+{
 #if defined( WIN32 )
-	if ( !FreeLibrary( ( HMODULE ) library ) ) {
+	if ( !FreeLibrary( ( HMODULE ) library ) )
+	{
 		PlReportErrorF( PL_RESULT_INVALID_PARM1, "failed to unload library (%d)", GetLastError() );
 	}
 #else /* unix */
-	if ( dlclose( library ) != 0 ) {
+	if ( dlclose( library ) != 0 )
+	{
 		PlReportErrorF( PL_RESULT_INVALID_PARM1, "failed to unload library (%s)", dlerror() );
 	}
 #endif

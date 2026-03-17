@@ -24,6 +24,7 @@ SOFTWARE.
 
 project(pl_gl_driver)
 
+set(CMAKE_C_STANDARD 23)
 set(GLEW_SOURCE
         3rdparty/glew-2.2.0/src/glew.c)
 

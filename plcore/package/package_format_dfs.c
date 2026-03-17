@@ -37,13 +37,13 @@ static void *LoadPackageFile( PLFile *file, PLPackageIndex *index ) {
 static int ValidateDFSFile( PLFile *file ) {
 	int magic = PlReadInt32( file, false, NULL );
 	if ( magic != DFS_MAGIC ) {
-		PlReportError( PL_RESULT_FILETYPE, PL_FUNCTION, "invalid magic" );
+		PlReportErrorF( PL_RESULT_FILETYPE, "invalid magic" );
 		return -1;
 	}
 
 	int version = PlReadInt32( file, false, NULL );
 	if ( version <= 0 || version > DFS_VERSION ) {
-		PlReportError( PL_RESULT_FILEVERSION, PL_FUNCTION, "invalid version" );
+		PlReportErrorF( PL_RESULT_FILEVERSION, "invalid version" );
 		return -1;
 	}
 
@@ -71,7 +71,7 @@ static char *ReadString( PLFile *file, char **dst, uint32_t offset ) {
 PLPackage *PlParseDfsPackage_( PLFile *file ) {
 	size_t fileSize = PlGetFileSize( file );
 	if ( fileSize == 0 ) {
-		PlReportError( PL_RESULT_FILESIZE, PL_FUNCTION, "empty file" );
+		PlReportErrorF( PL_RESULT_FILESIZE, "empty file" );
 		return NULL;
 	}
 
@@ -85,7 +85,7 @@ PLPackage *PlParseDfsPackage_( PLFile *file ) {
 
 	uint32_t numFiles = PL_READUINT32( file, false, NULL );
 	if ( numFiles <= 0 ) {
-		PlReportError( PL_RESULT_FILEERR, PL_FUNCTION, "invalid number of files" );
+		PlReportErrorF( PL_RESULT_FILEERR, "invalid number of files" );
 		return NULL;
 	}
 
@@ -93,7 +93,7 @@ PLPackage *PlParseDfsPackage_( PLFile *file ) {
 
 	uint32_t stringTableSize = PL_READUINT32( file, false, NULL );
 	if ( stringTableSize <= 0 || stringTableSize >= fileSize ) {
-		PlReportError( PL_RESULT_FILEERR, PL_FUNCTION, "invalid string table size" );
+		PlReportErrorF( PL_RESULT_FILEERR, "invalid string table size" );
 		return NULL;
 	}
 
@@ -102,7 +102,7 @@ PLPackage *PlParseDfsPackage_( PLFile *file ) {
 
 	uint32_t stringTableOffset = PL_READUINT32( file, false, NULL );
 	if ( stringTableOffset <= 0 || stringTableOffset >= fileSize ) {
-		PlReportError( PL_RESULT_FILEERR, PL_FUNCTION, "invalid string table offset" );
+		PlReportErrorF( PL_RESULT_FILEERR, "invalid string table offset" );
 		return NULL;
 	}
 

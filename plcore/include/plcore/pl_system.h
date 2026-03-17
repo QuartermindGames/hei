@@ -19,10 +19,7 @@
 #define PL_SYSTEM_OS_SOLARIS 4
 
 #if defined( _WIN32 )
-#	define PL_SYSTEM_NAME              "WINDOWS"
-#	define PL_SYSTEM_OS                PL_SYSTEM_OS_WINDOWS
-#	define PL_SYSTEM_EXE_EXTENSION     ".exe"
-#	define PL_SYSTEM_LIBRARY_EXTENSION ".dll"
+#	define PL_SYSTEM_OS PL_SYSTEM_OS_WINDOWS
 
 #	if 0
 #		define PL_SYSTEM_MAX_PATH 259
@@ -73,10 +70,7 @@
 #		include <strings.h>
 #	endif
 
-#	define PL_SYSTEM_NAME              "LINUX"
-#	define PL_SYSTEM_OS                PL_SYSTEM_OS_LINUX
-#	define PL_SYSTEM_EXE_EXTENSION     ""
-#	define PL_SYSTEM_LIBRARY_EXTENSION ".so"
+#	define PL_SYSTEM_OS PL_SYSTEM_OS_LINUX
 
 #	define PL_SYSTEM_MAX_PATH     256
 #	define PL_SYSTEM_MAX_USERNAME 32
@@ -89,10 +83,7 @@
 #		include <strings.h>
 #	endif
 
-#	define PL_SYSTEM_NAME              "FREEBSD"
-#	define PL_SYSTEM_OS                PL_SYSTEM_OS_FREEBSD
-#	define PL_SYSTEM_EXE_EXTENSION     ""
-#	define PL_SYSTEM_LIBRARY_EXTENSION ".so"
+#	define PL_SYSTEM_OS PL_SYSTEM_OS_FREEBSD
 
 #	define PL_SYSTEM_MAX_PATH     256
 #	define PL_SYSTEM_MAX_USERNAME 32
@@ -105,10 +96,7 @@
 #		include <dlfcn.h>
 #	endif
 
-#	define PL_SYSTEM_NAME              "macOS"
-#	define PL_SYSTEM_OS                PL_SYSTEM_OS_MACOS
-#	define PL_SYSTEM_EXE_EXTENSION     ""
-#	define PL_SYSTEM_LIBRARY_EXTENSION ".so"
+#	define PL_SYSTEM_OS PL_SYSTEM_OS_MACOS
 
 #	define PL_SYSTEM_MAX_PATH     512
 #	define PL_SYSTEM_MAX_USERNAME 32
@@ -116,106 +104,43 @@
 #	error "Unsupported system type."
 #endif
 
-// (Basic) Hardware
-
-/* endianness
- * */
-#define PL_SYSTEM_LITTLE_ENDIAN 0
-#define PL_SYSTEM_BIG_ENDIAN    1
-
-/* architecture
- * */
-#define PL_SYSTEM_CPU_X86   0
-#define PL_SYSTEM_CPU_X64   1
-#define PL_SYSTEM_CPU_ARM   2
-#define PL_SYSTEM_CPU_ARM64 3
-
-#if defined( __amd64 ) || defined( __amd64__ ) || defined( _M_X64 ) || defined( _M_AMD64 )
-#	define PL_SYSTEM_CPU        PL_SYSTEM_CPU_X64
-#	define PL_SYSTEM_CPU_NAME   "AMD64"
-#	define PL_SYSTEM_ENDIANNESS PL_SYSTEM_LITTLE_ENDIAN
-#elif defined( __arm__ ) || defined( __thumb__ ) || defined( _M_ARM ) || defined( _M_ARMT )
-#	define PL_SYSTEM_CPU        PL_SYSTEM_CPU_ARM
-#	define PL_SYSTEM_CPU_NAME   "ARM"
-#	define PL_SYSTEM_ENDIANNESS PL_SYSTEM_LITTLE_ENDIAN
-#elif defined( __aarch64__ )
-#	define PL_SYSTEM_CPU        PL_SYSTEM_CPU_ARM64
-#	define PL_SYSTEM_CPU_NAME   "ARM64"
-#	define PL_SYSTEM_ENDIANNESS PL_SYSTEM_LITTLE_ENDIAN
-#elif defined( i386 ) || defined( __i386 ) || defined( __i386__ ) || defined( _M_I86 ) || defined( _M_IX86 ) || defined( _X86_ )
-#	define PL_SYSTEM_CPU        PL_SYSTEM_CPU_X86
-#	define PL_SYSTEM_CPU_NAME   "INTEL86"
-#	define PL_SYSTEM_ENDIANNESS PL_SYSTEM_LITTLE_ENDIAN
-#else
-#	error "Unsupported CPU type."
-#endif
-
 // Compiler
 
 #if ( __STDC_VERSION__ == 202311L )//C23
-#	define PL_UNUSED                 [[maybe_unused]]
 #	define PL_DEPRECATED( function ) [[deprecated]] function
-#	define PL_NORETURN( function )   [[noreturn]] function
 #endif
 
 #if defined( _MSC_VER )
-#	define PL_INSTANCE HINSTANCE
-#	define PL_FARPROC  FARPROC
-#	define PL_EXTERN   extern
-#	define PL_CALL     __stdcall
+#	define PL_EXTERN extern
 
-// MSVC doesn't support __func__
-#	define PL_FUNCTION __FUNCTION__// Returns the active function.
-
-#	define PL_EXPORT __declspec( dllexport )
-#	define PL_IMPORT __declspec( dllimport )
-
-#	ifndef PL_UNUSED
-#		define PL_UNUSED
-#	endif
 #	ifndef PL_DEPRECATED
 #		define PL_DEPRECATED( function ) __declspec( deprecated ) function
-#	endif
-#	ifndef PL_NORETURN
-#		define PL_NORETURN( function ) __declspec( noreturn ) function
 #	endif
 
 #	define PL_STATIC_ASSERT( a, b ) static_assert( ( a ), b )
 
-#	define PL_PACKED_STRUCT_START( a ) \
-		__pragma( pack( push, 1 ) ) typedef struct a {
+#	define PL_PACKED_STRUCT_START( a )              \
+		__pragma( pack( push, 1 ) ) typedef struct a \
+		{
 #	define PL_PACKED_STRUCT_END( a ) \
 		}                             \
-		a;                            \
+		( a );                        \
 		__pragma( pack( pop ) )
 #elif defined( __GNUC__ ) || defined( __GNUG__ )
-#	define PL_INSTANCE void *
-#	define PL_FARPROC  void *
-
 #	define PL_EXTERN extern
-#	define PL_CALL
 
-#	define PL_FUNCTION __FUNCTION__
-
-#	define PL_EXPORT __attribute__( ( visibility( "default" ) ) )
-#	define PL_IMPORT
-
-#	ifndef PL_UNUSED
-#		define PL_UNUSED __attribute__( ( unused ) )
-#	endif
 #	ifndef PL_DEPRECATED
 #		define PL_DEPRECATED( function ) function __attribute__( ( deprecated ) )
-#	endif
-#	ifndef PL_NORETURN
-#		define PL_NORETURN( function ) __attribute__( ( noreturn ) ) function
 #	endif
 
 #	define PL_STATIC_ASSERT( a, b ) _Static_assert( ( a ), b )
 
-#	define PL_PACKED_STRUCT_START( a ) typedef struct __attribute__( ( packed ) ) a {
+#	define PL_PACKED_STRUCT_START( a )              \
+		typedef struct __attribute__( ( packed ) ) a \
+		{
 #	define PL_PACKED_STRUCT_END( a ) \
 		}                             \
-		a;
+		( a );
 #else
 #	error "Unsupported compiler."
 #endif

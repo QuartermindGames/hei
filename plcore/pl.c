@@ -412,7 +412,7 @@ time_t PlStringToTime( const char *ts ) {
 #include <plcore/pl_plugin_interface.h>
 
 typedef struct PLPlugin {
-	PLLibrary *libPtr;                           /* library handle */
+	QmOsLibrary *libPtr;                           /* library handle */
 	PLPluginInitializationFunction initFunction; /* initialization function */
 	PLLinkedListNode *node;
 } PLPlugin;

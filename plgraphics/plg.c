@@ -24,7 +24,7 @@ data for each of these functions
 	{                                       \
 		static unsigned int num_calls = 0;  \
 		if ( gfx_state.mode_debug ) {       \
-			GfxLog( " %s\n", PL_FUNCTION ); \
+			GfxLog( " %s\n", __FUNCTION__ ); \
 			num_calls++;                    \
 		}                                   \
 	}

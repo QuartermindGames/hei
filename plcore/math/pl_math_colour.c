@@ -7,20 +7,6 @@
 #include <plcore/pl_math.h>
 
 /****************************************
- * Type Conversion
- ****************************************/
-
-QmMathColour4ub PlColourF32ToU8( const QmMathColour4f *in )
-{
-	return qm_math_colour4ub( PlFloatToByte( in->r ), PlFloatToByte( in->g ), PlFloatToByte( in->b ), PlFloatToByte( in->a ) );
-}
-
-QmMathColour4f PlColourU8ToF32( const QmMathColour4ub *in )
-{
-	return qm_math_colour4f( QM_MATH_BTOF( in->r ), QM_MATH_BTOF( in->g ), QM_MATH_BTOF( in->b ), QM_MATH_BTOF( in->a ) );
-}
-
-/****************************************
  * Addition
  ****************************************/
 

@@ -24,6 +24,8 @@ SOFTWARE.
 
 project(plcore)
 
+set(CMAKE_C_STANDARD 23)
+
 option(PL_COMPILE_STATIC "Compile as static library" ON)
 option(PL_FILESYSTEM_64 "Use 64-bit interface for file IO" ON)
 
@@ -40,7 +42,7 @@ file(
 
         pl_memory.c
         pl_parser.c
-        pl_library.c
+        qm_os_library.c
 
         pl_hashtable.c
         pl_linkedlist.c

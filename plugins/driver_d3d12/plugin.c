@@ -16,13 +16,13 @@ static PLGDriverDescription pluginDesc = {
 
 const PLGDriverExportTable *gInterface = NULL;
 
-PL_EXPORT const PLGDriverDescription *QueryGraphicsDriver( void ) {
+QM_OS_EXPORT const PLGDriverDescription *QueryGraphicsDriver( void ) {
 	return &pluginDesc;
 }
 
 int glLogLevel;
 
-PL_EXPORT const PLGDriverImportTable *InitializeGraphicsDriver( const PLGDriverExportTable *functionTable ) {
+QM_OS_EXPORT const PLGDriverImportTable *InitializeGraphicsDriver( const PLGDriverExportTable *functionTable ) {
 	gInterface = functionTable;
 
 	glLogLevel = gInterface->core->AddLogLevel( "plugin/d3d12", QM_MATH_COLOUR4UB_RGB( 255, 255, 255 ), true );

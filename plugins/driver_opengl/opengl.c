@@ -386,7 +386,7 @@ static bool GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
 		}
 
 		//TODO: graphics API really needs it's own error reporting solution...
-		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "%s", msg );
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, __FUNCTION__, "%s", msg );
 
 		GLDeleteFrameBuffer( buffer );
 		return false;
@@ -790,7 +790,7 @@ static void GLSetTextureAnisotropy( PLGTexture *texture, uint32_t value ) {
 		XGL_CALL( glTexParameterf( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, ( float ) value ) );
 		XGL_CALL( glBindTexture( target, curId ) );
 	} else {
-		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "EXT_texture_filter_anisotropic is unsupported" );
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, __FUNCTION__, "EXT_texture_filter_anisotropic is unsupported" );
 	}
 }
 
@@ -888,7 +888,7 @@ static void GLSwizzleTexture( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t
 		        TranslateColourChannel( a ) };
 		XGL_CALL( glTexParameteriv( ( ( GLTexture * ) texture->driver )->target, GL_TEXTURE_SWIZZLE_RGBA, swizzle ) );
 	} else {
-		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, PL_FUNCTION, "missing software implementation" );
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, __FUNCTION__, "missing software implementation" );
 	}
 }
 
@@ -1480,23 +1480,23 @@ static void GLCreateShaderStage( PLGShaderStage *stage ) {
 
 	GLenum type = TranslateShaderStageType( stage->type );
 	if ( type == SHADER_INVALID_TYPE ) {
-		gInterface->core->ReportError( PL_RESULT_INVALID_SHADER_TYPE, PL_FUNCTION, "%u", type );
+		gInterface->core->ReportError( PL_RESULT_INVALID_SHADER_TYPE, __FUNCTION__, "%u", type );
 		return;
 	}
 
 	if ( type == GL_GEOMETRY_SHADER && !XGL_VERSION( 3, 0 ) ) {
-		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, PL_FUNCTION, "%s", GetGLShaderStageDescriptor( type ) );
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, __FUNCTION__, "%s", GetGLShaderStageDescriptor( type ) );
 		return;
 	}
 
 	if ( type == GL_COMPUTE_SHADER && !XGL_VERSION( 4, 3 ) ) {
-		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, PL_FUNCTION, "%s", GetGLShaderStageDescriptor( type ) );
+		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, __FUNCTION__, "%s", GetGLShaderStageDescriptor( type ) );
 		return;
 	}
 
 	stage->internal.id = glCreateShader( type );
 	if ( stage->internal.id == 0 ) {
-		gInterface->core->ReportError( PL_RESULT_INVALID_SHADER_TYPE, PL_FUNCTION, "%u", type );
+		gInterface->core->ReportError( PL_RESULT_INVALID_SHADER_TYPE, __FUNCTION__, "%u", type );
 		return;
 	}
 }
@@ -1723,7 +1723,7 @@ static void GLSetShaderProgram( PLGShaderProgram *program ) {
 	XGL_CALL( glUseProgram( id ) );
 }
 
-#define SHADER_CACHE_MAGIC PL_MAGIC_TO_NUM( 'G', 'L', 'S', 'B' )
+#define SHADER_CACHE_MAGIC QM_OS_MAGIC_TO_NUM( 'G', 'L', 'S', 'B' )
 
 typedef struct ShaderCacheHeader {
 	uint32_t magic;
@@ -1784,7 +1784,7 @@ static void CacheShaderProgram( PLGShaderProgram *program ) {
 
 static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 	if ( !XGL_VERSION( 2, 0 ) ) {
-		gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, PL_FUNCTION, "unsupported" );
+		gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, __FUNCTION__, "unsupported" );
 		return;
 	}
 
@@ -1800,10 +1800,10 @@ static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 			XGL_CALL( glGetProgramInfoLog( program->internal.id, s_length, NULL, log ) );
 			XGL_LOG( " LINK ERROR:\n%s\n", log );
 			gInterface->core->Free( log );
-			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, PL_FUNCTION, log );
+			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, __FUNCTION__, log );
 		} else {
 			XGL_LOG( " UNKNOWN LINK ERROR!\n" );
-			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, PL_FUNCTION, "unknown error" );
+			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, __FUNCTION__, "unknown error" );
 		}
 
 		return;
@@ -1898,25 +1898,25 @@ static GLenum TranslateStencilFace( PLGStencilFace face ) {
 static void GLStencilOp( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp depthFailOp, PLGStencilOp depthPassOp ) {
 	GLenum glface = TranslateStencilFace( face );
 	if ( glface == XGL_INVALID ) {
-		gInterface->core->ReportError( PL_RESULT_FAIL, PL_FUNCTION, "invalid stencil face specified" );
+		gInterface->core->ReportError( PL_RESULT_FAIL, __FUNCTION__, "invalid stencil face specified" );
 		return;
 	}
 
 	GLenum sfail = TranslateStencilOp( stencilFailOp );
 	if ( sfail == XGL_INVALID ) {
-		gInterface->core->ReportError( PL_RESULT_FAIL, PL_FUNCTION, "invalid stencil fail operation" );
+		gInterface->core->ReportError( PL_RESULT_FAIL, __FUNCTION__, "invalid stencil fail operation" );
 		return;
 	}
 
 	GLenum dpfail = TranslateStencilOp( depthFailOp );
 	if ( sfail == XGL_INVALID ) {
-		gInterface->core->ReportError( PL_RESULT_FAIL, PL_FUNCTION, "invalid depth fail operation" );
+		gInterface->core->ReportError( PL_RESULT_FAIL, __FUNCTION__, "invalid depth fail operation" );
 		return;
 	}
 
 	GLenum dppass = TranslateStencilOp( depthPassOp );
 	if ( sfail == XGL_INVALID ) {
-		gInterface->core->ReportError( PL_RESULT_FAIL, PL_FUNCTION, "invalid depth pass operation" );
+		gInterface->core->ReportError( PL_RESULT_FAIL, __FUNCTION__, "invalid depth pass operation" );
 		return;
 	}
 
