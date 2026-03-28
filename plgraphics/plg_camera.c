@@ -203,10 +203,10 @@ void PlgSetupCamera( PLGCamera *camera ) {
 /**
  * Checks that the given bounding box is within the view space.
  */
-bool PlgIsBoxInsideView( const PLGCamera *camera, const PLCollisionAABB *bounds ) {
+bool qm_gfx_camera_test_box( const PLGCamera *camera, const PLCollisionAABB *bounds ) {
 	QmMathVector3f mins = qm_math_vector3f_add( bounds->mins, bounds->origin );
 	QmMathVector3f maxs = qm_math_vector3f_add( bounds->maxs, bounds->origin );
-	for ( unsigned int i = 0; i < 5; ++i ) {
+	for ( unsigned int i = 0; i < PLG_MAX_FRUSTUM_PLANES; ++i ) {
 		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &QM_MATH_VECTOR3F( mins.x, mins.y, mins.z ) ) >= 0.0f ) {
 			continue;
 		}
@@ -238,9 +238,22 @@ bool PlgIsBoxInsideView( const PLGCamera *camera, const PLCollisionAABB *bounds 
 /**
  * Checks that the given sphere is within the view space.
  */
-bool PlgIsSphereInsideView( const PLGCamera *camera, const PLCollisionSphere *sphere ) {
-	for ( unsigned int i = 0; i < 5; ++i ) {
+bool qm_gfx_camera_test_sphere( const PLGCamera *camera, const PLCollisionSphere *sphere ) {
+	for ( unsigned int i = 0; i < PLG_MAX_FRUSTUM_PLANES; ++i ) {
 		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &sphere->origin ) < -sphere->radius ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool qm_gfx_camera_test_point( const PLGCamera *camera, const QmMathVector3f point )
+{
+	for ( unsigned int i = 0; i < PLG_MAX_FRUSTUM_PLANES; ++i )
+	{
+		if ( PlGetPlaneDotProduct( &camera->frustum[ i ], &point ) < 0.0f )
+		{
 			return false;
 		}
 	}

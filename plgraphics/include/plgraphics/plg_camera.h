@@ -27,13 +27,15 @@ SOFTWARE.
 #include <plcore/pl_physics.h>
 #include <plcore/pl_image.h>
 
-enum {
+enum
+{
 	PLG_CAMERA_MODE_PERSPECTIVE,
 	PLG_CAMERA_MODE_ORTHOGRAPHIC,
 	PLG_CAMERA_MODE_ISOMETRIC
 };
 
-enum {
+enum
+{
 	PLG_FRUSTUM_PLANE_RIGHT,
 	PLG_FRUSTUM_PLANE_LEFT,
 	PLG_FRUSTUM_PLANE_BOTTOM,
@@ -46,9 +48,10 @@ enum {
 
 typedef QmMathVector4f PLGViewFrustum[ PLG_MAX_FRUSTUM_PLANES ];
 
-typedef struct PLGCamera {
-	float fov;
-	float near, far;
+typedef struct PLGCamera
+{
+	float        fov;
+	float        near, far;
 	unsigned int mode;
 
 	QmMathVector3f angles, position;
@@ -57,7 +60,8 @@ typedef struct PLGCamera {
 
 	PLCollisionAABB bounds;
 
-	struct {
+	struct
+	{
 		PLMatrix4 proj;
 		PLMatrix4 view;
 	} internal;
@@ -68,15 +72,16 @@ PL_EXTERN_C
 #if !defined( PL_COMPILE_PLUGIN )
 
 PLGCamera *PlgCreateCamera( void );
-void PlgDestroyCamera( PLGCamera *camera );
+void       PlgDestroyCamera( PLGCamera *camera );
 
-void PlgSetCameraFieldOfView( PLGCamera *camera, float fieldOfView );
+void  PlgSetCameraFieldOfView( PLGCamera *camera, float fieldOfView );
 float PlgGetCameraFieldOfView( const PLGCamera *camera );
 
 void PlgSetupCamera( PLGCamera *camera );
 
-bool PlgIsBoxInsideView( const PLGCamera *camera, const PLCollisionAABB *bounds );
-bool PlgIsSphereInsideView( const PLGCamera *camera, const PLCollisionSphere *sphere );
+bool qm_gfx_camera_test_box( const PLGCamera *camera, const PLCollisionAABB *bounds );
+bool qm_gfx_camera_test_sphere( const PLGCamera *camera, const PLCollisionSphere *sphere );
+bool qm_gfx_camera_test_point( const PLGCamera *camera, QmMathVector3f point );
 
 void PlgGetViewport( int *x, int *y, int *width, int *height );
 void PlgClipViewport( int x, int y, int width, int height );
@@ -91,9 +96,9 @@ void PlgSetupCameraFrustum( PLGCamera *camera );
 
 /***** TEMPORARY CRAP START *****/
 
-void PlgSetViewMatrix( const PLMatrix4 *viewMatrix );
+void      PlgSetViewMatrix( const PLMatrix4 *viewMatrix );
 PLMatrix4 PlgGetViewMatrix( void );
-void PlgSetProjectionMatrix( const PLMatrix4 *projMatrix );
+void      PlgSetProjectionMatrix( const PLMatrix4 *projMatrix );
 PLMatrix4 PlgGetProjectionMatrix( void );
 
 /***** TEMPORARY CRAP END 	*****/
