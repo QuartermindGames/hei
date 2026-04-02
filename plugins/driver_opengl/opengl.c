@@ -27,7 +27,6 @@ SOFTWARE.
 #include "qmos/public/qm_os.h"
 
 #include <plgraphics/plg.h>
-#include <plgraphics/plg_camera.h>
 
 #include <plcore/pl_parse.h>
 
@@ -300,7 +299,7 @@ static uint32_t boundFrameBuffers[ XGL_MAX_FRAMEBUFFER_TARGETS ] = {
         [XGL_FRAMEBUFFER_TARGET_READ] = ( uint32_t ) -1,
 };
 
-static void GLBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget target_binding ) {
+static void GLBindFrameBuffer( QmGfxFramebuffer *buffer, PLGFrameBufferObjectTarget target_binding ) {
 	uint32_t fbo = ( buffer != NULL ) ? buffer->fbo : 0;
 
 	XGL_CALL( glBindFramebuffer( TranslateFrameBufferBinding( target_binding ), fbo ) );
@@ -315,8 +314,8 @@ static void GLBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarge
 	}
 }
 
-static void GLDeleteFrameBuffer( PLGFrameBuffer *buffer );
-static bool GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
+static void GLDeleteFrameBuffer( QmGfxFramebuffer *buffer );
+static bool GLCreateFrameBuffer( QmGfxFramebuffer *buffer ) {
 	XGL_CALL( glGenFramebuffers( 1, &buffer->fbo ) );
 	GLBindFrameBuffer( buffer, PLG_FRAMEBUFFER_DEFAULT );
 
@@ -395,7 +394,7 @@ static bool GLCreateFrameBuffer( PLGFrameBuffer *buffer ) {
 	return true;
 }
 
-static void GLDeleteFrameBuffer( PLGFrameBuffer *buffer ) {
+static void GLDeleteFrameBuffer( QmGfxFramebuffer *buffer ) {
 	if ( buffer == NULL ) {
 		return;
 	}
@@ -423,10 +422,10 @@ static void GLDeleteFrameBuffer( PLGFrameBuffer *buffer ) {
 	}
 }
 
-static void GLBlitFrameBuffers( PLGFrameBuffer *src_buffer,
+static void GLBlitFrameBuffers( QmGfxFramebuffer *src_buffer,
                                 unsigned int    src_w,
                                 unsigned int    src_h,
-                                PLGFrameBuffer *dst_buffer,
+                                QmGfxFramebuffer *dst_buffer,
                                 unsigned int    dst_w,
                                 unsigned int    dst_h,
                                 unsigned int    mask,
@@ -456,7 +455,7 @@ static void GLBlitFrameBuffers( PLGFrameBuffer *src_buffer,
 	                                  linear ? GL_LINEAR : GL_NEAREST ) );
 }
 
-static void GLSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height ) {
+static void GLSetFrameBufferSize( QmGfxFramebuffer *frameBuffer, unsigned int width, unsigned int height ) {
 	/* just to be safe, flush the whole thing */
 	GLDeleteFrameBuffer( frameBuffer );
 
@@ -468,7 +467,7 @@ static void GLSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int widt
 	GLCreateFrameBuffer( frameBuffer );
 }
 
-static void *GLReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf ) {
+static void *GLReadFrameBufferRegion( QmGfxFramebuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf ) {
 	GLBindFrameBuffer( frameBuffer, PLG_FRAMEBUFFER_READ );
 
 	if ( XGL_VERSION( 4, 5 ) ) {
@@ -496,7 +495,7 @@ static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter );
 static void GLSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode );
 static unsigned int TranslateWrapMode( PLGTextureWrapMode wrapMode );
 //TODO: this should be CreateFrameBufferTextureAttachment, not GET!
-static PLGTexture *GLGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int components, PLGTextureFilter filter, PLGTextureWrapMode wrap ) {
+static PLGTexture *GLGetFrameBufferTextureAttachment( QmGfxFramebuffer *buffer, unsigned int components, PLGTextureFilter filter, PLGTextureWrapMode wrap ) {
 	PLGTexture *texture = gInterface->CreateTexture();
 	if ( texture == NULL ) {
 		return NULL;
@@ -972,7 +971,7 @@ static void GLCreateMesh( PLGMesh *mesh ) {
 	XGL_CALL( glGenBuffers( MAX_GPU_MESH_BUFFERS, mesh->buffers ) );
 }
 
-static void GLUploadMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
+static void GLUploadMesh( PLGMesh *mesh, QmGfxShaderProgram *program ) {
 	if ( !mesh->isDirty ) {
 		return;
 	}
@@ -1002,7 +1001,7 @@ static void GLDeleteMesh( PLGMesh *mesh ) {
 	XGL_CALL( glDeleteBuffers( MAX_GPU_MESH_BUFFERS, mesh->buffers ) );
 }
 
-static void GLDrawInstancedMesh( PLGMesh *mesh, PLGShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount ) {
+static void GLDrawInstancedMesh( PLGMesh *mesh, QmGfxShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount ) {
 	if ( program == NULL ) {
 		XGL_LOG( "no shader assigned!\n" );
 		return;
@@ -1044,7 +1043,7 @@ static void GLDrawInstancedMesh( PLGMesh *mesh, PLGShaderProgram *program, const
 	}
 }
 
-static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
+static void GLDrawMesh( PLGMesh *mesh, QmGfxShaderProgram *program ) {
 	if ( program == NULL ) {
 		XGL_LOG( "No shader assigned!\n" );
 		return;
@@ -1071,7 +1070,7 @@ static void GLDrawMesh( PLGMesh *mesh, PLGShaderProgram *program ) {
 	if ( !XGL_VERSION( 2, 0 ) ) {
 		/* todo... */
 		for ( unsigned int i = 0; i < program->num_stages; ++i ) {
-			PLGShaderStage *stage = program->stages[ i ];
+			QmGfxShaderStage *stage = program->stages[ i ];
 			if ( stage->SWFallback == NULL ) {
 				continue;
 			}
@@ -1209,9 +1208,9 @@ static void GLSetViewport( int x, int y, int width, int height ) {
 
 #define SHADER_INVALID_TYPE ( ( uint32_t ) 0 - 1 )
 
-static const char *uniformDescriptors[ PLG_MAX_UNIFORM_TYPES ] = {
-        [PLG_INVALID_UNIFORM] = "invalid",
-        [PLG_UNIFORM_FLOAT] = "float",
+static const char *uniformDescriptors[ QM_GFX_MAX_SHADER_UNIFORM_TYPES ] = {
+        [QM_GFX_SHADER_UNIFORM_TYPE_INVALID] = "invalid",
+        [QM_GFX_SHADER_UNIFORM_TYPE_FLOAT] = "float",
         [PLG_UNIFORM_INT] = "int",
         [PLG_UNIFORM_UINT] = "uint",
         [PLG_UNIFORM_BOOL] = "bool",
@@ -1228,10 +1227,10 @@ static const char *uniformDescriptors[ PLG_MAX_UNIFORM_TYPES ] = {
         [PLG_UNIFORM_MAT4] = "mat4",
 };
 
-static PLGShaderUniformType GLConvertGLUniformType( unsigned int type ) {
+static QmGfxShaderUniformType GLConvertGLUniformType( unsigned int type ) {
 	switch ( type ) {
 		case GL_FLOAT:
-			return PLG_UNIFORM_FLOAT;
+			return QM_GFX_SHADER_UNIFORM_TYPE_FLOAT;
 		case GL_FLOAT_VEC2:
 			return PLG_UNIFORM_VEC2;
 		case GL_FLOAT_VEC3:
@@ -1265,20 +1264,20 @@ static PLGShaderUniformType GLConvertGLUniformType( unsigned int type ) {
 
 		default: {
 			XGL_LOG( "Unhandled GLSL data type, \"%u\"!\n", type );
-			return PLG_INVALID_UNIFORM;
+			return QM_GFX_SHADER_UNIFORM_TYPE_INVALID;
 		}
 	}
 }
 
-static GLenum TranslateShaderStageType( PLGShaderStageType type ) {
+static GLenum TranslateShaderStageType( QmGfxShaderStageType type ) {
 	switch ( type ) {
-		case PLG_SHADER_TYPE_VERTEX:
+		case QM_GFX_SHADER_STAGE_TYPE_VERTEX:
 			return GL_VERTEX_SHADER;
-		case PLG_SHADER_TYPE_COMPUTE:
+		case QM_GFX_SHADER_STAGE_TYPE_COMPUTE:
 			return GL_COMPUTE_SHADER;
-		case PLG_SHADER_TYPE_FRAGMENT:
+		case QM_GFX_SHADER_STAGE_TYPE_FRAGMENT:
 			return GL_FRAGMENT_SHADER;
-		case PLG_SHADER_TYPE_GEOMETRY:
+		case QM_GFX_SHADER_STAGE_TYPE_GEOMETRY:
 			return GL_GEOMETRY_SHADER;
 		default:
 			return SHADER_INVALID_TYPE;
@@ -1326,7 +1325,7 @@ static char *InsertString( const char *string, char **buf, size_t *bufSize, size
  * and handle any pre-processor commands.
  * todo: this is dumb... rewrite it
  */
-static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *length, bool head, const char *directory ) {
+static char *GLPreProcessGLSLShader( QmGfxShaderStage *stage, char *buf, size_t *length, bool head, const char *directory ) {
 	/* setup the destination buffer */
 	size_t actualLength = 0;
 	size_t maxLength = *length;
@@ -1343,7 +1342,7 @@ static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *l
 		insert( "uniform mat4 pl_texture;\n" );
 		insert( "uniform vec4 pl_clipplane;\n" );
 		insert( "uniform mat4 pl_clipplane_matrix;\n" );
-		if ( stage->type == PLG_SHADER_TYPE_VERTEX ) {
+		if ( stage->type == QM_GFX_SHADER_STAGE_TYPE_VERTEX ) {
 			insert( "in vec3 pl_vposition;\n" );
 			insert( "in vec3 pl_vnormal;\n" );
 			insert( "in vec2 pl_vuv[4];\n" );
@@ -1351,7 +1350,7 @@ static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *l
 			insert( "in vec3 pl_vtangent, pl_vbitangent;\n" );
 			insert( "out float gl_ClipDistance[1];\n" );
 			insert( "#define PLG_COMPILE_VERTEX 1\n" );
-		} else if ( stage->type == PLG_SHADER_TYPE_FRAGMENT ) {
+		} else if ( stage->type == QM_GFX_SHADER_STAGE_TYPE_FRAGMENT ) {
 			insert( "out vec4 pl_frag;\n" );
 			insert( "#define PLG_COMPILE_FRAGMENT 1\n" );
 		}
@@ -1443,7 +1442,7 @@ static char *GLPreProcessGLSLShader( PLGShaderStage *stage, char *buf, size_t *l
 	return dstBuffer;
 }
 
-static void GLCreateShaderProgram( PLGShaderProgram *program ) {
+static void GLCreateShaderProgram( QmGfxShaderProgram *program ) {
 	if ( !XGL_VERSION( 2, 0 ) ) {
 		XGL_LOG( "HW shaders unsupported on platform, relying on SW fallback\n" );
 		return;
@@ -1458,7 +1457,7 @@ static void GLCreateShaderProgram( PLGShaderProgram *program ) {
 	program->driver = gInterface->core->MAlloc( sizeof( OGLShaderProgram ), true );
 }
 
-static void GLDestroyShaderProgram( PLGShaderProgram *program ) {
+static void GLDestroyShaderProgram( QmGfxShaderProgram *program ) {
 	gInterface->core->Free( program->driver );
 
 	if ( program->internal.id == 0 ) {
@@ -1472,7 +1471,7 @@ static void GLDestroyShaderProgram( PLGShaderProgram *program ) {
 	program->internal.id = 0;
 }
 
-static void GLCreateShaderStage( PLGShaderStage *stage ) {
+static void GLCreateShaderStage( QmGfxShaderStage *stage ) {
 	if ( !XGL_VERSION( 2, 0 ) ) {
 		XGL_LOG( "HW shaders unsupported on platform, relying on SW fallback\n" );
 		return;
@@ -1501,7 +1500,7 @@ static void GLCreateShaderStage( PLGShaderStage *stage ) {
 	}
 }
 
-static void GLDestroyShaderStage( PLGShaderStage *stage ) {
+static void GLDestroyShaderStage( QmGfxShaderStage *stage ) {
 	if ( !XGL_VERSION( 2, 0 ) ) {
 		return;
 	}
@@ -1515,7 +1514,7 @@ static void GLDestroyShaderStage( PLGShaderStage *stage ) {
 	stage->internal.id = 0;
 }
 
-static void GLAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stage ) {
+static void GLAttachShaderStage( QmGfxShaderProgram *program, QmGfxShaderStage *stage ) {
 	if ( !XGL_VERSION( 2, 0 ) ) {
 		return;
 	}
@@ -1523,7 +1522,7 @@ static void GLAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stag
 	XGL_CALL( glAttachShader( program->internal.id, stage->internal.id ) );
 }
 
-static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length, const char *directory ) {
+static bool GLCompileShaderStage( QmGfxShaderStage *stage, const char *buf, size_t length, const char *directory ) {
 	if ( !XGL_VERSION( 2, 0 ) ) {
 		return;
 	}
@@ -1554,9 +1553,9 @@ static void GLCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t
 	gInterface->core->Free( temp );
 }
 
-static void GLSetShaderUniformValue( PLGShaderProgram *program, int slot, const void *value, bool transpose ) {
+static void GLSetShaderUniformValue( QmGfxShaderProgram *program, int slot, const void *value, bool transpose ) {
 	switch ( program->uniforms[ slot ].type ) {
-		case PLG_UNIFORM_FLOAT:
+		case QM_GFX_SHADER_UNIFORM_TYPE_FLOAT:
 			XGL_CALL( glUniform1f( program->uniforms[ slot ].slot, *( float * ) value ) );
 			break;
 		case PLG_UNIFORM_SAMPLER2D:
@@ -1596,7 +1595,7 @@ static void GLSetShaderUniformValue( PLGShaderProgram *program, int slot, const 
 	}
 }
 
-static void GLSetShaderUniformMatrix4( PLGShaderProgram *program, int slot, const PLMatrix4 *value, bool transpose ) {
+static void GLSetShaderUniformMatrix4( QmGfxShaderProgram *program, int slot, const PLMatrix4 *value, bool transpose ) {
 	PL_UNUSEDVAR( program );
 
 	if ( !XGL_VERSION( 2, 0 ) ) {
@@ -1606,7 +1605,7 @@ static void GLSetShaderUniformMatrix4( PLGShaderProgram *program, int slot, cons
 	XGL_CALL( glUniformMatrix4fv( slot, 1, transpose ? GL_TRUE : GL_FALSE, value->m ) );
 }
 
-static void RegisterShaderProgramData( PLGShaderProgram *program ) {
+static void RegisterShaderProgramData( QmGfxShaderProgram *program ) {
 	if ( program->uniforms != NULL ) {
 		XGL_LOG( "Uniforms have already been initialised!\n" );
 		return;
@@ -1665,7 +1664,7 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 
 		/* fetch it's current value, assume it's the default */
 		switch ( program->uniforms[ i ].type ) {
-			case PLG_UNIFORM_FLOAT:
+			case QM_GFX_SHADER_UNIFORM_TYPE_FLOAT:
 				XGL_CALL( glGetUniformfv( program->internal.id, program->uniforms[ i ].slot, &program->uniforms[ i ].defaultFloat ) );
 				break;
 			case PLG_UNIFORM_SAMPLER2D:
@@ -1710,7 +1709,7 @@ static void RegisterShaderProgramData( PLGShaderProgram *program ) {
 	}
 }
 
-static void GLSetShaderProgram( PLGShaderProgram *program ) {
+static void GLSetShaderProgram( QmGfxShaderProgram *program ) {
 	if ( !XGL_VERSION( 2, 0 ) ) {
 		return;
 	}
@@ -1723,6 +1722,7 @@ static void GLSetShaderProgram( PLGShaderProgram *program ) {
 	XGL_CALL( glUseProgram( id ) );
 }
 
+#if 0 // removed as we don't use it
 #define SHADER_CACHE_MAGIC QM_OS_MAGIC_TO_NUM( 'G', 'L', 'S', 'B' )
 
 typedef struct ShaderCacheHeader {
@@ -1732,7 +1732,7 @@ typedef struct ShaderCacheHeader {
 	uint32_t length;
 } ShaderCacheHeader;
 
-static void CacheShaderProgram( PLGShaderProgram *program ) {
+static void CacheShaderProgram( QmGfxShaderProgram *program ) {
 	const char *cacheLocation = gInterface->GetShaderCacheLocation();
 	if ( *cacheLocation == '\0' ) {
 		return;
@@ -1781,8 +1781,9 @@ static void CacheShaderProgram( PLGShaderProgram *program ) {
 
 	fclose( file );
 }
+#endif
 
-static void GLLinkShaderProgram( PLGShaderProgram *program ) {
+static void GLLinkShaderProgram( QmGfxShaderProgram *program ) {
 	if ( !XGL_VERSION( 2, 0 ) ) {
 		gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, __FUNCTION__, "unsupported" );
 		return;
@@ -1811,7 +1812,6 @@ static void GLLinkShaderProgram( PLGShaderProgram *program ) {
 
 	program->is_linked = true;
 
-	CacheShaderProgram( program );
 	RegisterShaderProgramData( program );
 }
 

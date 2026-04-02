@@ -7,18 +7,6 @@
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
-#include "qmos/public/qm_os_memory.h"
-
-static void CheckTMUStates( void ) {
-	if ( gfx_state.tmu != NULL ) {
-		return;
-	}
-
-	gfx_state.tmu = ( PLGTextureMappingUnit * ) QM_OS_MEMORY_CALLOC( PlgGetMaxTextureUnits(), sizeof( PLGTextureMappingUnit ) );
-	for ( unsigned int i = 0; i < PlgGetMaxTextureUnits(); i++ ) {
-		gfx_state.tmu[ i ].current_envmode = PLG_TEXTUREMODE_REPLACE;
-	}
-}
 
 void PlgShutdownTextures( void ) {
 	qm_os_memory_free( gfx_state.tmu );

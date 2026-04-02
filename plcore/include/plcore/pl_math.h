@@ -57,25 +57,11 @@ typedef struct PLRectangleF32 {
 /////////////////////////////////////////////////////////////////////////////////////
 // Colour
 
-QmMathColour4ub PlAddColour( const QmMathColour4ub *c, const QmMathColour4ub *c2 );
-QmMathColour4f PlAddColourF32( const QmMathColour4f *c, const QmMathColour4f *c2 );
-
-static inline bool PlColour4fCompare( const QmMathColour4f *a, const QmMathColour4f *b ) {
-	return ( ( a->r == b->r ) && ( a->g == b->g ) && ( a->b == b->b ) && ( a->a == b->a ) );
-}
-
-static inline bool PlCompareColour( QmMathColour4ub c, QmMathColour4ub c2 ) {
-	return ( ( c.r == c2.r ) && ( c.g == c2.g ) && ( c.b == c2.b ) && ( c.a == c2.a ) );
-}
-
 static inline QmMathColour4f PlVector4ToColourF32( const QmMathVector4f *v ) {
 	QmMathColour4f colour;
 	memcpy( &colour, v, sizeof( QmMathColour4f ) );
 	return colour;
 }
-
-#define PL_COLOURF32RGB( R, G, B ) \
-	( QmMathColour4f ){ .r = ( R ), .g = ( G ), .b = ( B ), .a = 1.0f }
 
 /* pinks */
 #define PL_COLOUR_PINK                   QM_MATH_COLOUR4UB_RGB( 255, 192, 203 )
@@ -229,8 +215,8 @@ static inline QmMathColour4f PlVector4ToColourF32( const QmMathVector4f *v ) {
 #define PL_COLOUR_DARK_SLATE_GRAY        QM_MATH_COLOUR4UB_RGB( 47, 79, 79 )
 #define PL_COLOUR_BLACK                  QM_MATH_COLOUR4UB_RGB( 0, 0, 0 )
 
-#define PL_COLOURF32_WHITE PL_COLOURF32RGB( 1.0f, 1.0f, 1.0f )
-#define PL_COLOURF32_BLACK PL_COLOURF32RGB( 0.0f, 0.0f, 0.0f )
+#define PL_COLOURF32_WHITE QM_MATH_COLOUR4F_RGB( 1.0f, 1.0f, 1.0f )
+#define PL_COLOURF32_BLACK QM_MATH_COLOUR4F_RGB( 0.0f, 0.0f, 0.0f )
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Primitives

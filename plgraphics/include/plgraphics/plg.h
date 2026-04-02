@@ -15,14 +15,16 @@
 
 typedef struct PLGDriverImportTable PLGDriverImportTable;
 
-typedef enum PLGCullMode {
+typedef enum PLGCullMode
+{
 	PLG_CULL_NONE, /* disables backface culling */
 	PLG_CULL_POSITIVE,
 	PLG_CULL_NEGATIVE
 } PLGCullMode;
 
 // Blending Modes
-typedef enum PLGBlend {
+typedef enum PLGBlend
+{
 	PLG_BLEND_NONE,// disables blending
 
 	PLG_BLEND_ZERO,
@@ -52,7 +54,8 @@ typedef enum PLGBlend {
  * plEnableBlend(bool active)
  */
 
-typedef enum PLGDrawState {
+typedef enum PLGDrawState
+{
 	PLG_GFX_STATE_FOG,            // Fog.
 	PLG_GFX_STATE_ALPHATEST,      // Alpha-testing.
 	PLG_GFX_STATE_BLEND,          // Blending.
@@ -70,7 +73,8 @@ typedef enum PLGDrawState {
 // Framebuffers
 // todo: move all of this into pl_graphics_framebuffer.h
 
-typedef enum PLGStencilOp {
+typedef enum PLGStencilOp
+{
 	PLG_STENCIL_OP_KEEP,
 	PLG_STENCIL_OP_ZERO,
 	PLG_STENCIL_OP_REPLACE,
@@ -83,7 +87,8 @@ typedef enum PLGStencilOp {
 	PLG_MAX_STENCIL_OPS
 } PLGStencilOp;
 
-typedef enum PLGStencilFace {
+typedef enum PLGStencilFace
+{
 	PLG_STENCIL_FACE_FRONT,
 	PLG_STENCIL_FACE_BACK,
 	PLG_STENCIL_FACE_FRONTANDBACK,
@@ -92,12 +97,14 @@ typedef enum PLGStencilFace {
 //-----------------
 // Lighting
 
-typedef enum PLGLightType {
+typedef enum PLGLightType
+{
 	PLG_LIGHT_TYPE_SPOT,// Spotlight
 	PLG_LIGHT_TYPE_OMNI // Omni-directional
 } PLGLightType;
 
-typedef struct PLGLight {
+typedef struct PLGLight
+{
 	QmMathVector3f position;
 	QmMathVector3f angles;
 
@@ -106,25 +113,57 @@ typedef struct PLGLight {
 	PLGLightType type;
 } PLGLight;
 
-//-----------------
+typedef struct PLGPolygon PLGPolygon;
+typedef struct PLGVertex  PLGVertex;
+typedef struct PLGMesh    PLGMesh;
+typedef struct PLGCamera  PLGCamera;
+
+typedef enum PLGCompareFunction
+{
+	PLG_COMPARE_NEVER,
+	PLG_COMPARE_LESS,
+	PLG_COMPARE_EQUAL,
+	PLG_COMPARE_LEQUAL,
+	PLG_COMPARE_GREATER,
+	PLG_COMPARE_NOTEQUAL,
+	PLG_COMPARE_GEQUAL,
+	PLG_COMPARE_ALWAYS,
+
+	PLG_MAX_COMPARE_FUNCTIONS
+} PLGCompareFunction;
+
+PL_EXTERN_C
+
+#if !defined( PL_COMPILE_PLUGIN )
+
+PLFunctionResult PlgInitializeGraphics( void );
+void             PlgShutdownGraphics( void );
+
+void PlgSetClipPlane( const QmMathVector4f *clip, const PLMatrix4 *clipMatrix, bool transpose );
+
+#endif
+
+/////////////////////////////////////////////////////////////////////////////////////
 // Shaders
-// todo: move all of this into pl_graphics_shader.h
+/////////////////////////////////////////////////////////////////////////////////////
 
 typedef int PLGShaderAttribute;
 
-typedef enum PLGShaderStageType {
-	PLG_SHADER_TYPE_VERTEX,
-	PLG_SHADER_TYPE_FRAGMENT,
-	PLG_SHADER_TYPE_GEOMETRY,
-	PLG_SHADER_TYPE_COMPUTE,
+typedef enum QmGfxShaderStageType : uint8_t
+{
+	QM_GFX_SHADER_STAGE_TYPE_VERTEX,
+	QM_GFX_SHADER_STAGE_TYPE_FRAGMENT,
+	QM_GFX_SHADER_STAGE_TYPE_GEOMETRY,
+	QM_GFX_SHADER_STAGE_TYPE_COMPUTE,
 
-	PLG_MAX_SHADER_TYPES
-} PLGShaderStageType;
+	QM_GFX_MAX_SHADER_STAGE_TYPES
+} QmGfxShaderStageType;
 
-typedef enum PLGShaderUniformType {
-	PLG_INVALID_UNIFORM,
+typedef enum QmGfxShaderUniformType : uint8_t
+{
+	QM_GFX_SHADER_UNIFORM_TYPE_INVALID,
 
-	PLG_UNIFORM_FLOAT,
+	QM_GFX_SHADER_UNIFORM_TYPE_FLOAT,
 	PLG_UNIFORM_INT,
 	PLG_UNIFORM_UINT,
 	PLG_UNIFORM_BOOL,
@@ -147,50 +186,53 @@ typedef enum PLGShaderUniformType {
 	PLG_UNIFORM_MAT3,
 	PLG_UNIFORM_MAT4,
 
-	PLG_MAX_UNIFORM_TYPES
-} PLGShaderUniformType;
+	QM_GFX_MAX_SHADER_UNIFORM_TYPES
+} QmGfxShaderUniformType;
 
-typedef struct PLGShaderProgram PLGShaderProgram;
-typedef struct PLGShaderStage PLGShaderStage;
+typedef struct QmGfxShaderProgram QmGfxShaderProgram;
+typedef struct QmGfxShaderStage   QmGfxShaderStage;
 
 #define PLG_MAX_DEFINITION_LENGTH 16
 #define PLG_MAX_DEFINITIONS       16
 
 #define PLG_MAX_UNIFORM_NAME_LENGTH 128
 
-#define PLG_MAX_SHADER_PROGRAM_ID 128
-
-typedef struct PLGShaderStage {
-	PLGShaderStageType type;
+typedef struct QmGfxShaderStage
+{
+	QmGfxShaderStageType type;
 
 	/* software implementation of the shader stage */
-	void ( *SWFallback )( PLGShaderProgram *program, PLGShaderStageType type );
+	void ( *SWFallback )( QmGfxShaderProgram *program, QmGfxShaderStageType type );
 
-	PLGShaderProgram *program;
+	QmGfxShaderProgram *program;
 
-	struct {
+	struct
+	{
 		unsigned int id;
 	} internal;
 
 	unsigned int numDefinitions;
-	char definitions[ PLG_MAX_DEFINITIONS ][ PLG_MAX_DEFINITION_LENGTH ];
+	char         definitions[ PLG_MAX_DEFINITIONS ][ PLG_MAX_DEFINITION_LENGTH ];
 
 	PLPath path; /* original location it was loaded from */
-} PLGShaderStage;
+} QmGfxShaderStage;
 
-typedef struct PLGShaderProgram {
-	struct {
-		char name[ PLG_MAX_UNIFORM_NAME_LENGTH ];
-		int slot;
-		unsigned int numElements;
-		PLGShaderUniformType type;
+typedef struct QmGfxShaderProgram
+{
+	struct
+	{
+		char                   name[ PLG_MAX_UNIFORM_NAME_LENGTH ];
+		int                    slot;
+		unsigned int           numElements;
+		QmGfxShaderUniformType type;
 
-		union {
-			int defaultInt;
+		union
+		{
+			int          defaultInt;
 			unsigned int defaultUInt;
-			bool defaultBool;
-			double defaultDouble;
-			float defaultFloat;
+			bool         defaultBool;
+			double       defaultDouble;
+			float        defaultFloat;
 
 			QmMathVector2f defaultVec2;
 			QmMathVector3f defaultVec3;
@@ -199,22 +241,24 @@ typedef struct PLGShaderProgram {
 			PLMatrix3 defaultMat3;
 			PLMatrix4 defaultMat4;
 		};
-	} *uniforms;
+	}           *uniforms;
 	unsigned int num_uniforms;
 
-	struct {
+	struct
+	{
 		char name[ 32 ];
 
 		unsigned int slot;
-	} *attributes;
+	}           *attributes;
 	unsigned int num_attributes;
 
-	PLGShaderStage *stages[ PLG_MAX_SHADER_TYPES ];
-	unsigned int num_stages;
+	QmGfxShaderStage *stages[ QM_GFX_MAX_SHADER_STAGE_TYPES ];
+	unsigned int      num_stages;
 
 	bool is_linked;
 
-	struct {
+	struct
+	{
 		unsigned int id;
 
 		PLGShaderAttribute v_position;
@@ -224,86 +268,89 @@ typedef struct PLGShaderProgram {
 		PLGShaderAttribute v_tangent, v_bitangent;
 	} internal;
 
-	char id[ PLG_MAX_SHADER_PROGRAM_ID ];
-
 	void *driver;// driver specific data
-} PLGShaderProgram;
-
-typedef struct PLGPolygon PLGPolygon;
-typedef struct PLGVertex PLGVertex;
-typedef struct PLGMesh PLGMesh;
-typedef struct PLGCamera PLGCamera;
-
-typedef enum PLGCompareFunction {
-	PLG_COMPARE_NEVER,
-	PLG_COMPARE_LESS,
-	PLG_COMPARE_EQUAL,
-	PLG_COMPARE_LEQUAL,
-	PLG_COMPARE_GREATER,
-	PLG_COMPARE_NOTEQUAL,
-	PLG_COMPARE_GEQUAL,
-	PLG_COMPARE_ALWAYS,
-
-	PLG_MAX_COMPARE_FUNCTIONS
-} PLGCompareFunction;
-
-PL_EXTERN_C
+} QmGfxShaderProgram;
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PLFunctionResult PlgInitializeGraphics( void );
-void PlgShutdownGraphics( void );
+/**
+ * Create the shader stage and generate it on the GPU, if applicable.
+ * Call memory_free to destroy.
+ *
+ * @param type the type of shader stage.
+ * @return the new shader stage.
+ */
+QmGfxShaderStage *qm_gfx_shader_stage_create( QmGfxShaderStageType type );
 
-void PlgSetClipPlane( const QmMathVector4f *clip, const PLMatrix4 *clipMatrix, bool transpose );
+/**
+ * Compiles the given shader stage on the GPU, otherwise it
+ * will be ignored when performing software-rendering or if
+ * your GPU doesn't support the shader compilation.
+ *
+ * If the compilation fails an error will be reported and this will
+ * automatically fallback when rendering anything if it's active.
+ *
+ * @param self the stage we're going to be compiling.
+ * @param buf pointer to buffer containing the shader we're compiling.
+ * @param length the length of the buffer.
+ */
+bool qm_gfx_shader_stage_compile( QmGfxShaderStage *self, const char *buf, size_t length, const char *localDirectory );
 
-PLGShaderStage *PlgCreateShaderStage( PLGShaderStageType type );
-void PlgDestroyShaderStage( PLGShaderStage *stage );
-PLGShaderStage *PlgParseShaderStage( PLGShaderStageType type, const char *buf, size_t length );
-PLGShaderStage *PlgLoadShaderStage( const char *path, PLGShaderStageType type );
-void PlgCompileShaderStage( PLGShaderStage *stage, const char *buf, size_t length, const char *localDirectory );
+/**
+ * Sets out what definitions should be applied when compiling the shader stage.
+ */
+void qm_gfx_shader_stage_set_definitions( QmGfxShaderStage *self, const char definitions[][ PLG_MAX_DEFINITION_LENGTH ], unsigned int numDefinitions );
 
-void PlgSetShaderStageDefinitions( PLGShaderStage *stage, const char definitions[][ PLG_MAX_DEFINITION_LENGTH ], unsigned int numDefinitions );
+void qm_gfx_shader_program_attach_stage( QmGfxShaderProgram *self, QmGfxShaderStage *stage );
+bool qm_gfx_shader_program_link( QmGfxShaderProgram *self );
 
-void PlgAttachShaderStage( PLGShaderProgram *program, PLGShaderStage *stage );
-bool PlgRegisterShaderStageFromMemory( PLGShaderProgram *program, const char *buffer, size_t length,
-                                       PLGShaderStageType type );
-bool PlgRegisterShaderStageFromDisk( PLGShaderProgram *program, const char *path, PLGShaderStageType type );
-bool PlgLinkShaderProgram( PLGShaderProgram *program );
+/**
+ * Searches through programs registered uniforms
+ * for the specified uniform entry.
+ *
+ * If it fails to find the uniform it'll return '-1'.
+ */
+int qm_gfx_shader_program_get_uniform_slot( QmGfxShaderProgram *program, const char *name );
 
-int PlgGetShaderUniformSlot( PLGShaderProgram *program, const char *name );
-PLGShaderUniformType PlgGetShaderUniformType( const PLGShaderProgram *program, int slot );
-unsigned int PlgGetNumShaderUniformElements( const PLGShaderProgram *program, int slot );
+QmGfxShaderUniformType qm_gfx_shader_program_get_uniform_type( const QmGfxShaderProgram *self, int slot );
+unsigned int           PlgGetNumShaderUniformElements( const QmGfxShaderProgram *program, int slot );
 
-void PlgSetShaderUniformDefaultValueByIndex( PLGShaderProgram *program, int slot, const void *defaultValue );
-void PlgSetShaderUniformDefaultValue( PLGShaderProgram *program, const char *name, const void *defaultValue );
-void PlgSetShaderUniformToDefaultByIndex( PLGShaderProgram *program, int slot );
-void PlgSetShaderUniformToDefault( PLGShaderProgram *program, const char *name );
-void PlgSetShaderUniformsToDefault( PLGShaderProgram *program );
+void PlgSetShaderUniformDefaultValueByIndex( QmGfxShaderProgram *program, int slot, const void *defaultValue );
+void PlgSetShaderUniformDefaultValue( QmGfxShaderProgram *program, const char *name, const void *defaultValue );
+void PlgSetShaderUniformToDefaultByIndex( QmGfxShaderProgram *program, int slot );
+void PlgSetShaderUniformToDefault( QmGfxShaderProgram *program, const char *name );
+void PlgSetShaderUniformsToDefault( QmGfxShaderProgram *program );
 
-void PlgSetShaderUniformValueByIndex( PLGShaderProgram *program, int slot, const void *value, bool transpose );
-void PlgSetShaderUniformValue( PLGShaderProgram *program, const char *name, const void *value, bool transpose );
+void PlgSetShaderUniformValueByIndex( QmGfxShaderProgram *program, int slot, const void *value, bool transpose );
+void PlgSetShaderUniformValue( QmGfxShaderProgram *program, const char *name, const void *value, bool transpose );
 
-PLGShaderProgram *PlgCreateShaderProgram( void );
-PLGShaderProgram *PlgLoadCachedShaderProgram( const char *path );
-void PlgDestroyShaderProgram( PLGShaderProgram *program, bool free_stages );
+/**
+ * allocates a new shader program in memory and generates it on the GPU, if applicable.
+ * Call memory_free to destroy.
+ *
+ * @return the new shader program.
+ */
+QmGfxShaderProgram *qm_gfx_shader_program_create();
 
-void PlgSetShaderProgramId( PLGShaderProgram *program, const char *id );
-void PlgClearShaderProgramId( PLGShaderProgram *program );
-const char *PlgGetShaderProgramId( PLGShaderProgram *program );
+QmGfxShaderProgram *PlgGetCurrentShaderProgram( void );
 
-void PlgSetShaderCacheLocation( const char *path );
-void PlgClearShaderCacheLocation( const char *path );
-const char *PlgGetShaderCacheLocation( void );
+/**
+ * sets the currently active shader program. means that any
+ * subsequent draw calls will use this shader program.
+ *
+ * @param program
+ */
+void PlgSetShaderProgram( QmGfxShaderProgram *program );
 
-PLGShaderProgram *PlgGetCurrentShaderProgram( void );
+bool PlgIsShaderProgramEnabled( QmGfxShaderProgram *program );
 
-void PlgSetShaderProgram( PLGShaderProgram *program );
-bool PlgIsShaderProgramEnabled( PLGShaderProgram *program );
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
 
 // Debugging
-void PlgInsertDebugMarker( const char *msg );
-void PlgPushDebugGroupMarker( const char *msg );
-void PlgPopDebugGroupMarker( void );
+void qm_gfx_debug_insert_marker( const char *msg );
+void qm_gfx_debug_push_group_marker( const char *msg );
+void qm_gfx_debug_pop_group_marker( void );
 
 // Hardware Information
 const char *PlgGetHWExtensions( void );
@@ -330,6 +377,25 @@ bool PlgIsGraphicsStateEnabled( PLGDrawState state );
 
 void PlgEnableGraphicsState( PLGDrawState state );
 void PlgDisableGraphicsState( PLGDrawState state );
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Viewport
+/////////////////////////////////////////////////////////////////////////////////////
+
+void qm_gfx_clip_viewport( int x, int y, int width, int height );
+void qm_gfx_set_viewport( int x, int y, int width, int height );
+void qm_gfx_get_viewport( int *x, int *y, int *width, int *height );
+
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+/***** TEMPORARY CRAP START *****/
+
+void      PlgSetViewMatrix( const PLMatrix4 *viewMatrix );
+PLMatrix4 PlgGetViewMatrix( void );
+void      PlgSetProjectionMatrix( const PLMatrix4 *projMatrix );
+PLMatrix4 PlgGetProjectionMatrix( void );
+
+/***** TEMPORARY CRAP END 	*****/
 
 #endif
 

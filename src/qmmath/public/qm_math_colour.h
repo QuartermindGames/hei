@@ -193,6 +193,42 @@ extern "C"
 #define QM_MATH_COLOUR4UB_TO_4F( IN )  QM_MATH_COLOUR4F( QM_MATH_BTOF( ( IN ).r ), QM_MATH_BTOF( ( IN ).g ), QM_MATH_BTOF( ( IN ).b ), QM_MATH_BTOF( ( IN ).a ) )
 
 	/////////////////////////////////////////////////////////////////////////////////////
+	// Compare
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	static inline bool qm_math_colour4f_compare( const QmMathColour4f src, const QmMathColour4f compare )
+	{
+		return src.r == compare.r && src.g == compare.g && src.b == compare.b && src.a == compare.a;
+	}
+
+	static inline bool qm_math_colour4ub_compare( const QmMathColour4ub src, const QmMathColour4ub compare )
+	{
+		return src.r == compare.r && src.g == compare.g && src.b == compare.b && src.a == compare.a;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	// Add
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	static inline QmMathColour4f qm_math_colour4f_add( const QmMathColour4f src, const QmMathColour4f add )
+	{
+		return QM_MATH_COLOUR4F( src.r + add.r, src.g + add.g, src.b + add.b, src.a + add.a );
+	}
+
+	static inline QmMathColour4ub qm_math_colour4ub_add( const QmMathColour4ub src, const QmMathColour4ub add )
+	{
+		int r = ( int ) src.r + add.r;
+		int g = ( int ) src.g + add.g;
+		int b = ( int ) src.b + add.b;
+		int a = ( int ) src.a + add.a;
+
+		return QM_MATH_COLOUR4UB( ( unsigned char ) QM_MATH_CLAMP( 0, r, 255 ),
+		                          ( unsigned char ) QM_MATH_CLAMP( 0, g, 255 ),
+		                          ( unsigned char ) QM_MATH_CLAMP( 0, b, 255 ),
+		                          ( unsigned char ) QM_MATH_CLAMP( 0, a, 255 ) );
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
 	// Clamp
 	/////////////////////////////////////////////////////////////////////////////////////
 

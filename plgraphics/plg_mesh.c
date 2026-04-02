@@ -258,7 +258,7 @@ void PlgSetMeshUniformColour( PLGMesh *mesh, const QmMathColour4ub *colour ) {
 	}
 }
 
-void PlgSetMeshShaderProgram( PLGMesh *mesh, PLGShaderProgram *program ) {
+void PlgSetMeshShaderProgram( PLGMesh *mesh, QmGfxShaderProgram *program ) {
 	mesh->shader_program = program;
 }
 

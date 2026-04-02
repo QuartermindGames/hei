@@ -65,13 +65,13 @@ void PlgImmSetPrimitiveScale( float scale ) {
 }
 
 void PlgImmDraw( void ) {
-	PLGShaderProgram *program = PlgGetCurrentShaderProgram();
+	QmGfxShaderProgram *program = PlgGetCurrentShaderProgram();
 	if ( program ) {
 		int slot;
-		if ( ( slot = PlgGetShaderUniformSlot( program, "pl_model" ) ) >= 0 ) {
+		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_model" ) ) >= 0 ) {
 			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
 		}
-		if ( ( slot = PlgGetShaderUniformSlot( program, "pl_texture" ) ) >= 0 ) {
+		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_texture" ) ) >= 0 ) {
 			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_TEXTURE_MATRIX ), false );
 		}
 	}
@@ -135,10 +135,10 @@ void PlgDrawEllipse( unsigned int segments, const QmMathVector2f *position, floa
 
 	PlLoadIdentityMatrix();
 
-	PLGShaderProgram *program = PlgGetCurrentShaderProgram();
+	QmGfxShaderProgram *program = PlgGetCurrentShaderProgram();
 	if ( program ) {
 		int slot;
-		if ( ( slot = PlgGetShaderUniformSlot( program, "pl_model" ) ) >= 0 ) {
+		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_model" ) ) >= 0 ) {
 			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
 		}
 	}
@@ -221,13 +221,13 @@ void PlgDrawTexturedQuad( const QmMathVector3f *ul, const QmMathVector3f *ur, co
 
 	PlLoadIdentityMatrix();
 
-	PLGShaderProgram *program = PlgGetCurrentShaderProgram();
+	QmGfxShaderProgram *program = PlgGetCurrentShaderProgram();
 	if ( program ) {
 		int slot;
-		if ( ( slot = PlgGetShaderUniformSlot( program, "pl_model" ) ) >= 0 ) {
+		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_model" ) ) >= 0 ) {
 			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
 		}
-		if ( ( slot = PlgGetShaderUniformSlot( program, "pl_texture" ) ) >= 0 ) {
+		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_texture" ) ) >= 0 ) {
 			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_TEXTURE_MATRIX ), false );
 		}
 	}
@@ -307,7 +307,7 @@ void PlgDrawDottedGrid( int x, int y, int w, int h, unsigned int gridSize, const
 
 void PlgDrawPixel( int x, int y, QmMathColour4ub colour ) {
 	int vpW, vpH;
-	PlgGetViewport( NULL, NULL, &vpW, &vpH );
+	qm_gfx_get_viewport( NULL, NULL, &vpW, &vpH );
 
 	/* make sure that the pixel is within the viewport */
 	if ( x > vpW || x < 0 || y > vpH || y < 0 ) {

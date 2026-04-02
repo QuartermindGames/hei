@@ -24,11 +24,13 @@ SOFTWARE.
 
 #pragma once
 
+#include "qmos/public/qm_os_memory.h"
+
 #include <plcore/pl_console.h>
 
 #include <plgraphics/plg.h>
+#include <plgraphics/plg_driver_interface.h>
 #include <plgraphics/plg_texture.h>
-#include <plgraphics/plg_camera.h>
 
 PL_EXTERN_C
 
@@ -56,7 +58,7 @@ typedef struct GfxState {
 
 	// Shader states
 
-	PLGShaderProgram *current_program;
+	QmGfxShaderProgram *current_program;
 	PLPath shaderCacheLocation; /* where shaders should be cached to, if supported */
 
 	// Hardware / Driver information

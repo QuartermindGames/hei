@@ -49,7 +49,6 @@ file(
 
         polygon.c
 
-        math/pl_math_colour.c
         math/pl_math_matrix.c
         math/pl_math_quaternion.c
         math/pl_math_random.c

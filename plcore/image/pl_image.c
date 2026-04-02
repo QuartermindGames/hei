@@ -647,14 +647,14 @@ void PlReplaceImageColour( PLImage *image, QmMathColour4ub target, QmMathColour4
 			for ( unsigned int i = 0; i < image->size; i += num_colours ) {
 				uint8_t *pixel = &image->data[ 0 ][ i ];
 				if ( num_colours == 4 ) {
-					if ( PlCompareColour( qm_math_colour4ub( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ], pixel[ 3 ] ), target ) ) {
+					if ( qm_math_colour4ub_compare( qm_math_colour4ub( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ], pixel[ 3 ] ), target ) ) {
 						pixel[ 0 ] = dest.r;
 						pixel[ 1 ] = dest.g;
 						pixel[ 2 ] = dest.b;
 						pixel[ 3 ] = dest.a;
 					}
 				} else {
-					if ( PlCompareColour( QM_MATH_COLOUR4UB_RGB( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ] ), target ) ) {
+					if ( qm_math_colour4ub_compare( QM_MATH_COLOUR4UB_RGB( pixel[ 0 ], pixel[ 1 ], pixel[ 2 ] ), target ) ) {
 						pixel[ 0 ] = dest.r;
 						pixel[ 1 ] = dest.g;
 						pixel[ 2 ] = dest.b;

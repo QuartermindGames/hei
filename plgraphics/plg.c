@@ -15,20 +15,6 @@
 
 GfxState gfx_state;
 
-/*	TODO:
-- Add somewhere we can store tracking
-data for each of these functions
-- Display that data as an overlay?
-*/
-#define GRAPHICS_TRACK()                    \
-	{                                       \
-		static unsigned int num_calls = 0;  \
-		if ( gfx_state.mode_debug ) {       \
-			GfxLog( " %s\n", __FUNCTION__ ); \
-			num_calls++;                    \
-		}                                   \
-	}
-
 /*===========================
 	INITIALIZATION
 ===========================*/
@@ -57,8 +43,6 @@ void PlgShutdownTextures( void );    // platform_graphics_texture
 void PlgClearInternalMeshes( void ); /* plg_draw.c */
 
 void PlgShutdownGraphics( void ) {
-	GRAPHICS_TRACK();
-
 	PlgClearInternalMeshes();
 	PlgShutdownTextures();
 
@@ -69,15 +53,18 @@ void PlgShutdownGraphics( void ) {
 	DEBUGGING
 ===========================*/
 
-void PlgInsertDebugMarker( const char *msg ) {
+void qm_gfx_debug_insert_marker( const char *msg )
+{
 	CallGfxFunction( InsertDebugMarker, msg );
 }
 
-void PlgPushDebugGroupMarker( const char *msg ) {
+void qm_gfx_debug_push_group_marker( const char *msg )
+{
 	CallGfxFunction( PushDebugGroupMarker, msg );
 }
 
-void PlgPopDebugGroupMarker( void ) {
+void qm_gfx_debug_pop_group_marker( void )
+{
 	CallGfxFunction( PopDebugGroupMarker );
 }
 
@@ -86,105 +73,7 @@ void PlgPopDebugGroupMarker( void ) {
 ===========================*/
 
 bool PlgSupportsHWShaders( void ) {
-	GRAPHICS_TRACK();
 	CallReturningGfxFunction( SupportsHWShaders, false );
-}
-
-/*===========================
-	FRAMEBUFFERS
-===========================*/
-
-static bool CreateFrameBuffer( PLGFrameBuffer *frameBuffer ) {
-	CallReturningGfxFunction( CreateFrameBuffer, false, frameBuffer );
-}
-
-PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned int flags, unsigned int numSamples ) {
-	if ( flags == 0 ) {
-		return NULL;
-	}
-
-	PLGFrameBuffer *buffer = QM_OS_MEMORY_NEW( PLGFrameBuffer );
-	buffer->width = w;
-	buffer->height = h;
-	buffer->flags = flags;
-	buffer->numSamples = numSamples;
-
-	if ( !CreateFrameBuffer( buffer ) ) {
-		PlgDestroyFrameBuffer( buffer );
-		return NULL;
-	}
-
-	return buffer;
-}
-
-void PlgDestroyFrameBuffer( PLGFrameBuffer *buffer ) {
-	if ( !buffer ) {
-		return;
-	}
-
-	CallGfxFunction( DeleteFrameBuffer, buffer );
-
-	qm_os_memory_free( buffer );
-}
-
-PLGTexture *PlgGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter, PLGTextureWrapMode wrap ) {
-	CallReturningGfxFunction( GetFrameBufferTextureAttachment, NULL, buffer, component, filter, wrap );
-}
-
-// should really be 'GetFrameBufferSize', urgh...
-void PlgGetFrameBufferResolution( const PLGFrameBuffer *buffer, unsigned int *width, unsigned int *height ) {
-	*width = buffer->width;
-	*height = buffer->height;
-}
-
-void PlgBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget target_binding ) {
-	//NOTE: NULL is valid for *buffer, to bind the SDL window default backbuffer
-	CallGfxFunction( BindFrameBuffer, buffer, target_binding );
-}
-
-void PlgBlitFrameBuffers( PLGFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLGFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, unsigned int mask, bool linear ) {
-	//NOTE: NULL is valid for *srcBuffer/*dstBuffer, to bind the SDL window default backbuffer
-	//      SRC and DST can be the same buffer, in order to quickly copy a subregion of the buffer to a new location
-	CallGfxFunction( BlitFrameBuffers, src_buffer, src_w, src_h, dst_buffer, dst_w, dst_h, mask, linear );
-}
-
-void PlgSetClearColour( QmMathColour4ub rgba ) {
-	if ( PlCompareColour( rgba, gfx_state.current_clearcolour ) ) {
-		return;
-	}
-
-	CallGfxFunction( SetClearColour, rgba );
-
-	gfx_state.current_clearcolour = rgba;
-}
-
-void PlgClearBuffers( unsigned int buffers ) {
-	CallGfxFunction( ClearBuffers, buffers );
-}
-
-/**
- * Resizes the given framebuffer to the specified size.
- */
-bool PlgSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height ) {
-	assert( width != 0 && height != 0 );
-	if ( width == 0 ) {
-		PlReportErrorF( PL_RESULT_INVALID_PARM2, "invalid width" );
-		return false;
-	} else if ( height == 0 ) {
-		PlReportErrorF( PL_RESULT_INVALID_PARM3, "invalid height" );
-		return false;
-	}
-
-	if ( frameBuffer->width == width && frameBuffer->height == height ) {
-		return true;
-	}
-
-	CallGfxFunction( SetFrameBufferSize, frameBuffer, width, height );
-	return true;
-}
-
-void *PlgReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf ) {
-	CallReturningGfxFunction( ReadFrameBufferRegion, NULL, frameBuffer, x, y, w, h, dstSize, dstBuf );
 }
 
 /*===========================
@@ -269,4 +158,50 @@ void PlgStencilOp( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp
 
 void PlgSetClipPlane( const QmMathVector4f *clip, const PLMatrix4 *clipMatrix, bool transpose ) {
 	CallGfxFunction( SetClipPlane, clip, clipMatrix, transpose );
+}
+
+/***** TEMPORARY CRAP START *****/
+/* this whole API needs to be revisited... */
+
+void      PlgSetViewMatrix( const PLMatrix4 *viewMatrix ) { gfx_state.view_matrix = *viewMatrix; }
+PLMatrix4 PlgGetViewMatrix( void ) { return gfx_state.view_matrix; }
+
+void      PlgSetProjectionMatrix( const PLMatrix4 *projMatrix ) { gfx_state.projection_matrix = *projMatrix; }
+PLMatrix4 PlgGetProjectionMatrix( void ) { return gfx_state.projection_matrix; }
+
+/***** TEMPORARY CRAP END 	*****/
+
+void qm_gfx_clip_viewport( int x, int y, int width, int height )
+{
+	CallGfxFunction( ClipViewport, x, y, width, height );
+}
+
+void qm_gfx_set_viewport( int x, int y, int width, int height )
+{
+	gfx_state.viewport.x = x;
+	gfx_state.viewport.y = y;
+	gfx_state.viewport.w = width;
+	gfx_state.viewport.h = height;
+
+	CallGfxFunction( SetViewport, x, y, width, height );
+}
+
+void qm_gfx_get_viewport( int *x, int *y, int *width, int *height )
+{
+	if ( x != NULL )
+	{
+		*x = gfx_state.viewport.x;
+	}
+	if ( y != NULL )
+	{
+		*y = gfx_state.viewport.y;
+	}
+	if ( width != NULL )
+	{
+		*width = gfx_state.viewport.w;
+	}
+	if ( height != NULL )
+	{
+		*height = gfx_state.viewport.h;
+	}
 }

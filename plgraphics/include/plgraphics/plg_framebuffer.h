@@ -32,18 +32,15 @@ enum {
 	PLG_MAX_RENDERBUFFER_TYPES
 };
 
-/* !!!
- * be careful changing this as it could break
- * the plugin interface
- * !!! */
-typedef struct PLGFrameBuffer {
-	unsigned int fbo;
-	unsigned int renderBuffers[ PLG_MAX_RENDERBUFFER_TYPES ];
-	unsigned int width;
-	unsigned int height;
-	unsigned int numSamples;
+typedef struct QmGfxFramebuffer
+{
+	unsigned int              fbo;
+	unsigned int              renderBuffers[ PLG_MAX_RENDERBUFFER_TYPES ];
+	unsigned int              width;
+	unsigned int              height;
+	unsigned int              numSamples;
 	PLGFrameBufferRenderFlags flags;
-} PLGFrameBuffer;
+} QmGfxFramebuffer;
 
 enum {
 	PLG_DEPTHBUFFER_DISABLE,
@@ -52,18 +49,18 @@ enum {
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PLGFrameBuffer *PlgCreateFrameBuffer( unsigned int w, unsigned int h, unsigned int flags, unsigned int numSamples );
-void            PlgDestroyFrameBuffer( PLGFrameBuffer *buffer );
-void            PlgBindFrameBuffer( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget target_binding );
-void            PlgBlitFrameBuffers( PLGFrameBuffer *src_buffer, unsigned int src_w, unsigned int src_h, PLGFrameBuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, unsigned int mask, bool linear );
+QmGfxFramebuffer *qm_gfx_framebuffer_create( unsigned int w, unsigned int h, unsigned int flags, unsigned int numSamples );
+void            qm_gfx_framebuffer_destroy( QmGfxFramebuffer *buffer );
+void            qm_gfx_framebuffer_bind( QmGfxFramebuffer *buffer, PLGFrameBufferObjectTarget target_binding );
+void            qm_gfx_framebuffer_blit( QmGfxFramebuffer *src_buffer, unsigned int src_w, unsigned int src_h, QmGfxFramebuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, unsigned int mask, bool linear );
 
-PLGTexture *PlgGetFrameBufferTextureAttachment( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter, PLGTextureWrapMode wrap );
-void        PlgGetFrameBufferResolution( const PLGFrameBuffer *buffer, unsigned int *width, unsigned int *height );
+PLGTexture *PlgGetFrameBufferTextureAttachment( QmGfxFramebuffer *buffer, unsigned int component, PLGTextureFilter filter, PLGTextureWrapMode wrap );
+void        PlgGetFrameBufferResolution( const QmGfxFramebuffer *buffer, unsigned int *width, unsigned int *height );
 
 void  PlgSetClearColour( QmMathColour4ub rgba );
 void  PlgClearBuffers( unsigned int buffers );
-bool  PlgSetFrameBufferSize( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height );
-void *PlgReadFrameBufferRegion( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf );
+bool  qm_gfx_framebuffer_set_resolution( QmGfxFramebuffer *frameBuffer, unsigned int width, unsigned int height );
+void *qm_gfx_framebuffer_read_region( QmGfxFramebuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf );
 
 void PlgColourMask( bool r, bool g, bool b, bool a );
 void PlgStencilMask( unsigned int mask );

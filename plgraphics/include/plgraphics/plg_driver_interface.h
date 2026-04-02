@@ -11,6 +11,9 @@
 
 PL_EXTERN_C
 
+typedef struct QmGfxShaderStage   QmGfxShaderStage;
+typedef struct QmGfxShaderProgram QmGfxShaderProgram;
+
 /**
  * For a little further clarity, technically
  * speaking 'drivers' in this context are handled
@@ -25,16 +28,18 @@ PL_EXTERN_C
 #define PLG_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR }
 
-typedef struct PLGDriverDescription {
+typedef struct PLGDriverDescription
+{
 	uint16_t coreInterfaceVersion[ 2 ];
 	uint16_t graphicsInterfaceVersion[ 2 ];
 
-	const char *identifier;          /* 'opengl3' */
+	const char  *identifier;         /* 'opengl3' */
 	unsigned int driverVersion[ 3 ]; /* major, minor and patch */
-	const char *description;         /* 'OpenGL 3.3 Graphics Driver' */
+	const char  *description;        /* 'OpenGL 3.3 Graphics Driver' */
 } PLGDriverDescription;
 
-typedef struct PLGDriverExportTable {
+typedef struct PLGDriverExportTable
+{
 	const PLPluginExportTable *core;
 
 	/* plg_texture */
@@ -48,11 +53,10 @@ typedef struct PLGDriverExportTable {
 	void ( *SetTextureUnit )( unsigned int tmu );
 	void ( *SetTextureEnvironmentMode )( PLGTextureEnvironmentMode mode );
 	void ( *SetTextureFlags )( PLGTexture *texture, unsigned int flags );
-
-	const char *( *GetShaderCacheLocation )( void );
 } PLGDriverExportTable;
 
-typedef struct PLGDriverImportTable {
+typedef struct PLGDriverImportTable
+{
 	PLFunctionResult ( *Initialize )( void );
 	void ( *Shutdown )( void );
 
@@ -90,25 +94,25 @@ typedef struct PLGDriverImportTable {
 
 	// Mesh
 	void ( *CreateMesh )( PLGMesh *mesh );
-	void ( *UploadMesh )( PLGMesh *mesh, PLGShaderProgram *program );
-	void ( *DrawMesh )( PLGMesh *mesh, PLGShaderProgram *program );
-	void ( *DrawInstancedMesh )( PLGMesh *mesh, PLGShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount );
+	void ( *UploadMesh )( PLGMesh *mesh, QmGfxShaderProgram *program );
+	void ( *DrawMesh )( PLGMesh *mesh, QmGfxShaderProgram *program );
+	void ( *DrawInstancedMesh )( PLGMesh *mesh, QmGfxShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount );
 	void ( *DeleteMesh )( PLGMesh *mesh );
 
 	// Framebuffer
-	bool ( *CreateFrameBuffer )( PLGFrameBuffer *buffer );
-	void ( *DeleteFrameBuffer )( PLGFrameBuffer *buffer );
-	void ( *BindFrameBuffer )( PLGFrameBuffer *buffer, PLGFrameBufferObjectTarget targetBinding );
-	PLGTexture *( *GetFrameBufferTextureAttachment )( PLGFrameBuffer *buffer, unsigned int component, PLGTextureFilter filter, PLGTextureWrapMode wrap );
-	void ( *BlitFrameBuffers )( PLGFrameBuffer *srcBuffer,
-	                            unsigned int    srcW,
-	                            unsigned int    srcH,
-	                            PLGFrameBuffer *dstBuffer,
-	                            unsigned int    dstW,
-	                            unsigned int    dstH,
-	                            unsigned int    mask,
-	                            bool            linear );
-	void ( *SetFrameBufferSize )( PLGFrameBuffer *frameBuffer, unsigned int width, unsigned int height );
+	bool ( *CreateFrameBuffer )( QmGfxFramebuffer *buffer );
+	void ( *DeleteFrameBuffer )( QmGfxFramebuffer *buffer );
+	void ( *BindFrameBuffer )( QmGfxFramebuffer *buffer, PLGFrameBufferObjectTarget targetBinding );
+	PLGTexture *( *GetFrameBufferTextureAttachment )( QmGfxFramebuffer *buffer, unsigned int component, PLGTextureFilter filter, PLGTextureWrapMode wrap );
+	void ( *BlitFrameBuffers )( QmGfxFramebuffer *srcBuffer,
+	                            unsigned int      srcW,
+	                            unsigned int      srcH,
+	                            QmGfxFramebuffer *dstBuffer,
+	                            unsigned int      dstW,
+	                            unsigned int      dstH,
+	                            unsigned int      mask,
+	                            bool              linear );
+	void ( *SetFrameBufferSize )( QmGfxFramebuffer *frameBuffer, unsigned int width, unsigned int height );
 
 	// Texture
 	void ( *CreateTexture )( PLGTexture *texture );
@@ -128,16 +132,16 @@ typedef struct PLGDriverImportTable {
 
 	// Shaders
 	/* todo: simplify this interface */
-	void ( *CreateShaderProgram )( PLGShaderProgram *program );
-	void ( *DestroyShaderProgram )( PLGShaderProgram *program );
-	void ( *AttachShaderStage )( PLGShaderProgram *program, PLGShaderStage *stage );
-	void ( *DetachShaderStage )( PLGShaderProgram *program, PLGShaderStage *stage );
-	void ( *LinkShaderProgram )( PLGShaderProgram *program );
-	void ( *SetShaderProgram )( PLGShaderProgram *program );
-	void ( *CreateShaderStage )( PLGShaderStage *stage );
-	void ( *DestroyShaderStage )( PLGShaderStage *stage );
-	void ( *CompileShaderStage )( PLGShaderStage *stage, const char *buf, size_t length, const char *directory );
-	void ( *SetShaderUniformValue )( PLGShaderProgram *program, int slot, const void *value, bool transpose );
+	void ( *CreateShaderProgram )( QmGfxShaderProgram *program );
+	void ( *DestroyShaderProgram )( QmGfxShaderProgram *program );
+	void ( *AttachShaderStage )( QmGfxShaderProgram *program, QmGfxShaderStage *stage );
+	void ( *DetachShaderStage )( QmGfxShaderProgram *program, QmGfxShaderStage *stage );
+	void ( *LinkShaderProgram )( QmGfxShaderProgram *program );
+	void ( *SetShaderProgram )( QmGfxShaderProgram *program );
+	void ( *CreateShaderStage )( QmGfxShaderStage *stage );
+	void ( *DestroyShaderStage )( QmGfxShaderStage *stage );
+	bool ( *CompileShaderStage )( QmGfxShaderStage *stage, const char *buf, size_t length, const char *directory );
+	void ( *SetShaderUniformValue )( QmGfxShaderProgram *program, int slot, const void *value, bool transpose );
 
 	// Stencil operations
 	void ( *StencilBufferFunction )( PLGCompareFunction compareFunction, int reference, unsigned int mask );
@@ -146,7 +150,7 @@ typedef struct PLGDriverImportTable {
 	void ( *StencilOp )( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp depthFailOp, PLGStencilOp depthPassOp );
 
 	// v3.1
-	void *( *ReadFrameBufferRegion )( PLGFrameBuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf );
+	void *( *ReadFrameBufferRegion )( QmGfxFramebuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf );
 
 	// v3.2
 	void ( *SetTextureWrapMode )( PLGTexture *texture, PLGTextureWrapMode wrapMode );
@@ -160,10 +164,10 @@ typedef const PLGDriverDescription *( *PLGDriverQueryFunction )( void );
 #	define PLG_DRIVER_INIT_FUNCTION "InitializeGraphicsDriver"
 typedef const PLGDriverImportTable *( *PLGDriverInitializationFunction )( const PLGDriverExportTable *exportTable );
 
-PL_EXTERN bool PlgRegisterDriver( const char *path );
+PL_EXTERN bool         PlgRegisterDriver( const char *path );
 PL_EXTERN unsigned int PlgScanForDrivers( const char *path );
 
-PL_EXTERN const char **PlgGetAvailableDriverInterfaces( unsigned int *numModes );
+PL_EXTERN const char     **PlgGetAvailableDriverInterfaces( unsigned int *numModes );
 PL_EXTERN PLFunctionResult PlgSetDriver( const char *mode );
 #endif
 

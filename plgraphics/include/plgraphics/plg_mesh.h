@@ -63,7 +63,7 @@ typedef struct PLGMesh {
 	unsigned int num_triangles;
 
 	/* todo: consider throwing out the below */
-	struct PLGShaderProgram *shader_program;
+	struct QmGfxShaderProgram *shader_program;
 	PLGTexture *texture;
 	unsigned int materialIndex;
 
@@ -113,7 +113,7 @@ void PlgSetMeshVertexST( PLGMesh *mesh, unsigned int index, float s, float t );
 void PlgSetMeshVertexSTv( PLGMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st );
 void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, const QmMathColour4ub *colour );
 void PlgSetMeshUniformColour( PLGMesh *mesh, const QmMathColour4ub *colour );
-void PlgSetMeshShaderProgram( PLGMesh *mesh, struct PLGShaderProgram *program );
+void PlgSetMeshShaderProgram( PLGMesh *mesh, struct QmGfxShaderProgram *program );
 void PlgSetMeshPrimitiveScale( PLGMesh *mesh, float scale );
 
 unsigned int PlgAddMeshVertex( PLGMesh *mesh, const QmMathVector3f *position, const QmMathVector3f *normal, const QmMathColour4ub *colour, const QmMathVector2f *st );

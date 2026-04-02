@@ -30,14 +30,14 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 file(GLOB PLG_SOURCE_FILES
         plg.c
-        plg_camera.c
         plg_draw.c
         plg_driver_interface.c
-        plg_layer_software.c
         plg_mesh.c
-        plg_shader.c
         plg_texture.c
         polygon.c
+
+        qm_gfx_framebuffer.c
+        qm_gfx_shader.c
         )
 
 if (PLG_COMPILE_STATIC)
