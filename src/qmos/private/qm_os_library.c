@@ -1,8 +1,6 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+// Copyright © 2017-2026 Quartermind Games, Mark E. Sowden <markelswo@gmail.com>
+// Purpose: OS library/dll management abstraction.
+// Author:  Mark E. Sowden
 
 #include "qmos/public/qm_os_library.h"
 
