@@ -55,67 +55,15 @@ typedef struct PLPluginExportTable {
 	 * FILE API
 	 **/
 
-	bool ( *LocalFileExists )( const char *path );
-	bool ( *FileExists )( const char *path );
-	bool ( *LocalPathExists )( const char *path );
-	bool ( *PathExists )( const char *path );
-
-	void ( *ScanDirectory )( const char *path, const char *extension, void ( *Function )( const char *, void * ), bool recursive, void *userData );
-
-	bool ( *CreateDirectory )( const char *path );
-	bool ( *CreatePath )( const char *path );
-
-	PLFile *( *CreateFileFromMemory )( const char *path, void *buf, size_t bufSize, PLFileMemoryBufferType bufType );
-	PLFile *( *OpenLocalFile )( const char *path, bool cache );
 	PLFile *( *OpenFile )( const char *path, bool cache );
 	void ( *CloseFile )( PLFile *file );
 
-	bool ( *IsEndOfFile )( const PLFile *file );
-
-	const char *( *GetFilePath )( const PLFile *file );
 	const void *( *GetFileData )( const PLFile *file );
 	size_t ( *GetFileSize )( const PLFile *file );
-	PLFileOffset ( *GetFileOffset )( const PLFile *file );
-
-	size_t ( *ReadFile )( PLFile *file, void *destination, size_t size, size_t count );
-
-	int8_t ( *ReadInt8 )( PLFile *file, bool *status );
-	int16_t ( *ReadInt16 )( PLFile *file, bool bigEndian, bool *status );
-	int32_t ( *ReadInt32 )( PLFile *file, bool bigEndian, bool *status );
-	int64_t ( *ReadInt64 )( PLFile *file, bool bigEndian, bool *status );
-
-	char *( *ReadString )( PLFile *file, char *destination, size_t size );
-
-	bool ( *FileSeek )( PLFile *file, PLFileOffset pos, PLFileSeek seek );
-	void ( *RewindFile )( PLFile *file );
-
-	const void *( *CacheFile )( PLFile *file );
-
-	/**
- 	 * PLUGIN API
- 	 **/
-
-	PLPackage *( *CreatePackageHandle )( const char *path, unsigned int tableSize, void *( *OpenFile )( PLFile *filePtr, PLPackageIndex *index ) );
-
-	void ( *RegisterPackageLoader )( const char *extension, PLPackage *( *LoadFunction )( const char *path ) );
-	void ( *RegisterImageLoader )( const char *extension, PLImage *( *LoadFunction )( PLFile *file ) );
-
-	const char *( *GetPackagePath )( const PLPackage *package );
-	unsigned int ( *GetPackageTableSize )( const PLPackage *package );
-	int ( *GetPackageTableIndex )( const PLPackage *package, const char *indexName );
-
-	const char *( *GetPackageFileName )( const PLPackage *package, unsigned int index );
 
 	/**
 	 * IMAGE API
 	 **/
-
-	PLImage *( *CreateImage )( uint8_t *buf, unsigned int width, unsigned int height, PLColourFormat colourFormat, PLImageFormat dataFormat );
-	void ( *DestroyImage )( PLImage *image );
-	bool ( *ConvertPixelFormat )( PLImage *image, PLImageFormat newFormat );
-	void ( *InvertImageColour )( PLImage *image );
-	void ( *ReplaceImageColour )( PLImage *image, QmMathColour4ub target, QmMathColour4ub destination );
-	bool ( *FlipImageVertical )( PLImage *image );
 
 	unsigned int ( *GetImageSize )( PLImageFormat format, unsigned int width, unsigned int height );
 
@@ -129,65 +77,18 @@ typedef struct PLPluginExportTable {
 	void ( *SetLogLevelStatus )( int id, bool status );
 	void ( *LogMessage )( int id, const char *msg, ... );
 
-	const char *( *GetConsoleVariableValue )( const char *name );
-	const char *( *GetConsoleVariableDefaultValue )( const char *name );
-	void ( *SetConsoleVariable )( const char *name, const char *value );
-	PLConsoleVariable *( *RegisterConsoleVariable )( const char *name, const char *description, const char *defaultValue, PLVariableType type, void *ptrValue, void ( *CallbackFunction )( PLConsoleVariable * ), bool archive );
-	void ( *RegisterConsoleCommand )( const char *name, const char *description, int args, void ( *CallbackFunction )( unsigned int argc, char *argv[] ) );
-	void ( *ParseConsoleString )( const char *string );
-
 	/**
 	 * SCRIPT API
 	 **/
-
-	bool ( *IsEndOfLine )( const char *p );
 
 	void ( *SkipWhitespace )( const char **p );
 	void ( *SkipLine )( const char **p );
 
 	const char *( *ParseEnclosedString )( const char **p, char *dest, size_t size );
 	const char *( *ParseToken )( const char **p, char *dest, size_t size );
-	int ( *ParseInteger )( const char **p, bool *status );
-	float ( *ParseFloat )( const char **p, bool *status );
-
-	/** v4.1 ************************************************/
-
-	unsigned long ( *GenerateChecksumCRC32 )( const void *data, size_t length, unsigned long crc );
-
-	/** v8.1 ************************************************/
-	/* pl_string.h */
-	char *( *itoa )( int val, char *buf, size_t n, int base );
-	char *( *strtolower )( char *s );
-	char *( *strntolower )( char *s, size_t n );
-	char *( *strtoupper )( char *s );
-	char *( *strntoupper )( char *s, size_t n );
-	char *( *strcasestr )( const char *s, const char *find );
-	int ( *strcasecmp )( const char *s1, const char *s2 );
-	int ( *strncasecmp )( const char *s1, const char *s2, size_t n );
-	int ( *strisalpha )( const char *s );
-	int ( *strnisalpha )( const char *s, unsigned int n );
-	int ( *strisalnum )( const char *s );
-	int ( *strnisalnum )( const char *s, unsigned int n );
-	int ( *strisdigit )( const char *s );
-	int ( *strnisdigit )( const char *s, unsigned int n );
-	int ( *vscprintf )( const char *format, va_list args );
-	unsigned int ( *strcnt )( const char *s, char c );
-	unsigned int ( *strncnt )( const char *s, char c, unsigned int n );
-	char *( *strinsert )( const char *s, char **buf, size_t *bufSize, size_t *maxBufSize );
-	/* pl_image.h */
-	PLImage *( *CreateImage2 )( void *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat );
-	bool ( *WriteImage )( const PLImage *image, const char *path );
-	/* pl_filesystem.h */
-	void ( *NormalizePath )( char *path, size_t length );
-
-	/** v9.1 ************************************************/
-	/* pl_image.h */
-	PLImage *( *ParseImage )( PLFile *file );
 
 	/** v9.2 ************************************************/
 	const char *( *SetupPath )( PLPath dst, bool truncate, const char *msg, ... );
-	const char *( *AppendPath )( PLPath dst, const char *src, bool truncate );
-	const char *( *PrefixPath )( PLPath dst, const char *src, bool truncate );
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */

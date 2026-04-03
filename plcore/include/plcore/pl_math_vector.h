@@ -6,18 +6,7 @@
 
 #pragma once
 
-#include <stdbool.h>
-
-#include "../../src/qmmath/public/qm_math_vector.h"
-
-#define PL_VEC2TO3( X ) PL_VECTOR3( X.x, X.y, 0.0f )
-#define PL_VEC2TO4( X ) PL_VECTOR4( X.x, X.y, 0.0f, 0.0f )
-
-#define PL_VEC3TO2( X ) PL_VECTOR2( X.x, X.y )
-#define PL_VEC3TO4( X ) PL_VECTOR4( X.x, X.y, X.z, 0.0f )
-
-#define PL_VEC4TO2( X ) PL_VECTOR2( X.x, X.y )
-#define PL_VEC4TO3( X ) PL_VECTOR3( X.x, X.y, X.z )
+#include "qmmath/public/qm_math_vector.h"
 
 /* these will give you the number of elements in each type
  * of vector. 												*/
@@ -37,7 +26,6 @@ PL_STATIC_ASSERT( PL_MVECNUM( QmMathVector4f ) == 4, "unexpected vector element 
 
 extern PL_DLL const QmMathVector2f pl_vecOrigin2;
 extern PL_DLL const QmMathVector3f pl_vecOrigin3;
-extern PL_DLL const QmMathVector4f pl_vecOrigin4;
 
 typedef struct PLMatrix4 PLMatrix4;
 

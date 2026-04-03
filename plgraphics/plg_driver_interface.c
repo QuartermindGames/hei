@@ -12,6 +12,8 @@
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
+
+#include "qmos/public/qm_os_library.h"
 #include "qmos/public/qm_os_memory.h"
 
 #define DRIVER_EXTENSION "_driver"

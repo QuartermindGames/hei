@@ -1,4 +1,4 @@
-// Copyright © 2017-2025 Quartermind Games, Mark E. Sowden <hogsy@snortysoft.net>
+// Copyright © 2017-2026 Quartermind Games, Mark E. Sowden <markelswo@gmail.com>
 
 #pragma once
 
@@ -217,15 +217,12 @@ extern "C"
 
 	static inline QmMathColour4ub qm_math_colour4ub_add( const QmMathColour4ub src, const QmMathColour4ub add )
 	{
-		int r = ( int ) src.r + add.r;
-		int g = ( int ) src.g + add.g;
-		int b = ( int ) src.b + add.b;
-		int a = ( int ) src.a + add.a;
+		int r = QM_MATH_CLAMP( 0, src.r + add.r, 255 );
+		int g = QM_MATH_CLAMP( 0, src.g + add.g, 255 );
+		int b = QM_MATH_CLAMP( 0, src.b + add.b, 255 );
+		int a = QM_MATH_CLAMP( 0, src.a + add.a, 255 );
 
-		return QM_MATH_COLOUR4UB( ( unsigned char ) QM_MATH_CLAMP( 0, r, 255 ),
-		                          ( unsigned char ) QM_MATH_CLAMP( 0, g, 255 ),
-		                          ( unsigned char ) QM_MATH_CLAMP( 0, b, 255 ),
-		                          ( unsigned char ) QM_MATH_CLAMP( 0, a, 255 ) );
+		return QM_MATH_COLOUR4UB( ( unsigned char ) r, ( unsigned char ) g, ( unsigned char ) b, ( unsigned char ) a );
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////

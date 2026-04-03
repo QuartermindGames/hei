@@ -1,4 +1,4 @@
-// Copyright © 2017-2025 Quartermind Games, Mark E. Sowden <hogsy@snortysoft.net>
+// Copyright © 2017-2026 Quartermind Games, Mark E. Sowden <markelswo@gmail.com>
 
 #pragma once
 
@@ -39,6 +39,7 @@ extern "C"
 	/**
 	 * Returns the size of an allocated block of memory,
 	 * if allocated through our memory manager.
+	 *
 	 * @param ptr Pointer to allocated memory.
 	 * @return Either the size of the block, or zero on fail.
 	 */
@@ -46,21 +47,66 @@ extern "C"
 
 	/**
 	 * Get the total memory in bytes.
+	 *
 	 * @return The total memory in bytes.
 	 */
 	uint64_t qm_os_memory_get_total();
 
 	/**
 	 * Get the total available memory in bytes.
+	 *
 	 * @return The total *available* memory in bytes.
 	 */
 	uint64_t qm_os_memory_get_total_available();
 
 	/**
 	 * Get the total used memory by the current process in bytes.
+	 *
 	 * @return The memory usage of the current process in bytes.
 	 */
 	uint64_t qm_os_memory_get_usage();
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	// Heap
+	// For quick temporary memory allocation.
+
+	typedef struct QmOsMemoryHeap QmOsMemoryHeap;
+
+	/**
+	 * Returns an allocated memory heap pool, with reserved size available.
+	 * Call memory_free to destroy.
+	 *
+	 * @param reserve	Amount of memory to reserve in the pool
+	 * @return			Returns memory heap pool on success, otherwise null on fail.
+	 */
+	QmOsMemoryHeap *qm_os_memory_heap_create( size_t reserve );
+
+	/**
+	 * Clears the heap; mind that this does not zero all memory,
+	 * just the first byte and relocates current position to the start.
+	 *
+	 * @param self		Heap to flush.
+	 */
+	void qm_os_memory_heap_flush( QmOsMemoryHeap *self );
+
+	/**
+	 * Returns the remaining space available in the heap.
+	 *
+	 * @param self		Heap to query.
+	 * @return			Remaining size in bytes.
+	 */
+	size_t qm_os_memory_heap_get_remaining( const QmOsMemoryHeap *self );
+
+	/**
+	 * Allocates space in the heap based on the given size.
+	 *
+	 * @param self		Heap to alloc.
+	 * @param size		Size to alloc.
+	 * @return			Pointer to allocated storage.
+	 */
+	void *qm_os_memory_heap_alloc( QmOsMemoryHeap *self, size_t size );
+
+	/////////////////////////////////////////////////////////////////////////////////////
 
 #if defined( __cplusplus )
 };

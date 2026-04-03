@@ -9,6 +9,7 @@
 
 #include "pl_private.h"
 #include "qmos/public/qm_os_memory.h"
+#include "qmos/public/qm_os_string.h"
 
 #include <errno.h>
 #if defined( _WIN32 )
@@ -80,7 +81,7 @@ void PlRegisterConsoleCommand( const char *name, const char *description, int ar
 		size_t s = strlen( name ) + 1;
 		cmd->name = QM_OS_MEMORY_NEW_( char, s );
 		strncpy( cmd->name, name, s );
-		pl_strtolower( cmd->name );
+		qm_os_string_to_lower( cmd->name, s );
 
 		PlInsertHashTableNode( commandHashes, cmd->name, s, cmd );
 
@@ -145,7 +146,7 @@ PLConsoleVariable *PlRegisterConsoleVariable( const char *name, const char *desc
 		size_t s = strlen( name ) + 1;
 		out->name = QM_OS_MEMORY_NEW_( char, s );
 		strncpy( out->name, name, s );
-		pl_strtolower( out->name );
+		qm_os_string_to_lower( out->name, s );
 
 		PlInsertHashTableNode( variableHashes, out->name, s, out );
 

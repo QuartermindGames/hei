@@ -388,7 +388,7 @@ inline static PLMatrix4 PlOrtho( float left, float right, float bottom, float to
 }
 
 inline static PLMatrix4 PlPerspective( float fov, float aspect, float nearf, float farf ) {
-	float y_max = nearf * tanf( fov * PL_PI / 360.0f );
+	float y_max = nearf * tanf( fov * QM_MATH_PI / 360.0f );
 	float x_max = y_max * aspect;
 	return PlFrustum( -x_max, x_max, -y_max, y_max, nearf, farf );
 }

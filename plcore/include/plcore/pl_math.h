@@ -17,16 +17,6 @@ PL_EXTERN_C
 
 // Base Defines
 
-#ifdef M_PI
-#	define PL_PI ( float ) M_PI
-#else
-#	define PL_PI 3.14159265359f
-#endif
-#define PL_180_DIV_PI ( 180.0f / PL_PI )
-#define PL_PI_DIV_180 ( PL_PI / 180.f )
-
-#define PL_TAU     6.28318530717f
-
 enum {
 	// Colours
 	PL_RED = 0,
@@ -35,13 +25,9 @@ enum {
 	PL_ALPHA
 };
 
-#define PlFloatToByte( a ) ( uint8_t ) ( roundf( ( a ) * 255.f ) )
-
 static inline bool PlIsPowerOfTwo( unsigned int num ) {
 	return ( bool ) ( ( num != 0 ) && ( ( num & ( ~num + 1 ) ) == num ) );
 }
-
-#define PL_DEG2RAD( X ) ( ( X ) * ( PL_PI_DIV_180 ) )
 
 /* https://stackoverflow.com/a/9194117 */
 static inline int PlRoundUp( int num, int multiple ) {
@@ -279,7 +265,7 @@ static inline QmMathVector3f PlLinearInterpolateV3f( QmMathVector3f a, QmMathVec
 
 static inline float PlCosineInterpolate( float y1, float y2, float mu )
 {
-	float mu2 = ( 1 - cosf( mu * ( float ) PL_PI ) ) / 2;
+	float mu2 = ( 1 - cosf( mu * QM_MATH_PI ) ) / 2;
 	return ( y1 * ( 1 - mu2 ) + y2 * mu2 );
 }
 
@@ -329,7 +315,7 @@ static inline float PlInSin( float x ) {
 	} else if ( x > 1.0f ) {
 		return 1.0f;
 	}
-	return -cosf( x * ( ( float ) PL_PI / 2.0f ) ) + 1.0f;
+	return -cosf( x * ( QM_MATH_PI / 2.0f ) ) + 1.0f;
 }
 
 static inline float PlOutSin( float x ) {
@@ -338,7 +324,7 @@ static inline float PlOutSin( float x ) {
 	} else if ( x > 1.0f ) {
 		return 1.0f;
 	}
-	return sinf( x * ( ( float ) PL_PI / 2.0f ) );
+	return sinf( x * ( QM_MATH_PI / 2.0f ) );
 }
 
 static inline float PlInExp( float x ) {
@@ -467,7 +453,7 @@ static inline float PlInOutSin( float x ) {
 		return 1.0f;
 	}
 
-	return -0.5f * ( cosf( ( float ) PL_PI * x ) - 1.0f );
+	return -0.5f * ( cosf( QM_MATH_PI * x ) - 1.0f );
 }
 
 static inline float PlInOutPow( float x, float p ) {
@@ -487,17 +473,17 @@ static inline float PlInOutPow( float x, float p ) {
 /* http://www.songho.ca/opengl/gl_anglestoaxes.html */
 static inline void PlAnglesAxes( QmMathVector3f angles, QmMathVector3f *left, QmMathVector3f *up, QmMathVector3f *forward ) {
 	/* pitch */
-	float theta = PL_DEG2RAD( angles.x );
+	float theta = QM_MATH_DEG2RAD( angles.x );
 	float sp = sinf( theta );
 	float cp = cosf( theta );
 
 	/* yaw */
-	theta = PL_DEG2RAD( angles.y );
+	theta = QM_MATH_DEG2RAD( angles.y );
 	float sy = sinf( theta );
 	float cy = cosf( theta );
 
 	/* roll */
-	theta = PL_DEG2RAD( angles.z );
+	theta = QM_MATH_DEG2RAD( angles.z );
 	float sr = sinf( theta );
 	float cr = cosf( theta );
 

@@ -166,10 +166,10 @@ PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, const QmMat
 		return NULL;
 	}
 
-	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x, y, 0.0f ), &pl_vecOrigin3, colour, &QM_MATH_VECTOR2F( 0.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x, y + h, 0.0f ), &pl_vecOrigin3, colour, &QM_MATH_VECTOR2F( 0.0f, 1.0f ) );
-	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x + w, y, 0.0f ), &pl_vecOrigin3, colour, &QM_MATH_VECTOR2F( 1.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x + w, y + h, 0.0f ), &pl_vecOrigin3, colour, &QM_MATH_VECTOR2F( 1.0f, 1.0f ) );
+	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x, y, 0.0f ), &QM_MATH_VECTOR3F_ZERO, colour, &QM_MATH_VECTOR2F( 0.0f, 0.0f ) );
+	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x, y + h, 0.0f ), &QM_MATH_VECTOR3F_ZERO, colour, &QM_MATH_VECTOR2F( 0.0f, 1.0f ) );
+	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x + w, y, 0.0f ), &QM_MATH_VECTOR3F_ZERO, colour, &QM_MATH_VECTOR2F( 1.0f, 0.0f ) );
+	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x + w, y + h, 0.0f ), &QM_MATH_VECTOR3F_ZERO, colour, &QM_MATH_VECTOR2F( 1.0f, 1.0f ) );
 
 	return mesh;
 }
@@ -346,8 +346,8 @@ PLCollisionAABB PlgGenerateAabbFromVertices( const PLGVertex *vertices, unsigned
 	PLCollisionAABB bounds = {};
 	qm_math_compute_min_max( vvertices, numVertices, &bounds.mins, &bounds.maxs, absolute );
 
-	bounds.absOrigin = PlGetAabbAbsOrigin( &bounds, pl_vecOrigin3 );
-	bounds.origin    = pl_vecOrigin3;
+	bounds.absOrigin = PlGetAabbAbsOrigin( &bounds, QM_MATH_VECTOR3F_ZERO );
+	bounds.origin    = QM_MATH_VECTOR3F_ZERO;
 
 	qm_os_memory_free( vvertices );
 

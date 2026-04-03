@@ -1,4 +1,4 @@
-// Copyright © 2017-2025 Quartermind Games, Mark E. Sowden <hogsy@snortysoft.net>
+// Copyright © 2017-2026 Quartermind Games, Mark E. Sowden <markelswo@gmail.com>
 // Purpose: Memory management helpers.
 // Author:  Mark E. Sowden
 
@@ -192,3 +192,54 @@ uint64_t qm_os_memory_get_usage()
 #	error "Unimplemented!"
 #endif
 }
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Heap
+// For quick temporary memory allocation.
+
+typedef struct QmOsMemoryHeap
+{
+	void  *store;
+	void  *pos;
+	size_t size;
+} QmOsMemoryHeap;
+
+static void memory_heap_destroy( void *ptr )
+{
+	qm_os_memory_free( ( ( QmOsMemoryHeap * ) ptr )->store );
+}
+
+QmOsMemoryHeap *qm_os_memory_heap_create( size_t reserve )
+{
+	QmOsMemoryHeap *heap = QM_OS_MEMORY_NEW_D( QmOsMemoryHeap, memory_heap_destroy );
+	heap->store          = QM_OS_MEMORY_NEW_( char, reserve );
+	heap->pos            = heap->store;
+	heap->size           = reserve;
+	return heap;
+}
+
+void qm_os_memory_heap_flush( QmOsMemoryHeap *self )
+{
+	self->pos             = self->store;
+	*( char * ) self->pos = '\0';
+}
+
+size_t qm_os_memory_heap_get_remaining( const QmOsMemoryHeap *self )
+{
+	return self->size - ( ( char * ) self->pos - ( char * ) self->store );
+}
+
+void *qm_os_memory_heap_alloc( QmOsMemoryHeap *self, size_t size )
+{
+	size_t end = ( char * ) self->pos - ( char * ) self->store + size;
+	if ( end >= self->size )
+	{
+		return nullptr;
+	}
+
+	void *p   = self->pos;
+	self->pos = ( char * ) self->pos + size;
+	return p;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////

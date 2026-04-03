@@ -125,75 +125,6 @@ void PlShutdown( void ) {
 }
 
 /*-------------------------------------------------------------------
- * UNIQUE ID GENERATION
- *-----------------------------------------------------------------*/
-
-/**
-  * Generate a simple unique identifier (!!DO NOT USE FOR ANYTHING THAT NEEDS TO BE SECURE!!)
-  */
-const char *PlGenerateUniqueIdentifier( char *dest, size_t destLength ) {
-	// Specific char set we will set, so we can preview it after
-	static char dataPool[] = {
-	        'a',
-	        'b',
-	        'c',
-	        'd',
-	        'e',
-	        'f',
-	        'g',
-	        'h',
-	        'i',
-	        'j',
-	        'k',
-	        'l',
-	        'm',
-	        'n',
-	        'o',
-	        'p',
-	        'w',
-	        'x',
-	        'y',
-	        'z',
-	        'A',
-	        'B',
-	        'C',
-	        'D',
-	        'E',
-	        'F',
-	        'G',
-	        'H',
-	        'I',
-	        'J',
-	        'K',
-	        'L',
-	        'M',
-	        'N',
-	        'O',
-	        'P',
-	        'W',
-	        'X',
-	        'Y',
-	        'Z',
-	        '0',
-	        '1',
-	        '2',
-	        '3',
-	        '4',
-	        '5',
-	        '6',
-	        '7',
-	        '8',
-	        '9',
-	};
-
-	for ( unsigned int i = 0; i < destLength; ++i ) {
-		dest[ i ] = dataPool[ rand() % PL_ARRAY_ELEMENTS( dataPool ) ];
-	}
-
-	return dest;
-}
-
-/*-------------------------------------------------------------------
  * ERROR HANDLING
  *-----------------------------------------------------------------*/
 
@@ -411,122 +342,28 @@ time_t PlStringToTime( const char *ts ) {
 
 #include <plcore/pl_plugin_interface.h>
 
-typedef struct PLPlugin {
-	QmOsLibrary *libPtr;                           /* library handle */
-	PLPluginInitializationFunction initFunction; /* initialization function */
-	PLLinkedListNode *node;
-} PLPlugin;
-
-static PLLinkedList *plugins = NULL;
-static unsigned int numPlugins = 0;
-
-static PLImage *CreateImageOldWrapper( uint8_t *buf, unsigned int width, unsigned int height, PLColourFormat colourFormat, PLImageFormat dataFormat ) {
-	return PlCreateImage( buf, width, height, 0, colourFormat, dataFormat );
-}
-
-static bool WriteImageOldWrapper( const PLImage *image, const char *path ) {
-	return PlWriteImage( image, path, 100 );
-}
-
-static void RegisterPackageLoaderWrapper( const char *extension, PLPackage *( *Callback )( const char * ) ) {
-	PlRegisterPackageLoader( extension, Callback, NULL );
-}
-
 static PLPluginExportTable exportTable = {
         .ReportError = PlReportError,
         .GetError = PlGetError,
 
         /* pl_filesystem.h */
-        .LocalFileExists = PlLocalFileExists,
-        .FileExists = PlFileExists,
-        .LocalPathExists = PlLocalPathExists,
-        .PathExists = PlPathExists,
-        .ScanDirectory = PlScanDirectory,
-        .CreateDirectory = PlCreateDirectory,
-        .CreatePath = PlCreatePath,
-        .CreateFileFromMemory = PlCreateFileFromMemory,
-        .OpenLocalFile = PlOpenLocalFile,
         .OpenFile = PlOpenFile,
         .CloseFile = PlCloseFile,
-        .IsEndOfFile = PlIsEndOfFile,
-        .GetFilePath = PlGetFilePath,
         .GetFileData = PlGetFileData,
         .GetFileSize = PlGetFileSize,
-        .GetFileOffset = PlGetFileOffset,
-        .ReadFile = PlReadFile,
-        .ReadInt8 = PlReadInt8,
-        .ReadInt16 = PlReadInt16,
-        .ReadInt32 = PlReadInt32,
-        .ReadInt64 = PlReadInt64,
-        .ReadString = PlReadString,
-        .FileSeek = PlFileSeek,
-        .RewindFile = PlRewindFile,
-        .CacheFile = PlCacheFile,
-        .NormalizePath = PlNormalizePath,
-
-        .RegisterPackageLoader = RegisterPackageLoaderWrapper,
-        .RegisterImageLoader = PlRegisterImageLoader,
 
         /* pl_image.h */
-        .CreateImage = CreateImageOldWrapper,
-        .CreateImage2 = PlCreateImage,
-        .DestroyImage = PlDestroyImage,
-        .ConvertPixelFormat = PlConvertPixelFormat,
-        .InvertImageColour = PlInvertImageColour,
-        .ReplaceImageColour = PlReplaceImageColour,
-        .FlipImageVertical = PlFlipImageVertical,
         .GetImageSize = PlGetImageSize,
-        .WriteImage = WriteImageOldWrapper,
-        .ParseImage = PlParseImage,
-
-        .CreatePackageHandle = PlCreatePackageHandle,
-        .GetPackagePath = PlGetPackagePath,
-        .GetPackageTableSize = PlGetPackageTableSize,
-        .GetPackageTableIndex = PlGetPackageTableIndex,
-        .GetPackageFileName = PlGetPackageFileName,
 
         .AddLogLevel = PlAddLogLevel,
         .LogMessage = PlLogMessage,
-        .GetConsoleVariableValue = PlGetConsoleVariableValue,
-        .GetConsoleVariableDefaultValue = PlGetConsoleVariableDefaultValue,
-        .SetConsoleVariable = PlSetConsoleVariableByName,
-        .RegisterConsoleVariable = PlRegisterConsoleVariable,
-        .RegisterConsoleCommand = PlRegisterConsoleCommand,
-        .ParseConsoleString = PlParseConsoleString,
 
-        .IsEndOfLine = PlIsEndOfLine,
         .SkipWhitespace = PlSkipWhitespace,
         .SkipLine = PlSkipLine,
         .ParseEnclosedString = PlParseEnclosedString,
         .ParseToken = PlParseToken,
-        .ParseInteger = PlParseInteger,
-        .ParseFloat = PlParseFloat,
-
-        .GenerateChecksumCRC32 = pl_crc32,
-
-        /* pl_string.h */
-        .itoa = pl_itoa,
-        .strtolower = pl_strtolower,
-        .strntolower = pl_strntolower,
-        .strtoupper = pl_strtoupper,
-        .strntoupper = pl_strntoupper,
-        .strcasestr = pl_strcasestr,
-        .strcasecmp = pl_strcasecmp,
-        .strncasecmp = pl_strncasecmp,
-        .strisalpha = pl_strisalpha,
-        .strnisalpha = pl_strnisalpha,
-        .strisalnum = pl_strisalnum,
-        .strnisalnum = pl_strnisalnum,
-        .strisdigit = pl_strisdigit,
-        .strnisdigit = pl_strnisdigit,
-        .vscprintf = pl_vscprintf,
-        .strcnt = pl_strcnt,
-        .strncnt = pl_strncnt,
-        .strinsert = pl_strinsert,
 
         .SetupPath = PlSetupPath,
-        .AppendPath = PlAppendPath,
-        .PrefixPath = PlPrefixPath,
 };
 
 static void *p_malloc( size_t size, bool die )

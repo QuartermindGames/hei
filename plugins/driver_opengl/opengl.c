@@ -1524,7 +1524,7 @@ static void GLAttachShaderStage( QmGfxShaderProgram *program, QmGfxShaderStage *
 
 static bool GLCompileShaderStage( QmGfxShaderStage *stage, const char *buf, size_t length, const char *directory ) {
 	if ( !XGL_VERSION( 2, 0 ) ) {
-		return;
+		return false;
 	}
 
 	/* shove this here for now... */
@@ -1536,14 +1536,16 @@ static bool GLCompileShaderStage( QmGfxShaderStage *stage, const char *buf, size
 	XGL_CALL( glShaderSource( stage->internal.id, 1, ( const GLchar ** ) &temp, ( GLint * ) &length ) );
 	XGL_CALL( glCompileShader( stage->internal.id ) );
 
-	int status;
-	XGL_CALL( glGetShaderiv( stage->internal.id, GL_COMPILE_STATUS, &status ) );
-	if ( status == 0 ) {
+	GLboolean status;
+	XGL_CALL( glGetShaderiv( stage->internal.id, GL_COMPILE_STATUS, ( GLint * ) &status ) );
+	if ( !status )
+	{
 		int s_length;
 		XGL_CALL( glGetShaderiv( stage->internal.id, GL_INFO_LOG_LENGTH, &s_length ) );
-		if ( s_length > 1 ) {
+		if ( s_length > 1 )
+		{
 			char *log = gInterface->core->CAlloc( ( size_t ) s_length, sizeof( char ), true );
-			XGL_CALL( glGetShaderInfoLog( stage->internal.id, s_length, NULL, log ) );
+			XGL_CALL( glGetShaderInfoLog( stage->internal.id, s_length, nullptr, log ) );
 			XGL_LOG( " COMPILE ERROR:\n%s\n", log );
 			gInterface->core->ReportError( PL_RESULT_SHADER_COMPILE, "%s", log );
 			gInterface->core->Free( log );
@@ -1551,6 +1553,8 @@ static bool GLCompileShaderStage( QmGfxShaderStage *stage, const char *buf, size
 	}
 
 	gInterface->core->Free( temp );
+
+	return status;
 }
 
 static void GLSetShaderUniformValue( QmGfxShaderProgram *program, int slot, const void *value, bool transpose ) {

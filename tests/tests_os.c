@@ -1,4 +1,4 @@
-// Copyright © 2017-2025 Quartermind Games, Mark E. Sowden <hogsy@snortysoft.net>
+// Copyright © 2017-2026 Quartermind Games, Mark E. Sowden <markelswo@gmail.com>
 // Purpose: Tests for QmOs API.
 // Author:  Mark E. Sowden
 

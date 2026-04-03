@@ -148,8 +148,6 @@ enum {
 #	define PL_DLL QM_OS_IMPORT
 #endif
 
-typedef void QmOsLibrary; /* handle to dll/module */
-
 PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
@@ -172,8 +170,6 @@ void PlReportError( PLFunctionResult result, const char *function, const char *m
 
 /******************************************************************/
 
-const char *PlGenerateUniqueIdentifier( char *dest, size_t destLength );
-
 // CL Arguments
 const char *PlGetCommandLineArgumentValue( const char *arg );
 
@@ -190,7 +186,6 @@ unsigned long pl_crc32( const void *data, size_t length, unsigned long crc );
 
 /* standard headers */
 #	include <plcore/pl_string.h>
-#	include <plcore/pl_memory.h>
 
 /**
  * Formats the current time based on the provided format string.
@@ -219,10 +214,6 @@ const char *PlGetFormattedTimeForTimestamp( uint64_t timestamp );
 time_t PlStringToTime( const char *ts );
 
 //////////////////////////////////////////////////////////////////
-
-QmOsLibrary *qm_os_library_load( const char *path, bool appendPath );
-void *qm_os_library_get_procedure( QmOsLibrary *library, const char *procedureName );
-void qm_os_library_unload( QmOsLibrary *library );
 
 /**
  * Plugin Interface

@@ -8,7 +8,6 @@
 
 PL_DLL const QmMathVector2f pl_vecOrigin2 = {};
 PL_DLL const QmMathVector3f pl_vecOrigin3 = {};
-PL_DLL const QmMathVector4f pl_vecOrigin4 = {};
 
 /****************************************
  * Transform

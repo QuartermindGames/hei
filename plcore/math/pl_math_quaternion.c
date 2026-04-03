@@ -69,7 +69,7 @@ QmMathVector3f PlQuaternionToEuler( const PLQuaternion *q ) {
 	/* pitch */
 	float sinp = 2.0f * ( q->w * q->y - q->z * q->x );
 	if ( fabsf( sinp ) >= 1.0f )
-		v.x = copysignf( PL_PI / 2.0f, sinp );
+		v.x = copysignf( QM_MATH_PI / 2.0f, sinp );
 	else
 		v.x = asinf( sinp );
 

@@ -2,7 +2,9 @@
 // Copyright © 2017-2023 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "package_private.h"
+
 #include "qmos/public/qm_os_memory.h"
+#include "qmos/public/qm_os_string.h"
 
 #define DFS_MAGIC   QM_OS_MAGIC_TO_NUM( 'S', 'F', 'D', 'X' )
 #define DFS_VERSION 1// Area 51 is 3 - will see about adding support later
@@ -122,7 +124,7 @@ PLPackage *PlParseDfsPackage_( PLFile *file ) {
 		ReadString( file, &c, stringTableOffset + nameOffset );
 		ReadString( file, &c, stringTableOffset + nameExtendedOffset );
 		ReadString( file, &c, stringTableOffset + extensionOffset );
-		pl_strntolower( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ) );
+		qm_os_string_to_lower( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ) );
 
 		package->table[ i ].offset = PL_READUINT32( file, false, NULL );
 		package->table[ i ].fileSize = PL_READUINT32( file, false, NULL );

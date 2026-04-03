@@ -56,7 +56,7 @@ void PlmGenerateModelBounds( PLMModel *model ) {
 
 	/* abs origin is the middle of the bounding volume (wherever it is) and origin is the transformative point */
 	b1.absOrigin = qm_math_vector3f( ( b1.mins.x + b1.maxs.x ) / 2, ( b1.mins.y + b1.maxs.y ) / 2, ( b1.mins.z + b1.maxs.z ) / 2 );
-	b1.origin = pl_vecOrigin3;
+	b1.origin = QM_MATH_VECTOR3F_ZERO;
 
 	model->bounds = b1;
 }
