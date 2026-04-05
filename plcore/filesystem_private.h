@@ -20,16 +20,13 @@
 #	define _pl_mkdir( a ) mkdir( ( a ), 0777 )
 #endif
 
-#define _pl_fclose( a ) \
-	fclose( ( a ) );    \
-	( a ) = NULL
-
-typedef struct PLFile {
-	char path[ PL_SYSTEM_MAX_PATH ];
-	void *data;
-	void *pos;
+typedef struct QmFsFile
+{
+	char  *path;
+	void  *data;
+	void  *pos;
 	size_t size;
 	time_t timeStamp;
-	void *fptr;
-	bool isUnmanaged;
-} PLFile;
+	FILE  *fptr;
+	bool   isUnmanaged;
+} QmFsFile;

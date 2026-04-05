@@ -17,8 +17,12 @@
 #include <plcore/pl_package.h>
 
 #include "filesystem_private.h"
+
 #include "pl_private.h"
+
+#include "qmos/public/qm_os_linked_list.h"
 #include "qmos/public/qm_os_memory.h"
+#include "qmos/public/qm_os_string.h"
 
 #if defined( _WIN32 )
 
@@ -44,45 +48,63 @@
 #	include <pwd.h>
 #endif
 
+/////////////////////////////////////////////////////////////////////////////////////
+// Low Level API
+/////////////////////////////////////////////////////////////////////////////////////
+
+int qm_fs_fclose( FILE **file )
+{
+	if ( *file == nullptr )
+	{
+		return 0;
+	}
+
+	int r = fclose( *file );
+	if ( r == 0 )
+	{
+		*file = nullptr;
+	}
+
+	return r;
+}
+
 /* this is gross... but provide a dumb interface so we can
  * use 64-bit file calls if they're available and we're on
  * a system that supports it. */
 
-static PLFileOffset pl_ftell( FILE *file ) {
-#ifdef PL_FILESYSTEM_64
-#	if ( PL_SYSTEM_OS == PL_SYSTEM_OS_WINDOWS )
-#		if defined( _MSC_VER )
+int64_t qm_fs_ftell( FILE *file )
+{
+#if QM_OS_SYSTEM == QM_OS_SYSTEM_WINDOWS
+#	if defined( _MSC_VER )
 	return _ftelli64( file );
-#		else
-	return ftello64( file );
-#		endif
 #	else
-	return ftello( file );
+	return ftello64( file );
 #	endif
 #else
-	return ftell( file );
+	return ftello( file );
 #endif
 }
 
-static int pl_fseek( FILE *file, PLFileOffset off, int wence ) {
-#ifdef PL_FILESYSTEM_64
-#	if ( PL_SYSTEM_OS == PL_SYSTEM_OS_WINDOWS )
-#		if defined( _MSC_VER )
+int64_t qm_fs_fseek( FILE *file, uint64_t off, QmFsSeek wence )
+{
+#if QM_OS_SYSTEM == QM_OS_SYSTEM_WINDOWS
+#	if defined( _MSC_VER )
 	return _fseeki64( file, off, wence );
-#		else
-	return fseeko64( file, off, wence );
-#		endif
 #	else
-	return fseeko( file, off, wence );
+	return fseeko64( file, off, wence );
 #	endif
 #else
-	return fseek( file, off, wence );
+	return fseeko( file, off, wence );
 #endif
 }
+
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
 
 /*	File System	*/
 
-const char *PlSetupPath( PLPath dst, bool truncate, const char *msg, ... ) {
+const char *PlSetupPath( PLPath dst, bool truncate, const char *msg, ... )
+{
 	*dst = '\0';
 
 	va_list args;
@@ -90,95 +112,97 @@ const char *PlSetupPath( PLPath dst, bool truncate, const char *msg, ... ) {
 	int length = pl_vscprintf( msg, args );
 	va_end( args );
 
-	if ( length <= 0 ) {
-		return NULL;
+	if ( length <= 0 )
+	{
+		return nullptr;
 	}
 
-	if ( !truncate && ( length + 1 >= sizeof( PLPath ) ) ) {
+	if ( !truncate && ( length + 1 >= sizeof( PLPath ) ) )
+	{
 		PlReportErrorF( PL_RESULT_MEMORY_EOA, "source path is too long" );
-		return NULL;
+		return nullptr;
 	}
 
 	va_start( args, msg );
 	vsnprintf( dst, sizeof( PLPath ), msg, args );
 	va_end( args );
 
-	PlNormalizePath( dst, sizeof( PLPath ) );
+	qm_fs_normalize_path( dst, sizeof( PLPath ) );
 
 	return dst;
 }
 
-const char *PlAppendPath( PLPath dst, const char *src, bool truncate ) {
+const char *PlAppendPath( PLPath dst, const char *src, bool truncate )
+{
 	size_t as = strlen( dst );
-	if ( !truncate && ( ( as + strlen( src ) ) >= sizeof( PLPath ) ) ) {
+	if ( !truncate && ( ( as + strlen( src ) ) >= sizeof( PLPath ) ) )
+	{
 		PlReportErrorF( PL_RESULT_MEMORY_EOA, "source path is too long" );
-		return NULL;
+		return nullptr;
 	}
 	snprintf( &dst[ as ], sizeof( PLPath ) - as, "%s", src );
-	PlNormalizePath( dst, sizeof( PLPath ) );
+	qm_fs_normalize_path( dst, sizeof( PLPath ) );
 	return dst;
 }
 
-const char *PlAppendPathEx( PLPath dst, bool truncate, const char *msg, ... ) {
+const char *PlAppendPathEx( PLPath dst, bool truncate, const char *msg, ... )
+{
 	va_list args;
 	va_start( args, msg );
 	int length = pl_vscprintf( msg, args );
 	va_end( args );
 
-	if ( length <= 0 ) {
-		return NULL;
+	if ( length <= 0 )
+	{
+		return nullptr;
 	}
 
 	size_t dstSize = strnlen( dst, sizeof( PLPath ) - 1 );
-	if ( !truncate && ( dstSize + ( length + 1 ) >= sizeof( PLPath ) ) ) {
+	if ( !truncate && ( dstSize + ( length + 1 ) >= sizeof( PLPath ) ) )
+	{
 		PlReportErrorF( PL_RESULT_MEMORY_EOA, "source path is too long" );
-		return NULL;
+		return nullptr;
 	}
 
 	va_start( args, msg );
 	vsnprintf( &dst[ dstSize ], sizeof( PLPath ) - dstSize, msg, args );
 	va_end( args );
 
-	PlNormalizePath( dst, sizeof( PLPath ) );
+	qm_fs_normalize_path( dst, sizeof( PLPath ) );
 
 	return dst;
 }
 
-const char *PlPrefixPath( PLPath dst, const char *src, bool truncate ) {
-	size_t as = strlen( dst );
-	size_t bs = strlen( src );
-	if ( !truncate && ( ( as + bs ) >= sizeof( PLPath ) ) ) {
-		PlReportErrorF( PL_RESULT_MEMORY_EOA, "source path is too long" );
-		return NULL;
-	}
-
-	PLPath tmp;
-	snprintf( tmp, sizeof( tmp ), "%s%s", src, dst );
-	strcpy( dst, tmp );
-
-	PlNormalizePath( dst, sizeof( PLPath ) );
-	return dst;
-}
-
-void PlNormalizePath( char *path, size_t length ) {
-	for ( size_t i = 0; i < length; ++i ) {
-		if ( path[ i ] == '\0' ) {
-			if ( path[ i - 1 ] == '/' ) {
-				path[ i - 1 ] = '\0';
+char *qm_fs_normalize_path( char *dst, size_t dstSize )
+{
+	for ( size_t i = 0; i < dstSize; ++i )
+	{
+		if ( dst[ i ] == '\0' )
+		{
+			if ( dst[ i - 1 ] == '/' )
+			{
+				dst[ i - 1 ] = '\0';
 			}
 			break;
-		} else if ( path[ i ] != '\\' ) {
+		}
+
+		if ( dst[ i ] != '\\' )
+		{
 			continue;
 		}
 
-		path[ i ] = '/';
+		dst[ i ] = '/';
 	}
+
+	return dst;
 }
 
-char *PlGetFolderForPath( PLPath dst, PLPath src ) {
+char *PlGetFolderForPath( PLPath dst, PLPath src )
+{
 	char *c = strrchr( src, '/' );
-	if ( c == NULL ) {
-		return NULL;
+	if ( c == nullptr )
+	{
+		return nullptr;
 	}
 
 	snprintf( dst, ( ( c - src ) + 1 ), "%s", src );
@@ -190,181 +214,175 @@ char *PlGetFolderForPath( PLPath dst, PLPath src ) {
  * 		- Descriptor for locations; then can use <location>:// to mount from a specific location
  */
 
-typedef struct PLFileSystemMount {
-	PLFileSystemMountType type;
-	PLPackage *pkg;                  /* PL_FS_MOUNT_PACKAGE */
-	char path[ PL_SYSTEM_MAX_PATH ]; /* PL_FS_MOUNT_DIR */
-	struct PLFileSystemMount *next, *prev;
-} PLFileSystemMount;
-static PLFileSystemMount *fs_mount_root = NULL;
-static PLFileSystemMount *fs_mount_ceiling = NULL;
+typedef struct QmFsMount
+{
+	QmFsMountType       type;
+	QmOsLinkedListNode *listNode;
+	union
+	{
+		QmFsPackage *pkg;  /* PL_FS_MOUNT_PACKAGE */
+		char        *path; /* PL_FS_MOUNT_DIR */
+	};
+} QmFsMount;
 
-#define VFS_LOCAL_HINT "local://"
-#define VFS_MAX_HINT   16
-#define VFS_MAX_PATH   ( ( PL_SYSTEM_MAX_PATH + VFS_MAX_HINT ) + 1 )
+static QmOsLinkedList *mounts;
+
+static constexpr char VFS_LOCAL_HINT[] = "local://";
+#define VFS_MAX_HINT 16
+#define VFS_MAX_PATH ( ( PL_SYSTEM_MAX_PATH + VFS_MAX_HINT ) + 1 )
 
 PL_STATIC_ASSERT( sizeof( VFS_LOCAL_HINT ) < VFS_MAX_HINT, "Local hint is larger than maximum hint length, please adjust limit!" );
 
-IMPLEMENT_COMMAND( lstmnt ) {
-	PL_UNUSEDVAR( argv );
-	PL_UNUSEDVAR( argc );
-
-	if ( fs_mount_root == NULL ) {
-		Print( "No locations mounted\n" );
-		return;
-	}
-
-	unsigned int numLocations = 0;
-	PLFileSystemMount *location = fs_mount_root;
-	while ( location != NULL ) {
-		numLocations++;
-
-		/* this sucks... */
-		const char *path;
-		if ( location->type == PL_FS_MOUNT_PACKAGE )
-			path = location->pkg->path;
-		else
-			path = location->path;
-
-		Print( " (%d) %-20s : %-20s\n", numLocations, path, location->type == PL_FS_MOUNT_DIR ? "DIRECTORY" : "PACKAGE" );
-		location = location->next;
-	}
-	Print( "%d locations mounted\n", numLocations );
-}
-
-static void PlRegisterFSCommands_( void ) {
-	PlRegisterConsoleCommand( "lstmnt", "List all mounted packages and directories.", 0, lstmnt_cmd );
-}
-
-void PlClearMountedLocation( PLFileSystemMount *location ) {
-	if ( location->type == PL_FS_MOUNT_PACKAGE ) {
+void PlClearMountedLocation( QmFsMount *location )
+{
+	if ( location->type == QM_FS_MOUNT_TYPE_PACKAGE )
+	{
 		PlDestroyPackage( location->pkg );
-		location->pkg = NULL;
+		location->pkg = nullptr;
+	}
+	else
+	{
+		qm_os_memory_free( location->path );
 	}
 
-	if ( location->prev != NULL ) {
-		location->prev->next = location->next;
-	}
-	if ( location->next != NULL ) {
-		location->next->prev = location->prev;
-	}
-
-	/* ensure root and ceiling are always pointing to a valid location */
-	if ( location == fs_mount_root ) {
-		fs_mount_root = location->next;
-	}
-	if ( location == fs_mount_ceiling ) {
-		fs_mount_ceiling = location->prev;
-	}
-
+	qm_os_memory_free( location->listNode );
 	qm_os_memory_free( location );
 }
 
-/**
- * Clear all of the mounted locations
- */
-void PlClearMountedLocations( void ) {
-	while ( fs_mount_root != NULL ) { PlClearMountedLocation( fs_mount_root ); }
-}
-
-static void PlInsertMountLocation_( PLFileSystemMount *location ) {
-	if ( fs_mount_root == NULL ) {
-		fs_mount_root = location;
+void qm_fs_clear_mounted_locations()
+{
+	if ( mounts == nullptr )
+	{
+		return;
 	}
 
-	location->prev = fs_mount_ceiling;
-	if ( fs_mount_ceiling != NULL ) {
-		fs_mount_ceiling->next = location;
+	QmFsMount *mount;
+	QM_OS_LINKED_LIST_ITERATE( mount, mounts, i )
+	{
+		PlClearMountedLocation( mount );
 	}
-	fs_mount_ceiling = location;
-	location->next = NULL;
+
+	qm_os_memory_free( mounts );
+	mounts = nullptr;
 }
 
-PLFileSystemMount *PlMountLocalLocation( const char *path ) {
-	if ( PlLocalPathExists( path ) ) { /* attempt to mount it as a path */
-		PLFileSystemMount *location = QM_OS_MEMORY_MALLOC_( sizeof( PLFileSystemMount ) );
-		PlInsertMountLocation_( location );
-		location->type = PL_FS_MOUNT_DIR;
-		snprintf( location->path, sizeof( location->path ), "%s", path );
+static QmOsLinkedListNode *push_back_mount_location( QmFsMount *location )
+{
+	if ( mounts == nullptr )
+	{
+		mounts = qm_os_linked_list_create();
+		if ( mounts == nullptr )
+		{
+			return nullptr;
+		}
+	}
 
-		PlNormalizePath( location->path, sizeof( location->path ) );
+	return qm_os_linked_list_push_back( mounts, location );
+}
 
-		Print( "Mounted directory %s successfully!\n", location->path );
+QmFsMount *qm_fs_mount_local_location( const char *path )
+{
+	if ( PlLocalPathExists( path ) )
+	{
+		// attempt to mount it as a path
+		QmFsMount *location = QM_OS_MEMORY_NEW( QmFsMount );
+		location->type      = QM_FS_MOUNT_TYPE_DIR;
+
+		location->listNode = push_back_mount_location( location );
+		if ( location->listNode == nullptr )
+		{
+			qm_os_memory_free( location );
+			return nullptr;
+		}
+
+		location->path = qm_os_string_alloc( "%s", path );
+		qm_fs_normalize_path( location->path, sizeof( location->path ) );
 
 		return location;
 	}
 
-#if 0
-	// LoadPackage operates via the VFS, but we want to enforce a local
-	// path here, so the only reasonable solution right now is to prefix
-	// it with the local dir hint
-	char localPath[ VFS_MAX_PATH ];
-	if ( strncmp( VFS_LOCAL_HINT, path, sizeof( VFS_LOCAL_HINT ) ) != 0 ) {
-		snprintf( localPath, sizeof( localPath ), VFS_LOCAL_HINT "%s", path );
-	} else {
-		snprintf( localPath, sizeof( localPath ), "%s", path );
-	}
-#endif
+	QmFsPackage *pkg = PlLoadPackage( path );
+	if ( pkg != nullptr )
+	{
+		QmFsMount *location = QM_OS_MEMORY_NEW( QmFsMount );
+		if ( location == nullptr )
+		{
+			goto ABORT;
+		}
 
-	PLPackage *pkg = PlLoadPackage( path );
-	if ( pkg != NULL ) {
-		PLFileSystemMount *location = QM_OS_MEMORY_MALLOC_( sizeof( PLFileSystemMount ) );
-		PlInsertMountLocation_( location );
-		location->type = PL_FS_MOUNT_PACKAGE;
-		location->pkg = pkg;
+		location->listNode = push_back_mount_location( location );
+		if ( location->listNode == nullptr )
+		{
+			goto ABORT;
+		}
 
-		Print( "Mounted package %s successfully!\n", path );
+		location->type = QM_FS_MOUNT_TYPE_PACKAGE;
+		location->pkg  = pkg;
 
 		return location;
+
+	ABORT:
+		PlDestroyPackage( pkg );
+		qm_os_memory_free( location );
+		return nullptr;
 	}
 
 	PlReportErrorF( 0, "failed to mount location, %s", path );
-	return NULL;
+	return nullptr;
 }
 
-/**
- * Mount the given location. On failure returns -1.
- */
-PLFileSystemMount *PlMountLocation( const char *path ) {
-	char buf[ VFS_MAX_PATH ];
-	const char *vpath = PlResolveVirtualPath( path, buf, sizeof( buf ) );
-	if ( vpath == NULL ) {
+QmFsMount *qm_fs_mount_location( const char *path )
+{
+	char        buf[ VFS_MAX_PATH ];
+	const char *vpath = qm_fs_resolve_virtual_path( path, buf, sizeof( buf ) );
+	if ( vpath == nullptr )
+	{
 		PlReportErrorF( PL_RESULT_FILEPATH, "failed to resolve path, %s", path );
-		return NULL;
+		return nullptr;
 	}
 
-	return PlMountLocalLocation( vpath );
+	return qm_fs_mount_local_location( vpath );
 }
 
-PLFileSystemMountType PlGetMountLocationType( const PLFileSystemMount *fileSystemMount ) {
-	return fileSystemMount->type;
+QmFsMountType qm_fs_mount_get_type( const QmFsMount *self )
+{
+	return self->type;
 }
 
-const char *PlGetMountLocationPath( const PLFileSystemMount *fileSystemMount ) {
-	if ( fileSystemMount->type != PL_FS_MOUNT_DIR ) {
-		return NULL;
+const char *qm_fs_mount_get_path( const QmFsMount *self )
+{
+	if ( self->type != QM_FS_MOUNT_TYPE_DIR )
+	{
+		return nullptr;
 	}
 
-	return fileSystemMount->path;
+	return self->path;
 }
 
-PLFileSystemMount *PlGetMountLocationForPath( const char *path ) {
-	if ( path == NULL || *path == '\0' ) {
-		PlReportBasicError( PL_RESULT_INVALID_PARM1 );
-		return NULL;
+QmFsMount *PlGetMountLocationForPath( const char *path )
+{
+	if ( mounts == nullptr )
+	{
+		return nullptr;
 	}
 
-	PLFileSystemMount *match = NULL;
-	size_t matchLength = 0;
-	for ( PLFileSystemMount *mount = fs_mount_root; mount != NULL; mount = mount->next ) {
+	QmFsMount *match       = nullptr;
+	size_t     matchLength = 0;
+
+	QmFsMount *mount;
+	QM_OS_LINKED_LIST_ITERATE( mount, mounts, i )
+	{
 		size_t mountLength = strlen( mount->path );
-		if ( match != NULL && matchLength >= mountLength ) {
+		if ( match != nullptr && matchLength >= mountLength )
+		{
 			continue;
 		}
 
-		if ( strncmp( mount->path, path, mountLength ) == 0 ) {
-			if ( path[ mountLength ] == '\0' || path[ mountLength ] == '/' ) {
-				match = mount;
+		if ( strncmp( mount->path, path, mountLength ) == 0 )
+		{
+			if ( path[ mountLength ] == '\0' || path[ mountLength ] == '/' )
+			{
+				match       = mount;
 				matchLength = mountLength;
 			}
 		}
@@ -373,40 +391,16 @@ PLFileSystemMount *PlGetMountLocationForPath( const char *path ) {
 	return match;
 }
 
-/****/
-
-// Checks whether a file has been modified or not.
-bool PlIsFileModified( time_t oldtime, const char *path ) {
-	if ( !oldtime ) {
-		PlReportErrorF( PL_RESULT_FILEERR, "invalid time, skipping check" );
-		return false;
-	}
-
-	struct stat attributes;
-	if ( stat( path, &attributes ) == -1 ) {
-		PlReportErrorF( PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror( errno ) );
-		return false;
-	}
-
-	if ( attributes.st_mtime > oldtime ) {
-		return true;
-	}
-
-	return false;
+bool qm_fs_file_is_end( const QmFsFile *self )
+{
+	return ( size_t ) qm_fs_file_get_offset( self ) == qm_fs_file_get_size( self );
 }
 
-bool PlIsEndOfFile( const PLFile *ptr ) {
-	return ( ( size_t ) PlGetFileOffset( ptr ) == PlGetFileSize( ptr ) );
-}
-
-/**
- * Returns the modified time of the given file.
- * @param path
- * @return Modification time in seconds. returns 0 upon fail.
- */
-time_t PlGetLocalFileTimeStamp( const char *path ) {
+time_t qm_fs_get_local_file_timestamp( const char *path )
+{
 	struct stat attributes;
-	if ( stat( path, &attributes ) == -1 ) {
+	if ( stat( path, &attributes ) == -1 )
+	{
 		PlReportErrorF( PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror( errno ) );
 		return 0;
 	}
@@ -414,22 +408,27 @@ time_t PlGetLocalFileTimeStamp( const char *path ) {
 	return attributes.st_mtime;
 }
 
-time_t PlGetFileTimeStamp( PLFile *ptr ) {
-	/* timestamp defaults to -1 for files loaded locally */
-	if ( ptr->timeStamp < 0 ) {
-		PlGetLocalFileTimeStamp( ptr->path );
+time_t qm_fs_file_get_timestamp( QmFsFile *self )
+{
+	// timestamp defaults to -1 for files loaded locally
+	if ( self->timeStamp < 0 )
+	{
+		self->timeStamp = qm_fs_get_local_file_timestamp( self->path );
 	}
 
-	return ptr->timeStamp;
+	return self->timeStamp;
 }
 
 // Creates a folder at the given path.
-bool PlCreateDirectory( const char *path ) {
-	if ( PlLocalPathExists( path ) ) {
+bool PlCreateDirectory( const char *path )
+{
+	if ( PlLocalPathExists( path ) )
+	{
 		return true;
 	}
 
-	if ( _pl_mkdir( path ) == 0 ) {
+	if ( _pl_mkdir( path ) == 0 )
+	{
 		return true;
 	}
 
@@ -438,22 +437,26 @@ bool PlCreateDirectory( const char *path ) {
 	return false;
 }
 
-bool PlCreatePath( const char *path ) {
+bool PlCreatePath( const char *path )
+{
 	size_t length = strlen( path );
-	if ( length >= PL_SYSTEM_MAX_PATH ) {
+	if ( length >= PL_SYSTEM_MAX_PATH )
+	{
 		PlReportErrorF( PL_RESULT_INVALID_PARM1, "path is greater that maximum supported path length, %d vs %d",
 		                length, PL_SYSTEM_MAX_PATH );
 		return false;
 	}
 
-	char dir_path[ PL_SYSTEM_MAX_PATH ];
-	memset( dir_path, 0, sizeof( dir_path ) );
-	for ( size_t i = 0; i < length; ++i ) {
+	char dir_path[ PL_SYSTEM_MAX_PATH ] = {};
+	for ( size_t i = 0; i < length; ++i )
+	{
 		dir_path[ i ] = path[ i ];
 		if ( i != 0 &&
 		     ( path[ i ] == '\\' || path[ i ] == '/' ) &&
-		     ( path[ i - 1 ] != '\\' && path[ i - 1 ] != '/' ) ) {
-			if ( !PlCreateDirectory( dir_path ) ) {
+		     ( path[ i - 1 ] != '\\' && path[ i - 1 ] != '/' ) )
+		{
+			if ( !PlCreateDirectory( dir_path ) )
+			{
 				return false;
 			}
 		}
@@ -463,21 +466,26 @@ bool PlCreatePath( const char *path ) {
 }
 
 // Returns the extension for the file.
-const char *PlGetFileExtension( const char *in ) {
+const char *PlGetFileExtension( const char *in )
+{
 	const char *s = strrchr( in, '.' );
-	return s != NULL ? s + 1 : NULL;
+	return s != nullptr ? s + 1 : nullptr;
 }
 
 // Strips the extension from the filename.
-void PlStripExtension( char *dest, size_t length, const char *in ) {
-	if ( PL_INVALID_STRING( in ) ) {
+void PlStripExtension( char *dest, size_t length, const char *in )
+{
+	if ( PL_INVALID_STRING( in ) )
+	{
 		*dest = 0;
 		return;
 	}
 
 	const char *s = strrchr( in, '.' );
-	while ( in < s ) {
-		if ( --length <= 1 ) {
+	while ( in < s )
+	{
+		if ( --length <= 1 )
+		{
 			break;
 		}
 		*dest++ = *in++;
@@ -485,29 +493,35 @@ void PlStripExtension( char *dest, size_t length, const char *in ) {
 	*dest = 0;
 }
 
-const char *PlGetFileName( const char *path ) {
+const char *PlGetFileName( const char *path )
+{
 	const char *lslash;
-	if ( ( lslash = strrchr( path, '/' ) ) == NULL ) {
+	if ( ( lslash = strrchr( path, '/' ) ) == nullptr )
+	{
 		lslash = strrchr( path, '\\' );
 	}
 
-	if ( lslash != NULL ) {
+	if ( lslash != nullptr )
+	{
 		path = lslash + 1;
 	}
 
 	return path;
 }
 
-char *PlGetUserName( char *out, size_t n ) {
+char *PlGetUserName( char *out, size_t n )
+{
 #ifdef _WIN32
-	char user_string[ PL_SYSTEM_MAX_USERNAME ];
+	char  user_string[ PL_SYSTEM_MAX_USERNAME ];
 	ULONG size = PL_SYSTEM_MAX_USERNAME;
-	if ( GetUserNameEx( NameDisplay, user_string, &size ) == 0 ) {
+	if ( GetUserNameEx( NameDisplay, user_string, &size ) == 0 )
+	{
 		snprintf( user_string, sizeof( user_string ), "user" );
 	}
 #else// Linux
 	char *user_string = getenv( "LOGNAME" );
-	if ( user_string == NULL ) {
+	if ( user_string == nullptr )
+	{
 		user_string = "user";
 	}
 #endif
@@ -516,49 +530,53 @@ char *PlGetUserName( char *out, size_t n ) {
 	return out;
 }
 
-char *PlGetApplicationDataDirectory( const char *app_name, char *out, size_t n ) {
-	if ( PL_INVALID_STRING( app_name ) ) {
-		PlReportErrorF( PL_RESULT_FILEPATH, "invalid app name" );
-		return NULL;
-	}
-
-#ifndef _WIN32
+char *PlGetApplicationDataDirectory( const char *appName, char *dst, size_t dstSize )
+{
+#if QM_OS_SYSTEM == QM_OS_SYSTEM_LINUX
 	const char *home;
-	if ( ( home = getenv( "HOME" ) ) == NULL ) {
+	if ( ( home = getenv( "HOME" ) ) == nullptr )
+	{
 		struct passwd *pw = getpwuid( getuid() );
-		home = pw->pw_dir;
+		home              = pw->pw_dir;
 	}
-	snprintf( out, n, "%s/.config/%s", home, app_name );
+	snprintf( dst, dstSize, "%s/.config/%s", home, appName );
 #else
 	char home[ MAX_PATH ];
-	if ( SUCCEEDED( SHGetFolderPath( NULL, CSIDL_APPDATA, NULL, 0, home ) ) ) {
-		snprintf( out, n, "%s/%s", home, app_name );
-		return out;
+	if ( SUCCEEDED( SHGetFolderPath( nullptr, CSIDL_APPDATA, nullptr, 0, home ) ) )
+	{
+		snprintf( dst, dstSize, "%s/%s", home, appName );
+		return dst;
 	}
 	snprintf( home, sizeof( home ), "." );
 #endif
 
-	return out;
+	return dst;
 }
 
-bool PlPathEndsInSlash( const char *p ) {
+bool PlPathEndsInSlash( const char *p )
+{
 	size_t l = strlen( p );
-	return ( l > 0 && ( p[ l - 1 ] == '/' || p[ l - 1 ] == '\\' ) );
+	return l > 0 && ( p[ l - 1 ] == '/' || p[ l - 1 ] == '\\' );
 }
 
-typedef struct FSScanInstance {
-	char path[ PL_SYSTEM_MAX_PATH ];
+typedef struct FSScanInstance
+{
+	char                   path[ PL_SYSTEM_MAX_PATH ];
 	struct FSScanInstance *next;
 } FSScanInstance;
 
-static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance **fileList, const char *path,
-                                const char *extension, void ( *Function )( const char *, void * ), bool recursive, void *userData ) {
+static void scan_local_directory( const QmFsMount *mount, FSScanInstance **fileList, const char *path,
+                                  const char *extension, void ( *Function )( const char *, void * ), bool recursive, void *userData )
+{
 #if !defined( _MSC_VER )
 	DIR *directory = opendir( path );
-	if ( directory ) {
+	if ( directory )
+	{
 		struct dirent *entry;
-		while ( ( entry = readdir( directory ) ) ) {
-			if ( strcmp( entry->d_name, "." ) == 0 || strcmp( entry->d_name, ".." ) == 0 ) {
+		while ( ( entry = readdir( directory ) ) )
+		{
+			if ( strcmp( entry->d_name, "." ) == 0 || strcmp( entry->d_name, ".." ) == 0 )
+			{
 				continue;
 			}
 
@@ -566,31 +584,38 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 			snprintf( filestring, sizeof( filestring ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, entry->d_name );
 
 			struct stat st;
-			if ( stat( filestring, &st ) == 0 ) {
-				if ( S_ISREG( st.st_mode ) ) {
+			if ( stat( filestring, &st ) == 0 )
+			{
+				if ( S_ISREG( st.st_mode ) )
+				{
 					// We used to just compare against the end of the name relative to '.',
 					// but an extension could be made up of multiple parts (.world.n),
 					// so we'll do this instead
 					bool match = false;
-					if ( extension != NULL ) {
+					if ( extension != nullptr )
+					{
 						size_t el = strlen( extension );
 						size_t fl = strlen( entry->d_name );
-						match = ( el < fl ) && ( pl_strncasecmp( &entry->d_name[ fl - el ], extension, el ) == 0 );
+						match     = ( el < fl ) && ( pl_strncasecmp( &entry->d_name[ fl - el ], extension, el ) == 0 );
 					}
 
-					if ( extension == NULL || match ) {
-						if ( mount == NULL ) {
+					if ( extension == nullptr || match )
+					{
+						if ( mount == nullptr )
+						{
 							Function( filestring, userData );
 							continue;
 						}
 
-						size_t pos = strlen( mount->path ) + 1;
+						size_t      pos      = strlen( mount->path ) + 1;
 						const char *filePath = &filestring[ pos ];
 
 						// Ensure it's not already in the list
 						FSScanInstance *cur = *fileList;
-						while ( cur != NULL ) {
-							if ( strcmp( filePath, cur->path ) == 0 ) {
+						while ( cur != nullptr )
+						{
+							if ( strcmp( filePath, cur->path ) == 0 )
+							{
 								// File was already passed back
 								break;
 							}
@@ -599,7 +624,8 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 						}
 
 						// Jumped the list early, so abort here
-						if ( cur != NULL ) {
+						if ( cur != nullptr )
+						{
 							continue;
 						}
 
@@ -611,18 +637,23 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 						cur->next = *fileList;
 						*fileList = cur;
 					}
-				} else if ( S_ISDIR( st.st_mode ) && recursive ) {
-					ScanLocalDirectory( mount, fileList, filestring, extension, Function, recursive, userData );
+				}
+				else if ( S_ISDIR( st.st_mode ) && recursive )
+				{
+					scan_local_directory( mount, fileList, filestring, extension, Function, recursive, userData );
 				}
 			}
 		}
 
 		closedir( directory );
-	} else {
+	}
+	else
+	{
 		PlReportErrorF( PL_RESULT_FILEPATH, "opendir failed: %s", GetLastError_strerror( GetLastError() ) );
 	}
 #else /* assumed win32 impl */
-	if ( extension == NULL ) {
+	if ( extension == nullptr )
+	{
 		extension = "*";
 	}
 
@@ -630,27 +661,32 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
 	snprintf( selectorPath, sizeof( selectorPath ), PlPathEndsInSlash( path ) ? "%s*.%s" : "%s/*.%s", path, extension );
 
 	WIN32_FIND_DATA ffd;
-	HANDLE find = FindFirstFile( selectorPath, &ffd );
-	if ( find == INVALID_HANDLE_VALUE ) {
+	HANDLE          find = FindFirstFile( selectorPath, &ffd );
+	if ( find == INVALID_HANDLE_VALUE )
+	{
 		return;
 	}
 
 	size_t ml;
-	if ( mount != NULL )
+	if ( mount != nullptr )
 		ml = strlen( mount->path );
 
-	do {
+	do
+	{
 		snprintf( selectorPath, sizeof( selectorPath ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, ffd.cFileName );
 
-		if ( ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) {
-			if ( recursive && !( strcmp( ffd.cFileName, "." ) == 0 || strcmp( ffd.cFileName, ".." ) == 0 ) ) {
-				ScanLocalDirectory( mount, fileList, selectorPath, extension, Function, recursive, userData );
+		if ( ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
+		{
+			if ( recursive && !( strcmp( ffd.cFileName, "." ) == 0 || strcmp( ffd.cFileName, ".." ) == 0 ) )
+			{
+				scan_local_directory( mount, fileList, selectorPath, extension, Function, recursive, userData );
 			}
 			continue;
 		}
 
 		const char *rp = selectorPath;
-		if ( mount != NULL ) {
+		if ( mount != nullptr )
+		{
 			rp = &selectorPath[ ml + 1 ];
 		}
 
@@ -669,109 +705,123 @@ static void ScanLocalDirectory( const PLFileSystemMount *mount, FSScanInstance *
  * @param Function callback function to deal with the file.
  * @param recursive if true, also scans the contents of each sub-directory.
  */
-void PlScanDirectory( const char *path, const char *extension, void ( *Function )( const char *, void * ), bool recursive, void *userData ) {
+void PlScanDirectory( const char *path, const char *extension, void ( *Function )( const char *, void * ), bool recursive, void *userData )
+{
 	PlClearError();
 
 	size_t hintSize = strlen( VFS_LOCAL_HINT );
-	if ( strncmp( VFS_LOCAL_HINT, path, hintSize ) == 0 ) {
+	if ( strncmp( VFS_LOCAL_HINT, path, hintSize ) == 0 )
+	{
 		const char *c = path + hintSize;
 		if ( *c == ':' ) c++;
-		ScanLocalDirectory( NULL, NULL, c, extension, Function, recursive, userData );
+		scan_local_directory( nullptr, nullptr, c, extension, Function, recursive, userData );
 		return;
 	}
 
 	// If no mounted locations, assume local scan
-	if ( fs_mount_root == NULL ) {
-		ScanLocalDirectory( NULL, NULL, path, extension, Function, recursive, userData );
+	if ( mounts == nullptr )
+	{
+		scan_local_directory( nullptr, nullptr, path, extension, Function, recursive, userData );
 		return;
 	}
 
 	PLPath normPath;
 	snprintf( normPath, sizeof( normPath ), "%s", path );
-	PlNormalizePath( normPath, sizeof( normPath ) );
+	qm_fs_normalize_path( normPath, sizeof( normPath ) );
 
-	FSScanInstance *fileList = NULL;
-	PLFileSystemMount *location = fs_mount_root;
-	while ( location != NULL ) {
-		if ( location->type == PL_FS_MOUNT_PACKAGE ) {
-			PLPackage *package = location->pkg;
-			for ( unsigned int i = 0; i < package->table_size; ++i ) {
+	FSScanInstance *fileList = nullptr;
+	QmFsMount      *location;
+	QM_OS_LINKED_LIST_ITERATE( location, mounts, i )
+	{
+		if ( location->type == QM_FS_MOUNT_TYPE_PACKAGE )
+		{
+			QmFsPackage *package = location->pkg;
+			for ( unsigned int j = 0; j < package->table_size; ++j )
+			{
 				//HACK: urgh, packages don't have the concept of '.' or './', so let's work around that
 
 				const char *subPath;
-				if ( *path == '.' ) {
+				if ( *path == '.' )
+				{
 					subPath = *( path + 1 ) == '/' ? path + 2 : path + 1;
-				} else {
+				}
+				else
+				{
 					subPath = path;
 				}
 
 				size_t l = strlen( subPath );
-				if ( strncmp( package->table[ i ].fileName, subPath, l ) != 0 ) {
+				if ( strncmp( package->table[ j ].fileName, subPath, l ) != 0 )
+				{
 					continue;
 				}
 
-				const char *indexExtension = PlGetFileExtension( package->table[ i ].fileName );
-				if ( indexExtension == NULL || strcmp( indexExtension, extension ) != 0 ) {
+				const char *indexExtension = PlGetFileExtension( package->table[ j ].fileName );
+				if ( indexExtension == nullptr || strcmp( indexExtension, extension ) != 0 )
+				{
 					continue;
 				}
 
-				Function( package->table[ i ].fileName, userData );
+				Function( package->table[ j ].fileName, userData );
 			}
-		} else if ( location->type == PL_FS_MOUNT_DIR ) {
+		}
+		else if ( location->type == QM_FS_MOUNT_TYPE_DIR )
+		{
 			char mounted_path[ PL_SYSTEM_MAX_PATH * 2 ];
 			snprintf( mounted_path, sizeof( mounted_path ), "%s/%s", location->path, normPath );
-			ScanLocalDirectory( location, &fileList, mounted_path, extension, Function, recursive, userData );
+			scan_local_directory( location, &fileList, mounted_path, extension, Function, recursive, userData );
 		}
-
-		location = location->next;
 	}
 
 	// Clean up the list
 	FSScanInstance *current = fileList;
-	while ( current != NULL ) {
+	while ( current != nullptr )
+	{
 		FSScanInstance *prev = current;
-		current = current->next;
+		current              = current->next;
 		qm_os_memory_free( prev );
 	}
 }
 
-const char *PlGetWorkingDirectory( void ) {
+const char *PlGetWorkingDirectory( void )
+{
 	static char out[ PL_SYSTEM_MAX_PATH ] = { '\0' };
-	if ( getcwd( out, PL_SYSTEM_MAX_PATH ) == NULL ) {
+	if ( getcwd( out, PL_SYSTEM_MAX_PATH ) == nullptr )
+	{
 		/* The MSDN documentation for getcwd() is gone, but it proooobably uses
 		 * errno and friends.
 		 */
 		PlReportErrorF( PL_RESULT_SYSERR, "%s", strerror( errno ) );
-		return NULL;
+		return nullptr;
 	}
-	PlNormalizePath( out, sizeof( out ) );
+	qm_fs_normalize_path( out, sizeof( out ) );
 	return out;
 }
 
-void PlSetWorkingDirectory( const char *path ) {
-	if ( chdir( path ) != 0 ) {
+void PlSetWorkingDirectory( const char *path )
+{
+	if ( chdir( path ) != 0 )
+	{
 		PlReportErrorF( PL_RESULT_SYSERR, "%s", strerror( errno ) );
 	}
 }
 
-const char *PlGetExecutablePath( char *out, size_t outSize ) {
+const char *PlGetExecutablePath( char *out, size_t outSize )
+{
 	PL_ZERO( out, outSize );
 
-#if PL_SYSTEM_OS == PL_SYSTEM_OS_LINUX
-	if ( readlink( "/proc/self/exe", out, outSize ) == -1 ) {
-		return NULL;
+#if QM_OS_SYSTEM == QM_OS_SYSTEM_LINUX
+	if ( readlink( "/proc/self/exe", out, outSize ) == -1 )
+	{
+		return nullptr;
 	}
-#elif PL_SYSTEM_OS == PL_SYSTEM_OS_FREEBSD
-	if ( readlink( "/proc/curproc/file", out, outSize ) == -1 ) {
-		return NULL;
-	}
-#elif PL_SYSTEM_OS == PL_SYSTEM_OS_WINDOWS
-	GetModuleFileName( NULL, out, ( DWORD ) outSize );
+#elif QM_OS_SYSTEM == QM_OS_SYSTEM_WINDOWS
+	GetModuleFileName( nullptr, out, ( DWORD ) outSize );
 #else
 	PlReportBasicError( PL_RESULT_UNSUPPORTED );
 #endif
 
-	PlNormalizePath( out, outSize );
+	qm_fs_normalize_path( out, outSize );
 
 	return out;
 }
@@ -779,23 +829,27 @@ const char *PlGetExecutablePath( char *out, size_t outSize ) {
 /**
  * Returns the directory the current executable is located within.
  */
-const char *PlGetExecutableDirectory( char *out, size_t outSize ) {
-	if ( PlGetExecutablePath( out, outSize ) == NULL ) {
-		return NULL;
+const char *PlGetExecutableDirectory( char *out, size_t outSize )
+{
+	if ( PlGetExecutablePath( out, outSize ) == nullptr )
+	{
+		return nullptr;
 	}
 
 	char *c = strrchr( out, '/' );
-	if ( c == NULL ) {
+	if ( c == nullptr )
+	{
 		PlReportErrorF( PL_RESULT_FILEPATH, "couldn't find path seperator" );
-		return NULL;
+		return nullptr;
 	}
 
 	unsigned int i = c - out + 1;
-	if ( i < outSize ) {
+	if ( i < outSize )
+	{
 		out[ i ] = '\0';
 	}
 
-	PlNormalizePath( out, outSize );
+	qm_fs_normalize_path( out, outSize );
 
 	return out;
 }
@@ -807,56 +861,68 @@ const char *PlGetExecutableDirectory( char *out, size_t outSize ) {
  * Transform the given path to the direct path
  * relative to anything mounted under the VFS.
  */
-static PLFileSystemMount *PlGetMountLocationForPath_( const char *path ) {
-	if ( PlLocalPathExists( path ) || PlLocalFileExists( path ) ) {
-		return NULL;
+static QmFsMount *PlGetMountLocationForPath_( const char *path )
+{
+	if ( PlLocalPathExists( path ) || qm_fs_check_local_file_exists( path ) )
+	{
+		return nullptr;
 	}
 
 #if 0
 	if ( strncmp( VFS_LOCAL_HINT, path, sizeof( VFS_LOCAL_HINT ) ) == 0 ) {
-		return NULL;
+		return nullptr;
 	}
 #endif
 
 	size_t sl = strlen( path );
-	if ( fs_mount_root != NULL ) {
-		PLFileSystemMount *location = fs_mount_root;
-		while ( location != NULL ) {
-			switch ( location->type ) {
-				default: {
+	if ( mounts != nullptr )
+	{
+		QmFsMount *location;
+		QM_OS_LINKED_LIST_ITERATE( location, mounts, i )
+		{
+			switch ( location->type )
+			{
+				default:
+				{
 					/* todo: don't allow path to search outside of mounted path */
 					char buf[ VFS_MAX_PATH ];
 					snprintf( buf, sizeof( buf ), "%s/%s", location->path, path );
-					if ( PlLocalPathExists( buf ) || PlLocalFileExists( buf ) ) {
+					if ( PlLocalPathExists( buf ) || qm_fs_check_local_file_exists( buf ) )
+					{
 						return location;
 					}
 					break;
 				}
-				case PL_FS_MOUNT_PACKAGE: {
-					for ( unsigned int i = 0; i < location->pkg->table_size; ++i ) {
+				case QM_FS_MOUNT_TYPE_PACKAGE:
+				{
+					for ( unsigned int i = 0; i < location->pkg->table_size; ++i )
+					{
 						/* packages don't necessarily have the concept of a directory
 						 * the way we might expect (take Unreal packages for example),
 						 * so down the line we might want to allow this to be handled
 						 * by the specific package API (i.e. call to GetPackageDirectory?). */
-						if ( strncmp( path, location->pkg->table[ i ].fileName, sl ) == 0 ) {
+						if ( strncmp( path, location->pkg->table[ i ].fileName, sl ) == 0 )
+						{
 							return location;
 						}
 					}
 					break;
 				}
 			}
-
-			location = location->next;
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
-static const char *PlVirtualToLocalPath_( PLFileSystemMount *mount, const char *path, char *dest, size_t size ) {
-	if ( mount == NULL || mount->type == PL_FS_MOUNT_PACKAGE ) {
+static const char *PlVirtualToLocalPath_( QmFsMount *mount, const char *path, char *dest, size_t size )
+{
+	if ( mount == nullptr || mount->type == QM_FS_MOUNT_TYPE_PACKAGE )
+	{
 		snprintf( dest, size, "%s", path );
-	} else {
+	}
+	else
+	{
 		const char *fmt;
 		if ( *path == '\\' || *path == '/' )
 			fmt = "%s%s";
@@ -873,14 +939,17 @@ static const char *PlVirtualToLocalPath_( PLFileSystemMount *mount, const char *
  * Transform the given path to the direct path
  * relative to anything mounted under the VFS.
  */
-const char *PlResolveVirtualPath( const char *path, char *dest, size_t size ) {
-	if ( strncmp( VFS_LOCAL_HINT, path, sizeof( VFS_LOCAL_HINT ) ) == 0 ) {
+const char *qm_fs_resolve_virtual_path( const char *path, char *dest, size_t size )
+{
+	if ( strncmp( VFS_LOCAL_HINT, path, sizeof( VFS_LOCAL_HINT ) ) == 0 )
+	{
 		path += sizeof( VFS_LOCAL_HINT );
 		return path;
 	}
 
-	PLFileSystemMount *mount = PlGetMountLocationForPath_( path );
-	if ( mount == NULL || mount->type == PL_FS_MOUNT_PACKAGE ) {
+	QmFsMount *mount = PlGetMountLocationForPath_( path );
+	if ( mount == nullptr || mount->type == QM_FS_MOUNT_TYPE_PACKAGE )
+	{
 		return path;
 	}
 
@@ -894,19 +963,17 @@ const char *PlResolveVirtualPath( const char *path, char *dest, size_t size ) {
 	return dest;
 }
 
-bool PlLocalFileExists( const char *path ) {
+bool qm_fs_check_local_file_exists( const char *path )
+{
 	struct stat buffer;
 	return ( bool ) ( stat( path, &buffer ) == 0 );
 }
 
-/**
- * Checks whether or not the given file is accessible or exists.
- * @param path
- * @return False if the file wasn't accessible.
- */
-bool PlFileExists( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
+bool qm_fs_check_file_exists( const char *path )
+{
+	QmFsFile *file = qm_fs_file_open( path, false );
+	if ( file == nullptr )
+	{
 		return false;
 	}
 
@@ -914,7 +981,8 @@ bool PlFileExists( const char *path ) {
 	return true;
 }
 
-bool PlLocalPathExists( const char *path ) {
+bool PlLocalPathExists( const char *path )
+{
 #if defined( _MSC_VER )
 	errno_t err = _access_s( path, 0 );
 	if ( err != 0 )
@@ -925,7 +993,8 @@ bool PlLocalPathExists( const char *path ) {
 	return ( s.st_mode & S_IFDIR );
 #else
 	DIR *dir = opendir( path );
-	if ( dir ) {
+	if ( dir )
+	{
 		closedir( dir );
 		return true;
 	}
@@ -934,26 +1003,25 @@ bool PlLocalPathExists( const char *path ) {
 #endif
 }
 
-bool PlPathExists( const char *path ) {
-	PLFileSystemMount *mount = PlGetMountLocationForPath_( path );
-	if ( mount == NULL )
+bool PlPathExists( const char *path )
+{
+	QmFsMount *mount = PlGetMountLocationForPath_( path );
+	if ( mount == nullptr )
 		return PlLocalPathExists( path );
 
 	return true;
 }
 
-/**
- * Deletes the specified file. Not VFS compatible.
- * @param path Path to the file you want to delete.
- * @return True on success and false on fail.
- */
-bool PlDeleteFile( const char *path ) {
-	if ( !PlLocalFileExists( path ) ) {
+bool qm_fs_delete_file( const char *path )
+{
+	if ( !qm_fs_check_local_file_exists( path ) )
+	{
 		return true;
 	}
 
 	int result = remove( path );
-	if ( result == 0 ) {
+	if ( result == 0 )
+	{
 		return true;
 	}
 
@@ -968,62 +1036,66 @@ bool PlDeleteFile( const char *path ) {
  * @param length Length of the data buffer.
  * @return True on success and false on fail.
  */
-bool PlWriteFile( const char *path, const void *buf, size_t length ) {
+bool PlWriteFile( const char *path, const void *buf, size_t length )
+{
 	FILE *fp = fopen( path, "wb" );
-	if ( fp == NULL ) {
+	if ( fp == nullptr )
+	{
 		PlReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", path );
 		return false;
 	}
 
 	bool result = true;
-	if ( fwrite( buf, sizeof( char ), length, fp ) != length ) {
+	if ( fwrite( buf, sizeof( char ), length, fp ) != length )
+	{
 		PlReportErrorF( PL_RESULT_FILEWRITE, "failed to write entirety of file" );
 		result = false;
 	}
 
-	_pl_fclose( fp );
+	qm_fs_fclose( &fp );
 
 	return result;
 }
 
-bool PlCopyFile( const char *path, const char *dest ) {
+bool qm_fs_copy_file( const char *path, const char *dest )
+{
 	// read in the original
-	PLFile *original = PlOpenFile( path, true );
-	if ( original == NULL ) {
+	QmFsFile *original = qm_fs_file_open( path, true );
+	if ( original == nullptr )
+	{
 		PlReportErrorF( PL_RESULT_FILEREAD, "failed to open %s", path );
 		return false;
 	}
 
 	// write out the copy
 	FILE *copy = fopen( dest, "wb" );
-	if ( copy == NULL ) {
+	if ( copy == nullptr )
+	{
 		PlReportErrorF( PL_RESULT_FILEWRITE, "failed to open %s for write", dest );
 		goto BAIL;
 	}
 
-	if ( fwrite( original->data, 1, original->size, copy ) != original->size ) {
+	if ( fwrite( original->data, 1, original->size, copy ) != original->size )
+	{
 		PlReportErrorF( PL_RESULT_FILEWRITE, "failed to write out %d bytes for %s", original->size, path );
 		goto BAIL;
 	}
 
-	_pl_fclose( copy );
-
+	qm_fs_fclose( &copy );
 	PlCloseFile( original );
 	return true;
 
 BAIL:
-
-	if ( copy != NULL ) {
-		_pl_fclose( copy );
-	}
-
+	qm_fs_fclose( &copy );
 	PlCloseFile( original );
 	return false;
 }
 
-size_t PlGetLocalFileSize( const char *path ) {
+size_t qm_fs_get_local_file_size( const char *path )
+{
 	struct stat buf;
-	if ( stat( path, &buf ) != 0 ) {
+	if ( stat( path, &buf ) != 0 )
+	{
 		PlReportErrorF( PL_RESULT_FILEERR, "failed to stat %s: %s", path, strerror( errno ) );
 		return 0;
 	}
@@ -1037,316 +1109,367 @@ size_t PlGetLocalFileSize( const char *path ) {
  * Creates a virtual file handle from the given buffer.
  * If 'isOwner' is true, the file handle takes ownership of the buffer and frees it.
  */
-PLFile *PlCreateFileFromMemory( const char *path, void *buf, size_t bufSize, PLFileMemoryBufferType bufType ) {
-	PLFile *file = QM_OS_MEMORY_MALLOC_( sizeof( PLFile ) );
+QmFsFile *qm_fs_file_from_memory( const char *path, void *buf, size_t bufSize, QmFsFileOwnershipType bufType )
+{
+	QmFsFile *file = QM_OS_MEMORY_NEW( QmFsFile );
+	if ( file == nullptr )
+	{
+		return nullptr;
+	}
 
-	if ( bufType == PL_FILE_MEMORYBUFFERTYPE_COPY ) {
+	if ( bufType == QM_FS_FILE_OWNERSHIP_TYPE_COPY )
+	{
 		file->data = QM_OS_MEMORY_MALLOC_( bufSize );
 		memcpy( file->data, buf, bufSize );
-	} else {
-		if ( bufType == PL_FILE_MEMORYBUFFERTYPE_UNMANAGED ) {
+	}
+	else
+	{
+		if ( bufType == QM_FS_FILE_OWNERSHIP_TYPE_UNMANAGED )
+		{
 			file->isUnmanaged = true;
 		}
+
 		file->data = buf;
 	}
-	file->pos = file->data;
-	file->size = bufSize;
 
-	snprintf( file->path, sizeof( file->path ), "%s", path );
+	file->pos  = file->data;
+	file->size = bufSize;
+	file->path = qm_os_string_alloc( "%s", path );
 
 	return file;
 }
 
-PLFile *PlCreateFileFromStdio( FILE *stdio, const char *source ) {
-	PLFileOffset size = 0;
-	PLFileOffset offset = pl_ftell( stdio );
-	if ( pl_fseek( stdio, 0, SEEK_END ) == 0 ) {
-		size = pl_ftell( stdio );
+QmFsFile *qm_fs_file_from_stdio( FILE *stdio, const char *source )
+{
+	PLFileOffset size   = 0;
+	PLFileOffset offset = qm_fs_ftell( stdio );
+	if ( qm_fs_fseek( stdio, 0, SEEK_END ) == 0 )
+	{
+		size = qm_fs_ftell( stdio );
 	}
-	pl_fseek( stdio, offset, SEEK_SET );
+	qm_fs_fseek( stdio, offset, SEEK_SET );
 
-	if ( size == 0 ) {
+	if ( size == 0 )
+	{
 		PlReportErrorF( PL_RESULT_FILEREAD, "failed to determine file size" );
-		return NULL;
+		return nullptr;
 	}
 
-	PLFile *file = QM_OS_MEMORY_NEW( PLFile );
+	QmFsFile *file = QM_OS_MEMORY_NEW( QmFsFile );
+	if ( file == nullptr )
+	{
+		return nullptr;
+	}
+
 	file->size = size;
 	file->fptr = stdio;
 
-	if ( source != NULL ) {
-		snprintf( file->path, sizeof( file->path ), "%s", source );
+	if ( source != nullptr )
+	{
+		file->path = qm_os_string_alloc( "%s", source );
 	}
 
 	return file;
 }
 
-PLFile *PlOpenLocalFile( const char *path, bool cache ) {
+QmFsFile *qm_fs_file_open_local( const char *path, bool cache )
+{
 	FILE *sysFile = fopen( path, "rb" );
-	if ( sysFile == NULL ) {
+	if ( sysFile == nullptr )
+	{
 		PlReportErrorF( PL_RESULT_FILEREAD, strerror( errno ) );
-		return NULL;
+		return nullptr;
 	}
 
-	PLFile *file = QM_OS_MEMORY_NEW( PLFile );
-	snprintf( file->path, sizeof( file->path ), "%s", path );
+	QmFsFile *file = QM_OS_MEMORY_NEW( QmFsFile );
 
-	file->size = PlGetLocalFileSize( path );
+	file->path = qm_os_string_alloc( "%s", path );
+	file->size = qm_fs_get_local_file_size( path );
 
-	if ( cache ) {
+	if ( cache )
+	{
 		file->data = QM_OS_MEMORY_NEW_( uint8_t, file->size );
-		file->pos = file->data;
-		if ( fread( file->data, sizeof( uint8_t ), file->size, sysFile ) != file->size ) {
+		file->pos  = file->data;
+		if ( fread( file->data, sizeof( uint8_t ), file->size, sysFile ) != file->size )
+		{
 			FSLog( "Failed to read complete file (%s)!\n", path );
 		}
-		_pl_fclose( sysFile );
-	} else {
+
+		qm_fs_fclose( &sysFile );
+	}
+	else
+	{
 		file->fptr = sysFile;
 	}
 
-	file->timeStamp = PlGetLocalFileTimeStamp( path );
+	file->timeStamp = qm_fs_get_local_file_timestamp( path );
 
 	return file;
 }
 
-/**
- * Opens the specified file via the VFS.
- * @param path Path to the file you want to open.
- * @param cache Whether or not to cache the entire file into memory.
- * @return Returns handle to the file instance.
- */
-PLFile *PlOpenFile( const char *path, bool cache ) {
+QmFsFile *qm_fs_file_open( const char *path, bool cache )
+{
 	const char *p = PlGetPathForAlias( path );
-	if ( p != NULL ) {
+	if ( p != nullptr )
+	{
 		path = p;
 	}
 
-	PLFileSystemMount *mount = PlGetMountLocationForPath_( path );
-	if ( mount != NULL && mount->type == PL_FS_MOUNT_PACKAGE ) {
+	QmFsMount *mount = PlGetMountLocationForPath_( path );
+	if ( mount != nullptr && mount->type == QM_FS_MOUNT_TYPE_PACKAGE )
+	{
 		return PlLoadPackageFile( mount->pkg, path );
 	}
 
 	char buf[ PL_SYSTEM_MAX_PATH ];
 	PlVirtualToLocalPath_( mount, path, buf, sizeof( buf ) );
 
-	return PlOpenLocalFile( buf, cache );
+	return qm_fs_file_open_local( buf, cache );
 }
 
-void PlCloseFile( PLFile *ptr ) {
-	if ( ptr == NULL ) {
+void PlCloseFile( QmFsFile *ptr )
+{
+	if ( ptr == nullptr )
+	{
 		return;
 	}
 
-	if ( ptr->fptr != NULL ) {
-		_pl_fclose( ptr->fptr );
-	}
+	qm_os_memory_free( ptr->path );
 
-	if ( !ptr->isUnmanaged ) {
+	if ( !ptr->isUnmanaged )
+	{
 		qm_os_memory_free( ptr->data );
 	}
+
+	qm_fs_fclose( &ptr->fptr );
+
 	qm_os_memory_free( ptr );
 }
 
-/**
- * Returns the path of the current open file.
- * @param ptr Pointer to file handle.
- * @return Full path to the current file.
- */
-const char *PlGetFilePath( const PLFile *ptr ) {
-	return ptr->path;
+const char *qm_fs_file_get_path( const QmFsFile *self )
+{
+	return self->path;
 }
 
-const void *PlGetFileData( const PLFile *ptr ) {
-	return ptr->data;
+const void *qm_fs_file_get_data( const QmFsFile *self )
+{
+	return self->data;
 }
 
-/**
- * Returns file size in bytes.
- * @param ptr Pointer to file handle.
- * @return Number of bytes within file.
- */
-size_t PlGetFileSize( const PLFile *ptr ) {
+size_t qm_fs_file_get_size( const QmFsFile *ptr )
+{
 	return ptr->size;
 }
 
-/**
- * Returns the current position within the file handle (ftell).
- * @param ptr Pointer to the file handle.
- * @return Number of bytes into the file.
- */
-PLFileOffset PlGetFileOffset( const PLFile *ptr ) {
-	if ( ptr->fptr != NULL ) {
-		return pl_ftell( ptr->fptr );
+int64_t qm_fs_file_get_offset( const QmFsFile *self )
+{
+	if ( self->fptr != nullptr )
+	{
+		return qm_fs_ftell( self->fptr );
 	}
 
-	return ( char * ) ptr->pos - ( char * ) ptr->data;
+	return ( char * ) self->pos - ( char * ) self->data;
 }
 
-size_t PlReadFile( PLFile *ptr, void *dest, size_t size, size_t count ) {
-	/* bail early if size is 0 to avoid division by 0 */
-	if ( size == 0 ) {
+size_t PlReadFile( QmFsFile *ptr, void *dest, size_t size, size_t count )
+{
+	// bail early if size is 0 to avoid division by 0
+	if ( size == 0 )
+	{
 		PlReportBasicError( PL_RESULT_FILESIZE );
 		return 0;
 	}
 
-	if ( ptr->fptr != NULL ) {
+	if ( ptr->fptr != nullptr )
+	{
 		size_t r = fread( dest, size, count, ptr->fptr );
-		if ( r != count ) {
+		if ( r != count )
+		{
 			PlReportErrorF( PL_RESULT_FILEREAD, "read failed on %u (%u read)", count, r );
 		}
 		return r;
 	}
 
-	/* ensure that the read is valid */
-	size_t length = size * count;
-	PLFileOffset posn = PlGetFileOffset( ptr );
-	if ( posn + length >= ptr->size ) {
-		/* out of bounds, truncate it */
+	// ensure that the read is valid
+	size_t       length = size * count;
+	PLFileOffset posn   = qm_fs_file_get_offset( ptr );
+	if ( posn + length >= ptr->size )
+	{
+		// out of bounds, truncate it
 		length = ptr->size - posn;
 	}
 
 	memcpy( dest, ptr->pos, length );
-	ptr->pos = ( void * ) ( ( char * ) ( ptr->pos ) + length );
+	ptr->pos = ( void * ) ( ( char * ) ptr->pos + length );
 	return length / size;
 }
 
-int8_t PlReadInt8( PLFile *ptr, bool *status ) {
-	if ( ( size_t ) PlGetFileOffset( ptr ) >= ptr->size ) {
-		if ( status != NULL ) {
+int8_t qm_fs_file_read_int8( QmFsFile *self, bool *status )
+{
+	if ( ( size_t ) qm_fs_file_get_offset( self ) >= self->size )
+	{
+		if ( status != nullptr )
+		{
 			*status = false;
 		}
 		return 0;
 	}
 
-	if ( status != NULL ) {
+	if ( status != nullptr )
+	{
 		*status = true;
 	}
 
-	if ( ptr->fptr != NULL ) {
-		return ( int8_t ) ( fgetc( ptr->fptr ) );
+	if ( self->fptr != nullptr )
+	{
+		return ( int8_t ) fgetc( self->fptr );
 	}
 
-	int8_t value = *( ( int8_t * ) ( ptr->pos ) );
-	ptr->pos = ( void * ) ( ( char * ) ( ptr->pos ) + 1 );
+	int8_t value = *( int8_t * ) self->pos;
+	self->pos    = ( void * ) ( ( char * ) self->pos + 1 );
 	return value;
 }
 
-static int64_t ReadSizedInteger( PLFile *ptr, size_t size, bool big_endian, bool *status ) {
+static int64_t file_read_sized_int( QmFsFile *ptr, size_t size, bool big_endian, bool *status )
+{
 	int64_t n;
-	if ( PlReadFile( ptr, &n, size, 1 ) != 1 ) {
-		if ( status != NULL ) {
+	if ( PlReadFile( ptr, &n, size, 1 ) != 1 )
+	{
+		if ( status != nullptr )
+		{
 			*status = false;
 		}
 		return 0;
 	}
 
-	if ( status != NULL ) {
+	if ( status != nullptr )
+	{
 		*status = true;
 	}
 
-	if ( big_endian ) {
-		if ( size == sizeof( int16_t ) ) {
+	if ( big_endian )
+	{
+		if ( size == sizeof( int16_t ) )
+		{
 			return be16toh( ( int16_t ) n );
-		} else if ( size == sizeof( int32_t ) ) {
-			return be32toh( ( int32_t ) n );
-		} else if ( size == sizeof( int64_t ) ) {
-			return be64toh( n );
-		} else {
-			if ( status != NULL ) {
-				*status = false;
-			}
-			return 0;
 		}
+
+		if ( size == sizeof( int32_t ) )
+		{
+			return be32toh( ( int32_t ) n );
+		}
+
+		return be64toh( n );
 	}
 
 	return n;
 }
 
-int16_t PlReadInt16( PLFile *ptr, bool big_endian, bool *status ) {
-	return ( int16_t ) ReadSizedInteger( ptr, sizeof( int16_t ), big_endian, status );
+int16_t qm_fs_file_read_int16( QmFsFile *self, bool big_endian, bool *status )
+{
+	return ( int16_t ) file_read_sized_int( self, sizeof( int16_t ), big_endian, status );
 }
 
-int32_t PlReadInt32( PLFile *ptr, bool big_endian, bool *status ) {
-	return ( int32_t ) ReadSizedInteger( ptr, sizeof( int32_t ), big_endian, status );
+int32_t qm_fs_file_read_int32( QmFsFile *self, bool big_endian, bool *status )
+{
+	return ( int32_t ) file_read_sized_int( self, sizeof( int32_t ), big_endian, status );
 }
 
-int64_t PlReadInt64( PLFile *ptr, bool big_endian, bool *status ) {
-	return ReadSizedInteger( ptr, sizeof( int64_t ), big_endian, status );
+int64_t qm_fs_file_read_int64( QmFsFile *self, bool big_endian, bool *status )
+{
+	return file_read_sized_int( self, sizeof( int64_t ), big_endian, status );
 }
 
-float PlReadFloat32( PLFile *ptr, bool big_endian, bool *status ) {
+float qm_fs_file_read_float( QmFsFile *ptr, bool big_endian, bool *status )
+{
 	float f;
-	if ( PlReadFile( ptr, &f, sizeof( float ), 1 ) != 1 ) {
-		if ( status != NULL ) *status = false;
+	if ( PlReadFile( ptr, &f, sizeof( float ), 1 ) != 1 )
+	{
+		if ( status != nullptr ) *status = false;
 		return 0.0f;
 	}
 
-	/* not entirely sure how well this'd work, if at all */
-	if ( big_endian ) {
+	// not entirely sure how well this'd work, if at all
+	if ( big_endian )
+	{
 		f = ( float ) be32toh( ( uint32_t ) f );
 	}
 
-	if ( status != NULL ) *status = true;
+	if ( status != nullptr ) *status = true;
 
 	return f;
 }
 
-double PlReadFloat64( PLFile *ptr, bool big_endian, bool *status ) {
+double qm_fs_file_read_double( QmFsFile *ptr, bool big_endian, bool *status )
+{
 	double d;
-	if ( PlReadFile( ptr, &d, sizeof( double ), 1 ) != 1 ) {
-		if ( status != NULL ) *status = false;
+	if ( PlReadFile( ptr, &d, sizeof( double ), 1 ) != 1 )
+	{
+		if ( status != nullptr ) *status = false;
 		return 0.0;
 	}
 
-	/* not entirely sure how well this'd work, if at all */
-	if ( big_endian ) {
+	// not entirely sure how well this'd work, if at all
+	if ( big_endian )
+	{
 		d = ( double ) be64toh( ( uint64_t ) d );
 	}
 
-	if ( status != NULL ) *status = true;
+	if ( status != nullptr ) *status = true;
 
 	return d;
 }
 
-char *PlReadString( PLFile *ptr, char *str, size_t size ) {
-	if ( size == 0 ) {
+char *qm_fs_file_read_string( QmFsFile *ptr, char *str, size_t size )
+{
+	if ( size == 0 )
+	{
 		PlReportBasicError( PL_RESULT_INVALID_PARM3 );
-		return NULL;
+		return nullptr;
 	}
 
-	char *result = NULL;
-	if ( ptr->fptr != NULL ) {
+	char *result;
+	if ( ptr->fptr != nullptr )
+	{
 		result = fgets( str, ( int ) size, ptr->fptr );
-	} else {
-		if ( ( char * ) ptr->pos >= ( char * ) ptr->data + ptr->size ) {
+	}
+	else
+	{
+		if ( ( char * ) ptr->pos >= ( char * ) ptr->data + ptr->size )
+		{
 			PlReportBasicError( PL_RESULT_FILEREAD );
-			return NULL;
+			return nullptr;
 		}
 
 		char *nl = memchr( ptr->pos, '\n', ptr->size - ( ( char * ) ptr->pos - ( char * ) ptr->data ) );
-		if ( nl == NULL ) {
-			nl = ( char * ) ( ( char * ) ptr->data + ptr->size - 1 );
+		if ( nl == nullptr )
+		{
+			nl = ( char * ) ptr->data + ptr->size - 1;
 		}
 
 		size_t bytesToCopy = nl - ( char * ) ptr->pos + 1;
-		if ( bytesToCopy >= size ) {
+		if ( bytesToCopy >= size )
+		{
 			bytesToCopy = size - 1;
-			nl = ( char * ) ( ( char * ) ptr->pos + bytesToCopy - 1 );
+			nl          = ( char * ) ptr->pos + bytesToCopy - 1;
 		}
 
 		memcpy( str, ptr->pos, bytesToCopy );
 		str[ bytesToCopy ] = '\0';
-		ptr->pos = ( uint8_t * ) ( nl + 1 );
-		result = str;
+		ptr->pos           = ( uint8_t * ) ( nl + 1 );
+		result             = str;
 	}
 
 	return result;
 }
 
-bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
-	if ( ptr->fptr != NULL ) {
-		int err = pl_fseek( ptr->fptr, pos, seek );
-		if ( err != 0 ) {
+bool qm_fs_file_seek( QmFsFile *ptr, PLFileOffset pos, QmFsSeek seek )
+{
+	if ( ptr->fptr != nullptr )
+	{
+		int err = qm_fs_fseek( ptr->fptr, pos, seek );
+		if ( err != 0 )
+		{
 			PlReportErrorF( PL_RESULT_FILEREAD, "failed to seek file (%s)", GetLastError_strerror( GetLastError() ) );
 			return false;
 		}
@@ -1354,26 +1477,30 @@ bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 		return true;
 	}
 
-	PLFileOffset posn = PlGetFileOffset( ptr );
-	switch ( seek ) {
-		case PL_SEEK_CUR:
-			if ( ( size_t ) ( posn + pos ) > ptr->size || pos < -( ( signed long ) posn ) ) {
+	PLFileOffset posn = qm_fs_file_get_offset( ptr );
+	switch ( seek )
+	{
+		case QM_FS_SEEK_CUR:
+			if ( ( size_t ) ( posn + pos ) > ptr->size || pos < -( ( signed long ) posn ) )
+			{
 				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
 			ptr->pos = ( ( char * ) ptr->pos + pos );
 			break;
 
-		case PL_SEEK_SET:
-			if ( pos > ( signed long ) ptr->size || pos < 0 ) {
+		case QM_FS_SEEK_SET:
+			if ( pos > ( signed long ) ptr->size || pos < 0 )
+			{
 				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
 			ptr->pos = ( ( char * ) ptr->data + pos );
 			break;
 
-		case PL_SEEK_END:
-			if ( pos <= -( ( signed long ) ptr->size ) ) {
+		case QM_FS_SEEK_END:
+			if ( pos <= -( ( signed long ) ptr->size ) )
+			{
 				PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 				return false;
 			}
@@ -1388,8 +1515,10 @@ bool PlFileSeek( PLFile *ptr, PLFileOffset pos, PLFileSeek seek ) {
 	return true;
 }
 
-void PlRewindFile( PLFile *ptr ) {
-	if ( ptr->fptr != NULL ) {
+void qm_fs_file_rewind( QmFsFile *ptr )
+{
+	if ( ptr->fptr != nullptr )
+	{
 		rewind( ptr->fptr );
 		return;
 	}
@@ -1404,29 +1533,32 @@ void PlRewindFile( PLFile *ptr ) {
  * Returns pointer to position relative to read
  * location, or null on fail.
  */
-const void *PlCacheFile( PLFile *file ) {
+const void *PlCacheFile( QmFsFile *file )
+{
 	/* make sure it's not already cached */
-	if ( file->fptr == NULL ) {
-		return NULL;
+	if ( file->fptr == nullptr )
+	{
+		return nullptr;
 	}
 
-	PLFileOffset p = PlGetFileOffset( file );
-	size_t s = PlGetFileSize( file );
+	PLFileOffset p = qm_fs_file_get_offset( file );
+	size_t       s = qm_fs_file_get_size( file );
 
 	/* jump back to the start */
-	PlRewindFile( file );
+	qm_fs_file_rewind( file );
 
 	/* allocate the new buffer and attempt to read in the whole thing */
 	file->data = QM_OS_MEMORY_MALLOC_( s );
-	if ( PlReadFile( file, file->data, sizeof( char ), s ) != s ) {
+	if ( PlReadFile( file, file->data, sizeof( char ), s ) != s )
+	{
 		/* seek back and restore where we were */
-		PlFileSeek( file, ( long ) p, PL_SEEK_SET );
+		qm_fs_file_seek( file, ( long ) p, QM_FS_SEEK_SET );
 		qm_os_memory_free( file->data );
-		return NULL;
+		return nullptr;
 	}
 
 	/* close the original file handle we had */
-	_pl_fclose( file->fptr );
+	qm_fs_fclose( &file->fptr );
 
 	/* match pos with where we originally were, so it's like nothing changed */
 	file->pos = ( char * ) file->data + p;
@@ -1444,29 +1576,34 @@ const void *PlCacheFile( PLFile *file ) {
 
 #define MAX_ALIASES 4096
 
-typedef struct FileAlias {
-	PLPath alias;
-	PLPath target;
+typedef struct FileAlias
+{
+	PLPath   alias;
+	PLPath   target;
 	uint32_t hash;
 } FileAlias;
-static FileAlias fileAliases[ MAX_ALIASES ];
+static FileAlias    fileAliases[ MAX_ALIASES ];
 static unsigned int numFileAliases = 0;
 
-void PlClearFileAliases( void ) {
+void PlClearFileAliases( void )
+{
 	numFileAliases = 0;
 }
 
 /**
  * Adds a new alias to the list.
  */
-void PlAddFileAlias( const char *alias, const char *target ) {
-	if ( numFileAliases >= MAX_ALIASES ) {
+void PlAddFileAlias( const char *alias, const char *target )
+{
+	if ( numFileAliases >= MAX_ALIASES )
+	{
 		PlReportBasicError( PL_RESULT_MEMORY_EOA );
 		return;
 	}
 
 	const char *p = PlGetPathForAlias( alias );
-	if ( p != NULL ) {
+	if ( p != nullptr )
+	{
 		PlReportErrorF( PL_RESULT_INVALID_PARM1, "duplicate alias" );
 		return;
 	}
@@ -1477,21 +1614,25 @@ void PlAddFileAlias( const char *alias, const char *target ) {
 	numFileAliases++;
 }
 
-const char *PlGetPathForAlias( const char *alias ) {
-	if ( numFileAliases == 0 ) {
-		return NULL;
+const char *PlGetPathForAlias( const char *alias )
+{
+	if ( numFileAliases == 0 )
+	{
+		return nullptr;
 	}
 
 	uint32_t hash = PlGenerateHashSDBM( alias );
-	for ( unsigned int i = 0; i < numFileAliases; ++i ) {
-		if ( hash != fileAliases[ i ].hash ) {
+	for ( unsigned int i = 0; i < numFileAliases; ++i )
+	{
+		if ( hash != fileAliases[ i ].hash )
+		{
 			continue;
 		}
 
 		return fileAliases[ i ].target;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -1499,13 +1640,15 @@ const char *PlGetPathForAlias( const char *alias ) {
 // TODO: move these under an entirely new module...
 /////////////////////////////////////////////////////////////////////////////////////
 
-char *hei_fs_get_temp_path( char *dst, size_t dstSize ) {
+char *hei_fs_get_temp_path( char *dst, size_t dstSize )
+{
 #if ( PL_SYSTEM_OS == PL_SYSTEM_OS_LINUX )
 
 	char dir[] = "/tmp/heiXXXXXX";
-	if ( mkdtemp( dir ) == NULL ) {
+	if ( mkdtemp( dir ) == nullptr )
+	{
 		PlReportErrorF( PL_RESULT_FILETYPE, "failed to set temporary write location" );
-		return NULL;
+		return nullptr;
 	}
 
 	snprintf( dst, dstSize, "%s", dir );
@@ -1516,8 +1659,9 @@ char *hei_fs_get_temp_path( char *dst, size_t dstSize ) {
 
 	char dir[ 128 ];
 	GetTempPath( sizeof( dir ), dir );
-	if ( !PlCreateDirectory( dir ) ) {
-		return NULL;
+	if ( !PlCreateDirectory( dir ) )
+	{
+		return nullptr;
 	}
 
 	snprintf( dst, dstSize, "%s", dir );

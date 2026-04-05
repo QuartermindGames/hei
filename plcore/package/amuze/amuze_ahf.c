@@ -14,7 +14,7 @@
  * https://hiddenpalace.org/Headhunter_(Nov_18,_2001_prototype)
  */
 
-PLPackage *PlParseAhfPackage_( PLFile *file ) {
+QmFsPackage *PlParseAhfPackage_( QmFsFile *file ) {
 	static const uint32_t MAGIC = QM_OS_MAGIC_TO_NUM( 'A', 'H', 'F', 'F' );
 	uint32_t tag = PL_READUINT32( file, false, NULL );
 	if ( tag != MAGIC ) {
@@ -34,14 +34,14 @@ PLPackage *PlParseAhfPackage_( PLFile *file ) {
 		return NULL;
 	}
 
-	size_t totalSize = PlGetFileSize( file );
+	size_t totalSize = qm_fs_file_get_size( file );
 	uint32_t startOffset = PL_READUINT32( file, false, NULL );
 	if ( startOffset >= totalSize ) {
 		PlReportErrorF( PL_RESULT_FILEERR, "invalid file size" );
 		return NULL;
 	}
 
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
 		package->table[ i ].offset = PL_READUINT32( file, false, NULL );
 		package->table[ i ].fileSize = PL_READUINT32( file, false, NULL );
@@ -49,16 +49,16 @@ PLPackage *PlParseAhfPackage_( PLFile *file ) {
 
 		unsigned int j;
 		for ( j = 0; j < ( sizeof( package->table[ i ].fileName ) - 1 ); ++j ) {
-			package->table[ i ].fileName[ j ] = PlReadInt8( file, NULL );
+			package->table[ i ].fileName[ j ] = qm_fs_file_read_int8( file, NULL );
 			if ( package->table[ i ].fileName[ j ] == '\0' ) {
 				break;
 			}
 		}
 
 		PLFileOffset padding = PlRoundUp( ( int ) ( j + 1 ), 4 ) - ( j + 1 );
-		PlFileSeek( file, padding, SEEK_CUR );
+		qm_fs_file_seek( file, padding, SEEK_CUR );
 
-		PlNormalizePath( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ) );
+		qm_fs_normalize_path( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ) );
 	}
 
 	return package;

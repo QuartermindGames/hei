@@ -15,7 +15,7 @@ typedef struct SWLHeader {
 	uint32_t height;
 } SWLHeader;
 
-PLImage *PlParseSwlImage( PLFile *fin ) {
+PLImage *PlParseSwlImage( QmFsFile *fin ) {
 	SWLHeader header;
 	if ( PlReadFile( fin, &header, sizeof( header ), 1 ) != 1 ) {
 		return nullptr;
@@ -37,7 +37,7 @@ PLImage *PlParseSwlImage( PLFile *fin ) {
 
 	/* according to sources, this is a collection of misc data that's
    	 * specific to SiN itself, so we'll skip it. */
-	if ( !PlFileSeek( fin, 0x4D4, PL_SEEK_SET ) ) {
+	if ( !qm_fs_file_seek( fin, 0x4D4, QM_FS_SEEK_SET ) ) {
 		PlReportBasicError( PL_RESULT_FILEREAD );
 		return nullptr;
 	}

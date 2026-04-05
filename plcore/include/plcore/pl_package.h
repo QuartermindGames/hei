@@ -8,26 +8,30 @@
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_compression.h>
 
-typedef struct PLPackageIndex {
-	PLPath sourcePath;// Where the file resides on disk - only matters if writing...
-	PLPath fileName;
-	PLFileOffset offset;
-	size_t fileSize;
-	size_t compressedSize;
+typedef struct PLPackageIndex
+{
+	PLPath            sourcePath;// Where the file resides on disk - only matters if writing...
+	PLPath            fileName;
+	uint64_t          offset;
+	size_t            fileSize;
+	size_t            compressedSize;
 	PLCompressionType compressionType;
 } PLPackageIndex;
 
-typedef struct PLPackage {
-	PLPath path;
-	unsigned int table_size;
-	unsigned int maxTableSize;
+typedef struct QmFsPackage
+{
+	char           *path;
+	unsigned int    table_size;
+	unsigned int    maxTableSize;
 	PLPackageIndex *table;
-	struct {
-		void *( *LoadFile )( PLFile *package, PLPackageIndex *index );
+	struct
+	{
+		void *( *LoadFile )( QmFsFile *package, PLPackageIndex *index );
 	} internal;
-} PLPackage;
+} QmFsPackage;
 
-enum {
+enum
+{
 	PL_PACKAGE_LOAD_FORMAT_ALL = 0,
 
 	QM_OS_BIT_FLAG( PL_PACKAGE_LOAD_FORMAT_ZIP, 0 ),
@@ -60,30 +64,30 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PLPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, void *( *OpenFile )( PLFile *filePtr, PLPackageIndex *index ) );
+QmFsPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, void *( *OpenFile )( QmFsFile *filePtr, PLPackageIndex *index ) );
 
-PLPackage *PlLoadPackage( const char *path );
-PLFile *PlLoadPackageFile( PLPackage *package, const char *path );
-PLFile *PlLoadPackageFileByIndex( PLPackage *package, unsigned int index );
-void PlDestroyPackage( PLPackage *package );
-void PlExtractPackage( PLPackage *package, const char *path );
+QmFsPackage *PlLoadPackage( const char *path );
+QmFsFile    *PlLoadPackageFile( QmFsPackage *package, const char *path );
+QmFsFile    *PlLoadPackageFileByIndex( QmFsPackage *package, unsigned int index );
+void         PlDestroyPackage( QmFsPackage *package );
+void         PlExtractPackage( QmFsPackage *package, const char *path );
 
-void PlRegisterPackageLoader( const char *ext, PLPackage *( *LoadFunction )( const char *path ), PLPackage *( *ParseFunction )( PLFile * ) );
-void PlRegisterStandardPackageLoaders( unsigned int flags );
-void PlClearPackageLoaders( void );
+void         PlRegisterPackageLoader( const char *ext, QmFsPackage *( *LoadFunction )( const char *path ), QmFsPackage *( *ParseFunction )( QmFsFile * ) );
+void         PlRegisterStandardPackageLoaders( unsigned int flags );
+void         PlClearPackageLoaders( void );
 const char **PlGetSupportedPackageFormats( unsigned int *numElements );
 
-const char *PlGetPackagePath( const PLPackage *package );
-unsigned int PlGetPackageTableSize( const PLPackage *package );
-int PlGetPackageTableIndex( const PLPackage *package, const char *indexName );
+const char  *PlGetPackagePath( const QmFsPackage *package );
+unsigned int PlGetPackageTableSize( const QmFsPackage *package );
+int          PlGetPackageTableIndex( const QmFsPackage *package, const char *indexName );
 
-const char *PlGetPackageFileName( const PLPackage *package, unsigned int index );
+const char *PlGetPackageFileName( const QmFsPackage *package, unsigned int index );
 
-PLPackage *PlLoadZipPackage( const char *path );
-PLPackage *PlParseZipPackage( PLFile *file );
+QmFsPackage *PlLoadZipPackage( const char *path );
+QmFsPackage *PlParseZipPackage( QmFsFile *file );
 
-PLPackage *PlParseVppPackage( PLFile *file );
-PLPackage *PlParseVenomPakPackage( PLFile *file );
+QmFsPackage *PlParseVppPackage( QmFsFile *file );
+QmFsPackage *PlParseVenomPakPackage( QmFsFile *file );
 
 #	if 0// Write API - excluded for now...
 
@@ -97,13 +101,13 @@ enum {
 
 #		define PL_PACKAGE_WRITE_ENABLED
 
-typedef bool ( *PLWritePackageFunction )( PLPackage *package, const char *path );
+typedef bool ( *PLWritePackageFunction )( QmFsPackage *package, const char *path );
 
 void PlRegisterPackageWriter( const char *formatTag, PLWritePackageFunction writeFunction );
 void PlRegisterStandardPackageWriters( unsigned int flags );
 void PlClearPackageWriters( void );
-PLPackageIndex *PlAppendPackageFromFile( PLPackage *package, const char *source, const char *filename, PLCompressionType compressionType );
-bool PlWritePackage( PLPackage *package, const char *path, const char *formatTag );
+PLPackageIndex *PlAppendPackageFromFile( QmFsPackage *package, const char *source, const char *filename, PLCompressionType compressionType );
+bool PlWritePackage( QmFsPackage *package, const char *path, const char *formatTag );
 
 #	endif
 

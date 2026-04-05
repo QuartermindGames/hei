@@ -4,7 +4,7 @@
 
 #include "package_private.h"
 
-PLPackage *PlParseAllPackage_( PLFile *file ) {
+QmFsPackage *PlParseAllPackage_( QmFsFile *file ) {
 	uint32_t numFiles = PL_READUINT32( file, false, NULL );
 	if ( numFiles == 0 ) {
 		PlReportErrorF( PL_RESULT_FILEERR, "invalid number of files in package" );
@@ -26,19 +26,19 @@ PLPackage *PlParseAllPackage_( PLFile *file ) {
 		return NULL;
 	}
 
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 	if ( package == NULL ) {
 		return NULL;
 	}
 
 	// this seems to be good enough, but not entirely correct?
 	static const unsigned int ENTRY_SIZE = 72;
-	unsigned int offset = PlGetFileOffset( file ) + ( ENTRY_SIZE * numFiles );
+	unsigned int offset = qm_fs_file_get_offset( file ) + ( ENTRY_SIZE * numFiles );
 	for ( unsigned int i = 0; i < numFiles; offset += package->table[ i ].fileSize, ++i ) {
 		PlReadFile( file, package->table[ i ].fileName, sizeof( char ), 64 );
 		package->table[ i ].fileSize = PL_READUINT32( file, false, NULL );
 		package->table[ i ].offset = offset;
-		PlReadInt32( file, false, NULL );
+		qm_fs_file_read_int32( file, false, NULL );
 	}
 
 	return package;

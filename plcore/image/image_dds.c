@@ -121,7 +121,7 @@ static PLImageFormat GetImageFormat( const DDSPixelFormat *pixelFormat ) {
 	return PL_IMAGEFORMAT_UNKNOWN;
 }
 
-PLImage *PlParseDdsImage( PLFile *file ) {
+PLImage *PlParseDdsImage( QmFsFile *file ) {
 	DDSHeader header;
 	if ( PlReadFile( file, &header, sizeof( DDSHeader ), 1 ) != 1 ) {
 		return NULL;
@@ -200,7 +200,7 @@ PLImage *PlParseDdsImage( PLFile *file ) {
 	PLImage *out = QM_OS_MEMORY_MALLOC_( sizeof( PLImage ) );
 	memcpy( out, &image, sizeof( PLImage ) );
 
-	snprintf( out->path, sizeof( out->path ), "%s", PlGetFilePath( file ) );
+	snprintf( out->path, sizeof( out->path ), "%s", qm_fs_file_get_path( file ) );
 
 	return out;
 }

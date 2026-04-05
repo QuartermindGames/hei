@@ -41,48 +41,48 @@ typedef struct ZipFileHeader {
 	void *extra;
 } ZipFileHeader;
 
-static bool ParseZipFileHeader( PLFile *file, ZipFileHeader *header ) {
-	header->magic = PlReadInt32( file, false, NULL );
+static bool ParseZipFileHeader( QmFsFile *file, ZipFileHeader *header ) {
+	header->magic = qm_fs_file_read_int32( file, false, NULL );
 	if ( header->magic != ZIP_FILE_MAGIC ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid magic: %X", header->magic );
 		return false;
 	}
 
-	header->version = PlReadInt16( file, false, NULL );
-	header->flags = PlReadInt16( file, false, NULL );
-	header->compression = PlReadInt16( file, false, NULL );
-	header->modificationTime = PlReadInt16( file, false, NULL );
-	header->modificationDate = PlReadInt16( file, false, NULL );
-	header->checksum = PlReadInt32( file, false, NULL );
-	header->compressedSize = PlReadInt32( file, false, NULL );
-	header->uncompressedSize = PlReadInt32( file, false, NULL );
+	header->version = qm_fs_file_read_int16( file, false, NULL );
+	header->flags = qm_fs_file_read_int16( file, false, NULL );
+	header->compression = qm_fs_file_read_int16( file, false, NULL );
+	header->modificationTime = qm_fs_file_read_int16( file, false, NULL );
+	header->modificationDate = qm_fs_file_read_int16( file, false, NULL );
+	header->checksum = qm_fs_file_read_int32( file, false, NULL );
+	header->compressedSize = qm_fs_file_read_int32( file, false, NULL );
+	header->uncompressedSize = qm_fs_file_read_int32( file, false, NULL );
 
-	header->nameSize = PlReadInt16( file, false, NULL );
+	header->nameSize = qm_fs_file_read_int16( file, false, NULL );
 	header->name = QM_OS_MEMORY_NEW_( char, header->nameSize + 1 );
 
-	header->extraSize = PlReadInt16( file, false, NULL );
+	header->extraSize = qm_fs_file_read_int16( file, false, NULL );
 	header->extra = QM_OS_MEMORY_NEW_( char, header->extraSize );
 
 	PlReadFile( file, header->name, sizeof( char ), header->nameSize );
 	PlReadFile( file, header->extra, sizeof( char ), header->extraSize );
 
-	header->offset = PlGetFileOffset( file );
+	header->offset = qm_fs_file_get_offset( file );
 
-	PlFileSeek( file, header->compressedSize, PL_SEEK_CUR );
+	qm_fs_file_seek( file, header->compressedSize, QM_FS_SEEK_CUR );
 
 	return true;
 }
 
-PLPackage *PlParseZipPackage( PLFile *file ) {
+QmFsPackage *PlParseZipPackage( QmFsFile *file ) {
 	/* check this first, just to be sure it's indicated
 	 * that it's actually a zip file */
-	uint32_t magic = PlReadInt32( file, false, NULL );
+	uint32_t magic = qm_fs_file_read_int32( file, false, NULL );
 	if ( magic != ZIP_FILE_MAGIC ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid magic: %X", magic );
 		return NULL;
 	}
 
-	PlRewindFile( file );
+	qm_fs_file_rewind( file );
 
 	PLLinkedList *files = PlCreateLinkedList();
 
@@ -108,7 +108,7 @@ PLPackage *PlParseZipPackage( PLFile *file ) {
 	}
 
 	unsigned int numFiles = PlGetNumLinkedListNodes( files );
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 
 	PLLinkedListNode *node = PlGetFirstNode( files );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
@@ -146,13 +146,13 @@ PLPackage *PlParseZipPackage( PLFile *file ) {
 	return package;
 }
 
-PLPackage *PlLoadZipPackage( const char *path ) {
-	PLFile *file = PlOpenFile( path, false );
+QmFsPackage *PlLoadZipPackage( const char *path ) {
+	QmFsFile *file = qm_fs_file_open( path, false );
 	if ( file == NULL ) {
 		return NULL;
 	}
 
-	PLPackage *package = PlParseZipPackage( file );
+	QmFsPackage *package = PlParseZipPackage( file );
 	PlCloseFile( file );
 	return package;
 }

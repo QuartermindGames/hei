@@ -25,12 +25,12 @@ static PLImageFormat FD3_GetImageFormat( const char *formatStr ) {
 	return PL_IMAGEFORMAT_UNKNOWN;
 }
 
-PLImage *PlParse3dfImage( PLFile *file ) {
+PLImage *PlParse3dfImage( QmFsFile *file ) {
 	/* read in the header */
 	char buf[ 64 ];
 
 	/* identifier */
-	if ( PlReadString( file, buf, sizeof( buf ) ) == NULL ) {
+	if ( qm_fs_file_read_string( file, buf, sizeof( buf ) ) == NULL ) {
 		return NULL;
 	}
 	if ( strncmp( buf, "3df ", 4 ) != 0 ) {
@@ -39,7 +39,7 @@ PLImage *PlParse3dfImage( PLFile *file ) {
 	}
 
 	/* image format */
-	PlReadString( file, buf, sizeof( buf ) );
+	qm_fs_file_read_string( file, buf, sizeof( buf ) );
 	PLImageFormat dataFormat = FD3_GetImageFormat( buf );
 	if ( dataFormat == PL_IMAGEFORMAT_UNKNOWN ) {
 		PlReportErrorF( PL_RESULT_IMAGEFORMAT, "unsupported image format, \"%s\"", buf );
@@ -47,7 +47,7 @@ PLImage *PlParse3dfImage( PLFile *file ) {
 	}
 
 	/* lod */
-	if ( PlReadString( file, buf, sizeof( buf ) ) == NULL ) {
+	if ( qm_fs_file_read_string( file, buf, sizeof( buf ) ) == NULL ) {
 		return NULL;
 	}
 	int w, h;
@@ -61,7 +61,7 @@ PLImage *PlParse3dfImage( PLFile *file ) {
 	}
 
 	/* aspect */
-	if ( PlReadString( file, buf, sizeof( buf ) ) == NULL ) {
+	if ( qm_fs_file_read_string( file, buf, sizeof( buf ) ) == NULL ) {
 		return NULL;
 	}
 	int x, y;

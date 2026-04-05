@@ -9,25 +9,25 @@
 
 #define WFEAR_IGNORE_DRIVE /* if enabled, strips the drive from the file path */
 
-static bool ParseINUHeader( PLFile *file, uint32_t *tableOffset, uint32_t *tableIndices ) {
-	uint32_t magic = PlReadInt32( file, false, NULL );
+static bool ParseINUHeader( QmFsFile *file, uint32_t *tableOffset, uint32_t *tableIndices ) {
+	uint32_t magic = qm_fs_file_read_int32( file, false, NULL );
 	if ( magic != WFEAR_INU_MAGIC ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid magic" );
 		return false;
 	}
 
-	if ( PlReadInt32( file, false, NULL ) != 0 ) {
+	if ( qm_fs_file_read_int32( file, false, NULL ) != 0 ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "unexpected clear zone" );
 		return false;
 	}
 
-	*tableOffset = PlReadInt32( file, false, NULL );
-	if ( *tableOffset >= PlGetFileSize( file ) ) {
+	*tableOffset = qm_fs_file_read_int32( file, false, NULL );
+	if ( *tableOffset >= qm_fs_file_get_size( file ) ) {
 		PlReportErrorF( PL_RESULT_FILEERR, "invalid table offset" );
 		return false;
 	}
 
-	*tableIndices = PlReadInt32( file, false, NULL );
+	*tableIndices = qm_fs_file_read_int32( file, false, NULL );
 	if ( *tableIndices == 0 ) {
 		PlReportErrorF( PL_RESULT_FILEERR, "invalid table indices" );
 		return false;
@@ -36,20 +36,20 @@ static bool ParseINUHeader( PLFile *file, uint32_t *tableOffset, uint32_t *table
 	return true;
 }
 
-PLPackage *PlParseInuPackage_( PLFile *file ) {
+QmFsPackage *PlParseInuPackage_( QmFsFile *file ) {
 	uint32_t tocOffset, tocIndices;
 	if ( !ParseINUHeader( file, &tocOffset, &tocIndices ) ) {
 		return NULL;
 	}
 
-	PlFileSeek( file, tocOffset, PL_SEEK_SET );
+	qm_fs_file_seek( file, tocOffset, QM_FS_SEEK_SET );
 
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), tocIndices, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), tocIndices, NULL );
 	for ( unsigned int i = 0; i < tocIndices; ++i ) {
 		unsigned int p = 0;
 		bool status;
 		do {
-			int c = PlReadInt8( file, &status );
+			int c = qm_fs_file_read_int8( file, &status );
 			if ( c == WFEAR_INU_TERMINATOR ) {
 				break;
 			}
@@ -78,8 +78,8 @@ PLPackage *PlParseInuPackage_( PLFile *file ) {
 		}
 #endif
 
-		package->table[ i ].offset = PlReadInt32( file, false, NULL );
-		package->table[ i ].fileSize = PlReadInt32( file, false, NULL );
+		package->table[ i ].offset = qm_fs_file_read_int32( file, false, NULL );
+		package->table[ i ].fileSize = qm_fs_file_read_int32( file, false, NULL );
 	}
 
 	return package;

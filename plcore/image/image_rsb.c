@@ -17,7 +17,7 @@ typedef struct RGBA {
 } RGBA;
 typedef RGBA Palette[ 256 ];
 
-PLImage *PlParseRsbImage_( PLFile *file ) {
+PLImage *PlParseRsbImage_( QmFsFile *file ) {
 	uint32_t version = PL_READUINT32( file, false, NULL );
 	if ( version < RSB_VERSION_MIN || version > RSB_VERSION_MAX ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "unexpected version (%u)", version );

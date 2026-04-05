@@ -55,11 +55,11 @@ typedef struct PLPluginExportTable {
 	 * FILE API
 	 **/
 
-	PLFile *( *OpenFile )( const char *path, bool cache );
-	void ( *CloseFile )( PLFile *file );
+	QmFsFile *( *OpenFile )( const char *path, bool cache );
+	void ( *CloseFile )( QmFsFile *file );
 
-	const void *( *GetFileData )( const PLFile *file );
-	size_t ( *GetFileSize )( const PLFile *file );
+	const void *( *GetFileData )( const QmFsFile *file );
+	size_t ( *GetFileSize )( const QmFsFile *file );
 
 	/**
 	 * IMAGE API

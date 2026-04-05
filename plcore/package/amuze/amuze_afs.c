@@ -16,7 +16,7 @@
  * Will check others some other time.
  */
 
-PLPackage *PlParseAfsPackage_( PLFile *file ) {
+QmFsPackage *PlParseAfsPackage_( QmFsFile *file ) {
 	uint32_t numFiles = PL_READUINT32( file, false, NULL );
 	if ( numFiles == 0 ) {
 		PlReportErrorF( PL_RESULT_FILEERR, "invalid number of files in package" );
@@ -30,11 +30,11 @@ PLPackage *PlParseAfsPackage_( PLFile *file ) {
 	}
 
 #define SECTOR_SIZE 2048
-	if ( !PlFileSeek( file, SECTOR_SIZE, PL_SEEK_SET ) ) {
+	if ( !qm_fs_file_seek( file, SECTOR_SIZE, QM_FS_SEEK_SET ) ) {
 		return NULL;
 	}
 
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 	if ( package == NULL ) {
 		return NULL;
 	}
@@ -46,7 +46,7 @@ PLPackage *PlParseAfsPackage_( PLFile *file ) {
 		PL_READUINT32( file, false, NULL );//?
 		PL_READUINT8( file, NULL );        // maybe this was supposed to be string length?? unused if so
 		PlReadFile( file, package->table[ i ].fileName, sizeof( char ), 239 );
-		PlNormalizePath( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ) );
+		qm_fs_normalize_path( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ) );
 	}
 
 	return package;

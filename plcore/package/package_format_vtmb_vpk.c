@@ -11,39 +11,39 @@
 #define VPK_TOC_OFFSET   5
 #define VPK_TOC_NUMFILES 9
 
-PLPackage *PlParseVpkPackage_( PLFile *file ) {
-	size_t size = PlGetFileSize( file );
+QmFsPackage *PlParseVpkPackage_( QmFsFile *file ) {
+	size_t size = qm_fs_file_get_size( file );
 
-	if ( !PlFileSeek( file, size - VPK_TOC_NUMFILES, PL_SEEK_SET ) ) {
+	if ( !qm_fs_file_seek( file, size - VPK_TOC_NUMFILES, QM_FS_SEEK_SET ) ) {
 		return NULL;
 	}
 
-	uint32_t numFiles = PlReadInt32( file, false, NULL );
+	uint32_t numFiles = qm_fs_file_read_int32( file, false, NULL );
 	if ( numFiles == 0 ) {
 		PlReportErrorF( PL_RESULT_FILEERR, "no files in package\n" );
 		return NULL;
 	}
 
-	uint32_t tocOffset = PlReadInt32( file, false, NULL );
+	uint32_t tocOffset = qm_fs_file_read_int32( file, false, NULL );
 	if ( tocOffset == 0 || tocOffset >= size ) {
 		PlReportErrorF( PL_RESULT_FILEERR, "invalid table offset: %u\n", tocOffset );
 		return NULL;
 	}
 
-	if ( !PlFileSeek( file, tocOffset, PL_SEEK_SET ) ) {
+	if ( !qm_fs_file_seek( file, tocOffset, QM_FS_SEEK_SET ) ) {
 		return NULL;
 	}
 
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
-		uint32_t nameLength = PlReadInt32( file, false, NULL );
+		uint32_t nameLength = qm_fs_file_read_int32( file, false, NULL );
 		char *name = QM_OS_MEMORY_NEW_( char, nameLength + 1 );
 		PlReadFile( file, name, sizeof( char ), nameLength );
 		snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ), "%s", name );
 		qm_os_memory_free( name );
 
-		package->table[ i ].offset = PlReadInt32( file, false, NULL );
-		package->table[ i ].fileSize = PlReadInt32( file, false, NULL );
+		package->table[ i ].offset = qm_fs_file_read_int32( file, false, NULL );
+		package->table[ i ].fileSize = qm_fs_file_read_int32( file, false, NULL );
 	}
 
 	return package;

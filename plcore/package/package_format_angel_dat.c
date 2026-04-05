@@ -24,7 +24,7 @@ typedef struct AngelDATIndex {
 	uint32_t compressedSize;// size on disk - if same as memory, not compressed
 } AngelDATIndex;
 
-PLPackage *PlParseAngelDatPackage_( PLFile *file ) {
+QmFsPackage *PlParseAngelDatPackage_( QmFsFile *file ) {
 	AngelDATHeader header;
 	PL_ZERO_( header );
 
@@ -38,14 +38,14 @@ PLPackage *PlParseAngelDatPackage_( PLFile *file ) {
 	header.tocLength = PL_READUINT32( file, false, NULL );
 	header.stringTableLength = PL_READUINT32( file, false, NULL );
 
-	size_t fileSize = PlGetFileSize( file );
+	size_t fileSize = qm_fs_file_get_size( file );
 	if ( header.tocLength >= fileSize || header.stringTableLength >= fileSize ) {
 		PlReportBasicError( PL_RESULT_FILEERR );
 		return NULL;
 	}
 
 	/* toc is always padded to 2048 bytes */
-	PlFileSeek( file, 2048, PL_SEEK_SET );
+	qm_fs_file_seek( file, 2048, QM_FS_SEEK_SET );
 
 	AngelDATIndex *indices = QM_OS_MEMORY_NEW_( AngelDATIndex, header.tocIndices );
 	for ( unsigned int i = 0; i < header.tocIndices; ++i ) {
@@ -56,7 +56,7 @@ PLPackage *PlParseAngelDatPackage_( PLFile *file ) {
 	}
 
 	/* and now seek to the string table */
-	PlFileSeek( file, 2048 + header.tocLength, PL_SEEK_SET );
+	qm_fs_file_seek( file, 2048 + header.tocLength, QM_FS_SEEK_SET );
 
 	char *names = QM_OS_MEMORY_NEW_( char, header.stringTableLength );
 	PlReadFile( file, names, sizeof( char ), header.stringTableLength );
@@ -66,8 +66,8 @@ PLPackage *PlParseAngelDatPackage_( PLFile *file ) {
 		encodedStrings = true;
 	}
 
-	const char *path = PlGetFilePath( file );
-	PLPackage *package = PlCreatePackageHandle( path, header.tocIndices, NULL );
+	const char *path = qm_fs_file_get_path( file );
+	QmFsPackage *package = PlCreatePackageHandle( path, header.tocIndices, NULL );
 	for ( unsigned int i = 0; i < package->maxTableSize; ++i ) {
 		package->table[ i ].offset = indices[ i ].offset;
 		package->table[ i ].compressedSize = indices[ i ].compressedSize;

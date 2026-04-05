@@ -46,8 +46,8 @@ enum TIMType {
 
 #define TIM_IDENT 16
 
-static bool TIM_FormatCheck( PLFile *fin ) {
-	PlRewindFile( fin );
+static bool TIM_FormatCheck( QmFsFile *fin ) {
+	qm_fs_file_rewind( fin );
 
 	uint32_t ident;
 	if ( PlReadFile( fin, &ident, sizeof( uint32_t ), 1 ) != 1 ) {
@@ -93,7 +93,7 @@ static uint16_t _tim16toRGB51A( uint16_t colour_in ) {
 	return colour_out;
 }
 
-static bool TIM_ReadFile( PLFile *fin, PLImage *out ) {
+static bool TIM_ReadFile( QmFsFile *fin, PLImage *out ) {
 	if ( !TIM_FormatCheck( fin ) ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid/unexpected identifier for TIM" );
 		return false;
@@ -287,12 +287,12 @@ ERR_CLEANUP:
 	return false;
 }
 
-PLImage *PlParseTimImage( PLFile *file ) {
+PLImage *PlParseTimImage( QmFsFile *file ) {
 	if ( !TIM_FormatCheck( file ) ) {
 		return NULL;
 	}
 
-	PlRewindFile( file );
+	qm_fs_file_rewind( file );
 
 	PLImage *image = QM_OS_MEMORY_CALLOC( 1, sizeof( PLImage ) );
 	if ( !TIM_ReadFile( file, image ) ) {

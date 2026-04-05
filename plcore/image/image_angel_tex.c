@@ -20,14 +20,14 @@ typedef enum AngelTEXType {
 	ANGEL_TEX_TYPE_BGRA8_PAL = 14,
 } AngelTEXType;
 
-PLImage *PlParseAngelTexImage_( PLFile *file ) {
+PLImage *PlParseAngelTexImage_( QmFsFile *file ) {
 	AngelTEXHeader header;
 	PL_ZERO_( header );
 
 	/* there's no magic for this format, so need to do some additional awkward checks... */
 
-	header.width = PlReadInt16( file, false, NULL );
-	header.height = PlReadInt16( file, false, NULL );
+	header.width = qm_fs_file_read_int16( file, false, NULL );
+	header.height = qm_fs_file_read_int16( file, false, NULL );
 
 	if ( !PlIsPowerOfTwo( header.width ) || !PlIsPowerOfTwo( header.height ) ) {
 		PlReportBasicError( PL_RESULT_FILETYPE );
@@ -40,11 +40,11 @@ PLImage *PlParseAngelTexImage_( PLFile *file ) {
 		return NULL;
 	}
 
-	header.type = PlReadInt16( file, false, NULL );
-	header.unk0 = PlReadInt16( file, false, NULL );
-	header.unk1 = PlReadInt16( file, false, NULL );
-	header.unk2 = PlReadInt16( file, false, NULL );
-	header.unk3 = PlReadInt16( file, false, NULL );
+	header.type = qm_fs_file_read_int16( file, false, NULL );
+	header.unk0 = qm_fs_file_read_int16( file, false, NULL );
+	header.unk1 = qm_fs_file_read_int16( file, false, NULL );
+	header.unk2 = qm_fs_file_read_int16( file, false, NULL );
+	header.unk3 = qm_fs_file_read_int16( file, false, NULL );
 
 	/* there's a hecking lot of different types supported...
 	 * for now we're just supporting the more often used types */
@@ -58,7 +58,7 @@ PLImage *PlParseAngelTexImage_( PLFile *file ) {
 		case ANGEL_TEX_TYPE_BGRA8_PAL: {
 			/* sanity check */
 			static const unsigned int dataOffset = 1038;
-			size_t fileSize = PlGetFileSize( file );
+			size_t fileSize = qm_fs_file_get_size( file );
 			if ( ( fileSize - dataOffset ) != numPixels ) {
 				PlReportBasicError( PL_RESULT_FILEERR );
 				return NULL;

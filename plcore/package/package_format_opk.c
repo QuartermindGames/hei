@@ -6,9 +6,9 @@
 
 /* Outcast OPK format */
 
-PLPackage *PlParseOpkPackage_( PLFile *file ) {
+QmFsPackage *PlParseOpkPackage_( QmFsFile *file ) {
 	static const int32_t opkMagic = 0x6e71;
-	int32_t magic = PlReadInt32( file, false, NULL );
+	int32_t magic = qm_fs_file_read_int32( file, false, NULL );
 	if ( magic != opkMagic ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "unexpected magic: %d", magic );
 		return NULL;
@@ -18,22 +18,22 @@ PLPackage *PlParseOpkPackage_( PLFile *file ) {
 	 * identifying the file type? noticed other files
 	 * feature the same magic, but then these same bytes
 	 * are different depending on the type. interesting. */
-	if ( !PlFileSeek( file, 12, PL_SEEK_CUR ) ) {
+	if ( !qm_fs_file_seek( file, 12, QM_FS_SEEK_CUR ) ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "failed to seek to table" );
 		return NULL;
 	}
 
-	int32_t numFiles = PlReadInt32( file, false, NULL );
+	int32_t numFiles = qm_fs_file_read_int32( file, false, NULL );
 	if ( numFiles <= 0 ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "no files in package" );
 		return NULL;
 	}
 
 	/* read in toc */
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 	for ( int32_t i = 0; i < numFiles; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
-		int32_t nameLength = PlReadInt32( file, false, NULL );
+		int32_t nameLength = qm_fs_file_read_int32( file, false, NULL );
 		if ( nameLength >= sizeof( index->fileName ) || nameLength <= 0 ) {
 			PlReportErrorF( PL_RESULT_FILEREAD, "invalid index name length, %d", i );
 			PlDestroyPackage( package );
@@ -47,9 +47,9 @@ PLPackage *PlParseOpkPackage_( PLFile *file ) {
 		}
 
 		bool status;
-		index->offset = PlReadInt32( file, false, &status );
-		index->compressedSize = PlReadInt32( file, false, &status );
-		index->fileSize = PlReadInt32( file, false, &status );
+		index->offset = qm_fs_file_read_int32( file, false, &status );
+		index->compressedSize = qm_fs_file_read_int32( file, false, &status );
+		index->fileSize = qm_fs_file_read_int32( file, false, &status );
 		index->compressionType = PL_COMPRESSION_IMPLODE;
 	}
 

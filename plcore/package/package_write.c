@@ -41,7 +41,7 @@ void PlClearPackageWriters( void ) {
 	PlDestroyHashTable( packageWriteFormats );
 }
 
-PLPackageIndex *PlAppendPackageFromFile( PLPackage *package, const char *source, const char *filename, PLCompressionType compressionType ) {
+PLPackageIndex *PlAppendPackageFromFile( QmFsPackage *package, const char *source, const char *filename, PLCompressionType compressionType ) {
 	if ( package->table_size >= package->maxTableSize ) {
 		static const unsigned int INC = 64;
 		unsigned int newMaxSize = package->maxTableSize + INC;
@@ -57,7 +57,7 @@ PLPackageIndex *PlAppendPackageFromFile( PLPackage *package, const char *source,
 	return index;
 }
 
-bool PlWritePackage( PLPackage *package, const char *path, const char *formatTag ) {
+bool PlWritePackage( QmFsPackage *package, const char *path, const char *formatTag ) {
 	if ( packageWriteFormats == NULL ) {
 		PlReportErrorF( PL_RESULT_UNSUPPORTED, "no package writers registered" );
 		return false;

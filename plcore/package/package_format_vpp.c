@@ -42,7 +42,7 @@ static uint32_t calculate_stream_length( uint32_t dataSize ) {
 	return ( ( dataSize + BLOCK_SIZE - 1 ) / BLOCK_SIZE ) * BLOCK_SIZE;
 }
 
-PLPackage *PlParseVppPackage( PLFile *file ) {
+QmFsPackage *PlParseVppPackage( QmFsFile *file ) {
 	// below currently doesn't bother or worry about endianness conversion,
 	// for simplicity’s sake, but probably worth incorporating at some point
 
@@ -76,19 +76,19 @@ PLPackage *PlParseVppPackage( PLFile *file ) {
 	if ( header->numFiles == 0 ) {
 		PlReportErrorF( PL_RESULT_FILESIZE, "empty VPP" );
 		return NULL;
-	} else if ( header->fileSize != PlGetFileSize( file ) ) {
+	} else if ( header->fileSize != qm_fs_file_get_size( file ) ) {
 		PlReportErrorF( PL_RESULT_FILESIZE, "unexpected file size for VPP" );
 		return NULL;
 	}
 
-	PLPackage *package = NULL;
+	QmFsPackage *package = NULL;
 
 	uint32_t streamSize = calculate_stream_length( ( header->version == 1 ? sizeof( VppEntry ) : sizeof( Vpp2Entry ) ) * header->numFiles );
 	uint8_t *stream = QM_OS_MEMORY_NEW_( uint8_t, streamSize );
 	if ( PlReadFile( file, stream, sizeof( uint8_t ), streamSize ) == streamSize ) {
-		PLFileOffset baseOffset = PlGetFileOffset( file );
+		PLFileOffset baseOffset = qm_fs_file_get_offset( file );
 
-		package = PlCreatePackageHandle( PlGetFilePath( file ), header->numFiles, NULL );
+		package = PlCreatePackageHandle( qm_fs_file_get_path( file ), header->numFiles, NULL );
 		for ( uint32_t i = 0; i < package->table_size; ++i ) {
 			if ( header->version == 1 ) {
 				VppEntry *entry = ( ( VppEntry * ) stream ) + i;

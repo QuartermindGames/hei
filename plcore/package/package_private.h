@@ -11,30 +11,30 @@
 
 PL_EXTERN_C
 
-PLPackage *PlParseDfsPackage_( PLFile *file );
+QmFsPackage *PlParseDfsPackage_( QmFsFile *file );
 
-PLPackage *PlParseWadPackage_( PLFile *file );
-PLPackage *PlParseQWadPackage_( PLFile *file );
-PLPackage *PlParsePakPackage_( PLFile *file );
-PLPackage *PlParseVpkPackage_( PLFile *file );
-PLPackage *PlParseMadPackage_( PLFile *file );
-PLPackage *PlLoadTabPackage( const char *path );
+QmFsPackage *PlParseWadPackage_( QmFsFile *file );
+QmFsPackage *PlParseQWadPackage_( QmFsFile *file );
+QmFsPackage *PlParsePakPackage_( QmFsFile *file );
+QmFsPackage *PlParseVpkPackage_( QmFsFile *file );
+QmFsPackage *PlParseMadPackage_( QmFsFile *file );
+QmFsPackage *PlLoadTabPackage( const char *path );
 
-PLPackage *PlParseFreshBinPackage_( PLFile *file );
-PLPackage *PlParseGrpPackage_( PLFile *file );
-PLPackage *PlParseOpkPackage_( PLFile *file );     // Outcast
-PLPackage *PlParseInuPackage_( PLFile *file );     // White Fear / Inuits
-PLPackage *PlParseAllPackage_( PLFile *file );     // The Last Job
-PLPackage *PlParseAfsPackage_( PLFile *file );     // Headhunter
-PLPackage *PlParseAhfPackage_( PLFile *file );     // Headhunter
-PLPackage *PlParseAngelDatPackage_( PLFile *file );// Oni 2, Red Dead Revolver
-PLPackage *PlParseHalPackage_( PLFile *file );     // Mortyr
-PLPackage *PlParseIce3DDatPackage_( PLFile *file );// Bioshock 3D
-PLPackage *PlParseFrdPakPackage_( PLFile *file );  // TimeSplitters
+QmFsPackage *PlParseFreshBinPackage_( QmFsFile *file );
+QmFsPackage *PlParseGrpPackage_( QmFsFile *file );
+QmFsPackage *PlParseOpkPackage_( QmFsFile *file );     // Outcast
+QmFsPackage *PlParseInuPackage_( QmFsFile *file );     // White Fear / Inuits
+QmFsPackage *PlParseAllPackage_( QmFsFile *file );     // The Last Job
+QmFsPackage *PlParseAfsPackage_( QmFsFile *file );     // Headhunter
+QmFsPackage *PlParseAhfPackage_( QmFsFile *file );     // Headhunter
+QmFsPackage *PlParseAngelDatPackage_( QmFsFile *file );// Oni 2, Red Dead Revolver
+QmFsPackage *PlParseHalPackage_( QmFsFile *file );     // Mortyr
+QmFsPackage *PlParseIce3DDatPackage_( QmFsFile *file );// Bioshock 3D
+QmFsPackage *PlParseFrdPakPackage_( QmFsFile *file );  // TimeSplitters
 
 #if ( RAR_SUPPORTED == 1 )
 
-PLPackage *PlParseRarPackage_( PLFile *file );
+QmFsPackage *PlParseRarPackage_( QmFsFile *file );
 
 #endif
 

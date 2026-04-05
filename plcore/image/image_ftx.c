@@ -15,12 +15,12 @@ typedef struct FtxHeader {
 	uint32_t alpha;
 } FtxHeader;
 
-PLImage *PlParseFtxImage( PLFile *file ) {
+PLImage *PlParseFtxImage( QmFsFile *file ) {
 	FtxHeader header;
 	bool status;
-	header.width = PlReadInt32( file, false, &status );
-	header.height = PlReadInt32( file, false, &status );
-	header.alpha = PlReadInt32( file, false, &status );
+	header.width = qm_fs_file_read_int32( file, false, &status );
+	header.height = qm_fs_file_read_int32( file, false, &status );
+	header.alpha = qm_fs_file_read_int32( file, false, &status );
 
 	if ( !status ) {
 		return NULL;

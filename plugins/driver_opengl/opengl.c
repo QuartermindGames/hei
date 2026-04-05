@@ -1386,7 +1386,7 @@ static char *GLPreProcessGLSLShader( QmGfxShaderStage *stage, char *buf, size_t 
 					strcpy( path, tmp );
 				}
 
-				PLFile *file = gInterface->core->OpenFile( path, true );
+				QmFsFile *file = gInterface->core->OpenFile( path, true );
 				if ( file != NULL ) {
 					/* allocate a temporary buffer */
 					size_t incLength = gInterface->core->GetFileSize( file );

@@ -11,7 +11,7 @@
 
 static const char VENOM_PAK_IDENTIFIER[] = "VENOMBINPAK1.0\n";
 
-PLPackage *PlParseVenomPakPackage( PLFile *file ) {
+QmFsPackage *PlParseVenomPakPackage( QmFsFile *file ) {
 	char ident[ 15 ];
 	PlReadFile( file, ident, sizeof( char ), sizeof( ident ) );
 	if ( strncmp( VENOM_PAK_IDENTIFIER, ident, sizeof( ident ) ) != 0 ) {
@@ -31,16 +31,16 @@ PLPackage *PlParseVenomPakPackage( PLFile *file ) {
 		return NULL;
 	}
 
-	PlReadInt32( file, true, NULL );// unk0
+	qm_fs_file_read_int32( file, true, NULL );// unk0
 
-	size_t bufSize = headerSize - PlGetFileOffset( file );
+	size_t bufSize = headerSize - qm_fs_file_get_offset( file );
 	char *buf = QM_OS_MEMORY_NEW_( char, bufSize + 1 );
 	if ( PlReadFile( file, buf, sizeof( char ), bufSize ) != bufSize ) {
 		qm_os_memory_free( buf );
 		return NULL;
 	}
 
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 
 	const char *p = buf;
 	for ( unsigned int i = 0; i < numFiles; ++i ) {

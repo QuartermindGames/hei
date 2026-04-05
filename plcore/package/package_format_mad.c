@@ -27,12 +27,12 @@ typedef struct MADIndex {
 	uint32_t length;
 } MADIndex;
 
-PLPackage *PlParseMadPackage_( PLFile *file ) {
+QmFsPackage *PlParseMadPackage_( QmFsFile *file ) {
 	FunctionStart();
 
-	PLPackage *package = NULL;
+	QmFsPackage *package = NULL;
 
-	size_t file_size = PlGetFileSize( file );
+	size_t file_size = qm_fs_file_get_size( file );
 	if ( PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
 		goto FAILED;
 	}
@@ -73,7 +73,7 @@ PLPackage *PlParseMadPackage_( PLFile *file ) {
 	}
 
 	/* Allocate the basic package structure now we know how many files are in the archive. */
-	package = PlCreatePackageHandle( PlGetFilePath( file ), num_indices, NULL );
+	package = PlCreatePackageHandle( qm_fs_file_get_path( file ), num_indices, NULL );
 
 	/* Rewind the file handle and populate package->table with the metadata from the headers. */
 

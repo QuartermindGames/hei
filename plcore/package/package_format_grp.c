@@ -6,7 +6,7 @@
 
 // GRP package format used by Duke Nukem 3D
 
-PLPackage *PlParseGrpPackage_( PLFile *file ) {
+QmFsPackage *PlParseGrpPackage_( QmFsFile *file ) {
 	char buf[ 12 ];
 	PlReadFile( file, buf, sizeof( char ), sizeof( buf ) );
 	if ( strncmp( buf, "KenSilverman", sizeof( buf ) ) != 0 ) {
@@ -20,12 +20,12 @@ PLPackage *PlParseGrpPackage_( PLFile *file ) {
 		return NULL;
 	}
 
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 	if ( package == NULL ) {
 		return NULL;
 	}
 
-	unsigned int baseOffset = PlGetFileOffset( file ) + ( numFiles * 16 );
+	unsigned int baseOffset = qm_fs_file_get_offset( file ) + ( numFiles * 16 );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
 		PlReadFile( file, package->table[ i ].fileName, sizeof( char ), 12 );
 		package->table[ i ].fileSize = PL_READUINT32( file, false, NULL );

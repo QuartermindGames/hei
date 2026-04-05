@@ -18,9 +18,9 @@
 #		include <libunrar/dll.hpp>
 #	endif
 
-static void *OpenRarFile( PLFile *file, PLPackageIndex *index ) {
+static void *OpenRarFile( QmFsFile *file, PLPackageIndex *index ) {
 	PLPath path;
-	PlSetupPath( path, true, "%s", PlGetFilePath( file ) );
+	PlSetupPath( path, true, "%s", qm_fs_file_get_path( file ) );
 
 	RAROpenArchiveDataEx archiveData = {};
 	archiveData.ArcName = path;
@@ -58,7 +58,7 @@ static void *OpenRarFile( PLFile *file, PLPackageIndex *index ) {
 			break;
 		}
 
-		PLFile *tmpFile = PlOpenLocalFile( tmpFilename, false );
+		QmFsFile *tmpFile = qm_fs_file_open_local( tmpFilename, false );
 		if ( tmpFile == nullptr ) {
 			break;
 		}
@@ -79,9 +79,9 @@ static void *OpenRarFile( PLFile *file, PLPackageIndex *index ) {
 	return buf;
 }
 
-extern "C" PLPackage *PlParseRarPackage_( PLFile *file ) {
+extern "C" QmFsPackage *PlParseRarPackage_( QmFsFile *file ) {
 	PLPath path;
-	PlSetupPath( path, true, "%s", PlGetFilePath( file ) );
+	PlSetupPath( path, true, "%s", qm_fs_file_get_path( file ) );
 
 	// I couldn't find any really good documentation on this,
 	// but my impression is that I can't just feed the library
@@ -97,7 +97,7 @@ extern "C" PLPackage *PlParseRarPackage_( PLFile *file ) {
 		return nullptr;
 	}
 
-	PLPackage *package = PlCreatePackageHandle( path, 0, OpenRarFile );
+	QmFsPackage *package = PlCreatePackageHandle( path, 0, OpenRarFile );
 	if ( package != nullptr ) {
 		RARHeaderDataEx headerData = {};
 		while ( RARReadHeaderEx( handle, &headerData ) == 0 ) {

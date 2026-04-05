@@ -119,7 +119,7 @@ const char *PlGetCommandLineArgumentValueByIndex( unsigned int index ) {
 }
 
 void PlShutdown( void ) {
-	PlClearMountedLocations();
+	qm_fs_clear_mounted_locations();
 
 	PlShutdownConsole();
 }
@@ -347,10 +347,10 @@ static PLPluginExportTable exportTable = {
         .GetError = PlGetError,
 
         /* pl_filesystem.h */
-        .OpenFile = PlOpenFile,
+        .OpenFile = qm_fs_file_open,
         .CloseFile = PlCloseFile,
-        .GetFileData = PlGetFileData,
-        .GetFileSize = PlGetFileSize,
+        .GetFileData = qm_fs_file_get_data,
+        .GetFileSize = qm_fs_file_get_size,
 
         /* pl_image.h */
         .GetImageSize = PlGetImageSize,

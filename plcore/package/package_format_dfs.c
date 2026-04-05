@@ -12,8 +12,8 @@
 /**
  * We actually need to load the data from a different file
  */
-static void *LoadPackageFile( PLFile *file, PLPackageIndex *index ) {
-	const char *dfsPath = PlGetFilePath( file );
+static void *LoadPackageFile( QmFsFile *file, PLPackageIndex *index ) {
+	const char *dfsPath = qm_fs_file_get_path( file );
 	size_t dfsPathSize = strlen( dfsPath );
 
 	PLPath dataPath;
@@ -22,8 +22,8 @@ static void *LoadPackageFile( PLFile *file, PLPackageIndex *index ) {
 	strcat( dataPath, "000" );
 
 	void *data = NULL;
-	PLFile *dataFile = PlOpenFile( dataPath, false );
-	if ( PlFileSeek( dataFile, ( signed ) index->offset, PL_SEEK_SET ) ) {
+	QmFsFile *dataFile = qm_fs_file_open( dataPath, false );
+	if ( qm_fs_file_seek( dataFile, ( signed ) index->offset, QM_FS_SEEK_SET ) ) {
 		data = QM_OS_MEMORY_NEW_( uint8_t, index->fileSize );
 		if ( PlReadFile( dataFile, data, sizeof( char ), index->fileSize ) != index->fileSize ) {
 			qm_os_memory_free( data );
@@ -36,14 +36,14 @@ static void *LoadPackageFile( PLFile *file, PLPackageIndex *index ) {
 	return data;
 }
 
-static int ValidateDFSFile( PLFile *file ) {
-	int magic = PlReadInt32( file, false, NULL );
+static int ValidateDFSFile( QmFsFile *file ) {
+	int magic = qm_fs_file_read_int32( file, false, NULL );
 	if ( magic != DFS_MAGIC ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid magic" );
 		return -1;
 	}
 
-	int version = PlReadInt32( file, false, NULL );
+	int version = qm_fs_file_read_int32( file, false, NULL );
 	if ( version <= 0 || version > DFS_VERSION ) {
 		PlReportErrorF( PL_RESULT_FILEVERSION, "invalid version" );
 		return -1;
@@ -52,12 +52,12 @@ static int ValidateDFSFile( PLFile *file ) {
 	return version;
 }
 
-static char *ReadString( PLFile *file, char **dst, uint32_t offset ) {
-	PLFileOffset store = PlGetFileOffset( file );
-	PlFileSeek( file, offset, PL_SEEK_SET );
+static char *ReadString( QmFsFile *file, char **dst, uint32_t offset ) {
+	PLFileOffset store = qm_fs_file_get_offset( file );
+	qm_fs_file_seek( file, offset, QM_FS_SEEK_SET );
 	for ( ;; ) {
 		bool status;
-		char c = ( char ) PlReadInt8( file, &status );
+		char c = ( char ) qm_fs_file_read_int8( file, &status );
 		if ( !status || c == '\0' ) {
 			break;
 		}
@@ -66,12 +66,12 @@ static char *ReadString( PLFile *file, char **dst, uint32_t offset ) {
 		}
 		*( *dst )++ = c;
 	}
-	PlFileSeek( file, store, PL_SEEK_SET );
+	qm_fs_file_seek( file, store, QM_FS_SEEK_SET );
 	return *dst;
 }
 
-PLPackage *PlParseDfsPackage_( PLFile *file ) {
-	size_t fileSize = PlGetFileSize( file );
+QmFsPackage *PlParseDfsPackage_( QmFsFile *file ) {
+	size_t fileSize = qm_fs_file_get_size( file );
 	if ( fileSize == 0 ) {
 		PlReportErrorF( PL_RESULT_FILESIZE, "empty file" );
 		return NULL;
@@ -82,8 +82,8 @@ PLPackage *PlParseDfsPackage_( PLFile *file ) {
 		return NULL;
 	}
 
-	PlReadInt32( file, false, NULL );// unknown
-	PlReadInt32( file, false, NULL );// unknown
+	qm_fs_file_read_int32( file, false, NULL );// unknown
+	qm_fs_file_read_int32( file, false, NULL );// unknown
 
 	uint32_t numFiles = PL_READUINT32( file, false, NULL );
 	if ( numFiles <= 0 ) {
@@ -91,7 +91,7 @@ PLPackage *PlParseDfsPackage_( PLFile *file ) {
 		return NULL;
 	}
 
-	PlReadInt32( file, false, NULL );// unknown
+	qm_fs_file_read_int32( file, false, NULL );// unknown
 
 	uint32_t stringTableSize = PL_READUINT32( file, false, NULL );
 	if ( stringTableSize <= 0 || stringTableSize >= fileSize ) {
@@ -99,8 +99,8 @@ PLPackage *PlParseDfsPackage_( PLFile *file ) {
 		return NULL;
 	}
 
-	PlReadInt32( file, false, NULL );// unknown
-	PlReadInt32( file, false, NULL );// unknown
+	qm_fs_file_read_int32( file, false, NULL );// unknown
+	qm_fs_file_read_int32( file, false, NULL );// unknown
 
 	uint32_t stringTableOffset = PL_READUINT32( file, false, NULL );
 	if ( stringTableOffset <= 0 || stringTableOffset >= fileSize ) {
@@ -108,9 +108,9 @@ PLPackage *PlParseDfsPackage_( PLFile *file ) {
 		return NULL;
 	}
 
-	PlReadInt32( file, false, NULL );// unknown
+	qm_fs_file_read_int32( file, false, NULL );// unknown
 
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, LoadPackageFile );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, LoadPackageFile );
 
 	for ( uint32_t i = 0; i < numFiles; ++i ) {
 		// urgh...

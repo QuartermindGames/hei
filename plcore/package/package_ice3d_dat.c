@@ -5,7 +5,7 @@
 #include "package_private.h"
 #include "qmos/public/qm_os_memory.h"
 
-PLPackage *PlParseIce3DDatPackage_( PLFile *file ) {
+QmFsPackage *PlParseIce3DDatPackage_( QmFsFile *file ) {
 	uint16_t versionMajor = PL_READUINT16( file, false, NULL );
 	uint16_t versionMinor = PL_READUINT16( file, false, NULL );
 	if ( versionMajor != 1 || versionMinor != 4 ) {
@@ -19,7 +19,7 @@ PLPackage *PlParseIce3DDatPackage_( PLFile *file ) {
 		return NULL;
 	}
 
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 	for ( uint32_t i = 0; i < numFiles; ++i ) {
 		PL_READUINT32( file, false, NULL );// index
 		PL_READUINT16( file, false, NULL );// ??

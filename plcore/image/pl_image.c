@@ -37,8 +37,8 @@
 #	define STB_IMAGE_WRITE_STATIC
 #	include "stb_image.h"
 
-static PLImage *LoadStbImage( PLFile *file ) {
-	size_t s = PlGetFileSize( file );
+static PLImage *LoadStbImage( QmFsFile *file ) {
+	size_t s = qm_fs_file_get_size( file );
 	if ( s >= INT32_MAX ) {
 		PlReportBasicError( PL_RESULT_FILESIZE );
 		return NULL;
@@ -89,13 +89,13 @@ static PLImage *LoadStbImage( PLFile *file ) {
 
 typedef struct PLImageLoader {
 	const char *extension;
-	PLImage *( *ParseFile )( PLFile *file );
+	PLImage *( *ParseFile )( QmFsFile *file );
 } PLImageLoader;
 
 static PLImageLoader imageLoaders[ MAX_IMAGE_LOADERS ];
 static unsigned int numImageLoaders = 0;
 
-void PlRegisterImageLoader( const char *extension, PLImage *( *ParseFile )( PLFile *file ) ) {
+void PlRegisterImageLoader( const char *extension, PLImage *( *ParseFile )( QmFsFile *file ) ) {
 	if ( numImageLoaders >= MAX_IMAGE_LOADERS ) {
 		PlReportBasicError( PL_RESULT_MEMORY_EOA );
 		return;
@@ -113,7 +113,7 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	typedef struct SImageLoader {
 		unsigned int flag;
 		const char *extension;
-		PLImage *( *LoadFunction )( PLFile *file );
+		PLImage *( *LoadFunction )( QmFsFile *file );
 	} SImageLoader;
 
 	static const SImageLoader loaderList[] = {
@@ -221,7 +221,7 @@ void PlDestroyImage( PLImage *image ) {
  * Returns null on fail.
  */
 PLImage *PlLoadImage( const char *path ) {
-	if ( !PlFileExists( path ) ) {
+	if ( !qm_fs_check_file_exists( path ) ) {
 		PlReportBasicError( PL_RESULT_FILEPATH );
 		return NULL;
 	}
@@ -233,7 +233,7 @@ PLImage *PlLoadImage( const char *path ) {
 		}
 
 		PLImage *image = NULL;
-		PLFile *file = PlOpenFile( path, false );
+		QmFsFile *file = qm_fs_file_open( path, false );
 		if ( file != NULL ) {
 			image = imageLoaders[ i ].ParseFile( file );
 			PlCloseFile( file );
@@ -255,7 +255,7 @@ PLImage *PlLoadImage( const char *path ) {
 /**
  * Load an image by it's virtual file handle.
  */
-PLImage *PlParseImage( PLFile *file ) {
+PLImage *PlParseImage( QmFsFile *file ) {
 	const char *extension = PlGetFileExtension( file->path );
 	for ( unsigned int i = 0; i < numImageLoaders; ++i ) {
 		if ( extension != NULL && pl_strcasecmp( extension, imageLoaders[ i ].extension ) != 0 ) {

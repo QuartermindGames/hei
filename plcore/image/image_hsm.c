@@ -15,7 +15,7 @@
 
 #define HSM_MAX_VERSION 1
 
-PLImage *PlParseHsmImage( PLFile *file ) {
+PLImage *PlParseHsmImage( QmFsFile *file ) {
 	bool status;
 	uint32_t version = PL_READUINT32( file, true, &status );
 	uint32_t width = PL_READUINT32( file, true, &status );

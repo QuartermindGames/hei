@@ -13,10 +13,10 @@
 #define QOI_IMPLEMENTATION
 #include "3rdparty/qoi.h"
 
-PLImage *PlParseQoiImage( PLFile *file ) {
+PLImage *PlParseQoiImage( QmFsFile *file ) {
 	PLImage *image = NULL;
 
-	int size = ( int ) PlGetFileSize( file );
+	int size = ( int ) qm_fs_file_get_size( file );
 	uint8_t *buf = QM_OS_MEMORY_NEW_( uint8_t, size + 1 );
 	if ( PlReadFile( file, buf, sizeof( uint8_t ), size ) == size ) {
 		qoi_desc desc;

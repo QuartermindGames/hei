@@ -20,44 +20,44 @@ typedef struct WadIndex {
 	char name[ 8 ];
 } WadIndex;
 
-PLPackage *PlParseWadPackage_( PLFile *file ) {
-	int32_t magic = PlReadInt32( file, false, NULL );
+QmFsPackage *PlParseWadPackage_( QmFsFile *file ) {
+	int32_t magic = qm_fs_file_read_int32( file, false, NULL );
 	if ( magic != WAD_MAGIC && magic != WAD_MAGIC_2 ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid magic: \"%s\"", magic );
 		return NULL;
 	}
 
-	int32_t numLumps = PlReadInt32( file, false, NULL );
+	int32_t numLumps = qm_fs_file_read_int32( file, false, NULL );
 	if ( numLumps <= 0 ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "invalid number of lumps: %d", numLumps );
 		return NULL;
 	}
 
-	int32_t tableOffset = PlReadInt32( file, false, NULL );
+	int32_t tableOffset = qm_fs_file_read_int32( file, false, NULL );
 	if ( tableOffset <= 0 ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "invalid table offset: %d", tableOffset );
 		return NULL;
 	}
 
 	unsigned int tableSize = sizeof( WadIndex ) * numLumps;
-	if ( tableOffset + tableSize > PlGetFileSize( file ) ) {
+	if ( tableOffset + tableSize > qm_fs_file_get_size( file ) ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "invalid table offset location: %u", tableSize );
 		return NULL;
 	}
 
-	PlFileSeek( file, tableOffset, PL_SEEK_SET );
+	qm_fs_file_seek( file, tableOffset, QM_FS_SEEK_SET );
 
 	WadIndex *indices = QM_OS_MEMORY_MALLOC_( tableSize );
 	for ( int i = 0; i < numLumps; ++i ) {
-		indices[ i ].offset = PlReadInt32( file, false, NULL );
+		indices[ i ].offset = qm_fs_file_read_int32( file, false, NULL );
 		if ( indices[ i ].offset == 0 || indices[ i ].offset >= tableOffset ) {
 			qm_os_memory_free( indices );
 			PlReportErrorF( PL_RESULT_FILEREAD, "invalid file offset for index %d", i );
 			return NULL;
 		}
 
-		indices[ i ].size = PlReadInt32( file, false, NULL );
-		if ( indices[ i ].size >= ( int ) PlGetFileSize( file ) ) {
+		indices[ i ].size = qm_fs_file_read_int32( file, false, NULL );
+		if ( indices[ i ].size >= ( int ) qm_fs_file_get_size( file ) ) {
 			qm_os_memory_free( indices );
 			PlReportErrorF( PL_RESULT_FILEREAD, "invalid file size for index %d", i );
 			return NULL;
@@ -69,8 +69,8 @@ PLPackage *PlParseWadPackage_( PLFile *file ) {
 		}
 	}
 
-	const char *path = PlGetFilePath( file );
-	PLPackage *package = PlCreatePackageHandle( path, numLumps, NULL );
+	const char *path = qm_fs_file_get_path( file );
+	QmFsPackage *package = PlCreatePackageHandle( path, numLumps, NULL );
 	for ( unsigned int i = 0; i < package->maxTableSize; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
 		index->offset = indices[ i ].offset;
@@ -101,43 +101,43 @@ typedef struct Wad2Index {
 	char name[ WAD2_NAME_LENGTH ];
 } Wad2Index;
 
-PLPackage *PlParseQWadPackage_( PLFile *file ) {
-	int32_t magic = PlReadInt32( file, false, NULL );
+QmFsPackage *PlParseQWadPackage_( QmFsFile *file ) {
+	int32_t magic = qm_fs_file_read_int32( file, false, NULL );
 	if ( magic != WAD2_MAGIC && magic != WAD3_MAGIC ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid magic: \"%u\"", magic );
 		return NULL;
 	}
 
-	int32_t numLumps = PlReadInt32( file, false, NULL );
+	int32_t numLumps = qm_fs_file_read_int32( file, false, NULL );
 	if ( numLumps <= 0 ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "invalid number of lumps: %d", numLumps );
 		return NULL;
 	}
 
-	int32_t tableOffset = PlReadInt32( file, false, NULL );
+	int32_t tableOffset = qm_fs_file_read_int32( file, false, NULL );
 	if ( tableOffset <= 0 ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "invalid table offset: %d", tableOffset );
 		return NULL;
 	}
 
 	unsigned int tableSize = sizeof( Wad2Index ) * numLumps;
-	if ( tableOffset + tableSize > PlGetFileSize( file ) ) {
+	if ( tableOffset + tableSize > qm_fs_file_get_size( file ) ) {
 		PlReportErrorF( PL_RESULT_FILEREAD, "invalid table offset location: %u", tableSize );
 		return NULL;
 	}
 
-	PlFileSeek( file, tableOffset, PL_SEEK_SET );
+	qm_fs_file_seek( file, tableOffset, QM_FS_SEEK_SET );
 
-	const char *path = PlGetFilePath( file );
-	PLPackage *package = PlCreatePackageHandle( path, numLumps, NULL );
+	const char *path = qm_fs_file_get_path( file );
+	QmFsPackage *package = PlCreatePackageHandle( path, numLumps, NULL );
 	for ( unsigned int i = 0; i < package->maxTableSize; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
-		index->offset = PlReadInt32( file, false, NULL );
-		index->compressedSize = PlReadInt32( file, false, NULL );
-		index->fileSize = PlReadInt32( file, false, NULL );
+		index->offset = qm_fs_file_read_int32( file, false, NULL );
+		index->compressedSize = qm_fs_file_read_int32( file, false, NULL );
+		index->fileSize = qm_fs_file_read_int32( file, false, NULL );
 
 		const char *hint;
-		uint8_t type = PlReadInt8( file, NULL ); /* type */
+		uint8_t type = qm_fs_file_read_int8( file, NULL ); /* type */
 		switch ( type ) {
 			default:
 				hint = ".none";
@@ -168,8 +168,8 @@ PLPackage *PlParseQWadPackage_( PLFile *file ) {
 				break;
 		}
 
-		PlReadInt8( file, NULL );         /* compression (afaik, never used) */
-		PlReadInt16( file, false, NULL ); /* unused */
+		qm_fs_file_read_int8( file, NULL );         /* compression (afaik, never used) */
+		qm_fs_file_read_int16( file, false, NULL ); /* unused */
 
 		PlReadFile( file, index->fileName, sizeof( char ), WAD2_NAME_LENGTH );
 		strcat( index->fileName, hint );

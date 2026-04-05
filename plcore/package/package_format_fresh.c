@@ -9,7 +9,7 @@
  *	- Fixed-length filenames (12 bytes)
  */
 
-PLPackage *PlParseFreshBinPackage_( PLFile *file ) {
+QmFsPackage *PlParseFreshBinPackage_( QmFsFile *file ) {
 	// First check the funky identifier at the start
 	char ident[ 8 ];
 	PlReadFile( file, ident, sizeof( char ), sizeof( ident ) );
@@ -19,7 +19,7 @@ PLPackage *PlParseFreshBinPackage_( PLFile *file ) {
 	}
 
 	// First two bytes seem to just be zero, so we'll assume that's normal
-	if ( PlReadInt32( file, false, NULL ) != 0 || PlReadInt32( file, false, NULL ) != 0 ) {
+	if ( qm_fs_file_read_int32( file, false, NULL ) != 0 || qm_fs_file_read_int32( file, false, NULL ) != 0 ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid freshengine bin package" );
 		return NULL;
 	}
@@ -30,7 +30,7 @@ PLPackage *PlParseFreshBinPackage_( PLFile *file ) {
 		return NULL;
 	}
 
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 	if ( package == NULL ) {
 		return NULL;
 	}

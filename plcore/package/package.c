@@ -11,19 +11,23 @@
 #include "../3rdparty/miniz/miniz.h"
 #include "../3rdparty/blast/blast.h"
 #include "qmos/public/qm_os_memory.h"
+#include "qmos/public/qm_os_string.h"
 
 /****************************************
  * Generic Loader
  ****************************************/
 
-typedef struct BlstUser {
-	uint8_t *buffer;
+typedef struct BlstUser
+{
+	uint8_t     *buffer;
 	unsigned int maxLength, length;
 } BlstUser;
 
-static unsigned int BlstCbIn( void *how, unsigned char **buf ) {
+static unsigned int BlstCbIn( void *how, unsigned char **buf )
+{
 	BlstUser *user = how;
-	if ( user->buffer == NULL ) {
+	if ( user->buffer == nullptr )
+	{
 		return 0;
 	}
 
@@ -31,9 +35,11 @@ static unsigned int BlstCbIn( void *how, unsigned char **buf ) {
 	return user->length;
 }
 
-static int BlstCbOut( void *how, unsigned char *buf, unsigned int len ) {
+static int BlstCbOut( void *how, unsigned char *buf, unsigned int len )
+{
 	BlstUser *user = how;
-	if ( user->length >= user->maxLength ) {
+	if ( user->length >= user->maxLength )
+	{
 		return 1;
 	}
 	memcpy( user->buffer + user->length, buf, len );
@@ -41,12 +47,13 @@ static int BlstCbOut( void *how, unsigned char *buf, unsigned int len ) {
 	return 0;
 }
 
-static int Inflate( unsigned char *dst, uint32_t *dstLength, const unsigned char *src, uint32_t srcLength, bool raw ) {
+static int Inflate( unsigned char *dst, uint32_t *dstLength, const unsigned char *src, uint32_t srcLength, bool raw )
+{
 	mz_stream stream;
 	PL_ZERO_( stream );
-	stream.next_in = src;
-	stream.avail_in = srcLength;
-	stream.next_out = dst;
+	stream.next_in   = src;
+	stream.avail_in  = srcLength;
+	stream.next_out  = dst;
 	stream.avail_out = *dstLength;
 
 	int status = mz_inflateInit2( &stream, raw ? -MZ_DEFAULT_WINDOW_BITS : MZ_DEFAULT_WINDOW_BITS );
@@ -54,7 +61,8 @@ static int Inflate( unsigned char *dst, uint32_t *dstLength, const unsigned char
 		return status;
 
 	status = mz_inflate( &stream, MZ_FINISH );
-	if ( status != MZ_STREAM_END ) {
+	if ( status != MZ_STREAM_END )
+	{
 		mz_inflateEnd( &stream );
 		return ( ( status == MZ_BUF_ERROR ) && ( !stream.avail_in ) ) ? MZ_DATA_ERROR : status;
 	}
@@ -67,59 +75,70 @@ static int Inflate( unsigned char *dst, uint32_t *dstLength, const unsigned char
  * Generic loader for package files, since this is unlikely to change
  * in most cases.
  */
-static void *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
+static void *LoadGenericPackageFile( QmFsFile *fh, PLPackageIndex *pi )
+{
 	FunctionStart();
 
-	if ( !PlFileSeek( fh, pi->offset, PL_SEEK_SET ) ) {
-		return NULL;
+	if ( !qm_fs_file_seek( fh, pi->offset, QM_FS_SEEK_SET ) )
+	{
+		return nullptr;
 	}
 
-	size_t size = ( pi->compressionType != PL_COMPRESSION_NONE ) ? pi->compressedSize : pi->fileSize;
+	size_t   size    = ( pi->compressionType != PL_COMPRESSION_NONE ) ? pi->compressedSize : pi->fileSize;
 	uint8_t *dataPtr = QM_OS_MEMORY_NEW_( uint8_t, size );
-	if ( PlReadFile( fh, dataPtr, sizeof( uint8_t ), size ) != size ) {
+	if ( PlReadFile( fh, dataPtr, sizeof( uint8_t ), size ) != size )
+	{
 		qm_os_memory_free( dataPtr );
-		return NULL;
+		return nullptr;
 	}
 
-	if ( pi->compressionType != PL_COMPRESSION_NONE ) {
-		switch ( pi->compressionType ) {
-			default: {
+	if ( pi->compressionType != PL_COMPRESSION_NONE )
+	{
+		switch ( pi->compressionType )
+		{
+			default:
+			{
 				PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported compression type for packages" );
 				qm_os_memory_free( dataPtr );
-				return NULL;
+				return nullptr;
 			}
 			case PL_COMPRESSION_DEFLATE:
-			case PL_COMPRESSION_GZIP: {
-				uint8_t *decompressedPtr = QM_OS_MEMORY_NEW_( uint8_t, pi->fileSize );
+			case PL_COMPRESSION_GZIP:
+			{
+				uint8_t *decompressedPtr    = QM_OS_MEMORY_NEW_( uint8_t, pi->fileSize );
 				uint32_t uncompressedLength = ( uint32_t ) pi->fileSize;
-				int status = Inflate( decompressedPtr, &uncompressedLength, dataPtr, ( unsigned long ) pi->compressedSize, ( pi->compressionType == PL_COMPRESSION_GZIP ) );
+				int      status             = Inflate( decompressedPtr, &uncompressedLength, dataPtr, ( unsigned long ) pi->compressedSize, ( pi->compressionType == PL_COMPRESSION_GZIP ) );
 				qm_os_memory_free( dataPtr );
 				dataPtr = decompressedPtr;
-				if ( status != Z_OK ) {
+				if ( status != Z_OK )
+				{
 					qm_os_memory_free( dataPtr );
 					PlReportErrorF( PL_RESULT_FILEERR, "failed to decompress buffer (%s)", zError( status ) );
-					return NULL;
+					return nullptr;
 				}
 				break;
 			}
-			case PL_COMPRESSION_IMPLODE: {
-				uint8_t *decompressedPtr = QM_OS_MEMORY_NEW_( uint8_t, pi->fileSize );
+			case PL_COMPRESSION_IMPLODE:
+			{
+				uint8_t *decompressedPtr    = QM_OS_MEMORY_NEW_( uint8_t, pi->fileSize );
 				uint32_t uncompressedLength = ( uint32_t ) pi->fileSize;
-				BlstUser in = {
-				                 .buffer = dataPtr,
-				                 .length = ( unsigned int ) size,
-				         },
+				BlstUser in                 = {
+				                                 .buffer = dataPtr,
+				                                 .length = ( unsigned int ) size,
+                         },
 				         out = {
-				                 .buffer = decompressedPtr,
-				                 .length = 0,
+				                 .buffer    = decompressedPtr,
+				                 .length    = 0,
 				                 .maxLength = uncompressedLength,
 				         };
-				int status = blast( BlstCbIn, &in, BlstCbOut, &out, NULL, NULL );
+				int status = blast( BlstCbIn, &in, BlstCbOut, &out, nullptr, nullptr );
 				qm_os_memory_free( dataPtr );
 				dataPtr = decompressedPtr;
-				if ( status != 0 ) {
+				if ( status != 0 )
+				{
 					const char *errmsg;
-					switch ( status ) {
+					switch ( status )
+					{
 						case 2:
 							errmsg = "ran out of input before completing decompression";
 							break;
@@ -142,13 +161,14 @@ static void *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 
 					qm_os_memory_free( dataPtr );
 					PlReportErrorF( PL_RESULT_FILEREAD, "%s (%d)", errmsg, status );
-					return NULL;
+					return nullptr;
 				}
 				break;
 			}
-			case PL_COMPRESSION_LZRW1: {
+			case PL_COMPRESSION_LZRW1:
+			{
 				size_t uncompressedLength = pi->fileSize;
-				void *decompressedPtr = PlDecompress_LZRW1( dataPtr, pi->compressedSize, &uncompressedLength );
+				void  *decompressedPtr    = PlDecompress_LZRW1( dataPtr, pi->compressedSize, &uncompressedLength );
 				qm_os_memory_free( dataPtr );
 				dataPtr = decompressedPtr;
 				break;
@@ -165,46 +185,56 @@ static void *LoadGenericPackageFile( PLFile *fh, PLPackageIndex *pi ) {
 /**
  * Allocate a new package handle.
  */
-PLPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, void *( *OpenFile )( PLFile *filePtr, PLPackageIndex *index ) ) {
-	PLPackage *package = QM_OS_MEMORY_MALLOC_( sizeof( PLPackage ) );
+QmFsPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, void *( *OpenFile )( QmFsFile *filePtr, PLPackageIndex *index ) )
+{
+	QmFsPackage *package = QM_OS_MEMORY_MALLOC_( sizeof( QmFsPackage ) );
 
-	if ( OpenFile == NULL ) {
+	if ( OpenFile == nullptr )
+	{
 		package->internal.LoadFile = LoadGenericPackageFile;
-	} else {
+	}
+	else
+	{
 		package->internal.LoadFile = OpenFile;
 	}
 
 	package->table_size = package->maxTableSize = tableSize;
-	package->table = QM_OS_MEMORY_NEW_( PLPackageIndex, tableSize );
+	package->table                              = QM_OS_MEMORY_NEW_( PLPackageIndex, tableSize );
 
-	snprintf( package->path, sizeof( package->path ), "%s", path );
+	package->path = qm_os_string_alloc( "%s", path );
 
 	return package;
 }
 
 /* Unloads package from memory
  */
-void PlDestroyPackage( PLPackage *package ) {
-	if ( package == NULL ) {
+void PlDestroyPackage( QmFsPackage *package )
+{
+	if ( package == nullptr )
+	{
 		return;
 	}
 
 	qm_os_memory_free( package->table );
+	qm_os_memory_free( package->path );
 	qm_os_memory_free( package );
 }
 #if 0// todo
-void plWritePackage(PLPackage *package) {
+void plWritePackage(QmFsPackage *package) {
 
 }
 #endif
 
-void PlExtractPackage( PLPackage *package, const char *path ) {
-	for ( unsigned int i = 0; i < package->table_size; ++i ) {
+void PlExtractPackage( QmFsPackage *package, const char *path )
+{
+	for ( unsigned int i = 0; i < package->table_size; ++i )
+	{
 		/* create the file dir first */
 		PLPath subPath;
 		snprintf( subPath, sizeof( subPath ), "%s", package->table[ i ].fileName );
 		unsigned int l = ( unsigned int ) strlen( subPath );
-		for ( unsigned int j = l; j > 0; --j ) {
+		for ( unsigned int j = l; j > 0; --j )
+		{
 			if ( subPath[ j ] != '\\' && subPath[ j ] != '/' )
 				continue;
 
@@ -213,21 +243,24 @@ void PlExtractPackage( PLPackage *package, const char *path ) {
 		}
 		PLPath writePath;
 		snprintf( writePath, sizeof( writePath ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, subPath );
-		if ( !PlCreatePath( writePath ) ) {
+		if ( !PlCreatePath( writePath ) )
+		{
 			FSLog( "Failed to create path: %s\n", PlGetError() );
 			continue;
 		}
 
-		PLFile *file = PlLoadPackageFileByIndex( package, i );
-		if ( file == NULL ) {
+		QmFsFile *file = PlLoadPackageFileByIndex( package, i );
+		if ( file == nullptr )
+		{
 			FSLog( "Failed to load package file: %s\n", PlGetError() );
 			continue;
 		}
-		const void *p = PlGetFileData( file );
+		const void *p = qm_fs_file_get_data( file );
 
 		/* now write it out */
 		snprintf( writePath, sizeof( writePath ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, package->table[ i ].fileName );
-		if ( !PlWriteFile( writePath, p, package->table[ i ].fileSize ) ) {
+		if ( !PlWriteFile( writePath, p, package->table[ i ].fileSize ) )
+		{
 			FSLog( "Failed to write package file: %s\n", PlGetError() );
 		}
 
@@ -237,16 +270,18 @@ void PlExtractPackage( PLPackage *package, const char *path ) {
 
 /////////////////////////////////////////////////////////////
 
-typedef struct PLPackageLoader {
+typedef struct PLPackageLoader
+{
 	const char *ext;
-	PLPackage *( *LoadFunction )( const char *path );
-	PLPackage *( *ParseFunction )( PLFile *file );
+	QmFsPackage *( *LoadFunction )( const char *path );
+	QmFsPackage *( *ParseFunction )( QmFsFile *file );
 } PLPackageLoader;
 
 static PLPackageLoader package_loaders[ MAX_OBJECT_INTERFACES ] = {};
-static unsigned int num_package_loaders = 0;
+static unsigned int    num_package_loaders                      = 0;
 
-void PlInitPackageSubSystem( void ) {
+void PlInitPackageSubSystem( void )
+{
 	PlClearPackageLoaders();
 }
 
@@ -254,9 +289,11 @@ void PlInitPackageSubSystem( void ) {
  * Returns a list of file extensions representing all
  * the formats supported by the package loader.
  */
-const char **PlGetSupportedPackageFormats( unsigned int *numElements ) {
+const char **PlGetSupportedPackageFormats( unsigned int *numElements )
+{
 	static const char *formats[ MAX_OBJECT_INTERFACES ];
-	for ( unsigned int i = 0; i < num_package_loaders; ++i ) {
+	for ( unsigned int i = 0; i < num_package_loaders; ++i )
+	{
 		formats[ i ] = package_loaders[ i ].ext;
 	}
 
@@ -265,22 +302,26 @@ const char **PlGetSupportedPackageFormats( unsigned int *numElements ) {
 	return formats;
 }
 
-void PlClearPackageLoaders( void ) {
+void PlClearPackageLoaders( void )
+{
 	num_package_loaders = 0;
 }
 
-void PlRegisterPackageLoader( const char *ext, PLPackage *( *LoadFunction )( const char * ), PLPackage *( *ParseFunction )( PLFile * ) ) {
-	package_loaders[ num_package_loaders ].ext = ext;
-	package_loaders[ num_package_loaders ].LoadFunction = LoadFunction;
+void PlRegisterPackageLoader( const char *ext, QmFsPackage *( *LoadFunction )( const char * ), QmFsPackage *( *ParseFunction )( QmFsFile * ) )
+{
+	package_loaders[ num_package_loaders ].ext           = ext;
+	package_loaders[ num_package_loaders ].LoadFunction  = LoadFunction;
 	package_loaders[ num_package_loaders ].ParseFunction = ParseFunction;
 	num_package_loaders++;
 }
 
-void PlRegisterStandardPackageLoaders( unsigned int flags ) {
-	typedef struct PackageLoader {
+void PlRegisterStandardPackageLoaders( unsigned int flags )
+{
+	typedef struct PackageLoader
+	{
 		unsigned int flag;
-		const char *extension;
-		PLPackage *( *parseFunction )( PLFile *file );
+		const char  *extension;
+		QmFsPackage *( *parseFunction )( QmFsFile *file );
 	} PackageLoader;
 
 	static const PackageLoader loaders[] = {
@@ -318,36 +359,47 @@ void PlRegisterStandardPackageLoaders( unsigned int flags ) {
 	        {PL_PACKAGE_LOAD_FORMAT_PAK_VENOM,   "bpak3", PlParseVenomPakPackage },
 	};
 
-	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaders ); ++i ) {
-		if ( flags != PL_PACKAGE_LOAD_FORMAT_ALL && !( flags & loaders[ i ].flag ) ) {
+	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaders ); ++i )
+	{
+		if ( flags != PL_PACKAGE_LOAD_FORMAT_ALL && !( flags & loaders[ i ].flag ) )
+		{
 			continue;
 		}
 
-		PlRegisterPackageLoader( loaders[ i ].extension, NULL, loaders[ i ].parseFunction );
+		PlRegisterPackageLoader( loaders[ i ].extension, nullptr, loaders[ i ].parseFunction );
 	}
 }
 
-PLPackage *PlLoadPackage( const char *path ) {
+QmFsPackage *PlLoadPackage( const char *path )
+{
 	FunctionStart();
 
 	const char *ext = PlGetFileExtension( path );
-	for ( unsigned int i = 0; i < num_package_loaders; ++i ) {
-		if ( package_loaders[ i ].LoadFunction == NULL ) {
+	for ( unsigned int i = 0; i < num_package_loaders; ++i )
+	{
+		if ( package_loaders[ i ].LoadFunction == nullptr )
+		{
 			continue;
 		}
 
-		if ( !PL_INVALID_STRING( ext ) && !PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
-			if ( pl_strncasecmp( ext, package_loaders[ i ].ext, sizeof( package_loaders[ i ].ext ) ) == 0 ) {
-				PLPackage *package = package_loaders[ i ].LoadFunction( path );
-				if ( package != NULL ) {
-					snprintf( package->path, sizeof( package->path ), "%s", path );
+		if ( !PL_INVALID_STRING( ext ) && !PL_INVALID_STRING( package_loaders[ i ].ext ) )
+		{
+			if ( pl_strncasecmp( ext, package_loaders[ i ].ext, sizeof( package_loaders[ i ].ext ) ) == 0 )
+			{
+				QmFsPackage *package = package_loaders[ i ].LoadFunction( path );
+				if ( package != nullptr )
+				{
+					package->path = qm_os_string_alloc( "%s", path );
 					return package;
 				}
 			}
-		} else if ( PL_INVALID_STRING( ext ) && PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
-			PLPackage *package = package_loaders[ i ].LoadFunction( path );
-			if ( package != NULL ) {
-				snprintf( package->path, sizeof( package->path ), "%s", path );
+		}
+		else if ( PL_INVALID_STRING( ext ) && PL_INVALID_STRING( package_loaders[ i ].ext ) )
+		{
+			QmFsPackage *package = package_loaders[ i ].LoadFunction( path );
+			if ( package != nullptr )
+			{
+				package->path = qm_os_string_alloc( "%s", path );
 				return package;
 			}
 		}
@@ -355,39 +407,51 @@ PLPackage *PlLoadPackage( const char *path ) {
 
 	//TODO: this should replace the above, eventually...
 
-	PLFile *file = PlOpenFile( path, false );
-	if ( file == NULL ) {
-		return NULL;
+	QmFsFile *file = qm_fs_file_open( path, false );
+	if ( file == nullptr )
+	{
+		return nullptr;
 	}
 
-	PLPackage *package = NULL;
-	for ( unsigned int i = 0; i < num_package_loaders; ++i ) {
-		if ( package_loaders[ i ].ParseFunction == NULL ) {
+	QmFsPackage *package = nullptr;
+	for ( unsigned int i = 0; i < num_package_loaders; ++i )
+	{
+		if ( package_loaders[ i ].ParseFunction == nullptr )
+		{
 			continue;
 		}
 
-		if ( !PL_INVALID_STRING( ext ) && !PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
-			if ( pl_strncasecmp( ext, package_loaders[ i ].ext, sizeof( package_loaders[ i ].ext ) ) == 0 ) {
+		if ( !PL_INVALID_STRING( ext ) && !PL_INVALID_STRING( package_loaders[ i ].ext ) )
+		{
+			if ( pl_strncasecmp( ext, package_loaders[ i ].ext, sizeof( package_loaders[ i ].ext ) ) == 0 )
+			{
 				package = package_loaders[ i ].ParseFunction( file );
-				if ( package != NULL ) {
+				if ( package != nullptr )
+				{
 					break;
 				}
 			}
-		} else if ( PL_INVALID_STRING( ext ) && PL_INVALID_STRING( package_loaders[ i ].ext ) ) {
+		}
+		else if ( PL_INVALID_STRING( ext ) && PL_INVALID_STRING( package_loaders[ i ].ext ) )
+		{
 			package = package_loaders[ i ].ParseFunction( file );
-			if ( package != NULL ) {
+			if ( package != nullptr )
+			{
 				break;
 			}
 		}
 
-		PlRewindFile( file );
+		qm_fs_file_rewind( file );
 	}
 
 	PlCloseFile( file );
 
-	if ( package != NULL && *package->path == '\0' ) {
-		snprintf( package->path, sizeof( package->path ), "%s", path );
-	} else if ( PlGetFunctionResult() == PL_RESULT_SUCCESS ) {
+	if ( package != nullptr && *package->path == '\0' )
+	{
+		package->path = qm_os_string_alloc( "%s", path );
+	}
+	else if ( PlGetFunctionResult() == PL_RESULT_SUCCESS )
+	{
 		/* this was clearly not the case... */
 		PlReportBasicError( PL_RESULT_UNSUPPORTED );
 	}
@@ -395,27 +459,31 @@ PLPackage *PlLoadPackage( const char *path ) {
 	return package;
 }
 
-PLFile *PlLoadPackageFileByIndex( PLPackage *package, unsigned int index ) {
-	if ( index >= package->table_size ) {
+QmFsFile *PlLoadPackageFileByIndex( QmFsPackage *package, unsigned int index )
+{
+	if ( index >= package->table_size )
+	{
 		PlReportBasicError( PL_RESULT_INVALID_PARM2 );
-		return NULL;
+		return nullptr;
 	}
 
 	/* load in the package */
-	PLFile *packageFile = PlOpenFile( package->path, false );
-	if ( packageFile == NULL ) {
-		return NULL;
+	QmFsFile *packageFile = qm_fs_file_open( package->path, false );
+	if ( packageFile == nullptr )
+	{
+		return nullptr;
 	}
 
-	PLFile *file = NULL;
+	QmFsFile *file = nullptr;
 
-	uint8_t *dataPtr = package->internal.LoadFile( packageFile, &( package->table[ index ] ) );
-	if ( dataPtr != NULL ) {
-		file = QM_OS_MEMORY_NEW( PLFile );
-		snprintf( file->path, sizeof( file->path ), "%s", package->table[ index ].fileName );
-		file->size = package->table[ index ].fileSize;
-		file->data = dataPtr;
-		file->pos = file->data;
+	uint8_t *dataPtr = package->internal.LoadFile( packageFile, &package->table[ index ] );
+	if ( dataPtr != nullptr )
+	{
+		file = qm_fs_file_from_memory(
+		        package->table[ index ].fileName,
+		        dataPtr,
+		        package->table[ index ].fileSize,
+		        QM_FS_FILE_OWNERSHIP_TYPE_OWNER );
 	}
 
 	PlCloseFile( packageFile );
@@ -423,14 +491,18 @@ PLFile *PlLoadPackageFileByIndex( PLPackage *package, unsigned int index ) {
 	return file;
 }
 
-PLFile *PlLoadPackageFile( PLPackage *package, const char *path ) {
-	if ( package->internal.LoadFile == NULL ) {
+QmFsFile *PlLoadPackageFile( QmFsPackage *package, const char *path )
+{
+	if ( package->internal.LoadFile == nullptr )
+	{
 		PlReportErrorF( PL_RESULT_FILEREAD, "package has not been initialized, no LoadFile function assigned, aborting" );
-		return NULL;
+		return nullptr;
 	}
 
-	for ( unsigned int i = 0; i < package->table_size; ++i ) {
-		if ( strcmp( path, package->table[ i ].fileName ) != 0 ) {
+	for ( unsigned int i = 0; i < package->table_size; ++i )
+	{
+		if ( strcmp( path, package->table[ i ].fileName ) != 0 )
+		{
 			continue;
 		}
 
@@ -438,31 +510,38 @@ PLFile *PlLoadPackageFile( PLPackage *package, const char *path ) {
 	}
 
 	PlReportErrorF( PL_RESULT_INVALID_PARM2, "failed to find file in package" );
-	return NULL;
+	return nullptr;
 }
 
-const char *PlGetPackagePath( const PLPackage *package ) {
+const char *PlGetPackagePath( const QmFsPackage *package )
+{
 	return package->path;
 }
 
-const char *PlGetPackageFileName( const PLPackage *package, unsigned int index ) {
-	if ( index >= package->table_size ) {
+const char *PlGetPackageFileName( const QmFsPackage *package, unsigned int index )
+{
+	if ( index >= package->table_size )
+	{
 		PlReportBasicError( PL_RESULT_INVALID_PARM2 );
-		return NULL;
+		return nullptr;
 	}
 
 	return package->table[ index ].fileName;
 }
 
-unsigned int PlGetPackageTableSize( const PLPackage *package ) {
+unsigned int PlGetPackageTableSize( const QmFsPackage *package )
+{
 	return package->table_size;
 }
 
-int PlGetPackageTableIndex( const PLPackage *package, const char *indexName ) {
+int PlGetPackageTableIndex( const QmFsPackage *package, const char *indexName )
+{
 	FunctionStart();
 
-	for ( unsigned int i = 0; i < package->table_size; ++i ) {
-		if ( strcmp( indexName, package->table[ i ].fileName ) != 0 ) {
+	for ( unsigned int i = 0; i < package->table_size; ++i )
+	{
+		if ( strcmp( indexName, package->table[ i ].fileName ) != 0 )
+		{
 			continue;
 		}
 

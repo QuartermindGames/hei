@@ -169,7 +169,7 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PL_EXTERN void PlRegisterImageLoader( const char *extension, PLImage *( *ParseFile )( PLFile *path ) );
+PL_EXTERN void PlRegisterImageLoader( const char *extension, PLImage *( *ParseFile )( QmFsFile *path ) );
 PL_EXTERN void PlRegisterStandardImageLoaders( unsigned int flags );
 PL_EXTERN void PlClearImageLoaders( void );
 
@@ -177,7 +177,7 @@ PL_EXTERN PLImage *PlCreateImage( void *buf, unsigned int w, unsigned int h, uns
 PL_EXTERN void     PlDestroyImage( PLImage *image );
 
 PL_EXTERN PLImage *PlLoadImage( const char *path );
-PL_EXTERN PLImage *PlParseImage( PLFile *file );
+PL_EXTERN PLImage *PlParseImage( QmFsFile *file );
 PL_EXTERN bool     PlWriteImage( const PLImage *image, const char *path, unsigned int quality );
 
 PL_EXTERN bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format );
@@ -212,13 +212,13 @@ void PlBlockDecompressImageDXT1( unsigned int width, unsigned int height, const 
 void PlBlockDecompressImageDXT3( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image );
 void PlBlockDecompressImageDXT5( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image );
 
-PLImage *PlParse3dfImage( PLFile *file );
-PLImage *PlParseFtxImage( PLFile *file );
-PLImage *PlParseTimImage( PLFile *file );
-PLImage *PlParseSwlImage( PLFile *file );
-PLImage *PlParseQoiImage( PLFile *file );
-PLImage *PlParseDdsImage( PLFile *file );
-PLImage *PlParseHsmImage( PLFile *file );
+PLImage *PlParse3dfImage( QmFsFile *file );
+PLImage *PlParseFtxImage( QmFsFile *file );
+PLImage *PlParseTimImage( QmFsFile *file );
+PLImage *PlParseSwlImage( QmFsFile *file );
+PLImage *PlParseQoiImage( QmFsFile *file );
+PLImage *PlParseDdsImage( QmFsFile *file );
+PLImage *PlParseHsmImage( QmFsFile *file );
 
 #endif
 

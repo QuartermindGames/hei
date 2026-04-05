@@ -8,22 +8,22 @@
 
 /* Loader for SFA TAB/BIN format */
 
-PLPackage *PlLoadTabPackage( const char *path ) {
+QmFsPackage *PlLoadTabPackage( const char *path ) {
 	char bin_path[ PL_SYSTEM_MAX_PATH + 1 ];
 	strncpy( bin_path, path, strlen( path ) - 3 );
 	strncat( bin_path, "bin", PL_SYSTEM_MAX_PATH );
-	if ( !PlFileExists( bin_path ) ) {
+	if ( !qm_fs_check_file_exists( bin_path ) ) {
 		PlReportErrorF( PL_RESULT_FILEPATH, "failed to open bin package at \"%s\", aborting", bin_path );
 		return NULL;
 	}
 
-	size_t tab_size = PlGetLocalFileSize( path );
+	size_t tab_size = qm_fs_get_local_file_size( path );
 	if ( tab_size == 0 ) {
 		PlReportErrorF( PL_RESULT_FILESIZE, PlGetResultString( PL_RESULT_FILESIZE ) );
 		return NULL;
 	}
 
-	PLFile *fp = PlOpenFile( path, false );
+	QmFsFile *fp = qm_fs_file_open( path, false );
 	if ( fp == NULL ) {
 		return NULL;
 	}
@@ -56,7 +56,7 @@ PLPackage *PlLoadTabPackage( const char *path ) {
 		indices[ i ].end = be32toh( indices[ i ].end );
 	}
 
-	PLPackage *package = PlCreatePackageHandle( path, num_indices, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( path, num_indices, NULL );
 	for ( unsigned int i = 0; i < num_indices; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
 		snprintf( index->fileName, sizeof( index->fileName ), "%u", i );

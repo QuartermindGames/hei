@@ -25,9 +25,9 @@ typedef struct Pak5Index {
 	uint32_t compressedSize;//?
 } Pak5Index;
 
-static PLHashTable *populate_name_table( const PLFile *file ) {
+static PLHashTable *populate_name_table( const QmFsFile *file ) {
 	PLPath path;
-	PlSetupPath( path, true, PlGetFilePath( file ) );
+	PlSetupPath( path, true, qm_fs_file_get_path( file ) );
 	char *c = strrchr( path, '.' );
 	if ( c == NULL ) {
 		return NULL;
@@ -38,7 +38,7 @@ static PLHashTable *populate_name_table( const PLFile *file ) {
 		return NULL;
 	}
 
-	PLFile *nameFile = PlOpenFile( path, false );
+	QmFsFile *nameFile = qm_fs_file_open( path, false );
 	if ( nameFile == NULL ) {
 		return NULL;
 	}
@@ -46,7 +46,7 @@ static PLHashTable *populate_name_table( const PLFile *file ) {
 	PLHashTable *nameTable = PlCreateHashTable();
 	while ( true ) {
 		char line[ 1024 ];
-		const char *p = PlReadString( nameFile, line, sizeof( line ) );
+		const char *p = qm_fs_file_read_string( nameFile, line, sizeof( line ) );
 		if ( p == NULL ) {
 			break;
 		}
@@ -73,7 +73,7 @@ static PLHashTable *populate_name_table( const PLFile *file ) {
 	return nameTable;
 }
 
-PLPackage *PlParseFrdPakPackage_( PLFile *file ) {
+QmFsPackage *PlParseFrdPakPackage_( QmFsFile *file ) {
 	Pak5Header header;
 	if ( PlReadFile( file, &header, sizeof( Pak5Header ), 1 ) != 1 ) {
 		return NULL;
@@ -84,12 +84,12 @@ PLPackage *PlParseFrdPakPackage_( PLFile *file ) {
 		return NULL;
 	}
 
-	if ( header.tocOffset == 0 || header.tocOffset >= PlGetFileSize( file ) ) {
+	if ( header.tocOffset == 0 || header.tocOffset >= qm_fs_file_get_size( file ) ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid TOC offset" );
 		return NULL;
 	}
 
-	if ( !PlFileSeek( file, header.tocOffset, SEEK_SET ) ) {
+	if ( !qm_fs_file_seek( file, header.tocOffset, SEEK_SET ) ) {
 		return NULL;
 	}
 
@@ -99,7 +99,7 @@ PLPackage *PlParseFrdPakPackage_( PLFile *file ) {
 		return NULL;
 	}
 
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 
 	// see if there's a checksum to name file
 	PLHashTable *nameTable = populate_name_table( file );
@@ -110,7 +110,7 @@ PLPackage *PlParseFrdPakPackage_( PLFile *file ) {
 		if ( PlReadFile( file, &index, sizeof( Pak5Index ), 1 ) != 1 ) {
 			break;
 		}
-		if ( index.offset == 0 || index.offset >= PlGetFileSize( file ) ) {
+		if ( index.offset == 0 || index.offset >= qm_fs_file_get_size( file ) ) {
 			PlReportErrorF( PL_RESULT_FILETYPE, "invalid file (%u) offset (%u)", i, index.offset );
 			break;
 		}

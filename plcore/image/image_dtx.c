@@ -71,7 +71,7 @@ static uint8_t GetDTXFormat( DTXHeader *dtx ) {
 	return dtx->extra[ 2 ];
 }
 
-PLImage *PlParseDtxImage_( PLFile *file ) {
+PLImage *PlParseDtxImage_( QmFsFile *file ) {
 	DTXHeader header;
 	if ( PlReadFile( file, &header, sizeof( DTXHeader ), 1 ) != 1 ) {
 		return NULL;

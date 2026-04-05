@@ -9,8 +9,8 @@
 
 #define HAL_MAGIC QM_OS_MAGIC_TO_NUM( 'A', 'P', 'U', 'K' )
 
-PLPackage *PlParseHalPackage_( PLFile *file ) {
-	int32_t magic = PlReadInt32( file, false, NULL );
+QmFsPackage *PlParseHalPackage_( QmFsFile *file ) {
+	int32_t magic = qm_fs_file_read_int32( file, false, NULL );
 	if ( magic != HAL_MAGIC ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid package identifier" );
 		return NULL;
@@ -24,7 +24,7 @@ PLPackage *PlParseHalPackage_( PLFile *file ) {
 	} FileIndex;
 
 	bool status;
-	uint32_t numFiles = PlReadInt32( file, false, &status );
+	uint32_t numFiles = qm_fs_file_read_int32( file, false, &status );
 	if ( !status ) {
 		PlCloseFile( file );
 		return NULL;
@@ -32,22 +32,22 @@ PLPackage *PlParseHalPackage_( PLFile *file ) {
 
 	/* make sure the file table is valid */
 	size_t tableSize = sizeof( FileIndex ) * numFiles;
-	if ( tableSize + 32 > PlGetFileSize( file ) ) {
+	if ( tableSize + 32 > qm_fs_file_get_size( file ) ) {
 		PlReportErrorF( PL_RESULT_INVALID_PARM1, "invalid file table" );
 		return NULL;
 	}
 
 	/* 24 bytes of nothing, can't think what this was intended for... */
-	if ( !PlFileSeek( file, 24, PL_SEEK_CUR ) ) {
+	if ( !qm_fs_file_seek( file, 24, QM_FS_SEEK_CUR ) ) {
 		return NULL;
 	}
 
 	FileIndex *indices = QM_OS_MEMORY_MALLOC_( sizeof( FileIndex ) * numFiles );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
-		indices[ i ].size = PlReadInt32( file, false, &status );
-		indices[ i ].offset = PlReadInt32( file, false, &status );
-		indices[ i ].unknown[ 0 ] = PlReadInt32( file, false, &status );
-		indices[ i ].unknown[ 1 ] = PlReadInt32( file, false, &status );
+		indices[ i ].size = qm_fs_file_read_int32( file, false, &status );
+		indices[ i ].offset = qm_fs_file_read_int32( file, false, &status );
+		indices[ i ].unknown[ 0 ] = qm_fs_file_read_int32( file, false, &status );
+		indices[ i ].unknown[ 1 ] = qm_fs_file_read_int32( file, false, &status );
 
 		if ( PlReadFile( file, indices[ i ].name, 1, 16 ) != 16 ) {
 			status = false;
@@ -61,7 +61,7 @@ PLPackage *PlParseHalPackage_( PLFile *file ) {
 
 	/* yay, we're finally done - now to setup the package object */
 
-	PLPackage *package = PlCreatePackageHandle( PlGetFilePath( file ), numFiles, NULL );
+	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 	for ( unsigned int i = 0; i < package->maxTableSize; ++i ) {
 		PLPackageIndex *index = &package->table[ i ];
 		index->offset = indices[ i ].offset;
