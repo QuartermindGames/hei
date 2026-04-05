@@ -9,7 +9,8 @@
 #include <plcore/pl_image.h>
 
 // Texture Environment Modes
-typedef enum PLGTextureEnvironmentMode {
+typedef enum PLGTextureEnvironmentMode
+{
 	PLG_TEXTUREMODE_ADD,
 	PLG_TEXTUREMODE_MODULATE,
 	PLG_TEXTUREMODE_DECAL,
@@ -18,16 +19,18 @@ typedef enum PLGTextureEnvironmentMode {
 	PLG_TEXTUREMODE_COMBINE
 } PLGTextureEnvironmentMode;
 
-typedef enum PLGTextureWrapMode {
+typedef enum PLGTextureWrapMode
+{
 	PLG_TEXTURE_WRAP_MODE_REPEAT,
 	PLG_TEXTURE_WRAP_MODE_MIRRORED_REPEAT,
 	PLG_TEXTURE_WRAP_MODE_CLAMP_EDGE,
 	PLG_TEXTURE_WRAP_MODE_CLAMP_BORDER,
 
 	PLG_MAX_TEXTURE_WRAP_MODES
-} PLGTextureWrapMode;
+} QmGfxTextureWrapMode;
 
-typedef enum PLGTextureFilter {
+typedef enum PLGTextureFilter
+{
 	PLG_TEXTURE_FILTER_MIPMAP_NEAREST,
 	PLG_TEXTURE_FILTER_MIPMAP_LINEAR,
 	PLG_TEXTURE_FILTER_MIPMAP_LINEAR_NEAREST,
@@ -36,20 +39,23 @@ typedef enum PLGTextureFilter {
 	PLG_TEXTURE_FILTER_LINEAR, // Linear
 
 	PLG_MAX_TEXTURE_FILTER_MODES
-} PLGTextureFilter;
+} QmGfxTextureFilter;
 
-typedef enum PLGTextureTarget {
+typedef enum PLGTextureTarget
+{
 	PLG_TEXTURE_1D,
 	PLG_TEXTURE_2D,
 	PLG_TEXTURE_3D
 } PLGTextureTarget;
 
-enum PLGTextureFlag {
+enum PLGTextureFlag
+{
 	PLG_TEXTURE_FLAG_PRESERVE = ( 1 << 1 ),
-	PLG_TEXTURE_FLAG_NOMIPS = ( 1 << 2 ),
+	PLG_TEXTURE_FLAG_NOMIPS   = ( 1 << 2 ),
 };
 
-typedef struct PLGTextureMappingUnit {
+typedef struct PLGTextureMappingUnit
+{
 	bool active;
 
 	unsigned int current_texture;
@@ -58,48 +64,45 @@ typedef struct PLGTextureMappingUnit {
 	PLGTextureEnvironmentMode current_envmode;
 } PLGTextureMappingUnit;
 
-typedef struct PLGTexture {
+typedef struct QmGfxTexture
+{
 	unsigned int flags;
 
 	unsigned int x, y;
 	unsigned int w, h;
 
-	size_t size;
+	size_t       size;
 	unsigned int levels;
 	unsigned int crc;
 
-	char name[ 64 ];
 	char path[ PL_SYSTEM_MAX_PATH ];
 
-	PLGTextureFilter filter;
-	PLGTextureWrapMode wrapMode;
+	QmGfxTextureFilter   filter;
+	QmGfxTextureWrapMode wrapMode;
 
-	PLImageFormat format;
+	PLImageFormat  format;
 	PLColourFormat pixel;
 
 	void *driver;// driver specific data
-} PLGTexture;
+} QmGfxTexture;
 
 PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PL_EXTERN PLGTexture *PlgCreateTexture( void );
-PL_EXTERN void PlgDestroyTexture( PLGTexture *texture );
+PL_EXTERN QmGfxTexture *qm_gfx_texture_create();
 
-PL_EXTERN bool PlgUploadTextureImage( PLGTexture *texture, const PLImage *upload );
+PL_EXTERN bool qm_gfx_texture_upload( QmGfxTexture *self, const PLImage *upload );
 
-PL_EXTERN unsigned int PlgGetMaxTextureSize( void );
-PL_EXTERN unsigned int PlgGetMaxTextureUnits( void );
-PL_EXTERN unsigned int PlgGetMaxTextureAnistropy( void );
+PL_EXTERN unsigned int qm_gfx_get_max_texture_size( void );
+PL_EXTERN unsigned int qm_gfx_get_max_texture_units( void );
 
-PL_EXTERN void PlgSetTextureAnisotropy( PLGTexture *texture, unsigned int amount );
-PL_EXTERN void PlgSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter );
-void PlgSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode );
+PL_EXTERN void PlgSetTextureAnisotropy( QmGfxTexture *texture, unsigned int amount );
+PL_EXTERN void qm_gfx_texture_set_filter( QmGfxTexture *self, QmGfxTextureFilter filter );
+void           qm_gfx_texture_set_wrap_mode( QmGfxTexture *self, QmGfxTextureWrapMode wrapMode );
 
-PL_EXTERN void PlgSetTexture( PLGTexture *texture, unsigned int tmu );
-PL_EXTERN void PlgSetTextureEnvironmentMode( PLGTextureEnvironmentMode mode );
-PL_EXTERN void PlgSetTextureFlags( PLGTexture *texture, unsigned int flags );
+PL_EXTERN void qm_gfx_texture_set( const QmGfxTexture *self, unsigned int tmu );
+PL_EXTERN void qm_gfx_texture_set_flags( QmGfxTexture *self, unsigned int flags );
 
 #endif /* !defined( PL_COMPILE_PLUGIN ) */
 

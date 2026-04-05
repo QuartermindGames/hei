@@ -20,48 +20,45 @@
 
 #define MAX_GRAPHICS_MODES 16
 
-typedef struct PLGDriver {
+typedef struct PLGDriver
+{
 	char identifier[ 32 ];
 	char description[ 64 ];
 
-	QmOsLibrary *libPtr; /* library handle */
-	const PLGDriverImportTable *interface;
+	QmOsLibrary                    *libPtr; /* library handle */
+	const PLGDriverImportTable     *interface;
 	PLGDriverInitializationFunction initFunction; /* initialization function */
 } PLGDriver;
 
-static PLGDriver drivers[ MAX_GRAPHICS_MODES ];
+static PLGDriver    drivers[ MAX_GRAPHICS_MODES ];
 static unsigned int numDrivers = 0;
 
 static PLGDriverExportTable exportTable = {
-        .CreateTexture = PlgCreateTexture,
-        .DestroyTexture = PlgDestroyTexture,
-        .GetMaxTextureAnistropy = PlgGetMaxTextureAnistropy,
-        .GetMaxTextureSize = PlgGetMaxTextureSize,
-        .GetMaxTextureUnits = PlgGetMaxTextureUnits,
-        .SetTexture = PlgSetTexture,
-        .SetTextureAnisotropy = PlgSetTextureAnisotropy,
-        .SetTextureEnvironmentMode = PlgSetTextureEnvironmentMode,
-        .SetTextureFlags = PlgSetTextureFlags,
+        .CreateTexture = qm_gfx_texture_create,
 };
 
-bool PlgRegisterDriver( const char *path ) {
+bool PlgRegisterDriver( const char *path )
+{
 	PlClearError();
 
 	GfxLog( "Registering driver: \"%s\"\n", path );
 
 	QmOsLibrary *library = qm_os_library_load( path, false );
-	if ( library == NULL ) {
+	if ( library == NULL )
+	{
 		GfxLog( "Failed to load library: %s\n", PlGetError() );
 		return false;
 	}
 
-	const PLGDriverDescription *description;
+	const PLGDriverDescription     *description;
 	PLGDriverInitializationFunction InitializeDriver;
-	PLGDriverQueryFunction RegisterDriver = ( PLGDriverQueryFunction ) qm_os_library_get_procedure( library, PLG_DRIVER_QUERY_FUNCTION );
-	if ( RegisterDriver != NULL ) {
+	PLGDriverQueryFunction          RegisterDriver = qm_os_library_get_procedure( library, PLG_DRIVER_QUERY_FUNCTION );
+	if ( RegisterDriver != NULL )
+	{
 		/* now fetch the driver description */
 		description = RegisterDriver();
-		if ( description == NULL ) {
+		if ( description == NULL )
+		{
 			GfxLog( "Failed to fetch description from library: \"%s\"!\n", path );
 			qm_os_library_unload( library );
 			return false;
@@ -78,16 +75,20 @@ bool PlgRegisterDriver( const char *path ) {
 		        description->driverVersion[ 1 ],
 		        description->driverVersion[ 2 ] );
 #endif
-		if ( description->coreInterfaceVersion[ 0 ] != PL_PLUGIN_INTERFACE_VERSION_MAJOR ) {
+		if ( description->coreInterfaceVersion[ 0 ] != PL_PLUGIN_INTERFACE_VERSION_MAJOR )
+		{
 			PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported core interface version" );
-		} else if ( description->graphicsInterfaceVersion[ 0 ] != PLG_INTERFACE_VERSION_MAJOR ) {
+		}
+		else if ( description->graphicsInterfaceVersion[ 0 ] != PLG_INTERFACE_VERSION_MAJOR )
+		{
 			PlReportErrorF( PL_RESULT_UNSUPPORTED, "unsupported graphics interface version" );
 		}
 
 		InitializeDriver = ( PLGDriverInitializationFunction ) qm_os_library_get_procedure( library, PLG_DRIVER_INIT_FUNCTION );
 	}
 
-	if ( RegisterDriver == NULL || InitializeDriver == NULL || PlGetFunctionResult() != PL_RESULT_SUCCESS ) {
+	if ( RegisterDriver == NULL || InitializeDriver == NULL || PlGetFunctionResult() != PL_RESULT_SUCCESS )
+	{
 		GfxLog( "Failed to load library!\nPL: %s\n", PlGetError() );
 		qm_os_library_unload( library );
 		return false;
@@ -98,9 +99,9 @@ bool PlgRegisterDriver( const char *path ) {
 	PLGDriver *driver = &drivers[ numDrivers++ ];
 	snprintf( driver->description, sizeof( driver->description ), "%s", description->description );
 	snprintf( driver->identifier, sizeof( driver->identifier ), "%s", description->identifier );
-	driver->interface = NULL;
+	driver->interface    = nullptr;
 	driver->initFunction = InitializeDriver;
-	driver->libPtr = library;
+	driver->libPtr       = library;
 
 	return true;
 }
@@ -108,19 +109,22 @@ bool PlgRegisterDriver( const char *path ) {
 /**
  * Private callback when scanning for plugins.
  */
-static void RegisterScannedDriver( const char *path, void *unused ) {
+static void RegisterScannedDriver( const char *path, void *unused )
+{
 	PL_UNUSEDVAR( unused );
 
 	/* validate it's actually a plugin */
-	size_t length = strlen( path );
-	const char *c = strrchr( path, '_' );
-	if ( c == NULL ) {
+	size_t      length = strlen( path );
+	const char *c      = strrchr( path, '_' );
+	if ( c == NULL )
+	{
 		return;
 	}
 
 	/* remaining length */
 	length -= c - path;
-	if ( pl_strncasecmp( c, DRIVER_EXTENSION QM_OS_SYSTEM_LIB_EXT, length ) != 0 ) {
+	if ( pl_strncasecmp( c, DRIVER_EXTENSION QM_OS_SYSTEM_LIB_EXT, length ) != 0 )
+	{
 		return;
 	}
 
@@ -134,7 +138,8 @@ static void RegisterScannedDriver( const char *path, void *unused ) {
  * @param path A path to the directory to scan.
  * @return The number of interfaces registered successfully.
  */
-unsigned int PlgScanForDrivers( const char *path ) {
+unsigned int PlgScanForDrivers( const char *path )
+{
 	unsigned int numDriversBefore = numDrivers;
 	PlScanDirectory( path, ( QM_OS_SYSTEM_LIB_EXT ) + 1, RegisterScannedDriver, false, NULL );
 	return numDrivers - numDriversBefore;
@@ -144,28 +149,34 @@ unsigned int PlgScanForDrivers( const char *path ) {
  * Query what available graphics modes there are so that the
  * host can either choose their preference or attempt each.
  */
-const char **PlgGetAvailableDriverInterfaces( unsigned int *numModes ) {
+const char **PlgGetAvailableDriverInterfaces( unsigned int *numModes )
+{
 	static unsigned int cachedModes = 0;
-	static const char *descriptors[ MAX_GRAPHICS_MODES ];
-	if ( cachedModes != numDrivers ) {
-		for ( unsigned int i = 0; i < numDrivers; ++i ) {
+	static const char  *descriptors[ MAX_GRAPHICS_MODES ];
+	if ( cachedModes != numDrivers )
+	{
+		for ( unsigned int i = 0; i < numDrivers; ++i )
+		{
 			descriptors[ i ] = drivers[ i ].identifier;
 		}
 	}
-	*numModes = numDrivers;
+	*numModes   = numDrivers;
 	cachedModes = *numModes;
 
 	return descriptors;
 }
 
-PLFunctionResult PlgSetDriver( const char *mode ) {
+PLFunctionResult PlgSetDriver( const char *mode )
+{
 	GfxLog( "Attempting mode \"%s\"...\n", mode );
 
 	exportTable.core = PlGetExportTable();
 
 	const PLGDriverImportTable *interface = NULL;
-	for ( unsigned int i = 0; i < numDrivers; ++i ) {
-		if ( pl_strcasecmp( mode, drivers[ i ].identifier ) != 0 ) {
+	for ( unsigned int i = 0; i < numDrivers; ++i )
+	{
+		if ( pl_strcasecmp( mode, drivers[ i ].identifier ) != 0 )
+		{
 			continue;
 		}
 
@@ -173,24 +184,28 @@ PLFunctionResult PlgSetDriver( const char *mode ) {
 		break;
 	}
 
-	if ( interface == NULL ) {
+	if ( interface == NULL )
+	{
 		PlReportErrorF( PL_RESULT_GRAPHICSINIT, "invalid graphics interface \"%s\" selected", mode );
 		return PL_RESULT_GRAPHICSINIT;
 	}
 
-	if ( gfx_state.interface != NULL && interface == gfx_state.interface ) {
+	if ( gfx_state.interface != NULL && interface == gfx_state.interface )
+	{
 		PlReportErrorF( PL_RESULT_GRAPHICSINIT, "chosen interface \"%s\" is already active", mode );
 		return PL_RESULT_GRAPHICSINIT;
 	}
 
 	gfx_state.interface = interface;
-	if ( gfx_state.interface->Initialize == NULL ) {
+	if ( gfx_state.interface->Initialize == NULL )
+	{
 		PlReportErrorF( PL_RESULT_GRAPHICSINIT, "no initialization function bound for graphics interface \"%s\"", mode );
 		return PL_RESULT_GRAPHICSINIT;
 	}
 
 	PLFunctionResult result;
-	if ( ( result = gfx_state.interface->Initialize() ) != PL_RESULT_SUCCESS ) {
+	if ( ( result = gfx_state.interface->Initialize() ) != PL_RESULT_SUCCESS )
+	{
 		return result;
 	}
 
@@ -198,9 +213,10 @@ PLFunctionResult PlgSetDriver( const char *mode ) {
 
 	qm_os_memory_free( gfx_state.tmu );
 
-	unsigned int numUnits = PlgGetMaxTextureUnits();
-	gfx_state.tmu = ( PLGTextureMappingUnit * ) QM_OS_MEMORY_CALLOC( numUnits, sizeof( PLGTextureMappingUnit ) );
-	for ( unsigned int i = 0; i < numUnits; i++ ) {
+	unsigned int numUnits = qm_gfx_get_max_texture_units();
+	gfx_state.tmu         = ( PLGTextureMappingUnit * ) QM_OS_MEMORY_CALLOC( numUnits, sizeof( PLGTextureMappingUnit ) );
+	for ( unsigned int i = 0; i < numUnits; i++ )
+	{
 		gfx_state.tmu[ i ].current_envmode = PLG_TEXTUREMODE_REPLACE;
 	}
 

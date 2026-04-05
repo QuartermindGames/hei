@@ -43,16 +43,7 @@ typedef struct PLGDriverExportTable
 	const PLPluginExportTable *core;
 
 	/* plg_texture */
-	PLGTexture *( *CreateTexture )( void );
-	void ( *DestroyTexture )( PLGTexture *texture );
-	unsigned int ( *GetMaxTextureSize )( void );
-	unsigned int ( *GetMaxTextureUnits )( void );
-	unsigned int ( *GetMaxTextureAnistropy )( void );
-	void ( *SetTextureAnisotropy )( PLGTexture *texture, unsigned int amount );
-	void ( *SetTexture )( PLGTexture *texture, unsigned int tmu );
-	void ( *SetTextureUnit )( unsigned int tmu );
-	void ( *SetTextureEnvironmentMode )( PLGTextureEnvironmentMode mode );
-	void ( *SetTextureFlags )( PLGTexture *texture, unsigned int flags );
+	QmGfxTexture *( *CreateTexture )( void );
 } PLGDriverExportTable;
 
 typedef struct PLGDriverImportTable
@@ -103,7 +94,7 @@ typedef struct PLGDriverImportTable
 	bool ( *CreateFrameBuffer )( QmGfxFramebuffer *buffer );
 	void ( *DeleteFrameBuffer )( QmGfxFramebuffer *buffer );
 	void ( *BindFrameBuffer )( QmGfxFramebuffer *buffer, PLGFrameBufferObjectTarget targetBinding );
-	PLGTexture *( *GetFrameBufferTextureAttachment )( QmGfxFramebuffer *buffer, unsigned int component, PLGTextureFilter filter, PLGTextureWrapMode wrap );
+	QmGfxTexture *( *GetFrameBufferTextureAttachment )( QmGfxFramebuffer *buffer, unsigned int component, QmGfxTextureFilter filter, QmGfxTextureWrapMode wrap );
 	void ( *BlitFrameBuffers )( QmGfxFramebuffer *srcBuffer,
 	                            unsigned int      srcW,
 	                            unsigned int      srcH,
@@ -115,13 +106,13 @@ typedef struct PLGDriverImportTable
 	void ( *SetFrameBufferSize )( QmGfxFramebuffer *frameBuffer, unsigned int width, unsigned int height );
 
 	// Texture
-	void ( *CreateTexture )( PLGTexture *texture );
-	void ( *DeleteTexture )( PLGTexture *texture );
-	void ( *BindTexture )( const PLGTexture *texture );
-	void ( *UploadTexture )( PLGTexture *texture, const PLImage *upload );
-	void ( *SwizzleTexture )( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a );
-	void ( *SetTextureAnisotropy )( PLGTexture *texture, uint32_t value );
-	void ( *SetTextureFilter )( PLGTexture *texture, PLGTextureFilter filter );
+	void ( *CreateTexture )( QmGfxTexture *texture );
+	void ( *DeleteTexture )( QmGfxTexture *texture );
+	void ( *BindTexture )( const QmGfxTexture *texture );
+	void ( *UploadTexture )( QmGfxTexture *texture, const PLImage *upload );
+	void ( *SwizzleTexture )( QmGfxTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a );
+	void ( *SetTextureAnisotropy )( QmGfxTexture *texture, uint32_t value );
+	void ( *SetTextureFilter )( QmGfxTexture *texture, QmGfxTextureFilter filter );
 	void ( *ActiveTexture )( unsigned int target );
 
 	/* viewport */
@@ -153,7 +144,7 @@ typedef struct PLGDriverImportTable
 	void *( *ReadFrameBufferRegion )( QmGfxFramebuffer *frameBuffer, uint32_t x, uint32_t y, uint32_t w, uint32_t h, size_t dstSize, void *dstBuf );
 
 	// v3.2
-	void ( *SetTextureWrapMode )( PLGTexture *texture, PLGTextureWrapMode wrapMode );
+	void ( *SetTextureWrapMode )( QmGfxTexture *texture, QmGfxTextureWrapMode wrapMode );
 
 	void ( *SetClipPlane )( const QmMathVector4f *clipPlane, const PLMatrix4 *clipPlaneMatrix, bool transpose );
 } PLGDriverImportTable;

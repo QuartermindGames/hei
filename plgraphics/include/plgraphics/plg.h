@@ -139,7 +139,7 @@ PL_EXTERN_C
 PLFunctionResult PlgInitializeGraphics( void );
 void             PlgShutdownGraphics( void );
 
-void PlgSetClipPlane( const QmMathVector4f *clip, const PLMatrix4 *clipMatrix, bool transpose );
+void qm_gfx_set_clip_plane( const QmMathVector4f *clip, const PLMatrix4 *clipMatrix, bool transpose );
 
 #endif
 

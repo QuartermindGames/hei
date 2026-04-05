@@ -40,7 +40,7 @@ typedef struct PLGVertex {
 	QmMathColour4ub colour;
 } PLGVertex;
 
-typedef struct PLGTexture PLGTexture;
+typedef struct QmGfxTexture QmGfxTexture;
 
 #define PLG_MAX_MESH_BUFFERS 32
 
@@ -64,7 +64,7 @@ typedef struct PLGMesh {
 
 	/* todo: consider throwing out the below */
 	struct QmGfxShaderProgram *shader_program;
-	PLGTexture *texture;
+	QmGfxTexture *texture;
 	unsigned int materialIndex;
 
 	PLGMeshPrimitive primitive;
@@ -90,9 +90,9 @@ void PlgDestroyMesh( PLGMesh *mesh );
 void PlgDrawEllipse( unsigned int segments, const QmMathVector2f *position, float w, float h, const QmMathColour4ub *colour );
 void PlgDrawRectangle( float x, float y, float w, float h, QmMathColour4ub colour );
 void PlgDrawLineRectangle( float x, float y, float w, float h, QmMathColour4ub colour );
-void PlgDrawTexturedRectangle( float x, float y, float w, float h, PLGTexture *texture );
+void PlgDrawTexturedRectangle( float x, float y, float w, float h, QmGfxTexture *texture );
 void PlgDrawTexturedQuad( const QmMathVector3f *ul, const QmMathVector3f *ur, const QmMathVector3f *ll, const QmMathVector3f *lr,
-                          float hScale, float vScale, PLGTexture *texture );
+                          float hScale, float vScale, QmGfxTexture *texture );
 void PlgDrawLines( const QmMathVector3f *points, unsigned int numPoints, QmMathColour4ub colour, float thickness );
 void PlgDrawLine( QmMathVector3f startPos, QmMathColour4ub startColour, QmMathVector3f endPos, QmMathColour4ub endColour );
 void PlgDrawSimpleLine( QmMathVector3f startPos, QmMathVector3f endPos, QmMathColour4ub colour );

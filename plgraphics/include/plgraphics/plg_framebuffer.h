@@ -54,7 +54,7 @@ void            qm_gfx_framebuffer_destroy( QmGfxFramebuffer *buffer );
 void            qm_gfx_framebuffer_bind( QmGfxFramebuffer *buffer, PLGFrameBufferObjectTarget target_binding );
 void            qm_gfx_framebuffer_blit( QmGfxFramebuffer *src_buffer, unsigned int src_w, unsigned int src_h, QmGfxFramebuffer *dst_buffer, unsigned int dst_w, unsigned int dst_h, unsigned int mask, bool linear );
 
-PLGTexture *PlgGetFrameBufferTextureAttachment( QmGfxFramebuffer *buffer, unsigned int component, PLGTextureFilter filter, PLGTextureWrapMode wrap );
+QmGfxTexture *PlgGetFrameBufferTextureAttachment( QmGfxFramebuffer *buffer, unsigned int component, QmGfxTextureFilter filter, QmGfxTextureWrapMode wrap );
 void        PlgGetFrameBufferResolution( const QmGfxFramebuffer *buffer, unsigned int *width, unsigned int *height );
 
 void  PlgSetClearColour( QmMathColour4ub rgba );

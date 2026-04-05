@@ -167,12 +167,12 @@ static void SetupRectangleMesh( float x, float y, float w, float h, QmMathColour
 	PlgImmColour( colour.r, colour.g, colour.b, colour.a );
 }
 
-void PlgDrawTexturedRectangle( float x, float y, float w, float h, PLGTexture *texture ) {
-	PlgSetTexture( texture, 0 );
+void PlgDrawTexturedRectangle( float x, float y, float w, float h, QmGfxTexture *texture ) {
+	qm_gfx_texture_set( texture, 0 );
 
 	PlgDrawRectangle( x, y, w, h, qm_math_colour4ub( 255, 255, 255, 255 ) );
 
-	PlgSetTexture( NULL, 0 );
+	qm_gfx_texture_set( NULL, 0 );
 }
 
 void PlgDrawRectangle( float x, float y, float w, float h, QmMathColour4ub colour ) {
@@ -196,7 +196,7 @@ void PlgDrawLineRectangle( float x, float y, float w, float h, QmMathColour4ub c
 	PlgImmDraw();
 }
 
-void PlgDrawTexturedQuad( const QmMathVector3f *ul, const QmMathVector3f *ur, const QmMathVector3f *ll, const QmMathVector3f *lr, float hScale, float vScale, PLGTexture *texture ) {
+void PlgDrawTexturedQuad( const QmMathVector3f *ul, const QmMathVector3f *ur, const QmMathVector3f *ll, const QmMathVector3f *lr, float hScale, float vScale, QmGfxTexture *texture ) {
 	PLGMesh *mesh = GetInternalMesh( PLG_MESH_TRIANGLES );
 
 	QmMathVector3f upperDist = qm_math_vector3f_sub( *ul, *ur );
@@ -214,7 +214,7 @@ void PlgDrawTexturedQuad( const QmMathVector3f *ul, const QmMathVector3f *ur, co
 
 	PlgGenerateMeshNormals( mesh, true );
 
-	PlgSetTexture( texture, 0 );
+	qm_gfx_texture_set( texture, 0 );
 
 	PlMatrixMode( PL_MODELVIEW_MATRIX );
 	PlPushMatrix();

@@ -50,7 +50,7 @@ void qm_gfx_framebuffer_destroy( QmGfxFramebuffer *buffer )
 	qm_os_memory_free( buffer );
 }
 
-PLGTexture *PlgGetFrameBufferTextureAttachment( QmGfxFramebuffer *buffer, unsigned int component, PLGTextureFilter filter, PLGTextureWrapMode wrap )
+QmGfxTexture *PlgGetFrameBufferTextureAttachment( QmGfxFramebuffer *buffer, unsigned int component, QmGfxTextureFilter filter, QmGfxTextureWrapMode wrap )
 {
 	CallReturningGfxFunction( GetFrameBufferTextureAttachment, NULL, buffer, component, filter, wrap );
 }

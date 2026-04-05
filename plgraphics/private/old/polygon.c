@@ -10,7 +10,7 @@
 #include <plgraphics/plg_polygon.h>
 
 typedef struct PLGPolygon {
-	PLGTexture *texture;
+	QmGfxTexture *texture;
 	QmMathVector2f textureOffset;
 	QmMathVector2f textureScale;
 	float textureRotation;
@@ -21,7 +21,7 @@ typedef struct PLGPolygon {
 	unsigned int numVertices;
 } PLGPolygon;
 
-PLGPolygon *PlgCreatePolygon( PLGTexture *texture, QmMathVector2f textureOffset, QmMathVector2f textureScale, float textureRotation ) {
+PLGPolygon *PlgCreatePolygon( QmGfxTexture *texture, QmMathVector2f textureOffset, QmMathVector2f textureScale, float textureRotation ) {
 	PLGPolygon *polygon = QM_OS_MEMORY_CALLOC( 1, sizeof( PLGPolygon ) );
 	polygon->texture = texture;
 	polygon->textureOffset = textureOffset;
@@ -135,7 +135,7 @@ PLGVertex *PlgGetPolygonVertices( PLGPolygon *polygon, unsigned int *numVertices
 	return polygon->vertices;
 }
 
-PLGTexture *PlgGetPolygonTexture( PLGPolygon *polygon ) {
+QmGfxTexture *PlgGetPolygonTexture( PLGPolygon *polygon ) {
 	return polygon->texture;
 }
 

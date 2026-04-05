@@ -131,7 +131,7 @@ static void ClearBoundBuffers( void ) {
 }
 #endif
 
-static void GL_TranslateTextureFilterFormat( PLGTextureFilter filterMode, int *min, int *mag ) {
+static void GL_TranslateTextureFilterFormat( QmGfxTextureFilter filterMode, int *min, int *mag ) {
 	switch ( filterMode ) {
 		case PLG_TEXTURE_FILTER_LINEAR:
 			*min = *mag = GL_LINEAR;
@@ -490,13 +490,13 @@ static void *GLReadFrameBufferRegion( QmGfxFramebuffer *frameBuffer, uint32_t x,
 	return dstBuf;
 }
 
-static void GLBindTexture( const PLGTexture *texture );
-static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter );
-static void GLSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode );
-static unsigned int TranslateWrapMode( PLGTextureWrapMode wrapMode );
+static void GLBindTexture( const QmGfxTexture *texture );
+static void GLSetTextureFilter( QmGfxTexture *texture, QmGfxTextureFilter filter );
+static void GLSetTextureWrapMode( QmGfxTexture *texture, QmGfxTextureWrapMode wrapMode );
+static unsigned int TranslateWrapMode( QmGfxTextureWrapMode wrapMode );
 //TODO: this should be CreateFrameBufferTextureAttachment, not GET!
-static PLGTexture *GLGetFrameBufferTextureAttachment( QmGfxFramebuffer *buffer, unsigned int components, PLGTextureFilter filter, PLGTextureWrapMode wrap ) {
-	PLGTexture *texture = gInterface->CreateTexture();
+static QmGfxTexture *GLGetFrameBufferTextureAttachment( QmGfxFramebuffer *buffer, unsigned int components, QmGfxTextureFilter filter, QmGfxTextureWrapMode wrap ) {
+	QmGfxTexture *texture = gInterface->CreateTexture();
 	if ( texture == NULL ) {
 		return NULL;
 	}
@@ -673,7 +673,7 @@ static unsigned int GetColourFormatForImageFormat( PLImageFormat format ) {
 	return GL_RGBA;
 }
 
-static void GLCreateTexture( PLGTexture *texture ) {
+static void GLCreateTexture( QmGfxTexture *texture ) {
 	texture->driver = gInterface->core->MAlloc( sizeof( GLTexture ), true );
 	XGL_CALL( glGenTextures( 1, &( ( GLTexture * ) texture->driver )->id ) );
 	( ( GLTexture * ) texture->driver )->target = GL_TEXTURE_2D;
@@ -681,14 +681,14 @@ static void GLCreateTexture( PLGTexture *texture ) {
 	texture->wrapMode = PLG_TEXTURE_WRAP_MODE_REPEAT;
 }
 
-static void GLDeleteTexture( PLGTexture *texture ) {
+static void GLDeleteTexture( QmGfxTexture *texture ) {
 	XGL_CALL( glDeleteTextures( 1, &( ( GLTexture * ) texture->driver )->id ) );
 
 	gInterface->core->Free( texture->driver );
 	texture->driver = NULL;
 }
 
-static void GLBindTexture( const PLGTexture *texture ) {
+static void GLBindTexture( const QmGfxTexture *texture ) {
 	if ( texture == NULL ) {
 		XGL_CALL( glBindTexture( GL_TEXTURE_2D, 0 ) );
 		return;
@@ -710,7 +710,7 @@ static bool IsCompressedImageFormat( PLImageFormat format ) {
 	}
 }
 
-static void GLUploadTexture( PLGTexture *texture, const PLImage *upload ) {
+static void GLUploadTexture( QmGfxTexture *texture, const PLImage *upload ) {
 	assert( upload->data != NULL && upload->data[ 0 ] != NULL );
 
 	unsigned int internalFormat = TranslateImageFormat( upload->format );
@@ -773,7 +773,7 @@ static GLenum target_to_query( GLenum target ) {
 	}
 }
 
-static void GLSetTextureAnisotropy( PLGTexture *texture, uint32_t value ) {
+static void GLSetTextureAnisotropy( QmGfxTexture *texture, uint32_t value ) {
 	GLenum target = ( ( GLTexture * ) texture->driver )->target;
 	GLuint id = ( ( GLTexture * ) texture->driver )->id;
 	if ( XGL_VERSION( 4, 6 ) ) {
@@ -793,7 +793,7 @@ static void GLSetTextureAnisotropy( PLGTexture *texture, uint32_t value ) {
 	}
 }
 
-static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter ) {
+static void GLSetTextureFilter( QmGfxTexture *texture, QmGfxTextureFilter filter ) {
 	GLenum target = ( ( GLTexture * ) texture->driver )->target;
 	if ( target != GL_TEXTURE_2D_MULTISAMPLE ) {
 		int min, mag;
@@ -820,7 +820,7 @@ static void GLSetTextureFilter( PLGTexture *texture, PLGTextureFilter filter ) {
 	texture->filter = filter;
 }
 
-static unsigned int TranslateWrapMode( PLGTextureWrapMode wrapMode ) {
+static unsigned int TranslateWrapMode( QmGfxTextureWrapMode wrapMode ) {
 	unsigned int glWrapMode;
 	switch ( wrapMode ) {
 		default:
@@ -843,7 +843,7 @@ static unsigned int TranslateWrapMode( PLGTextureWrapMode wrapMode ) {
 	return glWrapMode;
 }
 
-static void GLSetTextureWrapMode( PLGTexture *texture, PLGTextureWrapMode wrapMode ) {
+static void GLSetTextureWrapMode( QmGfxTexture *texture, QmGfxTextureWrapMode wrapMode ) {
 	GLBindTexture( texture );
 
 	GLenum target = ( ( GLTexture * ) texture->driver )->target;
@@ -877,7 +877,7 @@ static int TranslateColourChannel( int channel ) {
 	}
 }
 
-static void GLSwizzleTexture( PLGTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
+static void GLSwizzleTexture( QmGfxTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
 	GLBindTexture( texture );
 	if ( XGL_VERSION( 3, 3 ) ) {
 		int swizzle[] = {

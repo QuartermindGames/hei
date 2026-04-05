@@ -1,14 +1,9 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2022 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
-
-#include <plcore/pl_console.h>
-#include <plcore/pl_image.h>
-#include <plgraphics/plg_driver_interface.h>
+// Copyright © 2017-2026 Quartermind Games, Mark E. Sowden <markelswo@gmail.com>
+// Purpose: Base graphics API
+// Author:  Mark E. Sowden
 
 #include "plg_private.h"
+
 #include "qmos/public/qm_os_memory.h"
 
 /*	Graphics	*/
@@ -23,7 +18,8 @@ int LOG_LEVEL_GRAPHICS = 0;
 
 void PlgInitializeInternalMeshes( void ); /* plg_draw.c */
 
-PLFunctionResult PlgInitializeGraphics( void ) {
+PLFunctionResult PlgInitializeGraphics( void )
+{
 	memset( &gfx_state, 0, sizeof( GfxState ) );
 
 	LOG_LEVEL_GRAPHICS = PlAddLogLevel( "plgraphics", ( QmMathColour4ub ) { 0, 255, 255, 255 },
@@ -39,12 +35,13 @@ PLFunctionResult PlgInitializeGraphics( void ) {
 	return PL_RESULT_SUCCESS;
 }
 
-void PlgShutdownTextures( void );    // platform_graphics_texture
 void PlgClearInternalMeshes( void ); /* plg_draw.c */
 
-void PlgShutdownGraphics( void ) {
+void PlgShutdownGraphics( void )
+{
 	PlgClearInternalMeshes();
-	PlgShutdownTextures();
+
+	qm_os_memory_free( gfx_state.tmu );
 
 	CallGfxFunction( Shutdown );
 }
@@ -72,20 +69,49 @@ void qm_gfx_debug_pop_group_marker( void )
 	HARDWARE INFORMATION
 ===========================*/
 
-bool PlgSupportsHWShaders( void ) {
+bool PlgSupportsHWShaders( void )
+{
 	CallReturningGfxFunction( SupportsHWShaders, false );
+}
+
+/* todo: move into generic GET handler */
+unsigned int qm_gfx_get_max_texture_units( void )
+{
+	if ( gfx_state.hw_maxtextureunits != 0 )
+	{
+		return gfx_state.hw_maxtextureunits;
+	}
+
+	CallGfxFunction( GetMaxTextureUnits, &gfx_state.hw_maxtextureunits );
+	return gfx_state.hw_maxtextureunits;
+}
+
+/* todo: move into generic GET handler */
+unsigned int qm_gfx_get_max_texture_size( void )
+{
+	if ( gfx_state.hw_maxtexturesize != 0 )
+	{
+		return gfx_state.hw_maxtexturesize;
+	}
+
+	CallGfxFunction( GetMaxTextureSize, &gfx_state.hw_maxtexturesize );
+
+	return gfx_state.hw_maxtexturesize;
 }
 
 /*===========================
 	CAPABILITIES
 ===========================*/
 
-bool PlgIsGraphicsStateEnabled( PLGDrawState state ) {
+bool PlgIsGraphicsStateEnabled( PLGDrawState state )
+{
 	return gfx_state.current_capabilities[ state ];
 }
 
-void PlgEnableGraphicsState( PLGDrawState state ) {
-	if ( PlgIsGraphicsStateEnabled( state ) ) {
+void PlgEnableGraphicsState( PLGDrawState state )
+{
+	if ( PlgIsGraphicsStateEnabled( state ) )
+	{
 		return;
 	}
 
@@ -94,8 +120,10 @@ void PlgEnableGraphicsState( PLGDrawState state ) {
 	gfx_state.current_capabilities[ state ] = true;
 }
 
-void PlgDisableGraphicsState( PLGDrawState state ) {
-	if ( !PlgIsGraphicsStateEnabled( state ) ) {
+void PlgDisableGraphicsState( PLGDrawState state )
+{
+	if ( !PlgIsGraphicsStateEnabled( state ) )
+	{
 		return;
 	}
 
@@ -108,12 +136,15 @@ void PlgDisableGraphicsState( PLGDrawState state ) {
 	DRAW
 ===========================*/
 
-void PlgSetBlendMode( PLGBlend a, PLGBlend b ) {
+void PlgSetBlendMode( PLGBlend a, PLGBlend b )
+{
 	CallGfxFunction( SetBlendMode, a, b );
 }
 
-void PlgSetCullMode( PLGCullMode mode ) {
-	if ( mode == gfx_state.current_cullmode ) {
+void PlgSetCullMode( PLGCullMode mode )
+{
+	if ( mode == gfx_state.current_cullmode )
+	{
 		return;
 	}
 
@@ -122,19 +153,23 @@ void PlgSetCullMode( PLGCullMode mode ) {
 	gfx_state.current_cullmode = mode;
 }
 
-void PlgSetDepthBufferMode( unsigned int mode ) {
+void PlgSetDepthBufferMode( unsigned int mode )
+{
 	CallGfxFunction( SetDepthBufferMode, mode );
 }
 
-void PlgDepthMask( bool enable ) {
+void PlgDepthMask( bool enable )
+{
 	CallGfxFunction( DepthMask, enable );
 }
 
-void PlgColourMask( bool r, bool g, bool b, bool a ) {
+void PlgColourMask( bool r, bool g, bool b, bool a )
+{
 	CallGfxFunction( ColourMask, r, g, b, a );
 }
 
-void PlgStencilMask( unsigned int mask ) {
+void PlgStencilMask( unsigned int mask )
+{
 	CallGfxFunction( StencilMask, mask );
 }
 
@@ -142,21 +177,25 @@ void PlgStencilMask( unsigned int mask ) {
 	BUFFER OPERATIONS
 ===========================*/
 
-void PlgDepthBufferFunction( PLGCompareFunction compareFunction ) {
+void PlgDepthBufferFunction( PLGCompareFunction compareFunction )
+{
 	CallGfxFunction( DepthBufferFunction, compareFunction );
 }
 
-void PlgStencilBufferFunction( PLGCompareFunction function, int reference, unsigned int mask ) {
+void PlgStencilBufferFunction( PLGCompareFunction function, int reference, unsigned int mask )
+{
 	CallGfxFunction( StencilBufferFunction, function, reference, mask );
 }
 
-void PlgStencilOp( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp depthFailOp, PLGStencilOp depthPassOp ) {
+void PlgStencilOp( PLGStencilFace face, PLGStencilOp stencilFailOp, PLGStencilOp depthFailOp, PLGStencilOp depthPassOp )
+{
 	CallGfxFunction( StencilOp, face, stencilFailOp, depthFailOp, depthPassOp );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-void PlgSetClipPlane( const QmMathVector4f *clip, const PLMatrix4 *clipMatrix, bool transpose ) {
+void qm_gfx_set_clip_plane( const QmMathVector4f *clip, const PLMatrix4 *clipMatrix, bool transpose )
+{
 	CallGfxFunction( SetClipPlane, clip, clipMatrix, transpose );
 }
 
