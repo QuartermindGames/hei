@@ -61,15 +61,10 @@ typedef char PLPath[ PL_SYSTEM_MAX_PATH ];
 
 #define PL_UNUSEDVAR( ... ) ( void ) ( __VA_ARGS__ )
 
-#define PL_ARRAY_ELEMENTS( a )  ( sizeof( a ) / sizeof( *( a ) ) )// Returns the number of elements within an array.
-#define PL_MAX_ARRAY_INDEX( a ) ( int ) ( PL_ARRAY_ELEMENTS( a ) - 1 )
 #define PL_INVALID_STRING( a )  ( a == NULL || *a == '\0' )
 
 #define PL_ZERO( DATA, SIZE ) memset( ( DATA ), 0, ( SIZE ) )
 #define PL_ZERO_( DATA )      memset( &( DATA ), 0, sizeof( ( DATA ) ) )
-
-#define PL_MIN( A, B ) ( ( A ) < ( B ) ? ( A ) : ( B ) )
-#define PL_MAX( A, B ) ( ( A ) > ( B ) ? ( A ) : ( B ) )
 
 #define PL_STRINGIFY( num ) #num
 #define PL_TOSTRING( A )    PL_STRINGIFY( A )

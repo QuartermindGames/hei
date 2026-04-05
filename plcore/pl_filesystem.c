@@ -475,12 +475,6 @@ const char *PlGetFileExtension( const char *in )
 // Strips the extension from the filename.
 void PlStripExtension( char *dest, size_t length, const char *in )
 {
-	if ( PL_INVALID_STRING( in ) )
-	{
-		*dest = 0;
-		return;
-	}
-
 	const char *s = strrchr( in, '.' );
 	while ( in < s )
 	{

@@ -28,7 +28,7 @@ void PlRegisterStandardPackageWriters( unsigned int flags ) {
 	        {PL_PACKAGE_WRITE_FORMAT_BIN_FRESH, PL_PACKAGE_FORMAT_TAG_BIN_FRESH, NULL},
 	};
 
-	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( writers ); ++i ) {
+	for ( unsigned int i = 0; i < QM_OS_ARRAY_ELEMENTS( writers ); ++i ) {
 		if ( flags != PL_PACKAGE_LOAD_FORMAT_ALL && !( flags & writers[ i ].flag ) ) {
 			continue;
 		}

@@ -31,12 +31,6 @@ SOFTWARE.
 
 typedef uint16_t PLPluginInterfaceVersion[ 2 ];
 
-typedef struct PLPluginDescription {
-	PLPluginInterfaceVersion interfaceVersion;
-	unsigned int pluginVersion[ 3 ]; /* Major, minor and patch. */
-	const char *description;
-} PLPluginDescription;
-
 /**
  * Functions exported from the platform library.
  */
@@ -96,11 +90,6 @@ typedef struct PLPluginExportTable {
 #define PL_PLUGIN_INTERFACE_VERSION_MINOR 2
 #define PL_PLUGIN_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
-
-#define PL_PLUGIN_QUERY_FUNCTION "PLQueryPlugin"
-typedef const PLPluginDescription *( *PLPluginQueryFunction )( void );
-#define PL_PLUGIN_INIT_FUNCTION "PLInitializePlugin"
-typedef void ( *PLPluginInitializationFunction )( const PLPluginExportTable *exportTable );
 
 /* 2023-04-10
  * - Added Path API

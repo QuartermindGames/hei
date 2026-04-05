@@ -141,7 +141,7 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	        {PL_IMAGE_FILEFORMAT_HSM,       "hsm",  PlParseHsmImage      },
 	};
 
-	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
+	for ( unsigned int i = 0; i < QM_OS_ARRAY_ELEMENTS( loaderList ); ++i ) {
 		if ( flags != PL_IMAGE_FILEFORMAT_ALL && !( flags & loaderList[ i ].flag ) ) {
 			continue;
 		}

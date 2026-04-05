@@ -359,7 +359,7 @@ void PlRegisterStandardPackageLoaders( unsigned int flags )
 	        {PL_PACKAGE_LOAD_FORMAT_PAK_VENOM,   "bpak3", PlParseVenomPakPackage },
 	};
 
-	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaders ); ++i )
+	for ( unsigned int i = 0; i < QM_OS_ARRAY_ELEMENTS( loaders ); ++i )
 	{
 		if ( flags != PL_PACKAGE_LOAD_FORMAT_ALL && !( flags & loaders[ i ].flag ) )
 		{

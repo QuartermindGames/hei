@@ -932,7 +932,7 @@ static MeshTranslatePrimitive primitives[] = {
 };
 
 static unsigned int TranslatePrimitiveMode( PLGMeshPrimitive mode ) {
-	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( primitives ); i++ ) {
+	for ( unsigned int i = 0; i < QM_OS_ARRAY_ELEMENTS( primitives ); i++ ) {
 		if ( mode == primitives[ i ].mode )
 			return primitives[ i ].target;
 	}

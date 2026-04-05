@@ -49,9 +49,9 @@ bool PlIsPointIntersectingAabb( const PLCollisionAABB *bounds, QmMathVector3f po
 static QmMathVector3f FindClosestPointOnAabb( const PLCollisionAABB *bounds, const QmMathVector3f *point )
 {
 	return qm_math_vector3f(
-	        PL_MAX( bounds->mins.x, PL_MIN( bounds->maxs.x, point->x ) ),
-	        PL_MAX( bounds->mins.y, PL_MIN( bounds->maxs.y, point->y ) ),
-	        PL_MAX( bounds->mins.z, PL_MIN( bounds->maxs.z, point->z ) ) );
+	        QM_OS_MAX( bounds->mins.x, QM_OS_MIN( bounds->maxs.x, point->x ) ),
+	        QM_OS_MAX( bounds->mins.y, QM_OS_MIN( bounds->maxs.y, point->y ) ),
+	        QM_OS_MAX( bounds->mins.z, QM_OS_MIN( bounds->maxs.z, point->z ) ) );
 }
 
 bool PlIsSphereIntersectingAabb( const PLCollisionSphere *sphere, const PLCollisionAABB *bounds ) {
