@@ -100,7 +100,7 @@ void PlgColour4bv( PLGMesh *mesh, const QmMathColour4ub *col ) {
  ****************************************/
 
 void PlgInitializeInternalMeshes( void ) {
-	PL_ZERO_( meshes );
+	QM_OS_ZERO_( meshes );
 }
 
 void PlgClearInternalMeshes( void ) {

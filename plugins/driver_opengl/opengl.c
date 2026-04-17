@@ -25,10 +25,9 @@ SOFTWARE.
 #include "plugin.h"
 
 #include "qmos/public/qm_os.h"
+#include "qmparse/public/qm_parse.h"
 
 #include <plgraphics/plg.h>
-
-#include <plcore/pl_parse.h>
 
 #include <GL/glew.h>
 #if defined( _WIN32 )

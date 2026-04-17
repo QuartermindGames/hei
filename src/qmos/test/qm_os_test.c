@@ -2,8 +2,6 @@
 // Purpose: Tests for QmOs API.
 // Author:  Mark E. Sowden
 
-#include "tests.h"
-
 #include "qmos/public/qm_os.h"
 #include "qmos/public/qm_os_memory.h"
 #include "qmos/public/qm_os_shared_ptr.h"
@@ -11,6 +9,8 @@
 #include "qmos/public/qm_os_time.h"
 #include "qmos/public/qm_os_random.h"
 #include "qmos/public/qm_os_linked_list.h"
+
+#include "qmtest/public/qm_test.h"
 
 QM_TEST_FUNC( linked_list )
 {
@@ -143,16 +143,15 @@ QM_TEST_FUNC( string )
 {
 	static constexpr char MSG[] = "Hello to you!";
 
-	size_t size;
-	char  *buf = qm_os_string_alloc( &size, "Hello World! %s", MSG );
+	char  *buf = qm_os_string_alloc( "Hello World! %s", MSG );
 	QM_TEST_ASSERT( buf != nullptr );
-	QM_TEST_ASSERT( size == strlen( buf ) + 1 );
 	QM_TEST_ASSERT( strcmp( buf, "Hello World! Hello to you!" ) == 0 );
 
 	char tmp[ 8 ];
 	qm_os_string_convert_int( 128, tmp, sizeof( tmp ), 10 );
 	QM_TEST_ASSERT( strcmp( tmp, "128" ) == 0 );
 
+	size_t size = strlen( buf );
 	if ( qm_os_string_count( buf, 'H', size ) != 2 )
 	{
 		QM_TEST_FAIL( "Failed on count\n" );

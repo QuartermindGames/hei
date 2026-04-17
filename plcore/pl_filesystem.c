@@ -730,7 +730,7 @@ void PlScanDirectory( const char *path, const char *extension, void ( *Function 
 		if ( location->type == QM_FS_MOUNT_TYPE_PACKAGE )
 		{
 			QmFsPackage *package = location->pkg;
-			for ( unsigned int j = 0; j < package->table_size; ++j )
+			for ( unsigned int j = 0; j < package->numFiles; ++j )
 			{
 				//HACK: urgh, packages don't have the concept of '.' or './', so let's work around that
 
@@ -745,18 +745,18 @@ void PlScanDirectory( const char *path, const char *extension, void ( *Function 
 				}
 
 				size_t l = strlen( subPath );
-				if ( strncmp( package->table[ j ].fileName, subPath, l ) != 0 )
+				if ( strncmp( package->files[ j ].name, subPath, l ) != 0 )
 				{
 					continue;
 				}
 
-				const char *indexExtension = PlGetFileExtension( package->table[ j ].fileName );
+				const char *indexExtension = PlGetFileExtension( package->files[ j ].name );
 				if ( indexExtension == nullptr || strcmp( indexExtension, extension ) != 0 )
 				{
 					continue;
 				}
 
-				Function( package->table[ j ].fileName, userData );
+				Function( package->files[ j ].name, userData );
 			}
 		}
 		else if ( location->type == QM_FS_MOUNT_TYPE_DIR )
@@ -802,7 +802,7 @@ void PlSetWorkingDirectory( const char *path )
 
 const char *PlGetExecutablePath( char *out, size_t outSize )
 {
-	PL_ZERO( out, outSize );
+	QM_OS_ZERO( out, outSize );
 
 #if QM_OS_SYSTEM == QM_OS_SYSTEM_LINUX
 	if ( readlink( "/proc/self/exe", out, outSize ) == -1 )
@@ -889,13 +889,13 @@ static QmFsMount *PlGetMountLocationForPath_( const char *path )
 				}
 				case QM_FS_MOUNT_TYPE_PACKAGE:
 				{
-					for ( unsigned int i = 0; i < location->pkg->table_size; ++i )
+					for ( unsigned int i = 0; i < location->pkg->numFiles; ++i )
 					{
 						/* packages don't necessarily have the concept of a directory
 						 * the way we might expect (take Unreal packages for example),
 						 * so down the line we might want to allow this to be handled
 						 * by the specific package API (i.e. call to GetPackageDirectory?). */
-						if ( strncmp( path, location->pkg->table[ i ].fileName, sl ) == 0 )
+						if ( strncmp( path, location->pkg->files[ i ].name, sl ) == 0 )
 						{
 							return location;
 						}

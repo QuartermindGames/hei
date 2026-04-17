@@ -49,8 +49,7 @@ static int BlstCbOut( void *how, unsigned char *buf, unsigned int len )
 
 static int Inflate( unsigned char *dst, uint32_t *dstLength, const unsigned char *src, uint32_t srcLength, bool raw )
 {
-	mz_stream stream;
-	PL_ZERO_( stream );
+	mz_stream stream = {};
 	stream.next_in   = src;
 	stream.avail_in  = srcLength;
 	stream.next_out  = dst;
@@ -75,7 +74,7 @@ static int Inflate( unsigned char *dst, uint32_t *dstLength, const unsigned char
  * Generic loader for package files, since this is unlikely to change
  * in most cases.
  */
-static void *LoadGenericPackageFile( QmFsFile *fh, PLPackageIndex *pi )
+static void *LoadGenericPackageFile( QmFsFile *fh, QmFsPackageFile *pi )
 {
 	FunctionStart();
 
@@ -84,7 +83,7 @@ static void *LoadGenericPackageFile( QmFsFile *fh, PLPackageIndex *pi )
 		return nullptr;
 	}
 
-	size_t   size    = ( pi->compressionType != PL_COMPRESSION_NONE ) ? pi->compressedSize : pi->fileSize;
+	size_t   size    = ( pi->compressionType != PL_COMPRESSION_NONE ) ? pi->compressedSize : pi->size;
 	uint8_t *dataPtr = QM_OS_MEMORY_NEW_( uint8_t, size );
 	if ( PlReadFile( fh, dataPtr, sizeof( uint8_t ), size ) != size )
 	{
@@ -105,8 +104,8 @@ static void *LoadGenericPackageFile( QmFsFile *fh, PLPackageIndex *pi )
 			case PL_COMPRESSION_DEFLATE:
 			case PL_COMPRESSION_GZIP:
 			{
-				uint8_t *decompressedPtr    = QM_OS_MEMORY_NEW_( uint8_t, pi->fileSize );
-				uint32_t uncompressedLength = ( uint32_t ) pi->fileSize;
+				uint8_t *decompressedPtr    = QM_OS_MEMORY_NEW_( uint8_t, pi->size );
+				uint32_t uncompressedLength = ( uint32_t ) pi->size;
 				int      status             = Inflate( decompressedPtr, &uncompressedLength, dataPtr, ( unsigned long ) pi->compressedSize, ( pi->compressionType == PL_COMPRESSION_GZIP ) );
 				qm_os_memory_free( dataPtr );
 				dataPtr = decompressedPtr;
@@ -120,8 +119,8 @@ static void *LoadGenericPackageFile( QmFsFile *fh, PLPackageIndex *pi )
 			}
 			case PL_COMPRESSION_IMPLODE:
 			{
-				uint8_t *decompressedPtr    = QM_OS_MEMORY_NEW_( uint8_t, pi->fileSize );
-				uint32_t uncompressedLength = ( uint32_t ) pi->fileSize;
+				uint8_t *decompressedPtr    = QM_OS_MEMORY_NEW_( uint8_t, pi->size );
+				uint32_t uncompressedLength = ( uint32_t ) pi->size;
 				BlstUser in                 = {
 				                                 .buffer = dataPtr,
 				                                 .length = ( unsigned int ) size,
@@ -167,7 +166,7 @@ static void *LoadGenericPackageFile( QmFsFile *fh, PLPackageIndex *pi )
 			}
 			case PL_COMPRESSION_LZRW1:
 			{
-				size_t uncompressedLength = pi->fileSize;
+				size_t uncompressedLength = pi->size;
 				void  *decompressedPtr    = PlDecompress_LZRW1( dataPtr, pi->compressedSize, &uncompressedLength );
 				qm_os_memory_free( dataPtr );
 				dataPtr = decompressedPtr;
@@ -185,7 +184,7 @@ static void *LoadGenericPackageFile( QmFsFile *fh, PLPackageIndex *pi )
 /**
  * Allocate a new package handle.
  */
-QmFsPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, void *( *OpenFile )( QmFsFile *filePtr, PLPackageIndex *index ) )
+QmFsPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, void *( *OpenFile )( QmFsFile *filePtr, QmFsPackageFile *index ) )
 {
 	QmFsPackage *package = QM_OS_MEMORY_MALLOC_( sizeof( QmFsPackage ) );
 
@@ -198,8 +197,8 @@ QmFsPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, vo
 		package->internal.LoadFile = OpenFile;
 	}
 
-	package->table_size = package->maxTableSize = tableSize;
-	package->table                              = QM_OS_MEMORY_NEW_( PLPackageIndex, tableSize );
+	package->numFiles = package->maxFiles = tableSize;
+	package->files                              = QM_OS_MEMORY_NEW_( QmFsPackageFile, tableSize );
 
 	package->path = qm_os_string_alloc( "%s", path );
 
@@ -215,7 +214,7 @@ void PlDestroyPackage( QmFsPackage *package )
 		return;
 	}
 
-	qm_os_memory_free( package->table );
+	qm_os_memory_free( package->files );
 	qm_os_memory_free( package->path );
 	qm_os_memory_free( package );
 }
@@ -227,11 +226,11 @@ void plWritePackage(QmFsPackage *package) {
 
 void PlExtractPackage( QmFsPackage *package, const char *path )
 {
-	for ( unsigned int i = 0; i < package->table_size; ++i )
+	for ( unsigned int i = 0; i < package->numFiles; ++i )
 	{
 		/* create the file dir first */
 		PLPath subPath;
-		snprintf( subPath, sizeof( subPath ), "%s", package->table[ i ].fileName );
+		snprintf( subPath, sizeof( subPath ), "%s", package->files[ i ].name );
 		unsigned int l = ( unsigned int ) strlen( subPath );
 		for ( unsigned int j = l; j > 0; --j )
 		{
@@ -258,8 +257,8 @@ void PlExtractPackage( QmFsPackage *package, const char *path )
 		const void *p = qm_fs_file_get_data( file );
 
 		/* now write it out */
-		snprintf( writePath, sizeof( writePath ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, package->table[ i ].fileName );
-		if ( !PlWriteFile( writePath, p, package->table[ i ].fileSize ) )
+		snprintf( writePath, sizeof( writePath ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, package->files[ i ].name );
+		if ( !PlWriteFile( writePath, p, package->files[ i ].size ) )
 		{
 			FSLog( "Failed to write package file: %s\n", PlGetError() );
 		}
@@ -461,7 +460,7 @@ QmFsPackage *PlLoadPackage( const char *path )
 
 QmFsFile *PlLoadPackageFileByIndex( QmFsPackage *package, unsigned int index )
 {
-	if ( index >= package->table_size )
+	if ( index >= package->numFiles )
 	{
 		PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 		return nullptr;
@@ -476,13 +475,13 @@ QmFsFile *PlLoadPackageFileByIndex( QmFsPackage *package, unsigned int index )
 
 	QmFsFile *file = nullptr;
 
-	uint8_t *dataPtr = package->internal.LoadFile( packageFile, &package->table[ index ] );
+	uint8_t *dataPtr = package->internal.LoadFile( packageFile, &package->files[ index ] );
 	if ( dataPtr != nullptr )
 	{
 		file = qm_fs_file_from_memory(
-		        package->table[ index ].fileName,
+		        package->files[ index ].name,
 		        dataPtr,
-		        package->table[ index ].fileSize,
+		        package->files[ index ].size,
 		        QM_FS_FILE_OWNERSHIP_TYPE_OWNER );
 	}
 
@@ -499,9 +498,9 @@ QmFsFile *PlLoadPackageFile( QmFsPackage *package, const char *path )
 		return nullptr;
 	}
 
-	for ( unsigned int i = 0; i < package->table_size; ++i )
+	for ( unsigned int i = 0; i < package->numFiles; ++i )
 	{
-		if ( strcmp( path, package->table[ i ].fileName ) != 0 )
+		if ( strcmp( path, package->files[ i ].name ) != 0 )
 		{
 			continue;
 		}
@@ -520,27 +519,27 @@ const char *PlGetPackagePath( const QmFsPackage *package )
 
 const char *PlGetPackageFileName( const QmFsPackage *package, unsigned int index )
 {
-	if ( index >= package->table_size )
+	if ( index >= package->numFiles )
 	{
 		PlReportBasicError( PL_RESULT_INVALID_PARM2 );
 		return nullptr;
 	}
 
-	return package->table[ index ].fileName;
+	return package->files[ index ].name;
 }
 
 unsigned int PlGetPackageTableSize( const QmFsPackage *package )
 {
-	return package->table_size;
+	return package->numFiles;
 }
 
 int PlGetPackageTableIndex( const QmFsPackage *package, const char *indexName )
 {
 	FunctionStart();
 
-	for ( unsigned int i = 0; i < package->table_size; ++i )
+	for ( unsigned int i = 0; i < package->numFiles; ++i )
 	{
-		if ( strcmp( indexName, package->table[ i ].fileName ) != 0 )
+		if ( strcmp( indexName, package->files[ i ].name ) != 0 )
 		{
 			continue;
 		}

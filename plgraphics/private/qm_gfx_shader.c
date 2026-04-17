@@ -2,7 +2,6 @@
 // Purpose: Shaders
 // Author:  Mark E. Sowden
 
-#include <plcore/pl_parse.h>
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"

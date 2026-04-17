@@ -85,10 +85,10 @@ QmFsPackage *PlParseMadPackage_( QmFsFile *file ) {
 			goto FAILED;
 		}
 
-		strncpy( package->table[ i ].fileName, index.file, sizeof( package->table[ i ].fileName ) );
-		package->table[ i ].fileName[ sizeof( index.file ) - 1 ] = '\0';
-		package->table[ i ].fileSize = index.length;
-		package->table[ i ].offset = index.offset;
+		strncpy( package->files[ i ].name, index.file, sizeof( package->files[ i ].name ) );
+		package->files[ i ].name[ sizeof( index.file ) - 1 ] = '\0';
+		package->files[ i ].size = index.length;
+		package->files[ i ].offset = index.offset;
 	}
 
 	return package;

@@ -54,10 +54,6 @@ add_subdirectory(plcore)
 add_subdirectory(plgraphics)
 add_subdirectory(plmodel)
 
-if (CMAKE_TESTING_ENABLED)
-    add_subdirectory(tests)
-endif ()
-
 if (PL_BUILD_PLUGINS)
     add_subdirectory(plugins/driver_opengl/)
     #add_subdirectory(plugins/driver_vulkan/)

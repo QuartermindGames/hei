@@ -40,13 +40,13 @@ QmFsPackage *PlParseAfsPackage_( QmFsFile *file ) {
 	}
 
 	for ( uint32_t i = 0; i < numFiles; ++i ) {
-		package->table[ i ].offset = PL_READUINT32( file, false, NULL );
-		package->table[ i ].fileSize = PL_READUINT32( file, false, NULL );
+		package->files[ i ].offset = PL_READUINT32( file, false, NULL );
+		package->files[ i ].size = PL_READUINT32( file, false, NULL );
 		PL_READUINT32( file, false, NULL );//?
 		PL_READUINT32( file, false, NULL );//?
 		PL_READUINT8( file, NULL );        // maybe this was supposed to be string length?? unused if so
-		PlReadFile( file, package->table[ i ].fileName, sizeof( char ), 239 );
-		qm_fs_normalize_path( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ) );
+		PlReadFile( file, package->files[ i ].name, sizeof( char ), 239 );
+		qm_fs_normalize_path( package->files[ i ].name, sizeof( package->files[ i ].name ) );
 	}
 
 	return package;

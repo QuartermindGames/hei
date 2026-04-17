@@ -89,20 +89,20 @@ QmFsPackage *PlParseVppPackage( QmFsFile *file ) {
 		PLFileOffset baseOffset = qm_fs_file_get_offset( file );
 
 		package = PlCreatePackageHandle( qm_fs_file_get_path( file ), header->numFiles, NULL );
-		for ( uint32_t i = 0; i < package->table_size; ++i ) {
+		for ( uint32_t i = 0; i < package->numFiles; ++i ) {
 			if ( header->version == 1 ) {
 				VppEntry *entry = ( ( VppEntry * ) stream ) + i;
-				strcpy( package->table[ i ].fileName, entry->name );
-				package->table[ i ].fileSize = entry->size;
-				package->table[ i ].offset = baseOffset;
+				strcpy( package->files[ i ].name, entry->name );
+				package->files[ i ].size = entry->size;
+				package->files[ i ].offset = baseOffset;
 				baseOffset += calculate_stream_length( entry->size );
 			} else {
 				Vpp2Entry *entry = ( ( Vpp2Entry * ) stream ) + i;
-				strcpy( package->table[ i ].fileName, entry->name );
-				package->table[ i ].fileSize = entry->size;
-				package->table[ i ].compressedSize = entry->compressedSize;
-				package->table[ i ].compressionType = ( package->table[ i ].compressedSize != entry->size ) ? PL_COMPRESSION_DEFLATE : PL_COMPRESSION_NONE;
-				package->table[ i ].offset = baseOffset;
+				strcpy( package->files[ i ].name, entry->name );
+				package->files[ i ].size = entry->size;
+				package->files[ i ].compressedSize = entry->compressedSize;
+				package->files[ i ].compressionType = ( package->files[ i ].compressedSize != entry->size ) ? PL_COMPRESSION_DEFLATE : PL_COMPRESSION_NONE;
+				package->files[ i ].offset = baseOffset;
 				baseOffset += calculate_stream_length( entry->compressedSize );
 			}
 		}

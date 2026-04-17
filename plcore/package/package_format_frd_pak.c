@@ -3,10 +3,11 @@
 // Copyright © 2017-2025 Mark E Sowden <hogsy@oldtimes-software.com>
 
 #include "package_private.h"
+
 #include "qmos/public/qm_os_memory.h"
+#include "qmparse/public/qm_parse.h"
 
 #include <plcore/pl_hashtable.h>
-#include <plcore/pl_parse.h>
 
 // Loader for Free Radical Design's PAK format.
 
@@ -54,13 +55,13 @@ static PLHashTable *populate_name_table( const QmFsFile *file ) {
 		char token[ 256 ];
 
 		// checksum
-		if ( PlParseToken( &p, token, sizeof( token ) ) == NULL ) {
+		if ( qm_parse_token( &p, token, sizeof( token ) ) == NULL ) {
 			break;
 		}
 		uint32_t checksum = strtoul( token, NULL, 16 );
 
 		// name
-		if ( PlParseToken( &p, token, sizeof( token ) ) == NULL ) {
+		if ( qm_parse_token( &p, token, sizeof( token ) ) == NULL ) {
 			break;
 		}
 
@@ -115,13 +116,13 @@ QmFsPackage *PlParseFrdPakPackage_( QmFsFile *file ) {
 			break;
 		}
 
-		package->table[ i ].offset = index.offset;
-		package->table[ i ].fileSize = index.size;
+		package->files[ i ].offset = index.offset;
+		package->files[ i ].size = index.size;
 
 		if ( nameTable != NULL ) {
 			const char *name = PlLookupHashTableUserData( nameTable, &index.checksum, sizeof( index.checksum ) );
 			if ( name != NULL ) {
-				snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ), "%s", name );
+				snprintf( package->files[ i ].name, sizeof( package->files[ i ].name ), "%s", name );
 			}
 		}
 	}

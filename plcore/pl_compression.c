@@ -6,6 +6,7 @@
 
 #define MINIZ_NO_ARCHIVE_APIS
 #include "3rdparty/miniz/miniz.h"
+
 #include "qmos/public/qm_os_memory.h"
 
 /*
@@ -30,8 +31,7 @@ void *PlCompress_Deflate( const void *src, size_t srcLength, size_t *dstLength )
 void *PlDecompress_Deflate( const void *src, size_t srcLength, size_t *dstLength, bool raw ) {
 	uint8_t *dst = qm_os_memory_alloc( srcLength, sizeof( uint8_t ), NULL );
 
-	mz_stream stream;
-	PL_ZERO_( stream );
+	mz_stream stream = {};
 	stream.next_in = src;
 	stream.avail_in = srcLength;
 	stream.next_out = dst;

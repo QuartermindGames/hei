@@ -18,7 +18,7 @@
 #		include <libunrar/dll.hpp>
 #	endif
 
-static void *OpenRarFile( QmFsFile *file, PLPackageIndex *index ) {
+static void *OpenRarFile( QmFsFile *file, QmFsPackageFile *index ) {
 	PLPath path;
 	PlSetupPath( path, true, "%s", qm_fs_file_get_path( file ) );
 
@@ -40,7 +40,7 @@ static void *OpenRarFile( QmFsFile *file, PLPackageIndex *index ) {
 
 	RARHeaderDataEx headerData = {};
 	while ( RARReadHeaderEx( handle, &headerData ) == 0 ) {
-		if ( strcmp( headerData.FileName, index->fileName ) != 0 ) {
+		if ( strcmp( headerData.FileName, index->name ) != 0 ) {
 			RARProcessFile( handle, RAR_SKIP, nullptr, nullptr );
 			continue;
 		}
@@ -101,16 +101,16 @@ extern "C" QmFsPackage *PlParseRarPackage_( QmFsFile *file ) {
 	if ( package != nullptr ) {
 		RARHeaderDataEx headerData = {};
 		while ( RARReadHeaderEx( handle, &headerData ) == 0 ) {
-			if ( package->table_size >= package->maxTableSize ) {
-				package->table = static_cast< PLPackageIndex * >( qm_os_memory_realloc( package->table, sizeof( PLPackageIndex ) * ( package->maxTableSize + 16 ) ) );
-				package->maxTableSize += 16;
+			if ( package->numFiles >= package->maxFiles ) {
+				package->files = static_cast< QmFsPackageFile * >( qm_os_memory_realloc( package->files, sizeof( QmFsPackageFile ) * ( package->maxFiles + 16 ) ) );
+				package->maxFiles += 16;
 			}
 
-			PLPackageIndex *index = &package->table[ package->table_size++ ];
+			QmFsPackageFile *index = &package->files[ package->numFiles++ ];
 			index->compressedSize = headerData.PackSize;
-			index->fileSize = headerData.UnpSize;
+			index->size = headerData.UnpSize;
 			index->compressionType = PL_COMPRESSION_RAR;
-			PlSetupPath( index->fileName, true, "%s", headerData.FileName );
+			PlSetupPath( index->name, true, "%s", headerData.FileName );
 
 			RARProcessFile( handle, RAR_SKIP, nullptr, nullptr );
 		}

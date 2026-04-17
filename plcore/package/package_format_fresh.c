@@ -48,12 +48,12 @@ QmFsPackage *PlParseFreshBinPackage_( QmFsFile *file ) {
 			break;
 		}
 
-		strncpy( package->table[ i ].fileName, filename, 12 );
+		strncpy( package->files[ i ].name, filename, 12 );
 
 		unsigned int blockOffs = PL_READUINT32( file, false, NULL );
-		package->table[ i ].offset = 2048 * blockOffs;
+		package->files[ i ].offset = 2048 * blockOffs;
 		unsigned int size = PL_READUINT32( file, false, NULL );
-		package->table[ i ].fileSize = size;
+		package->files[ i ].size = size;
 	}
 
 	return package;

@@ -151,8 +151,7 @@ PLImage *PlParseDdsImage( QmFsFile *file ) {
 		return NULL;
 	}
 
-	PLImage image;
-	PL_ZERO_( image );
+	PLImage image = {};
 	image.width = header.width;
 	image.height = header.height;
 	image.levels = header.numMipMaps ? header.numMipMaps : 1;

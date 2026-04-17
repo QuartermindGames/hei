@@ -25,8 +25,7 @@ typedef struct AngelDATIndex {
 } AngelDATIndex;
 
 QmFsPackage *PlParseAngelDatPackage_( QmFsFile *file ) {
-	AngelDATHeader header;
-	PL_ZERO_( header );
+	AngelDATHeader header = {};
 
 	header.magic = PL_READUINT32( file, false, NULL );
 	if ( header.magic != ANGEL_DAT_MAGIC && header.magic != ANGEL_DAT_MAGIC2 ) {
@@ -68,21 +67,21 @@ QmFsPackage *PlParseAngelDatPackage_( QmFsFile *file ) {
 
 	const char *path = qm_fs_file_get_path( file );
 	QmFsPackage *package = PlCreatePackageHandle( path, header.tocIndices, NULL );
-	for ( unsigned int i = 0; i < package->maxTableSize; ++i ) {
-		package->table[ i ].offset = indices[ i ].offset;
-		package->table[ i ].compressedSize = indices[ i ].compressedSize;
-		package->table[ i ].fileSize = indices[ i ].size;
+	for ( unsigned int i = 0; i < package->maxFiles; ++i ) {
+		package->files[ i ].offset = indices[ i ].offset;
+		package->files[ i ].compressedSize = indices[ i ].compressedSize;
+		package->files[ i ].size = indices[ i ].size;
 		if ( indices[ i ].compressedSize != indices[ i ].size ) {
-			package->table[ i ].compressionType = PL_COMPRESSION_GZIP;
+			package->files[ i ].compressionType = PL_COMPRESSION_GZIP;
 		}
 
 		/* no idea right now, so just spit by index */
 		if ( encodedStrings ) {
-			snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ), "%d", i );
+			snprintf( package->files[ i ].name, sizeof( package->files[ i ].name ), "%d", i );
 			continue;
 		}
 
-		strncpy( package->table[ i ].fileName, &names[ indices[ i ].nameOffset ], sizeof( package->table[ i ].fileName ) - 1 );
+		strncpy( package->files[ i ].name, &names[ indices[ i ].nameOffset ], sizeof( package->files[ i ].name ) - 1 );
 	}
 
 	qm_os_memory_free( indices );

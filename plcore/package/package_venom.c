@@ -4,7 +4,8 @@
 // Purpose: Venom PAK loader
 
 #include "package_private.h"
-#include "plcore/pl_parse.h"
+
+#include "qmparse/public/qm_parse.h"
 #include "qmos/public/qm_os_memory.h"
 
 // big-endian
@@ -51,26 +52,26 @@ QmFsPackage *PlParseVenomPakPackage( QmFsFile *file ) {
 		char line[ 512 ] = {};
 
 		// name
-		if ( PlParseLine( &p, line, sizeof( line ) ) == NULL ) {
+		if ( qm_parse_line( &p, line, sizeof( line ) ) == NULL ) {
 			PlReportErrorF( PL_RESULT_FILEREAD, "failed to pull name %u", i );
 			break;
 		}
-		PlSetupPath( package->table[ i ].fileName, true, "%s", ( *line == 'd' && *( line + 1 ) == ':' ) ? line + 3 : line );
+		PlSetupPath( package->files[ i ].name, true, "%s", ( *line == 'd' && *( line + 1 ) == ':' ) ? line + 3 : line );
 
 		// filesize
-		if ( PlParseLine( &p, line, sizeof( line ) ) == NULL ) {
+		if ( qm_parse_line( &p, line, sizeof( line ) ) == NULL ) {
 			break;
 		}
-		package->table[ i ].fileSize = strtoul( line, NULL, 10 );
+		package->files[ i ].size = strtoul( line, NULL, 10 );
 
 		// offset
-		if ( PlParseLine( &p, line, sizeof( line ) ) == NULL ) {
+		if ( qm_parse_line( &p, line, sizeof( line ) ) == NULL ) {
 			break;
 		}
-		package->table[ i ].offset = headerSize + ( PLFileOffset ) strtoul( line, NULL, 10 );
+		package->files[ i ].offset = headerSize + ( PLFileOffset ) strtoul( line, NULL, 10 );
 
 		// unknown...
-		if ( PlParseLine( &p, line, sizeof( line ) ) == NULL ) {
+		if ( qm_parse_line( &p, line, sizeof( line ) ) == NULL ) {
 			break;
 		}
 	}

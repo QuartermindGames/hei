@@ -41,7 +41,6 @@ file(
         pl_filesystem.c
 
         pl_memory.c
-        pl_parser.c
         qm_os_library.c
 
         pl_hashtable.c

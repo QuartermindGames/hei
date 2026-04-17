@@ -5,10 +5,10 @@
  */
 
 #include "qmos/public/qm_os_memory.h"
+#include "qmparse/public/qm_parse.h"
 
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_linkedlist.h>
-#include <plcore/pl_parse.h>
 #include <plcore/pl_image.h>
 
 #if defined( _WIN32 )
@@ -358,10 +358,10 @@ static PLPluginExportTable exportTable = {
         .AddLogLevel = PlAddLogLevel,
         .LogMessage = PlLogMessage,
 
-        .SkipWhitespace = PlSkipWhitespace,
-        .SkipLine = PlSkipLine,
-        .ParseEnclosedString = PlParseEnclosedString,
-        .ParseToken = PlParseToken,
+        .SkipWhitespace = qm_parse_skip_whitespace,
+        .SkipLine = qm_parse_skip_line,
+        .ParseEnclosedString = qm_parse_enclosed,
+        .ParseToken = qm_parse_token,
 
         .SetupPath = PlSetupPath,
 };

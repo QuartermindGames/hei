@@ -8,25 +8,25 @@
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_compression.h>
 
-typedef struct PLPackageIndex
+typedef struct QmFsPackageFile
 {
 	PLPath            sourcePath;// Where the file resides on disk - only matters if writing...
-	PLPath            fileName;
+	PLPath            name;
 	uint64_t          offset;
-	size_t            fileSize;
+	size_t            size;
 	size_t            compressedSize;
 	PLCompressionType compressionType;
-} PLPackageIndex;
+} QmFsPackageFile;
 
 typedef struct QmFsPackage
 {
-	char           *path;
-	unsigned int    table_size;
-	unsigned int    maxTableSize;
-	PLPackageIndex *table;
+	char            *path;
+	unsigned int     numFiles;
+	unsigned int     maxFiles;
+	QmFsPackageFile *files;
 	struct
 	{
-		void *( *LoadFile )( QmFsFile *package, PLPackageIndex *index );
+		void *( *LoadFile )( QmFsFile *package, QmFsPackageFile *index );
 	} internal;
 } QmFsPackage;
 
@@ -62,9 +62,7 @@ enum
 
 PL_EXTERN_C
 
-#if !defined( PL_COMPILE_PLUGIN )
-
-QmFsPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, void *( *OpenFile )( QmFsFile *filePtr, PLPackageIndex *index ) );
+QmFsPackage *PlCreatePackageHandle( const char *path, unsigned int tableSize, void *( *OpenFile )( QmFsFile *filePtr, QmFsPackageFile *index ) );
 
 QmFsPackage *PlLoadPackage( const char *path );
 QmFsFile    *PlLoadPackageFile( QmFsPackage *package, const char *path );
@@ -89,7 +87,7 @@ QmFsPackage *PlParseZipPackage( QmFsFile *file );
 QmFsPackage *PlParseVppPackage( QmFsFile *file );
 QmFsPackage *PlParseVenomPakPackage( QmFsFile *file );
 
-#	if 0// Write API - excluded for now...
+#if 0// Write API - excluded for now...
 
 enum {
 	PL_PACKAGE_WRITE_FORMAT_ALL = 0,
@@ -97,19 +95,17 @@ enum {
 	PL_BITFLAG( PL_PACKAGE_WRITE_FORMAT_BIN_FRESH, 0 ),
 };
 
-#		define PL_PACKAGE_FORMAT_TAG_BIN_FRESH "fresh.bin"
+#	define PL_PACKAGE_FORMAT_TAG_BIN_FRESH "fresh.bin"
 
-#		define PL_PACKAGE_WRITE_ENABLED
+#	define PL_PACKAGE_WRITE_ENABLED
 
 typedef bool ( *PLWritePackageFunction )( QmFsPackage *package, const char *path );
 
 void PlRegisterPackageWriter( const char *formatTag, PLWritePackageFunction writeFunction );
 void PlRegisterStandardPackageWriters( unsigned int flags );
 void PlClearPackageWriters( void );
-PLPackageIndex *PlAppendPackageFromFile( QmFsPackage *package, const char *source, const char *filename, PLCompressionType compressionType );
+QmFsPackageFile *PlAppendPackageFromFile( QmFsPackage *package, const char *source, const char *filename, PLCompressionType compressionType );
 bool PlWritePackage( QmFsPackage *package, const char *path, const char *formatTag );
-
-#	endif
 
 #endif
 

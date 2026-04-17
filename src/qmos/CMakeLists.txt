@@ -20,3 +20,13 @@ add_library(qm-os STATIC
 )
 
 target_include_directories(qm-os PUBLIC ..)
+
+#############################################
+# Tests
+#############################################
+if (CMAKE_TESTING_ENABLED)
+    add_executable(qm-os-test test/qm_os_test.c)
+    target_link_libraries(qm-os-test qm-os)
+
+    add_test(NAME QmTestOsApi COMMAND qm-os-test)
+endif()

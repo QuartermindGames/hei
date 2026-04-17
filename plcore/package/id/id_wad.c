@@ -71,12 +71,12 @@ QmFsPackage *PlParseWadPackage_( QmFsFile *file ) {
 
 	const char *path = qm_fs_file_get_path( file );
 	QmFsPackage *package = PlCreatePackageHandle( path, numLumps, NULL );
-	for ( unsigned int i = 0; i < package->maxTableSize; ++i ) {
-		PLPackageIndex *index = &package->table[ i ];
+	for ( unsigned int i = 0; i < package->maxFiles; ++i ) {
+		QmFsPackageFile *index = &package->files[ i ];
 		index->offset = indices[ i ].offset;
-		index->fileSize = indices[ i ].size;
-		strncpy( index->fileName, indices[ i ].name, sizeof( index->fileName ) );
-		index->fileName[ 8 ] = '\0';
+		index->size = indices[ i ].size;
+		strncpy( index->name, indices[ i ].name, sizeof( index->name ) );
+		index->name[ 8 ] = '\0';
 	}
 
 	return package;
@@ -130,11 +130,11 @@ QmFsPackage *PlParseQWadPackage_( QmFsFile *file ) {
 
 	const char *path = qm_fs_file_get_path( file );
 	QmFsPackage *package = PlCreatePackageHandle( path, numLumps, NULL );
-	for ( unsigned int i = 0; i < package->maxTableSize; ++i ) {
-		PLPackageIndex *index = &package->table[ i ];
+	for ( unsigned int i = 0; i < package->maxFiles; ++i ) {
+		QmFsPackageFile *index = &package->files[ i ];
 		index->offset = qm_fs_file_read_int32( file, false, NULL );
 		index->compressedSize = qm_fs_file_read_int32( file, false, NULL );
-		index->fileSize = qm_fs_file_read_int32( file, false, NULL );
+		index->size = qm_fs_file_read_int32( file, false, NULL );
 
 		const char *hint;
 		uint8_t type = qm_fs_file_read_int8( file, NULL ); /* type */
@@ -171,8 +171,8 @@ QmFsPackage *PlParseQWadPackage_( QmFsFile *file ) {
 		qm_fs_file_read_int8( file, NULL );         /* compression (afaik, never used) */
 		qm_fs_file_read_int16( file, false, NULL ); /* unused */
 
-		PlReadFile( file, index->fileName, sizeof( char ), WAD2_NAME_LENGTH );
-		strcat( index->fileName, hint );
+		PlReadFile( file, index->name, sizeof( char ), WAD2_NAME_LENGTH );
+		strcat( index->name, hint );
 	}
 
 	return package;

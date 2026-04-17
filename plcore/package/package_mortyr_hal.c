@@ -62,11 +62,11 @@ QmFsPackage *PlParseHalPackage_( QmFsFile *file ) {
 	/* yay, we're finally done - now to setup the package object */
 
 	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
-	for ( unsigned int i = 0; i < package->maxTableSize; ++i ) {
-		PLPackageIndex *index = &package->table[ i ];
+	for ( unsigned int i = 0; i < package->maxFiles; ++i ) {
+		QmFsPackageFile *index = &package->files[ i ];
 		index->offset = indices[ i ].offset;
-		index->fileSize = indices[ i ].size;
-		snprintf( index->fileName, sizeof( index->fileName ), "%s", indices[ i ].name );
+		index->size = indices[ i ].size;
+		snprintf( index->name, sizeof( index->name ), "%s", indices[ i ].name );
 	}
 
 	qm_os_memory_free( indices );

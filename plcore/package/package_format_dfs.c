@@ -12,20 +12,19 @@
 /**
  * We actually need to load the data from a different file
  */
-static void *LoadPackageFile( QmFsFile *file, PLPackageIndex *index ) {
+static void *LoadPackageFile( QmFsFile *file, QmFsPackageFile *index ) {
 	const char *dfsPath = qm_fs_file_get_path( file );
 	size_t dfsPathSize = strlen( dfsPath );
 
-	PLPath dataPath;
-	PL_ZERO_( dataPath );
+	PLPath dataPath = {};
 	strncpy( dataPath, dfsPath, dfsPathSize - 3 );
 	strcat( dataPath, "000" );
 
 	void *data = NULL;
 	QmFsFile *dataFile = qm_fs_file_open( dataPath, false );
 	if ( qm_fs_file_seek( dataFile, ( signed ) index->offset, QM_FS_SEEK_SET ) ) {
-		data = QM_OS_MEMORY_NEW_( uint8_t, index->fileSize );
-		if ( PlReadFile( dataFile, data, sizeof( char ), index->fileSize ) != index->fileSize ) {
+		data = QM_OS_MEMORY_NEW_( uint8_t, index->size );
+		if ( PlReadFile( dataFile, data, sizeof( char ), index->size ) != index->size ) {
 			qm_os_memory_free( data );
 			data = NULL;
 		}
@@ -119,15 +118,15 @@ QmFsPackage *PlParseDfsPackage_( QmFsFile *file ) {
 		uint32_t dirOffset = PL_READUINT32( file, false, NULL );
 		uint32_t extensionOffset = PL_READUINT32( file, false, NULL );
 
-		char *c = package->table[ i ].fileName;
+		char *c = package->files[ i ].name;
 		ReadString( file, &c, stringTableOffset + dirOffset );
 		ReadString( file, &c, stringTableOffset + nameOffset );
 		ReadString( file, &c, stringTableOffset + nameExtendedOffset );
 		ReadString( file, &c, stringTableOffset + extensionOffset );
-		qm_os_string_to_lower( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ) );
+		qm_os_string_to_lower( package->files[ i ].name, sizeof( package->files[ i ].name ) );
 
-		package->table[ i ].offset = PL_READUINT32( file, false, NULL );
-		package->table[ i ].fileSize = PL_READUINT32( file, false, NULL );
+		package->files[ i ].offset = PL_READUINT32( file, false, NULL );
+		package->files[ i ].size = PL_READUINT32( file, false, NULL );
 	}
 
 	return package;

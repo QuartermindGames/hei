@@ -4,12 +4,13 @@
 #include <plcore/pl_console.h>
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_linkedlist.h>
-#include <plcore/pl_parse.h>
 #include <plcore/pl_hashtable.h>
 
 #include "pl_private.h"
+
 #include "qmos/public/qm_os_memory.h"
 #include "qmos/public/qm_os_string.h"
+#include "qmparse/public/qm_parse.h"
 
 #include <errno.h>
 #if defined( _WIN32 )
@@ -75,7 +76,7 @@ void PlRegisterConsoleCommand( const char *name, const char *description, int ar
 		}
 
 		PLConsoleCommand *cmd = _pl_commands[ _pl_num_commands ];
-		PL_ZERO( cmd, sizeof( PLConsoleCommand ) );
+		QM_OS_ZERO( cmd, sizeof( PLConsoleCommand ) );
 		cmd->Callback = CallbackFunction;
 
 		size_t s = strlen( name ) + 1;

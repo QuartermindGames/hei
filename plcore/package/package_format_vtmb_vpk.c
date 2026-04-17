@@ -39,11 +39,11 @@ QmFsPackage *PlParseVpkPackage_( QmFsFile *file ) {
 		uint32_t nameLength = qm_fs_file_read_int32( file, false, NULL );
 		char *name = QM_OS_MEMORY_NEW_( char, nameLength + 1 );
 		PlReadFile( file, name, sizeof( char ), nameLength );
-		snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ), "%s", name );
+		snprintf( package->files[ i ].name, sizeof( package->files[ i ].name ), "%s", name );
 		qm_os_memory_free( name );
 
-		package->table[ i ].offset = qm_fs_file_read_int32( file, false, NULL );
-		package->table[ i ].fileSize = qm_fs_file_read_int32( file, false, NULL );
+		package->files[ i ].offset = qm_fs_file_read_int32( file, false, NULL );
+		package->files[ i ].size = qm_fs_file_read_int32( file, false, NULL );
 	}
 
 	return package;

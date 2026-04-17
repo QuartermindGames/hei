@@ -24,15 +24,15 @@ QmFsPackage *PlParseIce3DDatPackage_( QmFsFile *file ) {
 		PL_READUINT32( file, false, NULL );// index
 		PL_READUINT16( file, false, NULL );// ??
 
-		package->table[ i ].fileSize = PL_READUINT32( file, false, NULL );
+		package->files[ i ].size = PL_READUINT32( file, false, NULL );
 
 		uint32_t stringSize = PL_READUINT32( file, false, NULL );
 		char *buf = QM_OS_MEMORY_NEW_( char, stringSize + 1 );
 		PlReadFile( file, buf, sizeof( char ), stringSize );
-		snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ), "%s", buf );
+		snprintf( package->files[ i ].name, sizeof( package->files[ i ].name ), "%s", buf );
 		qm_os_memory_free( buf );
 
-		package->table[ i ].offset = PL_READUINT32( file, false, NULL ) + 8;
+		package->files[ i ].offset = PL_READUINT32( file, false, NULL ) + 8;
 	}
 
 	return package;

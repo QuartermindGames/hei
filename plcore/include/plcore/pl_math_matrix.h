@@ -51,11 +51,11 @@ void PlExtractMatrix4Directions( const PLMatrix4 *matrix, QmMathVector3f *left, 
 /* ClearMatrix */
 
 inline static void PlClearMatrix3( PLMatrix3 *m ) {
-	PL_ZERO( m, sizeof( PLMatrix3 ) );
+	QM_OS_ZERO( m, sizeof( PLMatrix3 ) );
 }
 
 inline static void PlClearMatrix4( PLMatrix4 *m ) {
-	PL_ZERO( m, sizeof( PLMatrix4 ) );
+	QM_OS_ZERO( m, sizeof( PLMatrix4 ) );
 }
 
 /* Identity */

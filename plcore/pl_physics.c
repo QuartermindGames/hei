@@ -73,7 +73,7 @@ bool PlIsSphereIntersecting( const PLCollisionSphere *aSphere, const PLCollision
 
 PLCollision PlIsSphereIntersectingPlane( const PLCollisionSphere *sphere, const PLCollisionPlane *plane ) {
 	PLCollision collision;
-	PL_ZERO_( collision );
+	QM_OS_ZERO_( collision );
 
 	QmMathVector3f pDist = qm_math_vector3f_sub( sphere->origin, plane->origin );
 

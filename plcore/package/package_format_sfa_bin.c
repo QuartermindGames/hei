@@ -58,9 +58,9 @@ QmFsPackage *PlLoadTabPackage( const char *path ) {
 
 	QmFsPackage *package = PlCreatePackageHandle( path, num_indices, NULL );
 	for ( unsigned int i = 0; i < num_indices; ++i ) {
-		PLPackageIndex *index = &package->table[ i ];
-		snprintf( index->fileName, sizeof( index->fileName ), "%u", i );
-		index->fileSize = indices[ i ].end - indices[ i ].start;
+		QmFsPackageFile *index = &package->files[ i ];
+		snprintf( index->name, sizeof( index->name ), "%u", i );
+		index->size = indices[ i ].end - indices[ i ].start;
 		index->offset = indices[ i ].start;
 	}
 

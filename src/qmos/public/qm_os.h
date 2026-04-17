@@ -117,6 +117,12 @@ enum
 // Helper Macros
 /////////////////////////////////////////////////////////////////////////////////////
 
+#define QM_OS_ZERO( DATA, SIZE ) memset( ( DATA ), 0, ( SIZE ) )
+#define QM_OS_ZERO_( DATA )      memset( &( DATA ), 0, sizeof( ( DATA ) ) )
+
+#define QM_OS_STRINGIFY( NUM ) #NUM
+#define QM_OS_TO_STRING( A )   QM_OS_STRINGIFY( A )
+
 #define QM_OS_ARRAY_ELEMENTS( A )  ( sizeof( A ) / sizeof( *( A ) ) )
 #define QM_OS_MAX_ARRAY_INDEX( A ) ( int ) ( QM_OS_ARRAY_ELEMENTS( A ) - 1 )
 

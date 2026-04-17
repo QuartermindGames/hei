@@ -113,24 +113,24 @@ QmFsPackage *PlParseZipPackage( QmFsFile *file ) {
 	PLLinkedListNode *node = PlGetFirstNode( files );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
 		ZipFileHeader *store = PlGetLinkedListNodeUserData( node );
-		package->table[ i ].compressedSize = store->compressedSize;
-		package->table[ i ].fileSize = store->uncompressedSize;
-		package->table[ i ].offset = store->offset;
+		package->files[ i ].compressedSize = store->compressedSize;
+		package->files[ i ].size = store->uncompressedSize;
+		package->files[ i ].offset = store->offset;
 
-		snprintf( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ), "%s", store->name );
+		snprintf( package->files[ i ].name, sizeof( package->files[ i ].name ), "%s", store->name );
 
 		switch ( store->compression ) {
 			case ZIP_COMPRESSION_DEFLATED:
-				package->table[ i ].compressionType = PL_COMPRESSION_DEFLATE;
+				package->files[ i ].compressionType = PL_COMPRESSION_DEFLATE;
 				break;
 			case ZIP_COMPRESSION_IMPLODED:
-				package->table[ i ].compressionType = PL_COMPRESSION_IMPLODE;
+				package->files[ i ].compressionType = PL_COMPRESSION_IMPLODE;
 				break;
 			case ZIP_COMPRESSION_NONE:
-				package->table[ i ].compressionType = PL_COMPRESSION_NONE;
+				package->files[ i ].compressionType = PL_COMPRESSION_NONE;
 				break;
 			default:
-				package->table[ i ].compressionType = PL_COMPRESSION_UNKNOWN;
+				package->files[ i ].compressionType = PL_COMPRESSION_UNKNOWN;
 				break;
 		}
 

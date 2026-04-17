@@ -43,14 +43,14 @@ QmFsPackage *PlParseAhfPackage_( QmFsFile *file ) {
 
 	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
-		package->table[ i ].offset = PL_READUINT32( file, false, NULL );
-		package->table[ i ].fileSize = PL_READUINT32( file, false, NULL );
+		package->files[ i ].offset = PL_READUINT32( file, false, NULL );
+		package->files[ i ].size = PL_READUINT32( file, false, NULL );
 		PL_READUINT32( file, false, NULL );// maybe was meant to be string size? seems unused
 
 		unsigned int j;
-		for ( j = 0; j < ( sizeof( package->table[ i ].fileName ) - 1 ); ++j ) {
-			package->table[ i ].fileName[ j ] = qm_fs_file_read_int8( file, NULL );
-			if ( package->table[ i ].fileName[ j ] == '\0' ) {
+		for ( j = 0; j < ( sizeof( package->files[ i ].name ) - 1 ); ++j ) {
+			package->files[ i ].name[ j ] = qm_fs_file_read_int8( file, NULL );
+			if ( package->files[ i ].name[ j ] == '\0' ) {
 				break;
 			}
 		}
@@ -58,7 +58,7 @@ QmFsPackage *PlParseAhfPackage_( QmFsFile *file ) {
 		PLFileOffset padding = PlRoundUp( ( int ) ( j + 1 ), 4 ) - ( j + 1 );
 		qm_fs_file_seek( file, padding, SEEK_CUR );
 
-		qm_fs_normalize_path( package->table[ i ].fileName, sizeof( package->table[ i ].fileName ) );
+		qm_fs_normalize_path( package->files[ i ].name, sizeof( package->files[ i ].name ) );
 	}
 
 	return package;

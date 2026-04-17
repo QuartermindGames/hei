@@ -43,8 +43,7 @@ bool PlWriteQoiImage( const PLImage *image, const char *path ) {
 		return false;
 	}
 
-	qoi_desc desc;
-	PL_ZERO_( desc );
+	qoi_desc desc = {};
 	desc.width = image->width;
 	desc.height = image->height;
 	desc.channels = ( image->format == PL_IMAGEFORMAT_RGBA8 ) ? 4 : 3;

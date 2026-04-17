@@ -21,8 +21,7 @@ typedef enum AngelTEXType {
 } AngelTEXType;
 
 PLImage *PlParseAngelTexImage_( QmFsFile *file ) {
-	AngelTEXHeader header;
-	PL_ZERO_( header );
+	AngelTEXHeader header = {};
 
 	/* there's no magic for this format, so need to do some additional awkward checks... */
 

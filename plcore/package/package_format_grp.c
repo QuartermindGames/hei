@@ -27,10 +27,10 @@ QmFsPackage *PlParseGrpPackage_( QmFsFile *file ) {
 
 	unsigned int baseOffset = qm_fs_file_get_offset( file ) + ( numFiles * 16 );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
-		PlReadFile( file, package->table[ i ].fileName, sizeof( char ), 12 );
-		package->table[ i ].fileSize = PL_READUINT32( file, false, NULL );
-		package->table[ i ].offset = baseOffset;
-		baseOffset += package->table[ i ].fileSize;
+		PlReadFile( file, package->files[ i ].name, sizeof( char ), 12 );
+		package->files[ i ].size = PL_READUINT32( file, false, NULL );
+		package->files[ i ].offset = baseOffset;
+		baseOffset += package->files[ i ].size;
 	}
 
 	return package;

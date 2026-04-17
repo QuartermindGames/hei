@@ -54,8 +54,8 @@ QmFsPackage *PlParseInuPackage_( QmFsFile *file ) {
 				break;
 			}
 
-			if ( p < sizeof( package->table[ i ].fileName ) ) {
-				package->table[ i ].fileName[ p++ ] = c;
+			if ( p < sizeof( package->files[ i ].name ) ) {
+				package->files[ i ].name[ p++ ] = c;
 			}
 		} while ( status );
 
@@ -68,18 +68,18 @@ QmFsPackage *PlParseInuPackage_( QmFsFile *file ) {
 #ifdef WFEAR_IGNORE_DRIVE
 		/* a lot of White Fear's files have paths with specific drive names which makes
 		 * it slightly awkward to dump them later, so we need to cut that crap off... */
-		size_t s = strlen( package->table[ i ].fileName );
-		if ( s > 3 && ( package->table[ i ].fileName[ 1 ] == ':' && ( package->table[ i ].fileName[ 2 ] == '\\' || package->table[ i ].fileName[ 2 ] == '/' ) ) ) {
-			char *c = &package->table[ i ].fileName[ 3 ];
+		size_t s = strlen( package->files[ i ].name );
+		if ( s > 3 && ( package->files[ i ].name[ 1 ] == ':' && ( package->files[ i ].name[ 2 ] == '\\' || package->files[ i ].name[ 2 ] == '/' ) ) ) {
+			char *c = &package->files[ i ].name[ 3 ];
 			for ( unsigned int j = 0; j < ( s - 3 ); ++j ) {
-				package->table[ i ].fileName[ j ] = *c++;
+				package->files[ i ].name[ j ] = *c++;
 			}
-			package->table[ i ].fileName[ s - 3 ] = '\0';
+			package->files[ i ].name[ s - 3 ] = '\0';
 		}
 #endif
 
-		package->table[ i ].offset = qm_fs_file_read_int32( file, false, NULL );
-		package->table[ i ].fileSize = qm_fs_file_read_int32( file, false, NULL );
+		package->files[ i ].offset = qm_fs_file_read_int32( file, false, NULL );
+		package->files[ i ].size = qm_fs_file_read_int32( file, false, NULL );
 	}
 
 	return package;

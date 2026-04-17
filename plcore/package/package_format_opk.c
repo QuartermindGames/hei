@@ -32,15 +32,15 @@ QmFsPackage *PlParseOpkPackage_( QmFsFile *file ) {
 	/* read in toc */
 	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 	for ( int32_t i = 0; i < numFiles; ++i ) {
-		PLPackageIndex *index = &package->table[ i ];
+		QmFsPackageFile *index = &package->files[ i ];
 		int32_t nameLength = qm_fs_file_read_int32( file, false, NULL );
-		if ( nameLength >= sizeof( index->fileName ) || nameLength <= 0 ) {
+		if ( nameLength >= sizeof( index->name ) || nameLength <= 0 ) {
 			PlReportErrorF( PL_RESULT_FILEREAD, "invalid index name length, %d", i );
 			PlDestroyPackage( package );
 			return NULL;
 		}
 
-		if ( PlReadFile( file, index->fileName, sizeof( char ), nameLength ) != nameLength ) {
+		if ( PlReadFile( file, index->name, sizeof( char ), nameLength ) != nameLength ) {
 			PlReportErrorF( PL_RESULT_FILEREAD, "failed to read in file name for index %d", i );
 			PlDestroyPackage( package );
 			return NULL;
@@ -49,7 +49,7 @@ QmFsPackage *PlParseOpkPackage_( QmFsFile *file ) {
 		bool status;
 		index->offset = qm_fs_file_read_int32( file, false, &status );
 		index->compressedSize = qm_fs_file_read_int32( file, false, &status );
-		index->fileSize = qm_fs_file_read_int32( file, false, &status );
+		index->size = qm_fs_file_read_int32( file, false, &status );
 		index->compressionType = PL_COMPRESSION_IMPLODE;
 	}
 

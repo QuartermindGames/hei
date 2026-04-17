@@ -41,19 +41,19 @@ void PlClearPackageWriters( void ) {
 	PlDestroyHashTable( packageWriteFormats );
 }
 
-PLPackageIndex *PlAppendPackageFromFile( QmFsPackage *package, const char *source, const char *filename, PLCompressionType compressionType ) {
-	if ( package->table_size >= package->maxTableSize ) {
+QmFsPackageFile *PlAppendPackageFromFile( QmFsPackage *package, const char *source, const char *filename, PLCompressionType compressionType ) {
+	if ( package->numFiles >= package->maxFiles ) {
 		static const unsigned int INC = 64;
-		unsigned int newMaxSize = package->maxTableSize + INC;
-		package->table = qm_os_memory_realloc( package->table, newMaxSize );
-		package->maxTableSize = newMaxSize;
+		unsigned int newMaxSize = package->maxFiles + INC;
+		package->files = qm_os_memory_realloc( package->files, newMaxSize );
+		package->maxFiles = newMaxSize;
 	}
 
-	PLPackageIndex *index = &package->table[ package->table_size ];
-	strncpy( index->fileName, filename, sizeof( index->fileName ) - 1 );
+	QmFsPackageFile *index = &package->files[ package->numFiles ];
+	strncpy( index->name, filename, sizeof( index->name ) - 1 );
 	index->compressionType = compressionType;
 
-	package->table_size++;
+	package->numFiles++;
 	return index;
 }
 
