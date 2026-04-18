@@ -288,7 +288,7 @@ size_t qm_fs_file_get_size( const QmFsFile *ptr );
  */
 int64_t qm_fs_file_get_offset( const QmFsFile *self );
 
-size_t PlReadFile( QmFsFile *ptr, void *dest, size_t size, size_t count );
+size_t qm_file_read( QmFsFile *ptr, void *dest, size_t size, size_t count );
 
 int8_t  qm_fs_file_read_int8( QmFsFile *self, bool *status );
 int16_t qm_fs_file_read_int16( QmFsFile *self, bool big_endian, bool *status );

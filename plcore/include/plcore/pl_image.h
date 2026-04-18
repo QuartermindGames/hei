@@ -1,8 +1,4 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+// Copyright © 2017-2026 Quartermind Games, Mark E. Sowden <markelswo@gmail.com>
 
 #pragma once
 
@@ -11,7 +7,7 @@
 #include <plcore/pl_filesystem.h>
 #include <plcore/pl_math.h>
 
-#define PL_IMAGE_MAX_CHANNELS 4
+static constexpr unsigned int QM_IMAGE_MAX_CHANNELS = 4;
 
 typedef enum QmImageChannelFormat
 {
@@ -38,7 +34,7 @@ typedef struct QmImageChannelFormatDescriptor
 typedef struct QmImagePixelFormatDescriptor
 {
 	uint8_t                        numChannels;
-	QmImageChannelFormatDescriptor channels[ PL_IMAGE_MAX_CHANNELS ];
+	QmImageChannelFormatDescriptor channels[ QM_IMAGE_MAX_CHANNELS ];
 } QmImagePixelFormatDescriptor;
 
 #define QM_IMAGE_FORMAT_RGBA8_DESC()                                                                                          \
@@ -118,7 +114,7 @@ typedef struct PLImageFrame
 	unsigned int numMips;
 } PLImageFrame;
 
-typedef struct PLImage
+typedef struct QmImage
 {
 #if 1
 	uint8_t **data; /* todo: kill this */
@@ -137,7 +133,7 @@ typedef struct PLImage
 	PLImageFormat  format;
 	PLColourFormat colour_format;
 	unsigned int   flags;
-} PLImage;
+} QmImage;
 
 enum
 {
@@ -169,56 +165,64 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PL_EXTERN void PlRegisterImageLoader( const char *extension, PLImage *( *ParseFile )( QmFsFile *path ) );
-PL_EXTERN void PlRegisterStandardImageLoaders( unsigned int flags );
-PL_EXTERN void PlClearImageLoaders( void );
+void PlRegisterImageLoader( const char *extension, QmImage *( *ParseFile )( QmFsFile *path ) );
+void PlRegisterStandardImageLoaders( unsigned int flags );
+void PlClearImageLoaders( void );
 
-PL_EXTERN PLImage *PlCreateImage( void *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat );
-PL_EXTERN void     PlDestroyImage( PLImage *image );
+QmImage *PlCreateImage( void *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat );
+void     PlDestroyImage( QmImage *image );
 
-PL_EXTERN PLImage *PlLoadImage( const char *path );
-PL_EXTERN PLImage *PlParseImage( QmFsFile *file );
-PL_EXTERN bool     PlWriteImage( const PLImage *image, const char *path, unsigned int quality );
+QmImage *qm_image_load( const char *path );
+QmImage *qm_image_parse( QmFsFile *file );
+bool     qm_image_write( const QmImage *image, const char *path, unsigned int quality );
 
-PL_EXTERN bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format );
+bool PlConvertPixelFormat( QmImage *image, PLImageFormat new_format );
 
-PL_EXTERN void PlInvertImageColour( PLImage *image );
-void           PlClearImageAlpha( PLImage *image );
-PL_EXTERN void PlReplaceImageColour( PLImage *image, QmMathColour4ub target, QmMathColour4ub dest );
+void qm_image_invert_colour( QmImage *image );
+void PlClearImageAlpha( QmImage *image );
+void qm_image_replace_colour( QmImage *image, QmMathColour4ub target, QmMathColour4ub dest );
 
-PL_EXTERN bool PlFlipImageVertical( PLImage *image );
+bool PlFlipImageVertical( QmImage *image );
 
-PL_EXTERN void         PlFreeImage( PLImage *image );
-PL_EXTERN unsigned int PlGetImageSize( PLImageFormat format, unsigned int width, unsigned int height );
+void         PlFreeImage( QmImage *image );
+unsigned int PlGetImageSize( PLImageFormat format, unsigned int width, unsigned int height );
 
 unsigned int PlGetImageFormatPixelSize( PLImageFormat format );
 unsigned int PlGetNumImageFormatChannels( PLImageFormat format );
 
-bool PlImageHasAlpha( const PLImage *image );
+bool PlImageHasAlpha( const QmImage *image );
 
-PL_EXTERN const char **PlGetSupportedImageFormats( unsigned int *numElements );
+const char **PlGetSupportedImageFormats( unsigned int *numElements );
 
-unsigned int  PlGetImageWidth( const PLImage *image );
-unsigned int  PlGetImageHeight( const PLImage *image );
-PLImageFormat PlGetImageFormat( const PLImage *image );
-void         *PlGetImageData( PLImage *image, unsigned int frame, unsigned int mip );
-unsigned int  PlGetImageDataSize( const PLImage *image );
+unsigned int qm_image_get_width( const QmImage *image );
+unsigned int qm_image_get_height( const QmImage *image );
 
-PLImage *PlResizeImage( PLImage *image, unsigned int newWidth, unsigned int newHeight );
-PLImage *PlCropImage( PLImage *image, unsigned int newWidth, unsigned int newHeight, unsigned int xOffset, unsigned int yOffset );
+PLImageFormat PlGetImageFormat( const QmImage *image );
+
+void        *PlGetImageData( QmImage *image, unsigned int frame, unsigned int mip );
+unsigned int PlGetImageDataSize( const QmImage *image );
+
+QmImage *qm_image_resize( QmImage *image, unsigned int newWidth, unsigned int newHeight );
+QmImage *qm_image_crop( QmImage *image, unsigned int newWidth, unsigned int newHeight, unsigned int xOffset, unsigned int yOffset );
 
 // S3TC Library Interface
 void PlBlockDecompressImageDXT1( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image );
 void PlBlockDecompressImageDXT3( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image );
 void PlBlockDecompressImageDXT5( unsigned int width, unsigned int height, const unsigned char *blockStorage, unsigned char *image );
 
-PLImage *PlParse3dfImage( QmFsFile *file );
-PLImage *PlParseFtxImage( QmFsFile *file );
-PLImage *PlParseTimImage( QmFsFile *file );
-PLImage *PlParseSwlImage( QmFsFile *file );
-PLImage *PlParseQoiImage( QmFsFile *file );
-PLImage *PlParseDdsImage( QmFsFile *file );
-PLImage *PlParseHsmImage( QmFsFile *file );
+QmImage *qm_image_3df_parse( QmFsFile *file );
+QmImage *qm_image_ftx_parse( QmFsFile *file );
+QmImage *qm_image_tim_parse( QmFsFile *file );
+QmImage *qm_image_swl_parse( QmFsFile *file );
+QmImage *qm_image_qoi_parse( QmFsFile *file );
+QmImage *qm_image_dds_parse( QmFsFile *file );
+QmImage *qm_image_hsm_parse( QmFsFile *file );
+QmImage *qm_image_rsb_parse( QmFsFile *file );
+QmImage *qm_image_3dr_parse( QmFsFile *file );
+QmImage *qm_image_angel_tex_parse( QmFsFile *file );
+QmImage *qm_image_dtx_parse( QmFsFile *file );
+
+bool qm_image_qoi_write( const QmImage *image, const char *path );
 
 #endif
 

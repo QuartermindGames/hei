@@ -49,7 +49,7 @@ QmFsPackage *PlParseHalPackage_( QmFsFile *file ) {
 		indices[ i ].unknown[ 0 ] = qm_fs_file_read_int32( file, false, &status );
 		indices[ i ].unknown[ 1 ] = qm_fs_file_read_int32( file, false, &status );
 
-		if ( PlReadFile( file, indices[ i ].name, 1, 16 ) != 16 ) {
+		if ( qm_file_read( file, indices[ i ].name, 1, 16 ) != 16 ) {
 			status = false;
 		}
 	}

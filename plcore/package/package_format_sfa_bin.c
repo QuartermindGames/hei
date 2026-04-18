@@ -36,7 +36,7 @@ QmFsPackage *PlLoadTabPackage( const char *path ) {
 	unsigned int num_indices = ( unsigned int ) ( tab_size / sizeof( TabIndex ) );
 
 	TabIndex *indices = QM_OS_MEMORY_MALLOC_( num_indices * sizeof( TabIndex ) );
-	size_t ret = PlReadFile( fp, indices, sizeof( TabIndex ), num_indices );
+	size_t ret = qm_file_read( fp, indices, sizeof( TabIndex ), num_indices );
 	PlCloseFile( fp );
 
 	if ( ret != num_indices ) {

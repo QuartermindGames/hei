@@ -47,7 +47,7 @@ QmFsPackage *PlParseVppPackage( QmFsFile *file ) {
 	// for simplicity’s sake, but probably worth incorporating at some point
 
 	uint8_t buf[ BLOCK_SIZE ];
-	if ( PlReadFile( file, buf, sizeof( uint8_t ), BLOCK_SIZE ) != BLOCK_SIZE ) {
+	if ( qm_file_read( file, buf, sizeof( uint8_t ), BLOCK_SIZE ) != BLOCK_SIZE ) {
 		return NULL;
 	}
 
@@ -85,7 +85,7 @@ QmFsPackage *PlParseVppPackage( QmFsFile *file ) {
 
 	uint32_t streamSize = calculate_stream_length( ( header->version == 1 ? sizeof( VppEntry ) : sizeof( Vpp2Entry ) ) * header->numFiles );
 	uint8_t *stream = QM_OS_MEMORY_NEW_( uint8_t, streamSize );
-	if ( PlReadFile( file, stream, sizeof( uint8_t ), streamSize ) == streamSize ) {
+	if ( qm_file_read( file, stream, sizeof( uint8_t ), streamSize ) == streamSize ) {
 		PLFileOffset baseOffset = qm_fs_file_get_offset( file );
 
 		package = PlCreatePackageHandle( qm_fs_file_get_path( file ), header->numFiles, NULL );

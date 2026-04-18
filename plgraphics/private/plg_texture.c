@@ -92,7 +92,7 @@ void qm_gfx_texture_set_flags( QmGfxTexture *self, unsigned int flags )
 	self->flags = flags;
 }
 
-bool qm_gfx_texture_upload( QmGfxTexture *self, const PLImage *upload )
+bool qm_gfx_texture_upload( QmGfxTexture *self, const QmImage *upload )
 {
 	self->w      = upload->width;
 	self->h      = upload->height;

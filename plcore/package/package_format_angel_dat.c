@@ -58,7 +58,7 @@ QmFsPackage *PlParseAngelDatPackage_( QmFsFile *file ) {
 	qm_fs_file_seek( file, 2048 + header.tocLength, QM_FS_SEEK_SET );
 
 	char *names = QM_OS_MEMORY_NEW_( char, header.stringTableLength );
-	PlReadFile( file, names, sizeof( char ), header.stringTableLength );
+	qm_file_read( file, names, sizeof( char ), header.stringTableLength );
 
 	bool encodedStrings = false;
 	if ( header.magic == ANGEL_DAT_MAGIC2 ) {

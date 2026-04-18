@@ -13,12 +13,12 @@
 #define QOI_IMPLEMENTATION
 #include "3rdparty/qoi.h"
 
-PLImage *PlParseQoiImage( QmFsFile *file ) {
-	PLImage *image = NULL;
+QmImage *qm_image_qoi_parse( QmFsFile *file ) {
+	QmImage *image = NULL;
 
 	int size = ( int ) qm_fs_file_get_size( file );
 	uint8_t *buf = QM_OS_MEMORY_NEW_( uint8_t, size + 1 );
-	if ( PlReadFile( file, buf, sizeof( uint8_t ), size ) == size ) {
+	if ( qm_file_read( file, buf, sizeof( uint8_t ), size ) == size ) {
 		qoi_desc desc;
 		uint8_t *dstBuf = qoi_decode( buf, size, &desc, 0 );
 		if ( dstBuf == NULL ) {
@@ -37,7 +37,7 @@ PLImage *PlParseQoiImage( QmFsFile *file ) {
 	return image;
 }
 
-bool PlWriteQoiImage( const PLImage *image, const char *path ) {
+bool qm_image_qoi_write( const QmImage *image, const char *path ) {
 	if ( image->format != PL_IMAGEFORMAT_RGBA8 && image->format != PL_IMAGEFORMAT_RGB8 ) {
 		PlReportBasicError( PL_RESULT_IMAGEFORMAT );
 		return false;

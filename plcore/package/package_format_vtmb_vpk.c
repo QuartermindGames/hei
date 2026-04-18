@@ -38,7 +38,7 @@ QmFsPackage *PlParseVpkPackage_( QmFsFile *file ) {
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
 		uint32_t nameLength = qm_fs_file_read_int32( file, false, NULL );
 		char *name = QM_OS_MEMORY_NEW_( char, nameLength + 1 );
-		PlReadFile( file, name, sizeof( char ), nameLength );
+		qm_file_read( file, name, sizeof( char ), nameLength );
 		snprintf( package->files[ i ].name, sizeof( package->files[ i ].name ), "%s", name );
 		qm_os_memory_free( name );
 

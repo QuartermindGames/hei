@@ -20,7 +20,7 @@ typedef enum AngelTEXType {
 	ANGEL_TEX_TYPE_BGRA8_PAL = 14,
 } AngelTEXType;
 
-PLImage *PlParseAngelTexImage_( QmFsFile *file ) {
+QmImage *qm_image_angel_tex_parse( QmFsFile *file ) {
 	AngelTEXHeader header = {};
 
 	/* there's no magic for this format, so need to do some additional awkward checks... */
@@ -48,7 +48,7 @@ PLImage *PlParseAngelTexImage_( QmFsFile *file ) {
 	/* there's a hecking lot of different types supported...
 	 * for now we're just supporting the more often used types */
 
-	PLImage *image = NULL;
+	QmImage *image = NULL;
 	switch ( header.type ) {
 		default: {
 			PlReportBasicError( PL_RESULT_UNSUPPORTED );
@@ -64,14 +64,14 @@ PLImage *PlParseAngelTexImage_( QmFsFile *file ) {
 			}
 
 			QmMathColour4ub palette[ 256 ];
-			if ( PlReadFile( file, palette, sizeof( QmMathColour4ub ), 256 ) != 256 ) {
+			if ( qm_file_read( file, palette, sizeof( QmMathColour4ub ), 256 ) != 256 ) {
 				return NULL;
 			}
 
 			image = PlCreateImage( NULL, header.width, header.height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
 			uint8_t *pixels = QM_OS_MEMORY_NEW_( uint8_t, numPixels );
-			PlReadFile( file, pixels, sizeof( uint8_t ), numPixels );
+			qm_file_read( file, pixels, sizeof( uint8_t ), numPixels );
 
 			uint8_t *dst = image->data[ 0 ];
 			for ( int y = 0; y < header.height; ++y ) {

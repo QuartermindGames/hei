@@ -71,9 +71,9 @@ static uint8_t GetDTXFormat( DTXHeader *dtx ) {
 	return dtx->extra[ 2 ];
 }
 
-PLImage *PlParseDtxImage_( QmFsFile *file ) {
+QmImage *qm_image_dtx_parse( QmFsFile *file ) {
 	DTXHeader header;
-	if ( PlReadFile( file, &header, sizeof( DTXHeader ), 1 ) != 1 ) {
+	if ( qm_file_read( file, &header, sizeof( DTXHeader ), 1 ) != 1 ) {
 		return NULL;
 	}
 
@@ -136,12 +136,12 @@ PLImage *PlParseDtxImage_( QmFsFile *file ) {
 		return NULL;
 	}
 
-	PLImage *image = PlCreateImage( NULL, header.width, header.height, 0, colourFormat, imageFormat );
+	QmImage *image = PlCreateImage( NULL, header.width, header.height, 0, colourFormat, imageFormat );
 	if ( image == NULL ) {
 		return NULL;
 	}
 
-	if ( PlReadFile( file, image->data[ 0 ], sizeof( uint8_t ), size ) != size ) {
+	if ( qm_file_read( file, image->data[ 0 ], sizeof( uint8_t ), size ) != size ) {
 		PlDestroyImage( image );
 		image = NULL;
 	}

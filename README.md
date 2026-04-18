@@ -20,7 +20,7 @@ A C23 framework for games, software and everything in-between.
 See [the roadmap](#roadmap) below for details.
 
 A collection of relatively small utility libraries written in C23 that can be used as the foundation for various applications, though probably more oriented towards games.
-Includes APIs for dealing with images, graphics, models, IO and much more.
+Includes APIs for dealing with images, graphics, IO and much more.
 
 Originally created around 2014/2015 as a support library for a game, it's since found a new life supporting [ApeTech](https://www.hogsy.me/ape.htm) and other projects.
 Do let me know if you find any use of it, and I'll give you a shoutout!
@@ -28,27 +28,39 @@ Do let me know if you find any use of it, and I'll give you a shoutout!
 **Keep in mind this is likely far from the most efficient library in the world.
 If performance is a big priority for you, then I would highly recommend looking elsewhere!**
 
-Mind that `plcore` is standalone, while `plmodel` and `plgraphics` depend on `plcore`.
-
 # Features
+
+The qmfw library is made up of the following.
+
+- [qmfs](src/qmfs)
+  - I/O focused library that provides a virtual file-system, allowing you to mount directories and packages.
+  - Depends: qmos
+- [qmgfx](src/qmgfx)
+  - Graphics abstraction library. Currently, provides an interface that wraps OpenGL but is designed to be extended to support other APIs.
+  - Depends: qmos
+- [qmimg](src/qmimg)
+  - Image-focused library allowing read/write support for a wide number of different formats.
+  - Depends: qmos
+- [qmmath](src/qmmath)
+  - A small math library.
+  - Depends: none!
+- [qmos](src/qmos)
+  - Takes care of some system-level abstraction, memory management, linked lists, string methods, time, shared pointers and more. Some of this may be split out in due time.
+  - Depends: none!
+- [qmparse](src/qmparse)
+  - Provides a basic header-only parser.
+  - Depends: none!
+- [qmtest](src/qmtest)
+  - Intended to be used internally for implementing tests for each library, but could technically be used for other things.
+  - Depends: none!
+
+----
 
 Support levels for formats indicate the following.
 - A: **Very good, perfect or near perfect support.**
 - B: **Probably good enough, but not perfect.**
 - C: **Experimental. You'll likely encounter issues.**
 - F: **Non-functional / broken.**
-
-## plcore
-- Support for multiple compression algorithms
-- PCMD command-line interface, that exposes features the library has to offer
-- Plugin interface for supporting new image and package formats
-- C/C++ Math Library (Vector, Matrix, Quaternion)
-    - Also provides optional OpenGL-style matrix functions
-- Console Interface, with logging, variables and commands
-- File I/O is endianness agnostic
-- Support for mounting packages; I/O requests will automatically be mapped to any 
-mounted packages before falling back to the local FS
-- Image API provides manipulation functions
 
 ### Supported image formats
 
@@ -107,13 +119,6 @@ mounted packages before falling back to the local FS
 | ALL          | [The Last Job](https://www.gamesthatwerent.com/2024/09/the-last-job/) | B             | R    |
 | P5CK         | Free Radical Design games                                             | B             | R    |
 
-## plgraphics
-- Provides a relatively simple abstraction layer
-- Camera implementation, supporting Isometric, orthographic and perspective views
-- Easy-to-use rendering API
-- Supported APIs via plugins, aka 'drivers'
-  - OpenGL 3.3
-  
 ## plmodel
 
 Model API supports static and animated per-vertex/skeletal formats.

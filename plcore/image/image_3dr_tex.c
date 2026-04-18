@@ -6,7 +6,7 @@
 
 // Quickly whipped up loader for 3D Realms' TEX format
 
-PLImage *PlParse3drTexImage_( QmFsFile *file ) {
+QmImage *qm_image_3dr_parse( QmFsFile *file ) {
 	// possibly some sort of image mode? non-zero for alpha textures
 	uint16_t mode = PL_READUINT16( file, false, NULL );
 	if ( mode != 0 && mode != 0x500 ) {
@@ -43,7 +43,7 @@ PLImage *PlParse3drTexImage_( QmFsFile *file ) {
 
 	unsigned int size = width * height;
 	uint16_t *src = QM_OS_MEMORY_NEW_( uint16_t, size );
-	if ( PlReadFile( file, src, sizeof( uint16_t ), size ) != size ) {
+	if ( qm_file_read( file, src, sizeof( uint16_t ), size ) != size ) {
 		qm_os_memory_free( src );
 		return NULL;
 	}
@@ -80,7 +80,7 @@ PLImage *PlParse3drTexImage_( QmFsFile *file ) {
 		}
 	}
 
-	PLImage *image = PlCreateImage( dst, width, height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+	QmImage *image = PlCreateImage( dst, width, height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
 	qm_os_memory_free( src );
 	qm_os_memory_free( dst );

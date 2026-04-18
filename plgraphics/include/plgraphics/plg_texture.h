@@ -92,7 +92,7 @@ PL_EXTERN_C
 
 PL_EXTERN QmGfxTexture *qm_gfx_texture_create();
 
-PL_EXTERN bool qm_gfx_texture_upload( QmGfxTexture *self, const PLImage *upload );
+PL_EXTERN bool qm_gfx_texture_upload( QmGfxTexture *self, const QmImage *upload );
 
 PL_EXTERN unsigned int qm_gfx_get_max_texture_size( void );
 PL_EXTERN unsigned int qm_gfx_get_max_texture_units( void );

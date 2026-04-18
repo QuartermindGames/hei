@@ -50,7 +50,7 @@ static bool TIM_FormatCheck( QmFsFile *fin ) {
 	qm_fs_file_rewind( fin );
 
 	uint32_t ident;
-	if ( PlReadFile( fin, &ident, sizeof( uint32_t ), 1 ) != 1 ) {
+	if ( qm_file_read( fin, &ident, sizeof( uint32_t ), 1 ) != 1 ) {
 		return false;
 	}
 
@@ -93,7 +93,7 @@ static uint16_t _tim16toRGB51A( uint16_t colour_in ) {
 	return colour_out;
 }
 
-static bool TIM_ReadFile( QmFsFile *fin, PLImage *out ) {
+static bool TIM_ReadFile( QmFsFile *fin, QmImage *out ) {
 	if ( !TIM_FormatCheck( fin ) ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "invalid/unexpected identifier for TIM" );
 		return false;
@@ -103,7 +103,7 @@ static bool TIM_ReadFile( QmFsFile *fin, PLImage *out ) {
 	uint8_t *image_data = NULL;
 
 	TIMHeader header;
-	if ( PlReadFile( fin, &header, sizeof( TIMHeader ), 1 ) != 1 ) {
+	if ( qm_file_read( fin, &header, sizeof( TIMHeader ), 1 ) != 1 ) {
 		goto UNEXPECTED_EOF;
 	}
 
@@ -113,7 +113,7 @@ static bool TIM_ReadFile( QmFsFile *fin, PLImage *out ) {
 		/* File has a palette (CLUT), read it it in */
 
 		TIMPaletteInfo palette_info;
-		if ( PlReadFile( fin, &palette_info, sizeof( TIMPaletteInfo ), 1 ) != 1 ) {
+		if ( qm_file_read( fin, &palette_info, sizeof( TIMPaletteInfo ), 1 ) != 1 ) {
 			goto UNEXPECTED_EOF;
 		}
 
@@ -130,13 +130,13 @@ static bool TIM_ReadFile( QmFsFile *fin, PLImage *out ) {
 			goto ERR_CLEANUP;
 		}
 
-		if ( PlReadFile( fin, palette, sizeof( uint16_t ), palette_size ) != palette_size ) {
+		if ( qm_file_read( fin, palette, sizeof( uint16_t ), palette_size ) != palette_size ) {
 			goto UNEXPECTED_EOF;
 		}
 	}
 
 	TIMImageInfo image_info;
-	if ( PlReadFile( fin, &image_info, sizeof( TIMImageInfo ), 1 ) != 1 ) {
+	if ( qm_file_read( fin, &image_info, sizeof( TIMImageInfo ), 1 ) != 1 ) {
 		goto UNEXPECTED_EOF;
 	}
 
@@ -156,7 +156,7 @@ static bool TIM_ReadFile( QmFsFile *fin, PLImage *out ) {
 		goto ERR_CLEANUP;
 	}
 
-	if ( PlReadFile( fin, image_data, image_data_len, 1 ) != 1 ) {
+	if ( qm_file_read( fin, image_data, image_data_len, 1 ) != 1 ) {
 		goto UNEXPECTED_EOF;
 	}
 
@@ -287,14 +287,14 @@ ERR_CLEANUP:
 	return false;
 }
 
-PLImage *PlParseTimImage( QmFsFile *file ) {
+QmImage *qm_image_tim_parse( QmFsFile *file ) {
 	if ( !TIM_FormatCheck( file ) ) {
 		return NULL;
 	}
 
 	qm_fs_file_rewind( file );
 
-	PLImage *image = QM_OS_MEMORY_CALLOC( 1, sizeof( PLImage ) );
+	QmImage *image = QM_OS_MEMORY_CALLOC( 1, sizeof( QmImage ) );
 	if ( !TIM_ReadFile( file, image ) ) {
 		qm_os_memory_free( image );
 		image = NULL;

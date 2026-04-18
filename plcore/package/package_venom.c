@@ -14,7 +14,7 @@ static const char VENOM_PAK_IDENTIFIER[] = "VENOMBINPAK1.0\n";
 
 QmFsPackage *PlParseVenomPakPackage( QmFsFile *file ) {
 	char ident[ 15 ];
-	PlReadFile( file, ident, sizeof( char ), sizeof( ident ) );
+	qm_file_read( file, ident, sizeof( char ), sizeof( ident ) );
 	if ( strncmp( VENOM_PAK_IDENTIFIER, ident, sizeof( ident ) ) != 0 ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "file is not a valid venom package" );
 		return NULL;
@@ -36,7 +36,7 @@ QmFsPackage *PlParseVenomPakPackage( QmFsFile *file ) {
 
 	size_t bufSize = headerSize - qm_fs_file_get_offset( file );
 	char *buf = QM_OS_MEMORY_NEW_( char, bufSize + 1 );
-	if ( PlReadFile( file, buf, sizeof( char ), bufSize ) != bufSize ) {
+	if ( qm_file_read( file, buf, sizeof( char ), bufSize ) != bufSize ) {
 		qm_os_memory_free( buf );
 		return NULL;
 	}

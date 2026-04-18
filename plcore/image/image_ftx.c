@@ -15,7 +15,7 @@ typedef struct FtxHeader {
 	uint32_t alpha;
 } FtxHeader;
 
-PLImage *PlParseFtxImage( QmFsFile *file ) {
+QmImage *qm_image_ftx_parse( QmFsFile *file ) {
 	FtxHeader header;
 	bool status;
 	header.width = qm_fs_file_read_int32( file, false, &status );
@@ -28,14 +28,14 @@ PLImage *PlParseFtxImage( QmFsFile *file ) {
 
 	unsigned int size = header.width * header.height * 4;
 	uint8_t *buffer = QM_OS_MEMORY_MALLOC_( size );
-	size_t rSize = PlReadFile( file, buffer, sizeof( uint8_t ), size );
+	size_t rSize = qm_file_read( file, buffer, sizeof( uint8_t ), size );
 
 	if ( rSize != size ) {
 		qm_os_memory_free( buffer );
 		return NULL;
 	}
 
-	PLImage *image = PlCreateImage( buffer, header.width, header.height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+	QmImage *image = PlCreateImage( buffer, header.width, header.height, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
 	/* create image makes a copy of the buffer */
 	qm_os_memory_free( buffer );

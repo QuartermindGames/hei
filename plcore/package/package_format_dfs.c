@@ -24,7 +24,7 @@ static void *LoadPackageFile( QmFsFile *file, QmFsPackageFile *index ) {
 	QmFsFile *dataFile = qm_fs_file_open( dataPath, false );
 	if ( qm_fs_file_seek( dataFile, ( signed ) index->offset, QM_FS_SEEK_SET ) ) {
 		data = QM_OS_MEMORY_NEW_( uint8_t, index->size );
-		if ( PlReadFile( dataFile, data, sizeof( char ), index->size ) != index->size ) {
+		if ( qm_file_read( dataFile, data, sizeof( char ), index->size ) != index->size ) {
 			qm_os_memory_free( data );
 			data = NULL;
 		}

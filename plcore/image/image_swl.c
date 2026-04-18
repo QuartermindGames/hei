@@ -15,9 +15,9 @@ typedef struct SWLHeader {
 	uint32_t height;
 } SWLHeader;
 
-PLImage *PlParseSwlImage( QmFsFile *fin ) {
+QmImage *qm_image_swl_parse( QmFsFile *fin ) {
 	SWLHeader header;
-	if ( PlReadFile( fin, &header, sizeof( header ), 1 ) != 1 ) {
+	if ( qm_file_read( fin, &header, sizeof( header ), 1 ) != 1 ) {
 		return nullptr;
 	}
 
@@ -30,7 +30,7 @@ PLImage *PlParseSwlImage( QmFsFile *fin ) {
 	struct {
 		uint8_t r, g, b, a;
 	} palette[ 256 ];
-	if ( PlReadFile( fin, palette, 4, 256 ) != 256 ) {
+	if ( qm_file_read( fin, palette, 4, 256 ) != 256 ) {
 		PlReportBasicError( PL_RESULT_FILEREAD );
 		return nullptr;
 	}
@@ -42,7 +42,7 @@ PLImage *PlParseSwlImage( QmFsFile *fin ) {
 		return nullptr;
 	}
 
-	PLImage *out = QM_OS_MEMORY_MALLOC_( sizeof( PLImage ) );
+	QmImage *out = QM_OS_MEMORY_MALLOC_( sizeof( QmImage ) );
 	out->width = header.width;
 	out->height = header.height;
 	out->levels = 4;
@@ -60,7 +60,7 @@ PLImage *PlParseSwlImage( QmFsFile *fin ) {
 
 		size_t buf_size = mip_w * mip_h;
 		uint8_t *buf = QM_OS_MEMORY_MALLOC_( buf_size );
-		if ( PlReadFile( fin, buf, 1, buf_size ) != buf_size ) {
+		if ( qm_file_read( fin, buf, 1, buf_size ) != buf_size ) {
 			PlDestroyImage( out );
 			qm_os_memory_free( buf );
 			return nullptr;

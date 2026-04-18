@@ -1265,7 +1265,7 @@ int64_t qm_fs_file_get_offset( const QmFsFile *self )
 	return ( char * ) self->pos - ( char * ) self->data;
 }
 
-size_t PlReadFile( QmFsFile *ptr, void *dest, size_t size, size_t count )
+size_t qm_file_read( QmFsFile *ptr, void *dest, size_t size, size_t count )
 {
 	// bail early if size is 0 to avoid division by 0
 	if ( size == 0 )
@@ -1327,7 +1327,7 @@ int8_t qm_fs_file_read_int8( QmFsFile *self, bool *status )
 static int64_t file_read_sized_int( QmFsFile *ptr, size_t size, bool big_endian, bool *status )
 {
 	int64_t n;
-	if ( PlReadFile( ptr, &n, size, 1 ) != 1 )
+	if ( qm_file_read( ptr, &n, size, 1 ) != 1 )
 	{
 		if ( status != nullptr )
 		{
@@ -1377,7 +1377,7 @@ int64_t qm_fs_file_read_int64( QmFsFile *self, bool big_endian, bool *status )
 float qm_fs_file_read_float( QmFsFile *ptr, bool big_endian, bool *status )
 {
 	float f;
-	if ( PlReadFile( ptr, &f, sizeof( float ), 1 ) != 1 )
+	if ( qm_file_read( ptr, &f, sizeof( float ), 1 ) != 1 )
 	{
 		if ( status != nullptr ) *status = false;
 		return 0.0f;
@@ -1397,7 +1397,7 @@ float qm_fs_file_read_float( QmFsFile *ptr, bool big_endian, bool *status )
 double qm_fs_file_read_double( QmFsFile *ptr, bool big_endian, bool *status )
 {
 	double d;
-	if ( PlReadFile( ptr, &d, sizeof( double ), 1 ) != 1 )
+	if ( qm_file_read( ptr, &d, sizeof( double ), 1 ) != 1 )
 	{
 		if ( status != nullptr ) *status = false;
 		return 0.0;
@@ -1543,7 +1543,7 @@ const void *PlCacheFile( QmFsFile *file )
 
 	/* allocate the new buffer and attempt to read in the whole thing */
 	file->data = QM_OS_MEMORY_MALLOC_( s );
-	if ( PlReadFile( file, file->data, sizeof( char ), s ) != s )
+	if ( qm_file_read( file, file->data, sizeof( char ), s ) != s )
 	{
 		/* seek back and restore where we were */
 		qm_fs_file_seek( file, ( long ) p, QM_FS_SEEK_SET );

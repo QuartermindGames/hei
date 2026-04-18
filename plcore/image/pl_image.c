@@ -37,7 +37,7 @@
 #	define STB_IMAGE_WRITE_STATIC
 #	include "stb_image.h"
 
-static PLImage *LoadStbImage( QmFsFile *file ) {
+static QmImage *LoadStbImage( QmFsFile *file ) {
 	size_t s = qm_fs_file_get_size( file );
 	if ( s >= INT32_MAX ) {
 		PlReportBasicError( PL_RESULT_FILESIZE );
@@ -50,7 +50,7 @@ static PLImage *LoadStbImage( QmFsFile *file ) {
 		return NULL;
 	}
 
-	PlReadFile( file, tmp, sizeof( char ), s );
+	qm_file_read( file, tmp, sizeof( char ), s );
 
 	int x, y, component;
 	unsigned char *data = stbi_load_from_memory( tmp, ( int ) s, &x, &y, &component, 4 );
@@ -62,7 +62,7 @@ static PLImage *LoadStbImage( QmFsFile *file ) {
 		return NULL;
 	}
 
-	PLImage *image = QM_OS_MEMORY_NEW( PLImage );
+	QmImage *image = QM_OS_MEMORY_NEW( QmImage );
 	if ( image != NULL )
 	{
 		image->colour_format = PL_COLOURFORMAT_RGBA;
@@ -89,13 +89,13 @@ static PLImage *LoadStbImage( QmFsFile *file ) {
 
 typedef struct PLImageLoader {
 	const char *extension;
-	PLImage *( *ParseFile )( QmFsFile *file );
+	QmImage *( *ParseFile )( QmFsFile *file );
 } PLImageLoader;
 
 static PLImageLoader imageLoaders[ MAX_IMAGE_LOADERS ];
 static unsigned int numImageLoaders = 0;
 
-void PlRegisterImageLoader( const char *extension, PLImage *( *ParseFile )( QmFsFile *file ) ) {
+void PlRegisterImageLoader( const char *extension, QmImage *( *ParseFile )( QmFsFile *file ) ) {
 	if ( numImageLoaders >= MAX_IMAGE_LOADERS ) {
 		PlReportBasicError( PL_RESULT_MEMORY_EOA );
 		return;
@@ -113,7 +113,7 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	typedef struct SImageLoader {
 		unsigned int flag;
 		const char *extension;
-		PLImage *( *LoadFunction )( QmFsFile *file );
+		QmImage *( *LoadFunction )( QmFsFile *file );
 	} SImageLoader;
 
 	static const SImageLoader loaderList[] = {
@@ -128,17 +128,17 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	        {PL_IMAGE_FILEFORMAT_HDR,       "hdr",  LoadStbImage         },
 	        {PL_IMAGE_FILEFORMAT_PIC,       "pic",  LoadStbImage         },
 	        {PL_IMAGE_FILEFORMAT_PNM,       "pnm",  LoadStbImage         },
-	        {PL_IMAGE_FILEFORMAT_FTX,       "ftx",  PlParseFtxImage      },
-	        {PL_IMAGE_FILEFORMAT_3DF,       "3df",  PlParse3dfImage      },
-	        {PL_IMAGE_FILEFORMAT_TIM,       "tim",  PlParseTimImage      },
-	        {PL_IMAGE_FILEFORMAT_SWL,       "swl",  PlParseSwlImage      },
-	        {PL_IMAGE_FILEFORMAT_QOI,       "qoi",  PlParseQoiImage      },
-	        {PL_IMAGE_FILEFORMAT_DDS,       "dds",  PlParseDdsImage      },
-	        {PL_IMAGE_FILEFORMAT_RSB,       "rsb",  PlParseRsbImage_     },
-	        {PL_IMAGE_FILEFORMAT_TEX,       "tex",  PlParse3drTexImage_  },
-	        {PL_IMAGE_FILEFORMAT_ANGEL_TEX, "tex",  PlParseAngelTexImage_},
-	        {PL_IMAGE_FILEFORMAT_DTX,       "dtx",  PlParseDtxImage_     },
-	        {PL_IMAGE_FILEFORMAT_HSM,       "hsm",  PlParseHsmImage      },
+	        {PL_IMAGE_FILEFORMAT_FTX,       "ftx",  qm_image_ftx_parse      },
+	        {PL_IMAGE_FILEFORMAT_3DF,       "3df",  qm_image_3df_parse      },
+	        {PL_IMAGE_FILEFORMAT_TIM,       "tim",  qm_image_tim_parse      },
+	        {PL_IMAGE_FILEFORMAT_SWL,       "swl",  qm_image_swl_parse      },
+	        {PL_IMAGE_FILEFORMAT_QOI,       "qoi",  qm_image_qoi_parse      },
+	        {PL_IMAGE_FILEFORMAT_DDS,       "dds",  qm_image_dds_parse      },
+	        {PL_IMAGE_FILEFORMAT_RSB,       "rsb",  qm_image_rsb_parse     },
+	        {PL_IMAGE_FILEFORMAT_TEX,       "tex",  qm_image_3dr_parse  },
+	        {PL_IMAGE_FILEFORMAT_ANGEL_TEX, "tex",  qm_image_angel_tex_parse},
+	        {PL_IMAGE_FILEFORMAT_DTX,       "dtx",  qm_image_dtx_parse     },
+	        {PL_IMAGE_FILEFORMAT_HSM,       "hsm",  qm_image_hsm_parse      },
 	};
 
 	for ( unsigned int i = 0; i < QM_OS_ARRAY_ELEMENTS( loaderList ); ++i ) {
@@ -154,8 +154,8 @@ void PlClearImageLoaders( void ) {
 	numImageLoaders = 0;
 }
 
-PLImage *PlCreateImage( void *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat ) {
-	PLImage *image = QM_OS_MEMORY_MALLOC_( sizeof( PLImage ) );
+QmImage *PlCreateImage( void *buf, unsigned int w, unsigned int h, unsigned int numFrames, PLColourFormat col, PLImageFormat dat ) {
+	QmImage *image = QM_OS_MEMORY_MALLOC_( sizeof( QmImage ) );
 	if ( image == NULL ) {
 		return NULL;
 	}
@@ -194,7 +194,7 @@ PLImage *PlCreateImage( void *buf, unsigned int w, unsigned int h, unsigned int 
 	return image;
 }
 
-void PlDestroyImage( PLImage *image ) {
+void PlDestroyImage( QmImage *image ) {
 	if ( image == NULL ) {
 		return;
 	}
@@ -220,7 +220,7 @@ void PlDestroyImage( PLImage *image ) {
  * Load an image by it's given pass.
  * Returns null on fail.
  */
-PLImage *PlLoadImage( const char *path ) {
+QmImage *qm_image_load( const char *path ) {
 	if ( !qm_fs_check_file_exists( path ) ) {
 		PlReportBasicError( PL_RESULT_FILEPATH );
 		return NULL;
@@ -232,7 +232,7 @@ PLImage *PlLoadImage( const char *path ) {
 			continue;
 		}
 
-		PLImage *image = NULL;
+		QmImage *image = NULL;
 		QmFsFile *file = qm_fs_file_open( path, false );
 		if ( file != NULL ) {
 			image = imageLoaders[ i ].ParseFile( file );
@@ -255,14 +255,14 @@ PLImage *PlLoadImage( const char *path ) {
 /**
  * Load an image by it's virtual file handle.
  */
-PLImage *PlParseImage( QmFsFile *file ) {
+QmImage *qm_image_parse( QmFsFile *file ) {
 	const char *extension = PlGetFileExtension( file->path );
 	for ( unsigned int i = 0; i < numImageLoaders; ++i ) {
 		if ( extension != NULL && pl_strcasecmp( extension, imageLoaders[ i ].extension ) != 0 ) {
 			continue;
 		}
 
-		PLImage *image = imageLoaders[ i ].ParseFile( file );
+		QmImage *image = imageLoaders[ i ].ParseFile( file );
 		if ( image == NULL ) {
 			continue;
 		}
@@ -273,7 +273,7 @@ PLImage *PlParseImage( QmFsFile *file ) {
 	return NULL;
 }
 
-bool PlWriteImage( const PLImage *image, const char *path, unsigned int quality ) {
+bool qm_image_write( const QmImage *image, const char *path, unsigned int quality ) {
 	if ( path != NULL && *path == '\0' ) {
 		PlReportErrorF( PL_RESULT_FILEPATH, PlGetResultString( PL_RESULT_FILEPATH ) );
 		return false;
@@ -304,7 +304,7 @@ bool PlWriteImage( const PLImage *image, const char *path, unsigned int quality 
 				return true;
 			}
 		} else if ( !pl_strncasecmp( extension, "qoi", 3 ) ) {
-			if ( PlWriteQoiImage( image, path ) ) {
+			if ( qm_image_qoi_write( image, path ) ) {
 				return true;
 			}
 		}
@@ -314,7 +314,7 @@ bool PlWriteImage( const PLImage *image, const char *path, unsigned int quality 
 	return false;
 }
 
-static bool RGB8toRGBA8( PLImage *image ) {
+static bool RGB8toRGBA8( QmImage *image ) {
 	size_t size = PlGetImageSize( PL_IMAGEFORMAT_RGBA8, image->width, image->height );
 	if ( size == 0 ) {
 		return false;
@@ -378,7 +378,7 @@ static uint8_t *ImageDataRGB5A1toRGBA8( const uint8_t *src, size_t n_pixels ) {
 	return dst;
 }
 
-bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
+bool PlConvertPixelFormat( QmImage *image, PLImageFormat new_format ) {
 	if ( image->format == new_format ) {
 		return true;
 	}
@@ -579,11 +579,11 @@ unsigned int PlGetNumImageFormatChannels( PLImageFormat format ) {
 	}
 }
 
-bool PlImageHasAlpha( const PLImage *image ) {
+bool PlImageHasAlpha( const QmImage *image ) {
 	return ( PlGetNumImageFormatChannels( image->format ) >= 4 );
 }
 
-void PlInvertImageColour( PLImage *image ) {
+void qm_image_invert_colour( QmImage *image ) {
 	unsigned int num_colours = PlGetNumImageFormatChannels( image->format );
 	switch ( image->format ) {
 		case PL_IMAGEFORMAT_RGB8:
@@ -604,7 +604,7 @@ void PlInvertImageColour( PLImage *image ) {
 }
 
 /* utility function */
-void PlGenerateStipplePattern( PLImage *image, unsigned int depth ) {
+void PlGenerateStipplePattern( QmImage *image, unsigned int depth ) {
 #if 0
     unsigned int p = 0;
     unsigned int num_colours = plGetSamplesPerPixel(image->colour_format);
@@ -628,7 +628,7 @@ void PlGenerateStipplePattern( PLImage *image, unsigned int depth ) {
 #endif
 }
 
-void PlClearImageAlpha( PLImage *image ) {
+void PlClearImageAlpha( QmImage *image ) {
 	if ( image->format != PL_IMAGEFORMAT_RGBA8 ) {
 		PlReportErrorF( PL_RESULT_IMAGEFORMAT, "unsupported image format" );
 		return;
@@ -639,7 +639,7 @@ void PlClearImageAlpha( PLImage *image ) {
 	}
 }
 
-void PlReplaceImageColour( PLImage *image, QmMathColour4ub target, QmMathColour4ub dest ) {
+void qm_image_replace_colour( QmImage *image, QmMathColour4ub target, QmMathColour4ub dest ) {
 	unsigned int num_colours = PlGetNumImageFormatChannels( image->format );
 	switch ( image->format ) {
 		case PL_IMAGEFORMAT_RGB8:
@@ -670,7 +670,7 @@ void PlReplaceImageColour( PLImage *image, QmMathColour4ub target, QmMathColour4
 	PlReportErrorF( PL_RESULT_IMAGEFORMAT, "unsupported image format" );
 }
 
-void PlFreeImage( PLImage *image ) {
+void PlFreeImage( QmImage *image ) {
 	FunctionStart();
 
 	if ( image == NULL || image->data == NULL ) {
@@ -684,7 +684,7 @@ void PlFreeImage( PLImage *image ) {
 	qm_os_memory_free( image->data );
 }
 
-bool PlFlipImageVertical( PLImage *image ) {
+bool PlFlipImageVertical( QmImage *image ) {
 	unsigned int width = image->width;
 	unsigned int height = image->height;
 
@@ -736,11 +736,11 @@ const char **PlGetSupportedImageFormats( unsigned int *numElements ) {
 }
 
 /* getters */
-unsigned int PlGetImageWidth( const PLImage *image ) { return image->width; }
-unsigned int PlGetImageHeight( const PLImage *image ) { return image->height; }
-PLImageFormat PlGetImageFormat( const PLImage *image ) { return image->format; }
+unsigned int qm_image_get_width( const QmImage *image ) { return image->width; }
+unsigned int qm_image_get_height( const QmImage *image ) { return image->height; }
+PLImageFormat PlGetImageFormat( const QmImage *image ) { return image->format; }
 
-void *PlGetImageData( PLImage *image, unsigned int frame, unsigned int mip ) {
+void *PlGetImageData( QmImage *image, unsigned int frame, unsigned int mip ) {
 	if ( mip >= image->levels ) {
 		PlReportErrorF( PL_RESULT_MEMORY_EOA, "invalid mip" );
 		return NULL;
@@ -759,17 +759,17 @@ void *PlGetImageData( PLImage *image, unsigned int frame, unsigned int mip ) {
 	return image->data[ mip ];
 }
 
-unsigned int PlGetImageDataSize( const PLImage *image ) {
+unsigned int PlGetImageDataSize( const QmImage *image ) {
 	return PlGetImageSize( image->format, image->width, image->height );
 }
 
-PLImage *PlResizeImage( PLImage *image, unsigned int newWidth, unsigned int newHeight ) {
+QmImage *qm_image_resize( QmImage *image, unsigned int newWidth, unsigned int newHeight ) {
 	if ( image->width == newWidth && image->height == newHeight ) {
 		PlReportErrorF( PL_RESULT_INVALID_PARM1, "image already of width/height" );
 		return NULL;
 	}
 
-	PLImage *newImage = PlCreateImage( NULL, newWidth, newHeight, 0, image->colour_format, image->format );
+	QmImage *newImage = PlCreateImage( NULL, newWidth, newHeight, 0, image->colour_format, image->format );
 	if ( newImage == NULL ) {
 		return NULL;
 	}
@@ -786,7 +786,7 @@ PLImage *PlResizeImage( PLImage *image, unsigned int newWidth, unsigned int newH
 	return newImage;
 }
 
-PLImage *PlCropImage( PLImage *image, unsigned int newWidth, unsigned int newHeight, unsigned int xOffset, unsigned int yOffset ) {
+QmImage *qm_image_crop( QmImage *image, unsigned int newWidth, unsigned int newHeight, unsigned int xOffset, unsigned int yOffset ) {
 	if ( image->width == newWidth && image->height == newHeight ) {
 		PlReportErrorF( PL_RESULT_INVALID_PARM1, "image already of width/height" );
 		return NULL;
@@ -795,7 +795,7 @@ PLImage *PlCropImage( PLImage *image, unsigned int newWidth, unsigned int newHei
 		return NULL;
 	}
 
-	PLImage *newImage = PlCreateImage( NULL, newWidth, newHeight, 0, image->colour_format, image->format );
+	QmImage *newImage = PlCreateImage( NULL, newWidth, newHeight, 0, image->colour_format, image->format );
 	if ( newImage == NULL ) {
 		return NULL;
 	}

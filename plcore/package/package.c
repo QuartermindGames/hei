@@ -85,7 +85,7 @@ static void *LoadGenericPackageFile( QmFsFile *fh, QmFsPackageFile *pi )
 
 	size_t   size    = ( pi->compressionType != PL_COMPRESSION_NONE ) ? pi->compressedSize : pi->size;
 	uint8_t *dataPtr = QM_OS_MEMORY_NEW_( uint8_t, size );
-	if ( PlReadFile( fh, dataPtr, sizeof( uint8_t ), size ) != size )
+	if ( qm_file_read( fh, dataPtr, sizeof( uint8_t ), size ) != size )
 	{
 		qm_os_memory_free( dataPtr );
 		return nullptr;

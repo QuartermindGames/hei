@@ -28,7 +28,7 @@ QmFsPackage *PlParseIce3DDatPackage_( QmFsFile *file ) {
 
 		uint32_t stringSize = PL_READUINT32( file, false, NULL );
 		char *buf = QM_OS_MEMORY_NEW_( char, stringSize + 1 );
-		PlReadFile( file, buf, sizeof( char ), stringSize );
+		qm_file_read( file, buf, sizeof( char ), stringSize );
 		snprintf( package->files[ i ].name, sizeof( package->files[ i ].name ), "%s", buf );
 		qm_os_memory_free( buf );
 

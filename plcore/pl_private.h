@@ -6,24 +6,9 @@
 
 #pragma once
 
+#include "qmos/public/qm_os_memory.h"
+
 #include <plcore/pl.h>
-
-#if defined( _MSC_VER )
-#	pragma warning( disable : 4204 )
-#	pragma warning( disable : 4820 )
-#	pragma warning( disable : 4668 )
-#endif
-
-// OS Specific Headers
-#if defined( _WIN32 )
-//#define WIN32_LEAN_AND_MEAN 1
-//#include <windows.h>
-//#include <afxres.h>
-//#define STRSAFE_NO_DEPRECATE 1
-//#include <strsafe.h>
-#	undef far
-#	undef near
-#endif
 
 /* Hard Limits */
 

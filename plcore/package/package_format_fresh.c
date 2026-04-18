@@ -12,7 +12,7 @@
 QmFsPackage *PlParseFreshBinPackage_( QmFsFile *file ) {
 	// First check the funky identifier at the start
 	char ident[ 8 ];
-	PlReadFile( file, ident, sizeof( char ), sizeof( ident ) );
+	qm_file_read( file, ident, sizeof( char ), sizeof( ident ) );
 	if ( strncmp( ident, "DATA    ", 8 ) != 0 ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "not a freshengine bin package" );
 		return NULL;
@@ -37,7 +37,7 @@ QmFsPackage *PlParseFreshBinPackage_( QmFsFile *file ) {
 
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
 		char filename[ 12 ];
-		PlReadFile( file, filename, sizeof( char ), sizeof( filename ) );
+		qm_file_read( file, filename, sizeof( char ), sizeof( filename ) );
 		// For some reason, so null-terminator but spaces instead??
 		// Let's convert it...
 		for ( unsigned int j = 0; j < sizeof( filename ); ++j ) {

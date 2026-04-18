@@ -45,7 +45,7 @@ QmFsPackage *PlParseAfsPackage_( QmFsFile *file ) {
 		PL_READUINT32( file, false, NULL );//?
 		PL_READUINT32( file, false, NULL );//?
 		PL_READUINT8( file, NULL );        // maybe this was supposed to be string length?? unused if so
-		PlReadFile( file, package->files[ i ].name, sizeof( char ), 239 );
+		qm_file_read( file, package->files[ i ].name, sizeof( char ), 239 );
 		qm_fs_normalize_path( package->files[ i ].name, sizeof( package->files[ i ].name ) );
 	}
 

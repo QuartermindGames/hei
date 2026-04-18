@@ -76,7 +76,7 @@ static PLHashTable *populate_name_table( const QmFsFile *file ) {
 
 QmFsPackage *PlParseFrdPakPackage_( QmFsFile *file ) {
 	Pak5Header header;
-	if ( PlReadFile( file, &header, sizeof( Pak5Header ), 1 ) != 1 ) {
+	if ( qm_file_read( file, &header, sizeof( Pak5Header ), 1 ) != 1 ) {
 		return NULL;
 	}
 
@@ -108,7 +108,7 @@ QmFsPackage *PlParseFrdPakPackage_( QmFsFile *file ) {
 	unsigned int i;
 	for ( i = 0; i < numFiles; ++i ) {
 		Pak5Index index;
-		if ( PlReadFile( file, &index, sizeof( Pak5Index ), 1 ) != 1 ) {
+		if ( qm_file_read( file, &index, sizeof( Pak5Index ), 1 ) != 1 ) {
 			break;
 		}
 		if ( index.offset == 0 || index.offset >= qm_fs_file_get_size( file ) ) {

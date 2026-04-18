@@ -63,8 +63,8 @@ static bool ParseZipFileHeader( QmFsFile *file, ZipFileHeader *header ) {
 	header->extraSize = qm_fs_file_read_int16( file, false, NULL );
 	header->extra = QM_OS_MEMORY_NEW_( char, header->extraSize );
 
-	PlReadFile( file, header->name, sizeof( char ), header->nameSize );
-	PlReadFile( file, header->extra, sizeof( char ), header->extraSize );
+	qm_file_read( file, header->name, sizeof( char ), header->nameSize );
+	qm_file_read( file, header->extra, sizeof( char ), header->extraSize );
 
 	header->offset = qm_fs_file_get_offset( file );
 

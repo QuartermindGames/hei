@@ -46,7 +46,7 @@ QmFsPackage *PlParseMadPackage_( QmFsFile *file ) {
 
 	while ( ( num_indices + 1 ) * sizeof( MADIndex ) <= data_begin ) {
 		MADIndex index;
-		if ( PlReadFile( file, &index, sizeof( MADIndex ), 1 ) != 1 ) {
+		if ( qm_file_read( file, &index, sizeof( MADIndex ), 1 ) != 1 ) {
 			/* EOF, or read error */
 			goto FAILED;
 		}
@@ -79,7 +79,7 @@ QmFsPackage *PlParseMadPackage_( QmFsFile *file ) {
 
 	for ( unsigned int i = 0; i < num_indices; ++i ) {
 		MADIndex index;
-		if ( PlReadFile( file, &index, sizeof( MADIndex ), 1 ) != 1 ) {
+		if ( qm_file_read( file, &index, sizeof( MADIndex ), 1 ) != 1 ) {
 			/* EOF, or read error */
 			PlReportErrorF( PL_RESULT_FILEREAD, "failed to read MAD index %d", i );
 			goto FAILED;

@@ -40,7 +40,7 @@ QmFsPackage *PlParseOpkPackage_( QmFsFile *file ) {
 			return NULL;
 		}
 
-		if ( PlReadFile( file, index->name, sizeof( char ), nameLength ) != nameLength ) {
+		if ( qm_file_read( file, index->name, sizeof( char ), nameLength ) != nameLength ) {
 			PlReportErrorF( PL_RESULT_FILEREAD, "failed to read in file name for index %d", i );
 			PlDestroyPackage( package );
 			return NULL;

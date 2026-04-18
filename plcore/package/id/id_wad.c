@@ -63,7 +63,7 @@ QmFsPackage *PlParseWadPackage_( QmFsFile *file ) {
 			return NULL;
 		}
 
-		if ( PlReadFile( file, indices[ i ].name, 1, 8 ) != 8 ) {
+		if ( qm_file_read( file, indices[ i ].name, 1, 8 ) != 8 ) {
 			qm_os_memory_free( indices );
 			return NULL;
 		}
@@ -171,7 +171,7 @@ QmFsPackage *PlParseQWadPackage_( QmFsFile *file ) {
 		qm_fs_file_read_int8( file, NULL );         /* compression (afaik, never used) */
 		qm_fs_file_read_int16( file, false, NULL ); /* unused */
 
-		PlReadFile( file, index->name, sizeof( char ), WAD2_NAME_LENGTH );
+		qm_file_read( file, index->name, sizeof( char ), WAD2_NAME_LENGTH );
 		strcat( index->name, hint );
 	}
 

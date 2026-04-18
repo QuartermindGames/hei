@@ -121,9 +121,9 @@ static PLImageFormat GetImageFormat( const DDSPixelFormat *pixelFormat ) {
 	return PL_IMAGEFORMAT_UNKNOWN;
 }
 
-PLImage *PlParseDdsImage( QmFsFile *file ) {
+QmImage *qm_image_dds_parse( QmFsFile *file ) {
 	DDSHeader header;
-	if ( PlReadFile( file, &header, sizeof( DDSHeader ), 1 ) != 1 ) {
+	if ( qm_file_read( file, &header, sizeof( DDSHeader ), 1 ) != 1 ) {
 		return NULL;
 	}
 
@@ -151,7 +151,7 @@ PLImage *PlParseDdsImage( QmFsFile *file ) {
 		return NULL;
 	}
 
-	PLImage image = {};
+	QmImage image = {};
 	image.width = header.width;
 	image.height = header.height;
 	image.levels = header.numMipMaps ? header.numMipMaps : 1;
@@ -187,7 +187,7 @@ PLImage *PlParseDdsImage( QmFsFile *file ) {
 		}
 
 		image.data[ i ] = QM_OS_MEMORY_MALLOC_( size );
-		if ( PlReadFile( file, image.data[ i ], sizeof( uint8_t ), size ) != size ) {
+		if ( qm_file_read( file, image.data[ i ], sizeof( uint8_t ), size ) != size ) {
 			PlFreeImage( &image );
 			return NULL;
 		}
@@ -196,8 +196,8 @@ PLImage *PlParseDdsImage( QmFsFile *file ) {
 		mipH /= 2;
 	}
 
-	PLImage *out = QM_OS_MEMORY_MALLOC_( sizeof( PLImage ) );
-	memcpy( out, &image, sizeof( PLImage ) );
+	QmImage *out = QM_OS_MEMORY_MALLOC_( sizeof( QmImage ) );
+	memcpy( out, &image, sizeof( QmImage ) );
 
 	snprintf( out->path, sizeof( out->path ), "%s", qm_fs_file_get_path( file ) );
 

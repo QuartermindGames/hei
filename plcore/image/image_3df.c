@@ -25,7 +25,7 @@ static PLImageFormat FD3_GetImageFormat( const char *formatStr ) {
 	return PL_IMAGEFORMAT_UNKNOWN;
 }
 
-PLImage *PlParse3dfImage( QmFsFile *file ) {
+QmImage *qm_image_3df_parse( QmFsFile *file ) {
 	/* read in the header */
 	char buf[ 64 ];
 
@@ -100,7 +100,7 @@ PLImage *PlParse3dfImage( QmFsFile *file ) {
 	/* now we can load the actual data in */
 	size_t srcSize = PlGetImageSize( dataFormat, w, h );
 	uint8_t *srcBuf = QM_OS_MEMORY_MALLOC_( srcSize );
-	if ( PlReadFile( file, srcBuf, sizeof( char ), srcSize ) != srcSize ) {
+	if ( qm_file_read( file, srcBuf, sizeof( char ), srcSize ) != srcSize ) {
 		qm_os_memory_free( srcBuf );
 		return NULL;
 	}
@@ -130,7 +130,7 @@ PLImage *PlParse3dfImage( QmFsFile *file ) {
 		}
 	}
 
-	PLImage *image = PlCreateImage( dstBuf, w, h, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
+	QmImage *image = PlCreateImage( dstBuf, w, h, 0, PL_COLOURFORMAT_RGBA, PL_IMAGEFORMAT_RGBA8 );
 
 	/* no longer need this */
 	qm_os_memory_free( dstBuf );

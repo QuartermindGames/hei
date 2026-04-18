@@ -64,7 +64,7 @@ static void *OpenRarFile( QmFsFile *file, QmFsPackageFile *index ) {
 		}
 
 		buf = QM_OS_MEMORY_NEW_( uint8_t, headerData.UnpSize + 1 );
-		if ( PlReadFile( tmpFile, buf, sizeof( uint8_t ), headerData.UnpSize ) != headerData.UnpSize ) {
+		if ( qm_file_read( tmpFile, buf, sizeof( uint8_t ), headerData.UnpSize ) != headerData.UnpSize ) {
 			PlCloseFile( tmpFile );
 			break;
 		}

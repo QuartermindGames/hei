@@ -17,7 +17,7 @@ typedef struct RGBA {
 } RGBA;
 typedef RGBA Palette[ 256 ];
 
-PLImage *PlParseRsbImage_( QmFsFile *file ) {
+QmImage *qm_image_rsb_parse( QmFsFile *file ) {
 	uint32_t version = PL_READUINT32( file, false, NULL );
 	if ( version < RSB_VERSION_MIN || version > RSB_VERSION_MAX ) {
 		PlReportErrorF( PL_RESULT_FILETYPE, "unexpected version (%u)", version );
@@ -32,7 +32,7 @@ PLImage *PlParseRsbImage_( QmFsFile *file ) {
 		return NULL;
 	}
 
-	PLImage *image = NULL;
+	QmImage *image = NULL;
 
 	bool hasPalette = false;
 	if ( version == 0 ) {
@@ -41,11 +41,11 @@ PLImage *PlParseRsbImage_( QmFsFile *file ) {
 
 	if ( hasPalette ) {
 		Palette palette = {};
-		PlReadFile( file, palette, sizeof( RGBA ), 256 );
+		qm_file_read( file, palette, sizeof( RGBA ), 256 );
 
 		unsigned int size = width * height;
 		uint8_t *src = QM_OS_MEMORY_NEW_( uint8_t, size );
-		if ( PlReadFile( file, src, sizeof( uint8_t ), size ) == size ) {
+		if ( qm_file_read( file, src, sizeof( uint8_t ), size ) == size ) {
 			QmMathColour4ub *dst = QM_OS_MEMORY_NEW_( QmMathColour4ub, size );
 			for ( unsigned int i = 0; i < size; ++i ) {
 				dst[ i ].r = palette[ src[ i ] ].b;
@@ -69,7 +69,7 @@ PLImage *PlParseRsbImage_( QmFsFile *file ) {
 
 		unsigned int size = width * height;
 		uint16_t *src = QM_OS_MEMORY_NEW_( uint16_t, size );
-		if ( PlReadFile( file, src, sizeof( uint16_t ), size ) == size ) {
+		if ( qm_file_read( file, src, sizeof( uint16_t ), size ) == size ) {
 			QmMathColour4ub *dst = QM_OS_MEMORY_NEW_( QmMathColour4ub, size );
 			uint32_t maskR = ( 1 << r ) - 1;
 			uint32_t maskG = ( 1 << g ) - 1;

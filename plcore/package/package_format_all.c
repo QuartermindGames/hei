@@ -35,7 +35,7 @@ QmFsPackage *PlParseAllPackage_( QmFsFile *file ) {
 	static const unsigned int ENTRY_SIZE = 72;
 	unsigned int offset = qm_fs_file_get_offset( file ) + ( ENTRY_SIZE * numFiles );
 	for ( unsigned int i = 0; i < numFiles; offset += package->files[ i ].size, ++i ) {
-		PlReadFile( file, package->files[ i ].name, sizeof( char ), 64 );
+		qm_file_read( file, package->files[ i ].name, sizeof( char ), 64 );
 		package->files[ i ].size = PL_READUINT32( file, false, NULL );
 		package->files[ i ].offset = offset;
 		qm_fs_file_read_int32( file, false, NULL );

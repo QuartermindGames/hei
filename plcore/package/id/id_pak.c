@@ -38,7 +38,7 @@ QmFsPackage *PlParsePakPackage_( QmFsFile *file ) {
 	unsigned int numFiles = tocSize / PAK_INDEX_LENGTH;
 	QmFsPackage *package = PlCreatePackageHandle( qm_fs_file_get_path( file ), numFiles, NULL );
 	for ( unsigned int i = 0; i < numFiles; ++i ) {
-		PlReadFile( file, package->files[ i ].name, sizeof( char ), PAK_INDEX_FILENAME_LENGTH );
+		qm_file_read( file, package->files[ i ].name, sizeof( char ), PAK_INDEX_FILENAME_LENGTH );
 		package->files[ i ].offset = qm_fs_file_read_int32( file, false, NULL );
 		package->files[ i ].size = qm_fs_file_read_int32( file, false, NULL );
 	}

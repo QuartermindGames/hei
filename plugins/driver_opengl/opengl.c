@@ -709,7 +709,7 @@ static bool IsCompressedImageFormat( PLImageFormat format ) {
 	}
 }
 
-static void GLUploadTexture( QmGfxTexture *texture, const PLImage *upload ) {
+static void GLUploadTexture( QmGfxTexture *texture, const QmImage *upload ) {
 	assert( upload->data != NULL && upload->data[ 0 ] != NULL );
 
 	unsigned int internalFormat = TranslateImageFormat( upload->format );
