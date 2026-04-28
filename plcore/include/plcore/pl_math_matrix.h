@@ -15,7 +15,6 @@ PL_EXTERN_C
 #define PL_M4_POS( ROW, COL ) ( ( ROW ) + 4 * ( COL ) )
 
 /* I know, this is disgusting... */
-#define pl_m3pos( row, col ) m[ PL_M3_POS( row, col ) ]
 #define pl_m4pos( row, col ) m[ PL_M4_POS( row, col ) ]
 
 typedef struct PLMatrix3 {
@@ -82,7 +81,7 @@ inline static PLMatrix4 PlMatrix4Identity( void ) {
 inline static PLMatrix3 PlTransposeMatrix3( PLMatrix3 m, PLMatrix3 m2 ) {
 	for ( unsigned int j = 0; j < 3; ++j ) {
 		for ( unsigned int i = 0; i < 3; ++i ) {
-			m.pl_m3pos( i, j ) = m2.pl_m3pos( j, i );
+			m.m[ PL_M3_POS( i, j ) ] = m2.m[ PL_M3_POS( j, i ) ];
 		}
 	}
 	return m;
@@ -92,7 +91,7 @@ inline static PLMatrix4 PlTransposeMatrix4( const PLMatrix4 *m ) {
 	PLMatrix4 out;
 	for ( unsigned int j = 0; j < 4; ++j ) {
 		for ( unsigned int i = 0; i < 4; ++i ) {
-			out.pl_m4pos( i, j ) = m->pl_m4pos( j, i );
+			out.m[ PL_M4_POS( i, j ) ] = m->m[ PL_M4_POS( j, i ) ];
 		}
 	}
 
@@ -104,7 +103,7 @@ inline static PLMatrix4 PlTransposeMatrix4( const PLMatrix4 *m ) {
 inline static PLMatrix3 PlAddMatrix3( PLMatrix3 m, PLMatrix3 m2 ) {
 	for ( unsigned int i = 0; i < 3; ++i ) {
 		for ( unsigned int j = 0; j < 3; ++j ) {
-			m.pl_m3pos( i, j ) += m2.pl_m3pos( i, j );
+			m.m[ PL_M3_POS( i, j ) ] += m2.m[ PL_M3_POS( i, j ) ];
 		}
 	}
 	return m;
@@ -113,7 +112,7 @@ inline static PLMatrix3 PlAddMatrix3( PLMatrix3 m, PLMatrix3 m2 ) {
 inline static PLMatrix4 PlAddMatrix4( PLMatrix4 m, PLMatrix4 m2 ) {
 	for ( unsigned int i = 0; i < 4; ++i ) {
 		for ( unsigned int j = 0; j < 4; ++j ) {
-			m.pl_m4pos( i, j ) += m2.pl_m4pos( i, j );
+			m.m[ PL_M4_POS( i, j ) ] += m2.m[ PL_M4_POS( i, j ) ];
 		}
 	}
 	return m;
@@ -124,7 +123,7 @@ inline static PLMatrix4 PlAddMatrix4( PLMatrix4 m, PLMatrix4 m2 ) {
 inline static PLMatrix3 PlSubtractMatrix3( PLMatrix3 m, PLMatrix3 m2 ) {
 	for ( unsigned int i = 0; i < 3; ++i ) {
 		for ( unsigned int j = 0; j < 3; ++j ) {
-			m.pl_m3pos( i, j ) -= m2.pl_m3pos( i, j );
+			m.m[ PL_M3_POS( i, j ) ] -= m2.m[ PL_M3_POS( i, j ) ];
 		}
 	}
 	return m;
@@ -133,7 +132,7 @@ inline static PLMatrix3 PlSubtractMatrix3( PLMatrix3 m, PLMatrix3 m2 ) {
 inline static PLMatrix4 PlSubtractMatrix4( PLMatrix4 m, PLMatrix4 m2 ) {
 	for ( unsigned int i = 0; i < 4; ++i ) {
 		for ( unsigned int j = 0; j < 4; ++j ) {
-			m.pl_m4pos( i, j ) -= m2.pl_m4pos( i, j );
+			m.m[ PL_M4_POS( i, j ) ] -= m2.m[ PL_M4_POS( i, j ) ];
 		}
 	}
 	return m;
@@ -162,7 +161,7 @@ inline static PLMatrix4 PlMultiplyMatrix4( const PLMatrix4 *m, const PLMatrix4 *
 inline static bool PlCompareMatrix( const PLMatrix4 *m, const PLMatrix4 *m2 ) {
 	for ( unsigned int i = 0; i < 4; ++i ) {
 		for ( unsigned int j = 0; j < 4; ++j ) {
-			if ( m->pl_m4pos( i, j ) != m2->pl_m4pos( i, j ) ) {
+			if ( m->m[ PL_M4_POS( i, j ) ] != m2->m[ PL_M4_POS( i, j ) ] ) {
 				return false;
 			}
 		}
