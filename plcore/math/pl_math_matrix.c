@@ -91,6 +91,49 @@ PLMatrix4 PlLookAt( QmMathVector3f eye, QmMathVector3f center, QmMathVector3f up
 /****************************************
  ****************************************/
 
+PLMatrix4 PlRotateMatrix4ByQuaternion( const QmMathQuaternion *rotation )
+{
+	float x2 = rotation->x + rotation->x;
+	float y2 = rotation->y + rotation->y;
+	float z2 = rotation->z + rotation->z;
+
+	float xx = rotation->x * x2;
+	float xy = rotation->x * y2;
+	float xz = rotation->x * z2;
+
+	float yy = rotation->y * y2;
+	float yz = rotation->y * z2;
+	float zz = rotation->z * z2;
+
+	float wx = rotation->w * x2;
+	float wy = rotation->w * y2;
+	float wz = rotation->w * z2;
+
+	PLMatrix4 m;
+
+	m.m[ 0 ] = 1.0f - ( yy + zz );
+	m.m[ 1 ] = xy + wz;
+	m.m[ 2 ] = xz - wy;
+	m.m[ 3 ] = 0.0f;
+
+	m.m[ 4 ] = xy - wz;
+	m.m[ 5 ] = 1.0f - ( xx + zz );
+	m.m[ 6 ] = yz + wx;
+	m.m[ 7 ] = 0.0f;
+
+	m.m[ 8 ]  = xz + wy;
+	m.m[ 9 ]  = yz - wx;
+	m.m[ 10 ] = 1.0f - ( xx + yy );
+	m.m[ 11 ] = 0.0f;
+
+	m.m[ 12 ] = 0.0f;
+	m.m[ 13 ] = 0.0f;
+	m.m[ 14 ] = 0.0f;
+	m.m[ 15 ] = 1.0f;
+
+	return m;
+}
+
 PLMatrix4 PlRotateMatrix4( float angle, const QmMathVector3f *axis ) {
 	float s = sinf( angle );
 	float c = cosf( angle );
@@ -101,25 +144,25 @@ PLMatrix4 PlRotateMatrix4( float angle, const QmMathVector3f *axis ) {
 
 	PLMatrix4 m;
 
-	m.pl_m4pos( 0, 0 ) = tv.x * axis->x + c;
-	m.pl_m4pos( 1, 0 ) = tv.x * axis->y + sv.z;
-	m.pl_m4pos( 2, 0 ) = tv.x * axis->z - sv.y;
+	m.m[ PL_M4_POS( 0, 0 ) ] = tv.x * axis->x + c;
+	m.m[ PL_M4_POS( 1, 0 ) ] = tv.x * axis->y + sv.z;
+	m.m[ PL_M4_POS( 2, 0 ) ] = tv.x * axis->z - sv.y;
 
-	m.pl_m4pos( 0, 1 ) = tv.x * axis->y - sv.z;
-	m.pl_m4pos( 1, 1 ) = tv.y * axis->y + c;
-	m.pl_m4pos( 2, 1 ) = tv.y * axis->z + sv.x;
+	m.m[ PL_M4_POS( 0, 1 ) ] = tv.x * axis->y - sv.z;
+	m.m[ PL_M4_POS( 1, 1 ) ] = tv.y * axis->y + c;
+	m.m[ PL_M4_POS( 2, 1 ) ] = tv.y * axis->z + sv.x;
 
-	m.pl_m4pos( 0, 2 ) = tv.x * axis->z + sv.y;
-	m.pl_m4pos( 1, 2 ) = tv.y * axis->z - sv.x;
-	m.pl_m4pos( 2, 2 ) = tv.z * axis->z + c;
+	m.m[ PL_M4_POS( 0, 2 ) ] = tv.x * axis->z + sv.y;
+	m.m[ PL_M4_POS( 1, 2 ) ] = tv.y * axis->z - sv.x;
+	m.m[ PL_M4_POS( 2, 2 ) ] = tv.z * axis->z + c;
 
-	m.pl_m4pos( 3, 0 ) = 0;
-	m.pl_m4pos( 3, 1 ) = 0;
-	m.pl_m4pos( 3, 2 ) = 0;
-	m.pl_m4pos( 0, 3 ) = 0;
-	m.pl_m4pos( 1, 3 ) = 0;
-	m.pl_m4pos( 2, 3 ) = 0;
-	m.pl_m4pos( 3, 3 ) = 1.0f;
+	m.m[ PL_M4_POS( 3, 0 ) ] = 0;
+	m.m[ PL_M4_POS( 3, 1 ) ] = 0;
+	m.m[ PL_M4_POS( 3, 2 ) ] = 0;
+	m.m[ PL_M4_POS( 0, 3 ) ] = 0;
+	m.m[ PL_M4_POS( 1, 3 ) ] = 0;
+	m.m[ PL_M4_POS( 2, 3 ) ] = 0;
+	m.m[ PL_M4_POS( 3, 3 ) ] = 1.0f;
 
 	return m;
 }

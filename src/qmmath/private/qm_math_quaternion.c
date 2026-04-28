@@ -65,10 +65,10 @@ QmMathQuaternion qm_math_quaternion_from_euler( const QmMathVector3f src )
 	float sr = sinf( src.z * 0.5f );
 
 	QmMathQuaternion q;
-	q.x = sr * cp * cy - cr * sp * sy;
-	q.y = cr * sp * cy + sr * cp * sy;
-	q.z = cr * cp * sy - sr * sp * cy;
-	q.w = cr * cp * cy + sr * sp * sy;
+	q.w = cy * cp * cr + sy * sp * sr;
+	q.x = cy * sp * cr + sy * cp * sr;
+	q.y = sy * cp * cr - cy * sp * sr;
+	q.z = cy * cp * sr - sy * sp * cr;
 
 	return q;
 }

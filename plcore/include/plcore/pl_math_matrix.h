@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "qmmath/public/qm_math_quaternion.h"
+
 PL_EXTERN_C
 
 /******************************************************************/
@@ -35,7 +37,8 @@ inline static PLMatrix4 PlAddMatrix4( PLMatrix4 m, PLMatrix4 m2 );
 inline static PLMatrix4 PlSubtractMatrix4( PLMatrix4 m, PLMatrix4 m2 );
 inline static PLMatrix4 PlScaleMatrix4( PLMatrix4 m, QmMathVector3f scale );
 inline static PLMatrix4 PlMultiplyMatrix4( const PLMatrix4 *m, const PLMatrix4 *m2 );
-PLMatrix4 PlRotateMatrix4( float angle, const QmMathVector3f *axis );
+PLMatrix4               PlRotateMatrix4ByQuaternion( const QmMathQuaternion *rotation );
+PLMatrix4               PlRotateMatrix4( float angle, const QmMathVector3f *axis );
 inline static PLMatrix4 PlTranslateMatrix4( QmMathVector3f v );
 inline static PLMatrix4 PlInverseMatrix4( PLMatrix4 m );
 
