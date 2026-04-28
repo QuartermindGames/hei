@@ -33,7 +33,7 @@
 		int main( int argc, char **argv ) { return qm_os_main( argc, argv ); }
 #elif defined( __APPLE__ )
 #	define QM_OS_SYSTEM_NAME    "macOS"
-#	define QM_OS_SYSTEM_OS      QM_OS_SYSTEM_MACOS
+#	define QM_OS_SYSTEM			QM_OS_SYSTEM_MACOS
 #	define QM_OS_SYSTEM_EXE_EXT ""
 #	define QM_OS_SYSTEM_LIB_EXT ".so"
 

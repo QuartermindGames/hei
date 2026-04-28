@@ -7,7 +7,9 @@
 #include "qmos/public/qm_os_memory.h"
 #include "qmos/public/qm_os_string.h"
 
-#if QM_OS_SYSTEM == QM_OS_SYSTEM_WINDOWS
+#if QM_OS_SYSTEM == QM_OS_SYSTEM_MACOS
+#	include <dlfcn.h>
+#elif QM_OS_SYSTEM == QM_OS_SYSTEM_WINDOWS
 #	include <windows.h>
 #elif QM_OS_SYSTEM == QM_OS_SYSTEM_LINUX
 #	include <dlfcn.h>
