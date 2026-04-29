@@ -526,7 +526,7 @@ char *PlGetUserName( char *out, size_t n )
 
 char *PlGetApplicationDataDirectory( const char *appName, char *dst, size_t dstSize )
 {
-#if QM_OS_SYSTEM == QM_OS_SYSTEM_LINUX
+#if QM_OS_SYSTEM == QM_OS_SYSTEM_LINUX || QM_OS_SYSTEM == QM_OS_SYSTEM_MACOS
 	const char *home;
 	if ( ( home = getenv( "HOME" ) ) == nullptr )
 	{
