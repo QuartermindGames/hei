@@ -125,6 +125,7 @@ void PlRegisterStandardImageLoaders( unsigned int flags ) {
 	        {PL_IMAGE_FILEFORMAT_ANGEL_TEX, "tex",  PlParseAngelTexImage_},
 	        {PL_IMAGE_FILEFORMAT_DTX,       "dtx",  PlParseDtxImage_     },
 	        {PL_IMAGE_FILEFORMAT_HSM,       "hsm",  PlParseHsmImage      },
+	        {PL_IMAGE_FILEFORMAT_ARGB,      "argb", PlParseArgbImage     },
 	};
 
 	for ( unsigned int i = 0; i < PL_ARRAY_ELEMENTS( loaderList ); ++i ) {
@@ -374,6 +375,38 @@ bool PlConvertPixelFormat( PLImage *image, PLImageFormat new_format ) {
 			if ( new_format == PL_IMAGEFORMAT_RGBA8 ) { return RGB8toRGBA8( image ); }
 		}
 
+		case PL_IMAGEFORMAT_BGRA8: {
+			typedef struct BGRA8 {
+				uint8_t b, g, r, a;
+			} BGRA8;
+			if ( new_format == PL_IMAGEFORMAT_RGBA8 ) {
+				unsigned int w = image->width;
+				unsigned int h = image->height;
+				for ( unsigned int i = 0; i < image->levels; ++i ) {
+					const size_t size = w * h;
+
+					BGRA8 *src = ( BGRA8 * ) image->data[ i ];
+					for ( unsigned int j = 0; j < size; ++j, src++ ) {
+						const uint8_t r = src->r;
+						const uint8_t g = src->g;
+						const uint8_t b = src->b;
+
+						src->b = r;
+						src->g = g;
+						src->r = b;
+					}
+
+					w /= 2;
+					h /= 2;
+				}
+
+				image->format = new_format;
+				return true;
+			}
+
+			break;
+		}
+
 		case PL_IMAGEFORMAT_RGB5A1: {
 			if ( new_format == PL_IMAGEFORMAT_RGBA8 ) {
 				uint8_t **levels = PlCAllocA( image->levels, sizeof( uint8_t * ) );
@@ -451,6 +484,7 @@ unsigned int PlGetImageFormatPixelSize( PLImageFormat format ) {
 		case PL_IMAGEFORMAT_RGB8:
 			return 3;
 		case PL_IMAGEFORMAT_RGBA_DXT1:
+		case PL_IMAGEFORMAT_BGRA8:
 		case PL_IMAGEFORMAT_RGBA8:
 			return 4;
 		case PL_IMAGEFORMAT_RGBA12:

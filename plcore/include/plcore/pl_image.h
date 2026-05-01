@@ -125,6 +125,7 @@ enum {
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_ANGEL_TEX, 17 ),
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_DTX, 18 ),
 	PL_BITFLAG( PL_IMAGE_FILEFORMAT_HSM, 19 ),
+	PL_BITFLAG( PL_IMAGE_FILEFORMAT_ARGB, 20 ),
 };
 
 PL_EXTERN_C
@@ -150,7 +151,7 @@ PL_EXTERN void PlReplaceImageColour( PLImage *image, PLColour target, PLColour d
 
 PL_EXTERN bool PlFlipImageVertical( PLImage *image );
 
-PL_EXTERN PL_DEPRECATED( void PlFreeImage( PLImage *image ) );
+PL_EXTERN void PlFreeImage( PLImage *image );
 PL_EXTERN unsigned int PlGetImageSize( PLImageFormat format, unsigned int width, unsigned int height );
 
 unsigned int PlGetImageFormatPixelSize( PLImageFormat format );
@@ -181,6 +182,7 @@ PLImage *PlParseSwlImage( PLFile *file );
 PLImage *PlParseQoiImage( PLFile *file );
 PLImage *PlParseDdsImage( PLFile *file );
 PLImage *PlParseHsmImage( PLFile *file );
+PLImage *PlParseArgbImage( PLFile *file );
 
 #endif
 
