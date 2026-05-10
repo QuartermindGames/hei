@@ -9,9 +9,10 @@ static void texture_destroy( void *ptr )
 	CallGfxFunction( DeleteTexture, ptr );
 }
 
-QmGfxTexture *qm_gfx_texture_create()
+QmGfxTexture *qm_gfx_texture_create( const QmGfxTextureType type )
 {
 	QmGfxTexture *texture = QM_OS_MEMORY_NEW_D( QmGfxTexture, texture_destroy );
+	texture->type         = type;
 	texture->format       = PL_IMAGEFORMAT_RGBA8;
 	texture->w            = 8;
 	texture->h            = 8;
@@ -49,7 +50,7 @@ void qm_gfx_texture_set( const QmGfxTexture *self, unsigned int tmu )
 }
 
 // todo, hook this up with var
-void PlgSetTextureAnisotropy( QmGfxTexture *texture, unsigned int amount )
+void qm_gfx_texture_set_anisotropy( QmGfxTexture *texture, unsigned int amount )
 {
 	CallGfxFunction( SetTextureAnisotropy, texture, amount );
 }
@@ -101,9 +102,6 @@ bool qm_gfx_texture_upload( QmGfxTexture *self, const QmImage *upload )
 	self->size   = upload->size;
 	self->levels = upload->levels;
 
-	/* store the path, so we can easily reload the image if we need to */
-	strncpy( self->path, upload->path, sizeof( self->path ) );
-
 	if ( self->flags & PLG_TEXTURE_FLAG_NOMIPS &&
 	     self->filter != PLG_TEXTURE_FILTER_LINEAR && self->filter != PLG_TEXTURE_FILTER_NEAREST )
 	{
@@ -118,9 +116,4 @@ bool qm_gfx_texture_upload( QmGfxTexture *self, const QmImage *upload )
 	BindTexture( nullptr );
 
 	return true;
-}
-
-void qm_gfx_texture_swizzle( QmGfxTexture *self, uint8_t r, uint8_t g, uint8_t b, uint8_t a )
-{
-	CallGfxFunction( SwizzleTexture, self, r, g, b, a );
 }

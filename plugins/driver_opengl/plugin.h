@@ -31,12 +31,15 @@ extern const PLGDriverExportTable *gInterface;
 
 extern int glLogLevel;
 
-typedef struct GLTexture {
+typedef struct GLTexture
+{
 	unsigned int id;
 	unsigned int target;
+	unsigned int faceIndex;// for cubemaps
 } GLTexture;
 
-typedef enum OGLDefaultUniform {
+typedef enum OGLDefaultUniform
+{
 	OGL_DEFAULT_UNIFORM_MODEL_MATRIX,
 	OGL_DEFAULT_UNIFORM_VIEW_MATRIX,
 	OGL_DEFAULT_UNIFORM_PROJECTION_MATRIX,
@@ -48,6 +51,7 @@ typedef enum OGLDefaultUniform {
 	OGL_MAX_DEFAULT_UNIFORMS
 } OGLDefaultUniform;
 
-typedef struct OGLShaderProgram {
+typedef struct OGLShaderProgram
+{
 	unsigned int defaultUniforms[ OGL_MAX_DEFAULT_UNIFORMS ];
 } OGLShaderProgram;

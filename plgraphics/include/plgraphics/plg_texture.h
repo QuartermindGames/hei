@@ -64,6 +64,17 @@ typedef struct PLGTextureMappingUnit
 	PLGTextureEnvironmentMode current_envmode;
 } PLGTextureMappingUnit;
 
+typedef enum QmGfxTextureType
+{
+	QM_GFX_TEXTURE_TYPE_1D,
+	QM_GFX_TEXTURE_TYPE_2D,
+	QM_GFX_TEXTURE_TYPE_2D_MULTISAMPLE,
+	QM_GFX_TEXTURE_TYPE_3D,
+	QM_GFX_TEXTURE_TYPE_CUBEMAP,
+} QmGfxTextureType;
+
+static constexpr uint8_t QM_GFX_TEXTURE_MAX_CUBEMAP_FACES = 6U;
+
 typedef struct QmGfxTexture
 {
 	unsigned int flags;
@@ -75,8 +86,7 @@ typedef struct QmGfxTexture
 	unsigned int levels;
 	unsigned int crc;
 
-	char path[ PL_SYSTEM_MAX_PATH ];
-
+	QmGfxTextureType     type;
 	QmGfxTextureFilter   filter;
 	QmGfxTextureWrapMode wrapMode;
 
@@ -90,14 +100,14 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-PL_EXTERN QmGfxTexture *qm_gfx_texture_create();
+PL_EXTERN QmGfxTexture *qm_gfx_texture_create( QmGfxTextureType type );
 
 PL_EXTERN bool qm_gfx_texture_upload( QmGfxTexture *self, const QmImage *upload );
 
 PL_EXTERN unsigned int qm_gfx_get_max_texture_size( void );
 PL_EXTERN unsigned int qm_gfx_get_max_texture_units( void );
 
-PL_EXTERN void PlgSetTextureAnisotropy( QmGfxTexture *texture, unsigned int amount );
+PL_EXTERN void qm_gfx_texture_set_anisotropy( QmGfxTexture *texture, unsigned int amount );
 PL_EXTERN void qm_gfx_texture_set_filter( QmGfxTexture *self, QmGfxTextureFilter filter );
 void           qm_gfx_texture_set_wrap_mode( QmGfxTexture *self, QmGfxTextureWrapMode wrapMode );
 

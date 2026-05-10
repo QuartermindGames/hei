@@ -489,19 +489,19 @@ static void *GLReadFrameBufferRegion( QmGfxFramebuffer *frameBuffer, uint32_t x,
 	return dstBuf;
 }
 
-static void GLBindTexture( const QmGfxTexture *texture );
-static void GLSetTextureFilter( QmGfxTexture *texture, QmGfxTextureFilter filter );
-static void GLSetTextureWrapMode( QmGfxTexture *texture, QmGfxTextureWrapMode wrapMode );
+static void gl_texture_bind( const QmGfxTexture *texture );
+static void gl_texture_set_filter( QmGfxTexture *texture, QmGfxTextureFilter filter );
+static void gl_texture_set_wrap( QmGfxTexture *texture, QmGfxTextureWrapMode wrapMode );
 static unsigned int TranslateWrapMode( QmGfxTextureWrapMode wrapMode );
 //TODO: this should be CreateFrameBufferTextureAttachment, not GET!
-static QmGfxTexture *GLGetFrameBufferTextureAttachment( QmGfxFramebuffer *buffer, unsigned int components, QmGfxTextureFilter filter, QmGfxTextureWrapMode wrap ) {
-	QmGfxTexture *texture = gInterface->CreateTexture();
-	if ( texture == NULL ) {
-		return NULL;
-	}
-
+static QmGfxTexture *GLGetFrameBufferTextureAttachment( QmGfxFramebuffer *buffer, unsigned int components, QmGfxTextureFilter filter, QmGfxTextureWrapMode wrap )
+{
 	// urgh, this is to ensure all interactions with the texture later on are correct
-	( ( GLTexture * ) texture->driver )->target = ( buffer->numSamples > 0 ) ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+	QmGfxTexture *texture = gInterface->CreateTexture( buffer->numSamples > 0 ? QM_GFX_TEXTURE_TYPE_2D_MULTISAMPLE : QM_GFX_TEXTURE_TYPE_2D );
+	if ( texture == NULL )
+	{
+		return nullptr;
+	}
 
 	/* all of this is going to change later...
 	 * this is just the bare minimum to get things going */
@@ -513,34 +513,48 @@ static QmGfxTexture *GLGetFrameBufferTextureAttachment( QmGfxFramebuffer *buffer
 
 	XGL_CALL( glBindTexture( ( ( GLTexture * ) texture->driver )->target, ( ( GLTexture * ) texture->driver )->id ) );
 
-	GLSetTextureFilter( texture, filter );
-	GLSetTextureWrapMode( texture, wrap );
+	gl_texture_set_filter( texture, filter );
+	gl_texture_set_wrap( texture, wrap );
 
 	/* sigh... */
-	if ( ( components & PLG_BUFFER_DEPTH ) || ( components & PLG_BUFFER_STENCIL ) ) {
-		if ( ( buffer->flags & PLG_BUFFER_DEPTH ) && ( buffer->flags & PLG_BUFFER_STENCIL ) ) {
+	if ( components & PLG_BUFFER_DEPTH || components & PLG_BUFFER_STENCIL )
+	{
+		if ( buffer->flags & PLG_BUFFER_DEPTH && buffer->flags & PLG_BUFFER_STENCIL )
+		{
 			/* so yeah, this sucks, but if both of these are active we assume it's packed */
 			XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, buffer->width, buffer->height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL ) );
-			if ( components & PLG_BUFFER_DEPTH ) {
+			if ( components & PLG_BUFFER_DEPTH )
+			{
 				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ( ( GLTexture * ) texture->driver )->id, 0 ) );
 			}
-			if ( components & PLG_BUFFER_STENCIL ) {
-				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, ( ( GLTexture * ) texture->driver )->id, 0 ) );
-			}
-		} else {
-			/* otherwise, assumed not packed */
-			if ( components & PLG_BUFFER_DEPTH ) {
-				XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, buffer->width, buffer->height, 0,  GL_DEPTH_COMPONENT, GL_FLOAT, NULL ) );
-				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ( ( GLTexture * ) texture->driver )->id, 0 ) );
-			} else if ( components & PLG_BUFFER_STENCIL ) {
-				XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_STENCIL_INDEX8, buffer->width, buffer->height, 0,  GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, NULL ) );
+			if ( components & PLG_BUFFER_STENCIL )
+			{
 				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, ( ( GLTexture * ) texture->driver )->id, 0 ) );
 			}
 		}
-	} else if ( components & PLG_BUFFER_COLOUR ) {
-		if ( buffer->numSamples > 0 ) {
+		else
+		{
+			/* otherwise, assumed not packed */
+			if ( components & PLG_BUFFER_DEPTH )
+			{
+				XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, buffer->width, buffer->height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL ) );
+				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ( ( GLTexture * ) texture->driver )->id, 0 ) );
+			}
+			else if ( components & PLG_BUFFER_STENCIL )
+			{
+				XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_STENCIL_INDEX8, buffer->width, buffer->height, 0, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, NULL ) );
+				XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, ( ( GLTexture * ) texture->driver )->id, 0 ) );
+			}
+		}
+	}
+	else if ( components & PLG_BUFFER_COLOUR )
+	{
+		if ( buffer->numSamples > 0 )
+		{
 			XGL_CALL( glTexImage2DMultisample( GL_TEXTURE_2D_MULTISAMPLE, buffer->numSamples, GL_RGBA8, buffer->width, buffer->height, GL_TRUE ) );
-		} else {
+		}
+		else
+		{
 			XGL_CALL( glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, buffer->width, buffer->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL ) );
 		}
 		XGL_CALL( glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, ( ( GLTexture * ) texture->driver )->target, ( ( GLTexture * ) texture->driver )->id, 0 ) );
@@ -672,10 +686,27 @@ static unsigned int GetColourFormatForImageFormat( PLImageFormat format ) {
 	return GL_RGBA;
 }
 
-static void GLCreateTexture( QmGfxTexture *texture ) {
+static unsigned int gl_texture_get_target_for_type( const QmGfxTextureType type )
+{
+	switch ( type )
+	{
+		case QM_GFX_TEXTURE_TYPE_1D: return GL_TEXTURE_1D;
+		case QM_GFX_TEXTURE_TYPE_2D: return GL_TEXTURE_2D;
+		case QM_GFX_TEXTURE_TYPE_2D_MULTISAMPLE: return GL_TEXTURE_2D_MULTISAMPLE;
+		case QM_GFX_TEXTURE_TYPE_3D: return GL_TEXTURE_3D;
+		case QM_GFX_TEXTURE_TYPE_CUBEMAP: return GL_TEXTURE_CUBE_MAP;
+	}
+
+	return ( unsigned int ) -1;
+}
+
+static void gl_texture_create( QmGfxTexture *texture )
+{
 	texture->driver = gInterface->core->MAlloc( sizeof( GLTexture ), true );
-	XGL_CALL( glGenTextures( 1, &( ( GLTexture * ) texture->driver )->id ) );
-	( ( GLTexture * ) texture->driver )->target = GL_TEXTURE_2D;
+	assert( texture->driver != nullptr );
+
+	( ( GLTexture * ) texture->driver )->target = gl_texture_get_target_for_type( texture->type );
+	XGL_CALL( glCreateTextures( ( ( GLTexture * ) texture->driver )->target, 1, &( ( GLTexture * ) texture->driver )->id ) );
 
 	texture->wrapMode = PLG_TEXTURE_WRAP_MODE_REPEAT;
 }
@@ -687,7 +718,7 @@ static void GLDeleteTexture( QmGfxTexture *texture ) {
 	texture->driver = NULL;
 }
 
-static void GLBindTexture( const QmGfxTexture *texture ) {
+static void gl_texture_bind( const QmGfxTexture *texture ) {
 	if ( texture == NULL ) {
 		XGL_CALL( glBindTexture( GL_TEXTURE_2D, 0 ) );
 		return;
@@ -709,46 +740,77 @@ static bool IsCompressedImageFormat( PLImageFormat format ) {
 	}
 }
 
-static void GLUploadTexture( QmGfxTexture *texture, const QmImage *upload ) {
+static void gl_texture_upload( QmGfxTexture *texture, const QmImage *upload )
+{
 	assert( upload->data != NULL && upload->data[ 0 ] != NULL );
+
+	// cubemaps are uh, fun... especially because we worried about them later!
+	GLenum target = ( ( GLTexture * ) texture->driver )->target;
+	if ( ( ( GLTexture * ) texture->driver )->target == GL_TEXTURE_CUBE_MAP )
+	{
+		target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + ( ( GLTexture * ) texture->driver )->faceIndex;
+
+		// increment the index and wrap if we go over...
+		( ( GLTexture * ) texture->driver )->faceIndex++;
+		if ( ( ( GLTexture * ) texture->driver )->faceIndex > QM_GFX_TEXTURE_MAX_CUBEMAP_FACES )
+		{
+			( ( GLTexture * ) texture->driver )->faceIndex = 0;
+		}
+	}
+
+	gl_texture_bind( texture );
+
+	gl_texture_set_wrap( texture, texture->wrapMode );
+	gl_texture_set_filter( texture, texture->filter );
 
 	unsigned int internalFormat = TranslateImageFormat( upload->format );
 	assert( internalFormat != 0 );
 
-	GLBindTexture( texture );
-
-	GLSetTextureWrapMode( texture, texture->wrapMode );
-	GLSetTextureFilter( texture, texture->filter );
-
-	for ( unsigned int i = 0; i < upload->levels; ++i ) {
+	for ( unsigned int i = 0; i < upload->levels; ++i )
+	{
 		const void *data = upload->data[ i ];
-		GLsizei w = upload->width >> i;
-		GLsizei h = upload->height >> i;
-		if ( IsCompressedImageFormat( upload->format ) ) {
+		GLsizei     w    = upload->width >> i;
+		GLsizei     h    = upload->height >> i;
+		if ( IsCompressedImageFormat( upload->format ) )
+		{
 			GLsizei size;
-			if ( i > 0 ) {
+			if ( i > 0 )
+			{
 				size = ( GLsizei ) gInterface->core->GetImageSize( upload->format, w, h );
-			} else {
+			}
+			else
+			{
 				size = ( GLsizei ) upload->size;
 			}
-			XGL_CALL( glCompressedTexImage2D( GL_TEXTURE_2D, i, internalFormat, w, h, 0, size, data ) );
-		} else {
+
+			XGL_CALL( glCompressedTexImage2D( target, i, internalFormat, w, h, 0, size, data ) );
+		}
+		else
+		{
 			GLenum format = GetColourFormatForImageFormat( upload->format );
 			assert( format != 0 );
 
 			GLenum type = GetStorageFormatForImageFormat( upload->format );
 			assert( type != 0 );
 
-			XGL_CALL( glTexImage2D( GL_TEXTURE_2D, i, internalFormat, w, h, 0, format, type, data ) );
+			XGL_CALL( glTexImage2D( target, i, internalFormat, w, h, 0, format, type, data ) );
 		}
 	}
 
-	if ( upload->levels == 1 && !( texture->filter == PLG_TEXTURE_FILTER_LINEAR || texture->filter == PLG_TEXTURE_FILTER_NEAREST ) ) {
-		XGL_CALL( glGenerateMipmap( GL_TEXTURE_2D ) );
+	if ( upload->levels == 1 && !( texture->filter == PLG_TEXTURE_FILTER_LINEAR || texture->filter == PLG_TEXTURE_FILTER_NEAREST ) )
+	{
+		if ( ( ( GLTexture * ) texture->driver )->target != GL_TEXTURE_CUBE_MAP || ( ( GLTexture * ) texture->driver )->faceIndex == QM_GFX_TEXTURE_MAX_CUBEMAP_FACES )
+		{
+			XGL_CALL( glGenerateTextureMipmap( ( ( GLTexture * ) texture->driver )->id ) );
+			texture->flags &= ~PLG_TEXTURE_FLAG_NOMIPS;
+		}
+	}
+	else if ( upload->levels > 1 )
+	{
 		texture->flags &= ~PLG_TEXTURE_FLAG_NOMIPS;
-	} else if ( upload->levels > 1 ) {
-		texture->flags &= ~PLG_TEXTURE_FLAG_NOMIPS;
-	} else {
+	}
+	else
+	{
 		texture->flags |= PLG_TEXTURE_FLAG_NOMIPS;
 	}
 }
@@ -772,48 +834,23 @@ static GLenum target_to_query( GLenum target ) {
 	}
 }
 
-static void GLSetTextureAnisotropy( QmGfxTexture *texture, uint32_t value ) {
-	GLenum target = ( ( GLTexture * ) texture->driver )->target;
+static void GLSetTextureAnisotropy( QmGfxTexture *texture, uint32_t value )
+{
 	GLuint id = ( ( GLTexture * ) texture->driver )->id;
-	if ( XGL_VERSION( 4, 6 ) ) {
-		XGL_CALL( glTextureParameterf( id, GL_TEXTURE_MAX_ANISOTROPY, ( float ) value ) );
-	} else if ( GLEW_EXT_texture_filter_anisotropic ) {
-		GLenum query = target_to_query( target );
-		assert( query != 0 );
-
-		GLint curId;
-		XGL_CALL( glGetIntegerv( query, &curId ) );
-
-		XGL_CALL( glBindTexture( target, id ) );
-		XGL_CALL( glTexParameterf( target, GL_TEXTURE_MAX_ANISOTROPY_EXT, ( float ) value ) );
-		XGL_CALL( glBindTexture( target, curId ) );
-	} else {
-		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, __FUNCTION__, "EXT_texture_filter_anisotropic is unsupported" );
-	}
+	XGL_CALL( glTextureParameterf( id, GL_TEXTURE_MAX_ANISOTROPY, ( float ) value ) );
 }
 
-static void GLSetTextureFilter( QmGfxTexture *texture, QmGfxTextureFilter filter ) {
+static void gl_texture_set_filter( QmGfxTexture *texture, QmGfxTextureFilter filter )
+{
 	GLenum target = ( ( GLTexture * ) texture->driver )->target;
-	if ( target != GL_TEXTURE_2D_MULTISAMPLE ) {
+	if ( target != GL_TEXTURE_2D_MULTISAMPLE )
+	{
 		int min, mag;
 		GL_TranslateTextureFilterFormat( filter, &min, &mag );
 
 		GLuint id = ( ( GLTexture * ) texture->driver )->id;
-		if ( XGL_VERSION( 4, 5 ) ) {
-			XGL_CALL( glTextureParameteri( id, GL_TEXTURE_MAG_FILTER, mag ) );
-			XGL_CALL( glTextureParameteri( id, GL_TEXTURE_MIN_FILTER, min ) );
-		} else {
-			GLenum query = target_to_query( target );
-			assert( query != 0 );
-
-			GLint curId;
-			XGL_CALL( glGetIntegerv( query, &curId ) );
-
-			XGL_CALL( glBindTexture( target, id ) );
-			XGL_CALL( glTexParameteri( target, GL_TEXTURE_MAG_FILTER, mag ) );
-			XGL_CALL( glTexParameteri( target, GL_TEXTURE_MIN_FILTER, min ) );
-			XGL_CALL( glBindTexture( target, curId ) );
-		}
+		XGL_CALL( glTextureParameteri( id, GL_TEXTURE_MAG_FILTER, mag ) );
+		XGL_CALL( glTextureParameteri( id, GL_TEXTURE_MIN_FILTER, min ) );
 	}
 
 	texture->filter = filter;
@@ -842,14 +879,24 @@ static unsigned int TranslateWrapMode( QmGfxTextureWrapMode wrapMode ) {
 	return glWrapMode;
 }
 
-static void GLSetTextureWrapMode( QmGfxTexture *texture, QmGfxTextureWrapMode wrapMode ) {
-	GLBindTexture( texture );
+static void gl_texture_set_wrap( QmGfxTexture *texture, QmGfxTextureWrapMode wrapMode )
+{
+	int glWrapMode = TranslateWrapMode( wrapMode );
+	assert( glWrapMode != 0 );
+
+	gl_texture_bind( texture );
 
 	GLenum target = ( ( GLTexture * ) texture->driver )->target;
-	if ( target != GL_TEXTURE_2D_MULTISAMPLE ) {
-		int glWrapMode = TranslateWrapMode( wrapMode );
-		XGL_CALL( glTexParameteri( ( ( GLTexture * ) texture->driver )->target, GL_TEXTURE_WRAP_S, glWrapMode ) );
-		XGL_CALL( glTexParameteri( ( ( GLTexture * ) texture->driver )->target, GL_TEXTURE_WRAP_T, glWrapMode ) );
+	if ( target == GL_TEXTURE_CUBE_MAP )
+	{
+		XGL_CALL( glTextureParameteri( ( ( GLTexture * ) texture->driver )->id, GL_TEXTURE_WRAP_S, glWrapMode ) );
+		XGL_CALL( glTextureParameteri( ( ( GLTexture * ) texture->driver )->id, GL_TEXTURE_WRAP_T, glWrapMode ) );
+		XGL_CALL( glTextureParameteri( ( ( GLTexture * ) texture->driver )->id, GL_TEXTURE_WRAP_R, glWrapMode ) );
+	}
+	else if ( target != GL_TEXTURE_2D_MULTISAMPLE )
+	{
+		XGL_CALL( glTextureParameteri( ( ( GLTexture * ) texture->driver )->id, GL_TEXTURE_WRAP_S, glWrapMode ) );
+		XGL_CALL( glTextureParameteri( ( ( GLTexture * ) texture->driver )->id, GL_TEXTURE_WRAP_T, glWrapMode ) );
 	}
 
 	texture->wrapMode = wrapMode;
@@ -857,37 +904,6 @@ static void GLSetTextureWrapMode( QmGfxTexture *texture, QmGfxTextureWrapMode wr
 
 static void GLActiveTexture( unsigned int target ) {
 	XGL_CALL( glActiveTexture( GL_TEXTURE0 + target ) );
-}
-
-/* Swizzle texture channels */
-
-static int TranslateColourChannel( int channel ) {
-	switch ( channel ) {
-		case PL_RED:
-			return GL_RED;
-		case PL_GREEN:
-			return GL_GREEN;
-		case PL_BLUE:
-			return GL_BLUE;
-		case PL_ALPHA:
-			return GL_ALPHA;
-		default:
-			return channel;
-	}
-}
-
-static void GLSwizzleTexture( QmGfxTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a ) {
-	GLBindTexture( texture );
-	if ( XGL_VERSION( 3, 3 ) ) {
-		int swizzle[] = {
-		        TranslateColourChannel( r ),
-		        TranslateColourChannel( g ),
-		        TranslateColourChannel( b ),
-		        TranslateColourChannel( a ) };
-		XGL_CALL( glTexParameteriv( ( ( GLTexture * ) texture->driver )->target, GL_TEXTURE_SWIZZLE_RGBA, swizzle ) );
-	} else {
-		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED, __FUNCTION__, "missing software implementation" );
-	}
 }
 
 /////////////////////////////////////////////////////////////
@@ -962,10 +978,6 @@ enum {
 PL_STATIC_ASSERT( MAX_GPU_MESH_BUFFERS < PLG_MAX_MESH_BUFFERS, "Invalid MAX_GL_BUFFERS size!" );
 
 static void GLCreateMesh( PLGMesh *mesh ) {
-	if ( !XGL_VERSION( 2, 0 ) ) {
-		return;
-	}
-
 	// Create our internal buffers for GL
 	XGL_CALL( glGenBuffers( MAX_GPU_MESH_BUFFERS, mesh->buffers ) );
 }
@@ -993,10 +1005,6 @@ static void GLUploadMesh( PLGMesh *mesh, QmGfxShaderProgram *program ) {
 }
 
 static void GLDeleteMesh( PLGMesh *mesh ) {
-	if ( !XGL_VERSION( 2, 0 ) ) {
-		return;
-	}
-
 	XGL_CALL( glDeleteBuffers( MAX_GPU_MESH_BUFFERS, mesh->buffers ) );
 }
 
@@ -1065,39 +1073,6 @@ static void GLDrawMesh( PLGMesh *mesh, QmGfxShaderProgram *program ) {
 		}
 	}
 
-	/* anything less and we'll just fallback to immediate */
-	if ( !XGL_VERSION( 2, 0 ) ) {
-		/* todo... */
-		for ( unsigned int i = 0; i < program->num_stages; ++i ) {
-			QmGfxShaderStage *stage = program->stages[ i ];
-			if ( stage->SWFallback == NULL ) {
-				continue;
-			}
-
-			stage->SWFallback( program, stage->type );
-
-			GLuint mode = TranslatePrimitiveMode( mesh->primitive );
-			XGL_CALL( glBegin( mode ) );
-			if ( mode == GL_TRIANGLES ) {
-				for ( unsigned int j = 0; j < mesh->num_indices; ++j ) {
-					PLGVertex *vertex = &mesh->vertices[ mesh->indices[ j ] ];
-					XGL_CALL( glVertex3f( vertex->position.x, vertex->position.y, vertex->position.z ) );
-					XGL_CALL( glNormal3f( vertex->normal.x, vertex->normal.y, vertex->normal.z ) );
-					XGL_CALL( glColor4ub( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a ) );
-				}
-			} else {
-				for ( unsigned int j = 0; j < mesh->num_verts; ++j ) {
-					PLGVertex *vertex = &mesh->vertices[ j ];
-					XGL_CALL( glVertex3f( vertex->position.x, vertex->position.y, vertex->position.z ) );
-					XGL_CALL( glNormal3f( vertex->normal.x, vertex->normal.y, vertex->normal.z ) );
-					XGL_CALL( glColor4ub( vertex->colour.r, vertex->colour.g, vertex->colour.b, vertex->colour.a ) );
-				}
-			}
-			XGL_CALL( glEnd() );
-		}
-		return;
-	}
-
 	if ( mesh->buffers[ BUFFER_VERTEX_DATA ] == 0 ) {
 		XGL_LOG( "invalid vertex buffer provided, skipping draw!\n" );
 		return;
@@ -1108,11 +1083,7 @@ static void GLDrawMesh( PLGMesh *mesh, QmGfxShaderProgram *program ) {
 	}
 
 	//Ensure VAO/VBO/EBO are bound
-	if ( XGL_VERSION( 3, 0 ) ) {
-		XGL_CALL( glBindVertexArray( VAO[ 0 ] ) );
-		/* todo: fallback for legacy... */
-	}
-
+	XGL_CALL( glBindVertexArray( VAO[ 0 ] ) );
 	XGL_CALL( glBindBuffer( GL_ARRAY_BUFFER, mesh->buffers[ BUFFER_VERTEX_DATA ] ) );
 
 	if ( program->internal.v_position != -1 ) {
@@ -1210,9 +1181,9 @@ static void GLSetViewport( int x, int y, int width, int height ) {
 static const char *uniformDescriptors[ QM_GFX_MAX_SHADER_UNIFORM_TYPES ] = {
         [QM_GFX_SHADER_UNIFORM_TYPE_INVALID] = "invalid",
         [QM_GFX_SHADER_UNIFORM_TYPE_FLOAT] = "float",
-        [PLG_UNIFORM_INT] = "int",
+        [QM_GFX_SHADER_UNIFORM_TYPE_INT] = "int",
         [PLG_UNIFORM_UINT] = "uint",
-        [PLG_UNIFORM_BOOL] = "bool",
+        [QM_GFX_SHADER_UNIFORM_TYPE_BOOL] = "bool",
         [PLG_UNIFORM_DOUBLE] = "double",
         [PLG_UNIFORM_SAMPLER1D] = "sampler1D",
         [PLG_UNIFORM_SAMPLER2D] = "sampler2D",
@@ -1245,12 +1216,12 @@ static QmGfxShaderUniformType GLConvertGLUniformType( unsigned int type ) {
 			return PLG_UNIFORM_DOUBLE;
 
 		case GL_INT:
-			return PLG_UNIFORM_INT;
+			return QM_GFX_SHADER_UNIFORM_TYPE_INT;
 		case GL_UNSIGNED_INT:
 			return PLG_UNIFORM_UINT;
 
 		case GL_BOOL:
-			return PLG_UNIFORM_BOOL;
+			return QM_GFX_SHADER_UNIFORM_TYPE_BOOL;
 
 		case GL_SAMPLER_1D:
 			return PLG_UNIFORM_SAMPLER1D;
@@ -1260,6 +1231,8 @@ static QmGfxShaderUniformType GLConvertGLUniformType( unsigned int type ) {
 			return PLG_UNIFORM_SAMPLER2D;
 		case GL_SAMPLER_2D_SHADOW:
 			return PLG_UNIFORM_SAMPLER2DSHADOW;
+		case GL_SAMPLER_CUBE:
+			return PLG_UNIFORM_SAMPLERCUBE;
 
 		default: {
 			XGL_LOG( "Unhandled GLSL data type, \"%u\"!\n", type );
@@ -1442,11 +1415,6 @@ static char *GLPreProcessGLSLShader( QmGfxShaderStage *stage, char *buf, size_t 
 }
 
 static void GLCreateShaderProgram( QmGfxShaderProgram *program ) {
-	if ( !XGL_VERSION( 2, 0 ) ) {
-		XGL_LOG( "HW shaders unsupported on platform, relying on SW fallback\n" );
-		return;
-	}
-
 	program->internal.id = glCreateProgram();
 	if ( program->internal.id == 0 ) {
 		XGL_LOG( "Failed to generate shader program!\n" );
@@ -1463,32 +1431,15 @@ static void GLDestroyShaderProgram( QmGfxShaderProgram *program ) {
 		return;
 	}
 
-	if ( XGL_VERSION( 2, 0 ) ) {
-		glDeleteProgram( program->internal.id );
-	}
+	glDeleteProgram( program->internal.id );
 
 	program->internal.id = 0;
 }
 
 static void GLCreateShaderStage( QmGfxShaderStage *stage ) {
-	if ( !XGL_VERSION( 2, 0 ) ) {
-		XGL_LOG( "HW shaders unsupported on platform, relying on SW fallback\n" );
-		return;
-	}
-
 	GLenum type = TranslateShaderStageType( stage->type );
 	if ( type == SHADER_INVALID_TYPE ) {
 		gInterface->core->ReportError( PL_RESULT_INVALID_SHADER_TYPE, __FUNCTION__, "%u", type );
-		return;
-	}
-
-	if ( type == GL_GEOMETRY_SHADER && !XGL_VERSION( 3, 0 ) ) {
-		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, __FUNCTION__, "%s", GetGLShaderStageDescriptor( type ) );
-		return;
-	}
-
-	if ( type == GL_COMPUTE_SHADER && !XGL_VERSION( 4, 3 ) ) {
-		gInterface->core->ReportError( PL_RESULT_UNSUPPORTED_SHADER_TYPE, __FUNCTION__, "%s", GetGLShaderStageDescriptor( type ) );
 		return;
 	}
 
@@ -1500,13 +1451,9 @@ static void GLCreateShaderStage( QmGfxShaderStage *stage ) {
 }
 
 static void GLDestroyShaderStage( QmGfxShaderStage *stage ) {
-	if ( !XGL_VERSION( 2, 0 ) ) {
-		return;
-	}
-
 	if ( stage->program != NULL ) {
 		XGL_CALL( glDetachShader( stage->program->internal.id, stage->internal.id ) );
-		stage->program = NULL;
+		stage->program = nullptr;
 	}
 
 	XGL_CALL( glDeleteShader( stage->internal.id ) );
@@ -1514,18 +1461,10 @@ static void GLDestroyShaderStage( QmGfxShaderStage *stage ) {
 }
 
 static void GLAttachShaderStage( QmGfxShaderProgram *program, QmGfxShaderStage *stage ) {
-	if ( !XGL_VERSION( 2, 0 ) ) {
-		return;
-	}
-
 	XGL_CALL( glAttachShader( program->internal.id, stage->internal.id ) );
 }
 
 static bool GLCompileShaderStage( QmGfxShaderStage *stage, const char *buf, size_t length, const char *directory ) {
-	if ( !XGL_VERSION( 2, 0 ) ) {
-		return false;
-	}
-
 	/* shove this here for now... */
 	char *temp = gInterface->core->MAlloc( length + 1, true );
 	memcpy( temp, buf, length );
@@ -1562,13 +1501,13 @@ static void GLSetShaderUniformValue( QmGfxShaderProgram *program, int slot, cons
 			XGL_CALL( glUniform1f( program->uniforms[ slot ].slot, *( float * ) value ) );
 			break;
 		case PLG_UNIFORM_SAMPLER2D:
-		case PLG_UNIFORM_INT:
+		case QM_GFX_SHADER_UNIFORM_TYPE_INT:
 			XGL_CALL( glUniform1i( program->uniforms[ slot ].slot, *( int * ) value ) );
 			break;
 		case PLG_UNIFORM_UINT:
 			XGL_CALL( glUniform1ui( program->uniforms[ slot ].slot, *( unsigned int * ) value ) );
 			break;
-		case PLG_UNIFORM_BOOL:
+		case QM_GFX_SHADER_UNIFORM_TYPE_BOOL:
 			XGL_CALL( glUniform1i( program->uniforms[ slot ].slot, *( bool * ) value ) );
 			break;
 		case PLG_UNIFORM_DOUBLE:
@@ -1600,10 +1539,6 @@ static void GLSetShaderUniformValue( QmGfxShaderProgram *program, int slot, cons
 
 static void GLSetShaderUniformMatrix4( QmGfxShaderProgram *program, int slot, const PLMatrix4 *value, bool transpose ) {
 	PL_UNUSEDVAR( program );
-
-	if ( !XGL_VERSION( 2, 0 ) ) {
-		return;
-	}
 
 	XGL_CALL( glUniformMatrix4fv( slot, 1, transpose ? GL_TRUE : GL_FALSE, value->m ) );
 }
@@ -1671,13 +1606,13 @@ static void RegisterShaderProgramData( QmGfxShaderProgram *program ) {
 				XGL_CALL( glGetUniformfv( program->internal.id, program->uniforms[ i ].slot, &program->uniforms[ i ].defaultFloat ) );
 				break;
 			case PLG_UNIFORM_SAMPLER2D:
-			case PLG_UNIFORM_INT:
+			case QM_GFX_SHADER_UNIFORM_TYPE_INT:
 				XGL_CALL( glGetUniformiv( program->internal.id, program->uniforms[ i ].slot, &program->uniforms[ i ].defaultInt ) );
 				break;
 			case PLG_UNIFORM_UINT:
 				XGL_CALL( glGetUniformuiv( program->internal.id, program->uniforms[ i ].slot, &program->uniforms[ i ].defaultUInt ) );
 				break;
-			case PLG_UNIFORM_BOOL:
+			case QM_GFX_SHADER_UNIFORM_TYPE_BOOL:
 				XGL_CALL( glGetUniformiv( program->internal.id, program->uniforms[ i ].slot, ( GLint * ) &program->uniforms[ i ].defaultBool ) );
 				break;
 			case PLG_UNIFORM_DOUBLE:
@@ -1713,10 +1648,6 @@ static void RegisterShaderProgramData( QmGfxShaderProgram *program ) {
 }
 
 static void GLSetShaderProgram( QmGfxShaderProgram *program ) {
-	if ( !XGL_VERSION( 2, 0 ) ) {
-		return;
-	}
-
 	unsigned int id = 0;
 	if ( program != NULL ) {
 		id = program->internal.id;
@@ -2057,27 +1988,32 @@ static void MessageCallback(
 
 static PLFunctionResult GLInitialize( void ) {
 	glewExperimental = true;
-	GLenum err = glewInit();
+	GLenum err       = glewInit();
 	// under wayland, glx requests aren't available; https://github.com/nigels-com/glew/issues/172
-	if ( err != GLEW_OK && err != GLEW_ERROR_NO_GLX_DISPLAY ) {
-		gInterface->core->ReportError( PL_RESULT_GRAPHICSINIT, "failed to initialize glew, %s", ( char * ) glewGetErrorString( err ) );
+	if ( err != GLEW_OK && err != GLEW_ERROR_NO_GLX_DISPLAY )
+	{
+		gInterface->core->ReportError( PL_RESULT_GRAPHICSINIT, __FUNCTION__, "failed to initialize glew, %s", ( char * ) glewGetErrorString( err ) );
 		return PL_RESULT_GRAPHICSINIT;
 	}
 
 	memset( &gl_capabilities, 0, sizeof( gl_capabilities ) );
 
 	const char *version = ( const char * ) glGetString( GL_VERSION );
-	gl_version_major = ( version[ 0 ] - '0' );
-	gl_version_minor = ( version[ 2 ] - '0' );
+	gl_version_major    = version[ 0 ] - '0';
+	gl_version_minor    = version[ 2 ] - '0';
 
-	if ( XGL_VERSION( 3, 0 ) ) {
+	if ( XGL_VERSION( 3, 0 ) )
+	{
 		int minor, major;
 		glGetIntegerv( GL_MAJOR_VERSION, &major );
 		glGetIntegerv( GL_MINOR_VERSION, &minor );
-		if ( major > 0 ) {
+		if ( major > 0 )
+		{
 			gl_version_major = major;
 			gl_version_minor = minor;
-		} else {
+		}
+		else
+		{
 			XGL_LOG( "failed to get OpenGL version, expect some functionality not to work!\n" );
 		}
 	}
@@ -2089,20 +2025,25 @@ static PLFunctionResult GLInitialize( void ) {
 	//GLLog( "  extensions:\n" );
 
 	XGL_CALL( glGetIntegerv( GL_NUM_EXTENSIONS, ( GLint * ) ( &gl_num_extensions ) ) );
-	for ( unsigned int i = 0; i < gl_num_extensions; ++i ) {
+	for ( unsigned int i = 0; i < gl_num_extensions; ++i )
+	{
 		const char *extension = ( char * ) glGetStringi( GL_EXTENSIONS, i );
 		snprintf( gl_extensions[ i ], sizeof( gl_extensions[ i ] ), "%s", extension );
 		//GLLog( "    %s\n", extension );
 	}
 
-#if defined( DEBUG_GL )
-	if ( XGL_VERSION( 4, 3 ) ) {
-		XGL_CALL( glEnable( GL_DEBUG_OUTPUT ) );
-		XGL_CALL( glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS ) );
-
-		XGL_CALL( glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE ) );
-		XGL_CALL( glDebugMessageCallback( ( GLDEBUGPROC ) MessageCallback, NULL ) );
+	if ( !XGL_VERSION( 4, 6 ) )
+	{
+		gInterface->core->ReportError( PL_RESULT_GRAPHICSINIT, __FUNCTION__, "unsupported hardware (4.6 required)" );
+		return PL_RESULT_GRAPHICSINIT;
 	}
+
+#if defined( DEBUG_GL )
+	XGL_CALL( glEnable( GL_DEBUG_OUTPUT ) );
+	XGL_CALL( glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS ) );
+
+	XGL_CALL( glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE ) );
+	XGL_CALL( glDebugMessageCallback( ( GLDEBUGPROC ) MessageCallback, nullptr ) );
 #endif
 
 	// Init vertex attributes
@@ -2119,10 +2060,8 @@ static PLFunctionResult GLInitialize( void ) {
 
 static void GLShutdown( void ) {
 #if defined( DEBUG_GL )
-	if ( XGL_VERSION( 4, 3 ) ) {
-		XGL_CALL( glDisable( GL_DEBUG_OUTPUT ) );
-		XGL_CALL( glDisable( GL_DEBUG_OUTPUT_SYNCHRONOUS ) );
-	}
+	XGL_CALL( glDisable( GL_DEBUG_OUTPUT ) );
+	XGL_CALL( glDisable( GL_DEBUG_OUTPUT_SYNCHRONOUS ) );
 #endif
 }
 
@@ -2169,15 +2108,14 @@ PLGDriverImportTable graphicsInterface = {
         .SetFrameBufferSize = GLSetFrameBufferSize,
         .ReadFrameBufferRegion = GLReadFrameBufferRegion,
 
-        .CreateTexture = GLCreateTexture,
+        .CreateTexture = gl_texture_create,
         .DeleteTexture = GLDeleteTexture,
-        .BindTexture = GLBindTexture,
-        .UploadTexture = GLUploadTexture,
-        .SwizzleTexture = GLSwizzleTexture,
+        .BindTexture = gl_texture_bind,
+        .UploadTexture = gl_texture_upload,
         .SetTextureAnisotropy = GLSetTextureAnisotropy,
         .ActiveTexture = GLActiveTexture,
-        .SetTextureFilter = GLSetTextureFilter,
-        .SetTextureWrapMode = GLSetTextureWrapMode,
+        .SetTextureFilter = gl_texture_set_filter,
+        .SetTextureWrapMode = gl_texture_set_wrap,
 
         .ClipViewport = GLClipViewport,
         .SetViewport = GLSetViewport,

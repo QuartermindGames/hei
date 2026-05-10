@@ -43,7 +43,7 @@ typedef struct PLGDriverExportTable
 	const PLPluginExportTable *core;
 
 	/* plg_texture */
-	QmGfxTexture *( *CreateTexture )( void );
+	QmGfxTexture *( *CreateTexture )( QmGfxTextureType type );
 } PLGDriverExportTable;
 
 typedef struct PLGDriverImportTable
@@ -110,7 +110,6 @@ typedef struct PLGDriverImportTable
 	void ( *DeleteTexture )( QmGfxTexture *texture );
 	void ( *BindTexture )( const QmGfxTexture *texture );
 	void ( *UploadTexture )( QmGfxTexture *texture, const QmImage *upload );
-	void ( *SwizzleTexture )( QmGfxTexture *texture, uint8_t r, uint8_t g, uint8_t b, uint8_t a );
 	void ( *SetTextureAnisotropy )( QmGfxTexture *texture, uint32_t value );
 	void ( *SetTextureFilter )( QmGfxTexture *texture, QmGfxTextureFilter filter );
 	void ( *ActiveTexture )( unsigned int target );

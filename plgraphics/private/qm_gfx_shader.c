@@ -212,13 +212,13 @@ void PlgSetShaderUniformDefaultValueByIndex( QmGfxShaderProgram *program, int sl
 			program->uniforms[ slot ].defaultFloat = *( float * ) defaultValue;
 			break;
 		case PLG_UNIFORM_SAMPLER2D:
-		case PLG_UNIFORM_INT:
+		case QM_GFX_SHADER_UNIFORM_TYPE_INT:
 			program->uniforms[ slot ].defaultInt = *( int * ) defaultValue;
 			break;
 		case PLG_UNIFORM_UINT:
 			program->uniforms[ slot ].defaultUInt = *( unsigned int * ) defaultValue;
 			break;
-		case PLG_UNIFORM_BOOL:
+		case QM_GFX_SHADER_UNIFORM_TYPE_BOOL:
 			program->uniforms[ slot ].defaultBool = *( bool * ) defaultValue;
 			break;
 		case PLG_UNIFORM_DOUBLE:
@@ -267,13 +267,13 @@ void PlgSetShaderUniformToDefaultByIndex( QmGfxShaderProgram *program, int slot 
 			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultFloat, false );
 			break;
 		case PLG_UNIFORM_SAMPLER2D:
-		case PLG_UNIFORM_INT:
+		case QM_GFX_SHADER_UNIFORM_TYPE_INT:
 			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultInt, false );
 			break;
 		case PLG_UNIFORM_UINT:
 			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultUInt, false );
 			break;
-		case PLG_UNIFORM_BOOL:
+		case QM_GFX_SHADER_UNIFORM_TYPE_BOOL:
 			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultBool, false );
 			break;
 		case PLG_UNIFORM_DOUBLE:
