@@ -321,7 +321,7 @@ void PlgSetShaderUniformToDefaultByIndex( QmGfxShaderProgram *program, int slot 
 void PlgSetShaderUniformToDefault( QmGfxShaderProgram *program, const char *name );
 void PlgSetShaderUniformsToDefault( QmGfxShaderProgram *program );
 
-void PlgSetShaderUniformValueByIndex( QmGfxShaderProgram *program, int slot, const void *value, bool transpose );
+void qm_gfx_shader_set_uniform_value_by_index( QmGfxShaderProgram *program, int slot, const void *value, bool transpose );
 void PlgSetShaderUniformValue( QmGfxShaderProgram *program, const char *name, const void *value, bool transpose );
 
 /**

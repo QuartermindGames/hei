@@ -69,10 +69,10 @@ void PlgImmDraw( void ) {
 	if ( program ) {
 		int slot;
 		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_model" ) ) >= 0 ) {
-			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
 		}
 		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_texture" ) ) >= 0 ) {
-			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_TEXTURE_MATRIX ), false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, PlGetMatrix( PL_TEXTURE_MATRIX ), false );
 		}
 	}
 
@@ -139,7 +139,7 @@ void PlgDrawEllipse( unsigned int segments, const QmMathVector2f *position, floa
 	if ( program ) {
 		int slot;
 		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_model" ) ) >= 0 ) {
-			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
 		}
 	}
 
@@ -225,10 +225,10 @@ void PlgDrawTexturedQuad( const QmMathVector3f *ul, const QmMathVector3f *ur, co
 	if ( program ) {
 		int slot;
 		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_model" ) ) >= 0 ) {
-			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
 		}
 		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_texture" ) ) >= 0 ) {
-			PlgSetShaderUniformValueByIndex( program, slot, PlGetMatrix( PL_TEXTURE_MATRIX ), false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, PlGetMatrix( PL_TEXTURE_MATRIX ), false );
 		}
 	}
 

@@ -2046,6 +2046,8 @@ static PLFunctionResult GLInitialize( void ) {
 	XGL_CALL( glDebugMessageCallback( ( GLDEBUGPROC ) MessageCallback, nullptr ) );
 #endif
 
+	XGL_CALL( glEnable( GL_TEXTURE_CUBE_MAP_SEAMLESS ) );
+
 	// Init vertex attributes
 	XGL_CALL( glGenVertexArrays( 1, VAO ) );
 	XGL_CALL( glBindVertexArray( VAO[ 0 ] ) );

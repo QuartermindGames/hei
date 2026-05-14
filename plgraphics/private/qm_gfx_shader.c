@@ -264,35 +264,35 @@ void PlgSetShaderUniformToDefaultByIndex( QmGfxShaderProgram *program, int slot 
 	switch ( program->uniforms[ slot ].type )
 	{
 		case QM_GFX_SHADER_UNIFORM_TYPE_FLOAT:
-			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultFloat, false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultFloat, false );
 			break;
 		case PLG_UNIFORM_SAMPLER2D:
 		case QM_GFX_SHADER_UNIFORM_TYPE_INT:
-			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultInt, false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultInt, false );
 			break;
 		case PLG_UNIFORM_UINT:
-			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultUInt, false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultUInt, false );
 			break;
 		case QM_GFX_SHADER_UNIFORM_TYPE_BOOL:
-			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultBool, false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultBool, false );
 			break;
 		case PLG_UNIFORM_DOUBLE:
-			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultDouble, false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultDouble, false );
 			break;
 		case PLG_UNIFORM_VEC2:
-			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultVec2, false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultVec2, false );
 			break;
 		case PLG_UNIFORM_VEC3:
-			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultVec3, false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultVec3, false );
 			break;
 		case PLG_UNIFORM_VEC4:
-			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultVec4, false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultVec4, false );
 			break;
 		case PLG_UNIFORM_MAT3:
-			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultMat3, false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultMat3, false );
 			break;
 		case PLG_UNIFORM_MAT4:
-			PlgSetShaderUniformValueByIndex( program, slot, &program->uniforms[ slot ].defaultMat4, false );
+			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultMat4, false );
 			break;
 		default:
 			break;
@@ -318,7 +318,7 @@ void PlgSetShaderUniformsToDefault( QmGfxShaderProgram *program )
 	}
 }
 
-void PlgSetShaderUniformValueByIndex( QmGfxShaderProgram *program, int slot, const void *value, bool transpose )
+void qm_gfx_shader_set_uniform_value_by_index( QmGfxShaderProgram *program, int slot, const void *value, bool transpose )
 {
 	if ( ValidateShaderUniformSlot( program, slot ) == -1 )
 	{
@@ -337,5 +337,5 @@ void PlgSetShaderUniformValueByIndex( QmGfxShaderProgram *program, int slot, con
 
 void PlgSetShaderUniformValue( QmGfxShaderProgram *program, const char *name, const void *value, bool transpose )
 {
-	PlgSetShaderUniformValueByIndex( program, qm_gfx_shader_program_get_uniform_slot( program, name ), value, transpose );
+	qm_gfx_shader_set_uniform_value_by_index( program, qm_gfx_shader_program_get_uniform_slot( program, name ), value, transpose );
 }
