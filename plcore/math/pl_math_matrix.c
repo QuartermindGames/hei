@@ -35,12 +35,12 @@ QmMathVector3f PlConvertScreenToWorld( QmMathVector2f windowCoordinate, const PL
 	windowCoordinate.y = windowCoordinate.y * 2.0f - 1.0f;
 
 	QmMathVector4f rayClip = qm_math_vector4f( windowCoordinate.x, windowCoordinate.y, -1.0f, 1.0f );
-	PLMatrix4 invProj = PlInverseMatrix4( *projMatrix );
+	PLMatrix4 invProj = PlInverseMatrix4( projMatrix );
 	QmMathVector4f rayEye = PlTransformVector4( &rayClip, &invProj );
 
 	rayEye = qm_math_vector4f( rayEye.x, rayEye.y, -1.0f, 0.0f );
 
-	PLMatrix4 invModel = PlInverseMatrix4( *viewMatrix );
+	PLMatrix4 invModel = PlInverseMatrix4( viewMatrix );
 	QmMathVector4f objPos = PlTransformVector4( &rayEye, &invModel );
 
 	return qm_math_vector3f( objPos.x, objPos.y, objPos.z );
@@ -263,7 +263,7 @@ void PlScaleMatrix( QmMathVector3f scale ) {
 
 void PlInverseMatrix( void ) {
 	PLMatrix4 *curStack = PlGetMatrix( curMatrixMode );
-	*curStack = PlInverseMatrix4( *curStack );
+	*curStack = PlInverseMatrix4( curStack );
 }
 
 void PlPushMatrix( void ) {
