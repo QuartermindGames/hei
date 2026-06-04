@@ -315,31 +315,27 @@ static void GLBindFrameBuffer( QmGfxFramebuffer *buffer, PLGFrameBufferObjectTar
 
 static void GLDeleteFrameBuffer( QmGfxFramebuffer *buffer );
 static bool GLCreateFrameBuffer( QmGfxFramebuffer *buffer ) {
-	XGL_CALL( glGenFramebuffers( 1, &buffer->fbo ) );
+	XGL_CALL( glCreateFramebuffers( 1, &buffer->fbo ) );
 	GLBindFrameBuffer( buffer, PLG_FRAMEBUFFER_DEFAULT );
 
 	if ( buffer->flags & PLG_BUFFER_COLOUR ) {
-		XGL_CALL( glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] ) );
-		XGL_CALL( glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] ) );
-		XGL_CALL( glRenderbufferStorageMultisample( GL_RENDERBUFFER, buffer->numSamples, GL_RGBA, ( int ) buffer->width, ( int ) buffer->height ) );
-		XGL_CALL( glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] ) );
+		XGL_CALL( glCreateRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] ) );
+		XGL_CALL( glNamedRenderbufferStorageMultisample( buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ], buffer->numSamples, GL_RGBA, ( int ) buffer->width, ( int ) buffer->height ) );
+		XGL_CALL( glNamedFramebufferRenderbuffer( buffer->fbo, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_COLOUR ] ) );
 	}
 
 	if ( ( buffer->flags & PLG_BUFFER_DEPTH ) && ( buffer->flags & PLG_BUFFER_STENCIL ) ) {
-		XGL_CALL( glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
-		XGL_CALL( glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
-		XGL_CALL( glRenderbufferStorageMultisample( GL_RENDERBUFFER, buffer->numSamples, GL_DEPTH24_STENCIL8, ( int ) buffer->width, ( int ) buffer->height ) );
-		XGL_CALL( glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
+		XGL_CALL( glCreateRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
+		XGL_CALL( glNamedRenderbufferStorageMultisample( buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ], buffer->numSamples, GL_DEPTH24_STENCIL8, ( int ) buffer->width, ( int ) buffer->height ) );
+		XGL_CALL( glNamedFramebufferRenderbuffer( buffer->fbo, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
 	} else if ( buffer->flags & PLG_BUFFER_DEPTH ) {
-		XGL_CALL( glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
-		XGL_CALL( glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
-		XGL_CALL( glRenderbufferStorageMultisample( GL_RENDERBUFFER, buffer->numSamples, GL_DEPTH_COMPONENT24, ( int ) buffer->width, ( int ) buffer->height ) );
-		XGL_CALL( glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
+		XGL_CALL( glCreateRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
+		XGL_CALL( glNamedRenderbufferStorageMultisample( buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ], buffer->numSamples, GL_DEPTH_COMPONENT24, ( int ) buffer->width, ( int ) buffer->height ) );
+		XGL_CALL( glNamedFramebufferRenderbuffer( buffer->fbo, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_DEPTH ] ) );
 	} else if ( buffer->flags & PLG_BUFFER_STENCIL ) {
-		XGL_CALL( glGenRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] ) );
-		XGL_CALL( glBindRenderbuffer( GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] ) );
-		XGL_CALL( glRenderbufferStorageMultisample( GL_RENDERBUFFER, buffer->numSamples, GL_STENCIL_INDEX8, ( int ) buffer->width, ( int ) buffer->height ) );
-		XGL_CALL( glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] ) );
+		XGL_CALL( glCreateRenderbuffers( 1, &buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] ) );
+		XGL_CALL( glNamedRenderbufferStorageMultisample( buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ], buffer->numSamples, GL_STENCIL_INDEX8, ( int ) buffer->width, ( int ) buffer->height ) );
+		XGL_CALL( glNamedFramebufferRenderbuffer( buffer->fbo, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer->renderBuffers[ PLG_RENDERBUFFER_STENCIL ] ) );
 	}
 
 	GLenum err = glCheckFramebufferStatus( GL_FRAMEBUFFER );
@@ -1249,25 +1245,8 @@ static GLenum TranslateShaderStageType( QmGfxShaderStageType type ) {
 			return GL_COMPUTE_SHADER;
 		case QM_GFX_SHADER_STAGE_TYPE_FRAGMENT:
 			return GL_FRAGMENT_SHADER;
-		case QM_GFX_SHADER_STAGE_TYPE_GEOMETRY:
-			return GL_GEOMETRY_SHADER;
 		default:
 			return SHADER_INVALID_TYPE;
-	}
-}
-
-static const char *GetGLShaderStageDescriptor( GLenum type ) {
-	switch ( type ) {
-		case GL_VERTEX_SHADER:
-			return "GL_VERTEX_SHADER";
-		case GL_COMPUTE_SHADER:
-			return "GL_COMPUTE_SHADER";
-		case GL_FRAGMENT_SHADER:
-			return "GL_FRAGMENT_SHADER";
-		case GL_GEOMETRY_SHADER:
-			return "GL_GEOMETRY_SHADER";
-		default:
-			return "unknown";
 	}
 }
 
@@ -1315,11 +1294,12 @@ static char *GLPreProcessGLSLShader( QmGfxShaderStage *stage, char *buf, size_t 
 		insert( "uniform vec4 pl_clipplane;\n" );
 		insert( "uniform mat4 pl_clipplane_matrix;\n" );
 		if ( stage->type == QM_GFX_SHADER_STAGE_TYPE_VERTEX ) {
-			insert( "in vec3 pl_vposition;\n" );
-			insert( "in vec3 pl_vnormal;\n" );
-			insert( "in vec2 pl_vuv[4];\n" );
-			insert( "in vec4 pl_vcolour;\n" );
-			insert( "in vec3 pl_vtangent, pl_vbitangent;\n" );
+			insert( "layout (location = 0) in vec3 pl_vposition;\n" );
+			insert( "layout (location = 1) in vec3 pl_vnormal;\n" );
+			insert( "layout (location = 2) in vec2 pl_vuv[4];\n" );
+			insert( "layout (location = 6) in vec4 pl_vcolour;\n" );
+			insert( "layout (location = 7) in vec3 pl_vtangent;\n" );
+			insert( "layout (location = 8) in vec3 pl_vbitangent;\n" );
 			insert( "out float gl_ClipDistance[1];\n" );
 			insert( "#define PLG_COMPILE_VERTEX 1\n" );
 		} else if ( stage->type == QM_GFX_SHADER_STAGE_TYPE_FRAGMENT ) {
@@ -2049,8 +2029,7 @@ static PLFunctionResult GLInitialize( void ) {
 	XGL_CALL( glEnable( GL_TEXTURE_CUBE_MAP_SEAMLESS ) );
 
 	// Init vertex attributes
-	XGL_CALL( glGenVertexArrays( 1, VAO ) );
-	XGL_CALL( glBindVertexArray( VAO[ 0 ] ) );
+	XGL_CALL( glCreateVertexArrays( 1, VAO ) );
 
 #if 0
 	/* in OpenGL, multisample is automatically enabled per spec */

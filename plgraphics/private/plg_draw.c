@@ -196,48 +196,6 @@ void PlgDrawLineRectangle( float x, float y, float w, float h, QmMathColour4ub c
 	PlgImmDraw();
 }
 
-void PlgDrawTexturedQuad( const QmMathVector3f *ul, const QmMathVector3f *ur, const QmMathVector3f *ll, const QmMathVector3f *lr, float hScale, float vScale, QmGfxTexture *texture ) {
-	PLGMesh *mesh = GetInternalMesh( PLG_MESH_TRIANGLES );
-
-	QmMathVector3f upperDist = qm_math_vector3f_sub( *ul, *ur );
-	float quadWidth = qm_math_vector3f_length( upperDist ) / hScale;
-	QmMathVector3f lowerDist = qm_math_vector3f_sub( *ll, *ul );
-	float quadHeight = qm_math_vector3f_length( lowerDist ) / vScale;
-
-	PlgAddMeshVertex( mesh, ul, &QM_MATH_VECTOR3F_ZERO, &PL_COLOUR_WHITE, &QM_MATH_VECTOR2F( 0.0f, quadHeight / texture->h ) );
-	PlgAddMeshVertex( mesh, ur, &QM_MATH_VECTOR3F_ZERO, &PL_COLOUR_WHITE, &QM_MATH_VECTOR2F( quadWidth / texture->w, quadHeight / texture->h ) );
-	PlgAddMeshVertex( mesh, ll, &QM_MATH_VECTOR3F_ZERO, &PL_COLOUR_WHITE, &QM_MATH_VECTOR2F( 0.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, lr, &QM_MATH_VECTOR3F_ZERO, &PL_COLOUR_WHITE, &QM_MATH_VECTOR2F( quadWidth / texture->w, 0.0f ) );
-
-	PlgAddMeshTriangle( mesh, 0, 1, 2 );
-	PlgAddMeshTriangle( mesh, 2, 1, 3 );
-
-	PlgGenerateMeshNormals( mesh, true );
-
-	qm_gfx_texture_set( texture, 0 );
-
-	PlMatrixMode( PL_MODELVIEW_MATRIX );
-	PlPushMatrix();
-
-	PlLoadIdentityMatrix();
-
-	QmGfxShaderProgram *program = PlgGetCurrentShaderProgram();
-	if ( program ) {
-		int slot;
-		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_model" ) ) >= 0 ) {
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
-		}
-		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_texture" ) ) >= 0 ) {
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, PlGetMatrix( PL_TEXTURE_MATRIX ), false );
-		}
-	}
-
-	PlgUploadMesh( mesh );
-	PlgDrawMesh( mesh );
-
-	PlPopMatrix();
-}
-
 void PlgDrawLines( const QmMathVector3f *points, unsigned int numPoints, QmMathColour4ub colour, float thickness ) {
 	PLGMesh *mesh = PlgImmBegin( PLG_MESH_LINES );
 	mesh->primitiveScale = thickness;
@@ -268,43 +226,6 @@ void PlgDrawSimpleLine( QmMathVector3f startPos, QmMathVector3f endPos, QmMathCo
 	PlgDrawLine( startPos, colour, endPos, colour );
 }
 
-void PlgDrawGrid( int x, int y, int w, int h, unsigned int gridSize, const QmMathColour4ub *colour ) {
-	PlgImmBegin( PLG_MESH_LINES );
-
-	int c = 0, r = 0;
-	for ( ; r < h + 1; r += ( int ) gridSize ) {
-		PlgImmPushVertex( x, y + r, 0.0f );
-		PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-		PlgImmPushVertex( x + w, r + y, 0.0f );
-		PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-		for ( ; c < w + 1; c += ( int ) gridSize ) {
-			PlgImmPushVertex( c + x, y, 0.0f );
-			PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-			PlgImmPushVertex( c + x, y + h, 0.0f );
-			PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-		}
-	}
-
-	PlgImmDraw();
-}
-
-void PlgDrawDottedGrid( int x, int y, int w, int h, unsigned int gridSize, const QmMathColour4ub *colour ) {
-	if ( gridSize == 0 ) {
-		return;
-	}
-
-	PlgImmBegin( PLG_MESH_POINTS );
-
-	for ( int r = 0; r < h + 1; r += ( int ) gridSize ) {
-		for ( int c = 0; c < w + 1; c += ( int ) gridSize ) {
-			PlgImmPushVertex( c + x, y + r, 0.0f );
-			PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-		}
-	}
-
-	PlgImmDraw();
-}
-
 void PlgDrawPixel( int x, int y, QmMathColour4ub colour ) {
 	int vpW, vpH;
 	qm_gfx_get_viewport( NULL, NULL, &vpW, &vpH );
@@ -315,71 +236,4 @@ void PlgDrawPixel( int x, int y, QmMathColour4ub colour ) {
 	}
 
 	CallGfxFunction( DrawPixel, x, y, colour );
-}
-
-/**
- * Utility function for drawing a bounding volume.
- */
-void PlgDrawBoundingVolume( const PLCollisionAABB *bounds, const QmMathColour4ub *colour ) {
-	PlMatrixMode( PL_MODELVIEW_MATRIX );
-	PlPushMatrix();
-
-	PlTranslateMatrix( bounds->origin );
-
-	PlgImmBegin( PLG_MESH_LINES );
-
-	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->mins.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->mins.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->mins.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->mins.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->mins.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->mins.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->mins.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->mins.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-
-	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->maxs.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->maxs.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->maxs.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->maxs.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->maxs.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->maxs.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->maxs.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->maxs.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-
-	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->mins.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->mins.x, bounds->mins.y, bounds->maxs.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->mins.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->maxs.x, bounds->mins.y, bounds->maxs.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->mins.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->maxs.x, bounds->maxs.y, bounds->maxs.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->mins.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-	PlgImmPushVertex( bounds->mins.x, bounds->maxs.y, bounds->maxs.z );
-	PlgImmColour( colour->r, colour->g, colour->b, colour->a );
-
-	PlgImmDraw();
-
-	PlPopMatrix();
 }

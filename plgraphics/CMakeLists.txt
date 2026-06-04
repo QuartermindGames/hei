@@ -4,11 +4,11 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 add_library(plgraphics STATIC
         private/plg_draw.c
         private/plg_driver_interface.c
-        private/plg_mesh.c
         private/plg_texture.c
 
         private/qm_gfx.c
         private/qm_gfx_framebuffer.c
+        private/qm_gfx_mesh.c
         private/qm_gfx_shader.c
 )
 

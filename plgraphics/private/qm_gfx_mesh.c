@@ -10,30 +10,34 @@
 
 #include "qmos/public/qm_os_memory.h"
 
-/**
- * Generate cubic coordinates for the given vertices.
- */
-void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertices, QmMathVector2f textureOffset, QmMathVector2f textureScale ) {
-	if ( textureScale.x == 0.0f || textureScale.y == 0.0f ) {
+void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertices, QmMathVector2f textureOffset, QmMathVector2f textureScale )
+{
+	if ( textureScale.x == 0.0f || textureScale.y == 0.0f )
+	{
 		return;
 	}
 
 	unsigned int x, y;
-	for ( unsigned int i = 0; i < numVertices; ++i ) {
-		if ( ( fabsf( vertices[ i ].normal.x ) > fabsf( vertices[ i ].normal.y ) ) &&
-		     ( fabsf( vertices[ i ].normal.x ) > fabsf( vertices[ i ].normal.z ) ) ) {
-			x = ( vertices[ i ].normal.x > 0.0 ) ? 1 : 2;
-			y = ( vertices[ i ].normal.x > 0.0 ) ? 2 : 1;
-		} else if ( ( fabsf( vertices[ i ].normal.z ) > fabsf( vertices[ i ].normal.x ) ) &&
-		            ( fabsf( vertices[ i ].normal.z ) > fabsf( vertices[ i ].normal.y ) ) ) {
-			x = ( vertices[ i ].normal.z > 0.0 ) ? 0 : 1;
-			y = ( vertices[ i ].normal.z > 0.0 ) ? 1 : 0;
-		} else {
-			x = ( vertices[ i ].normal.y > 0.0 ) ? 2 : 0;
-			y = ( vertices[ i ].normal.y > 0.0 ) ? 0 : 2;
+	for ( unsigned int i = 0; i < numVertices; ++i )
+	{
+		if ( fabsf( vertices[ i ].normal.x ) > fabsf( vertices[ i ].normal.y ) &&
+		     fabsf( vertices[ i ].normal.x ) > fabsf( vertices[ i ].normal.z ) )
+		{
+			x = vertices[ i ].normal.x > 0.0 ? 1 : 2;
+			y = vertices[ i ].normal.x > 0.0 ? 2 : 1;
+		}
+		else if ( fabsf( vertices[ i ].normal.z ) > fabsf( vertices[ i ].normal.x ) &&
+		          fabsf( vertices[ i ].normal.z ) > fabsf( vertices[ i ].normal.y ) )
+		{
+			x = vertices[ i ].normal.z > 0.0 ? 0 : 1;
+			y = vertices[ i ].normal.z > 0.0 ? 1 : 0;
+		}
+		else
+		{
+			x = vertices[ i ].normal.y > 0.0 ? 2 : 0;
+			y = vertices[ i ].normal.y > 0.0 ? 0 : 2;
 		}
 
-		/* why the weird multiplication at the end here? to roughly match previous scaling values */
 		vertices[ i ].st[ 0 ].x = ( PL_VECTOR3_I( vertices[ i ].position, x ) + textureOffset.x ) / textureScale.x;
 		vertices[ i ].st[ 0 ].y = ( PL_VECTOR3_I( vertices[ i ].position, y ) + textureOffset.y ) / textureScale.y;
 	}
@@ -161,20 +165,6 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 	return mesh;
 }
 
-PLGMesh *PlgCreateMeshRectangle( float x, float y, float w, float h, const QmMathColour4ub *colour ) {
-	PLGMesh *mesh = PlgCreateMesh( PLG_MESH_TRIANGLE_STRIP, PLG_DRAW_DYNAMIC, 0, 4 );
-	if ( mesh == NULL ) {
-		return NULL;
-	}
-
-	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x, y, 0.0f ), &QM_MATH_VECTOR3F_ZERO, colour, &QM_MATH_VECTOR2F( 0.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x, y + h, 0.0f ), &QM_MATH_VECTOR3F_ZERO, colour, &QM_MATH_VECTOR2F( 0.0f, 1.0f ) );
-	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x + w, y, 0.0f ), &QM_MATH_VECTOR3F_ZERO, colour, &QM_MATH_VECTOR2F( 1.0f, 0.0f ) );
-	PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x + w, y + h, 0.0f ), &QM_MATH_VECTOR3F_ZERO, colour, &QM_MATH_VECTOR2F( 1.0f, 1.0f ) );
-
-	return mesh;
-}
-
 void PlgDestroyMesh( PLGMesh *mesh ) {
 	if ( mesh == NULL ) {
 		return;
@@ -206,12 +196,6 @@ void PlgClearMeshTriangles( PLGMesh *mesh ) {
 	mesh->range = mesh->start = 0;
 	mesh->num_triangles = mesh->num_indices = 0;
 	mesh->isDirty = true;
-}
-
-void PlgScaleMesh( PLGMesh *mesh, QmMathVector3f scale ) {
-	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
-		mesh->vertices[ i ].position = qm_math_vector3f_scale( mesh->vertices[ i ].position, scale );
-	}
 }
 
 void PlgSetMeshTrianglePosition( PLGMesh *mesh, unsigned int *index, unsigned int x, unsigned int y, unsigned int z ) {
@@ -336,29 +320,4 @@ void PlgDrawSubMeshes( PLGMesh *mesh, int32_t *firstSubMeshes, int32_t *subMeshe
 
 void PlgDrawInstancedMesh( PLGMesh *mesh, const PLMatrix4 *transforms, unsigned int instanceCount ) {
 	CallGfxFunction( DrawInstancedMesh, mesh, gfx_state.current_program, transforms, instanceCount );
-}
-
-PLCollisionAABB PlgGenerateAabbFromVertices( const PLGVertex *vertices, unsigned int numVertices, bool absolute ) {
-	QmMathVector3f *vvertices = QM_OS_MEMORY_MALLOC_( sizeof( QmMathVector3f ) * numVertices );
-	for ( unsigned int i = 0; i < numVertices; ++i ) {
-		vvertices[ i ] = vertices[ i ].position;
-	}
-
-	PLCollisionAABB bounds = {};
-	qm_math_compute_min_max( vvertices, numVertices, &bounds.mins, &bounds.maxs, absolute );
-
-	bounds.absOrigin = PlGetAabbAbsOrigin( &bounds, QM_MATH_VECTOR3F_ZERO );
-	bounds.origin    = QM_MATH_VECTOR3F_ZERO;
-
-	qm_os_memory_free( vvertices );
-
-	return bounds;
-}
-
-PLCollisionAABB PlgGenerateAabbFromMesh( const PLGMesh *mesh, bool absolute ) {
-	return PlgGenerateAabbFromVertices( mesh->vertices, mesh->num_verts, absolute );
-}
-
-unsigned int PlgGetNumTrianglesForPolygon( unsigned int numVertices ) {
-	return ( numVertices < 3 ) ? 0 : numVertices - 2;
 }
