@@ -395,6 +395,37 @@ static inline PLMatrix4 PlPerspective( float fov, float aspect, float nearf, flo
 	return PlFrustum( -x_max, x_max, -y_max, y_max, nearf, farf );
 }
 
+// http://www.terathon.com/code/oblique.php
+/**
+ * The following code modifies the projection matrix so that the near plane of the standard view
+ * frustum is moved so that it coincides with a given arbitrary plane. The far plane is adjusted so
+ * that the resulting view frustum has the best shape possible. This code assumes that the original
+ * projection matrix is a perspective projection (standard or infinite). The clipPlane parameter
+ * must be in camera-space coordinates, and its w-coordinate must be negative (corresponding to the
+ * camera being on the negative side of the plane).
+ */
+static inline PLMatrix4 qm_math_matrix4_oblique( const PLMatrix4 *proj, const QmMathVector4f clip )
+{
+	//TODO: if this is useful anywhere else, move it
+#define QM_MATH_SGN( X ) ( ( X ) > 0.0f ? 1.0f : ( ( ( X ) < 0.0f ) ? -1.0f : 0.0f ) )
+
+	QmMathVector4f q;
+	q.x = ( QM_MATH_SGN( clip.x ) + proj->m[ 8 ] ) / proj->m[ 0 ];
+	q.y = ( QM_MATH_SGN( clip.y ) + proj->m[ 9 ] ) / proj->m[ 5 ];
+	q.z = -1.0f;
+	q.w = ( 1.0f + proj->m[ 10 ] ) / proj->m[ 14 ];
+
+	QmMathVector4f c = qm_math_vector4f_scale_float( clip, 2.0f / qm_math_vector4f_dot_product( clip, q ) );
+
+	PLMatrix4 out = *proj;
+	out.m[ 2 ]    = c.x;
+	out.m[ 6 ]    = c.y;
+	out.m[ 10 ]   = c.z + 1.0f;
+	out.m[ 14 ]   = c.w;
+
+	return out;
+}
+
 /* Matrix Stack, sorta mirrors OpenGL behaviour
  * TODO: move this into plgraphics */
 
