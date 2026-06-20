@@ -20,12 +20,14 @@ typedef enum PLGMeshPrimitive
 	PLG_MESH_TRIANGLE_STRIP,
 	PLG_MESH_TRIANGLE_FAN,
 	PLG_MESH_TRIANGLE_FAN_LINE,
-	PLG_MESH_QUADS,      /* todo */
-	PLG_MESH_QUAD_STRIP, /* todo */
 
 	PLG_NUM_PRIMITIVES
 } PLGMeshPrimitive;
 
+/* If these confuse you, like they do me, there's a really good write-up here.
+ * https://www.reddit.com/r/opengl/comments/57i9cl/comment/d8s8wnq/
+ * tldr; stream for update every frame, dynamic for update occasionally and static for no updates.
+ */
 typedef enum PLGMeshDrawMode
 {
 	PLG_DRAW_STREAM,
@@ -151,5 +153,45 @@ unsigned int PlgPushVertex3fv( PLGMesh *mesh, const QmMathVector3f *vec );
 void         PlgColour4bv( PLGMesh *mesh, const QmMathColour4ub *col );
 
 #endif
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Vertex Attribute Declarations
+// Much of the below is pretty gross and limiting, I know! For the moment, it's just
+// to provide the basics and we'll expand on this further down the line so the caller
+// can actually set up their own instead rather than using our built-in types.
+/////////////////////////////////////////////////////////////////////////////////////
+
+typedef enum QmGfxMeshVertexAttributeType : uint8_t
+{
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_POSITION, // f32 f32 f32
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_NORMAL,   // f32 f32 f32
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_COLOUR,   // ui8 ui8 ui8 ui8
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_TANGENT,  // f32 f32 f32
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_BITANGENT,// f32 f32 f32
+
+	// f32 f32
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_ST0,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_ST1,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_ST2,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_ST3,
+
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_MAX
+} QmGfxMeshVertexAttributeType;
+
+typedef struct QmGfxMeshVertexAttribute
+{
+	unsigned int location;
+	unsigned int stride;
+	bool         isEnabled;
+	unsigned int offset;
+} QmGfxMeshVertexAttribute;
+
+typedef struct QmGfxMeshVertexDescriptor
+{
+	QmGfxMeshVertexAttribute attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_MAX ];
+	unsigned int             numAttributes;
+} QmGfxMeshVertexDescriptor;
+
+void qm_gfx_mesh_set_vertex_layout( PLGMesh *mesh, QmGfxMeshVertexAttributeType *attributes, unsigned int numAttributes );
 
 PL_EXTERN_C_END

@@ -185,6 +185,11 @@ extern "C"
 	// Conversion
 	/////////////////////////////////////////////////////////////////////////////////////
 
+#define QM_MATH_COLOUR3F16_TO_3F( IN )    QM_MATH_COLOUR3F( ( IN ).r, ( IN ).g, ( IN ).b )
+#define QM_MATH_COLOUR3F16_TO_4F( IN, A ) QM_MATH_COLOUR4F( ( IN ).r, ( IN ).g, ( IN ).b, ( A ) )
+
+#define QM_MATH_COLOUR3F_TO_4UB( IN, A ) QM_MATH_COLOUR4UB( QM_MATH_FTOB( ( IN ).r ), QM_MATH_FTOB( ( IN ).g ), QM_MATH_FTOB( ( IN ).b ), ( A ) )
+
 #define QM_MATH_COLOUR4F_TO_4UB( IN ) QM_MATH_COLOUR4UB( QM_MATH_FTOB( ( IN ).r ), QM_MATH_FTOB( ( IN ).g ), QM_MATH_FTOB( ( IN ).b ), QM_MATH_FTOB( ( IN ).a ) )
 #define QM_MATH_COLOUR4F_TO_3UB( IN ) QM_MATH_COLOUR3UB( QM_MATH_FTOB( ( IN ).r ), QM_MATH_FTOB( ( IN ).g ), QM_MATH_FTOB( ( IN ).b ) )
 #define QM_MATH_COLOUR4F_TO_3F( IN )  QM_MATH_COLOUR3F( ( IN ).r, ( IN ).g, ( IN ).b )

@@ -115,21 +115,6 @@ static void GLPopDebugGroupMarker( void ) {
 	XGL_CALL( glPopDebugGroup() );
 }
 
-#if 0
-static void ClearBoundTextures( void ) {
-	for ( unsigned int i = 0; i < gfx_state.hw_maxtextureunits; ++i ) {
-		glActiveTexture( GL_TEXTURE0 + i );
-		glBindTexture( GL_TEXTURE_2D, 0 );
-	}
-	glActiveTexture( GL_TEXTURE0 );
-}
-
-static void ClearBoundBuffers( void ) {
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-	glBindRenderbuffer( GL_RENDERBUFFER, 0 );
-}
-#endif
-
 static void GL_TranslateTextureFilterFormat( QmGfxTextureFilter filterMode, int *min, int *mag ) {
 	switch ( filterMode ) {
 		case PLG_TEXTURE_FILTER_LINEAR:
@@ -928,18 +913,16 @@ static void GLSetClipPlane( const QmMathVector4f *clip, const PLMatrix4 *transfo
 typedef struct MeshTranslatePrimitive {
 	PLGMeshPrimitive mode;
 	unsigned int target;
-	const char *name;
 } MeshTranslatePrimitive;
 
 static MeshTranslatePrimitive primitives[] = {
-        {PLG_MESH_LINES,             GL_LINES,          "LINES"            },
-        {PLG_MESH_LINE_LOOP,         GL_LINE_LOOP,      "LINE_LOOP"        },
-        {PLG_MESH_POINTS,            GL_POINTS,         "POINTS"           },
-        {PLG_MESH_TRIANGLES,         GL_TRIANGLES,      "TRIANGLES"        },
-        {PLG_MESH_TRIANGLE_FAN,      GL_TRIANGLE_FAN,   "TRIANGLE_FAN"     },
-        {PLG_MESH_TRIANGLE_FAN_LINE, GL_LINES,          "TRIANGLE_FAN_LINE"},
-        {PLG_MESH_TRIANGLE_STRIP,    GL_TRIANGLE_STRIP, "TRIANGLE_STRIP"   },
-        {PLG_MESH_QUADS,             GL_TRIANGLES,      "QUADS"            }  // todo, translate
+        {PLG_MESH_LINES,             GL_LINES,         },
+        {PLG_MESH_LINE_LOOP,         GL_LINE_LOOP,     },
+        {PLG_MESH_POINTS,            GL_POINTS,        },
+        {PLG_MESH_TRIANGLES,         GL_TRIANGLES,     },
+        {PLG_MESH_TRIANGLE_FAN,      GL_TRIANGLE_FAN,  },
+        {PLG_MESH_TRIANGLE_FAN_LINE, GL_LINES,         },
+        {PLG_MESH_TRIANGLE_STRIP,    GL_TRIANGLE_STRIP,},
 };
 
 static unsigned int TranslatePrimitiveMode( PLGMeshPrimitive mode ) {
@@ -1046,6 +1029,61 @@ static void GLDrawInstancedMesh( PLGMesh *mesh, QmGfxShaderProgram *program, con
 	}
 }
 
+static void draw_setup_attributes( PLGMesh *mesh, QmGfxShaderProgram *program )
+{
+	//Ensure VAO/VBO/EBO are bound
+	XGL_CALL( glBindVertexArray( VAO[ 0 ] ) );
+	XGL_CALL( glBindBuffer( GL_ARRAY_BUFFER, mesh->buffers[ BUFFER_VERTEX_DATA ] ) );
+
+	unsigned int posAttribute = program->internal.attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_POSITION ];
+	if ( posAttribute != XGL_INVALID )
+	{
+		XGL_CALL( glEnableVertexAttribArray( posAttribute ) );
+		XGL_CALL( glVertexAttribPointer( posAttribute, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, position ) ) );
+	}
+
+	unsigned int norAttribute = program->internal.attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_NORMAL ];
+	if ( norAttribute != XGL_INVALID )
+	{
+		XGL_CALL( glEnableVertexAttribArray( norAttribute ) );
+		XGL_CALL( glVertexAttribPointer( norAttribute, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, normal ) ) );
+	}
+
+	unsigned int uvAttribute = program->internal.attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_ST0 ];
+	if ( uvAttribute != XGL_INVALID )
+	{
+		for ( unsigned int i = 0; i < 4; ++i )
+		{
+			XGL_CALL( glEnableVertexAttribArray( uvAttribute + i ) );
+			XGL_CALL( glVertexAttribPointer( uvAttribute + i,
+			                                 2, GL_FLOAT, GL_FALSE,
+			                                 sizeof( PLGVertex ),
+			                                 ( const GLvoid * ) offsetof( PLGVertex, st ) + i * sizeof( QmMathVector2f ) ) );
+		}
+	}
+
+	unsigned int colAttribute = program->internal.attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_COLOUR ];
+	if ( colAttribute != XGL_INVALID )
+	{
+		XGL_CALL( glEnableVertexAttribArray( colAttribute ) );
+		XGL_CALL( glVertexAttribPointer( colAttribute, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, colour ) ) );
+	}
+
+	unsigned int tanAttribute = program->internal.attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_TANGENT ];
+	if ( tanAttribute != XGL_INVALID )
+	{
+		XGL_CALL( glEnableVertexAttribArray( tanAttribute ) );
+		XGL_CALL( glVertexAttribPointer( tanAttribute, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, tangent ) ) );
+	}
+
+	unsigned int btanAttribute = program->internal.attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_BITANGENT ];
+	if ( btanAttribute != XGL_INVALID )
+	{
+		XGL_CALL( glEnableVertexAttribArray( btanAttribute ) );
+		XGL_CALL( glVertexAttribPointer( btanAttribute, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, bitangent ) ) );
+	}
+}
+
 static void GLDrawMesh( PLGMesh *mesh, QmGfxShaderProgram *program ) {
 	if ( program == NULL ) {
 		XGL_LOG( "No shader assigned!\n" );
@@ -1078,43 +1116,7 @@ static void GLDrawMesh( PLGMesh *mesh, QmGfxShaderProgram *program ) {
 		return;
 	}
 
-	//Ensure VAO/VBO/EBO are bound
-	XGL_CALL( glBindVertexArray( VAO[ 0 ] ) );
-	XGL_CALL( glBindBuffer( GL_ARRAY_BUFFER, mesh->buffers[ BUFFER_VERTEX_DATA ] ) );
-
-	if ( program->internal.v_position != -1 ) {
-		XGL_CALL( glEnableVertexAttribArray( program->internal.v_position ) );
-		XGL_CALL( glVertexAttribPointer( program->internal.v_position, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, position ) ) );
-	}
-	if ( program->internal.v_normal != -1 ) {
-		XGL_CALL( glEnableVertexAttribArray( program->internal.v_normal ) );
-		XGL_CALL( glVertexAttribPointer( program->internal.v_normal, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, normal ) ) );
-	}
-
-	if ( program->internal.v_uv != -1 )
-	{
-		for ( unsigned int i = 0; i < 4; ++i )
-		{
-			XGL_CALL( glEnableVertexAttribArray( program->internal.v_uv + i ) );
-			XGL_CALL( glVertexAttribPointer( program->internal.v_uv + i,
-			                                 2, GL_FLOAT, GL_FALSE,
-			                                 sizeof( PLGVertex ),
-			                                 ( const GLvoid * ) PL_OFFSETOF( PLGVertex, st ) + i * sizeof( QmMathVector2f ) ) );
-		}
-	}
-
-	if ( program->internal.v_colour != -1 ) {
-		XGL_CALL( glEnableVertexAttribArray( program->internal.v_colour ) );
-		XGL_CALL( glVertexAttribPointer( program->internal.v_colour, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, colour ) ) );
-	}
-	if ( program->internal.v_tangent != -1 ) {
-		XGL_CALL( glEnableVertexAttribArray( program->internal.v_tangent ) );
-		XGL_CALL( glVertexAttribPointer( program->internal.v_tangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, tangent ) ) );
-	}
-	if ( program->internal.v_bitangent != -1 ) {
-		XGL_CALL( glEnableVertexAttribArray( program->internal.v_bitangent ) );
-		XGL_CALL( glVertexAttribPointer( program->internal.v_bitangent, 3, GL_FLOAT, GL_FALSE, sizeof( PLGVertex ), ( const GLvoid * ) PL_OFFSETOF( PLGVertex, bitangent ) ) );
-	}
+	draw_setup_attributes( mesh, program );
 
 	//draw
 	GLuint mode = TranslatePrimitiveMode( mesh->primitive );
@@ -1401,6 +1403,8 @@ static void GLCreateShaderProgram( QmGfxShaderProgram *program ) {
 		return;
 	}
 
+	memset( program->internal.attributes, XGL_INVALID, sizeof( unsigned int ) * QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_MAX );
+
 	program->driver = gInterface->core->MAlloc( sizeof( OGLShaderProgram ), true );
 }
 
@@ -1529,12 +1533,12 @@ static void RegisterShaderProgramData( QmGfxShaderProgram *program ) {
 		return;
 	}
 
-	XGL_CALL( program->internal.v_position = glGetAttribLocation( program->internal.id, "pl_vposition" ) );
-	XGL_CALL( program->internal.v_normal = glGetAttribLocation( program->internal.id, "pl_vnormal" ) );
-	XGL_CALL( program->internal.v_uv = glGetAttribLocation( program->internal.id, "pl_vuv" ) );
-	XGL_CALL( program->internal.v_colour = glGetAttribLocation( program->internal.id, "pl_vcolour" ) );
-	XGL_CALL( program->internal.v_tangent = glGetAttribLocation( program->internal.id, "pl_vtangent" ) );
-	XGL_CALL( program->internal.v_bitangent = glGetAttribLocation( program->internal.id, "pl_vbitangent" ) );
+	XGL_CALL( program->internal.attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_POSITION ] = glGetAttribLocation( program->internal.id, "pl_vposition" ) );
+	XGL_CALL( program->internal.attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_NORMAL ] = glGetAttribLocation( program->internal.id, "pl_vnormal" ) );
+	XGL_CALL( program->internal.attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_ST0 ] = glGetAttribLocation( program->internal.id, "pl_vuv" ) );
+	XGL_CALL( program->internal.attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_COLOUR ] = glGetAttribLocation( program->internal.id, "pl_vcolour" ) );
+	XGL_CALL( program->internal.attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_TANGENT ] = glGetAttribLocation( program->internal.id, "pl_vtangent" ) );
+	XGL_CALL( program->internal.attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_BITANGENT ] = glGetAttribLocation( program->internal.id, "pl_vbitangent" ) );
 
 	XGL_CALL( ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_MODEL_MATRIX ] = glGetUniformLocation( program->internal.id, "pl_model" ) );
 	XGL_CALL( ( ( OGLShaderProgram * ) program->driver )->defaultUniforms[ OGL_DEFAULT_UNIFORM_VIEW_MATRIX ] = glGetUniformLocation( program->internal.id, "pl_view" ) );

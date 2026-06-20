@@ -243,14 +243,6 @@ typedef struct QmGfxShaderProgram
 	}           *uniforms;
 	unsigned int num_uniforms;
 
-	struct
-	{
-		char name[ 32 ];
-
-		unsigned int slot;
-	}           *attributes;
-	unsigned int num_attributes;
-
 	QmGfxShaderStage *stages[ QM_GFX_MAX_SHADER_STAGE_TYPES ];
 	unsigned int      num_stages;
 
@@ -258,13 +250,8 @@ typedef struct QmGfxShaderProgram
 
 	struct
 	{
-		unsigned int id;
-
-		PLGShaderAttribute v_position;
-		PLGShaderAttribute v_normal;
-		PLGShaderAttribute v_uv;
-		PLGShaderAttribute v_colour;
-		PLGShaderAttribute v_tangent, v_bitangent;
+		unsigned int       id;
+		PLGShaderAttribute attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_MAX ];
 	} internal;
 
 	void *driver;// driver specific data

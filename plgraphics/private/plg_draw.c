@@ -25,7 +25,7 @@ static unsigned int currentTriangle;
 static PLGMesh *meshes[ PLG_NUM_PRIMITIVES ];
 static PLGMesh *GetInternalMesh( PLGMeshPrimitive primitive ) {
 	if ( meshes[ primitive ] == NULL ) {
-		return ( meshes[ primitive ] = PlgCreateMesh( primitive, PLG_DRAW_DYNAMIC, MAXIMUM_STORAGE, MAXIMUM_STORAGE ) );
+		return ( meshes[ primitive ] = PlgCreateMesh( primitive, PLG_DRAW_STREAM, MAXIMUM_STORAGE, MAXIMUM_STORAGE ) );
 	}
 
 	PlgClearMesh( meshes[ primitive ] );

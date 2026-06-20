@@ -37,8 +37,10 @@ For more information, please refer to <http://unlicense.org>
 
 PL_EXTERN_C
 
-typedef struct PLCollisionRay {
+typedef struct PLCollisionRay
+{
 	QmMathVector3f origin, direction;
+	float          range;
 } PLCollisionRay;
 
 typedef struct PLCollisionAABB {
@@ -60,14 +62,10 @@ typedef struct PLCollision {
 	float penetration;
 } PLCollision;
 
-#define PlSetupCollisionRay( ORIGIN, DIRECTION ) \
-	( PLCollisionRay ) { ( ORIGIN ), ( DIRECTION ) }
 #define PL_COLLISION_AABB( ORIGIN, MINS, MAXS ) \
 	( PLCollisionAABB ) { ( ORIGIN ), ( MINS ), ( MAXS ) }
 #define PlSetupCollisionSphere( ORIGIN, RADIUS ) \
 	( PLCollisionSphere ) { ( ORIGIN ), ( RADIUS ) }
-#define PlSetupCollisionPlane( ORIGIN, NORMAL ) \
-	( PLCollisionPlane ) { ( ORIGIN ), ( NORMAL ) }
 
 QmMathVector3f PlGetAabbAbsOrigin( const PLCollisionAABB *bounds, QmMathVector3f origin );
 

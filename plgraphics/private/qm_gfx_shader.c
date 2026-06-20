@@ -61,7 +61,6 @@ static void shader_program_destroy( void *ptr )
 	CallGfxFunction( DestroyShaderProgram, self );
 
 	qm_os_memory_free( self->uniforms );
-	qm_os_memory_free( self->attributes );
 }
 
 QmGfxShaderProgram *qm_gfx_shader_program_create()
