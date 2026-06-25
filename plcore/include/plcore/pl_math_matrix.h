@@ -44,6 +44,7 @@ static inline PLMatrix4 PlInverseMatrix4( const PLMatrix4 *m );
 
 QmMathVector3f PlGetMatrix4Translation( const PLMatrix4 *m );
 QmMathVector3f PlGetMatrix4Angle( const PLMatrix4 *m );
+QmMathVector3f qm_math_matrix4_get_scale( const PLMatrix4 *self );
 
 QmMathVector2f PlConvertWorldToScreen( const QmMathVector3f *position, const PLMatrix4 *viewProjMatrix, const int *viewport, float *w, bool flip );
 QmMathVector3f PlConvertScreenToWorld( QmMathVector2f windowCoordinate, const PLMatrix4 *viewMatrix, const PLMatrix4 *projMatrix, const int *viewport );

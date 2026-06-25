@@ -167,8 +167,9 @@ PLMatrix4 PlRotateMatrix4( float angle, const QmMathVector3f *axis ) {
 	return m;
 }
 
-QmMathVector3f PlGetMatrix4Translation( const PLMatrix4 *m ) {
-	return qm_math_vector3f( m->pl_m4pos( 0, 3 ), m->pl_m4pos( 1, 3 ), m->pl_m4pos( 2, 3 ) );
+QmMathVector3f PlGetMatrix4Translation( const PLMatrix4 *m )
+{
+	return QM_MATH_VECTOR3F( m->mm[ 3 ][ 0 ], m->mm[ 3 ][ 1 ], m->mm[ 3 ][ 2 ] );
 }
 
 QmMathVector3f PlGetMatrix4Angle( const PLMatrix4 *m ) {
@@ -188,6 +189,15 @@ QmMathVector3f PlGetMatrix4Angle( const PLMatrix4 *m ) {
 		out.x = QM_MATH_RAD2DEG( atan2f( -m->m[ 9 ], m->m[ 10 ] ) );
 	}
 	return out;
+}
+
+QmMathVector3f qm_math_matrix4_get_scale( const PLMatrix4 *self )
+{
+	float sx = qm_math_vector3f_length( QM_MATH_VECTOR3F( self->mm[ 0 ][ 0 ], self->mm[ 0 ][ 1 ], self->mm[ 0 ][ 2 ] ) );
+	float sy = qm_math_vector3f_length( QM_MATH_VECTOR3F( self->mm[ 1 ][ 0 ], self->mm[ 1 ][ 1 ], self->mm[ 1 ][ 2 ] ) );
+	float sz = qm_math_vector3f_length( QM_MATH_VECTOR3F( self->mm[ 2 ][ 0 ], self->mm[ 2 ][ 1 ], self->mm[ 2 ][ 2 ] ) );
+
+	return QM_MATH_VECTOR3F( sx, sy, sz );
 }
 
 /****************************************
