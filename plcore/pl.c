@@ -40,11 +40,6 @@ PLArguments pl_arguments;
 void PlInitializeMatrixStacks_( void );
 
 PLFunctionResult PlInitialize( int argc, char **argv ) {
-	static bool is_initialized = false;
-	if ( !is_initialized ) {
-		PlInitConsole();
-	}
-
 	memset( &pl_arguments, 0, sizeof( PLArguments ) );
 	pl_arguments.num_arguments = ( unsigned int ) argc;
 	if ( pl_arguments.num_arguments > 0 ) {
@@ -57,8 +52,6 @@ PLFunctionResult PlInitialize( int argc, char **argv ) {
 
 	PlInitPackageSubSystem();
 	PlInitializeMatrixStacks_();
-
-	is_initialized = true;
 
 	return PL_RESULT_SUCCESS;
 }
@@ -120,8 +113,6 @@ const char *PlGetCommandLineArgumentValueByIndex( unsigned int index ) {
 
 void PlShutdown( void ) {
 	qm_fs_clear_mounted_locations();
-
-	PlShutdownConsole();
 }
 
 /*-------------------------------------------------------------------
@@ -354,9 +345,6 @@ static PLPluginExportTable exportTable = {
 
         /* pl_image.h */
         .GetImageSize = PlGetImageSize,
-
-        .AddLogLevel = PlAddLogLevel,
-        .LogMessage = PlLogMessage,
 
         .SkipWhitespace = qm_parse_skip_whitespace,
         .SkipLine = qm_parse_skip_line,

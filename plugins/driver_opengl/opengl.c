@@ -58,9 +58,9 @@ static int gl_version_major = 0;
 static int gl_version_minor = 0;
 
 #define XGL_VERSION( maj, min ) ( ( ( maj ) == gl_version_major && ( min ) <= gl_version_minor ) || ( maj ) < gl_version_major )
-#define XGL_LOG( ... )          gInterface->core->LogMessage( glLogLevel, __VA_ARGS__ )
+#define XGL_LOG( ... )          printf( __VA_ARGS__ )
 #if !defined( NDEBUG )
-#	define XGL_DEBUG( ... ) gInterface->core->LogMessage( glLogLevel, __VA_ARGS__ )
+#	define XGL_DEBUG( ... ) printf( __VA_ARGS__ )
 #else
 #	define XGL_DEBUG( ... )
 #endif

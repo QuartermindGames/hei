@@ -13,7 +13,6 @@
 #	include <dirent.h>
 #endif
 
-#include <plcore/pl_console.h>
 #include <plcore/pl_package.h>
 
 #include "filesystem_private.h"
@@ -1184,12 +1183,17 @@ QmFsFile *qm_fs_file_open_local( const char *path, bool cache )
 	{
 		file->data = QM_OS_MEMORY_NEW_( uint8_t, file->size );
 		file->pos  = file->data;
-		if ( fread( file->data, sizeof( uint8_t ), file->size, sysFile ) != file->size )
-		{
-			FSLog( "Failed to read complete file (%s)!\n", path );
-		}
+		size_t r   = fread( file->data, sizeof( uint8_t ), file->size, sysFile );
 
 		qm_fs_fclose( &sysFile );
+
+		if ( r != file->size )
+		{
+			qm_os_memory_free( file->data );
+			qm_os_memory_free( file );
+			PlReportErrorF( PL_RESULT_FILEREAD, "failed to read complete file (%lu != %lu)", r, file->size );
+			return nullptr;
+		}
 	}
 	else
 	{

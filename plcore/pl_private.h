@@ -39,7 +39,6 @@ PLFunctionResult PlInitFileSystem( void );
 void PlShutdownFileSystem( void );
 
 PLFunctionResult PlInitConsole( void );
-void PlShutdownConsole( void );
 
 void PlInitPackageSubSystem( void );
 

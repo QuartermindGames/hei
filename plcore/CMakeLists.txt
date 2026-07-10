@@ -37,7 +37,6 @@ file(
         pl.c
         pl_array_vector.c
         pl_compression.c
-        pl_console.c
         pl_filesystem.c
 
         pl_memory.c

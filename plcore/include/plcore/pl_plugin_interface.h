@@ -25,7 +25,6 @@ SOFTWARE.
 #pragma once
 
 #include <plcore/pl.h>
-#include <plcore/pl_console.h>
 #include <plcore/pl_package.h>
 #include <plcore/pl_image.h>
 
@@ -64,14 +63,6 @@ typedef struct PLPluginExportTable {
 	/** v2.0 ************************************************/
 
 	/**
-	 * CONSOLE API
-	 **/
-
-	int ( *AddLogLevel )( const char *prefix, QmMathColour4ub colour, bool status );
-	void ( *SetLogLevelStatus )( int id, bool status );
-	void ( *LogMessage )( int id, const char *msg, ... );
-
-	/**
 	 * SCRIPT API
 	 **/
 
@@ -86,8 +77,8 @@ typedef struct PLPluginExportTable {
 } PLPluginExportTable;
 
 /* be absolutely sure to change this whenever the API is updated! */
-#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 9
-#define PL_PLUGIN_INTERFACE_VERSION_MINOR 2
+#define PL_PLUGIN_INTERFACE_VERSION_MAJOR 10
+#define PL_PLUGIN_INTERFACE_VERSION_MINOR 0
 #define PL_PLUGIN_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PL_PLUGIN_INTERFACE_VERSION_MAJOR, PL_PLUGIN_INTERFACE_VERSION_MINOR }
 

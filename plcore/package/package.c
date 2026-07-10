@@ -2,8 +2,6 @@
 // Hei Platform Library
 // Copyright © 2017-2024 Mark E Sowden <hogsy@oldtimes-software.com>
 
-#include <plcore/pl_console.h>
-
 #include "package_private.h"
 #include "filesystem_private.h"
 
@@ -244,14 +242,14 @@ void PlExtractPackage( QmFsPackage *package, const char *path )
 		snprintf( writePath, sizeof( writePath ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, subPath );
 		if ( !PlCreatePath( writePath ) )
 		{
-			FSLog( "Failed to create path: %s\n", PlGetError() );
+			//FSLog( "Failed to create path: %s\n", PlGetError() );
 			continue;
 		}
 
 		QmFsFile *file = PlLoadPackageFileByIndex( package, i );
 		if ( file == nullptr )
 		{
-			FSLog( "Failed to load package file: %s\n", PlGetError() );
+			//FSLog( "Failed to load package file: %s\n", PlGetError() );
 			continue;
 		}
 		const void *p = qm_fs_file_get_data( file );
@@ -260,7 +258,7 @@ void PlExtractPackage( QmFsPackage *package, const char *path )
 		snprintf( writePath, sizeof( writePath ), PlPathEndsInSlash( path ) ? "%s%s" : "%s/%s", path, package->files[ i ].name );
 		if ( !PlWriteFile( writePath, p, package->files[ i ].size ) )
 		{
-			FSLog( "Failed to write package file: %s\n", PlGetError() );
+			//FSLog( "Failed to write package file: %s\n", PlGetError() );
 		}
 
 		PlCloseFile( file );

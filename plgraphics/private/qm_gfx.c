@@ -14,21 +14,11 @@ GfxState gfx_state;
 	INITIALIZATION
 ===========================*/
 
-int LOG_LEVEL_GRAPHICS = 0;
-
 void PlgInitializeInternalMeshes( void ); /* plg_draw.c */
 
 PLFunctionResult PlgInitializeGraphics( void )
 {
 	memset( &gfx_state, 0, sizeof( GfxState ) );
-
-	LOG_LEVEL_GRAPHICS = PlAddLogLevel( "plgraphics", ( QmMathColour4ub ) { 0, 255, 255, 255 },
-#if !defined( NDEBUG )
-	                                    true
-#else
-	                                    false
-#endif
-	);
 
 	PlgInitializeInternalMeshes();
 

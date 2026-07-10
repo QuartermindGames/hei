@@ -4,8 +4,6 @@
 
 #include "qmos/public/qm_os_memory.h"
 
-#include <plcore/pl_console.h>
-
 #include <plgraphics/plg.h>
 #include <plgraphics/plg_driver_interface.h>
 #include <plgraphics/plg_texture.h>
@@ -13,8 +11,7 @@
 PL_EXTERN_C
 
 #if !defined( NDEBUG )
-extern int LOG_LEVEL_GRAPHICS;
-#	define GfxLog( FORMAT, ... ) PlLogWFunction( LOG_LEVEL_GRAPHICS, FORMAT, ##__VA_ARGS__ )
+#	define GfxLog( FORMAT, ... ) printf( FORMAT, ##__VA_ARGS__ )
 #else
 #	define GfxLog( ... )
 #endif
