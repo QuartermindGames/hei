@@ -10,7 +10,7 @@
 
 #include "qmos/public/qm_os_memory.h"
 
-void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertices, QmMathVector2f textureOffset, QmMathVector2f textureScale )
+void PlgGenerateTextureCoordinates( QmGfxMeshVertex *vertices, unsigned int numVertices, QmMathVector2f textureOffset, QmMathVector2f textureScale )
 {
 	if ( textureScale.x == 0.0f || textureScale.y == 0.0f )
 	{
@@ -43,9 +43,12 @@ void PlgGenerateTextureCoordinates( PLGVertex *vertices, unsigned int numVertice
 	}
 }
 
-void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, unsigned int *indices, unsigned int numTriangles, bool perFace ) {
-	if ( perFace ) {
-		for ( unsigned int i = 0, idx = 0; i < numTriangles; ++i, idx += 3 ) {
+void PlgGenerateVertexNormals( QmGfxMeshVertex *vertices, unsigned int numVertices, unsigned int *indices, unsigned int numTriangles, bool perFace )
+{
+	if ( perFace )
+	{
+		for ( unsigned int i = 0, idx = 0; i < numTriangles; ++i, idx += 3 )
+		{
 			unsigned int a = indices[ idx ];
 			unsigned int b = indices[ idx + 1 ];
 			unsigned int c = indices[ idx + 2 ];
@@ -66,45 +69,41 @@ void PlgGenerateVertexNormals( PLGVertex *vertices, unsigned int numVertices, un
 	/* todo: normal generation per vertex */
 }
 
-QmMathVector3f PlgGenerateVertexNormal( QmMathVector3f a, QmMathVector3f b, QmMathVector3f c ) {
+QmMathVector3f PlgGenerateVertexNormal( QmMathVector3f a, QmMathVector3f b, QmMathVector3f c )
+{
 	QmMathVector3f x = qm_math_vector3f( c.x - b.x, c.y - b.y, c.z - b.z );
 	QmMathVector3f y = qm_math_vector3f( a.x - b.x, a.y - b.y, a.z - b.z );
 	return qm_math_vector3f_normalize( qm_math_vector3f_cross_product( x, y ) );
 }
 
-void PlgGenerateMeshNormals( PLGMesh *mesh, bool perFace ) {
-	assert( mesh );
-
-	PlgGenerateVertexNormals( mesh->vertices, mesh->num_verts, mesh->indices, mesh->num_triangles, perFace );
-}
-
-void PlgGenerateMeshTangentBasis( PLGMesh *mesh ) {
-	PlgGenerateTangentBasis( mesh->vertices, mesh->num_verts, mesh->indices, mesh->num_triangles );
-}
-
-void PlgGenerateVertexTangentBasis( PLGVertex *vertices, unsigned int numVertices ) {
-	for ( unsigned int i = 0; i < numVertices; ++i ) {
-		PLGVertex *v = &vertices[ i ];
+void PlgGenerateVertexTangentBasis( QmGfxMeshVertex *vertices, unsigned int numVertices )
+{
+	for ( unsigned int i = 0; i < numVertices; ++i )
+	{
+		QmGfxMeshVertex *v = &vertices[ i ];
 
 		QmMathVector3f up, forward;
 		PlAnglesAxes( v->normal, NULL, &up, &forward );
 
 		v->tangent = qm_math_vector3f_cross_product( v->normal, forward );
-		if ( qm_math_vector3f_length( v->tangent ) == 0 ) {
+		if ( qm_math_vector3f_length( v->tangent ) == 0 )
+		{
 			v->tangent = qm_math_vector3f_cross_product( v->normal, up );
 		}
 
-		v->tangent = qm_math_vector3f_normalize( v->tangent );
+		v->tangent   = qm_math_vector3f_normalize( v->tangent );
 		v->bitangent = qm_math_vector3f_normalize( qm_math_vector3f_cross_product( v->normal, v->tangent ) );
 	}
 }
 
 /* based on http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#computing-the-tangents-and-bitangents */
-void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles ) {
-	for ( unsigned int i = 0; i < numTriangles; i++, indices += 3 ) {
-		PLGVertex *a = &vertices[ indices[ 0 ] ];
-		PLGVertex *b = &vertices[ indices[ 1 ] ];
-		PLGVertex *c = &vertices[ indices[ 2 ] ];
+void PlgGenerateTangentBasis( QmGfxMeshVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles )
+{
+	for ( unsigned int i = 0; i < numTriangles; i++, indices += 3 )
+	{
+		QmGfxMeshVertex *a = &vertices[ indices[ 0 ] ];
+		QmGfxMeshVertex *b = &vertices[ indices[ 1 ] ];
+		QmGfxMeshVertex *c = &vertices[ indices[ 2 ] ];
 
 		/* edges of the triangle, aka, position delta */
 		QmMathVector3f deltaPos1 = qm_math_vector3f_sub( b->position, a->position );
@@ -117,7 +116,7 @@ void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, con
 		/* now actually compute the tangent and bitangent */
 		float r = 1.0f / ( deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x );
 
-		QmMathVector3f tangent = qm_math_vector3f_scale_float( qm_math_vector3f_sub( qm_math_vector3f_scale_float( deltaPos1, deltaUV2.y ), qm_math_vector3f_scale_float( deltaPos2, deltaUV1.y ) ), r );
+		QmMathVector3f tangent   = qm_math_vector3f_scale_float( qm_math_vector3f_sub( qm_math_vector3f_scale_float( deltaPos1, deltaUV2.y ), qm_math_vector3f_scale_float( deltaPos2, deltaUV1.y ) ), r );
 		QmMathVector3f bitangent = qm_math_vector3f_scale_float( qm_math_vector3f_add( qm_math_vector3f_scale_float( deltaPos1, -deltaUV2.x ), qm_math_vector3f_scale_float( deltaPos2, deltaUV1.x ) ), r );
 
 		a->tangent = b->tangent = c->tangent = tangent;
@@ -125,36 +124,42 @@ void PlgGenerateTangentBasis( PLGVertex *vertices, unsigned int numVertices, con
 	}
 }
 
-PLGMesh *PlgCreateMesh( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts ) {
+QmGfxMesh *PlgCreateMesh( QmGfxMeshPrimitive primitive, QmGfxMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts )
+{
 	return PlgCreateMeshInit( primitive, mode, num_tris, num_verts, NULL, NULL );
 }
 
-PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
-                            const unsigned int *indicies, const PLGVertex *vertices ) {
-	PLGMesh *mesh = ( PLGMesh * ) QM_OS_MEMORY_CALLOC( 1, sizeof( PLGMesh ) );
+QmGfxMesh *PlgCreateMeshInit( QmGfxMeshPrimitive primitive, QmGfxMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
+                            const unsigned int *indicies, const QmGfxMeshVertex *vertices )
+{
+	QmGfxMesh *mesh   = ( QmGfxMesh * ) QM_OS_MEMORY_CALLOC( 1, sizeof( QmGfxMesh ) );
 	mesh->primitive = primitive;
-	mesh->mode = mode;
+	mesh->mode      = mode;
 
-	if ( numTriangles > 0 ) {
-		if ( mesh->primitive == PLG_MESH_TRIANGLES ) {
+	if ( numTriangles > 0 )
+	{
+		if ( mesh->primitive == PLG_MESH_TRIANGLES )
+		{
 			unsigned int numIndices = numTriangles * 3; /* todo: this is too assumptious... */
-			mesh->maxIndices = numIndices;
-			mesh->indices = QM_OS_MEMORY_CALLOC( mesh->maxIndices, sizeof( unsigned int ) );
-			if ( indicies != NULL ) {
+			mesh->maxIndices        = numIndices;
+			mesh->indices           = QM_OS_MEMORY_CALLOC( mesh->maxIndices, sizeof( unsigned int ) );
+			if ( indicies != NULL )
+			{
 				memcpy( mesh->indices, indicies, sizeof( unsigned int ) * numIndices );
-				mesh->num_indices = numIndices;
+				mesh->num_indices   = numIndices;
 				mesh->num_triangles = numTriangles;
-				mesh->range = mesh->num_indices;
+				mesh->range         = mesh->num_indices;
 			}
 		}
 	}
 
 	mesh->maxVertices = numVerts;
-	mesh->vertices = QM_OS_MEMORY_NEW_( PLGVertex, mesh->maxVertices );
+	mesh->vertices    = QM_OS_MEMORY_NEW_( QmGfxMeshVertex, mesh->maxVertices );
 
 	// If the vertices passed in aren't null, copy them into our vertex list
-	if ( vertices != NULL && mesh->num_verts > 0 ) {
-		memcpy( mesh->vertices, vertices, sizeof( PLGVertex ) * numVerts );
+	if ( vertices != NULL && mesh->num_verts > 0 )
+	{
+		memcpy( mesh->vertices, vertices, sizeof( QmGfxMeshVertex ) * numVerts );
 		mesh->num_verts = numVerts;
 	}
 
@@ -165,8 +170,10 @@ PLGMesh *PlgCreateMeshInit( PLGMeshPrimitive primitive, PLGMeshDrawMode mode, un
 	return mesh;
 }
 
-void PlgDestroyMesh( PLGMesh *mesh ) {
-	if ( mesh == NULL ) {
+void PlgDestroyMesh( QmGfxMesh *mesh )
+{
+	if ( mesh == NULL )
+	{
 		return;
 	}
 
@@ -180,85 +187,71 @@ void PlgDestroyMesh( PLGMesh *mesh ) {
 	qm_os_memory_free( mesh );
 }
 
-void PlgClearMesh( PLGMesh *mesh ) {
-	PlgClearMeshVertices( mesh );
-	PlgClearMeshTriangles( mesh );
-
-	mesh->numSubMeshes = 0;
-}
-
-void PlgClearMeshVertices( PLGMesh *mesh ) {
+void PlgClearMesh( QmGfxMesh *mesh )
+{
 	mesh->num_verts = 0;
-	mesh->isDirty = true;
-}
-
-void PlgClearMeshTriangles( PLGMesh *mesh ) {
 	mesh->range = mesh->start = 0;
 	mesh->num_triangles = mesh->num_indices = 0;
+
+	mesh->numSubMeshes = 0;
+
 	mesh->isDirty = true;
 }
 
-void PlgSetMeshTrianglePosition( PLGMesh *mesh, unsigned int *index, unsigned int x, unsigned int y, unsigned int z ) {
-	assert( *index < mesh->maxIndices );
-	mesh->indices[ ( *index )++ ] = x;
-	mesh->indices[ ( *index )++ ] = y;
-	mesh->indices[ ( *index )++ ] = z;
-}
-
-void PlgSetMeshVertexPosition( PLGMesh *mesh, unsigned int index, const QmMathVector3f *vector ) {
+void PlgSetMeshVertexPosition( QmGfxMesh *mesh, unsigned int index, const QmMathVector3f *vector )
+{
 	assert( index < mesh->maxVertices );
 	mesh->vertices[ index ].position = *vector;
 }
 
-void PlgSetMeshVertexNormal( PLGMesh *mesh, unsigned int index, const QmMathVector3f *vector ) {
+void PlgSetMeshVertexNormal( QmGfxMesh *mesh, unsigned int index, const QmMathVector3f *vector )
+{
 	assert( index < mesh->maxVertices );
 	mesh->vertices[ index ].normal = *vector;
 }
 
-void PlgSetMeshVertexST( PLGMesh *mesh, unsigned int index, float s, float t ) {
+void PlgSetMeshVertexST( QmGfxMesh *mesh, unsigned int index, float s, float t )
+{
 	assert( index < mesh->maxVertices );
 	mesh->vertices[ index ].st[ 0 ] = qm_math_vector2f( s, t );
 }
 
-void PlgSetMeshVertexSTv( PLGMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st ) {
+void PlgSetMeshVertexSTv( QmGfxMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st )
+{
 	size += index;
-	if ( size > mesh->num_verts ) {
+	if ( size > mesh->num_verts )
+	{
 		size -= ( size - mesh->num_verts );
 	}
 
-	for ( unsigned int i = index; i < size; i++ ) {
+	for ( unsigned int i = index; i < size; i++ )
+	{
 		mesh->vertices[ i ].st[ unit ].x = st[ 0 ];
 		mesh->vertices[ i ].st[ unit ].y = st[ 1 ];
 	}
 }
 
-void PlgSetMeshVertexColour( PLGMesh *mesh, unsigned int index, const QmMathColour4ub *colour ) {
+void PlgSetMeshVertexColour( QmGfxMesh *mesh, unsigned int index, const QmMathColour4ub *colour )
+{
 	assert( index < mesh->maxVertices );
 	mesh->vertices[ index ].colour = *colour;
-}
-
-void PlgSetMeshUniformColour( PLGMesh *mesh, const QmMathColour4ub *colour ) {
-	for ( unsigned int i = 0; i < mesh->num_verts; ++i ) {
-		PlgSetMeshVertexColour( mesh, i, colour );
-	}
-}
-
-void PlgSetMeshShaderProgram( PLGMesh *mesh, QmGfxShaderProgram *program ) {
-	mesh->shader_program = program;
 }
 
 /**
  * Sets the draw scale for the particular primitive type.
  * Only applies for POINTS / LINES.
  */
-void PlgSetMeshPrimitiveScale( PLGMesh *mesh, float scale ) {
+void PlgSetMeshPrimitiveScale( QmGfxMesh *mesh, float scale )
+{
 	mesh->primitiveScale = scale;
 }
 
-unsigned int PlgAddMeshVertex( PLGMesh *mesh, const QmMathVector3f *position, const QmMathVector3f *normal, const QmMathColour4ub *colour, const QmMathVector2f *st ) {
+unsigned int PlgAddMeshVertex( QmGfxMesh *mesh, const QmMathVector3f *position, const QmMathVector3f *normal, const QmMathColour4ub *colour, const QmMathVector2f *st )
+{
 	unsigned int vertexIndex = mesh->num_verts++;
-	if ( vertexIndex >= mesh->maxVertices ) {
-		mesh->vertices = qm_os_memory_realloc( mesh->vertices, ( mesh->maxVertices += 16 ) * sizeof( PLGVertex ) );
+	if ( vertexIndex >= mesh->maxVertices )
+	{
+		mesh->vertices = qm_os_memory_realloc( mesh->vertices, ( mesh->maxVertices += 16 ) * sizeof( QmGfxMeshVertex ) );
 	}
 
 	PlgSetMeshVertexPosition( mesh, vertexIndex, position );
@@ -269,17 +262,19 @@ unsigned int PlgAddMeshVertex( PLGMesh *mesh, const QmMathVector3f *position, co
 	return vertexIndex;
 }
 
-unsigned int PlgAddMeshTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, unsigned int z ) {
+unsigned int PlgAddMeshTriangle( QmGfxMesh *mesh, unsigned int x, unsigned int y, unsigned int z )
+{
 	unsigned int triangleIndex = mesh->num_indices;
 
 	mesh->num_indices += 3;
-	if ( mesh->num_indices >= mesh->maxIndices ) {
+	if ( mesh->num_indices >= mesh->maxIndices )
+	{
 		mesh->indices = qm_os_memory_realloc( mesh->indices, ( mesh->maxIndices += 16 ) * sizeof( unsigned int ) );
 	}
 
 	mesh->range = mesh->num_indices;
 
-	mesh->indices[ triangleIndex ] = x;
+	mesh->indices[ triangleIndex ]     = x;
 	mesh->indices[ triangleIndex + 1 ] = y;
 	mesh->indices[ triangleIndex + 2 ] = z;
 
@@ -289,14 +284,24 @@ unsigned int PlgAddMeshTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, 
 }
 
 /* todo: combine with Draw? */
-void PlgUploadMesh( PLGMesh *mesh ) {
+void PlgUploadMesh( QmGfxMesh *mesh )
+{
 	CallGfxFunction( UploadMesh, mesh, gfx_state.current_program );
 }
 
-void PlgDrawMesh( PLGMesh *mesh ) {
-	if ( gfx_state.current_program != NULL ) {
-		PlgSetShaderUniformValue( gfx_state.current_program, "pl_view", gfx_state.view_matrix.m, false );
-		PlgSetShaderUniformValue( gfx_state.current_program, "pl_proj", gfx_state.projection_matrix.m, false );
+void PlgDrawMesh( QmGfxMesh *mesh )
+{
+	if ( gfx_state.current_program != NULL )
+	{
+		int slot;
+		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( gfx_state.current_program, "pl_view" ) ) != -1 )
+		{
+			qm_gfx_shader_program_set_uniform( gfx_state.current_program, slot, gfx_state.view_matrix.m, false );
+		}
+		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( gfx_state.current_program, "pl_proj" ) ) != -1 )
+		{
+			qm_gfx_shader_program_set_uniform( gfx_state.current_program, slot, gfx_state.projection_matrix.m, false );
+		}
 	}
 
 	CallGfxFunction( DrawMesh, mesh, gfx_state.current_program );
@@ -305,12 +310,13 @@ void PlgDrawMesh( PLGMesh *mesh ) {
 /**
  * Draws a collection of subsets of the given mesh.
  */
-void PlgDrawSubMeshes( PLGMesh *mesh, int32_t *firstSubMeshes, int32_t *subMeshes, uint32_t numSubMeshes ) {
+void PlgDrawSubMeshes( QmGfxMesh *mesh, int32_t *firstSubMeshes, int32_t *subMeshes, uint32_t numSubMeshes )
+{
 	// urgh, this is just a botch for now,
 	// eventually we should introduce a proper call for it, probably
-	mesh->subMeshes = subMeshes;
+	mesh->subMeshes      = subMeshes;
 	mesh->firstSubMeshes = firstSubMeshes;
-	mesh->numSubMeshes = numSubMeshes;
+	mesh->numSubMeshes   = numSubMeshes;
 
 	PlgDrawMesh( mesh );
 
@@ -318,6 +324,7 @@ void PlgDrawSubMeshes( PLGMesh *mesh, int32_t *firstSubMeshes, int32_t *subMeshe
 	mesh->numSubMeshes = 0;
 }
 
-void PlgDrawInstancedMesh( PLGMesh *mesh, const PLMatrix4 *transforms, unsigned int instanceCount ) {
+void PlgDrawInstancedMesh( QmGfxMesh *mesh, const PLMatrix4 *transforms, unsigned int instanceCount )
+{
 	CallGfxFunction( DrawInstancedMesh, mesh, gfx_state.current_program, transforms, instanceCount );
 }

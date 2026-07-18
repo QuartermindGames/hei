@@ -32,22 +32,26 @@ PL_EXTERN_C
 
 #if !defined( PL_COMPILE_PLUGIN )
 
+//TODO: all of this is going to go!
+
+typedef struct PLGPolygon PLGPolygon;
+
 extern PLGPolygon *PlgCreatePolygon( QmGfxTexture *texture, QmMathVector2f textureOffset, QmMathVector2f textureScale, float textureRotation );
 extern void PlgDestroyPolygon( PLGPolygon *polygon );
 
 extern void PlgGeneratePolygonNormals( PLGPolygon *polygon );
 
-extern void PlgAddPolygonVertex( PLGPolygon *polygon, const PLGVertex *vertex );
+extern void PlgAddPolygonVertex( PLGPolygon *polygon, const QmGfxMeshVertex *vertex );
 extern void PlgRemovePolygonVertex( PLGPolygon *polygon, unsigned int vertIndex );
 
 extern unsigned int PlgGetNumOfPolygonVertices( const PLGPolygon *polygon );
-extern PLGVertex *PlgGetPolygonVertex( PLGPolygon *polygon, unsigned int vertIndex );
-extern PLGVertex *PlgGetPolygonVertices( PLGPolygon *polygon, unsigned int *numVertices );
+extern QmGfxMeshVertex *PlgGetPolygonVertex( PLGPolygon *polygon, unsigned int vertIndex );
+extern QmGfxMeshVertex *PlgGetPolygonVertices( PLGPolygon *polygon, unsigned int *numVertices );
 extern QmGfxTexture *PlgGetPolygonTexture( PLGPolygon *polygon );
 extern QmMathVector3f PlgGetPolygonFaceNormal( const PLGPolygon *polygon );
 extern unsigned int PlgGetNumOfPolygonTriangles( const PLGPolygon *polygon );
 extern unsigned int *PlgConvertPolygonToTriangles( const PLGPolygon *polygon, unsigned int *numTriangles );
-extern PLGMesh *PlgConvertPolygonToMesh( const PLGPolygon *polygon );
+extern QmGfxMesh *PlgConvertPolygonToMesh( const PLGPolygon *polygon );
 
 #endif
 

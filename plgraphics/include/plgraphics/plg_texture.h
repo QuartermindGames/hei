@@ -9,7 +9,7 @@
 #include <plcore/pl_image.h>
 
 // Texture Environment Modes
-typedef enum PLGTextureEnvironmentMode
+typedef enum PLGTextureEnvironmentMode : uint8_t
 {
 	PLG_TEXTUREMODE_ADD,
 	PLG_TEXTUREMODE_MODULATE,
@@ -19,7 +19,7 @@ typedef enum PLGTextureEnvironmentMode
 	PLG_TEXTUREMODE_COMBINE
 } PLGTextureEnvironmentMode;
 
-typedef enum PLGTextureWrapMode
+typedef enum QmGfxTextureWrapMode : uint8_t
 {
 	PLG_TEXTURE_WRAP_MODE_REPEAT,
 	PLG_TEXTURE_WRAP_MODE_MIRRORED_REPEAT,
@@ -29,7 +29,7 @@ typedef enum PLGTextureWrapMode
 	PLG_MAX_TEXTURE_WRAP_MODES
 } QmGfxTextureWrapMode;
 
-typedef enum PLGTextureFilter
+typedef enum QmGfxTextureFilter : uint8_t
 {
 	PLG_TEXTURE_FILTER_MIPMAP_NEAREST,
 	PLG_TEXTURE_FILTER_MIPMAP_LINEAR,

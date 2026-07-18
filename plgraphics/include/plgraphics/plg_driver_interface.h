@@ -23,7 +23,7 @@ typedef struct QmGfxShaderProgram QmGfxShaderProgram;
  * either audio/video.
  */
 
-#define PLG_INTERFACE_VERSION_MAJOR 8
+#define PLG_INTERFACE_VERSION_MAJOR 9
 #define PLG_INTERFACE_VERSION_MINOR 0
 #define PLG_INTERFACE_VERSION \
 	( uint16_t[ 2 ] ) { PLG_INTERFACE_VERSION_MAJOR, PLG_INTERFACE_VERSION_MINOR }
@@ -58,8 +58,6 @@ typedef struct PLGDriverImportTable
 
 	/* hw information */
 
-	bool ( *SupportsHWShaders )( void );
-
 	void ( *GetMaxTextureUnits )( unsigned int *num_units );
 	void ( *GetMaxTextureSize )( unsigned int *s );
 
@@ -84,11 +82,11 @@ typedef struct PLGDriverImportTable
 	void ( *StencilMask )( unsigned int mask );
 
 	// Mesh
-	void ( *CreateMesh )( PLGMesh *mesh );
-	void ( *UploadMesh )( PLGMesh *mesh, QmGfxShaderProgram *program );
-	void ( *DrawMesh )( PLGMesh *mesh, QmGfxShaderProgram *program );
-	void ( *DrawInstancedMesh )( PLGMesh *mesh, QmGfxShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount );
-	void ( *DeleteMesh )( PLGMesh *mesh );
+	void ( *CreateMesh )( QmGfxMesh *mesh );
+	void ( *UploadMesh )( QmGfxMesh *mesh, QmGfxShaderProgram *program );
+	void ( *DrawMesh )( QmGfxMesh *mesh, QmGfxShaderProgram *program );
+	void ( *DrawInstancedMesh )( QmGfxMesh *mesh, QmGfxShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount );
+	void ( *DeleteMesh )( QmGfxMesh *mesh );
 
 	// Framebuffer
 	bool ( *CreateFrameBuffer )( QmGfxFramebuffer *buffer );
@@ -108,11 +106,10 @@ typedef struct PLGDriverImportTable
 	// Texture
 	void ( *CreateTexture )( QmGfxTexture *texture );
 	void ( *DeleteTexture )( QmGfxTexture *texture );
-	void ( *BindTexture )( const QmGfxTexture *texture );
+	void ( *BindTexture )( const QmGfxTexture *texture, unsigned int unit );
 	void ( *UploadTexture )( QmGfxTexture *texture, const QmImage *upload );
 	void ( *SetTextureAnisotropy )( QmGfxTexture *texture, uint32_t value );
 	void ( *SetTextureFilter )( QmGfxTexture *texture, QmGfxTextureFilter filter );
-	void ( *ActiveTexture )( unsigned int target );
 
 	/* viewport */
 	void ( *ClipViewport )( int x, int y, int width, int height );

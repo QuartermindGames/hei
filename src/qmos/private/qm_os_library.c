@@ -7,6 +7,8 @@
 #include "qmos/public/qm_os_memory.h"
 #include "qmos/public/qm_os_string.h"
 
+#include <stdio.h>
+
 #if QM_OS_SYSTEM == QM_OS_SYSTEM_MACOS
 #	include <dlfcn.h>
 #elif QM_OS_SYSTEM == QM_OS_SYSTEM_WINDOWS
@@ -31,10 +33,12 @@ QmOsLibrary *qm_os_library_load( const char *path, bool appendPath )
 	//}
 #else /* unix */
 	void *libraryHandle = dlopen( fullPath, RTLD_LAZY );
-	//if ( libraryHandle == NULL )
-	//{
-	//	PlReportErrorF( PL_RESULT_INVALID_PARM1, "failed to load library (%s)", dlerror() );
-	//}
+#if !defined( NDEBUG )
+	if ( libraryHandle == NULL )
+	{
+		fprintf( stderr, "Failed to load library: %s\n", dlerror() );
+	}
+#endif
 #endif
 
 	qm_os_memory_free( fullPath );

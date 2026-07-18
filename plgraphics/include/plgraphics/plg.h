@@ -94,29 +94,8 @@ typedef enum PLGStencilFace
 	PLG_STENCIL_FACE_FRONTANDBACK,
 } PLGStencilFace;
 
-//-----------------
-// Lighting
-
-typedef enum PLGLightType
-{
-	PLG_LIGHT_TYPE_SPOT,// Spotlight
-	PLG_LIGHT_TYPE_OMNI // Omni-directional
-} PLGLightType;
-
-typedef struct PLGLight
-{
-	QmMathVector3f position;
-	QmMathVector3f angles;
-
-	QmMathColour4ub colour;
-
-	PLGLightType type;
-} PLGLight;
-
-typedef struct PLGPolygon PLGPolygon;
-typedef struct PLGVertex  PLGVertex;
-typedef struct PLGMesh    PLGMesh;
-typedef struct PLGCamera  PLGCamera;
+typedef struct QmGfxMeshVertex QmGfxMeshVertex;
+typedef struct QmGfxMesh       QmGfxMesh;
 
 typedef enum PLGCompareFunction
 {
@@ -164,26 +143,26 @@ typedef enum QmGfxShaderUniformType : uint8_t
 
 	QM_GFX_SHADER_UNIFORM_TYPE_FLOAT,
 	QM_GFX_SHADER_UNIFORM_TYPE_INT,
-	PLG_UNIFORM_UINT,
+	QM_GFX_SHADER_UNIFORM_TYPE_UINT,
 	QM_GFX_SHADER_UNIFORM_TYPE_BOOL,
-	PLG_UNIFORM_DOUBLE,
+	QM_GFX_SHADER_UNIFORM_TYPE_DOUBLE,
 
 	/* textures */
-	PLG_UNIFORM_SAMPLER1D,
-	PLG_UNIFORM_SAMPLER2D,
-	PLG_UNIFORM_SAMPLER3D,
-	PLG_UNIFORM_SAMPLERCUBE,
-	PLG_UNIFORM_SAMPLER1DSHADOW,
-	PLG_UNIFORM_SAMPLER2DSHADOW,
+	QM_GFX_SHADER_UNIFORM_TYPE_SAMPLER1D,
+	QM_GFX_SHADER_UNIFORM_TYPE_SAMPLER2D,
+	QM_GFX_SHADER_UNIFORM_TYPE_SAMPLER3D,
+	QM_GFX_SHADER_UNIFORM_TYPE_SAMPLERCUBE,
+	QM_GFX_SHADER_UNIFORM_TYPE_SAMPLER1DSHADOW,
+	QM_GFX_SHADER_UNIFORM_TYPE_SAMPLER2DSHADOW,
 
 	/* vectors */
-	PLG_UNIFORM_VEC2,
-	PLG_UNIFORM_VEC3,
-	PLG_UNIFORM_VEC4,
+	QM_GFX_SHADER_UNIFORM_TYPE_VEC2,
+	QM_GFX_SHADER_UNIFORM_TYPE_VEC3,
+	QM_GFX_SHADER_UNIFORM_TYPE_VEC4,
 
 	/* matrices */
-	PLG_UNIFORM_MAT3,
-	PLG_UNIFORM_MAT4,
+	QM_GFX_SHADER_UNIFORM_TYPE_MAT3,
+	QM_GFX_SHADER_UNIFORM_TYPE_MAT4,
 
 	QM_GFX_MAX_SHADER_UNIFORM_TYPES
 } QmGfxShaderUniformType;
@@ -250,7 +229,6 @@ typedef struct QmGfxShaderProgram
 
 	struct
 	{
-		unsigned int       id;
 		PLGShaderAttribute attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_MAX ];
 	} internal;
 
@@ -296,19 +274,14 @@ bool qm_gfx_shader_program_link( QmGfxShaderProgram *self );
  *
  * If it fails to find the uniform it'll return '-1'.
  */
-int qm_gfx_shader_program_get_uniform_slot( QmGfxShaderProgram *program, const char *name );
+int qm_gfx_shader_program_get_uniform_slot( QmGfxShaderProgram *self, const char *name );
 
 QmGfxShaderUniformType qm_gfx_shader_program_get_uniform_type( const QmGfxShaderProgram *self, int slot );
-unsigned int           PlgGetNumShaderUniformElements( const QmGfxShaderProgram *program, int slot );
+unsigned int           qm_gfx_shader_program_get_num_uniform_elements( const QmGfxShaderProgram *self, int slot );
 
-void PlgSetShaderUniformDefaultValueByIndex( QmGfxShaderProgram *program, int slot, const void *defaultValue );
-void PlgSetShaderUniformDefaultValue( QmGfxShaderProgram *program, const char *name, const void *defaultValue );
-void PlgSetShaderUniformToDefaultByIndex( QmGfxShaderProgram *program, int slot );
-void PlgSetShaderUniformToDefault( QmGfxShaderProgram *program, const char *name );
-void PlgSetShaderUniformsToDefault( QmGfxShaderProgram *program );
-
-void qm_gfx_shader_set_uniform_value_by_index( QmGfxShaderProgram *program, int slot, const void *value, bool transpose );
-void PlgSetShaderUniformValue( QmGfxShaderProgram *program, const char *name, const void *value, bool transpose );
+void qm_gfx_shader_program_set_uniform_default( QmGfxShaderProgram *self, int slot, const void *defaultValue );
+void qm_gfx_shader_program_set_uniform_to_default( QmGfxShaderProgram *self, int slot );
+void qm_gfx_shader_program_set_uniform( QmGfxShaderProgram *self, int slot, const void *value, bool transpose );
 
 /**
  * allocates a new shader program in memory and generates it on the GPU, if applicable.
@@ -318,6 +291,11 @@ void PlgSetShaderUniformValue( QmGfxShaderProgram *program, const char *name, co
  */
 QmGfxShaderProgram *qm_gfx_shader_program_create();
 
+/**
+ * returns the currently active shader program.
+ *
+ * @return pointer to the currently active shader program.
+ */
 QmGfxShaderProgram *PlgGetCurrentShaderProgram( void );
 
 /**
@@ -328,6 +306,14 @@ QmGfxShaderProgram *PlgGetCurrentShaderProgram( void );
  */
 void PlgSetShaderProgram( QmGfxShaderProgram *program );
 
+/**
+ * checks whether the given shader program is currently
+ * enabled - meaning it will be used in any subsequent draw
+ * calls.
+ *
+ * @param program
+ * @return true if the program is equal to that currently enabled.
+ */
 bool PlgIsShaderProgramEnabled( QmGfxShaderProgram *program );
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -343,8 +329,6 @@ const char *PlgGetHWExtensions( void );
 const char *PlgGetHWRenderer( void );
 const char *PlgGetHWVendor( void );
 const char *PlgGetHWVersion( void );
-
-bool PlgSupportsHWShaders( void );
 
 void PlgSetCullMode( PLGCullMode mode );
 void PlgSetBlendMode( PLGBlend a, PLGBlend b );

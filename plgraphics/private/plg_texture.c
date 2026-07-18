@@ -21,32 +21,9 @@ QmGfxTexture *qm_gfx_texture_create( const QmGfxTextureType type )
 	return texture;
 }
 
-static void set_texture_unit( unsigned int target )
-{
-	if ( target == gfx_state.current_textureunit )
-	{
-		return;
-	}
-
-	if ( target > qm_gfx_get_max_texture_units() )
-	{
-		GfxLog( "Attempted to select a texture image unit beyond what's supported by your hardware! (%i)\n",
-		        target );
-		return;
-	}
-
-	CallGfxFunction( ActiveTexture, target );
-
-	gfx_state.current_textureunit = target;
-}
-
 void qm_gfx_texture_set( const QmGfxTexture *self, unsigned int tmu )
 {
-	set_texture_unit( tmu );
-
-	CallGfxFunction( BindTexture, self );
-
-	set_texture_unit( 0 );
+	CallGfxFunction( BindTexture, self, tmu );
 }
 
 // todo, hook this up with var
@@ -75,19 +52,6 @@ void qm_gfx_texture_set_wrap_mode( QmGfxTexture *self, QmGfxTextureWrapMode wrap
 	CallGfxFunction( SetTextureWrapMode, self, wrapMode );
 }
 
-/* todo: kill this, favor SetTexture */
-static void BindTexture( const QmGfxTexture *texture )
-{
-	unsigned int unitIndex = gfx_state.current_textureunit;
-	if ( unitIndex >= qm_gfx_get_max_texture_units() )
-	{
-		/* todo: should we let user know ... ? */
-		return;
-	}
-
-	CallGfxFunction( BindTexture, texture );
-}
-
 void qm_gfx_texture_set_flags( QmGfxTexture *self, unsigned int flags )
 {
 	self->flags = flags;
@@ -109,11 +73,7 @@ bool qm_gfx_texture_upload( QmGfxTexture *self, const QmImage *upload )
 		self->filter = PLG_TEXTURE_FILTER_NEAREST;
 	}
 
-	BindTexture( self );
-
 	CallGfxFunction( UploadTexture, self, upload );
-
-	BindTexture( nullptr );
 
 	return true;
 }

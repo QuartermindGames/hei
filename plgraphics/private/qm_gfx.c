@@ -14,13 +14,9 @@ GfxState gfx_state;
 	INITIALIZATION
 ===========================*/
 
-void PlgInitializeInternalMeshes( void ); /* plg_draw.c */
-
 PLFunctionResult PlgInitializeGraphics( void )
 {
 	memset( &gfx_state, 0, sizeof( GfxState ) );
-
-	PlgInitializeInternalMeshes();
 
 	return PL_RESULT_SUCCESS;
 }
@@ -58,11 +54,6 @@ void qm_gfx_debug_pop_group_marker( void )
 /*===========================
 	HARDWARE INFORMATION
 ===========================*/
-
-bool PlgSupportsHWShaders( void )
-{
-	CallReturningGfxFunction( SupportsHWShaders, false );
-}
 
 /* todo: move into generic GET handler */
 unsigned int qm_gfx_get_max_texture_units( void )

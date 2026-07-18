@@ -47,17 +47,6 @@ typedef struct GfxState {
 	unsigned int hw_maxtextureunits;
 	unsigned int hw_maxtextureanistropy;
 
-	// Lighting
-
-	unsigned int num_lights;
-
-	// Cameras
-
-	PLGCamera **cameras;
-
-	unsigned int num_cameras;
-	unsigned int max_cameras;
-
 	PLMatrix4 projection_matrix;
 	PLMatrix4 view_matrix;
 

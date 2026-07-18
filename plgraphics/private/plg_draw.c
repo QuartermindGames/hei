@@ -15,24 +15,24 @@
  * some higher-level library?
  ****************************************/
 
-static PLGMesh *currentDynamicMesh;
+static QmGfxMesh *currentDynamicMesh;
 static unsigned int currentVertex;
 
 static unsigned int currentTriangle;
 
 #define MAXIMUM_STORAGE 4096
 
-static PLGMesh *meshes[ PLG_NUM_PRIMITIVES ];
-static PLGMesh *GetInternalMesh( PLGMeshPrimitive primitive ) {
+static QmGfxMesh *meshes[ PLG_NUM_PRIMITIVES ];
+static QmGfxMesh *GetInternalMesh( QmGfxMeshPrimitive primitive ) {
 	if ( meshes[ primitive ] == NULL ) {
-		return ( meshes[ primitive ] = PlgCreateMesh( primitive, PLG_DRAW_STREAM, MAXIMUM_STORAGE, MAXIMUM_STORAGE ) );
+		return ( meshes[ primitive ] = PlgCreateMesh( primitive, QM_GFX_MESH_DRAW_MODE_STREAM, MAXIMUM_STORAGE, MAXIMUM_STORAGE ) );
 	}
 
 	PlgClearMesh( meshes[ primitive ] );
 	return meshes[ primitive ];
 }
 
-PLGMesh *PlgImmBegin( PLGMeshPrimitive primitive ) {
+QmGfxMesh *PlgImmBegin( QmGfxMeshPrimitive primitive ) {
 	currentDynamicMesh = GetInternalMesh( primitive );
 	PlgClearMesh( currentDynamicMesh );
 	PlgSetMeshPrimitiveScale( currentDynamicMesh, 1.0f );
@@ -69,10 +69,10 @@ void PlgImmDraw( void ) {
 	if ( program ) {
 		int slot;
 		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_model" ) ) >= 0 ) {
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
+			qm_gfx_shader_program_set_uniform( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
 		}
 		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_texture" ) ) >= 0 ) {
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, PlGetMatrix( PL_TEXTURE_MATRIX ), false );
+			qm_gfx_shader_program_set_uniform( program, slot, PlGetMatrix( PL_TEXTURE_MATRIX ), false );
 		}
 	}
 
@@ -80,28 +80,20 @@ void PlgImmDraw( void ) {
 	PlgDrawMesh( currentDynamicMesh );
 }
 
-unsigned int PlgPushTriangle( PLGMesh *mesh, unsigned int x, unsigned int y, unsigned int z ) {
+unsigned int PlgPushTriangle( QmGfxMesh *mesh, unsigned int x, unsigned int y, unsigned int z ) {
 	return PlgAddMeshTriangle( mesh, x, y, z );
 }
 
-unsigned int PlgPushVertex3f( PLGMesh *mesh, float x, float y, float z ) {
+unsigned int PlgPushVertex3f( QmGfxMesh *mesh, float x, float y, float z ) {
 	return PlgAddMeshVertex( mesh, &QM_MATH_VECTOR3F( x, y, z ), &QM_MATH_VECTOR3F_ZERO, &PL_COLOUR_WHITE, &QM_MATH_VECTOR2F_ZERO );
 }
 
-unsigned int PlgPushVertex3fv( PLGMesh *mesh, const QmMathVector3f *vec ) {
-	return PlgAddMeshVertex( mesh, vec, &QM_MATH_VECTOR3F_ZERO, &PL_COLOUR_WHITE, &QM_MATH_VECTOR2F_ZERO );
-}
-
-void PlgColour4bv( PLGMesh *mesh, const QmMathColour4ub *col ) {
+void PlgColour4bv( QmGfxMesh *mesh, const QmMathColour4ub *col ) {
 	PlgSetMeshVertexColour( mesh, mesh->num_verts - 1, col );
 }
 
 /****************************************
  ****************************************/
-
-void PlgInitializeInternalMeshes( void ) {
-	QM_OS_ZERO_( meshes );
-}
 
 void PlgClearInternalMeshes( void ) {
 	for ( unsigned int i = 0; i < PLG_NUM_PRIMITIVES; ++i ) {
@@ -112,41 +104,6 @@ void PlgClearInternalMeshes( void ) {
 		PlgDestroyMesh( meshes[ i ] );
 		meshes[ i ] = NULL;
 	}
-}
-
-void PlgDrawEllipse( unsigned int segments, const QmMathVector2f *position, float w, float h, const QmMathColour4ub *colour ) {
-	PLGMesh *mesh = GetInternalMesh( PLG_MESH_TRIANGLE_FAN );
-
-	for ( unsigned int i = 0, pos = 0; i < 360; i += ( 360 / segments ) ) {
-		if ( pos >= segments ) {
-			break;
-		}
-
-		QmMathVector3f coord = qm_math_vector3f(
-		        ( position->x + w ) + cosf( QM_MATH_DEG2RAD( ( float ) i ) ) * w,
-		        ( position->y + h ) + sinf( QM_MATH_DEG2RAD( ( float ) i ) ) * h,
-		        0.0f );
-
-		PlgAddMeshVertex( mesh, &coord, &QM_MATH_VECTOR3F_ZERO, colour, &QM_MATH_VECTOR2F_ZERO );
-	}
-
-	PlMatrixMode( PL_MODELVIEW_MATRIX );
-	PlPushMatrix();
-
-	PlLoadIdentityMatrix();
-
-	QmGfxShaderProgram *program = PlgGetCurrentShaderProgram();
-	if ( program ) {
-		int slot;
-		if ( ( slot = qm_gfx_shader_program_get_uniform_slot( program, "pl_model" ) ) >= 0 ) {
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, PlGetMatrix( PL_MODELVIEW_MATRIX ), false );
-		}
-	}
-
-	PlgUploadMesh( mesh );
-	PlgDrawMesh( mesh );
-
-	PlPopMatrix();
 }
 
 static void SetupRectangleMesh( float x, float y, float w, float h, QmMathColour4ub colour ) {
@@ -167,14 +124,6 @@ static void SetupRectangleMesh( float x, float y, float w, float h, QmMathColour
 	PlgImmColour( colour.r, colour.g, colour.b, colour.a );
 }
 
-void PlgDrawTexturedRectangle( float x, float y, float w, float h, QmGfxTexture *texture ) {
-	qm_gfx_texture_set( texture, 0 );
-
-	PlgDrawRectangle( x, y, w, h, qm_math_colour4ub( 255, 255, 255, 255 ) );
-
-	qm_gfx_texture_set( NULL, 0 );
-}
-
 void PlgDrawRectangle( float x, float y, float w, float h, QmMathColour4ub colour ) {
 	PlgImmBegin( PLG_MESH_TRIANGLE_STRIP );
 
@@ -184,7 +133,7 @@ void PlgDrawRectangle( float x, float y, float w, float h, QmMathColour4ub colou
 }
 
 void PlgDrawLineRectangle( float x, float y, float w, float h, QmMathColour4ub colour ) {
-	PlgImmBegin( PLG_MESH_LINE_LOOP );
+	PlgImmBegin( QM_GFX_MESH_PRIMITIVE_LINE_LOOP );
 	PlgImmPushVertex( x, y, 0.0f );
 	PlgImmColour( colour.r, colour.g, colour.b, colour.a );
 	PlgImmPushVertex( x + w, y, 0.0f );
@@ -197,7 +146,7 @@ void PlgDrawLineRectangle( float x, float y, float w, float h, QmMathColour4ub c
 }
 
 void PlgDrawLines( const QmMathVector3f *points, unsigned int numPoints, QmMathColour4ub colour, float thickness ) {
-	PLGMesh *mesh = PlgImmBegin( PLG_MESH_LINES );
+	QmGfxMesh *mesh = PlgImmBegin( QM_GFX_MESH_PRIMITIVE_LINES );
 	mesh->primitiveScale = thickness;
 
 	for ( unsigned int i = 0; i < numPoints; ++i ) {
@@ -211,7 +160,7 @@ void PlgDrawLines( const QmMathVector3f *points, unsigned int numPoints, QmMathC
 }
 
 void PlgDrawLine( QmMathVector3f startPos, QmMathColour4ub startColour, QmMathVector3f endPos, QmMathColour4ub endColour ) {
-	PlgImmBegin( PLG_MESH_LINES );
+	PlgImmBegin( QM_GFX_MESH_PRIMITIVE_LINES );
 
 	PlgImmPushVertex( startPos.x, startPos.y, startPos.z );
 	PlgImmColour( startColour.r, startColour.g, startColour.b, startColour.a );

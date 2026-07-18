@@ -77,24 +77,11 @@ void qm_gfx_shader_program_attach_stage( QmGfxShaderProgram *self, QmGfxShaderSt
 	CallGfxFunction( AttachShaderStage, self, stage );
 }
 
-/**
- * returns the currently active shader program.
- *
- * @return pointer to the currently active shader program.
- */
 QmGfxShaderProgram *PlgGetCurrentShaderProgram( void )
 {
 	return gfx_state.current_program;
 }
 
-/**
- * checks whether the given shader program is currently
- * enabled - meaning it will be used in any subsequent draw
- * calls.
- *
- * @param program
- * @return true if the program is equal to that currently enabled.
- */
 bool PlgIsShaderProgramEnabled( QmGfxShaderProgram *program )
 {
 	return gfx_state.current_program == program;
@@ -119,7 +106,7 @@ void PlgSetShaderProgram( QmGfxShaderProgram *program )
 	gfx_state.current_program = program;
 }
 
-static QmGfxShaderProgram *GetShaderProgram( QmGfxShaderProgram *program )
+static QmGfxShaderProgram *get_shader_program( QmGfxShaderProgram *program )
 {
 	if ( program != NULL )
 	{
@@ -135,9 +122,12 @@ static QmGfxShaderProgram *GetShaderProgram( QmGfxShaderProgram *program )
 	return nullptr;
 }
 
-int qm_gfx_shader_program_get_uniform_slot( QmGfxShaderProgram *program, const char *name )
+/*****************************************************/
+/** shader uniform **/
+
+int qm_gfx_shader_program_get_uniform_slot( QmGfxShaderProgram *self, const char *name )
 {
-	QmGfxShaderProgram *prg = GetShaderProgram( program );
+	QmGfxShaderProgram *prg = get_shader_program( self );
 	if ( prg == NULL )
 	{
 		return -1;
@@ -169,32 +159,31 @@ QmGfxShaderUniformType qm_gfx_shader_program_get_uniform_type( const QmGfxShader
 	return self->uniforms[ slot ].type;
 }
 
-unsigned int PlgGetNumShaderUniformElements( const QmGfxShaderProgram *program, int slot )
+unsigned int qm_gfx_shader_program_get_num_uniform_elements( const QmGfxShaderProgram *self, int slot )
 {
-	if ( slot < 0 || ( unsigned int ) slot >= program->num_uniforms )
+	if ( slot < 0 || ( unsigned int ) slot >= self->num_uniforms )
 	{
 		return 0;
 	}
 
-	return program->uniforms[ slot ].numElements;
+	return self->uniforms[ slot ].numElements;
 }
 
-/*****************************************************/
-/** shader uniform **/
-
-static int ValidateShaderUniformSlot( QmGfxShaderProgram *program, int slot )
+static int shader_program_validate_uniform_slot( const QmGfxShaderProgram *program, const int slot )
 {
 	if ( slot == -1 )
 	{
 		GfxLog( "Invalid shader uniform slot!\n" );
 		return -1;
 	}
-	else if ( ( unsigned int ) ( slot ) >= program->num_uniforms )
+
+	if ( ( unsigned int ) slot >= program->num_uniforms )
 	{
 		GfxLog( "Potential overflow for uniform slot! (%d / %d)\n", slot, program->num_uniforms );
 		return -1;
 	}
-	else if ( program->uniforms[ slot ].type == QM_GFX_SHADER_UNIFORM_TYPE_INVALID )
+
+	if ( program->uniforms[ slot ].type == QM_GFX_SHADER_UNIFORM_TYPE_INVALID )
 	{
 		GfxLog( "Unknown uniform type for slot! (%d)\n", slot );
 		return -1;
@@ -203,138 +192,99 @@ static int ValidateShaderUniformSlot( QmGfxShaderProgram *program, int slot )
 	return slot;
 }
 
-void PlgSetShaderUniformDefaultValueByIndex( QmGfxShaderProgram *program, int slot, const void *defaultValue )
+void qm_gfx_shader_program_set_uniform_default( QmGfxShaderProgram *self, const int slot, const void *defaultValue )
 {
-	switch ( program->uniforms[ slot ].type )
+	switch ( self->uniforms[ slot ].type )
 	{
 		case QM_GFX_SHADER_UNIFORM_TYPE_FLOAT:
-			program->uniforms[ slot ].defaultFloat = *( float * ) defaultValue;
+			self->uniforms[ slot ].defaultFloat = *( float * ) defaultValue;
 			break;
-		case PLG_UNIFORM_SAMPLER2D:
+		case QM_GFX_SHADER_UNIFORM_TYPE_SAMPLER2D:
 		case QM_GFX_SHADER_UNIFORM_TYPE_INT:
-			program->uniforms[ slot ].defaultInt = *( int * ) defaultValue;
+			self->uniforms[ slot ].defaultInt = *( int * ) defaultValue;
 			break;
-		case PLG_UNIFORM_UINT:
-			program->uniforms[ slot ].defaultUInt = *( unsigned int * ) defaultValue;
+		case QM_GFX_SHADER_UNIFORM_TYPE_UINT:
+			self->uniforms[ slot ].defaultUInt = *( unsigned int * ) defaultValue;
 			break;
 		case QM_GFX_SHADER_UNIFORM_TYPE_BOOL:
-			program->uniforms[ slot ].defaultBool = *( bool * ) defaultValue;
+			self->uniforms[ slot ].defaultBool = *( bool * ) defaultValue;
 			break;
-		case PLG_UNIFORM_DOUBLE:
-			program->uniforms[ slot ].defaultDouble = *( double * ) defaultValue;
+		case QM_GFX_SHADER_UNIFORM_TYPE_DOUBLE:
+			self->uniforms[ slot ].defaultDouble = *( double * ) defaultValue;
 			break;
-		case PLG_UNIFORM_VEC2:
-			program->uniforms[ slot ].defaultVec2 = *( QmMathVector2f * ) defaultValue;
+		case QM_GFX_SHADER_UNIFORM_TYPE_VEC2:
+			self->uniforms[ slot ].defaultVec2 = *( QmMathVector2f * ) defaultValue;
 			break;
-		case PLG_UNIFORM_VEC3:
-			program->uniforms[ slot ].defaultVec3 = *( QmMathVector3f * ) defaultValue;
+		case QM_GFX_SHADER_UNIFORM_TYPE_VEC3:
+			self->uniforms[ slot ].defaultVec3 = *( QmMathVector3f * ) defaultValue;
 			break;
-		case PLG_UNIFORM_VEC4:
-			program->uniforms[ slot ].defaultVec4 = *( QmMathVector4f * ) defaultValue;
+		case QM_GFX_SHADER_UNIFORM_TYPE_VEC4:
+			self->uniforms[ slot ].defaultVec4 = *( QmMathVector4f * ) defaultValue;
 			break;
-		case PLG_UNIFORM_MAT3:
-			program->uniforms[ slot ].defaultMat3 = *( PLMatrix3 * ) defaultValue;
+		case QM_GFX_SHADER_UNIFORM_TYPE_MAT3:
+			self->uniforms[ slot ].defaultMat3 = *( PLMatrix3 * ) defaultValue;
 			break;
-		case PLG_UNIFORM_MAT4:
-			program->uniforms[ slot ].defaultMat4 = *( PLMatrix4 * ) defaultValue;
+		case QM_GFX_SHADER_UNIFORM_TYPE_MAT4:
+			self->uniforms[ slot ].defaultMat4 = *( PLMatrix4 * ) defaultValue;
 			break;
 		default:
 			break;
 	}
 }
 
-/**
- * Set a default value to use for the particular uniform that
- * it can be reset to later.
- */
-void PlgSetShaderUniformDefaultValue( QmGfxShaderProgram *program, const char *name, const void *defaultValue )
+void qm_gfx_shader_program_set_uniform_to_default( QmGfxShaderProgram *self, int slot )
 {
-	int slot = qm_gfx_shader_program_get_uniform_slot( program, name );
-	if ( slot == -1 )
-	{
-		return;
-	}
-
-	PlgSetShaderUniformDefaultValueByIndex( program, slot, defaultValue );
-}
-
-void PlgSetShaderUniformToDefaultByIndex( QmGfxShaderProgram *program, int slot )
-{
-	switch ( program->uniforms[ slot ].type )
+	switch ( self->uniforms[ slot ].type )
 	{
 		case QM_GFX_SHADER_UNIFORM_TYPE_FLOAT:
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultFloat, false );
+			qm_gfx_shader_program_set_uniform( self, slot, &self->uniforms[ slot ].defaultFloat, false );
 			break;
-		case PLG_UNIFORM_SAMPLER2D:
+		case QM_GFX_SHADER_UNIFORM_TYPE_SAMPLER2D:
 		case QM_GFX_SHADER_UNIFORM_TYPE_INT:
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultInt, false );
+			qm_gfx_shader_program_set_uniform( self, slot, &self->uniforms[ slot ].defaultInt, false );
 			break;
-		case PLG_UNIFORM_UINT:
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultUInt, false );
+		case QM_GFX_SHADER_UNIFORM_TYPE_UINT:
+			qm_gfx_shader_program_set_uniform( self, slot, &self->uniforms[ slot ].defaultUInt, false );
 			break;
 		case QM_GFX_SHADER_UNIFORM_TYPE_BOOL:
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultBool, false );
+			qm_gfx_shader_program_set_uniform( self, slot, &self->uniforms[ slot ].defaultBool, false );
 			break;
-		case PLG_UNIFORM_DOUBLE:
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultDouble, false );
+		case QM_GFX_SHADER_UNIFORM_TYPE_DOUBLE:
+			qm_gfx_shader_program_set_uniform( self, slot, &self->uniforms[ slot ].defaultDouble, false );
 			break;
-		case PLG_UNIFORM_VEC2:
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultVec2, false );
+		case QM_GFX_SHADER_UNIFORM_TYPE_VEC2:
+			qm_gfx_shader_program_set_uniform( self, slot, &self->uniforms[ slot ].defaultVec2, false );
 			break;
-		case PLG_UNIFORM_VEC3:
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultVec3, false );
+		case QM_GFX_SHADER_UNIFORM_TYPE_VEC3:
+			qm_gfx_shader_program_set_uniform( self, slot, &self->uniforms[ slot ].defaultVec3, false );
 			break;
-		case PLG_UNIFORM_VEC4:
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultVec4, false );
+		case QM_GFX_SHADER_UNIFORM_TYPE_VEC4:
+			qm_gfx_shader_program_set_uniform( self, slot, &self->uniforms[ slot ].defaultVec4, false );
 			break;
-		case PLG_UNIFORM_MAT3:
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultMat3, false );
+		case QM_GFX_SHADER_UNIFORM_TYPE_MAT3:
+			qm_gfx_shader_program_set_uniform( self, slot, &self->uniforms[ slot ].defaultMat3, false );
 			break;
-		case PLG_UNIFORM_MAT4:
-			qm_gfx_shader_set_uniform_value_by_index( program, slot, &program->uniforms[ slot ].defaultMat4, false );
+		case QM_GFX_SHADER_UNIFORM_TYPE_MAT4:
+			qm_gfx_shader_program_set_uniform( self, slot, &self->uniforms[ slot ].defaultMat4, false );
 			break;
 		default:
 			break;
 	}
 }
 
-void PlgSetShaderUniformToDefault( QmGfxShaderProgram *program, const char *name )
+void qm_gfx_shader_program_set_uniform( QmGfxShaderProgram *self, int slot, const void *value, bool transpose )
 {
-	int slot = qm_gfx_shader_program_get_uniform_slot( program, name );
-	if ( slot == -1 )
-	{
-		return;
-	}
-
-	PlgSetShaderUniformToDefaultByIndex( program, slot );
-}
-
-void PlgSetShaderUniformsToDefault( QmGfxShaderProgram *program )
-{
-	for ( unsigned int i = 0; i < program->num_uniforms; ++i )
-	{
-		PlgSetShaderUniformToDefaultByIndex( program, i );
-	}
-}
-
-void qm_gfx_shader_set_uniform_value_by_index( QmGfxShaderProgram *program, int slot, const void *value, bool transpose )
-{
-	if ( ValidateShaderUniformSlot( program, slot ) == -1 )
+	if ( shader_program_validate_uniform_slot( self, slot ) == -1 )
 	{
 		return;
 	}
 
 	/* this should be done by the GL layer!! */
 	QmGfxShaderProgram *oldProgram = PlgGetCurrentShaderProgram();
-	PlgSetShaderProgram( program );
+	PlgSetShaderProgram( self );
 
-	CallGfxFunction( SetShaderUniformValue, program, slot, value, transpose );
+	CallGfxFunction( SetShaderUniformValue, self, slot, value, transpose );
 
 	/* this should be done by the GL layer!! */
 	PlgSetShaderProgram( oldProgram );
-}
-
-void PlgSetShaderUniformValue( QmGfxShaderProgram *program, const char *name, const void *value, bool transpose )
-{
-	qm_gfx_shader_set_uniform_value_by_index( program, qm_gfx_shader_program_get_uniform_slot( program, name ), value, transpose );
 }
