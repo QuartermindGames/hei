@@ -133,7 +133,7 @@ int qm_gfx_shader_program_get_uniform_slot( QmGfxShaderProgram *self, const char
 		return -1;
 	}
 
-	for ( unsigned int i = 0; i < prg->num_uniforms; ++i )
+	for ( unsigned int i = 0; i < prg->numUniforms; ++i )
 	{
 		if ( *prg->uniforms[ i ].name == '\0' )
 		{
@@ -151,7 +151,7 @@ int qm_gfx_shader_program_get_uniform_slot( QmGfxShaderProgram *self, const char
 
 QmGfxShaderUniformType qm_gfx_shader_program_get_uniform_type( const QmGfxShaderProgram *self, int slot )
 {
-	if ( slot < 0 || ( unsigned int ) slot >= self->num_uniforms )
+	if ( slot < 0 || ( unsigned int ) slot >= self->numUniforms )
 	{
 		return QM_GFX_SHADER_UNIFORM_TYPE_INVALID;
 	}
@@ -161,7 +161,7 @@ QmGfxShaderUniformType qm_gfx_shader_program_get_uniform_type( const QmGfxShader
 
 unsigned int qm_gfx_shader_program_get_num_uniform_elements( const QmGfxShaderProgram *self, int slot )
 {
-	if ( slot < 0 || ( unsigned int ) slot >= self->num_uniforms )
+	if ( slot < 0 || ( unsigned int ) slot >= self->numUniforms )
 	{
 		return 0;
 	}
@@ -177,9 +177,9 @@ static int shader_program_validate_uniform_slot( const QmGfxShaderProgram *progr
 		return -1;
 	}
 
-	if ( ( unsigned int ) slot >= program->num_uniforms )
+	if ( ( unsigned int ) slot >= program->numUniforms )
 	{
-		GfxLog( "Potential overflow for uniform slot! (%d / %d)\n", slot, program->num_uniforms );
+		GfxLog( "Potential overflow for uniform slot! (%d / %d)\n", slot, program->numUniforms );
 		return -1;
 	}
 

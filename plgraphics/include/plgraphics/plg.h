@@ -220,17 +220,12 @@ typedef struct QmGfxShaderProgram
 			PLMatrix4 defaultMat4;
 		};
 	}           *uniforms;
-	unsigned int num_uniforms;
+	unsigned int numUniforms;
 
 	QmGfxShaderStage *stages[ QM_GFX_MAX_SHADER_STAGE_TYPES ];
 	unsigned int      num_stages;
 
 	bool is_linked;
-
-	struct
-	{
-		PLGShaderAttribute attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_MAX ];
-	} internal;
 
 	void *driver;// driver specific data
 } QmGfxShaderProgram;

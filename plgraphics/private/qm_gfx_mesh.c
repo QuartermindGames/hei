@@ -124,44 +124,24 @@ void PlgGenerateTangentBasis( QmGfxMeshVertex *vertices, unsigned int numVertice
 	}
 }
 
-QmGfxMesh *PlgCreateMesh( QmGfxMeshPrimitive primitive, QmGfxMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts )
+QmGfxMesh *PlgCreateMesh( QmGfxMeshPrimitive primitive, QmGfxMeshDrawMode mode, unsigned int numTriangles, unsigned int numVertices )
 {
-	return PlgCreateMeshInit( primitive, mode, num_tris, num_verts, NULL, NULL );
-}
-
-QmGfxMesh *PlgCreateMeshInit( QmGfxMeshPrimitive primitive, QmGfxMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
-                            const unsigned int *indicies, const QmGfxMeshVertex *vertices )
-{
-	QmGfxMesh *mesh   = ( QmGfxMesh * ) QM_OS_MEMORY_CALLOC( 1, sizeof( QmGfxMesh ) );
+	QmGfxMesh *mesh = QM_OS_MEMORY_CALLOC( 1, sizeof( QmGfxMesh ) );
 	mesh->primitive = primitive;
 	mesh->mode      = mode;
 
 	if ( numTriangles > 0 )
 	{
-		if ( mesh->primitive == PLG_MESH_TRIANGLES )
+		if ( mesh->primitive == QM_GFX_MESH_PRIMITIVE_TRIANGLES )
 		{
 			unsigned int numIndices = numTriangles * 3; /* todo: this is too assumptious... */
 			mesh->maxIndices        = numIndices;
 			mesh->indices           = QM_OS_MEMORY_CALLOC( mesh->maxIndices, sizeof( unsigned int ) );
-			if ( indicies != NULL )
-			{
-				memcpy( mesh->indices, indicies, sizeof( unsigned int ) * numIndices );
-				mesh->num_indices   = numIndices;
-				mesh->num_triangles = numTriangles;
-				mesh->range         = mesh->num_indices;
-			}
 		}
 	}
 
-	mesh->maxVertices = numVerts;
+	mesh->maxVertices = numVertices;
 	mesh->vertices    = QM_OS_MEMORY_NEW_( QmGfxMeshVertex, mesh->maxVertices );
-
-	// If the vertices passed in aren't null, copy them into our vertex list
-	if ( vertices != NULL && mesh->num_verts > 0 )
-	{
-		memcpy( mesh->vertices, vertices, sizeof( QmGfxMeshVertex ) * numVerts );
-		mesh->num_verts = numVerts;
-	}
 
 	mesh->isDirty = true;
 
@@ -178,9 +158,6 @@ void PlgDestroyMesh( QmGfxMesh *mesh )
 	}
 
 	CallGfxFunction( DeleteMesh, mesh );
-
-	//qm_os_memory_free( mesh->subMeshes );
-	//qm_os_memory_free( mesh->firstSubMeshes );
 
 	qm_os_memory_free( mesh->vertices );
 	qm_os_memory_free( mesh->indices );
@@ -327,4 +304,12 @@ void PlgDrawSubMeshes( QmGfxMesh *mesh, int32_t *firstSubMeshes, int32_t *subMes
 void PlgDrawInstancedMesh( QmGfxMesh *mesh, const PLMatrix4 *transforms, unsigned int instanceCount )
 {
 	CallGfxFunction( DrawInstancedMesh, mesh, gfx_state.current_program, transforms, instanceCount );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Vertex Attribute Declarations
+/////////////////////////////////////////////////////////////////////////////////////
+
+void qm_gfx_mesh_set_vertex_layout( QmGfxMesh *mesh, const QmGfxMeshVertexAttribute *attributes, unsigned int numAttributes, void *ptr )
+{
 }

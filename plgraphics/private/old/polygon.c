@@ -21,23 +21,6 @@ typedef struct PLGPolygon {
 	unsigned int numVertices;
 } PLGPolygon;
 
-PLGPolygon *PlgCreatePolygon( QmGfxTexture *texture, QmMathVector2f textureOffset, QmMathVector2f textureScale, float textureRotation ) {
-	PLGPolygon *polygon = QM_OS_MEMORY_CALLOC( 1, sizeof( PLGPolygon ) );
-	polygon->texture = texture;
-	polygon->textureOffset = textureOffset;
-	polygon->textureScale = textureScale;
-	polygon->textureRotation = textureRotation;
-	return polygon;
-}
-
-void PlgDestroyPolygon( PLGPolygon *polygon ) {
-	if( polygon == NULL ) {
-		return;
-	}
-
-	qm_os_memory_free( polygon );
-}
-
 /**
  * Generate vertex normals for the given polygon.
  */
@@ -117,32 +100,6 @@ void PlgRemovePolygonVertex( PLGPolygon *polygon, unsigned int vertIndex ) {
 #endif
 }
 
-unsigned int PlgGetNumOfPolygonVertices( const PLGPolygon *polygon ) {
-	return polygon->numVertices;
-}
-
-PLGVertex *PlgGetPolygonVertex( PLGPolygon *polygon, unsigned int vertIndex ) {
-	if( vertIndex >= polygon->numVertices ) {
-		PlReportErrorF( PL_RESULT_INVALID_PARM2, "invalid vertex index, %d", vertIndex );
-		return NULL;
-	}
-
-	return &polygon->vertices[ vertIndex ];
-}
-
-PLGVertex *PlgGetPolygonVertices( PLGPolygon *polygon, unsigned int *numVertices ) {
-	*numVertices = polygon->numVertices;
-	return polygon->vertices;
-}
-
-QmGfxTexture *PlgGetPolygonTexture( PLGPolygon *polygon ) {
-	return polygon->texture;
-}
-
-QmMathVector3f PlgGetPolygonFaceNormal( const PLGPolygon *polygon ) {
-	return polygon->normal;
-}
-
 /**
  * Return the number of triangles in this polygon.
  */
@@ -171,18 +128,4 @@ unsigned int *PlgConvertPolygonToTriangles( const PLGPolygon *polygon, unsigned 
 	}
 
 	return indices;
-}
-
-PLGMesh *PlgConvertPolygonToMesh( const PLGPolygon *polygon ) {
-	unsigned int numTriangles;
-	unsigned int *indices = PlgConvertPolygonToTriangles( polygon, &numTriangles );
-	if ( indices == NULL ) {
-		return NULL;
-	}
-
-	PLGMesh *mesh = PlgCreateMeshInit( PLG_MESH_TRIANGLES, PLG_DRAW_STATIC, numTriangles, polygon->numVertices, indices, polygon->vertices );
-
-	qm_os_memory_free( indices );
-
-	return mesh;
 }

@@ -7,17 +7,67 @@
 
 PL_EXTERN_C
 
+typedef struct QmGfxMesh QmGfxMesh;
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Vertex Attribute Declarations
+// Much of the below is pretty gross and limiting, I know! For the moment, it's just
+// to provide the basics and we'll expand on this further down the line so the caller
+// can actually set up their own instead rather than using our built-in types.
+/////////////////////////////////////////////////////////////////////////////////////
+
+typedef enum QmGfxMeshVertexAttributeDataType : uint8_t
+{
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_BYTE,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_SHORT,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_INT,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_HALF_FLOAT,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_FLOAT,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_DOUBLE,
+
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_MAX
+} QmGfxMeshVertexAttributeDataType;
+
+typedef struct QmGfxMeshVertexAttribute
+{
+	unsigned int location;
+	size_t       size;
+
+	QmGfxMeshVertexAttributeDataType dataType;
+
+	unsigned int stride;
+	unsigned int offset;
+} QmGfxMeshVertexAttribute;
+
+static constexpr unsigned int QM_GFX_MESH_MAX_ATTRIBUTES = 16;
+
+typedef struct QmGfxMeshVertexDescriptor
+{
+	QmGfxMeshVertexAttribute attributes[ QM_GFX_MESH_MAX_ATTRIBUTES ];
+	unsigned int             numAttributes;
+	void                    *ptr;
+} QmGfxMeshVertexDescriptor;
+
+#if !defined( PL_COMPILE_PLUGIN )
+
+void qm_gfx_mesh_set_vertex_layout( QmGfxMesh *mesh, const QmGfxMeshVertexAttribute *attributes, unsigned int numAttributes, void *ptr );
+
+#endif
+
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+
 typedef enum QmGfxMeshPrimitive
 {
 	QM_GFX_MESH_PRIMITIVE_LINES,
 	QM_GFX_MESH_PRIMITIVE_LINE_LOOP,
-	PLG_MESH_POINTS,
-	PLG_MESH_TRIANGLES,
-	PLG_MESH_TRIANGLE_STRIP,
-	PLG_MESH_TRIANGLE_FAN,
-	PLG_MESH_TRIANGLE_FAN_LINE,
+	QM_GFX_MESH_PRIMITIVE_POINTS,
+	QM_GFX_MESH_PRIMITIVE_TRIANGLES,
+	QM_GFX_MESH_PRIMITIVE_TRIANGLE_STRIP,
+	QM_GFX_MESH_PRIMITIVE_TRIANGLE_FAN,
+	QM_GFX_MESH_PRIMITIVE_TRIANGLE_FAN_LINE,
 
-	PLG_NUM_PRIMITIVES
+	QM_GFX_MESH_PRIMITIVE_MAX
 } QmGfxMeshPrimitive;
 
 /* If these confuse you, like they do me, there's a really good write-up here.
@@ -65,6 +115,8 @@ typedef struct QmGfxMesh
 
 	float primitiveScale; /* only matters for points/lines */
 
+	QmGfxMeshVertexDescriptor vertexDescriptor;
+
 	void *driver;
 } QmGfxMesh;
 
@@ -72,9 +124,7 @@ typedef struct PLCollisionAABB PLCollisionAABB;
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-QmGfxMesh *PlgCreateMesh( QmGfxMeshPrimitive primitive, QmGfxMeshDrawMode mode, unsigned int num_tris, unsigned int num_verts );
-QmGfxMesh *PlgCreateMeshInit( QmGfxMeshPrimitive primitive, QmGfxMeshDrawMode mode, unsigned int numTriangles, unsigned int numVerts,
-                              const unsigned int *indicies, const QmGfxMeshVertex *vertices );
+QmGfxMesh *PlgCreateMesh( QmGfxMeshPrimitive primitive, QmGfxMeshDrawMode mode, unsigned int numTriangles, unsigned int numVertices );
 void       PlgDestroyMesh( QmGfxMesh *mesh );
 
 void PlgDrawRectangle( float x, float y, float w, float h, QmMathColour4ub colour );
@@ -110,6 +160,7 @@ void PlgGenerateTextureCoordinates( QmGfxMeshVertex *vertices, unsigned int numV
 
 void PlgGenerateVertexNormals( QmGfxMeshVertex *vertices, unsigned int numVertices, unsigned int *indices, unsigned int numTriangles, bool perFace );
 
+//TODO: move into math library
 QmMathVector3f PlgGenerateVertexNormal( QmMathVector3f a, QmMathVector3f b, QmMathVector3f c );
 
 /* immediate mode style api */
@@ -127,47 +178,5 @@ unsigned int PlgPushVertex3f( QmGfxMesh *mesh, float x, float y, float z );
 void         PlgColour4bv( QmGfxMesh *mesh, const QmMathColour4ub *col );
 
 #endif
-
-/////////////////////////////////////////////////////////////////////////////////////
-// Vertex Attribute Declarations
-// Much of the below is pretty gross and limiting, I know! For the moment, it's just
-// to provide the basics and we'll expand on this further down the line so the caller
-// can actually set up their own instead rather than using our built-in types.
-/////////////////////////////////////////////////////////////////////////////////////
-
-typedef enum QmGfxMeshVertexAttributeType : uint8_t
-{
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_POSITION,
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_NORMAL,
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_COLOUR,
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_TANGENT,
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_BITANGENT,
-
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_BWEIGHT,
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_BINDICES,
-
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_ST0,
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_ST1,
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_ST2,
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_ST3,
-
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_MAX
-} QmGfxMeshVertexAttributeType;
-
-typedef struct QmGfxMeshVertexAttribute
-{
-	unsigned int location;
-	unsigned int stride;
-	bool         isEnabled;
-	unsigned int offset;
-} QmGfxMeshVertexAttribute;
-
-typedef struct QmGfxMeshVertexDescriptor
-{
-	QmGfxMeshVertexAttribute attributes[ QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_MAX ];
-	unsigned int             numAttributes;
-} QmGfxMeshVertexDescriptor;
-
-void qm_gfx_mesh_set_vertex_layout( QmGfxMesh *mesh );
 
 PL_EXTERN_C_END

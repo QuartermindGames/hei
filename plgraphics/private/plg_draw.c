@@ -1,13 +1,11 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+// Copyright © 2017-2026 Quartermind Games, Mark E. Sowden <markelswo@gmail.com>
+// Purpose: Helper drawing methods.
+//			This is deprecated!
+// Author:  Mark E. Sowden
 
 #include <plgraphics/plg_driver_interface.h>
 
 #include "plg_private.h"
-
 
 /****************************************
  * Immediate-mode style API
@@ -22,7 +20,7 @@ static unsigned int currentTriangle;
 
 #define MAXIMUM_STORAGE 4096
 
-static QmGfxMesh *meshes[ PLG_NUM_PRIMITIVES ];
+static QmGfxMesh *meshes[ QM_GFX_MESH_PRIMITIVE_MAX ];
 static QmGfxMesh *GetInternalMesh( QmGfxMeshPrimitive primitive ) {
 	if ( meshes[ primitive ] == NULL ) {
 		return ( meshes[ primitive ] = PlgCreateMesh( primitive, QM_GFX_MESH_DRAW_MODE_STREAM, MAXIMUM_STORAGE, MAXIMUM_STORAGE ) );
@@ -96,7 +94,7 @@ void PlgColour4bv( QmGfxMesh *mesh, const QmMathColour4ub *col ) {
  ****************************************/
 
 void PlgClearInternalMeshes( void ) {
-	for ( unsigned int i = 0; i < PLG_NUM_PRIMITIVES; ++i ) {
+	for ( unsigned int i = 0; i < QM_GFX_MESH_PRIMITIVE_MAX; ++i ) {
 		if ( meshes[ i ] == NULL ) {
 			continue;
 		}
@@ -125,7 +123,7 @@ static void SetupRectangleMesh( float x, float y, float w, float h, QmMathColour
 }
 
 void PlgDrawRectangle( float x, float y, float w, float h, QmMathColour4ub colour ) {
-	PlgImmBegin( PLG_MESH_TRIANGLE_STRIP );
+	PlgImmBegin( QM_GFX_MESH_PRIMITIVE_TRIANGLE_STRIP );
 
 	SetupRectangleMesh( x, y, w, h, colour );
 
