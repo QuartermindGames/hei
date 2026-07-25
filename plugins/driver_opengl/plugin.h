@@ -4,10 +4,37 @@
 
 #define PL_COMPILE_PLUGIN 1
 #include <plgraphics/plg_driver_interface.h>
-
 extern const PLGDriverExportTable *gInterface;
 
-extern int glLogLevel;
+#include <GL/glew.h>
+#if defined( _WIN32 )
+#	include <GL/wglew.h>
+#else
+#	include <GL/glxew.h>
+#endif
+
+#if !defined( NDEBUG )
+#	define XGL_DEBUG( ... ) printf( __VA_ARGS__ )
+#else
+#	define XGL_DEBUG( ... )
+#endif
+
+#if !defined( NDEBUG )
+#	define XGL_CALL( X )                     \
+		{                                     \
+			glGetError();                     \
+			X;                                \
+			unsigned int _err = glGetError(); \
+			assert( _err == GL_NO_ERROR );    \
+		}
+#else
+#	define XGL_CALL( X ) X
+#endif
+
+static constexpr unsigned int XGL_INVALID = ( unsigned int ) -1;
+
+const QmMathVector4f *xgl_get_clip_plane();
+const PLMatrix4      *xgl_get_clip_matrix();
 
 typedef struct XglTexture
 {
@@ -48,9 +75,11 @@ typedef struct XglShaderProgram
 {
 	unsigned int id;
 
-	XglShaderUniformType   defaultUniforms[ XGL_SHADER_UNIFORM_TYPE_MAX ];
-	XglShaderAttributeType defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_MAX ];
+	XglShaderUniformType defaultUniforms[ XGL_SHADER_UNIFORM_TYPE_MAX ];
 } XglShaderProgram;
+
+/////////////////////////////////////////////////////////////
+// Mesh
 
 enum
 {
@@ -65,3 +94,14 @@ typedef struct XglMesh
 	unsigned int buffers[ XGL_MESH_BUFFER_MAX ];
 	unsigned int vao;
 } XglMesh;
+
+void xgl_mesh_vao_manager_initialize();
+void xgl_mesh_vao_manager_shutdown();
+
+void xgl_mesh_create( QmGfxMesh *self );
+void xgl_mesh_upload( QmGfxMesh *self, QmGfxShaderProgram *program );
+void xgl_mesh_delete( QmGfxMesh *self );
+void xgl_mesh_draw_instanced( QmGfxMesh *self, QmGfxShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount );
+void xgl_mesh_draw( QmGfxMesh *self, QmGfxShaderProgram *program );
+
+/////////////////////////////////////////////////////////////

@@ -16,27 +16,27 @@ typedef struct QmGfxMesh QmGfxMesh;
 // can actually set up their own instead rather than using our built-in types.
 /////////////////////////////////////////////////////////////////////////////////////
 
-typedef enum QmGfxMeshVertexAttributeDataType : uint8_t
+typedef enum QmGfxMeshVertexAttributeType : uint8_t
 {
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_BYTE,
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_SHORT,
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_INT,
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_HALF_FLOAT,
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_FLOAT,
-	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_DOUBLE,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_INT8,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_INT16,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_INT32,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_UINT8,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_UINT16,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_UINT32,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT16,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32,
+	QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT64,
 
 	QM_GFX_MESH_VERTEX_ATTRIBUTE_DATA_TYPE_MAX
-} QmGfxMeshVertexAttributeDataType;
+} QmGfxMeshVertexAttributeType;
 
 typedef struct QmGfxMeshVertexAttribute
 {
-	unsigned int location;
-	size_t       size;
-
-	QmGfxMeshVertexAttributeDataType dataType;
-
-	unsigned int stride;
-	unsigned int offset;
+	unsigned int                 location;
+	size_t                       size;
+	QmGfxMeshVertexAttributeType type;
+	unsigned int                 offset;
 } QmGfxMeshVertexAttribute;
 
 static constexpr unsigned int QM_GFX_MESH_MAX_ATTRIBUTES = 16;

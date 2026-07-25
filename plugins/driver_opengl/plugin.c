@@ -38,8 +38,6 @@ QM_OS_EXPORT const PLGDriverDescription *QueryGraphicsDriver( void ) {
 	return &pluginDesc;
 }
 
-int glLogLevel;
-
 QM_OS_EXPORT const PLGDriverImportTable *InitializeGraphicsDriver( const PLGDriverExportTable *functionTable ) {
 	gInterface = functionTable;
 

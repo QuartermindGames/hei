@@ -31,7 +31,10 @@ set(GLEW_SOURCE
 add_library(
         pl_gl_driver SHARED
         ${GLEW_SOURCE}
-        opengl.c
+
+        xgl.c
+        xgl_mesh.c
+
         plugin.c
         plugin.h)
 

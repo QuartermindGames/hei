@@ -9,13 +9,6 @@
 
 #include <plgraphics/plg.h>
 
-#include <GL/glew.h>
-#if defined( _WIN32 )
-#	include <GL/wglew.h>
-#else
-#	include <GL/glxew.h>
-#endif
-
 #if !defined( NDEBUG )
 #	define DEBUG_GL
 #endif
@@ -23,28 +16,7 @@
 static int xgl_versionMajor = 0;
 static int xgl_versionMinor = 0;
 
-static GLuint xgl_defaultVao;
-
 #define XGL_VERSION( maj, min ) ( ( ( maj ) == xgl_versionMajor && ( min ) <= xgl_versionMinor ) || ( maj ) < xgl_versionMajor )
-#if !defined( NDEBUG )
-#	define XGL_DEBUG( ... ) printf( __VA_ARGS__ )
-#else
-#	define XGL_DEBUG( ... )
-#endif
-
-static constexpr unsigned int XGL_INVALID = ( unsigned int ) -1;
-
-#if !defined( NDEBUG )
-#	define XGL_CALL( X )                     \
-		{                                     \
-			glGetError();                     \
-			X;                                \
-			unsigned int _err = glGetError(); \
-			assert( _err == GL_NO_ERROR );    \
-		}
-#else
-#	define XGL_CALL( X ) X
-#endif
 
 ///////////////////////////////////////////
 // Debug
@@ -943,254 +915,14 @@ static void xgl_set_clip_plane( const QmMathVector4f *clip, const PLMatrix4 *tra
 	}
 }
 
-/////////////////////////////////////////////////////////////
-// Mesh
-
-static unsigned int xgl_translate_primitive_mode( QmGfxMeshPrimitive mode )
+const QmMathVector4f *xgl_get_clip_plane()
 {
-	switch ( mode )
-	{
-		default:
-			return XGL_INVALID;
-		case QM_GFX_MESH_PRIMITIVE_LINES:
-			return GL_LINES;
-		case QM_GFX_MESH_PRIMITIVE_LINE_LOOP:
-			return GL_LINE_LOOP;
-		case QM_GFX_MESH_PRIMITIVE_POINTS:
-			return GL_POINTS;
-		case QM_GFX_MESH_PRIMITIVE_TRIANGLES:
-			return GL_TRIANGLES;
-		case QM_GFX_MESH_PRIMITIVE_TRIANGLE_FAN:
-			return GL_TRIANGLE_FAN;
-		case QM_GFX_MESH_PRIMITIVE_TRIANGLE_FAN_LINE:
-			return GL_LINES;
-		case QM_GFX_MESH_PRIMITIVE_TRIANGLE_STRIP:
-			return GL_TRIANGLE_STRIP;
-	}
+	return &clipPlane;
 }
 
-static unsigned int xgl_translate_draw_mode( QmGfxMeshDrawMode mode )
+const PLMatrix4 *xgl_get_clip_matrix()
 {
-	switch ( mode )
-	{
-		default:
-			return XGL_INVALID;
-		case QM_GFX_MESH_DRAW_MODE_DYNAMIC:
-			return GL_DYNAMIC_DRAW;
-		case QM_GFX_MESH_DRAW_MODE_STATIC:
-			return GL_STATIC_DRAW;
-		case QM_GFX_MESH_DRAW_MODE_STREAM:
-			return GL_STREAM_DRAW;
-	}
-}
-
-static void xgl_mesh_create( QmGfxMesh *self )
-{
-	XglMesh *drv = gInterface->core->MAlloc( sizeof( XglMesh ), true );
-
-	drv->vao = xgl_defaultVao;
-
-	// Create our internal buffers for GL
-	XGL_CALL( glCreateBuffers( XGL_MESH_BUFFER_MAX, drv->buffers ) );
-
-	self->driver = drv;
-}
-
-static void xgl_mesh_upload( QmGfxMesh *self, QmGfxShaderProgram *program )
-{
-	if ( !self->isDirty )
-	{
-		return;
-	}
-
-	unsigned int drawMode = xgl_translate_draw_mode( self->mode );
-	assert( drawMode != XGL_INVALID );
-
-	XglMesh *drv = self->driver;
-
-	// Write the current CPU vertex data into the VBO
-	XGL_CALL( glNamedBufferData( drv->buffers[ XGL_MESH_BUFFER_VERTEX ], ( GLsizei ) ( sizeof( QmGfxMeshVertex ) * self->num_verts ), &self->vertices[ 0 ], drawMode ) );
-
-	//Point to the different substreams of the interleaved BVO
-	//Args: Index, Size, Type, (Normalized), Stride, StartPtr
-
-	if ( drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] != 0 )
-	{
-		XGL_CALL( glNamedBufferData( drv->buffers[ XGL_MESH_BUFFER_ELEMENT ], sizeof( GLuint ) * self->num_indices, &self->indices[ 0 ], drawMode ) );
-	}
-
-	self->isDirty = false;
-}
-
-static void xgl_mesh_delete( QmGfxMesh *self )
-{
-	XglMesh *drv = self->driver;
-	XGL_CALL( glDeleteBuffers( XGL_MESH_BUFFER_MAX, drv->buffers ) );
-
-	gInterface->core->Free( drv );
-	self->driver = nullptr;
-}
-
-#if 0// we're now doing this during init, I get the impression it's not necessary to do this *every* time...
-static void xgl_mesh_setup_attributes( QmGfxMesh *self, const QmGfxShaderProgram *program )
-{
-	XglMesh *drv = self->driver;
-
-	for ( unsigned int i = 0; i < XGL_SHADER_ATTRIBUTE_TYPE_MAX; ++i )
-	{
-		unsigned int attr;
-		if ( ( attr = ( ( XglShaderProgram * ) program->driver )->defaultAttributes[ i ] ) == XGL_INVALID )
-		{
-			continue;
-		}
-
-		XGL_CALL( glEnableVertexArrayAttrib( drv->vao, attr ) );
-		XGL_CALL( glVertexArrayAttribBinding( drv->vao, attr, bindingIndex ) );
-	}
-}
-#endif
-
-static void xgl_mesh_draw_instanced( QmGfxMesh *self, QmGfxShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount )
-{
-	XglMesh *drv = self->driver;
-	if ( drv->buffers[ XGL_MESH_BUFFER_VERTEX ] == 0 )
-	{
-		XGL_DEBUG( "invalid buffer provided, skipping draw!\n" );
-		return;
-	}
-
-	if ( self->primitiveScale != 0.0f )
-	{
-		if ( self->primitive == QM_GFX_MESH_PRIMITIVE_LINES )
-		{
-			XGL_CALL( glLineWidth( self->primitiveScale ) );
-		}
-		else if ( self->primitive == QM_GFX_MESH_PRIMITIVE_POINTS )
-		{
-			XGL_CALL( glPointSize( self->primitiveScale ) );
-		}
-	}
-
-	static constexpr unsigned int bindingIndex = 0;
-	if ( self->num_indices > 0 && drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] != 0 )
-	{
-		XGL_CALL( glVertexArrayElementBuffer( drv->vao, drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] ) );
-	}
-
-	XGL_CALL( glVertexArrayVertexBuffer( drv->vao, bindingIndex, drv->buffers[ XGL_MESH_BUFFER_VERTEX ], 0, sizeof( QmGfxMeshVertex ) ) );
-
-	//Ensure VAO/VBO/EBO are bound
-	XGL_CALL( glBindVertexArray( drv->vao ) );
-
-	//draw
-	GLuint mode = xgl_translate_primitive_mode( self->primitive );
-	assert( mode != XGL_INVALID );
-	if ( self->num_indices > 0 )
-	{
-		XGL_CALL( glDrawElementsInstanced( mode, self->num_indices, GL_UNSIGNED_INT, nullptr, instanceCount ) );
-	}
-	else
-	{
-		XGL_CALL( glDrawArraysInstanced( mode, 0, self->num_verts, instanceCount ) );
-	}
-
-	if ( self->primitiveScale != 0.0f )
-	{
-		if ( self->primitive == QM_GFX_MESH_PRIMITIVE_LINES )
-		{
-			XGL_CALL( glLineWidth( 1.0f ) );
-		}
-		else if ( self->primitive == QM_GFX_MESH_PRIMITIVE_POINTS )
-		{
-			XGL_CALL( glPointSize( 1.0f ) );
-		}
-	}
-}
-
-static void xgl_mesh_draw( QmGfxMesh *self, QmGfxShaderProgram *program )
-{
-	XglMesh *drv = self->driver;
-	if ( drv->buffers[ XGL_MESH_BUFFER_VERTEX ] == 0 )
-	{
-		XGL_DEBUG( "invalid vertex buffer provided, skipping draw!\n" );
-		return;
-	}
-	if ( self->num_indices > 0 && drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] == 0 )
-	{
-		XGL_DEBUG( "invalid element buffer provided, skipping draw!\n" );
-		return;
-	}
-
-	// Set up the default uniforms
-	unsigned int slot;
-	if ( ( slot = ( ( XglShaderProgram * ) program->driver )->defaultUniforms[ XGL_SHADER_UNIFORM_TYPE_CLIP_PLANE ] ) != XGL_INVALID )
-	{
-		XGL_CALL( glUniform4fv( slot, 1, ( float * ) &clipPlane ) );
-	}
-	if ( ( slot = ( ( XglShaderProgram * ) program->driver )->defaultUniforms[ XGL_SHADER_UNIFORM_TYPE_CLIP_PLANE_MATRIX ] ) != XGL_INVALID )
-	{
-		XGL_CALL( glUniformMatrix4fv( slot, 1, GL_FALSE, clipPlaneMatrix.m ) );
-	}
-
-	if ( self->primitiveScale != 0.0f )
-	{
-		if ( self->primitive == QM_GFX_MESH_PRIMITIVE_LINES )
-		{
-			XGL_CALL( glLineWidth( self->primitiveScale ) );
-		}
-		else if ( self->primitive == QM_GFX_MESH_PRIMITIVE_POINTS )
-		{
-			XGL_CALL( glPointSize( self->primitiveScale ) );
-		}
-	}
-
-	static constexpr unsigned int bindingIndex = 0;
-	if ( self->num_indices > 0 && drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] != 0 )
-	{
-		XGL_CALL( glVertexArrayElementBuffer( drv->vao, drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] ) );
-	}
-
-	XGL_CALL( glVertexArrayVertexBuffer( drv->vao, bindingIndex, drv->buffers[ XGL_MESH_BUFFER_VERTEX ], 0, sizeof( QmGfxMeshVertex ) ) );
-
-	XGL_CALL( glBindVertexArray( drv->vao ) );
-
-	//draw
-	GLuint mode = xgl_translate_primitive_mode( self->primitive );
-	assert( mode != XGL_INVALID );
-	if ( self->num_indices > 0 )
-	{
-		if ( self->numSubMeshes > 0 )
-		{
-			XGL_CALL( glMultiDrawElements( mode, self->subMeshes, GL_UNSIGNED_INT, nullptr, self->numSubMeshes ) );
-		}
-		else
-		{
-			XGL_CALL( glDrawElements( mode, self->range, GL_UNSIGNED_INT, ( void * ) ( self->start * sizeof( GLuint ) ) ) );
-		}
-	}
-	else
-	{
-		if ( self->numSubMeshes > 0 )
-		{
-			XGL_CALL( glMultiDrawArrays( mode, self->firstSubMeshes, self->subMeshes, self->numSubMeshes ) );
-		}
-		else
-		{
-			XGL_CALL( glDrawArrays( mode, self->start, self->num_verts ) );
-		}
-	}
-
-	if ( self->primitiveScale != 0.0f )
-	{
-		if ( self->primitive == QM_GFX_MESH_PRIMITIVE_LINES )
-		{
-			XGL_CALL( glLineWidth( 1.0f ) );
-		}
-		else if ( self->primitive == QM_GFX_MESH_PRIMITIVE_POINTS )
-		{
-			XGL_CALL( glPointSize( 1.0f ) );
-		}
-	}
+	return &clipPlaneMatrix;
 }
 
 /////////////////////////////////////////////////////////////
@@ -1359,12 +1091,6 @@ static char *xgl_shader_stage_pp_glsl( QmGfxShaderStage *self, char *buf, size_t
 		insert( "uniform mat4 pl_clipplane_matrix;\n" );
 		if ( self->type == QM_GFX_SHADER_STAGE_TYPE_VERTEX )
 		{
-			insert( "layout (location = 0) in vec3 pl_vposition;\n" ); //XGL_SHADER_ATTRIBUTE_TYPE_POSITION
-			insert( "layout (location = 1) in vec3 pl_vnormal;\n" );   //XGL_SHADER_ATTRIBUTE_TYPE_NORMAL
-			insert( "layout (location = 2) in vec4 pl_vcolour;\n" );   //XGL_SHADER_ATTRIBUTE_TYPE_COLOUR
-			insert( "layout (location = 3) in vec3 pl_vtangent;\n" );  //XGL_SHADER_ATTRIBUTE_TYPE_TANGENT
-			insert( "layout (location = 4) in vec3 pl_vbitangent;\n" );//XGL_SHADER_ATTRIBUTE_TYPE_BITANGENT
-			insert( "layout (location = 5) in vec2 pl_vuv[4];\n" );    //XGL_SHADER_ATTRIBUTE_TYPE_UV0
 			insert( "out float gl_ClipDistance[1];\n" );
 			insert( "#define PLG_COMPILE_VERTEX 1\n" );
 		}
@@ -1483,7 +1209,6 @@ static void xgl_shader_program_create( QmGfxShaderProgram *program )
 		return;
 	}
 
-	memset( drv->defaultAttributes, XGL_INVALID, sizeof( XglShaderAttributeType ) * XGL_SHADER_ATTRIBUTE_TYPE_MAX );
 	memset( drv->defaultUniforms, XGL_INVALID, sizeof( XglShaderUniformType ) * XGL_SHADER_UNIFORM_TYPE_MAX );
 
 	program->driver = drv;
@@ -2085,29 +1810,15 @@ static PLFunctionResult xgl_initialize()
 
 	XGL_CALL( glEnable( GL_TEXTURE_CUBE_MAP_SEAMLESS ) );
 
-	// create our global VAO - eventually this'll die :)
-	XGL_CALL( glCreateVertexArrays( 1, &xgl_defaultVao ) );
-	XGL_CALL( glVertexArrayAttribFormat( xgl_defaultVao, XGL_SHADER_ATTRIBUTE_TYPE_POSITION, 3, GL_FLOAT, GL_FALSE, offsetof( QmGfxMeshVertex, position ) ) );
-	XGL_CALL( glVertexArrayAttribFormat( xgl_defaultVao, XGL_SHADER_ATTRIBUTE_TYPE_NORMAL, 3, GL_FLOAT, GL_FALSE, offsetof( QmGfxMeshVertex, normal ) ) );
-	XGL_CALL( glVertexArrayAttribFormat( xgl_defaultVao, XGL_SHADER_ATTRIBUTE_TYPE_COLOUR, 4, GL_UNSIGNED_BYTE, GL_TRUE, offsetof( QmGfxMeshVertex, colour ) ) );
-	XGL_CALL( glVertexArrayAttribFormat( xgl_defaultVao, XGL_SHADER_ATTRIBUTE_TYPE_TANGENT, 3, GL_FLOAT, GL_FALSE, offsetof( QmGfxMeshVertex, tangent ) ) );
-	XGL_CALL( glVertexArrayAttribFormat( xgl_defaultVao, XGL_SHADER_ATTRIBUTE_TYPE_BITANGENT, 3, GL_FLOAT, GL_FALSE, offsetof( QmGfxMeshVertex, bitangent ) ) );
-	for ( unsigned int i = 0; i < 4; ++i )
-	{
-		XGL_CALL( glVertexArrayAttribFormat( xgl_defaultVao, XGL_SHADER_ATTRIBUTE_TYPE_UV0 + i, 2, GL_FLOAT, GL_FALSE, offsetof( QmGfxMeshVertex, st ) + i * sizeof( QmMathVector2f ) ) );
-	}
-
-	for ( unsigned int i = 0; i < XGL_SHADER_ATTRIBUTE_TYPE_MAX; ++i )
-	{
-		XGL_CALL( glEnableVertexArrayAttrib( xgl_defaultVao, i ) );
-		XGL_CALL( glVertexArrayAttribBinding( xgl_defaultVao, i, 0 ) );
-	}
+	xgl_mesh_vao_manager_initialize();
 
 	return PL_RESULT_SUCCESS;
 }
 
 static void xgl_shutdown()
 {
+	xgl_mesh_vao_manager_shutdown();
+
 #if defined( DEBUG_GL )
 	XGL_CALL( glDisable( GL_DEBUG_OUTPUT ) );
 	XGL_CALL( glDisable( GL_DEBUG_OUTPUT_SYNCHRONOUS ) );
