@@ -1043,37 +1043,16 @@ static void xgl_mesh_setup_attributes( QmGfxMesh *self, const QmGfxShaderProgram
 
 	XGL_CALL( glVertexArrayVertexBuffer( drv->vao, bindingIndex, drv->buffers[ XGL_MESH_BUFFER_VERTEX ], 0, sizeof( QmGfxMeshVertex ) ) );
 
-	unsigned int attr;
-	if ( ( attr = ( ( XglShaderProgram * ) program->driver )->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_POSITION ] ) != XGL_INVALID )
+	for ( unsigned int i = 0; i < XGL_SHADER_ATTRIBUTE_TYPE_MAX; ++i )
 	{
-		XGL_CALL( glEnableVertexArrayAttrib( drv->vao, attr ) );
-		XGL_CALL( glVertexArrayAttribBinding( drv->vao, attr, bindingIndex ) );
-	}
-	if ( ( attr = ( ( XglShaderProgram * ) program->driver )->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_NORMAL ] ) != XGL_INVALID )
-	{
-		XGL_CALL( glEnableVertexArrayAttrib( drv->vao, attr ) );
-		XGL_CALL( glVertexArrayAttribBinding( drv->vao, attr, bindingIndex ) );
-	}
-	if ( ( attr = ( ( XglShaderProgram * ) program->driver )->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_COLOUR ] ) != XGL_INVALID )
-	{
-		XGL_CALL( glEnableVertexArrayAttrib( drv->vao, attr ) );
-		XGL_CALL( glVertexArrayAttribBinding( drv->vao, attr, bindingIndex ) );
-	}
-	if ( ( attr = ( ( XglShaderProgram * ) program->driver )->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_TANGENT ] ) != XGL_INVALID )
-	{
-		XGL_CALL( glEnableVertexArrayAttrib( drv->vao, attr ) );
-	}
-	if ( ( attr = ( ( XglShaderProgram * ) program->driver )->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_BITANGENT ] ) != XGL_INVALID )
-	{
-		XGL_CALL( glEnableVertexArrayAttrib( drv->vao, attr ) );
-	}
-	if ( ( attr = ( ( XglShaderProgram * ) program->driver )->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_UV0 ] ) != XGL_INVALID )
-	{
-		for ( unsigned int i = 0; i < 4; ++i )
+		unsigned int attr;
+		if ( ( attr = ( ( XglShaderProgram * ) program->driver )->defaultAttributes[ i ] ) == XGL_INVALID )
 		{
-			XGL_CALL( glEnableVertexArrayAttrib( drv->vao, attr + i ) );
-			XGL_CALL( glVertexArrayAttribBinding( drv->vao, attr + i, bindingIndex ) );
+			continue;
 		}
+
+		XGL_CALL( glEnableVertexArrayAttrib( drv->vao, attr ) );
+		XGL_CALL( glVertexArrayAttribBinding( drv->vao, attr, bindingIndex ) );
 	}
 }
 
@@ -1643,7 +1622,10 @@ static void xgl_shader_program_register_data( QmGfxShaderProgram *self )
 	XglShaderProgram *drv = self->driver;
 	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_POSITION ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vposition" ) );
 	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_NORMAL ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vnormal" ) );
-	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_UV0 ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vuv" ) );
+	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_UV0 ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vuv[0]" ) );
+	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_UV1 ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vuv[1]" ) );
+	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_UV2 ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vuv[2]" ) );
+	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_UV3 ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vuv[3]" ) );
 	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_COLOUR ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vcolour" ) );
 	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_TANGENT ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vtangent" ) );
 	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_BITANGENT ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vbitangent" ) );
