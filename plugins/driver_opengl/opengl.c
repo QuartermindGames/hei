@@ -1031,17 +1031,10 @@ static void xgl_mesh_delete( QmGfxMesh *self )
 	self->driver = nullptr;
 }
 
+#if 0// we're now doing this during init, I get the impression it's not necessary to do this *every* time...
 static void xgl_mesh_setup_attributes( QmGfxMesh *self, const QmGfxShaderProgram *program )
 {
 	XglMesh *drv = self->driver;
-
-	static constexpr unsigned int bindingIndex = 0;
-	if ( self->num_indices > 0 && drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] != 0 )
-	{
-		XGL_CALL( glVertexArrayElementBuffer( drv->vao, drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] ) );
-	}
-
-	XGL_CALL( glVertexArrayVertexBuffer( drv->vao, bindingIndex, drv->buffers[ XGL_MESH_BUFFER_VERTEX ], 0, sizeof( QmGfxMeshVertex ) ) );
 
 	for ( unsigned int i = 0; i < XGL_SHADER_ATTRIBUTE_TYPE_MAX; ++i )
 	{
@@ -1055,6 +1048,7 @@ static void xgl_mesh_setup_attributes( QmGfxMesh *self, const QmGfxShaderProgram
 		XGL_CALL( glVertexArrayAttribBinding( drv->vao, attr, bindingIndex ) );
 	}
 }
+#endif
 
 static void xgl_mesh_draw_instanced( QmGfxMesh *self, QmGfxShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount )
 {
@@ -1077,11 +1071,16 @@ static void xgl_mesh_draw_instanced( QmGfxMesh *self, QmGfxShaderProgram *progra
 		}
 	}
 
+	static constexpr unsigned int bindingIndex = 0;
+	if ( self->num_indices > 0 && drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] != 0 )
+	{
+		XGL_CALL( glVertexArrayElementBuffer( drv->vao, drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] ) );
+	}
+
+	XGL_CALL( glVertexArrayVertexBuffer( drv->vao, bindingIndex, drv->buffers[ XGL_MESH_BUFFER_VERTEX ], 0, sizeof( QmGfxMeshVertex ) ) );
+
 	//Ensure VAO/VBO/EBO are bound
 	XGL_CALL( glBindVertexArray( drv->vao ) );
-
-	XGL_CALL( glBindBuffer( GL_ARRAY_BUFFER, drv->buffers[ XGL_MESH_BUFFER_VERTEX ] ) );
-	XGL_CALL( glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] ) );
 
 	//draw
 	GLuint mode = xgl_translate_primitive_mode( self->primitive );
@@ -1145,7 +1144,13 @@ static void xgl_mesh_draw( QmGfxMesh *self, QmGfxShaderProgram *program )
 		}
 	}
 
-	xgl_mesh_setup_attributes( self, program );
+	static constexpr unsigned int bindingIndex = 0;
+	if ( self->num_indices > 0 && drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] != 0 )
+	{
+		XGL_CALL( glVertexArrayElementBuffer( drv->vao, drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] ) );
+	}
+
+	XGL_CALL( glVertexArrayVertexBuffer( drv->vao, bindingIndex, drv->buffers[ XGL_MESH_BUFFER_VERTEX ], 0, sizeof( QmGfxMeshVertex ) ) );
 
 	XGL_CALL( glBindVertexArray( drv->vao ) );
 
@@ -1620,16 +1625,6 @@ static void xgl_shader_program_register_data( QmGfxShaderProgram *self )
 	}
 
 	XglShaderProgram *drv = self->driver;
-	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_POSITION ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vposition" ) );
-	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_NORMAL ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vnormal" ) );
-	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_UV0 ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vuv[0]" ) );
-	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_UV1 ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vuv[1]" ) );
-	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_UV2 ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vuv[2]" ) );
-	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_UV3 ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vuv[3]" ) );
-	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_COLOUR ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vcolour" ) );
-	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_TANGENT ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vtangent" ) );
-	XGL_CALL( drv->defaultAttributes[ XGL_SHADER_ATTRIBUTE_TYPE_BITANGENT ] = ( unsigned int ) glGetAttribLocation( drv->id, "pl_vbitangent" ) );
-
 	XGL_CALL( drv->defaultUniforms[ XGL_SHADER_UNIFORM_TYPE_MODEL_MATRIX ] = ( unsigned int ) glGetUniformLocation( drv->id, "pl_model" ) );
 	XGL_CALL( drv->defaultUniforms[ XGL_SHADER_UNIFORM_TYPE_VIEW_MATRIX ] = ( unsigned int ) glGetUniformLocation( drv->id, "pl_view" ) );
 	XGL_CALL( drv->defaultUniforms[ XGL_SHADER_UNIFORM_TYPE_PROJECTION_MATRIX ] = ( unsigned int ) glGetUniformLocation( drv->id, "pl_proj" ) );
@@ -2028,7 +2023,7 @@ static void xgl_message_callback(
 }
 #endif
 
-static PLFunctionResult xgl_initialize( void )
+static PLFunctionResult xgl_initialize()
 {
 	glewExperimental = true;
 	GLenum err       = glewInit();
@@ -2102,10 +2097,16 @@ static PLFunctionResult xgl_initialize( void )
 		XGL_CALL( glVertexArrayAttribFormat( xgl_defaultVao, XGL_SHADER_ATTRIBUTE_TYPE_UV0 + i, 2, GL_FLOAT, GL_FALSE, offsetof( QmGfxMeshVertex, st ) + i * sizeof( QmMathVector2f ) ) );
 	}
 
+	for ( unsigned int i = 0; i < XGL_SHADER_ATTRIBUTE_TYPE_MAX; ++i )
+	{
+		XGL_CALL( glEnableVertexArrayAttrib( xgl_defaultVao, i ) );
+		XGL_CALL( glVertexArrayAttribBinding( xgl_defaultVao, i, 0 ) );
+	}
+
 	return PL_RESULT_SUCCESS;
 }
 
-static void xgl_shutdown( void )
+static void xgl_shutdown()
 {
 #if defined( DEBUG_GL )
 	XGL_CALL( glDisable( GL_DEBUG_OUTPUT ) );
