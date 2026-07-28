@@ -77,7 +77,6 @@ QmGfxMesh *qm_gfx_mesh_create( QmGfxMeshPrimitive primitive, QmGfxMeshDrawMode m
 	        {6, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st ) + 1 * sizeof( QmMathVector2f )},
 	        {7, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st ) + 2 * sizeof( QmMathVector2f )},
 	        {8, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st ) + 3 * sizeof( QmMathVector2f )},
-	        {9, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st ) + 4 * sizeof( QmMathVector2f )},
 	};
 	static constexpr unsigned int NUM_DEFAULT_ATTRIBUTES = QM_OS_ARRAY_ELEMENTS( DEFAULT_ATTRIBUTES );
 

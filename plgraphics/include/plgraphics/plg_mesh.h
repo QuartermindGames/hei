@@ -89,9 +89,9 @@ typedef enum QmGfxMeshDrawMode
 typedef struct QmGfxMeshVertex
 {
 	QmMathVector3f  position, normal;
-	QmMathVector3f  tangent, bitangent;
-	QmMathVector2f  st[ 16 ];
 	QmMathColour4ub colour;
+	QmMathVector3f  tangent, bitangent;
+	QmMathVector2f  st[ 4 ];
 } QmGfxMeshVertex;
 
 typedef struct QmGfxMesh
