@@ -4,8 +4,6 @@
  * This software is licensed under MIT. See LICENSE for more details.
  */
 
-#include <plgraphics/plg_driver_interface.h>
-
 #include "plg_private.h"
 
 #include "qmos/public/qm_os_memory.h"
@@ -143,6 +141,23 @@ QmGfxMesh *PlgCreateMesh( QmGfxMeshPrimitive primitive, QmGfxMeshDrawMode mode, 
 	mesh->maxVertices = numVertices;
 	mesh->vertices    = QM_OS_MEMORY_NEW_( QmGfxMeshVertex, mesh->maxVertices );
 
+	static constexpr QmGfxMeshVertexAttribute DEFAULT_ATTRIBUTES[] = {
+	        {0, 3, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, position )                         },
+	        {1, 3, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, normal )                           },
+	        {2, 4, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_UINT8,   offsetof( QmGfxMeshVertex, colour )                           },
+	        {3, 3, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, tangent )                          },
+	        {4, 3, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, bitangent )                        },
+	        {5, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st )                               },
+	        {6, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st ) + 1 * sizeof( QmMathVector2f )},
+	        {7, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st ) + 2 * sizeof( QmMathVector2f )},
+	        {8, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st ) + 3 * sizeof( QmMathVector2f )},
+	        {9, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st ) + 4 * sizeof( QmMathVector2f )},
+	};
+	static constexpr unsigned int NUM_DEFAULT_ATTRIBUTES = QM_OS_ARRAY_ELEMENTS( DEFAULT_ATTRIBUTES );
+
+	//TODO: temporary
+	qm_gfx_mesh_set_vertex_layout( mesh, DEFAULT_ATTRIBUTES, NUM_DEFAULT_ATTRIBUTES, sizeof( QmGfxMeshVertex ) );
+
 	mesh->isDirty = true;
 
 	CallGfxFunction( CreateMesh, mesh );
@@ -198,7 +213,7 @@ void PlgSetMeshVertexSTv( QmGfxMesh *mesh, uint8_t unit, unsigned int index, uns
 	size += index;
 	if ( size > mesh->num_verts )
 	{
-		size -= ( size - mesh->num_verts );
+		size -= size - mesh->num_verts;
 	}
 
 	for ( unsigned int i = index; i < size; i++ )
@@ -260,10 +275,9 @@ unsigned int PlgAddMeshTriangle( QmGfxMesh *mesh, unsigned int x, unsigned int y
 	return triangleIndex;
 }
 
-/* todo: combine with Draw? */
-void PlgUploadMesh( QmGfxMesh *mesh )
+void PlgUploadMesh( QmGfxMesh *mesh, const void *vertexPtr )
 {
-	CallGfxFunction( UploadMesh, mesh, gfx_state.current_program );
+	CallGfxFunction( UploadMesh, mesh, gfx_state.current_program, vertexPtr != nullptr ? vertexPtr : mesh->vertices );
 }
 
 void PlgDrawMesh( QmGfxMesh *mesh )
@@ -310,6 +324,22 @@ void PlgDrawInstancedMesh( QmGfxMesh *mesh, const PLMatrix4 *transforms, unsigne
 // Vertex Attribute Declarations
 /////////////////////////////////////////////////////////////////////////////////////
 
-void qm_gfx_mesh_set_vertex_layout( QmGfxMesh *mesh, const QmGfxMeshVertexAttribute *attributes, unsigned int numAttributes, void *ptr )
+QmGfxResult qm_gfx_mesh_set_vertex_layout( QmGfxMesh *mesh, const QmGfxMeshVertexAttribute *attributes, unsigned int numAttributes, size_t size )
 {
+	if ( mesh->vertexDescriptor.numAttributes >= QM_GFX_MESH_MAX_ATTRIBUTES )
+	{
+		return -1;
+	}
+
+	// we don't yet expose our hashing methods to the backend, so we'll have to compute the hash here
+	// but why? WHY!? well we need a vao on gl side, so we hash it so we only create one as and when
+	// necessary (which I *think* makes sense?)
+	mesh->vertexDescriptor.attributeTableHash = PlGenerateHashFNV1( attributes, sizeof( QmGfxMeshVertexAttribute ) * numAttributes );
+
+	mesh->vertexDescriptor.numAttributes = numAttributes;
+	memcpy( mesh->vertexDescriptor.attributes, attributes, sizeof( QmGfxMeshVertexAttribute ) * numAttributes );
+
+	mesh->vertexDescriptor.size = size;
+
+	return QM_GFX_RESULT_SUCCESS;
 }

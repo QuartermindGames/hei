@@ -16,7 +16,8 @@ PL_EXTERN_C
 #	define GfxLog( ... )
 #endif
 
-typedef struct GfxState {
+typedef struct GfxState
+{
 	const PLGDriverImportTable *interface;
 
 	PLGCullMode current_cullmode;
@@ -24,7 +25,7 @@ typedef struct GfxState {
 	QmMathColour4ub current_clearcolour;
 	QmMathColour4ub current_colour;// Current global colour.
 
-	bool current_capabilities[ PLG_GFX_MAX_STATES ];// Enabled capabilities.
+	bool         current_capabilities[ PLG_GFX_MAX_STATES ];// Enabled capabilities.
 	unsigned int current_textureunit;
 
 	// Textures
@@ -34,7 +35,7 @@ typedef struct GfxState {
 	// Shader states
 
 	QmGfxShaderProgram *current_program;
-	PLPath shaderCacheLocation; /* where shaders should be cached to, if supported */
+	PLPath              shaderCacheLocation; /* where shaders should be cached to, if supported */
 
 	// Hardware / Driver information
 
@@ -52,7 +53,8 @@ typedef struct GfxState {
 
 	////////////////////////////////////////
 
-	struct {
+	struct
+	{
 		int x, y;
 		int w, h;
 	} viewport;
@@ -61,21 +63,28 @@ typedef struct GfxState {
 } GfxState;
 
 #define CallGfxFunction( FUNCTION, ... )                                   \
-	if ( gfx_state.interface != NULL ) {                                   \
+	if ( gfx_state.interface != NULL )                                     \
+	{                                                                      \
 		if ( gfx_state.interface->FUNCTION != NULL )                       \
 			gfx_state.interface->FUNCTION( __VA_ARGS__ );                  \
 		else                                                               \
 			GfxLog( "Unbound layer function %s was called\n", #FUNCTION ); \
 	}
 #define CallReturningGfxFunction( FUNCTION, RETURN, ... )                  \
-	if ( gfx_state.interface != NULL ) {                                   \
-		if ( gfx_state.interface->FUNCTION != NULL ) {                     \
+	if ( gfx_state.interface != NULL )                                     \
+	{                                                                      \
+		if ( gfx_state.interface->FUNCTION != NULL )                       \
+		{                                                                  \
 			return gfx_state.interface->FUNCTION( __VA_ARGS__ );           \
-		} else {                                                           \
+		}                                                                  \
+		else                                                               \
+		{                                                                  \
 			GfxLog( "Unbound layer function %s was called\n", #FUNCTION ); \
 			return ( RETURN );                                             \
 		}                                                                  \
-	} else {                                                               \
+	}                                                                      \
+	else                                                                   \
+	{                                                                      \
 		return ( RETURN );                                                 \
 	}
 

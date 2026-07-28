@@ -4,27 +4,38 @@
 
 #include "plugin.h"
 
-/////////////////////////////////////////////////////////////
+typedef struct XglMesh
+{
+	unsigned int buffers[ XGL_MESH_BUFFER_MAX ];
+	unsigned int vertexLayout;
+} XglMesh;
+
+/////////////////////////////////////////////////////////////////////////////////////
 // VAO Management
 // Urgh... This *should* use a hash lookup, but that's not
 // exposed to our dumb plugin interface thing which is going
 // to go out the window anyway. So, that's why this is just
 // awful for now. Sorry! :(
 
-static GLuint xgl_defaultVao;
+// I decided this probably doesn't matter, so parked and put it behind this for now
+// odds are an application is only going to create so many of these and they'll
+// rarely change (my engine only needs three?)
+//#define XGL_MESH_VAO_REF_COUNTING
 
 typedef struct XglMeshVertexLayout
 {
-	GLuint                   vao;
-	QmGfxMeshVertexAttribute attributes[ QM_GFX_MESH_MAX_ATTRIBUTES ];
-	unsigned int             numAttributes;
+	GLuint   vao;
+	uint64_t hash;
+#ifdef XGL_MESH_VAO_REF_COUNTING
+	unsigned int refs;
+#endif
 } XglMeshVertexLayout;
 
 static unsigned int         maxMeshVertexLayouts;
 static unsigned int         numMeshVertexLayouts;
 static XglMeshVertexLayout *meshVertexLayouts;
 
-static unsigned int xgl_translate_data_type_to_gl_type( QmGfxMeshVertexAttributeType type )
+static unsigned int xgl_translate_attribute_type( const QmGfxMeshVertexAttributeType type )
 {
 	switch ( type )
 	{
@@ -41,52 +52,107 @@ static unsigned int xgl_translate_data_type_to_gl_type( QmGfxMeshVertexAttribute
 	}
 }
 
-static unsigned int xgl_mesh_vao_manager_create_vao( const QmGfxMeshVertexAttribute *attributes, unsigned int numAttributes )
+static unsigned int xgl_mesh_vao_get( const QmGfxMeshVertexAttribute *attributes, unsigned int numAttributes, const uint64_t hash )
 {
+	//TODO: temporary until we can use our hash lookup api
+#ifdef XGL_MESH_VAO_REF_COUNTING
+	XglMeshVertexLayout *emptySlot = nullptr;
+#endif
+	for ( unsigned int i = 0; i < numMeshVertexLayouts; ++i )
+	{
+#ifdef XGL_MESH_VAO_REF_COUNTING
+		if ( emptySlot == nullptr && meshVertexLayouts[ i ].hash == 0 )
+		{
+			emptySlot = &meshVertexLayouts[ i ];
+			continue;
+		}
+#endif
+
+		if ( hash != meshVertexLayouts[ i ].hash )
+		{
+			continue;
+		}
+
+#ifdef XGL_MESH_VAO_REF_COUNTING
+		meshVertexLayouts[ i ].refs++;
+#endif
+		return i;
+	}
+
 	unsigned int vao;
 	XGL_CALL( glCreateVertexArrays( 1, &vao ) );
 	for ( unsigned int i = 0; i < numAttributes; ++i )
 	{
-		unsigned int type = xgl_translate_data_type_to_gl_type( attributes[ i ].type );
-		// this is a botch, sorry! the reason why there's no API to do this for now is because it seems normalization here
-		// is a GLism, so in the long-term it probably doesn't really make sense to keep it...
-		bool normalize = !( type == GL_HALF_FLOAT || type == GL_FLOAT || type == GL_DOUBLE );
+		unsigned int type = xgl_translate_attribute_type( attributes[ i ].type );
+		assert( type != XGL_INVALID );
 		XGL_CALL( glVertexArrayAttribFormat( vao,
 		                                     attributes[ i ].location,
 		                                     attributes[ i ].size,
-		                                     type, normalize,
+		                                     type,
+		                                     // this is a botch, sorry! the reason why there's no API to do this for now is because it seems normalization here
+		                                     // is a GLism, so in the long-term it probably doesn't really make sense to keep it...
+		                                     !( type == GL_HALF_FLOAT || type == GL_FLOAT || type == GL_DOUBLE ),
 		                                     attributes[ i ].offset ) );
 		XGL_CALL( glEnableVertexArrayAttrib( vao, attributes[ i ].location ) );
 		XGL_CALL( glVertexArrayAttribBinding( vao, attributes[ i ].location, 0 ) );
 	}
 
-	return vao;
+	// vao doesn't exist in the list, so whip up a new one
+	XglMeshVertexLayout *vertexLayout = &meshVertexLayouts[ numMeshVertexLayouts ];
+	vertexLayout->vao                 = vao;
+	vertexLayout->hash                = hash;
+
+#ifdef XGL_MESH_VAO_REF_COUNTING
+	vertexLayout->refs++;
+#endif
+
+	if ( numMeshVertexLayouts + 1 >= maxMeshVertexLayouts )
+	{
+		maxMeshVertexLayouts = numMeshVertexLayouts + 8;
+		meshVertexLayouts    = gInterface->core->ReAlloc( meshVertexLayouts, sizeof( XglMeshVertexLayout ) * maxMeshVertexLayouts, true );
+	}
+
+	return numMeshVertexLayouts++;
 }
+
+#ifdef XGL_MESH_VAO_REF_COUNTING
+static void xgl_mesh_vao_destroy( unsigned int vertexLayoutIndex )
+{
+	if ( vertexLayoutIndex != XGL_INVALID )
+	{
+		return;
+	}
+
+	XglMeshVertexLayout *vertexLayout = &meshVertexLayouts[ vertexLayoutIndex ];
+
+	vertexLayout->refs--;
+	if ( vertexLayout->refs == 0 )
+	{
+		XGL_CALL( glDeleteVertexArrays( 1, &vertexLayout->vao ) );
+		vertexLayout->vao  = XGL_INVALID;
+		vertexLayout->hash = 0;
+	}
+}
+#endif
 
 void xgl_mesh_vao_manager_initialize()
 {
 	maxMeshVertexLayouts = 8;
 	meshVertexLayouts    = gInterface->core->CAlloc( maxMeshVertexLayouts, sizeof( XglMeshVertexLayout ), true );
-
-	static constexpr QmGfxMeshVertexAttribute DEFAULT_ATTRIBUTES[] = {
-	        {0, 3, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, position )                         },
-	        {1, 3, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, normal )                           },
-	        {2, 4, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_UINT8,   offsetof( QmGfxMeshVertex, colour )                           },
-	        {3, 3, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, tangent )                          },
-	        {4, 3, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, bitangent )                        },
-	        {5, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st )                               },
-	        {6, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st ) + 1 * sizeof( QmMathVector2f )},
-	        {7, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st ) + 2 * sizeof( QmMathVector2f )},
-	        {8, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st ) + 3 * sizeof( QmMathVector2f )},
-	        {9, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( QmGfxMeshVertex, st ) + 4 * sizeof( QmMathVector2f )},
-	};
-	static constexpr unsigned int NUM_DEFAULT_ATTRIBUTES = QM_OS_ARRAY_ELEMENTS( DEFAULT_ATTRIBUTES );
-
-	xgl_defaultVao = xgl_mesh_vao_manager_create_vao( DEFAULT_ATTRIBUTES, NUM_DEFAULT_ATTRIBUTES );
 }
 
 void xgl_mesh_vao_manager_shutdown()
 {
+	for ( unsigned int i = 0; i < numMeshVertexLayouts; ++i )
+	{
+		if ( meshVertexLayouts[ i ].hash == 0 )
+		{
+			continue;
+		}
+
+		XGL_CALL( glDeleteVertexArrays( 1, &meshVertexLayouts[ i ].vao ) );
+	}
+
 	gInterface->core->Free( meshVertexLayouts );
 }
 
@@ -135,7 +201,7 @@ void xgl_mesh_create( QmGfxMesh *self )
 {
 	XglMesh *drv = gInterface->core->MAlloc( sizeof( XglMesh ), true );
 
-	drv->vao = xgl_defaultVao;
+	drv->vertexLayout = XGL_INVALID;
 
 	// Create our internal buffers for GL
 	XGL_CALL( glCreateBuffers( XGL_MESH_BUFFER_MAX, drv->buffers ) );
@@ -143,20 +209,40 @@ void xgl_mesh_create( QmGfxMesh *self )
 	self->driver = drv;
 }
 
-void xgl_mesh_upload( QmGfxMesh *self, QmGfxShaderProgram *program )
+void xgl_mesh_delete( QmGfxMesh *self )
+{
+	XglMesh *drv = self->driver;
+	XGL_CALL( glDeleteBuffers( XGL_MESH_BUFFER_MAX, drv->buffers ) );
+
+#ifdef XGL_MESH_VAO_REF_COUNTING
+	xgl_mesh_vao_destroy( drv->vertexLayout );
+#endif
+
+	gInterface->core->Free( drv );
+	self->driver = nullptr;
+}
+
+void xgl_mesh_upload( QmGfxMesh *self, QmGfxShaderProgram *program, const void *vertexPtr )
 {
 	if ( !self->isDirty )
 	{
 		return;
 	}
 
+	// check if there's a custom vertex layout specified
+	//TODO: this should be done on CREATION not UPLOAD, but we're
+	//		botching for now to work around the existing API design
+	XglMesh *drv = self->driver;
+	if ( drv->vertexLayout == XGL_INVALID )
+	{
+		drv->vertexLayout = xgl_mesh_vao_get( self->vertexDescriptor.attributes, self->vertexDescriptor.numAttributes, self->vertexDescriptor.attributeTableHash );
+	}
+
 	unsigned int drawMode = xgl_translate_draw_mode( self->mode );
 	assert( drawMode != XGL_INVALID );
 
-	XglMesh *drv = self->driver;
-
 	// Write the current CPU vertex data into the VBO
-	XGL_CALL( glNamedBufferData( drv->buffers[ XGL_MESH_BUFFER_VERTEX ], ( GLsizei ) ( sizeof( QmGfxMeshVertex ) * self->num_verts ), &self->vertices[ 0 ], drawMode ) );
+	XGL_CALL( glNamedBufferData( drv->buffers[ XGL_MESH_BUFFER_VERTEX ], ( GLsizei ) ( self->vertexDescriptor.size * self->num_verts ), vertexPtr, drawMode ) );
 
 	//Point to the different substreams of the interleaved BVO
 	//Args: Index, Size, Type, (Normalized), Stride, StartPtr
@@ -167,15 +253,6 @@ void xgl_mesh_upload( QmGfxMesh *self, QmGfxShaderProgram *program )
 	}
 
 	self->isDirty = false;
-}
-
-void xgl_mesh_delete( QmGfxMesh *self )
-{
-	XglMesh *drv = self->driver;
-	XGL_CALL( glDeleteBuffers( XGL_MESH_BUFFER_MAX, drv->buffers ) );
-
-	gInterface->core->Free( drv );
-	self->driver = nullptr;
 }
 
 void xgl_mesh_draw_instanced( QmGfxMesh *self, QmGfxShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount )
@@ -199,16 +276,15 @@ void xgl_mesh_draw_instanced( QmGfxMesh *self, QmGfxShaderProgram *program, cons
 		}
 	}
 
-	static constexpr unsigned int bindingIndex = 0;
 	if ( self->num_indices > 0 && drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] != 0 )
 	{
-		XGL_CALL( glVertexArrayElementBuffer( drv->vao, drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] ) );
+		XGL_CALL( glVertexArrayElementBuffer( meshVertexLayouts[ drv->vertexLayout ].vao, drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] ) );
 	}
 
-	XGL_CALL( glVertexArrayVertexBuffer( drv->vao, bindingIndex, drv->buffers[ XGL_MESH_BUFFER_VERTEX ], 0, sizeof( QmGfxMeshVertex ) ) );
+	XGL_CALL( glVertexArrayVertexBuffer( meshVertexLayouts[ drv->vertexLayout ].vao, 0, drv->buffers[ XGL_MESH_BUFFER_VERTEX ], 0, self->vertexDescriptor.size ) );
 
 	//Ensure VAO/VBO/EBO are bound
-	XGL_CALL( glBindVertexArray( drv->vao ) );
+	XGL_CALL( glBindVertexArray( meshVertexLayouts[ drv->vertexLayout ].vao ) );
 
 	//draw
 	GLuint mode = xgl_translate_primitive_mode( self->primitive );
@@ -249,7 +325,7 @@ void xgl_mesh_draw( QmGfxMesh *self, QmGfxShaderProgram *program )
 		return;
 	}
 
-#if 0
+#if 1
 	// Set up the default uniforms
 	unsigned int slot;
 	if ( ( slot = ( ( XglShaderProgram * ) program->driver )->defaultUniforms[ XGL_SHADER_UNIFORM_TYPE_CLIP_PLANE ] ) != XGL_INVALID )
@@ -276,15 +352,14 @@ void xgl_mesh_draw( QmGfxMesh *self, QmGfxShaderProgram *program )
 		}
 	}
 
-	static constexpr unsigned int bindingIndex = 0;
 	if ( self->num_indices > 0 && drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] != 0 )
 	{
-		XGL_CALL( glVertexArrayElementBuffer( drv->vao, drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] ) );
+		XGL_CALL( glVertexArrayElementBuffer( meshVertexLayouts[ drv->vertexLayout ].vao, drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] ) );
 	}
 
-	XGL_CALL( glVertexArrayVertexBuffer( drv->vao, bindingIndex, drv->buffers[ XGL_MESH_BUFFER_VERTEX ], 0, sizeof( QmGfxMeshVertex ) ) );
+	XGL_CALL( glVertexArrayVertexBuffer( meshVertexLayouts[ drv->vertexLayout ].vao, 0, drv->buffers[ XGL_MESH_BUFFER_VERTEX ], 0, self->vertexDescriptor.size ) );
 
-	XGL_CALL( glBindVertexArray( drv->vao ) );
+	XGL_CALL( glBindVertexArray( meshVertexLayouts[ drv->vertexLayout ].vao ) );
 
 	//draw
 	GLuint mode = xgl_translate_primitive_mode( self->primitive );

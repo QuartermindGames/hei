@@ -1,13 +1,12 @@
-/**
- * Hei Platform Library
- * Copyright (C) 2017-2021 Mark E Sowden <hogsy@oldtimes-software.com>
- * This software is licensed under MIT. See LICENSE for more details.
- */
+// Copyright © 2017-2026 Quartermind Games, Mark E. Sowden <markelswo@gmail.com>
 
 #pragma once
 
 #include <plcore/pl.h>
 #include <plcore/pl_math.h>
+
+typedef int          QmGfxResult;
+static constexpr int QM_GFX_RESULT_SUCCESS = 0;
 
 #include <plgraphics/plg_mesh.h>
 #include <plgraphics/plg_texture.h>

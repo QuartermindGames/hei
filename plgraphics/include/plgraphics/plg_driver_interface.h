@@ -83,7 +83,7 @@ typedef struct PLGDriverImportTable
 
 	// Mesh
 	void ( *CreateMesh )( QmGfxMesh *mesh );
-	void ( *UploadMesh )( QmGfxMesh *mesh, QmGfxShaderProgram *program );
+	void ( *UploadMesh )( QmGfxMesh *mesh, QmGfxShaderProgram *program, const void *vertexPtr );
 	void ( *DrawMesh )( QmGfxMesh *mesh, QmGfxShaderProgram *program );
 	void ( *DrawInstancedMesh )( QmGfxMesh *mesh, QmGfxShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount );
 	void ( *DeleteMesh )( QmGfxMesh *mesh );

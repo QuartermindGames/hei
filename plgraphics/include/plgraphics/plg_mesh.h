@@ -43,14 +43,19 @@ static constexpr unsigned int QM_GFX_MESH_MAX_ATTRIBUTES = 16;
 
 typedef struct QmGfxMeshVertexDescriptor
 {
+	uint64_t                 attributeTableHash;
 	QmGfxMeshVertexAttribute attributes[ QM_GFX_MESH_MAX_ATTRIBUTES ];
 	unsigned int             numAttributes;
-	void                    *ptr;
+	size_t                   size;
 } QmGfxMeshVertexDescriptor;
 
 #if !defined( PL_COMPILE_PLUGIN )
 
-void qm_gfx_mesh_set_vertex_layout( QmGfxMesh *mesh, const QmGfxMeshVertexAttribute *attributes, unsigned int numAttributes, void *ptr );
+/**
+ * Sets up the vertex layout for the given mesh.
+ * -1 : Unsupported number of attributes.
+ */
+QmGfxResult qm_gfx_mesh_set_vertex_layout( QmGfxMesh *mesh, const QmGfxMeshVertexAttribute *attributes, unsigned int numAttributes, size_t size );
 
 #endif
 
@@ -146,7 +151,7 @@ void PlgSetMeshPrimitiveScale( QmGfxMesh *mesh, float scale );
 unsigned int PlgAddMeshVertex( QmGfxMesh *mesh, const QmMathVector3f *position, const QmMathVector3f *normal, const QmMathColour4ub *colour, const QmMathVector2f *st );
 unsigned int PlgAddMeshTriangle( QmGfxMesh *mesh, unsigned int x, unsigned int y, unsigned int z );
 
-void PlgUploadMesh( QmGfxMesh *mesh );
+void PlgUploadMesh( QmGfxMesh *mesh, const void *vertexPtr );
 void PlgDrawMesh( QmGfxMesh *mesh );
 void PlgDrawSubMeshes( QmGfxMesh *mesh, int32_t *firstSubMeshes, int32_t *subMeshes, uint32_t numSubMeshes );
 
