@@ -125,50 +125,40 @@ typedef struct QmGfxMesh
 	void *driver;
 } QmGfxMesh;
 
-typedef struct PLCollisionAABB PLCollisionAABB;
-
 #if !defined( PL_COMPILE_PLUGIN )
 
-QmGfxMesh *PlgCreateMesh( QmGfxMeshPrimitive primitive, QmGfxMeshDrawMode mode, unsigned int numTriangles, unsigned int numVertices );
-void       PlgDestroyMesh( QmGfxMesh *mesh );
+QmGfxMesh *qm_gfx_mesh_create( QmGfxMeshPrimitive primitive, QmGfxMeshDrawMode mode, unsigned int numTriangles, unsigned int numVertices );
+void       qm_gfx_mesh_destroy( QmGfxMesh *mesh );
 
-void PlgDrawRectangle( float x, float y, float w, float h, QmMathColour4ub colour );
-void PlgDrawLineRectangle( float x, float y, float w, float h, QmMathColour4ub colour );
-void PlgDrawLines( const QmMathVector3f *points, unsigned int numPoints, QmMathColour4ub colour, float thickness );
-void PlgDrawLine( QmMathVector3f startPos, QmMathColour4ub startColour, QmMathVector3f endPos, QmMathColour4ub endColour );
-void PlgDrawSimpleLine( QmMathVector3f startPos, QmMathVector3f endPos, QmMathColour4ub colour );
-void PlgDrawPixel( int x, int y, QmMathColour4ub colour );
+[[deprecated]] void PlgDrawRectangle( float x, float y, float w, float h, QmMathColour4ub colour );
+[[deprecated]] void PlgDrawLineRectangle( float x, float y, float w, float h, QmMathColour4ub colour );
+[[deprecated]] void PlgDrawLines( const QmMathVector3f *points, unsigned int numPoints, QmMathColour4ub colour, float thickness );
+[[deprecated]] void PlgDrawLine( QmMathVector3f startPos, QmMathColour4ub startColour, QmMathVector3f endPos, QmMathColour4ub endColour );
+[[deprecated]] void PlgDrawSimpleLine( QmMathVector3f startPos, QmMathVector3f endPos, QmMathColour4ub colour );
 
-void PlgClearMesh( QmGfxMesh *mesh );
+[[deprecated]] void PlgClearMesh( QmGfxMesh *mesh );
 
-void PlgSetMeshVertexPosition( QmGfxMesh *mesh, unsigned int index, const QmMathVector3f *vector );
-void PlgSetMeshVertexNormal( QmGfxMesh *mesh, unsigned int index, const QmMathVector3f *vector );
-void PlgSetMeshVertexST( QmGfxMesh *mesh, unsigned int index, float s, float t );
-void PlgSetMeshVertexSTv( QmGfxMesh *mesh, uint8_t unit, unsigned int index, unsigned int size, const float *st );
-void PlgSetMeshVertexColour( QmGfxMesh *mesh, unsigned int index, const QmMathColour4ub *colour );
-void PlgSetMeshPrimitiveScale( QmGfxMesh *mesh, float scale );
+void qm_gfx_mesh_set_primitive_scale( QmGfxMesh *mesh, float scale );
 
-unsigned int PlgAddMeshVertex( QmGfxMesh *mesh, const QmMathVector3f *position, const QmMathVector3f *normal, const QmMathColour4ub *colour, const QmMathVector2f *st );
-unsigned int PlgAddMeshTriangle( QmGfxMesh *mesh, unsigned int x, unsigned int y, unsigned int z );
+[[deprecated]] unsigned int PlgAddMeshVertex( QmGfxMesh *mesh, const QmMathVector3f *position, const QmMathVector3f *normal, const QmMathColour4ub *colour, const QmMathVector2f *st );
+[[deprecated]] unsigned int PlgAddMeshTriangle( QmGfxMesh *mesh, unsigned int x, unsigned int y, unsigned int z );
 
-void PlgUploadMesh( QmGfxMesh *mesh, const void *vertexPtr );
-void PlgDrawMesh( QmGfxMesh *mesh );
-void PlgDrawSubMeshes( QmGfxMesh *mesh, int32_t *firstSubMeshes, int32_t *subMeshes, uint32_t numSubMeshes );
+void qm_gfx_mesh_upload( QmGfxMesh *mesh, const void *vertexPtr, const void *elementsPtr );
 
-void PlgGenerateVertexTangentBasis( QmGfxMeshVertex *vertices, unsigned int numVertices );
-void PlgGenerateTangentBasis( QmGfxMeshVertex *vertices, unsigned int numVertices, const unsigned int *indices, unsigned int numTriangles );
+void qm_gfx_mesh_draw( QmGfxMesh *mesh );
+void qm_gfx_mesh_draw_sub( QmGfxMesh *mesh, int32_t *firstSubMeshes, int32_t *subMeshes, uint32_t numSubMeshes );
+void qm_gfx_mesh_draw_instanced( QmGfxMesh *mesh, const PLMatrix4 *transforms, unsigned int instanceCount );
 
 /**
  * Generate cubic coordinates for the given vertices.
  */
 void PlgGenerateTextureCoordinates( QmGfxMeshVertex *vertices, unsigned int numVertices, QmMathVector2f textureOffset, QmMathVector2f textureScale );
 
-void PlgGenerateVertexNormals( QmGfxMeshVertex *vertices, unsigned int numVertices, unsigned int *indices, unsigned int numTriangles, bool perFace );
-
 //TODO: move into math library
 QmMathVector3f PlgGenerateVertexNormal( QmMathVector3f a, QmMathVector3f b, QmMathVector3f c );
 
 /* immediate mode style api */
+//TODO: move into engine
 QmGfxMesh   *PlgImmBegin( QmGfxMeshPrimitive primitive );
 unsigned int PlgImmPushVertex( float x, float y, float z );
 void         PlgImmNormal( float x, float y, float z );

@@ -11,24 +11,12 @@
  * some higher-level library?
  ****************************************/
 
-static QmGfxMesh   *currentDynamicMesh;
-static unsigned int currentVertex;
+static QmGfxMesh *currentDynamicMesh;
+
+static constexpr unsigned int MAXIMUM_STORAGE = 4096;
 
 static unsigned int currentTriangle;
-
-typedef struct DrawVertex
-{
-	QmMathVector3f  position;
-	QmMathVector3f  normal;
-	QmMathColour4ub colour;
-	QmMathVector2f  uv;
-} DrawVertex;
-
-static DrawVertex  *vertices;
-static unsigned int numVertices;
-static unsigned int maxVertices;
-
-#define MAXIMUM_STORAGE 4096
+static unsigned int currentVertex;
 
 static QmGfxMesh *meshes[ QM_GFX_MESH_PRIMITIVE_MAX ];
 
@@ -36,54 +24,52 @@ QmGfxMesh *PlgImmBegin( QmGfxMeshPrimitive primitive )
 {
 	if ( meshes[ primitive ] == NULL )
 	{
-		meshes[ primitive ] = PlgCreateMesh( primitive, QM_GFX_MESH_DRAW_MODE_STREAM, MAXIMUM_STORAGE, MAXIMUM_STORAGE );
-
-		static constexpr QmGfxMeshVertexAttribute DEFAULT_ATTRIBUTES[] = {
-		        {0, 3, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( DrawVertex, position )},
-		        {1, 3, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( DrawVertex, normal )  },
-		        {2, 4, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_UINT8,   offsetof( DrawVertex, colour )  },
-		        {5, 2, QM_GFX_MESH_VERTEX_ATTRIBUTE_TYPE_FLOAT32, offsetof( DrawVertex, uv )      },
-		};
-		static constexpr unsigned int NUM_DEFAULT_ATTRIBUTES = QM_OS_ARRAY_ELEMENTS( DEFAULT_ATTRIBUTES );
-
-		//qm_gfx_mesh_set_vertex_layout( meshes[ primitive ], DEFAULT_ATTRIBUTES, NUM_DEFAULT_ATTRIBUTES );
+		meshes[ primitive ] = qm_gfx_mesh_create( primitive, QM_GFX_MESH_DRAW_MODE_STREAM, MAXIMUM_STORAGE, MAXIMUM_STORAGE );
 	}
 
 	currentDynamicMesh = meshes[ primitive ];
 	PlgClearMesh( currentDynamicMesh );
-	PlgSetMeshPrimitiveScale( currentDynamicMesh, 1.0f );
+	qm_gfx_mesh_set_primitive_scale( currentDynamicMesh, 1.0f );
+
 	currentVertex = 0;
+
 	return currentDynamicMesh;
 }
 
 unsigned int PlgImmPushVertex( float x, float y, float z )
 {
-	return ( currentVertex = PlgAddMeshVertex( currentDynamicMesh, &QM_MATH_VECTOR3F( x, y, z ), &QM_MATH_VECTOR3F_ZERO, &PL_COLOUR_WHITE, &QM_MATH_VECTOR2F_ZERO ) );
+	return currentVertex = PlgAddMeshVertex( currentDynamicMesh, &QM_MATH_VECTOR3F( x, y, z ), &QM_MATH_VECTOR3F_ZERO, &PL_COLOUR_WHITE, &QM_MATH_VECTOR2F_ZERO );
 }
 
 void PlgImmNormal( float x, float y, float z )
 {
-	PlgSetMeshVertexNormal( currentDynamicMesh, currentVertex, &QM_MATH_VECTOR3F( x, y, z ) );
+	currentDynamicMesh->vertices[ currentVertex ].normal.x = x;
+	currentDynamicMesh->vertices[ currentVertex ].normal.y = y;
+	currentDynamicMesh->vertices[ currentVertex ].normal.z = z;
 }
 
 void PlgImmColour( uint8_t r, uint8_t g, uint8_t b, uint8_t a )
 {
-	PlgSetMeshVertexColour( currentDynamicMesh, currentVertex, &QM_MATH_COLOUR4UB( r, g, b, a ) );
+	currentDynamicMesh->vertices[ currentVertex ].colour.r = r;
+	currentDynamicMesh->vertices[ currentVertex ].colour.g = g;
+	currentDynamicMesh->vertices[ currentVertex ].colour.b = b;
+	currentDynamicMesh->vertices[ currentVertex ].colour.a = a;
 }
 
 void PlgImmTextureCoord( float s, float t )
 {
-	PlgSetMeshVertexST( currentDynamicMesh, currentVertex, s, t );
+	currentDynamicMesh->vertices[ currentVertex ].st[ 0 ].x = s;
+	currentDynamicMesh->vertices[ currentVertex ].st[ 0 ].y = t;
 }
 
 unsigned int PlgImmPushTriangle( unsigned int x, unsigned int y, unsigned int z )
 {
-	return ( currentTriangle = PlgAddMeshTriangle( currentDynamicMesh, x, y, z ) );
+	return currentTriangle = PlgAddMeshTriangle( currentDynamicMesh, x, y, z );
 }
 
 void PlgImmSetPrimitiveScale( float scale )
 {
-	PlgSetMeshPrimitiveScale( currentDynamicMesh, scale );
+	qm_gfx_mesh_set_primitive_scale( currentDynamicMesh, scale );
 }
 
 void PlgImmDraw( void )
@@ -102,8 +88,8 @@ void PlgImmDraw( void )
 		}
 	}
 
-	PlgUploadMesh( currentDynamicMesh, nullptr );
-	PlgDrawMesh( currentDynamicMesh );
+	qm_gfx_mesh_upload( currentDynamicMesh, nullptr, nullptr );
+	qm_gfx_mesh_draw( currentDynamicMesh );
 }
 
 unsigned int PlgPushTriangle( QmGfxMesh *mesh, unsigned int x, unsigned int y, unsigned int z )
@@ -118,7 +104,7 @@ unsigned int PlgPushVertex3f( QmGfxMesh *mesh, float x, float y, float z )
 
 void PlgColour4bv( QmGfxMesh *mesh, const QmMathColour4ub *col )
 {
-	PlgSetMeshVertexColour( mesh, mesh->num_verts - 1, col );
+	mesh->vertices[ mesh->num_verts - 1 ].colour = *col;
 }
 
 /****************************************
@@ -133,8 +119,8 @@ void PlgClearInternalMeshes( void )
 			continue;
 		}
 
-		PlgDestroyMesh( meshes[ i ] );
-		meshes[ i ] = NULL;
+		qm_gfx_mesh_destroy( meshes[ i ] );
+		meshes[ i ] = nullptr;
 	}
 }
 
@@ -212,18 +198,4 @@ void PlgDrawLine( QmMathVector3f startPos, QmMathColour4ub startColour, QmMathVe
 void PlgDrawSimpleLine( QmMathVector3f startPos, QmMathVector3f endPos, QmMathColour4ub colour )
 {
 	PlgDrawLine( startPos, colour, endPos, colour );
-}
-
-void PlgDrawPixel( int x, int y, QmMathColour4ub colour )
-{
-	int vpW, vpH;
-	qm_gfx_get_viewport( NULL, NULL, &vpW, &vpH );
-
-	/* make sure that the pixel is within the viewport */
-	if ( x > vpW || x < 0 || y > vpH || y < 0 )
-	{
-		return;
-	}
-
-	CallGfxFunction( DrawPixel, x, y, colour );
 }

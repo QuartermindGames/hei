@@ -222,7 +222,7 @@ void xgl_mesh_delete( QmGfxMesh *self )
 	self->driver = nullptr;
 }
 
-void xgl_mesh_upload( QmGfxMesh *self, QmGfxShaderProgram *program, const void *vertexPtr )
+void xgl_mesh_upload( QmGfxMesh *self, QmGfxShaderProgram *program, const void *vertexPtr, const void *elementsPtr )
 {
 	if ( !self->isDirty )
 	{
@@ -249,7 +249,7 @@ void xgl_mesh_upload( QmGfxMesh *self, QmGfxShaderProgram *program, const void *
 
 	if ( drv->buffers[ XGL_MESH_BUFFER_ELEMENT ] != 0 )
 	{
-		XGL_CALL( glNamedBufferData( drv->buffers[ XGL_MESH_BUFFER_ELEMENT ], sizeof( GLuint ) * self->num_indices, &self->indices[ 0 ], drawMode ) );
+		XGL_CALL( glNamedBufferData( drv->buffers[ XGL_MESH_BUFFER_ELEMENT ], sizeof( GLuint ) * self->num_indices, elementsPtr, drawMode ) );
 	}
 
 	self->isDirty = false;

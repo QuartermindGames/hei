@@ -93,7 +93,7 @@ void xgl_mesh_vao_manager_initialize();
 void xgl_mesh_vao_manager_shutdown();
 
 void xgl_mesh_create( QmGfxMesh *self );
-void xgl_mesh_upload( QmGfxMesh *self, QmGfxShaderProgram *program, const void *vertexPtr );
+void xgl_mesh_upload( QmGfxMesh *self, QmGfxShaderProgram *program, const void *vertexPtr, const void *elementsPtr );
 void xgl_mesh_delete( QmGfxMesh *self );
 void xgl_mesh_draw_instanced( QmGfxMesh *self, QmGfxShaderProgram *program, const PLMatrix4 *transforms, unsigned int instanceCount );
 void xgl_mesh_draw( QmGfxMesh *self, QmGfxShaderProgram *program );
