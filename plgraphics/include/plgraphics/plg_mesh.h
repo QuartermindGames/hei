@@ -166,11 +166,11 @@ void         PlgImmColour( uint8_t r, uint8_t g, uint8_t b, uint8_t a );
 void         PlgImmTextureCoord( float s, float t );
 unsigned int PlgImmPushTriangle( unsigned int x, unsigned int y, unsigned int z );
 void         PlgImmSetPrimitiveScale( float scale );
-void         PlgImmDraw( void );
+void         PlgImmDraw();
 
-unsigned int PlgPushTriangle( QmGfxMesh *mesh, unsigned int x, unsigned int y, unsigned int z );
-unsigned int PlgPushVertex3f( QmGfxMesh *mesh, float x, float y, float z );
-void         PlgColour4bv( QmGfxMesh *mesh, const QmMathColour4ub *col );
+[[deprecated]] unsigned int PlgPushTriangle( QmGfxMesh *mesh, unsigned int x, unsigned int y, unsigned int z );
+[[deprecated]] unsigned int PlgPushVertex3f( QmGfxMesh *mesh, float x, float y, float z );
+[[deprecated]] void         PlgColour4bv( QmGfxMesh *mesh, const QmMathColour4ub *col );
 
 #endif
 
